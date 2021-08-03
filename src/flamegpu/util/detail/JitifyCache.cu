@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <regex>
+#include <array>
 
 #include "flamegpu/version.h"
 #include "flamegpu/exception/FLAMEGPUException.h"
@@ -81,74 +82,138 @@ std::string loadFile(const path &filepath) {
     ifs.close();
     return rtn;
 }
-}  // namespace
 
-std::mutex JitifyCache::instance_mutex;
-std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::string &func_name, const std::vector<std::string> &template_args, const std::string &kernel_src, const std::string &dynamic_header) {
-    NVTX_RANGE("JitifyCache::compileKernel");
-    // Init runtime compilation constants
-    static std::string env_inc_fgp2 = std::getenv("FLAMEGPU2_INC_DIR") ? std::getenv("FLAMEGPU2_INC_DIR") : "";
-    static bool header_version_confirmed = false;
-    static std::string env_cuda_path = std::getenv("CUDA_PATH") ? std::getenv("CUDA_PATH") : "";
-    if (env_inc_fgp2.empty()) {
-        // Start with the current working directory
-        path test_include(".");
-        // Try 5 levels of directory, to see if we can find flame_api.h
-        for (int i = 0; i < 5; ++i) {
-            // If break out the loop if the test_include directory does not exist.
-            if (!exists(test_include)) {
-                break;
-            }
-            // Check file assuming flamegpu is the root cmake project
-            path check_file = test_include;
-            check_file/= "include/flamegpu/version.h";
+/**
+ * Find the cuda include directory.
+ * Throws exceptions if it can not be found.
+ * @return the path to the CUDA include directory.
+ */
+std::string getCUDAIncludeDir() {
+    // Define an array of environment variables to check in order
+    std::array<const std::string, 2> ENV_VARS { "CUDA_PATH", "CUDA_HOME" };
+    std::string cuda_include_dir_str = "";
+    for (const auto& env_var : ENV_VARS) {
+        std::string env_value = std::getenv(env_var.c_str()) ? std::getenv(env_var.c_str()) : "";
+        if (!env_value.empty()) {
+            path check_path = path(env_value) / "include/";
+            // Use try catch to suppress file permission exceptions etc
+            try {
+                if (exists(check_path)) {
+                    cuda_include_dir_str = check_path.string();
+                    break;
+                }
+            } catch (...) { }
+            // Throw if the value is not empty, but it does not exist. Outside the try catch excplicityly.
+            THROW flamegpu::exception::InvalidFilePath("Error environment variable %s (%s) does not contain a valid CUDA include directory", env_var.c_str(), env_value.c_str());
+        }
+    }
+    // If none of the search enviornmental variables were useful, throw an exception.
+    if (cuda_include_dir_str.empty()) {
+        THROW exception::InvalidFilePath("Error could not find CUDA include directory. Please specify using the CUDA_PATH environment variable");
+    }
+    return cuda_include_dir_str;
+}
+
+/**
+ * Get the FLAME GPU include directory via the environment variables. 
+ * @param env_var_used modified to return the name of the environment variable which was used, if any.
+ * @return the FLAME GPU 2+ include directory.
+ */
+std::string getFLAMEGPUIncludeDir(std::string &env_var_used) {
+    // Define an array of environment variables to check
+    std::array<const std::string, 2> ENV_VARS { "FLAMEGPU_INC_DIR", "FLAMEGPU2_INC_DIR" };
+    std::string include_dir_str = "";
+    // Iterate the array of environment variables to check for the version header.
+    for (const auto& env_var : ENV_VARS) {
+        // If the environment variable exists
+        std::string env_value = std::getenv(env_var.c_str()) ? std::getenv(env_var.c_str()) : "";
+        // If it's a value, check if the path exists, and if any expected files are found.
+        if (!env_value.empty()) {
+            path check_file = path(env_value) / "flamegpu/flamegpu.h";
             // Use try catch to suppress file permission exceptions etc
             try {
                 if (exists(check_file)) {
-                    test_include /= "include";
-                    env_inc_fgp2 = test_include.string();
+                    include_dir_str = env_value;
+                    env_var_used = env_var;
+                    break;
+                }
+            } catch (...) { }
+            // Throw if the value is not empty, but it does not exist. Outside the try catch excplicityly.
+            THROW flamegpu::exception::InvalidFilePath("Error environment variable %s (%s) does not contain flamegpu/flamegpu.h. Please correct this environment variable.", env_var.c_str(), env_value.c_str());
+        }
+    }
+
+    // If no appropriate environmental variables were found, check upwards for N levels (assuming the default filestructure is in use)
+    if (include_dir_str.empty()) {
+        // Start with the current working directory
+        path test_dir(".");
+        // Try multiple levels of directory, to see if we can find include/flamegpu/flamegpu.h
+        const unsigned int LEVELS = 5;
+        for (unsigned int level = 0; level < LEVELS; level++) {
+            // If break out the loop if the test_dir directory does not exist.
+            if (!exists(test_dir)) {
+                break;
+            }
+            // Check file assuming flamegpu is the root cmake project
+            path check_file = test_dir;
+            check_file /= "include/flamegpu/flamegpu.h";
+            // Use try catch to suppress file permission exceptions etc
+            try {
+                if (exists(check_file)) {
+                    test_dir /= "include";
+                    include_dir_str = test_dir.string();
                     break;
                 }
             } catch (...) { }
             // Check file assuming a standalone example is the root cmake project
             // We want to see if we can find the build directory
-            for (auto& p : directory_iterator(test_include)) {
+            for (auto& p : directory_iterator(test_dir)) {
                 if (is_directory(p)) {
                     check_file = p.path();
                     check_file /= "_deps/flamegpu2-src/include/flamegpu/version.h";
                     // Use try catch to suppress file permission exceptions etc
                     try {
                         if (exists(check_file)) {
-                            test_include = p.path();
-                            test_include /= "_deps/flamegpu2-src/include";
-                            env_inc_fgp2 = test_include.string();
+                            test_dir = p.path();
+                            test_dir /= "_deps/flamegpu2-src/include";
+                            include_dir_str = test_dir.string();
                             goto break_flamegpu_inc_dir_loop;  // Break out of nested loop
                         }
                     } catch (...) { }
                 }
             }
             // Go up a level for next iteration
-            test_include/= "..";
+            test_dir /= "..";
         }
 break_flamegpu_inc_dir_loop:
-        if (env_inc_fgp2.empty()) {
-            THROW exception::InvalidAgentFunc("Error compiling runtime agent function: Unable to automatically determine include directory and FLAMEGPU2_INC_DIR environment variable does not exist, "
-                "in JitifyCache::compileKernel().");
+        // If still not found, throw.
+        if (include_dir_str.empty()) {
+            // @todo - more appropriate exception?
+            THROW flamegpu::exception::InvalidAgentFunc("Error compiling runtime agent function: Unable to automatically determine include directory and FLAMEGPU_INC_DIR environment variable not set");
         }
     }
+    return include_dir_str;
+}
+
+/**
+ * Confirm that include directory version header matches the version of the static library.
+ * @param flamegpuIncludeDir path to the flamegpu include directory to check.
+ * @return boolean indicator of success.
+ */
+bool confirmFLAMEGPUHeaderVersion(const std::string flamegpuIncludeDir, const std::string envVariable) {
+    static bool header_version_confirmed = false;
+
     if (!header_version_confirmed) {
         std::string fileHash;
         std::string fileVersion;
         // Open version.h
-        path version_file = env_inc_fgp2;
-        version_file/= "flamegpu/version.h";
+        path version_file = path(flamegpuIncludeDir) /= "flamegpu/version.h";
         std::ifstream vFile(version_file);
         if (vFile.is_open()) {
-            // Read the first line
-            std::string line;
-            // Use a regular expression to match the FLAMEGPU_VERSION number macro.
+            // Use a regular expression to match the FLAMEGPU_VERSION number macro against lines in the file.
             std::regex pattern("^static constexpr char VERSION_FULL\\[\\] = \"(.+)\";$");
             std::smatch match;
+            std::string line;
             while (std::getline(vFile, line)) {
                 if (std::regex_search(line, match, pattern)) {
                     fileVersion = match[1];
@@ -160,31 +225,41 @@ break_flamegpu_inc_dir_loop:
                 THROW exception::VersionMismatch("Could not extract RTC header version hash.\n");
             }
         }
+        // Confirm that the version matches, else throw an exception.
         if (fileVersion == std::string(flamegpu::VERSION_FULL)) {
             header_version_confirmed = true;
         } else {
-            THROW exception::VersionMismatch("RTC header version (%s) does not match version flamegpu library was built with (%s). Set the environment variable FLAMEGPU2_INC_DIR to the correct include directory.\n",
-                fileVersion.c_str(), flamegpu::VERSION_FULL);
+            THROW exception::VersionMismatch("RTC header version (%s) does not match version flamegpu library was built with (%s). Set the environment variable %s to the correct include directory.\n",
+                fileVersion.c_str(), flamegpu::VERSION_FULL, envVariable.c_str());
         }
     }
-    if (env_cuda_path.empty()) {
-        THROW exception::InvalidAgentFunc("Error compiling runtime agent function: CUDA_PATH environment variable does not exist, "
-            "in CUDAAgent::compileKernel().");
-    }
-    // If the last char is a / or \, remove it. Only removes a single slash.
-    if ((env_cuda_path.back() == '/' || env_cuda_path.back() == '\\')) {
-        env_cuda_path.pop_back();
-    }
+
+
+    return header_version_confirmed;
+}
+
+}  // namespace
+
+std::mutex JitifyCache::instance_mutex;
+std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::string &func_name, const std::vector<std::string> &template_args, const std::string &kernel_src, const std::string &dynamic_header) {
+    NVTX_RANGE("JitifyCache::compileKernel");
+    // find and validate the cuda include directory via CUDA_PATH or CUDA_HOME.
+    static const std::string cuda_include_dir = getCUDAIncludeDir();
+    // find and validate the the flamegpu include directory
+    static std::string flamegpu_include_dir_envvar;
+    static const std::string flamegpu_include_dir = getFLAMEGPUIncludeDir(flamegpu_include_dir_envvar);
+    // verify that the include directory contains the correct headers.
+    confirmFLAMEGPUHeaderVersion(flamegpu_include_dir, flamegpu_include_dir_envvar);
 
      // vector of compiler options for jitify
     std::vector<std::string> options;
     std::vector<std::string> headers;
 
     // fpgu include directory
-    options.push_back(std::string("-I" + std::string(env_inc_fgp2)));
+    options.push_back(std::string("-I" + std::string(flamegpu_include_dir)));
 
     // cuda include directory (via CUDA_PATH)
-    options.push_back(std::string("-I" + env_cuda_path + "/include"));
+    options.push_back(std::string("-I" + cuda_include_dir));
 
     // Set the compilation architecture target if it was successfully detected.
     int currentDeviceIdx = 0;
@@ -227,7 +302,7 @@ break_flamegpu_inc_dir_loop:
 
     // cuda.h
     std::string include_cuda_h;
-    include_cuda_h = "--pre-include=" + env_cuda_path + "/include/cuda.h";
+    include_cuda_h = "--pre-include=" + cuda_include_dir + "/cuda.h";
     options.push_back(include_cuda_h);
 
     // get the dynamically generated header from curve rtc

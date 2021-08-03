@@ -220,7 +220,7 @@ If wishing to run examples within Visual Studio it is necessary to right click t
 
 FLAME GPU 2 supports runtime compilation of agent functions. E.g. specification of agent functions, or agent function conditions, as strings. This is a prerequisite for other language support via [SWIG](http://www.swig.org/). In order to test RTC features (in `tests/test_cases/runtime/test_rtc_device_api.cu`) you must set the following environment variables.
 
-1. `FLAMEGPU2_INC_DIR` This should be set to the `\include` directory of the main FLAMEGPU2 directory.
+1. `FLAMEGPU_INC_DIR` This should be set to the `\include` directory of the main FLAME GPU 2 directory.
 2. `CUDA_PATH` This may be set when installing CUDA, however if it does not exist or has been changed this then it **must** point to the CUDA installation folder of the CUDA version used to compile FLAMEGPU (e.g. the one detected by CMake).
 
 ### Creating your own project using FLAME GPU 2
