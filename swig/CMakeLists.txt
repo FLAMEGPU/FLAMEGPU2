@@ -16,7 +16,12 @@ if(POLICY CMP0086)
 endif()
 
 # Make sure python 3 is available before bothering with SWIG.
-find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+# Provide the cmake option EXACT_PYTHON3_VERSION as an opportunity to override the version used. This is mostly for CI, so not a GUI option.
+if(PYTHON3_EXACT_VERSION)
+    set(PYTHON3_EXACT_VERSION_ARG ${PYTHON3_EXACT_VERSION} EXACT)
+endif()
+find_package(Python3 ${PYTHON3_EXACT_VERSION_ARG} REQUIRED COMPONENTS Interpreter Development)
+unset(PYTHON3_EXACT_VERSION_ARG)
 message(STATUS "Python found at " ${Python3_EXECUTABLE})
 
 # Define the minimum version of cmake we support.
