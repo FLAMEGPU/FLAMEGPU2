@@ -238,10 +238,10 @@ class FLAMEGPUIterator(object):
 %inline %{
 class FLAMEGPURuntimeException : public std::exception {
  public:
-     FLAMEGPURuntimeException(std::string msg, std::string type) {
-         err_message = msg;
+     FLAMEGPURuntimeException(std::string message, std::string type) {
+         err_message = message;
          type_str = type;
-         str_str = std::string("(") + type + ") " + msg;
+         str_str = std::string("(") + type + ") " + message;
      }
      const char* what() const noexcept {
          return err_message.c_str();
@@ -382,14 +382,14 @@ class FLAMEGPURuntimeException : public std::exception {
     %rename (CUDASimulation_Config) flamegpu::CUDASimulation::Config;
     %rename (Simulation_Config) flamegpu::Simulation::Config;
 
-    %rename (MsgBruteForce_Description) flamegpu::MsgBruteForce::Description;
-    %rename (MsgSpatial2D_Description) flamegpu::MsgSpatial2D::Description;
-    %rename (MsgSpatial3D_Description) flamegpu::MsgSpatial3D::Description;
-    %rename (MsgSpatial3D_MetaData) flamegpu::MsgSpatial3D::MetaData;
-    %rename (MsgArray_Description) flamegpu::MsgArray::Description;
-    %rename (MsgArray2D_Description) flamegpu::MsgArray2D::Description;
-    %rename (MsgArray3D_Description) flamegpu::MsgArray3D::Description;
-    %rename (MsgBucket_Description) flamegpu::MsgBucket::Description;
+    %rename (MessageBruteForce_Description) flamegpu::MessageBruteForce::Description;
+    %rename (MessageSpatial2D_Description) flamegpu::MessageSpatial2D::Description;
+    %rename (MessageSpatial3D_Description) flamegpu::MessageSpatial3D::Description;
+    %rename (MessageSpatial3D_MetaData) flamegpu::MessageSpatial3D::MetaData;
+    %rename (MessageArray_Description) flamegpu::MessageArray::Description;
+    %rename (MessageArray2D_Description) flamegpu::MessageArray2D::Description;
+    %rename (MessageArray3D_Description) flamegpu::MessageArray3D::Description;
+    %rename (MessageBucket_Description) flamegpu::MessageBucket::Description;
 
     %rename (CUDAEnsembleConfig) flamegpu::CUDAEnsemble::EnsembleConfig;
 %feature("flatnested", ""); // flat nested off
@@ -460,22 +460,22 @@ class ModelVis;
 %include "flamegpu/runtime/HostFunctionCallback.h"
 
 %feature("flatnested");     // flat nested on
-%include "flamegpu/runtime/messaging/None.h"
-%include "flamegpu/runtime/messaging/None/NoneHost.h"
-%include "flamegpu/runtime/messaging/BruteForce.h"
-%include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"  // must be before ModelDesc, AgentFunctionDescription and more complex messaging types.
-%include "flamegpu/runtime/messaging/Spatial2D.h"
-%include "flamegpu/runtime/messaging/Spatial2D/Spatial2DHost.h"
-%include "flamegpu/runtime/messaging/Spatial3D.h"
-%include "flamegpu/runtime/messaging/Spatial3D/Spatial3DHost.h"
-%include "flamegpu/runtime/messaging/Array.h"
-%include "flamegpu/runtime/messaging/Array/ArrayHost.h"
-%include "flamegpu/runtime/messaging/Array2D.h"
-%include "flamegpu/runtime/messaging/Array2D/Array2DHost.h"
-%include "flamegpu/runtime/messaging/Array3D.h"
-%include "flamegpu/runtime/messaging/Array3D/Array3DHost.h"
-%include "flamegpu/runtime/messaging/Bucket.h"
-%include "flamegpu/runtime/messaging/Bucket/BucketHost.h"
+%include "flamegpu/runtime/messaging/MessageNone.h"
+%include "flamegpu/runtime/messaging/MessageNone/MessageNoneHost.h"
+%include "flamegpu/runtime/messaging/MessageBruteForce.h"
+%include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h"  // must be before ModelDesc, AgentFunctionDescription and more complex messaging types.
+%include "flamegpu/runtime/messaging/MessageSpatial2D.h"
+%include "flamegpu/runtime/messaging/MessageSpatial2D/MessageSpatial2DHost.h"
+%include "flamegpu/runtime/messaging/MessageSpatial3D.h"
+%include "flamegpu/runtime/messaging/MessageSpatial3D/MessageSpatial3DHost.h"
+%include "flamegpu/runtime/messaging/MessageArray.h"
+%include "flamegpu/runtime/messaging/MessageArray/MessageArrayHost.h"
+%include "flamegpu/runtime/messaging/MessageArray2D.h"
+%include "flamegpu/runtime/messaging/MessageArray2D/MessageArray2DHost.h"
+%include "flamegpu/runtime/messaging/MessageArray3D.h"
+%include "flamegpu/runtime/messaging/MessageArray3D/MessageArray3DHost.h"
+%include "flamegpu/runtime/messaging/MessageBucket.h"
+%include "flamegpu/runtime/messaging/MessageBucket/MessageBucketHost.h"
 %feature("flatnested", "");     // flat nested off
 
 %include "flamegpu/model/DependencyNode.h"
@@ -696,38 +696,38 @@ TEMPLATE_VARIABLE_INSTANTIATE(getMax, flamegpu::AgentLogFrame::getMax)
 TEMPLATE_VARIABLE_INSTANTIATE(getSum, flamegpu::AgentLogFrame::getSum)
 
 // Instantiate template versions of new and get message types from the API
-%template(newMessageBruteForce) flamegpu::ModelDescription::newMessage<flamegpu::MsgBruteForce>;
-%template(newMessageSpatial2D) flamegpu::ModelDescription::newMessage<flamegpu::MsgSpatial2D>;
-%template(newMessageSpatial3D) flamegpu::ModelDescription::newMessage<flamegpu::MsgSpatial3D>;
-%template(newMessageArray) flamegpu::ModelDescription::newMessage<flamegpu::MsgArray>;
-%template(newMessageArray2D) flamegpu::ModelDescription::newMessage<flamegpu::MsgArray2D>;
-%template(newMessageArray3D) flamegpu::ModelDescription::newMessage<flamegpu::MsgArray3D>;
-%template(newMessageBucket) flamegpu::ModelDescription::newMessage<flamegpu::MsgBucket>;
+%template(newMessageBruteForce) flamegpu::ModelDescription::newMessage<flamegpu::MessageBruteForce>;
+%template(newMessageSpatial2D) flamegpu::ModelDescription::newMessage<flamegpu::MessageSpatial2D>;
+%template(newMessageSpatial3D) flamegpu::ModelDescription::newMessage<flamegpu::MessageSpatial3D>;
+%template(newMessageArray) flamegpu::ModelDescription::newMessage<flamegpu::MessageArray>;
+%template(newMessageArray2D) flamegpu::ModelDescription::newMessage<flamegpu::MessageArray2D>;
+%template(newMessageArray3D) flamegpu::ModelDescription::newMessage<flamegpu::MessageArray3D>;
+%template(newMessageBucket) flamegpu::ModelDescription::newMessage<flamegpu::MessageBucket>;
 
-%template(getMessageBruteForce) flamegpu::ModelDescription::getMessage<MsgBruteForce>;
-%template(getMessageSpatial2D) flamegpu::ModelDescription::getMessage<MsgSpatial2D>;
-%template(getMessageSpatial3D) flamegpu::ModelDescription::getMessage<MsgSpatial3D>;
-%template(getMessageArray) flamegpu::ModelDescription::getMessage<MsgArray>;
-%template(getMessageArray2D) flamegpu::ModelDescription::getMessage<MsgArray2D>;
-%template(getMessageArray3D) flamegpu::ModelDescription::getMessage<MsgArray3D>;
-%template(getMessageBucket) flamegpu::ModelDescription::getMessage<MsgBucket>;
+%template(getMessageBruteForce) flamegpu::ModelDescription::getMessage<MessageBruteForce>;
+%template(getMessageSpatial2D) flamegpu::ModelDescription::getMessage<MessageSpatial2D>;
+%template(getMessageSpatial3D) flamegpu::ModelDescription::getMessage<MessageSpatial3D>;
+%template(getMessageArray) flamegpu::ModelDescription::getMessage<MessageArray>;
+%template(getMessageArray2D) flamegpu::ModelDescription::getMessage<MessageArray2D>;
+%template(getMessageArray3D) flamegpu::ModelDescription::getMessage<MessageArray3D>;
+%template(getMessageBucket) flamegpu::ModelDescription::getMessage<MessageBucket>;
 
 
 // Instantiate template versions of message functions from the API
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MsgBruteForce::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MsgSpatial2D::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MsgSpatial3D::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MsgArray::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MsgArray2D::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MsgArray3D::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MsgBucket::Description::newVariable)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MsgBruteForce::Description::newVariableArray)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MsgSpatial2D::Description::newVariableArray)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MsgSpatial3D::Description::newVariableArray)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MsgArray::Description::newVariableArray)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MsgArray2D::Description::newVariableArray)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MsgArray3D::Description::newVariableArray)
-TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MsgBucket::Description::newVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MessageBruteForce::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MessageSpatial2D::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MessageSpatial3D::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MessageArray::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MessageArray2D::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MessageArray3D::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MessageBucket::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MessageBruteForce::Description::newVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MessageSpatial2D::Description::newVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MessageSpatial3D::Description::newVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MessageArray::Description::newVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MessageArray2D::Description::newVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MessageArray3D::Description::newVariableArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MessageBucket::Description::newVariableArray)
 
 // Instantiate template versions of host random functions from the API
 

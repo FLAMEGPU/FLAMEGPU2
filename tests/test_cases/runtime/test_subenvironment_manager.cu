@@ -13,7 +13,7 @@ FLAMEGPU_EXIT_CONDITION(ExitAlways) {
     return EXIT;
 }
 
-FLAMEGPU_AGENT_FUNCTION(DeviceAPIGetFn, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(DeviceAPIGetFn, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<int>("property_read", FLAMEGPU->environment.getProperty<int>("property_read"));
     FLAMEGPU->setVariable<int, 2>("property_read2", 0, FLAMEGPU->environment.getProperty<int>("property_read2", 0));
     FLAMEGPU->setVariable<int, 2>("property_read2", 1, FLAMEGPU->environment.getProperty<int>("property_read2", 1));

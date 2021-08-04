@@ -137,7 +137,7 @@ class TestSimulation(TestCase):
 
 
     SetGetFn = """
-    FLAMEGPU_AGENT_FUNCTION(SetGetFn, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(SetGetFn, flamegpu::MessageNone, flamegpu::MessageNone) {
         int i = FLAMEGPU->getVariable<int>("test");
         FLAMEGPU->setVariable<int>("test", i * 3);
         return flamegpu::ALIVE;
@@ -249,7 +249,7 @@ class TestSimulation(TestCase):
         assert c.getStepCounter() == 3
 
     DeathFunc = """
-        FLAMEGPU_AGENT_FUNCTION(DeathFunc, flamegpu::MsgNone, flamegpu::MsgNone) {
+        FLAMEGPU_AGENT_FUNCTION(DeathFunc, flamegpu::MessageNone, flamegpu::MessageNone) {
             unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
             // Agents with even value for 'x' die
             if (x % 2 == 0)
@@ -295,7 +295,7 @@ class TestSimulation(TestCase):
         assert c.getCUDAConfig().inLayerConcurrency == False
 
     CopyID = """
-        FLAMEGPU_AGENT_FUNCTION(CopyID, flamegpu::MsgNone, flamegpu::MsgNone) {
+        FLAMEGPU_AGENT_FUNCTION(CopyID, flamegpu::MessageNone, flamegpu::MessageNone) {
             FLAMEGPU->setVariable<flamegpu::id_t>("id_copy", FLAMEGPU->getID());
             return flamegpu::ALIVE;
         }

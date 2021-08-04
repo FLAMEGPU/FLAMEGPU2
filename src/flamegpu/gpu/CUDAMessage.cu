@@ -7,7 +7,7 @@
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/gpu/CUDAScatter.cuh"
 
-#include "flamegpu/runtime/messaging/BruteForce.h"
+#include "flamegpu/runtime/messaging/MessageBruteForce.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/runtime/detail/curve/curve.cuh"
 #include "flamegpu/model/AgentDescription.h"
@@ -24,7 +24,7 @@
 
 namespace flamegpu {
 
-CUDAMessage::CUDAMessage(const MsgBruteForce::Data& description, const CUDASimulation& cudaSimulation)
+CUDAMessage::CUDAMessage(const MessageBruteForce::Data& description, const CUDASimulation& cudaSimulation)
     : message_description(description)
     , message_count(0)
     , max_list_size(0)
@@ -40,7 +40,7 @@ CUDAMessage::~CUDAMessage(void) {
     specialisation_handler->freeMetaDataDevicePtr();
 }
 
-const MsgBruteForce::Data& CUDAMessage::getMessageDescription() const {
+const MessageBruteForce::Data& CUDAMessage::getMessageDescription() const {
     return message_description;
 }
 
@@ -209,13 +209,13 @@ void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func, const uns
         curve.unregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id);
     }
 }
-void CUDAMessage::swap(bool isOptional, const unsigned int &newMsgCount, CUDAScatter &scatter, const unsigned int &streamId) {
+void CUDAMessage::swap(bool isOptional, const unsigned int &newMessageCount, CUDAScatter &scatter, const unsigned int &streamId) {
     if (!message_list) {
         THROW exception::InvalidMessageData("MessageList '%s' is not yet allocated, in CUDAMessage::swap()\n", message_description.name.c_str());
     }
     if (isOptional && message_description.optional_outputs > 0) {
         CUDAScanCompactionConfig &scanCfg = scatter.Scan().Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId);
-        if (newMsgCount > scanCfg.cub_temp_size_max_list_size) {
+        if (newMessageCount > scanCfg.cub_temp_size_max_list_size) {
             if (scanCfg.hd_cub_temp) {
                 gpuErrchk(cudaFree(scanCfg.hd_cub_temp));
             }
@@ -235,18 +235,18 @@ void CUDAMessage::swap(bool isOptional, const unsigned int &newMsgCount, CUDASca
             scanCfg.cub_temp_size,
             scanCfg.d_ptrs.scan_flag,
             scanCfg.d_ptrs.position,
-            newMsgCount + 1));
+            newMessageCount + 1));
         // Scatter
         // Update count
-        message_count = message_list->scatter(newMsgCount, scatter, streamId, !this->truncate_messagelist_flag);
+        message_count = message_list->scatter(newMessageCount, scatter, streamId, !this->truncate_messagelist_flag);
     } else {
         if (this->truncate_messagelist_flag) {
-            message_count = newMsgCount;
+            message_count = newMessageCount;
             message_list->swap();
         } else {
-            assert(message_count + newMsgCount <= max_list_size);
+            assert(message_count + newMessageCount <= max_list_size);
             // We're appending so use our scatter kernel
-            message_count = message_list->scatterAll(newMsgCount, scatter, streamId);
+            message_count = message_list->scatterAll(newMessageCount, scatter, streamId);
         }
     }
 }

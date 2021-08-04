@@ -6,7 +6,7 @@ import random as rand
 AGENT_COUNT = 2049
 
 out_mandatory2D = """
-FLAMEGPU_AGENT_FUNCTION(out_mandatory2D, flamegpu::MsgNone, flamegpu::MsgSpatial2D) {
+FLAMEGPU_AGENT_FUNCTION(out_mandatory2D, flamegpu::MessageNone, flamegpu::MessageSpatial2D) {
     FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
     FLAMEGPU->message_out.setLocation(
         FLAMEGPU->getVariable<float>("x"),
@@ -16,7 +16,7 @@ FLAMEGPU_AGENT_FUNCTION(out_mandatory2D, flamegpu::MsgNone, flamegpu::MsgSpatial
 """
 
 out_optional2D = """
-FLAMEGPU_AGENT_FUNCTION(out_optional2D, flamegpu::MsgNone, flamegpu::MsgSpatial2D) {
+FLAMEGPU_AGENT_FUNCTION(out_optional2D, flamegpu::MessageNone, flamegpu::MessageSpatial2D) {
     if (FLAMEGPU->getVariable<int>("do_output")) {
         FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
         FLAMEGPU->message_out.setLocation(
@@ -28,7 +28,7 @@ FLAMEGPU_AGENT_FUNCTION(out_optional2D, flamegpu::MsgNone, flamegpu::MsgSpatial2
 """
 
 in2D = """
-FLAMEGPU_AGENT_FUNCTION(in2D, flamegpu::MsgSpatial2D, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(in2D, flamegpu::MessageSpatial2D, flamegpu::MessageNone) {
     const float x1 = FLAMEGPU->getVariable<float>("x");
     const float y1 = FLAMEGPU->getVariable<float>("y");
     unsigned int count = 0;
@@ -41,13 +41,13 @@ FLAMEGPU_AGENT_FUNCTION(in2D, flamegpu::MsgSpatial2D, flamegpu::MsgNone) {
     // This is all those which fall within the 3x3x3 Moore neighbourhood
     // Not our search radius
     for (const auto &message : FLAMEGPU->message_in(x1, y1)) {
-         unsigned int msgBin[2] = {
+         unsigned int messageBin[2] = {
              static_cast<unsigned int>(message.getVariable<float>("x")),
              static_cast<unsigned int>(message.getVariable<float>("y"))
          };
          bool isBad = false;
          for (unsigned int i = 0; i < 2; ++i) {  // Iterate axis
-             int binDiff = myBin[i] - msgBin[i];
+             int binDiff = myBin[i] - messageBin[i];
              if (binDiff > 1 || binDiff < -1) {
                  isBad = true;
              }
@@ -62,7 +62,7 @@ FLAMEGPU_AGENT_FUNCTION(in2D, flamegpu::MsgSpatial2D, flamegpu::MsgNone) {
 """
 
 count2D = """
-FLAMEGPU_AGENT_FUNCTION(count2D, flamegpu::MsgSpatial2D, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(count2D, flamegpu::MessageSpatial2D, flamegpu::MessageNone) {
     unsigned int count = 0;
     // Count how many messages we received (including our own)
     // This is all those which fall within the 3x3 Moore neighbourhood
@@ -74,13 +74,13 @@ FLAMEGPU_AGENT_FUNCTION(count2D, flamegpu::MsgSpatial2D, flamegpu::MsgNone) {
 }
 """
 
-class Spatial2DMsgTest(TestCase):
+class Spatial2DMessageTest(TestCase):
 
 
     def test_Mandatory(self): 
         bin_counts = {}
         # Construct model
-        model = pyflamegpu.ModelDescription("Spatial2DMsgTestModel")
+        model = pyflamegpu.ModelDescription("Spatial2DMessageTestModel")
         # Location message
         message = model.newMessageSpatial2D("location")
         message.setMin(0, 0)
@@ -183,7 +183,7 @@ class Spatial2DMsgTest(TestCase):
         bin_counts = {}
         bin_counts_optional = {}
         # Construct model
-        model = pyflamegpu.ModelDescription("Spatial2DMsgTestModel")
+        model = pyflamegpu.ModelDescription("Spatial2DMessageTestModel")
         # Location message
         message = model.newMessageSpatial2D("location")
         message.setMin(0, 0)
@@ -295,7 +295,7 @@ class Spatial2DMsgTest(TestCase):
 
 
     def test_BadRadius(self): 
-        model = pyflamegpu.ModelDescription("Spatial2DMsgTestModel")
+        model = pyflamegpu.ModelDescription("Spatial2DMessageTestModel")
         message = model.newMessageSpatial2D("location")
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.setRadius(0)
@@ -305,7 +305,7 @@ class Spatial2DMsgTest(TestCase):
         assert e.value.type() == "InvalidArgument"
 
     def test_BadMin(self): 
-        model = pyflamegpu.ModelDescription("Spatial2DMsgTestModel")
+        model = pyflamegpu.ModelDescription("Spatial2DMessageTestModel")
         message = model.newMessageSpatial2D("location")
         message.setMax(5, 5)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
@@ -322,7 +322,7 @@ class Spatial2DMsgTest(TestCase):
         assert e.value.type() == "InvalidArgument"
 
     def test_BadMax(self): 
-        model = pyflamegpu.ModelDescription("Spatial2DMsgTestModel")
+        model = pyflamegpu.ModelDescription("Spatial2DMessageTestModel")
         message = model.newMessageSpatial2D("location")
         message.setMin(5, 5)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
@@ -339,7 +339,7 @@ class Spatial2DMsgTest(TestCase):
         assert e.value.type() == "InvalidArgument"
 
     def test_UnsetMax(self): 
-        model = pyflamegpu.ModelDescription("Spatial2DMsgTestModel")
+        model = pyflamegpu.ModelDescription("Spatial2DMessageTestModel")
         message = model.newMessageSpatial2D("location")
         message.setMin(5, 5)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
@@ -347,7 +347,7 @@ class Spatial2DMsgTest(TestCase):
         assert e.value.type() == "InvalidMessage"
 
     def test_UnsetMin(self): 
-        model = pyflamegpu.ModelDescription("Spatial2DMsgTestModel")
+        model = pyflamegpu.ModelDescription("Spatial2DMessageTestModel")
         message = model.newMessageSpatial2D("location")
         message.setMin(5, 5)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
@@ -355,7 +355,7 @@ class Spatial2DMsgTest(TestCase):
         assert e.value.type() == "InvalidMessage"
 
     def test_reserved_name(self): 
-        model = pyflamegpu.ModelDescription("Spatial2DMsgTestModel")
+        model = pyflamegpu.ModelDescription("Spatial2DMessageTestModel")
         message = model.newMessageSpatial2D("location")
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.newVariableInt("_")

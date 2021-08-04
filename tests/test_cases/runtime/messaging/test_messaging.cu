@@ -14,11 +14,11 @@ namespace test_messaging {
     const char *IN_LAYER_NAME = "InLayer";
     const char *OUT_LAYER_NAME = "OutLayer";
 
-FLAMEGPU_AGENT_FUNCTION(OutFunction, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(OutFunction, MessageNone, MessageBruteForce) {
     FLAMEGPU->message_out.setVariable("x", FLAMEGPU->getVariable<int>("x"));
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(InFunction, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InFunction, MessageBruteForce, MessageNone) {
     int sum = FLAMEGPU->getVariable<int>("sum");
     int product = FLAMEGPU->getVariable<int>("product");
     for (auto &message : FLAMEGPU->message_in) {
@@ -37,16 +37,16 @@ TEST(TestMessage, NoAgents) {
     // This test confirms that it nolonger exists
 
     ModelDescription m(MODEL_NAME);
-    MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
-    msg.newVariable<int>("x");
+    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    message.newVariable<int>("x");
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
-    fo.setMessageOutput(msg);
+    fo.setMessageOutput(message);
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
-    fi.setMessageInput(msg);
+    fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
     LayerDescription &li = m.newLayer(IN_LAYER_NAME);

@@ -57,10 +57,10 @@ class FLAMEGPUException : public std::exception {
  * _DEBUG builds will print the error to stderr
  */
 #ifdef _DEBUG
-#define DERIVED_FLAMEGPUException(name, default_msg)\
+#define DERIVED_FLAMEGPUException(name, default_message)\
 class name : public FLAMEGPUException {\
  public:\
-    explicit name(const char *format = default_msg, ...) {\
+    explicit name(const char *format = default_message, ...) {\
         va_list argp;\
         va_start(argp, format);\
         err_message += parseArgs(format, argp);\
@@ -72,10 +72,10 @@ class name : public FLAMEGPUException {\
     }\
 }
 #else
-#define DERIVED_FLAMEGPUException(name, default_msg)\
+#define DERIVED_FLAMEGPUException(name, default_message)\
 class name : public FLAMEGPUException {\
  public:\
-    explicit name(const char *format = default_msg, ...) {\
+    explicit name(const char *format = default_message, ...) {\
         va_list argp;\
         va_start(argp, format);\
         err_message += parseArgs(format, argp);\

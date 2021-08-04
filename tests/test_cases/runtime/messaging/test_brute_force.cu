@@ -18,19 +18,19 @@ namespace test_message_brute_force {
     const char *OUT_LAYER_NAME = "OutLayer";
     const unsigned int AGENT_COUNT = 128;
 
-FLAMEGPU_AGENT_FUNCTION(OutFunction, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(OutFunction, MessageNone, MessageBruteForce) {
     FLAMEGPU->message_out.setVariable("x", FLAMEGPU->getVariable<int>("x"));
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(OutFunction_Optional, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(OutFunction_Optional, MessageNone, MessageBruteForce) {
     const int x = FLAMEGPU->getVariable<int>("x");
     if (x) FLAMEGPU->message_out.setVariable("x", x);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(OutFunction_OptionalNone, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(OutFunction_OptionalNone, MessageNone, MessageBruteForce) {
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(InFunction, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InFunction, MessageBruteForce, MessageNone) {
     int sum = FLAMEGPU->getVariable<int>("sum");
     int product = FLAMEGPU->getVariable<int>("product");
     for (auto &message : FLAMEGPU->message_in) {
@@ -43,7 +43,7 @@ FLAMEGPU_AGENT_FUNCTION(InFunction, MsgBruteForce, MsgNone) {
     FLAMEGPU->setVariable<int>("product", product);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(InFunction2, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InFunction2, MessageBruteForce, MessageNone) {
     int sum = FLAMEGPU->getVariable<int>("sum");
     int product = FLAMEGPU->getVariable<int>("product");
     for (auto &message : FLAMEGPU->message_in) {
@@ -58,7 +58,7 @@ FLAMEGPU_AGENT_FUNCTION(InFunction2, MsgBruteForce, MsgNone) {
     FLAMEGPU->setVariable<int>("x", x + 1);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(InFunctionNone, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InFunctionNone, MessageBruteForce, MessageNone) {
     for (auto &message : FLAMEGPU->message_in) {
         FLAMEGPU->setVariable("message_read", message.getVariable<unsigned int>("index_times_3"));
     }
@@ -70,16 +70,16 @@ FLAMEGPU_AGENT_FUNCTION(InFunctionNone, MsgBruteForce, MsgNone) {
  */
 TEST(TestMessage_BruteForce, Mandatory1) {
     ModelDescription m(MODEL_NAME);
-    MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
-    msg.newVariable<int>("x");
+    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    message.newVariable<int>("x");
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
-    fo.setMessageOutput(msg);
+    fo.setMessageOutput(message);
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
-    fi.setMessageInput(msg);
+    fi.setMessageInput(message);
 
     std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
@@ -115,16 +115,16 @@ TEST(TestMessage_BruteForce, Mandatory1) {
  */
 TEST(TestMessage_BruteForce, Mandatory2) {
     ModelDescription m(MODEL_NAME);
-    MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
-    msg.newVariable<int>("x");
+    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    message.newVariable<int>("x");
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
-    fo.setMessageOutput(msg);
+    fo.setMessageOutput(message);
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction2);
-    fi.setMessageInput(msg);
+    fi.setMessageInput(message);
 
     std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
@@ -165,17 +165,17 @@ TEST(TestMessage_BruteForce, Mandatory2) {
  */
 TEST(TestMessage_BruteForce, Optional1) {
     ModelDescription m(MODEL_NAME);
-    MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
-    msg.newVariable<int>("x");
+    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    message.newVariable<int>("x");
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction_Optional);
     fo.setMessageOutputOptional(true);
-    fo.setMessageOutput(msg);
+    fo.setMessageOutput(message);
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
-    fi.setMessageInput(msg);
+    fi.setMessageInput(message);
 
     std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
@@ -210,17 +210,17 @@ TEST(TestMessage_BruteForce, Optional1) {
 }
 TEST(TestMessage_BruteForce, Optional2) {
     ModelDescription m(MODEL_NAME);
-    MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
-    msg.newVariable<int>("x");
+    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    message.newVariable<int>("x");
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction_Optional);
     fo.setMessageOutputOptional(true);
-    fo.setMessageOutput(msg);
+    fo.setMessageOutput(message);
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction2);
-    fi.setMessageInput(msg);
+    fi.setMessageInput(message);
 
     std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
@@ -265,16 +265,16 @@ TEST(TestMessage_BruteForce, Optional2) {
 // Test optional message output, wehre no messages are output.
 TEST(TestMessage_BruteForce, OptionalNone) {
     ModelDescription m(MODEL_NAME);
-    MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
-    msg.newVariable<unsigned int>("index_times_3");
+    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    message.newVariable<unsigned int>("index_times_3");
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction_OptionalNone);
     fo.setMessageOutputOptional(true);
-    fo.setMessageOutput(msg);
+    fo.setMessageOutput(message);
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunctionNone);
-    fi.setMessageInput(msg);
+    fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
     LayerDescription &li = m.newLayer(IN_LAYER_NAME);
@@ -304,11 +304,11 @@ TEST(TestMessage_BruteForce, OptionalNone) {
 
 TEST(TestMessage_BruteForce, reserved_name) {
     ModelDescription m(MODEL_NAME);
-    MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
-    EXPECT_THROW(msg.newVariable<int>("_"), exception::ReservedName);
+    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    EXPECT_THROW(message.newVariable<int>("_"), exception::ReservedName);
 }
 
-FLAMEGPU_AGENT_FUNCTION(countBF, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(countBF, MessageBruteForce, MessageNone) {
     unsigned int count = 0;
     // Count how many messages we received (including our own)
     // This is all those which fall within the 3x3 Moore neighbourhood
@@ -322,7 +322,7 @@ TEST(TestMessage_BruteForce, ReadEmpty) {
 // What happens if we read a message list before it has been output?
     ModelDescription model("Model");
     {   // Location message
-        MsgBruteForce::Description &message = model.newMessage<MsgBruteForce>("location");
+        MessageBruteForce::Description &message = model.newMessage<MessageBruteForce>("location");
         message.newVariable<int>("id");  // unused by current test
     }
     {   // Circle agent
@@ -349,7 +349,7 @@ TEST(TestMessage_BruteForce, ReadEmpty) {
     EXPECT_EQ(ai.getVariable<unsigned int>("count"), 0u);
 }
 
-FLAMEGPU_AGENT_FUNCTION(ArrayOut, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(ArrayOut, MessageNone, MessageBruteForce) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     FLAMEGPU->message_out.setVariable<unsigned int>("index", index);
     FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 0, index * 3);
@@ -357,7 +357,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayOut, MsgNone, MsgBruteForce) {
     FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 2, index * 11);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(ArrayIn, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(ArrayIn, MessageBruteForce, MessageNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     for (auto &message : FLAMEGPU->message_in) {
         if (message.getVariable<unsigned int>("index") == my_index) {
@@ -371,16 +371,16 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, MsgBruteForce, MsgNone) {
 }
 TEST(TestMessage_BruteForce, ArrayVariable) {
     ModelDescription m(MODEL_NAME);
-    MsgBruteForce::Description &msg = m.newMessage<MsgBruteForce>(MESSAGE_NAME);
-    msg.newVariable<unsigned int, 3>("v");
-    msg.newVariable<unsigned int>("index");
+    MessageBruteForce::Description &message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
+    message.newVariable<unsigned int, 3>("v");
+    message.newVariable<unsigned int>("index");
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
-    fo.setMessageOutput(msg);
+    fo.setMessageOutput(message);
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
-    fi.setMessageInput(msg);
+    fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
     LayerDescription &li = m.newLayer(IN_LAYER_NAME);
@@ -406,7 +406,7 @@ TEST(TestMessage_BruteForce, ArrayVariable) {
     }
 }
 const char* rtc_ArrayOut_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MessageNone, flamegpu::MessageBruteForce) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     FLAMEGPU->message_out.setVariable<unsigned int>("index", index);
     FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 0, index * 3);
@@ -416,7 +416,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
 }
 )###";
 const char* rtc_ArrayIn_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageBruteForce, flamegpu::MessageNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     for (auto &message : FLAMEGPU->message_in) {
         if (message.getVariable<unsigned int>("index") == my_index) {
@@ -431,16 +431,16 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
 )###";
 TEST(TestRTCMessage_BruteForce, ArrayVariable) {
     ModelDescription m(MODEL_NAME);
-    MsgBruteForce::Description& msg = m.newMessage<MsgBruteForce>(MESSAGE_NAME);
-    msg.newVariable<unsigned int, 3>("v");
-    msg.newVariable<unsigned int>("index");
+    MessageBruteForce::Description& message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
+    message.newVariable<unsigned int, 3>("v");
+    message.newVariable<unsigned int>("index");
     AgentDescription& a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
     AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
-    fo.setMessageOutput(msg);
+    fo.setMessageOutput(message);
     AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
-    fi.setMessageInput(msg);
+    fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
     LayerDescription& li = m.newLayer(IN_LAYER_NAME);
@@ -467,14 +467,14 @@ TEST(TestRTCMessage_BruteForce, ArrayVariable) {
 }
 
 #if defined(USE_GLM)
-FLAMEGPU_AGENT_FUNCTION(ArrayOut_glm, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(ArrayOut_glm, MessageNone, MessageBruteForce) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     FLAMEGPU->message_out.setVariable<unsigned int>("index", index);
     glm::uvec3 t = glm::uvec3(index * 3, index * 7, index * 11);
     FLAMEGPU->message_out.setVariable<glm::uvec3>("v", t);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(ArrayIn_glm, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(ArrayIn_glm, MessageBruteForce, MessageNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     for (auto &message : FLAMEGPU->message_in) {
         if (message.getVariable<unsigned int>("index") == my_index) {
@@ -486,16 +486,16 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn_glm, MsgBruteForce, MsgNone) {
 }
 TEST(TestMessage_BruteForce, ArrayVariable_glm) {
     ModelDescription m(MODEL_NAME);
-    MsgBruteForce::Description &msg = m.newMessage<MsgBruteForce>(MESSAGE_NAME);
-    msg.newVariable<unsigned int, 3>("v");
-    msg.newVariable<unsigned int>("index");
+    MessageBruteForce::Description &message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
+    message.newVariable<unsigned int, 3>("v");
+    message.newVariable<unsigned int>("index");
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
-    fo.setMessageOutput(msg);
+    fo.setMessageOutput(message);
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
-    fi.setMessageInput(msg);
+    fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
     LayerDescription &li = m.newLayer(IN_LAYER_NAME);
@@ -521,7 +521,7 @@ TEST(TestMessage_BruteForce, ArrayVariable_glm) {
     }
 }
 const char* rtc_ArrayOut_func_glm = R"###(
-FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MessageNone, flamegpu::MessageBruteForce) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     FLAMEGPU->message_out.setVariable<unsigned int>("index", index);
     glm::uvec3 t = glm::uvec3(index * 3, index * 7, index * 11);
@@ -530,7 +530,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
 }
 )###";
 const char* rtc_ArrayIn_func_glm = R"###(
-FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageBruteForce, flamegpu::MessageNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     for (auto &message : FLAMEGPU->message_in) {
         if (message.getVariable<unsigned int>("index") == my_index) {
@@ -543,16 +543,16 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
 )###";
 TEST(TestRTCMessage_BruteForce, ArrayVariable_glm) {
     ModelDescription m(MODEL_NAME);
-    MsgBruteForce::Description& msg = m.newMessage<MsgBruteForce>(MESSAGE_NAME);
-    msg.newVariable<unsigned int, 3>("v");
-    msg.newVariable<unsigned int>("index");
+    MessageBruteForce::Description& message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
+    message.newVariable<unsigned int, 3>("v");
+    message.newVariable<unsigned int>("index");
     AgentDescription& a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
     AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
-    fo.setMessageOutput(msg);
+    fo.setMessageOutput(message);
     AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
-    fi.setMessageInput(msg);
+    fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
     LayerDescription& li = m.newLayer(IN_LAYER_NAME);

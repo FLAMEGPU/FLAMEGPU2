@@ -8,19 +8,19 @@ namespace flamegpu {
 
 
 namespace test_dependency_graph {
-FLAMEGPU_AGENT_FUNCTION(agent_fn1, MsgBruteForce, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn1, MessageBruteForce, MessageBruteForce) {
     // do nothing
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn2, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn2, MessageNone, MessageNone) {
     // do nothing
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn3, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn3, MessageNone, MessageNone) {
     // do nothing
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn4, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn4, MessageNone, MessageNone) {
     // do nothing
     return ALIVE;
 }

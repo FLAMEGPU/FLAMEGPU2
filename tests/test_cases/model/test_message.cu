@@ -14,7 +14,7 @@ namespace test_message {
 
 TEST(MessageDescriptionTest, variables) {
     ModelDescription _m(MODEL_NAME);
-    MsgBruteForce::Description &m = _m.newMessage(MESSAGE_NAME1);
+    MessageBruteForce::Description &m = _m.newMessage(MESSAGE_NAME1);
     EXPECT_FALSE(m.hasVariable(VARIABLE_NAME1));
     EXPECT_FALSE(m.hasVariable(VARIABLE_NAME2));
     EXPECT_EQ(m.getVariablesCount(), 0u);
@@ -35,7 +35,7 @@ TEST(MessageDescriptionTest, variables) {
 }
 TEST(MessageDescriptionTest, variables_array) {
     ModelDescription _m(MODEL_NAME);
-    MsgBruteForce::Description &m = _m.newMessage(MESSAGE_NAME1);
+    MessageBruteForce::Description &m = _m.newMessage(MESSAGE_NAME1);
     EXPECT_FALSE(m.hasVariable(VARIABLE_NAME1));
     EXPECT_FALSE(m.hasVariable(VARIABLE_NAME2));
     EXPECT_EQ(m.getVariablesCount(), 0u);
@@ -60,10 +60,10 @@ TEST(MessageDescriptionTest, variables_array) {
     EXPECT_EQ(std::type_index(typeid(int16_t)), m.getVariableType(VARIABLE_NAME2));
 }
 
-FLAMEGPU_AGENT_FUNCTION(NoInput, MsgNone, MsgSpatial3D) {
+FLAMEGPU_AGENT_FUNCTION(NoInput, MessageNone, MessageSpatial3D) {
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(NoOutput, MsgSpatial2D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(NoOutput, MessageSpatial2D, MessageNone) {
     return ALIVE;
 }
 
@@ -87,7 +87,7 @@ TEST(MessageDescriptionTest, CorrectMessageTypeBound3) {
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent("foo");
     AgentFunctionDescription &fo = a.newFunction("bar", NoInput);
-    MsgBruteForce::Description &md = m.newMessage<MsgBruteForce>("foo2");
+    MessageBruteForce::Description &md = m.newMessage<MessageBruteForce>("foo2");
     EXPECT_THROW(fo.setMessageOutput(md), exception::InvalidMessageType);
     EXPECT_THROW(fo.setMessageInput(md), exception::InvalidMessageType);
 }
@@ -95,7 +95,7 @@ TEST(MessageDescriptionTest, CorrectMessageTypeBound4) {
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent("foo");
     AgentFunctionDescription &fo = a.newFunction("bar", NoOutput);
-    MsgBruteForce::Description &md = m.newMessage<MsgBruteForce>("foo2");
+    MessageBruteForce::Description &md = m.newMessage<MessageBruteForce>("foo2");
     EXPECT_THROW(fo.setMessageOutput(md), exception::InvalidMessageType);
     EXPECT_THROW(fo.setMessageInput(md), exception::InvalidMessageType);
 }

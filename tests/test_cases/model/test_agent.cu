@@ -21,11 +21,11 @@ const char *FUNCTION_NAME2 = "Func2";
 const char *STATE_NAME1 = "State1";
 const char *STATE_NAME2 = "State2";
 
-FLAMEGPU_AGENT_FUNCTION(agent_fn1, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn1, MessageNone, MessageNone) {
     // do nothing
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn2, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn2, MessageNone, MessageNone) {
     // do nothing
     return ALIVE;
 }
@@ -55,9 +55,9 @@ TEST(AgentDescriptionTest, functions) {
     EXPECT_EQ(f1.getName(), FUNCTION_NAME1);
     EXPECT_EQ(f2.getName(), FUNCTION_NAME2);
     {
-        AgentFunctionWrapper *_a = &agent_function_wrapper<agent_fn1_impl, MsgNone, MsgNone>;
+        AgentFunctionWrapper *_a = &agent_function_wrapper<agent_fn1_impl, MessageNone, MessageNone>;
         EXPECT_EQ(f1.getFunctionPtr(), _a);
-        AgentFunctionWrapper *_b = &agent_function_wrapper<agent_fn2_impl, MsgNone, MsgNone>;
+        AgentFunctionWrapper *_b = &agent_function_wrapper<agent_fn2_impl, MessageNone, MessageNone>;
         EXPECT_EQ(f2.getFunctionPtr(), _b);
     }
 }
@@ -196,7 +196,7 @@ TEST(AgentDescriptionTest, reserved_name) {
     EXPECT_THROW((a.*array_version)("sTate", {}), exception::ReservedName);
 }
 const char* rtc_agent_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_filefunc, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_filefunc, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->setVariable<int>("x", FLAMEGPU->getVariable<int>("x") + 1);
     return flamegpu::ALIVE;
 }

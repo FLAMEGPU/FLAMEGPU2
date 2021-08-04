@@ -115,7 +115,7 @@ FLAMEGPU_HOST_DEVICE_FUNCTION void clampPosition(float &x, float &y, float &z, c
 /**
  * outputdata agent funFLAMEGPU_AGENT_FUNCTIONction for Boid agents, which outputs publicly visible properties to a message list
  */
-FLAMEGPU_AGENT_FUNCTION(outputdata, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(outputdata, flamegpu::MessageNone, flamegpu::MessageBruteForce) {
     // Output each agents publicly visible properties.
     FLAMEGPU->message_out.setVariable<flamegpu::id_t>("id", FLAMEGPU->getID());
     FLAMEGPU->message_out.setVariable<float>("x", FLAMEGPU->getVariable<float>("x"));
@@ -129,7 +129,7 @@ FLAMEGPU_AGENT_FUNCTION(outputdata, flamegpu::MsgNone, flamegpu::MsgBruteForce) 
 /**
  * inputdata agent function for Boid agents, which reads data from neighbouring Boid agents, to perform the boid flocking model.
  */
-FLAMEGPU_AGENT_FUNCTION(inputdata, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(inputdata, flamegpu::MessageBruteForce, flamegpu::MessageNone) {
     // Agent properties in local register
     const int id = FLAMEGPU->getID();
     // Agent position
@@ -289,7 +289,7 @@ int main(int argc, const char ** argv) {
     flamegpu::ModelDescription model("Boids_BruteForce");
 
     {   // Location message
-        flamegpu::MsgBruteForce::Description &message = model.newMessage("location");
+        flamegpu::MessageBruteForce::Description &message = model.newMessage("location");
         // A message to hold the location of an agent.
         message.newVariable<flamegpu::id_t>("id");
         message.newVariable<float>("x");

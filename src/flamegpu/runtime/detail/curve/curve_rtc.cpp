@@ -54,7 +54,7 @@ namespace curve {
 /**
  * Dynamically generated version of Curve without hashing
  * Both environment data, and curve variable ptrs are stored in this buffer
- * Order: Env Data, Agent, MsgOut, MsgIn, NewAgent
+ * Order: Env Data, Agent, MessageOut, MessageIn, NewAgent
  * EnvData size must be a multiple of 8 bytes
  */
 $DYNAMIC_VARIABLES
@@ -339,8 +339,8 @@ void CurveRTCHost::initHeaderEnvironment() {
         THROW exception::UnknownInternalError("EnvironmentManager::MAX_BUFFER_SIZE should be a multiple of %llu!", sizeof(void*));
     }
     agent_data_offset = data_buffer_size;     data_buffer_size += agent_variables.size() * sizeof(void*);
-    msgOut_data_offset = data_buffer_size;    data_buffer_size += messageOut_variables.size() * sizeof(void*);
-    msgIn_data_offset = data_buffer_size;     data_buffer_size += messageIn_variables.size() * sizeof(void*);
+    messageOut_data_offset = data_buffer_size;    data_buffer_size += messageOut_variables.size() * sizeof(void*);
+    messageIn_data_offset = data_buffer_size;     data_buffer_size += messageIn_variables.size() * sizeof(void*);
     newAgent_data_offset = data_buffer_size;  data_buffer_size += newAgent_variables.size() * sizeof(void*);
     variables << "__constant__  char " << getVariableSymbolName() << "[" << data_buffer_size << "];\n";
     setHeaderPlaceholder("$DYNAMIC_VARIABLES", variables.str());
@@ -474,7 +474,7 @@ void CurveRTCHost::initHeaderSetters() {
                 setMessageVariableImpl << "                    return;\n";
                 setMessageVariableImpl << "                }\n";
                 setMessageVariableImpl << "#endif\n";
-                setMessageVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgOut_data_offset + (ct++ * sizeof(void*)) << ")))[index] = (T) variable;\n";
+                setMessageVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageOut_data_offset + (ct++ * sizeof(void*)) << ")))[index] = (T) variable;\n";
                 setMessageVariableImpl << "              return;\n";
                 setMessageVariableImpl << "          }\n";
             } else { ++ct; }
@@ -570,7 +570,7 @@ void CurveRTCHost::initHeaderSetters() {
                 setMessageArrayVariableImpl << "                  return;\n";
                 setMessageArrayVariableImpl << "              }\n";
                 setMessageArrayVariableImpl << "#endif\n";
-                setMessageArrayVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgOut_data_offset + (ct++ * sizeof(void*)) << ")))[i] = (T) variable;\n";
+                setMessageArrayVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageOut_data_offset + (ct++ * sizeof(void*)) << ")))[i] = (T) variable;\n";
                 setMessageArrayVariableImpl << "              return;\n";
                 setMessageArrayVariableImpl << "          }\n";
             } else { ++ct; }
@@ -668,7 +668,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getMessageVariableImpl << "                    return {};\n";
                 getMessageVariableImpl << "                }\n";
                 getMessageVariableImpl << "#endif\n";
-                getMessageVariableImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct++ * sizeof(void*)) << ")))[index];\n";
+                getMessageVariableImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageIn_data_offset + (ct++ * sizeof(void*)) << ")))[index];\n";
                 getMessageVariableImpl << "            }\n";
             } else { ++ct; }
         }
@@ -739,10 +739,10 @@ void CurveRTCHost::initHeaderGetters() {
                 getMessageVariableLDGImpl << "                }\n";
                 getMessageVariableLDGImpl << "#endif\n";
                 getMessageVariableLDGImpl << "#if !defined(USE_GLM)\n";
-                getMessageVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct * sizeof(void*)) << "))) + index);\n";
+                getMessageVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageIn_data_offset + (ct * sizeof(void*)) << "))) + index);\n";
                 getMessageVariableLDGImpl << "#else\n";
                 getMessageVariableLDGImpl << "// GLM types (e.g. uvec3) cannot all be loaded via _ldg()\n";
-                getMessageVariableLDGImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct * sizeof(void*)) << ")))[index];\n";
+                getMessageVariableLDGImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageIn_data_offset + (ct * sizeof(void*)) << ")))[index];\n";
                 getMessageVariableLDGImpl << "#endif\n";
                 getMessageVariableLDGImpl << "            }\n";
                 ++ct;  // Prev was part of the return line, but don't want confusion
@@ -808,7 +808,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getMessageArrayVariableImpl << "                  return {};\n";
                 getMessageArrayVariableImpl << "              }\n";
                 getMessageArrayVariableImpl << "#endif\n";
-                getMessageArrayVariableImpl << "              return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct++ * sizeof(void*)) << ")))[i];\n";
+                getMessageArrayVariableImpl << "              return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageIn_data_offset + (ct++ * sizeof(void*)) << ")))[i];\n";
                 getMessageArrayVariableImpl << "           };\n";
             } else { ++ct; }
         }
@@ -879,10 +879,10 @@ void CurveRTCHost::initHeaderGetters() {
                 getMessageArrayVariableLDGImpl << "              }\n";
                 getMessageArrayVariableLDGImpl << "#endif\n";
                 getMessageArrayVariableLDGImpl << "#if !defined(USE_GLM)\n";
-                getMessageArrayVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct * sizeof(void*)) << "))) + i);\n";
+                getMessageArrayVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageIn_data_offset + (ct * sizeof(void*)) << "))) + i);\n";
                 getMessageArrayVariableLDGImpl << "#else\n";
                 getMessageArrayVariableLDGImpl << "// GLM types (e.g. uvec3) cannot all be loaded via _ldg()\n";
-                getMessageArrayVariableLDGImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << msgIn_data_offset + (ct * sizeof(void*)) << ")))[i];\n";
+                getMessageArrayVariableLDGImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageIn_data_offset + (ct * sizeof(void*)) << ")))[i];\n";
                 getMessageArrayVariableLDGImpl << "#endif\n";
                 getMessageArrayVariableLDGImpl << "           };\n";
                 ++ct;  // Prev was part of the return line, but don't want confusion
@@ -908,11 +908,11 @@ void CurveRTCHost::initDataBuffer() {
     }
     ct = 0;
     for (auto &element : messageOut_variables) {
-        element.second.h_data_ptr = h_data_buffer + msgOut_data_offset + (ct++ * sizeof(void*));
+        element.second.h_data_ptr = h_data_buffer + messageOut_data_offset + (ct++ * sizeof(void*));
     }
     ct = 0;
     for (auto &element : messageIn_variables) {
-        element.second.h_data_ptr = h_data_buffer + msgIn_data_offset + (ct++ * sizeof(void*));
+        element.second.h_data_ptr = h_data_buffer + messageIn_data_offset + (ct++ * sizeof(void*));
     }
     ct = 0;
     for (auto &element : newAgent_variables) {

@@ -10,7 +10,7 @@ AGENT_COUNT = 1024
 class DeviceAgentCreationTest(TestCase):
 
     MandatoryOutput = """
-    FLAMEGPU_AGENT_FUNCTION(MandatoryOutput, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(MandatoryOutput, flamegpu::MessageNone, flamegpu::MessageNone) {
         unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
         FLAMEGPU->agent_out.setVariable<float>("x", id + 12.0);
         FLAMEGPU->agent_out.setVariable<unsigned int>("id", id);
@@ -18,7 +18,7 @@ class DeviceAgentCreationTest(TestCase):
     }"""
     
     OptionalOutput = """
-    FLAMEGPU_AGENT_FUNCTION(OptionalOutput, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(OptionalOutput, flamegpu::MessageNone, flamegpu::MessageNone) {
         unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
         if (threadIdx.x % 2 == 0) {
             FLAMEGPU->agent_out.setVariable<float>("x", id + 12.0);
@@ -28,7 +28,7 @@ class DeviceAgentCreationTest(TestCase):
     }"""
     
     MandatoryOutputWithDeath = """
-    FLAMEGPU_AGENT_FUNCTION(MandatoryOutputWithDeath, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(MandatoryOutputWithDeath, flamegpu::MessageNone, flamegpu::MessageNone) {
         unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
         FLAMEGPU->agent_out.setVariable<float>("x", id + 12.0);
         FLAMEGPU->agent_out.setVariable<unsigned int>("id", id);
@@ -36,7 +36,7 @@ class DeviceAgentCreationTest(TestCase):
     }"""
     
     OptionalOutputWithDeath = """
-    FLAMEGPU_AGENT_FUNCTION(OptionalOutputWithDeath, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(OptionalOutputWithDeath, flamegpu::MessageNone, flamegpu::MessageNone) {
         unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
         if (threadIdx.x % 2 == 0) {
             FLAMEGPU->agent_out.setVariable<float>("x", id + 12.0);
@@ -54,7 +54,7 @@ class DeviceAgentCreationTest(TestCase):
     """
 
     ArrayVarDeviceBirth = """
-    FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth, flamegpu::MessageNone, flamegpu::MessageNone) {
         unsigned int i = FLAMEGPU->getVariable<unsigned int>("id") * 3;
         FLAMEGPU->agent_out.setVariable<unsigned int>("id", i);
         FLAMEGPU->agent_out.setVariable<int, 4>("array_var", 0, 3 + i);
@@ -66,7 +66,7 @@ class DeviceAgentCreationTest(TestCase):
     }"""
     
     ArrayVarDeviceBirth_DefaultWorks = """
-    FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth_DefaultWorks, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth_DefaultWorks, flamegpu::MessageNone, flamegpu::MessageNone) {
         unsigned int i = FLAMEGPU->getVariable<unsigned int>("id") * 3;
         FLAMEGPU->agent_out.setVariable<unsigned int>("id", i);
         return flamegpu::DEAD;
@@ -74,7 +74,7 @@ class DeviceAgentCreationTest(TestCase):
     """
     
     ArrayVarDeviceBirth_ArrayUnsuitable = """
-    FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth_ArrayUnsuitable, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth_ArrayUnsuitable, flamegpu::MessageNone, flamegpu::MessageNone) {
         FLAMEGPU->agent_out.setVariable<int>("array_var", 0);
         return flamegpu::DEAD;
     }"""

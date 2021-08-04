@@ -26,7 +26,7 @@ void runSim(CUDASimulation &sim, bool &exception_thrown) {
     }
 }
 
-FLAMEGPU_AGENT_FUNCTION(SlowFn, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowFn, MessageNone, MessageNone) {
     int x = FLAMEGPU->getVariable<int>("x");
     // Do nothing, just waste time. Get values from environment to prevent optimisation
     for (int i = 0; i < FLAMEGPU->environment.getProperty<int>("ten thousand"); ++i) {
@@ -35,7 +35,7 @@ FLAMEGPU_AGENT_FUNCTION(SlowFn, MsgNone, MsgNone) {
     FLAMEGPU->setVariable<int>("x", x + 1);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(FastFn, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(FastFn, MessageNone, MessageNone) {
     const int x = FLAMEGPU->getVariable<int>("x");
     FLAMEGPU->setVariable<int>("x", x + 1);
     return ALIVE;
@@ -115,7 +115,7 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_Agent) {
     }
 }
 
-FLAMEGPU_AGENT_FUNCTION(SlowFnMsg, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowFnMessage, MessageBruteForce, MessageNone) {
     int x = FLAMEGPU->getVariable<int>("x");
     int y = 0;
     // Do nothing, just waste time. Get values from environment to prevent optimisation
@@ -125,7 +125,7 @@ FLAMEGPU_AGENT_FUNCTION(SlowFnMsg, MsgBruteForce, MsgNone) {
     FLAMEGPU->setVariable<int>("x", x + y);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(FastFnMsg, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(FastFnMessage, MessageNone, MessageBruteForce) {
     const int x = FLAMEGPU->getVariable<int>("x");
     FLAMEGPU->message_out.setVariable<int>("x", 1);
     return ALIVE;
@@ -136,13 +136,13 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_Message) {
     // Success of this test does not mean there isn't a problem
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
-    MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
-    msg.newVariable<int>("x");
+    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    message.newVariable<int>("x");
     a.newVariable<int>("x", 0);
-    a.newFunction(FUNCTION_NAME1, FastFnMsg).setMessageOutput(msg);
-    a.newFunction(FUNCTION_NAME2, SlowFnMsg).setMessageInput(msg);
-    m.newLayer().addAgentFunction(FastFnMsg);
-    m.newLayer().addAgentFunction(SlowFnMsg);
+    a.newFunction(FUNCTION_NAME1, FastFnMessage).setMessageOutput(message);
+    a.newFunction(FUNCTION_NAME2, SlowFnMessage).setMessageInput(message);
+    m.newLayer().addAgentFunction(FastFnMessage);
+    m.newLayer().addAgentFunction(SlowFnMessage);
 
     AgentVector pop_in1(a, POP_SIZE);
     AgentVector pop_in2(a, POP_SIZE);
@@ -203,7 +203,7 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_Message) {
     }
 }
 
-FLAMEGPU_AGENT_FUNCTION(SlowFn2, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowFn2, MessageNone, MessageNone) {
     int x = FLAMEGPU->getVariable<int>("x");
     // Do nothing, just waste time. Get values from environment to prevent optimisation
     for (int i = 0; i < FLAMEGPU->environment.getProperty<int>("ten thousand"); ++i) {
@@ -212,7 +212,7 @@ FLAMEGPU_AGENT_FUNCTION(SlowFn2, MsgNone, MsgNone) {
     FLAMEGPU->setVariable<int>("x", x + FLAMEGPU->environment.getProperty<int>("one"));
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(FastFn2, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(FastFn2, MessageNone, MessageNone) {
     const int x = FLAMEGPU->getVariable<int>("x");
     FLAMEGPU->setVariable<int>("x", x + FLAMEGPU->environment.getProperty<int>("three"));
     return ALIVE;
@@ -297,7 +297,7 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_Environment) {
         ASSERT_EQ(x3, 4003);
     }
 }
-FLAMEGPU_AGENT_FUNCTION(SlowFn3, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowFn3, MessageNone, MessageNone) {
     int x = FLAMEGPU->getVariable<int>("x");
     // Do nothing, just waste time. Get values from environment to prevent optimisation
     for (int i = 0; i < FLAMEGPU->environment.getProperty<int>("ten thousand"); ++i) {
@@ -559,13 +559,13 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Message) {
 
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
-    MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
-    msg.newVariable<int>("x");
+    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    message.newVariable<int>("x");
     a.newVariable<int>("x", 0);
-    a.newFunction(FUNCTION_NAME1, FastFnMsg).setMessageOutput(msg);
-    a.newFunction(FUNCTION_NAME2, SlowFnMsg).setMessageInput(msg);
-    m.newLayer().addAgentFunction(FastFnMsg);
-    m.newLayer().addAgentFunction(SlowFnMsg);
+    a.newFunction(FUNCTION_NAME1, FastFnMessage).setMessageOutput(message);
+    a.newFunction(FUNCTION_NAME2, SlowFnMessage).setMessageInput(message);
+    m.newLayer().addAgentFunction(FastFnMessage);
+    m.newLayer().addAgentFunction(SlowFnMessage);
 
     int devices = 0;
     if (cudaSuccess != cudaGetDeviceCount(&devices) || devices <= 0) {

@@ -61,8 +61,8 @@ void LayerDescription::addAgentFunction(const std::string &agentName, const std:
                     functionName.c_str(), agentName.c_str());
             }
             auto a_agent_out = f->second->agent_output.lock();
-            auto a_msg_out = f->second->message_output.lock();
-            auto a_msg_in = f->second->message_input.lock();
+            auto a_message_out = f->second->message_output.lock();
+            auto a_message_in = f->second->message_input.lock();
             for (const auto &b : layer->agent_functions) {
                 if (auto parent = b->parent.lock()) {
                     // Check that layer does not already contain function with same agent + states
@@ -108,11 +108,11 @@ void LayerDescription::addAgentFunction(const std::string &agentName, const std:
                     }
                 }
                 // Check the layer does not already contain function which outputs to same message list
-                auto b_msg_out = b->message_output.lock();
-                auto b_msg_in = b->message_input.lock();
-                if ((a_msg_out && b_msg_out && a_msg_out == b_msg_out) ||
-                    (a_msg_out && b_msg_in && a_msg_out == b_msg_in) ||
-                    (a_msg_in && b_msg_out && a_msg_in == b_msg_out)) {  // Pointer comparison should be fine here
+                auto b_message_out = b->message_output.lock();
+                auto b_message_in = b->message_input.lock();
+                if ((a_message_out && b_message_out && a_message_out == b_message_out) ||
+                    (a_message_out && b_message_in && a_message_out == b_message_in) ||
+                    (a_message_in && b_message_out && a_message_in == b_message_out)) {  // Pointer comparison should be fine here
                     THROW exception::InvalidLayerMember("Agent functions '%s' cannot be added to this layer as agent function '%s' "
                         "within the layer also inputs or outputs to the same messagelist, this is not permitted, "
                         "in LayerDescription::addAgentFunction().",

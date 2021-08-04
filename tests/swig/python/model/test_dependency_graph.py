@@ -51,19 +51,19 @@ class ExitAlways(pyflamegpu.HostFunctionConditionCallback):
 
 class DependencyGraphTest(TestCase):
 
-    agent_fn1 = """FLAMEGPU_AGENT_FUNCTION(agent_fn1, flamegpu::MsgBruteForce, flamegpu::MsgBruteForce) {
+    agent_fn1 = """FLAMEGPU_AGENT_FUNCTION(agent_fn1, flamegpu::MessageBruteForce, flamegpu::MessageBruteForce) {
         // do nothing
         return flamegpu::ALIVE
     }"""
-    agent_fn2 = """FLAMEGPU_AGENT_FUNCTION(agent_fn2, flamegpu::MsgNone, flamegpu::MsgNone) {
+    agent_fn2 = """FLAMEGPU_AGENT_FUNCTION(agent_fn2, flamegpu::MessageNone, flamegpu::MessageNone) {
         // do nothing
         return flamegpu::ALIVE
     }"""
-    agent_fn3 = """FLAMEGPU_AGENT_FUNCTION(agent_fn3, flamegpu::MsgNone, flamegpu::MsgNone) {
+    agent_fn3 = """FLAMEGPU_AGENT_FUNCTION(agent_fn3, flamegpu::MessageNone, flamegpu::MessageNone) {
         // do nothing
         return flamegpu::ALIVE
     }"""
-    agent_fn4 = """FLAMEGPU_AGENT_FUNCTION(agent_fn4, flamegpu::MsgNone, flamegpu::MsgNone) {
+    agent_fn4 = """FLAMEGPU_AGENT_FUNCTION(agent_fn4, flamegpu::MessageNone, flamegpu::MessageNone) {
         // do nothing
         return flamegpu::ALIVE
     }"""

@@ -10,7 +10,7 @@ const char *AGENT_NAME1 = "Agent1";
 const char *FUNCTION_NAME1 = "Func1";
 const char *HOST_FUNCTION_NAME1 = "Func2";
 
-FLAMEGPU_AGENT_FUNCTION(agent_fn1, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn1, MessageNone, MessageNone) {
     // increment all variables
     FLAMEGPU->setVariable<float>("float_var", FLAMEGPU->getVariable<float>("float_var") + 1.0f);
     FLAMEGPU->setVariable<int>("int_var", FLAMEGPU->getVariable<int>("int_var") + 1);

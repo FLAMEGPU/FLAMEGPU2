@@ -1,6 +1,6 @@
 #include "flamegpu/flamegpu.h"
 
-FLAMEGPU_AGENT_FUNCTION(output_message, flamegpu::MsgNone, flamegpu::MsgSpatial3D) {
+FLAMEGPU_AGENT_FUNCTION(output_message, flamegpu::MessageNone, flamegpu::MessageSpatial3D) {
     FLAMEGPU->message_out.setVariable<flamegpu::id_t>("id", FLAMEGPU->getID());
     FLAMEGPU->message_out.setLocation(
         FLAMEGPU->getVariable<float>("x"),
@@ -8,7 +8,7 @@ FLAMEGPU_AGENT_FUNCTION(output_message, flamegpu::MsgNone, flamegpu::MsgSpatial3
         FLAMEGPU->getVariable<float>("z"));
     return flamegpu::ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(move, flamegpu::MsgSpatial3D, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(move, flamegpu::MessageSpatial3D, flamegpu::MessageNone) {
     const flamegpu::id_t ID = FLAMEGPU->getID();
     const float REPULSE_FACTOR = FLAMEGPU->environment.getProperty<float>("repulse");
     const float RADIUS = FLAMEGPU->message_in.radius();
@@ -72,7 +72,7 @@ int main(int argc, const char ** argv) {
     const float ENV_MAX = static_cast<float>(floor(cbrt(AGENT_COUNT)));
     const float RADIUS = 2.0f;
     {   // Location message
-        flamegpu::MsgSpatial3D::Description &message = model.newMessage<flamegpu::MsgSpatial3D>("location");
+        flamegpu::MessageSpatial3D::Description &message = model.newMessage<flamegpu::MessageSpatial3D>("location");
         message.newVariable<flamegpu::id_t>("id");
         message.setRadius(RADIUS);
         message.setMin(0, 0, 0);

@@ -6,14 +6,14 @@
  * The bulk of message specialisation is implemented within headers included at the bottom of this file
  */
 
-#include "flamegpu/runtime/messaging/None/NoneHost.h"
-#include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
-#include "flamegpu/runtime/messaging/Spatial2D/Spatial2DHost.h"
-#include "flamegpu/runtime/messaging/Spatial3D/Spatial3DHost.h"
-#include "flamegpu/runtime/messaging/Array/ArrayHost.h"
-#include "flamegpu/runtime/messaging/Array2D/Array2DHost.h"
-#include "flamegpu/runtime/messaging/Array3D/Array3DHost.h"
-#include "flamegpu/runtime/messaging/Bucket/BucketHost.h"
+#include "flamegpu/runtime/messaging/MessageNone/MessageNoneHost.h"
+#include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h"
+#include "flamegpu/runtime/messaging/MessageSpatial2D/MessageSpatial2DHost.h"
+#include "flamegpu/runtime/messaging/MessageSpatial3D/MessageSpatial3DHost.h"
+#include "flamegpu/runtime/messaging/MessageArray/MessageArrayHost.h"
+#include "flamegpu/runtime/messaging/MessageArray2D/MessageArray2DHost.h"
+#include "flamegpu/runtime/messaging/MessageArray3D/MessageArray3DHost.h"
+#include "flamegpu/runtime/messaging/MessageBucket/MessageBucketHost.h"
 
 /**
  * ######################################################
@@ -43,7 +43,7 @@
  *  This class provides message specific handling of message lists, 
  *  some of this functionality may not be required for your messaging type.
  *  
- *  It is required to have the correct constructor format, and to inherit from MsgSpecialisationHandler.
+ *  It is required to have the correct constructor format, and to inherit from MessageSpecialisationHandler.
  *  
  *  The method buildIndex() is called the first time messages are read after message output. This
  *  is useful if your messaging type required a special index (e.g. Spatial messaging PBM). Read list 
@@ -57,7 +57,7 @@
  *  This is the class a user interacts with to configure their message as part of a ModelDescription
  *  hierarchy. It is expected to follow the same style as all the existing Description classes. 
  *  
- *  This class will likely inherit from MsgBruteForce::Description.
+ *  This class will likely inherit from MessageBruteForce::Description.
  *  
  *  Data:
  *  This is the class that stores the data behind the scenes of the ModelDescription hierarchy.
@@ -65,7 +65,7 @@
  *  It must have a functional copy constructor and equality operators. However, due to the hierarchical
  *  nature the protoype for the copy constructor takes some additional arguments.
  *  
- *  This class will likely inherit from MsgBruteForce::Description.
+ *  This class will likely inherit from MessageBruteForce::Description.
  *  
  */
 

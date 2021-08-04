@@ -107,7 +107,7 @@ VISUALISATION = True;
   outputdata agent function for Boid agents, which outputs publicly visible properties to a message list
 """
 outputdata = r"""
-FLAMEGPU_AGENT_FUNCTION(outputdata, flamegpu::MsgNone, flamegpu::MsgSpatial3D) {
+FLAMEGPU_AGENT_FUNCTION(outputdata, flamegpu::MessageNone, flamegpu::MessageSpatial3D) {
     // Output each agents publicly visible properties.
     FLAMEGPU->message_out.setVariable<flamegpu::id_t>("id", FLAMEGPU->getID());
     FLAMEGPU->message_out.setVariable<float>("x", FLAMEGPU->getVariable<float>("x"));
@@ -163,7 +163,7 @@ FLAMEGPU_HOST_DEVICE_FUNCTION void clampPosition(float &x, float &y, float &z, c
     z = (z > MAX_POSITION)? MAX_POSITION: z;
 }
 // Agent function
-FLAMEGPU_AGENT_FUNCTION(inputdata, flamegpu::MsgSpatial3D, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(inputdata, flamegpu::MessageSpatial3D, flamegpu::MessageNone) {
     // Agent properties in local register
     const flamegpu::id_t id = FLAMEGPU->getID();
     // Agent position

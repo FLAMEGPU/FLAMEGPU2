@@ -158,31 +158,31 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/detail/curve/curve_rtc.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging_device.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MsgSpecialisationHandler.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/None.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/None/NoneHost.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/None/NoneDevice.cuh
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/BruteForce.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/BruteForce/BruteForceDevice.cuh
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/BruteForce/BruteForceHost.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial2D.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial2D/Spatial2DHost.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial2D/Spatial2DDevice.cuh
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial3D.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial3D/Spatial3DHost.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Spatial3D/Spatial3DDevice.cuh
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array/ArrayHost.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array/ArrayDevice.cuh
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array2D.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array2D/Array2DHost.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array2D/Array2DDevice.cuh
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array3D.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array3D/Array3DHost.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Array3D/Array3DDevice.cuh
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Bucket.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Bucket/BucketHost.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/Bucket/BucketDevice.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageSpecialisationHandler.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageNone.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageNone/MessageNoneHost.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageNone/MessageNoneDevice.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageBruteForce.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceDevice.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageSpatial2D.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageSpatial2D/MessageSpatial2DHost.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageSpatial2D/MessageSpatial2DDevice.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageSpatial3D.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageSpatial3D/MessageSpatial3DHost.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageSpatial3D/MessageSpatial3DDevice.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageArray.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageArray/MessageArrayHost.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageArray/MessageArrayDevice.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageArray2D.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageArray2D/MessageArray2DHost.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageArray2D/MessageArray2DDevice.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageArray3D.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageArray3D/MessageArray3DHost.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageArray3D/MessageArray3DDevice.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageBucket.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageBucket/MessageBucketHost.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageBucket/MessageBucketDevice.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/AgentRandom.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/DeviceEnvironment.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/EnvironmentManager.cuh
@@ -249,13 +249,13 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/detail/curve/curve_rtc.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/HostAPI.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/HostAgentAPI.cu 
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/BruteForce.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Spatial2D.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Spatial3D.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Array.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Array2D.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Array3D.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/Bucket.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/MessageBruteForce.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/MessageSpatial2D.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/MessageSpatial3D.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/MessageArray.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/MessageArray2D.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/MessageArray3D.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/MessageBucket.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateReader.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateWriter.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLStateReader.cpp

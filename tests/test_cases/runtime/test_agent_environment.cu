@@ -25,103 +25,103 @@ __device__ int32_t int32_t_out;
 __device__ uint64_t uint64_t_out;
 __device__ int64_t int64_t_out;
 
-FLAMEGPU_AGENT_FUNCTION(get_float, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_float, MessageNone, MessageNone) {
     float_out = FLAMEGPU->environment.getProperty<float>("a");
     bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(get_double, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_double, MessageNone, MessageNone) {
     double_out = FLAMEGPU->environment.getProperty<double>("a");
     bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(get_uint8_t, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_uint8_t, MessageNone, MessageNone) {
     uint8_t_out = FLAMEGPU->environment.getProperty<uint8_t>("a");
     bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(get_int8_t, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_int8_t, MessageNone, MessageNone) {
     int8_t_out = FLAMEGPU->environment.getProperty<int8_t>("a");
     bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(get_uint16_t, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_uint16_t, MessageNone, MessageNone) {
     uint16_t_out = FLAMEGPU->environment.getProperty<uint16_t>("a");
     bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(get_int16_t, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_int16_t, MessageNone, MessageNone) {
     int16_t_out = FLAMEGPU->environment.getProperty<int16_t>("a");
     bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(get_uint32_t, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_uint32_t, MessageNone, MessageNone) {
     uint32_t_out = FLAMEGPU->environment.getProperty<uint32_t>("a");
     bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(get_int32_t, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_int32_t, MessageNone, MessageNone) {
     int32_t_out = FLAMEGPU->environment.getProperty<int32_t>("a");
     bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(get_uint64_t, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_uint64_t, MessageNone, MessageNone) {
     uint64_t_out = FLAMEGPU->environment.getProperty<uint64_t>("a");
     bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(get_int64_t, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_int64_t, MessageNone, MessageNone) {
     int64_t_out = FLAMEGPU->environment.getProperty<int64_t>("a");
     bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
 
-FLAMEGPU_AGENT_FUNCTION(get_arrayElement_float, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_arrayElement_float, MessageNone, MessageNone) {
     float_out = FLAMEGPU->environment.getProperty<float>("a", 1);
     bool_out = FLAMEGPU->environment.containsProperty("b");
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(get_arrayElement_double, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_arrayElement_double, MessageNone, MessageNone) {
     double_out = FLAMEGPU->environment.getProperty<double>("a", 1);
     bool_out = FLAMEGPU->environment.containsProperty("b");
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(get_arrayElement_uint8_t, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_arrayElement_uint8_t, MessageNone, MessageNone) {
     uint8_t_out = FLAMEGPU->environment.getProperty<uint8_t>("a", 1);
     bool_out = FLAMEGPU->environment.containsProperty("b");
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(get_arrayElement_int8_t, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_arrayElement_int8_t, MessageNone, MessageNone) {
     int8_t_out = FLAMEGPU->environment.getProperty<int8_t>("a", 1);
     bool_out = FLAMEGPU->environment.containsProperty("b");
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(get_arrayElement_uint16_t, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_arrayElement_uint16_t, MessageNone, MessageNone) {
     uint16_t_out = FLAMEGPU->environment.getProperty<uint16_t>("a", 1);
     bool_out = FLAMEGPU->environment.containsProperty("b");
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(get_arrayElement_int16_t, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_arrayElement_int16_t, MessageNone, MessageNone) {
     int16_t_out = FLAMEGPU->environment.getProperty<int16_t>("a", 1);
     bool_out = FLAMEGPU->environment.containsProperty("b");
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(get_arrayElement_uint32_t, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_arrayElement_uint32_t, MessageNone, MessageNone) {
     uint32_t_out = FLAMEGPU->environment.getProperty<uint32_t>("a", 1);
     bool_out = FLAMEGPU->environment.containsProperty("b");
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(get_arrayElement_int32_t, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_arrayElement_int32_t, MessageNone, MessageNone) {
     int32_t_out = FLAMEGPU->environment.getProperty<int32_t>("a", 1);
     bool_out = FLAMEGPU->environment.containsProperty("b");
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(get_arrayElement_uint64_t, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_arrayElement_uint64_t, MessageNone, MessageNone) {
     uint64_t_out = FLAMEGPU->environment.getProperty<uint64_t>("a", 1);
     bool_out = FLAMEGPU->environment.containsProperty("b");
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(get_arrayElement_int64_t, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_arrayElement_int64_t, MessageNone, MessageNone) {
     int64_t_out = FLAMEGPU->environment.getProperty<int64_t>("a", 1);
     bool_out = FLAMEGPU->environment.containsProperty("b");
     return ALIVE;
@@ -526,7 +526,7 @@ TEST_F(AgentEnvironmentTest, Get_arrayElement_int64_t) {
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 #ifdef USE_GLM
-FLAMEGPU_AGENT_FUNCTION(get_array_glm, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_array_glm, MessageNone, MessageNone) {
     glm::vec3 t = FLAMEGPU->environment.getProperty<glm::vec3>("k");
     FLAMEGPU->setVariable<float, 3>("k", 0, t[0]);
     FLAMEGPU->setVariable<float, 3>("k", 1, t[1]);
@@ -547,7 +547,7 @@ TEST_F(AgentEnvironmentTest, Get_array_glm) {
     ASSERT_EQ(t_in, t_out);
 }
 const char* rtc_get_array_glm = R"###(
-FLAMEGPU_AGENT_FUNCTION(get_array_glm, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(get_array_glm, flamegpu::MessageNone, flamegpu::MessageNone) {
     glm::vec3 t = FLAMEGPU->environment.getProperty<glm::vec3>("k");
     FLAMEGPU->setVariable<float, 3>("k", 0, t[0]);
     FLAMEGPU->setVariable<float, 3>("k", 1, t[1]);

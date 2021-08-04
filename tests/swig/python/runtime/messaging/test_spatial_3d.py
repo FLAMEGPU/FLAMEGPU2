@@ -6,7 +6,7 @@ import random as rand
 AGENT_COUNT = 2049
 
 out_mandatory3D = """
-FLAMEGPU_AGENT_FUNCTION(out_mandatory3D, flamegpu::MsgNone, flamegpu::MsgSpatial3D) {
+FLAMEGPU_AGENT_FUNCTION(out_mandatory3D, flamegpu::MessageNone, flamegpu::MessageSpatial3D) {
     FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
     FLAMEGPU->message_out.setLocation(
         FLAMEGPU->getVariable<float>("x"),
@@ -17,7 +17,7 @@ FLAMEGPU_AGENT_FUNCTION(out_mandatory3D, flamegpu::MsgNone, flamegpu::MsgSpatial
 """
 
 out_optional3D = """
-FLAMEGPU_AGENT_FUNCTION(out_optional3D, flamegpu::MsgNone, flamegpu::MsgSpatial3D) {
+FLAMEGPU_AGENT_FUNCTION(out_optional3D, flamegpu::MessageNone, flamegpu::MessageSpatial3D) {
     if (FLAMEGPU->getVariable<int>("do_output")) {
         FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
         FLAMEGPU->message_out.setLocation(
@@ -30,7 +30,7 @@ FLAMEGPU_AGENT_FUNCTION(out_optional3D, flamegpu::MsgNone, flamegpu::MsgSpatial3
 """
 
 in3D = """
-FLAMEGPU_AGENT_FUNCTION(in3D, flamegpu::MsgSpatial3D, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(in3D, flamegpu::MessageSpatial3D, flamegpu::MessageNone) {
     const float x1 = FLAMEGPU->getVariable<float>("x");
     const float y1 = FLAMEGPU->getVariable<float>("y");
     const float z1 = FLAMEGPU->getVariable<float>("z");
@@ -45,14 +45,14 @@ FLAMEGPU_AGENT_FUNCTION(in3D, flamegpu::MsgSpatial3D, flamegpu::MsgNone) {
     // This is all those which fall within the 3x3x3 Moore neighbourhood
     // Not our search radius
     for (const auto &message : FLAMEGPU->message_in(x1, y1, z1)) {
-         int msgBin[3] = {
+         int messageBin[3] = {
              static_cast<int>(message.getVariable<float>("x")),
              static_cast<int>(message.getVariable<float>("y")),
              static_cast<int>(message.getVariable<float>("z"))
         };
         bool isBad = false;
         for (unsigned int i = 0; i < 3; ++i) {  // Iterate axis
-            int binDiff = myBin[i] - msgBin[i];
+            int binDiff = myBin[i] - messageBin[i];
             if (binDiff > 1 || binDiff < -1) {
                 isBad = true;
             }
@@ -67,7 +67,7 @@ FLAMEGPU_AGENT_FUNCTION(in3D, flamegpu::MsgSpatial3D, flamegpu::MsgNone) {
 """
 
 count3D = """
-FLAMEGPU_AGENT_FUNCTION(count3D, flamegpu::MsgSpatial3D, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(count3D, flamegpu::MessageSpatial3D, flamegpu::MessageNone) {
     unsigned int count = 0;
     // Count how many messages we received (including our own)
     // This is all those which fall within the 3x3x3 Moore neighbourhood
@@ -79,13 +79,13 @@ FLAMEGPU_AGENT_FUNCTION(count3D, flamegpu::MsgSpatial3D, flamegpu::MsgNone) {
 }
 """
 
-class Spatial3DMsgTest(TestCase):
+class Spatial3DMessageTest(TestCase):
 
 
     def test_Mandatory(self): 
         bin_counts = {}
         # Construct model
-        model = pyflamegpu.ModelDescription("Spatial3DMsgTestModel")
+        model = pyflamegpu.ModelDescription("Spatial3DMessageTestModel")
         # Location message
         message = model.newMessageSpatial3D("location")
         message.setMin(0, 0, 0)
@@ -192,7 +192,7 @@ class Spatial3DMsgTest(TestCase):
         bin_counts = {}
         bin_counts_optional = {}
         # Construct model
-        model = pyflamegpu.ModelDescription("Spatial3DMsgTestModel")
+        model = pyflamegpu.ModelDescription("Spatial3DMessageTestModel")
         # Location message
         message = model.newMessageSpatial3D("location")
         message.setMin(0, 0, 0)
@@ -313,7 +313,7 @@ class Spatial3DMsgTest(TestCase):
 
 
     def test_BadRadius(self): 
-        model = pyflamegpu.ModelDescription("Spatial3DMsgTestModel")
+        model = pyflamegpu.ModelDescription("Spatial3DMessageTestModel")
         message = model.newMessageSpatial3D("location")
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.setRadius(0)
@@ -323,7 +323,7 @@ class Spatial3DMsgTest(TestCase):
         assert e.value.type() == "InvalidArgument"
 
     def test_BadMin(self): 
-        model = pyflamegpu.ModelDescription("Spatial3DMsgTestModel")
+        model = pyflamegpu.ModelDescription("Spatial3DMessageTestModel")
         message = model.newMessageSpatial3D("location")
         message.setMax(5, 5, 5)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
@@ -346,7 +346,7 @@ class Spatial3DMsgTest(TestCase):
         assert e.value.type() == "InvalidArgument"
 
     def test_BadMax(self): 
-        model = pyflamegpu.ModelDescription("Spatial3DMsgTestModel")
+        model = pyflamegpu.ModelDescription("Spatial3DMessageTestModel")
         message = model.newMessageSpatial3D("location")
         message.setMin(5, 5, 5)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
@@ -369,7 +369,7 @@ class Spatial3DMsgTest(TestCase):
         assert e.value.type() == "InvalidArgument"
 
     def test_UnsetMax(self): 
-        model = pyflamegpu.ModelDescription("Spatial3DMsgTestModel")
+        model = pyflamegpu.ModelDescription("Spatial3DMessageTestModel")
         message = model.newMessageSpatial3D("location")
         message.setMin(5, 5, 5)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
@@ -377,7 +377,7 @@ class Spatial3DMsgTest(TestCase):
         assert e.value.type() == "InvalidMessage"
 
     def test_UnsetMin(self): 
-        model = pyflamegpu.ModelDescription("Spatial3DMsgTestModel")
+        model = pyflamegpu.ModelDescription("Spatial3DMessageTestModel")
         message = model.newMessageSpatial3D("location")
         message.setMin(5, 5, 5)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
@@ -385,7 +385,7 @@ class Spatial3DMsgTest(TestCase):
         assert e.value.type() == "InvalidMessage"
 
     def test_reserved_name(self): 
-        model = pyflamegpu.ModelDescription("Spatial3DMsgTestModel")
+        model = pyflamegpu.ModelDescription("Spatial3DMessageTestModel")
         message = model.newMessageSpatial3D("location")
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             message.newVariableInt("_")

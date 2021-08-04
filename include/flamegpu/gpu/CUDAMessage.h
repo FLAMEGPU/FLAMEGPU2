@@ -7,7 +7,7 @@
 
 // include sub classes
 #include "flamegpu/gpu/CUDAMessageList.h"
-#include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
+#include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h"
 
 // forward declare classes from other modules
 
@@ -21,7 +21,7 @@ namespace curve {
 class Curve;
 }  // namespace curve
 }  // namespace detail
-class MsgSpecialisationHandler;
+class MessageSpecialisationHandler;
 class CUDAAgent;
 /**
  * This class is CUDASimulation's internal handler for message functionality
@@ -34,7 +34,7 @@ class CUDAMessage {
       * @param description The message to represent
       * @param cudaSimulation The simulation which owns the CUDAMessage
       */
-    explicit CUDAMessage(const MsgBruteForce::Data& description, const CUDASimulation& cudaSimulation);
+    explicit CUDAMessage(const MessageBruteForce::Data& description, const CUDASimulation& cudaSimulation);
     /**
      * Destructor, releases CUDA memory
      */
@@ -42,7 +42,7 @@ class CUDAMessage {
     /**
      * Return an immutable reference to the message description represented by the CUDAMessage instance
      */
-    const MsgBruteForce::Data& getMessageDescription() const;
+    const MessageBruteForce::Data& getMessageDescription() const;
     /**
      * @return The currently allocated length of the message array (in the number of messages)
      */
@@ -97,17 +97,17 @@ class CUDAMessage {
      */
     void unmapRuntimeVariables(const AgentFunctionData& func, const unsigned int &instance_id) const;
     void *getReadPtr(const std::string &var_name);
-    const CUDAMsgMap &getReadList() { return message_list->getReadList(); }
-    const CUDAMsgMap &getWriteList() { return message_list->getWriteList(); }
+    const CUDAMessageMap &getReadList() { return message_list->getReadList(); }
+    const CUDAMessageMap &getWriteList() { return message_list->getWriteList(); }
     /**
      * Swaps the two internal maps within message_list
-     * @param isOptional If optional newMsgCount will be reduced based on scan_flag[streamId]
-     * @param newMsgCount The number of output messages (including optional messages which were not output)
+     * @param isOptional If optional newMessageCount will be reduced based on scan_flag[streamId]
+     * @param newMessageCount The number of output messages (including optional messages which were not output)
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of stream specific structures used
      * @throw exception::InvalidCudaMessage If this is called before the internal buffers have been allocated
      */
-    void swap(bool isOptional, const unsigned int &newMsgCount, CUDAScatter &scatter, const unsigned int &streamId);
+    void swap(bool isOptional, const unsigned int &newMessageCount, CUDAScatter &scatter, const unsigned int &streamId);
     /**
      * Basic list swap with no additional actions
      */
@@ -137,7 +137,7 @@ class CUDAMessage {
      /**
       * Holds the definition of the message type represented by this CUDAMessage
       */
-    const MsgBruteForce::Data& message_description;
+    const MessageBruteForce::Data& message_description;
     /**
      * Holds/Manages the cuda memory for each of the message variables
      */
@@ -171,7 +171,7 @@ class CUDAMessage {
      * Set to False before messages are read
      */
     bool pbm_construction_required;
-    std::unique_ptr<MsgSpecialisationHandler> specialisation_handler;
+    std::unique_ptr<MessageSpecialisationHandler> specialisation_handler;
 
     /**
      * A reference to the cuda model which this object belongs to

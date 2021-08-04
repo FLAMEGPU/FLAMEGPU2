@@ -13,15 +13,15 @@ const unsigned int AGENT_COUNT = 32;
 // All agent functions require specialising the Message type, regardless of wheter it is None or not, so not point testing without message output being involved.
 
 // Test using explicitly namespaced types. ie. flamegpu::ALIVE
-const char* msg_out_func_explicit = R"###(
-FLAMEGPU_AGENT_FUNCTION(msg_out_func_explicit, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
+const char* message_out_func_explicit = R"###(
+FLAMEGPU_AGENT_FUNCTION(message_out_func_explicit, flamegpu::MessageNone, flamegpu::MessageBruteForce) {
     FLAMEGPU->message_out.setVariable("x", FLAMEGPU->getVariable<int>("x"));
     return flamegpu::ALIVE;
 }
 )###";
 
-const char* msg_in_func_explicit = R"###(
-FLAMEGPU_AGENT_FUNCTION(msg_in_func_explicit, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
+const char* message_in_func_explicit = R"###(
+FLAMEGPU_AGENT_FUNCTION(message_in_func_explicit, flamegpu::MessageBruteForce, flamegpu::MessageNone) {
     int sum = 0;
     for (auto& message : FLAMEGPU->message_in) {
         const int x = message.getVariable<int>("x");
@@ -35,16 +35,16 @@ FLAMEGPU_AGENT_FUNCTION(msg_in_func_explicit, flamegpu::MsgBruteForce, flamegpu:
 
 TEST(RTCNamespaceTest, AgentFunctionsExplicit) {
     ModelDescription m("model");
-    MsgBruteForce::Description& msg = m.newMessage("message_x");
-    msg.newVariable<int>("x");
+    MessageBruteForce::Description& message = m.newMessage("message_x");
+    message.newVariable<int>("x");
     AgentDescription& a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription& fo = a.newRTCFunction("msg_out_func_explicit", msg_out_func_explicit);
-    fo.setMessageOutput(msg);
-    AgentFunctionDescription& fi = a.newRTCFunction("msg_in_func_explicit", msg_in_func_explicit);
-    fi.setMessageInput(msg);
+    AgentFunctionDescription& fo = a.newRTCFunction("message_out_func_explicit", message_out_func_explicit);
+    fo.setMessageOutput(message);
+    AgentFunctionDescription& fi = a.newRTCFunction("message_in_func_explicit", message_in_func_explicit);
+    fi.setMessageInput(message);
     std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
@@ -70,21 +70,21 @@ TEST(RTCNamespaceTest, AgentFunctionsExplicit) {
 }
 
 // Test via the using declarations, i.e. using flamegpu::ALIVE
-const char* msg_out_func_declaration = R"###(
+const char* message_out_func_declaration = R"###(
 using flamegpu::ALIVE;
-using flamegpu::MsgNone;
-using flamegpu::MsgBruteForce;
-FLAMEGPU_AGENT_FUNCTION(msg_out_func_declaration, MsgNone, MsgBruteForce) {
+using flamegpu::MessageNone;
+using flamegpu::MessageBruteForce;
+FLAMEGPU_AGENT_FUNCTION(message_out_func_declaration, MessageNone, MessageBruteForce) {
     FLAMEGPU->message_out.setVariable("x", FLAMEGPU->getVariable<int>("x"));
     return ALIVE;
 }
 )###";
 
-const char* msg_in_func_declaration = R"###(
+const char* message_in_func_declaration = R"###(
 using flamegpu::ALIVE;
-using flamegpu::MsgNone;
-using flamegpu::MsgBruteForce;
-FLAMEGPU_AGENT_FUNCTION(msg_in_func_declaration, MsgBruteForce, MsgNone) {
+using flamegpu::MessageNone;
+using flamegpu::MessageBruteForce;
+FLAMEGPU_AGENT_FUNCTION(message_in_func_declaration, MessageBruteForce, MessageNone) {
     int sum = 0;
     for (auto& message : FLAMEGPU->message_in) {
         const int x = message.getVariable<int>("x");
@@ -98,16 +98,16 @@ FLAMEGPU_AGENT_FUNCTION(msg_in_func_declaration, MsgBruteForce, MsgNone) {
 
 TEST(RTCNamespaceTest, AgentFunctionsDeclaration) {
     ModelDescription m("model");
-    MsgBruteForce::Description& msg = m.newMessage("message_x");
-    msg.newVariable<int>("x");
+    MessageBruteForce::Description& message = m.newMessage("message_x");
+    message.newVariable<int>("x");
     AgentDescription& a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription& fo = a.newRTCFunction("msg_out_func_declaration", msg_out_func_declaration);
-    fo.setMessageOutput(msg);
-    AgentFunctionDescription& fi = a.newRTCFunction("msg_in_func_declaration", msg_in_func_declaration);
-    fi.setMessageInput(msg);
+    AgentFunctionDescription& fo = a.newRTCFunction("message_out_func_declaration", message_out_func_declaration);
+    fo.setMessageOutput(message);
+    AgentFunctionDescription& fi = a.newRTCFunction("message_in_func_declaration", message_in_func_declaration);
+    fi.setMessageInput(message);
     std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
@@ -133,17 +133,17 @@ TEST(RTCNamespaceTest, AgentFunctionsDeclaration) {
 }
 
 // Test via the using directives (which outside of rtc will be a lint failure), i.e. using namespace flamegpu
-const char* msg_out_func_directive = R"###(
+const char* message_out_func_directive = R"###(
 using namespace flamegpu;
-FLAMEGPU_AGENT_FUNCTION(msg_out_func_directive, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(message_out_func_directive, MessageNone, MessageBruteForce) {
     FLAMEGPU->message_out.setVariable("x", FLAMEGPU->getVariable<int>("x"));
     return ALIVE;
 }
 )###";
 
-const char* msg_in_func_directive = R"###(
+const char* message_in_func_directive = R"###(
 using namespace flamegpu;
-FLAMEGPU_AGENT_FUNCTION(msg_in_func_directive, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(message_in_func_directive, MessageBruteForce, MessageNone) {
     int sum = 0;
     for (auto& message : FLAMEGPU->message_in) {
         const int x = message.getVariable<int>("x");
@@ -157,16 +157,16 @@ FLAMEGPU_AGENT_FUNCTION(msg_in_func_directive, MsgBruteForce, MsgNone) {
 
 TEST(RTCNamespaceTest, AgentFunctionsDirective) {
     ModelDescription m("model");
-    MsgBruteForce::Description& msg = m.newMessage("message_x");
-    msg.newVariable<int>("x");
+    MessageBruteForce::Description& message = m.newMessage("message_x");
+    message.newVariable<int>("x");
     AgentDescription& a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription& fo = a.newRTCFunction("msg_out_func_directive", msg_out_func_directive);
-    fo.setMessageOutput(msg);
-    AgentFunctionDescription& fi = a.newRTCFunction("msg_in_func_directive", msg_in_func_directive);
-    fi.setMessageInput(msg);
+    AgentFunctionDescription& fo = a.newRTCFunction("message_out_func_directive", message_out_func_directive);
+    fo.setMessageOutput(message);
+    AgentFunctionDescription& fi = a.newRTCFunction("message_in_func_directive", message_in_func_directive);
+    fi.setMessageInput(message);
     std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
@@ -199,18 +199,18 @@ https://docs.nvidia.com/cuda/nvrtc/index.html#accessing-lowered-names
 __global__, __constant__ and __device__ in namespaces need to be expliciltly made available via  nvrtcAddNameExpression
 This is a lot of additional complexity to support edge case behaviour, that we do not want to encourage anyway, so disabling this test. */
 
-/* const char* msg_out_func_named = R"###(
+/* const char* message_out_func_named = R"###(
 namespace flamegpu {
-FLAMEGPU_AGENT_FUNCTION(msg_out_func_named, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(message_out_func_named, MessageNone, MessageBruteForce) {
     FLAMEGPU->message_out.setVariable("x", FLAMEGPU->getVariable<int>("x"));
     return ALIVE;
 }
 }  // namespace flamegpu
 )###";
 
-const char* msg_in_func_named = R"###(
+const char* message_in_func_named = R"###(
 namespace flamegpu {
-FLAMEGPU_AGENT_FUNCTION(msg_in_func_named, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(message_in_func_named, MessageBruteForce, MessageNone) {
     int sum = 0;
     for (auto& message : FLAMEGPU->message_in) {
         const int x = message.getVariable<int>("x");
@@ -225,16 +225,16 @@ FLAMEGPU_AGENT_FUNCTION(msg_in_func_named, MsgBruteForce, MsgNone) {
 
 TEST(RTCNamespaceTest, AgentFunctionsNamed) {
     ModelDescription m("model");
-    MsgBruteForce::Description& msg = m.newMessage("message_x");
-    msg.newVariable<int>("x");
+    MessageBruteForce::Description& message = m.newMessage("message_x");
+    message.newVariable<int>("x");
     AgentDescription& a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription& fo = a.newRTCFunction("msg_out_func_named", msg_out_func_named);
-    fo.setMessageOutput(msg);
-    AgentFunctionDescription& fi = a.newRTCFunction("msg_in_func_named", msg_in_func_named);
-    fi.setMessageInput(msg);
+    AgentFunctionDescription& fo = a.newRTCFunction("message_out_func_named", message_out_func_named);
+    fo.setMessageOutput(message);
+    AgentFunctionDescription& fi = a.newRTCFunction("message_in_func_named", message_in_func_named);
+    fi.setMessageInput(message);
     std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
@@ -261,17 +261,17 @@ TEST(RTCNamespaceTest, AgentFunctionsNamed) {
  */
 
 // Test using an aliased namespace
-const char* msg_out_func_alias = R"###(
+const char* message_out_func_alias = R"###(
 namespace fgpu = flamegpu;
-FLAMEGPU_AGENT_FUNCTION(msg_out_func_alias, fgpu::MsgNone, fgpu::MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(message_out_func_alias, fgpu::MessageNone, fgpu::MessageBruteForce) {
     FLAMEGPU->message_out.setVariable("x", FLAMEGPU->getVariable<int>("x"));
     return fgpu::ALIVE;
 }
 )###";
 
-const char* msg_in_func_alias = R"###(
+const char* message_in_func_alias = R"###(
 namespace fgpu = flamegpu;
-FLAMEGPU_AGENT_FUNCTION(msg_in_func_alias, fgpu::MsgBruteForce, fgpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(message_in_func_alias, fgpu::MessageBruteForce, fgpu::MessageNone) {
     int sum = 0;
     for (auto& message : FLAMEGPU->message_in) {
         const int x = message.getVariable<int>("x");
@@ -285,16 +285,16 @@ FLAMEGPU_AGENT_FUNCTION(msg_in_func_alias, fgpu::MsgBruteForce, fgpu::MsgNone) {
 
 TEST(RTCNamespaceTest, AgentFunctionsAlias) {
     ModelDescription m("model");
-    MsgBruteForce::Description& msg = m.newMessage("message_x");
-    msg.newVariable<int>("x");
+    MessageBruteForce::Description& message = m.newMessage("message_x");
+    message.newVariable<int>("x");
     AgentDescription& a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription& fo = a.newRTCFunction("msg_out_func_alias", msg_out_func_alias);
-    fo.setMessageOutput(msg);
-    AgentFunctionDescription& fi = a.newRTCFunction("msg_in_func_alias", msg_in_func_alias);
-    fi.setMessageInput(msg);
+    AgentFunctionDescription& fo = a.newRTCFunction("message_out_func_alias", message_out_func_alias);
+    fo.setMessageOutput(message);
+    AgentFunctionDescription& fi = a.newRTCFunction("message_in_func_alias", message_in_func_alias);
+    fi.setMessageInput(message);
     std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
@@ -320,17 +320,17 @@ TEST(RTCNamespaceTest, AgentFunctionsAlias) {
 }
 
 // Test aliasing the flamegpu namespace, but accessing using a mix (to check that message type comparisons work)
-const char* msg_out_func_alias_mixed = R"###(
+const char* message_out_func_alias_mixed = R"###(
 namespace fgpu = flamegpu;
-FLAMEGPU_AGENT_FUNCTION(msg_out_func_alias_mixed, fgpu::MsgNone, fgpu::MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(message_out_func_alias_mixed, fgpu::MessageNone, fgpu::MessageBruteForce) {
     FLAMEGPU->message_out.setVariable("x", FLAMEGPU->getVariable<int>("x"));
     return fgpu::ALIVE;
 }
 )###";
 
-const char* msg_in_func_alias_mixed = R"###(
+const char* message_in_func_alias_mixed = R"###(
 namespace fgpu = flamegpu;
-FLAMEGPU_AGENT_FUNCTION(msg_in_func_alias_mixed, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(message_in_func_alias_mixed, flamegpu::MessageBruteForce, flamegpu::MessageNone) {
     int sum = 0;
     for (auto& message : FLAMEGPU->message_in) {
         const int x = message.getVariable<int>("x");
@@ -344,16 +344,16 @@ FLAMEGPU_AGENT_FUNCTION(msg_in_func_alias_mixed, flamegpu::MsgBruteForce, flameg
 
 TEST(RTCNamespaceTest, AgentFunctionsAliasMixed) {
     ModelDescription m("model");
-    MsgBruteForce::Description& msg = m.newMessage("message_x");
-    msg.newVariable<int>("x");
+    MessageBruteForce::Description& message = m.newMessage("message_x");
+    message.newVariable<int>("x");
     AgentDescription& a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription& fo = a.newRTCFunction("msg_out_func_alias_mixed", msg_out_func_alias_mixed);
-    fo.setMessageOutput(msg);
-    AgentFunctionDescription& fi = a.newRTCFunction("msg_in_func_alias_mixed", msg_in_func_alias_mixed);
-    fi.setMessageInput(msg);
+    AgentFunctionDescription& fo = a.newRTCFunction("message_out_func_alias_mixed", message_out_func_alias_mixed);
+    fo.setMessageOutput(message);
+    AgentFunctionDescription& fi = a.newRTCFunction("message_in_func_alias_mixed", message_in_func_alias_mixed);
+    fi.setMessageInput(message);
     std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);

@@ -17,7 +17,7 @@ const unsigned int AGENT_COUNT = 64;
  * Test that exceptions on getVariable() work
  */
 const char* rtc_dthrow_agent_func_getAgentVar = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->getVariable<int>("nope");
     return flamegpu::ALIVE;
 }
@@ -42,7 +42,7 @@ TEST(RTCDeviceExceptionTest, getAgentVar_name) {
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 }
 const char* rtc_dthrow_agent_func_getAgentVarType = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->getVariable<double>("id");
     return flamegpu::ALIVE;
 }
@@ -70,7 +70,7 @@ TEST(RTCDeviceExceptionTest, getAgentVar_typesize) {
  * Test that exceptions on getArrayVariable() works
  */
 const char* rtc_dthrow_agent_func_getAgentArrayVar = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->getVariable<int, 2>("nope", 0);
     return flamegpu::ALIVE;
 }
@@ -94,7 +94,7 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_name) {
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 }
 const char* rtc_dthrow_agent_func_getAgentArrayVar1 = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->getVariable<double, 2>("id", 0);
     return flamegpu::ALIVE;
 }
@@ -118,7 +118,7 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_typesize) {
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 }
 const char* rtc_dthrow_agent_func_getAgentArrayVar2 = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->getVariable<int, 3>("id", 0);
     return flamegpu::ALIVE;
 }
@@ -142,7 +142,7 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_length) {
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 }
 const char* rtc_dthrow_agent_func_getAgentArrayVar3 = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->getVariable<int, 2>("id", 2);
     return flamegpu::ALIVE;
 }
@@ -169,7 +169,7 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_bounds) {
  * Test that exceptions on setVariable() works
  */
 const char* rtc_dthrow_agent_func_setAgentVar = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->setVariable<int>("nope", 12);
     return flamegpu::ALIVE;
 }
@@ -194,7 +194,7 @@ TEST(RTCDeviceExceptionTest, setAgentVar_name) {
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 }
 const char* rtc_dthrow_agent_func_setAgentVar2 = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->setVariable<double>("id", 12);
     return flamegpu::ALIVE;
 }
@@ -222,7 +222,7 @@ TEST(RTCDeviceExceptionTest, setAgentVar_typesize) {
  * Test that exceptions on setVariable() work
  */
 const char* rtc_dthrow_agent_func_setAgentArrayVar = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->setVariable<int, 2>("nope", 0, 12);
     return flamegpu::ALIVE;
 }
@@ -246,7 +246,7 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_name) {
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 }
 const char* rtc_dthrow_agent_func_setAgentArrayVar1 = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->setVariable<double, 2>("id", 0, 12);
     return flamegpu::ALIVE;
 }
@@ -270,7 +270,7 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_typesize) {
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 }
 const char* rtc_dthrow_agent_func_setAgentArrayVar2 = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->setVariable<int, 3>("id", 0, 12);
     return flamegpu::ALIVE;
 }
@@ -294,7 +294,7 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_length) {
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 }
 const char* rtc_dthrow_agent_func_setAgentArrayVar3 = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->setVariable<int, 2>("id", 2, 12);
     return flamegpu::ALIVE;
 }
@@ -321,7 +321,7 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_bounds) {
  * Test that exceptions on environment.getProperty() work
  */
 const char* rtc_dthrow_agent_func_getEnvironmentProp = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->environment.getProperty<int>("nope");
     return flamegpu::ALIVE;
 }
@@ -347,7 +347,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentProp_name) {
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 }
 const char* rtc_dthrow_agent_func_getEnvironmentProp1 = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->environment.getProperty<double>("test");
     return flamegpu::ALIVE;
 }
@@ -376,7 +376,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentProp_typesize) {
  * Test that exceptions on environment.getArrayProperty() work
  */
 const char* rtc_dthrow_agent_func_getEnvironmentArrayProp = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->environment.getProperty<int>("nope", 0);
     return flamegpu::ALIVE;
 }
@@ -402,7 +402,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_name) {
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 }
 const char* rtc_dthrow_agent_func_getEnvironmentArrayProp1 = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->environment.getProperty<double>("test", 0);
     return flamegpu::ALIVE;
 }
@@ -429,7 +429,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_typesize) {
 }
 // Device environment does not currently require user to specify length of array
 // const char* rtc_dthrow_agent_func_getEnvironmentArrayProp2 = R"###(
-// FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+// FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
 //     FLAMEGPU->environment.getProperty<int>("test", 0);
 //     return flamegpu::ALIVE;
 // }
@@ -455,7 +455,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_typesize) {
 //     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 // }
 const char* rtc_dthrow_agent_func_getEnvironmentArrayProp3 = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->environment.getProperty<int>("test", 2);
     return flamegpu::ALIVE;
 }

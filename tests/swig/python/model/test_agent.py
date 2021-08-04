@@ -21,13 +21,13 @@ AGENT_COUNT = 100
 class AgentDescriptionTest(TestCase):
 
     agent_fn1 = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn1, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn1, flamegpu::MessageNone, flamegpu::MessageNone) {
         // do nothing
         return flamegpu::ALIVE
     }
     """
     agent_fn2 = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn2, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn2, flamegpu::MessageNone, flamegpu::MessageNone) {
         // do nothing
         return flamegpu::ALIVE
     }
@@ -240,7 +240,7 @@ class AgentDescriptionTest(TestCase):
         test_file_name = "test_rtcfunc_file";
         # Create RTC function inside file
         rtc_agent_func = r"""
-        FLAMEGPU_AGENT_FUNCTION(rtc_test_filefunc, flamegpu::MsgNone, flamegpu::MsgNone) {
+        FLAMEGPU_AGENT_FUNCTION(rtc_test_filefunc, flamegpu::MessageNone, flamegpu::MessageNone) {
             FLAMEGPU->setVariable<int>("x", FLAMEGPU->getVariable<int>("x") + 1);
             return flamegpu::ALIVE;
         }

@@ -7,7 +7,7 @@ namespace flamegpu {
 
 namespace test_device_api {
     const unsigned int AGENT_COUNT = 1024;
-FLAMEGPU_AGENT_FUNCTION(agent_fn_ad_array, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn_ad_array, MessageNone, MessageNone) {
     if (threadIdx.x % 2 == 0)
         return DEAD;
     return ALIVE;
@@ -57,7 +57,7 @@ TEST(DeviceAPITest, AgentDeath_array) {
         EXPECT_EQ(output_array[3], 16 + j);
     }
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn_da_set, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn_da_set, MessageNone, MessageNone) {
     // Read array from `array_var`
     // Store it's values back in `a1` -> `a4`
     FLAMEGPU->setVariable<int, 4>("array_var", 0, 2 + FLAMEGPU->getVariable<int>("id"));
@@ -66,7 +66,7 @@ FLAMEGPU_AGENT_FUNCTION(agent_fn_da_set, MsgNone, MsgNone) {
     FLAMEGPU->setVariable<int, 4>("array_var", 3, 16 + FLAMEGPU->getVariable<int>("id"));
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn_da_get, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn_da_get, MessageNone, MessageNone) {
     // Read array from `array_var`
     // Store it's values back in `a1` -> `a4`
     FLAMEGPU->setVariable<int>("a1", FLAMEGPU->getVariable<int, 4>("array_var", 0));
@@ -166,14 +166,14 @@ TEST(DeviceAPITest, ArrayGet) {
     }
 }
 #ifdef USE_GLM
-FLAMEGPU_AGENT_FUNCTION(agent_fn_da_set_glm, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn_da_set_glm, MessageNone, MessageNone) {
     // Read array from `array_var`
     // Store it's values back in `a1` -> `a4`
     const int id = FLAMEGPU->getVariable<int>("id");
     FLAMEGPU->setVariable<glm::ivec4>("array_var", glm::ivec4(2 + id, 4 + id, 8 + id, 16 + id));
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn_da_get_glm, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn_da_get_glm, MessageNone, MessageNone) {
     // Read array from `array_var`
     // Store it's values back in `a1` -> `a4`
     const glm::ivec4 t = FLAMEGPU->getVariable<glm::ivec4>("array_var");
@@ -280,7 +280,7 @@ TEST(DeviceAPITest, DISABLED_ArrayGet_glm) { }
 #endif
 
 // Test device_api::getStepCounter()
-FLAMEGPU_AGENT_FUNCTION(agent_testGetStepCounter, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_testGetStepCounter, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<unsigned int>("step", FLAMEGPU->getStepCounter());
     return ALIVE;
 }
@@ -321,7 +321,7 @@ TEST(DeviceAPITest, getStepCounter) {
 FLAMEGPU_AGENT_FUNCTION_CONDITION(condition_testGetStepCounter) {
     return FLAMEGPU->getStepCounter() == 0;
 }
-FLAMEGPU_AGENT_FUNCTION(condition_testGetStepCounterFunction, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(condition_testGetStepCounterFunction, MessageNone, MessageNone) {
     // Increment the counter of the number of times the agent ran the function.
     unsigned int count = FLAMEGPU->getVariable<unsigned int>("count");
     FLAMEGPU->setVariable<unsigned int>("count", count + 1);

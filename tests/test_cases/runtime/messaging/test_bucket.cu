@@ -2,7 +2,7 @@
 * Tests of feature Spatial 3D messaging
 *
 * Tests cover:
-* > validation on MsgBucket::Description
+* > validation on MessageBucket::Description
 */
 
 
@@ -20,10 +20,10 @@ namespace test_message_bucket {
     const char* IN_LAYER_NAME = "InLayer";
     const char* OUT_LAYER_NAME = "OutLayer";
     const unsigned int AGENT_COUNT = 1024;  // must be a multiple of 4
-TEST(BucketMsgTest, DescriptionValidation) {
-    ModelDescription model("BucketMsgTest");
+TEST(BucketMessageTest, DescriptionValidation) {
+    ModelDescription model("BucketMessageTest");
     // Test description accessors
-    MsgBucket::Description &message = model.newMessage<MsgBucket>("buckets");
+    MessageBucket::Description &message = model.newMessage<MessageBucket>("buckets");
     EXPECT_THROW(message.setUpperBound(0), exception::InvalidArgument);  // Min should default to 0, this would mean no buckets
     EXPECT_NO_THROW(message.setLowerBound(10));
     EXPECT_NO_THROW(message.setUpperBound(11));
@@ -35,29 +35,29 @@ TEST(BucketMsgTest, DescriptionValidation) {
     EXPECT_NO_THROW(message.setBounds(12, 13));
     EXPECT_NO_THROW(message.newVariable<int>("somevar"));
 }
-TEST(BucketMsgTest, DataValidation) {
-    ModelDescription model("BucketMsgTest");
+TEST(BucketMessageTest, DataValidation) {
+    ModelDescription model("BucketMessageTest");
     // Test Data copy constructor knows when bounds have not been init
-    MsgBucket::Description &message = model.newMessage<MsgBucket>("buckets");
+    MessageBucket::Description &message = model.newMessage<MessageBucket>("buckets");
     EXPECT_THROW(CUDASimulation c(model), exception::InvalidMessage);  // Max not set
     message.setLowerBound(1);  // It should default to 0
     EXPECT_THROW(CUDASimulation c(model), exception::InvalidMessage);  // Max not set
     message.setUpperBound(10);
     EXPECT_NO_THROW(CUDASimulation c(model));
 }
-TEST(BucketMsgTest, reserved_name) {
-    ModelDescription model("BucketMsgTest");
-    MsgBucket::Description &message = model.newMessage<MsgBucket>("buckets");
+TEST(BucketMessageTest, reserved_name) {
+    ModelDescription model("BucketMessageTest");
+    MessageBucket::Description &message = model.newMessage<MessageBucket>("buckets");
     EXPECT_THROW(message.newVariable<int>("_"), exception::ReservedName);
 }
 
-FLAMEGPU_AGENT_FUNCTION(out_mandatory, MsgNone, MsgBucket) {
+FLAMEGPU_AGENT_FUNCTION(out_mandatory, MessageNone, MessageBucket) {
     int id = FLAMEGPU->getVariable<int>("id");
     FLAMEGPU->message_out.setVariable<int>("id", id);
     FLAMEGPU->message_out.setKey(12 + (id/2));
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(out_optional, MsgNone, MsgBucket) {
+FLAMEGPU_AGENT_FUNCTION(out_optional, MessageNone, MessageBucket) {
     if (FLAMEGPU->getVariable<int>("do_output")) {
         int id = FLAMEGPU->getVariable<int>("id");
         FLAMEGPU->message_out.setVariable<int>("id", id);
@@ -65,10 +65,10 @@ FLAMEGPU_AGENT_FUNCTION(out_optional, MsgNone, MsgBucket) {
     }
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(out_optionalNone, MsgNone, MsgBucket) {
+FLAMEGPU_AGENT_FUNCTION(out_optionalNone, MessageNone, MessageBucket) {
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(in, MsgBucket, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(in, MessageBucket, MessageNone) {
     const int id = FLAMEGPU->getVariable<int>("id");
     const int id_m1 = id == 0 ? 0 : id-1;
     unsigned int count = 0;
@@ -82,7 +82,7 @@ FLAMEGPU_AGENT_FUNCTION(in, MsgBucket, MsgNone) {
     FLAMEGPU->setVariable<unsigned int>("sum", sum);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(in_range, MsgBucket, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(in_range, MessageBucket, MessageNone) {
     const int id = FLAMEGPU->getVariable<int>("id");
     const int id_m4 = 12 + ((id / 8) * 4);
     unsigned int count = 0;
@@ -96,13 +96,13 @@ FLAMEGPU_AGENT_FUNCTION(in_range, MsgBucket, MsgNone) {
     FLAMEGPU->setVariable<unsigned int>("sum", sum);
     return ALIVE;
 }
-TEST(BucketMsgTest, Mandatory) {
+TEST(BucketMessageTest, Mandatory) {
     std::unordered_map<int, unsigned int> bucket_count;
     std::unordered_map<int, unsigned int> bucket_sum;
     // Construct model
-    ModelDescription model("BucketMsgTest");
-    {   // MsgBucket::Description
-        MsgBucket::Description &message = model.newMessage<MsgBucket>("bucket");
+    ModelDescription model("BucketMessageTest");
+    {   // MessageBucket::Description
+        MessageBucket::Description &message = model.newMessage<MessageBucket>("bucket");
         message.setBounds(12, 12 +(AGENT_COUNT/2));  // None zero lowerBound, to check that's working
         message.newVariable<int>("id");
     }
@@ -160,13 +160,13 @@ TEST(BucketMsgTest, Mandatory) {
         EXPECT_EQ(sum, bucket_sum.at(id_m1/2));
     }
 }
-TEST(BucketMsgTest, Optional) {
+TEST(BucketMessageTest, Optional) {
     std::unordered_map<int, unsigned int> bucket_count;
     std::unordered_map<int, unsigned int> bucket_sum;
     // Construct model
-    ModelDescription model("BucketMsgTest");
-    {   // MsgBucket::Description
-        MsgBucket::Description &message = model.newMessage<MsgBucket>("bucket");
+    ModelDescription model("BucketMessageTest");
+    {   // MessageBucket::Description
+        MessageBucket::Description &message = model.newMessage<MessageBucket>("bucket");
         message.setBounds(12, 12 +(AGENT_COUNT/2));  // None zero lowerBound, to check that's working
         message.newVariable<int>("id");
     }
@@ -234,13 +234,13 @@ TEST(BucketMsgTest, Optional) {
     }
 }
 // Test optional message output, wehre no messages are output.
-TEST(BucketMsgTest, OptionalNone) {
+TEST(BucketMessageTest, OptionalNone) {
     std::unordered_map<int, unsigned int> bucket_count;
     std::unordered_map<int, unsigned int> bucket_sum;
     // Construct model
-    ModelDescription model("BucketMsgTest");
-    {   // MsgBucket::Description
-        MsgBucket::Description &message = model.newMessage<MsgBucket>("bucket");
+    ModelDescription model("BucketMessageTest");
+    {   // MessageBucket::Description
+        MessageBucket::Description &message = model.newMessage<MessageBucket>("bucket");
         message.setBounds(12, 12 +(AGENT_COUNT/2));  // None zero lowerBound, to check that's working
         message.newVariable<int>("id");
     }
@@ -298,14 +298,14 @@ TEST(BucketMsgTest, OptionalNone) {
         EXPECT_EQ(0u, sum);
     }
 }
-TEST(BucketMsgTest, Mandatory_Range) {
+TEST(BucketMessageTest, Mandatory_Range) {
     // Agent count must be multiple of 4
     std::unordered_map<int, unsigned int> bucket_count;
     std::unordered_map<int, unsigned int> bucket_sum;
     // Construct model
-    ModelDescription model("BucketMsgTest");
-    {   // MsgBucket::Description
-        MsgBucket::Description &message = model.newMessage<MsgBucket>("bucket");
+    ModelDescription model("BucketMessageTest");
+    {   // MessageBucket::Description
+        MessageBucket::Description &message = model.newMessage<MessageBucket>("bucket");
         message.setBounds(12, 12 +(AGENT_COUNT/2));  // None zero lowerBound, to check that's working
         message.newVariable<int>("id");
     }
@@ -370,7 +370,7 @@ TEST(BucketMsgTest, Mandatory_Range) {
     }
 }
 
-FLAMEGPU_AGENT_FUNCTION(ArrayOut, MsgNone, MsgBucket) {
+FLAMEGPU_AGENT_FUNCTION(ArrayOut, MessageNone, MessageBucket) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 0, index * 3);
     FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 1, index * 7);
@@ -378,7 +378,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayOut, MsgNone, MsgBucket) {
     FLAMEGPU->message_out.setKey(index);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(ArrayIn, MsgBucket, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(ArrayIn, MessageBucket, MessageNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     for (auto &message : FLAMEGPU->message_in(my_index)) {
         FLAMEGPU->setVariable<unsigned int, 3>("message_read", 0, message.getVariable<unsigned int, 3>("v", 0));
@@ -389,16 +389,16 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, MsgBucket, MsgNone) {
 }
 TEST(TestMessage_Bucket, ArrayVariable) {
     ModelDescription m(MODEL_NAME);
-    MsgBucket::Description &msg = m.newMessage<MsgBucket>(MESSAGE_NAME);
-    msg.setBounds(0, AGENT_COUNT);
-    msg.newVariable<unsigned int, 3>("v");
+    MessageBucket::Description &message = m.newMessage<MessageBucket>(MESSAGE_NAME);
+    message.setBounds(0, AGENT_COUNT);
+    message.newVariable<unsigned int, 3>("v");
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
-    fo.setMessageOutput(msg);
+    fo.setMessageOutput(message);
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
-    fi.setMessageInput(msg);
+    fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
     LayerDescription &li = m.newLayer(IN_LAYER_NAME);
@@ -424,7 +424,7 @@ TEST(TestMessage_Bucket, ArrayVariable) {
     }
 }
 const char* rtc_ArrayOut_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MsgNone, flamegpu::MsgBucket) {
+FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MessageNone, flamegpu::MessageBucket) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 0, index * 3);
     FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 1, index * 7);
@@ -434,7 +434,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MsgNone, flamegpu::MsgBucket) {
 }
 )###";
 const char* rtc_ArrayIn_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MsgBucket, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageBucket, flamegpu::MessageNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     for (auto &message : FLAMEGPU->message_in(my_index)) {
         FLAMEGPU->setVariable<unsigned int, 3>("message_read", 0, message.getVariable<unsigned int, 3>("v", 0));
@@ -446,16 +446,16 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MsgBucket, flamegpu::MsgNone) {
 )###";
 TEST(TestRTCMessage_Bucket, ArrayVariable) {
     ModelDescription m(MODEL_NAME);
-    MsgBucket::Description& msg = m.newMessage<MsgBucket>(MESSAGE_NAME);
-    msg.setBounds(0, AGENT_COUNT);
-    msg.newVariable<unsigned int, 3>("v");
+    MessageBucket::Description& message = m.newMessage<MessageBucket>(MESSAGE_NAME);
+    message.setBounds(0, AGENT_COUNT);
+    message.newVariable<unsigned int, 3>("v");
     AgentDescription& a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
     AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
-    fo.setMessageOutput(msg);
+    fo.setMessageOutput(message);
     AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
-    fi.setMessageInput(msg);
+    fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
     LayerDescription& li = m.newLayer(IN_LAYER_NAME);
@@ -482,14 +482,14 @@ TEST(TestRTCMessage_Bucket, ArrayVariable) {
 }
 
 #if defined(USE_GLM)
-FLAMEGPU_AGENT_FUNCTION(ArrayOut_glm, MsgNone, MsgBucket) {
+FLAMEGPU_AGENT_FUNCTION(ArrayOut_glm, MessageNone, MessageBucket) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     glm::uvec3 t = glm::uvec3(index * 3, index * 7, index * 11);
     FLAMEGPU->message_out.setVariable<glm::uvec3>("v", t);
     FLAMEGPU->message_out.setKey(index);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(ArrayIn_glm, MsgBucket, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(ArrayIn_glm, MessageBucket, MessageNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     for (auto &message : FLAMEGPU->message_in(my_index)) {
         FLAMEGPU->setVariable<glm::uvec3>("message_read", message.getVariable<glm::uvec3>("v"));
@@ -498,16 +498,16 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn_glm, MsgBucket, MsgNone) {
 }
 TEST(TestMessage_Bucket, ArrayVariable_glm) {
     ModelDescription m(MODEL_NAME);
-    MsgBucket::Description &msg = m.newMessage<MsgBucket>(MESSAGE_NAME);
-    msg.setBounds(0, AGENT_COUNT);
-    msg.newVariable<unsigned int, 3>("v");
+    MessageBucket::Description &message = m.newMessage<MessageBucket>(MESSAGE_NAME);
+    message.setBounds(0, AGENT_COUNT);
+    message.newVariable<unsigned int, 3>("v");
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
-    fo.setMessageOutput(msg);
+    fo.setMessageOutput(message);
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
-    fi.setMessageInput(msg);
+    fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
     LayerDescription &li = m.newLayer(IN_LAYER_NAME);
@@ -533,7 +533,7 @@ TEST(TestMessage_Bucket, ArrayVariable_glm) {
     }
 }
 const char* rtc_ArrayOut_func_glm = R"###(
-FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MsgNone, flamegpu::MsgBucket) {
+FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MessageNone, flamegpu::MessageBucket) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     glm::uvec3 t = glm::uvec3(index * 3, index * 7, index * 11);
     FLAMEGPU->message_out.setVariable<glm::uvec3>("v", t);
@@ -542,7 +542,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MsgNone, flamegpu::MsgBucket) {
 }
 )###";
 const char* rtc_ArrayIn_func_glm = R"###(
-FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MsgBucket, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageBucket, flamegpu::MessageNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     for (auto &message : FLAMEGPU->message_in(my_index)) {
         FLAMEGPU->setVariable<glm::uvec3>("message_read", message.getVariable<glm::uvec3>("v"));
@@ -552,16 +552,16 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MsgBucket, flamegpu::MsgNone) {
 )###";
 TEST(TestRTCMessage_Bucket, ArrayVariable_glm) {
     ModelDescription m(MODEL_NAME);
-    MsgBucket::Description& msg = m.newMessage<MsgBucket>(MESSAGE_NAME);
-    msg.setBounds(0, AGENT_COUNT);
-    msg.newVariable<unsigned int, 3>("v");
+    MessageBucket::Description& message = m.newMessage<MessageBucket>(MESSAGE_NAME);
+    message.setBounds(0, AGENT_COUNT);
+    message.newVariable<unsigned int, 3>("v");
     AgentDescription& a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
     AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
-    fo.setMessageOutput(msg);
+    fo.setMessageOutput(message);
     AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
-    fi.setMessageInput(msg);
+    fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
     LayerDescription& li = m.newLayer(IN_LAYER_NAME);

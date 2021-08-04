@@ -7,7 +7,7 @@ AGENT_COUNT = 5
 class AgentRandomTest(TestCase):
 
     random1_func = """
-    FLAMEGPU_AGENT_FUNCTION(random1_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(random1_func, flamegpu::MessageNone, flamegpu::MessageNone) {
         FLAMEGPU->setVariable<float>("a", FLAMEGPU->random.uniform<float>());
         FLAMEGPU->setVariable<float>("b", FLAMEGPU->random.uniform<float>());
         FLAMEGPU->setVariable<float>("c", FLAMEGPU->random.uniform<float>());
@@ -17,7 +17,7 @@ class AgentRandomTest(TestCase):
     """
     
     random2_func = """
-    FLAMEGPU_AGENT_FUNCTION(random2_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(random2_func, flamegpu::MessageNone, flamegpu::MessageNone) {
         FLAMEGPU->setVariable<float>("uniform_float", FLAMEGPU->random.uniform<float>());
         FLAMEGPU->setVariable<double>("uniform_double", FLAMEGPU->random.uniform<double>());
 

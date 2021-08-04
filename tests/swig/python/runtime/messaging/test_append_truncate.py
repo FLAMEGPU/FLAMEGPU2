@@ -15,21 +15,21 @@ OUT_LAYER2_NAME = "OutLayer2"
 AGENT_COUNT = 1024
 
 Out_AppendTruncate = """
-FLAMEGPU_AGENT_FUNCTION(Out_AppendTruncate, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(Out_AppendTruncate, flamegpu::MessageNone, flamegpu::MessageBruteForce) {
     FLAMEGPU->message_out.setVariable("x", 0);
     return flamegpu::ALIVE;
 }
 """
 
 Out_AppendTruncate2 = """
-FLAMEGPU_AGENT_FUNCTION(Out_AppendTruncate2, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(Out_AppendTruncate2, flamegpu::MessageNone, flamegpu::MessageBruteForce) {
     FLAMEGPU->message_out.setVariable("x", 1);
     return flamegpu::ALIVE;
 }
 """
 
 In_AppendTruncate = """
-FLAMEGPU_AGENT_FUNCTION(In_AppendTruncate, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(In_AppendTruncate, flamegpu::MessageBruteForce, flamegpu::MessageNone) {
     int count = 0;
     for (auto &message : FLAMEGPU->message_in) {
         count++;
@@ -40,7 +40,7 @@ FLAMEGPU_AGENT_FUNCTION(In_AppendTruncate, flamegpu::MsgBruteForce, flamegpu::Ms
 """
 
 In_AppendTruncate2 = """
-FLAMEGPU_AGENT_FUNCTION(In_AppendTruncate2, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(In_AppendTruncate2, flamegpu::MessageBruteForce, flamegpu::MessageNone) {
     int count0 = 0;
     int count1 = 0;
     for (auto &message : FLAMEGPU->message_in) {
@@ -57,7 +57,7 @@ FLAMEGPU_AGENT_FUNCTION(In_AppendTruncate2, flamegpu::MsgBruteForce, flamegpu::M
 """
 
 OptionalOut_AppendTruncate = """
-FLAMEGPU_AGENT_FUNCTION(OptionalOut_AppendTruncate, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(OptionalOut_AppendTruncate, flamegpu::MessageNone, flamegpu::MessageBruteForce) {
     if (FLAMEGPU->getVariable<unsigned int>("do_out") > 0) {
         FLAMEGPU->message_out.setVariable("x", 0);
         FLAMEGPU->setVariable<unsigned int>("do_out", 0);
@@ -69,7 +69,7 @@ FLAMEGPU_AGENT_FUNCTION(OptionalOut_AppendTruncate, flamegpu::MsgNone, flamegpu:
 """
 
 OptionalOut_AppendTruncate2 = """
-FLAMEGPU_AGENT_FUNCTION(OptionalOut_AppendTruncate2, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(OptionalOut_AppendTruncate2, flamegpu::MessageNone, flamegpu::MessageBruteForce) {
     if (FLAMEGPU->getVariable<unsigned int>("do_out") > 0) {
         FLAMEGPU->message_out.setVariable("x", 1);
     }
@@ -86,14 +86,14 @@ class TestMessageAppendTruncate(TestCase):
 
     def test_Truncate(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageBruteForce(MESSAGE_NAME)
-        msg.newVariableInt("x")
+        message = m.newMessageBruteForce(MESSAGE_NAME)
+        message.newVariableInt("x")
         a = m.newAgent(AGENT_NAME)
         a.newVariableUInt("count")
         fo = a.newRTCFunction(OUT_FUNCTION_NAME, Out_AppendTruncate)
-        fo.setMessageOutput(msg)
+        fo.setMessageOutput(message)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, In_AppendTruncate)
-        fi.setMessageInput(msg)
+        fi.setMessageInput(message)
 
         pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         for ai in pop:
@@ -120,17 +120,17 @@ class TestMessageAppendTruncate(TestCase):
     
     def test_Append_KeepData(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageBruteForce(MESSAGE_NAME)
-        msg.newVariableInt("x")
+        message = m.newMessageBruteForce(MESSAGE_NAME)
+        message.newVariableInt("x")
         a = m.newAgent(AGENT_NAME)
         a.newVariableUInt("count0")
         a.newVariableUInt("count1")
         fo = a.newRTCFunction(OUT_FUNCTION_NAME, Out_AppendTruncate)
-        fo.setMessageOutput(msg)
+        fo.setMessageOutput(message)
         fo2 = a.newRTCFunction(OUT_FUNCTION_NAME2, Out_AppendTruncate2)
-        fo2.setMessageOutput(msg)
+        fo2.setMessageOutput(message)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, In_AppendTruncate2)
-        fi.setMessageInput(msg)
+        fi.setMessageInput(message)
 
         pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         for ai in pop:
@@ -162,16 +162,16 @@ class TestMessageAppendTruncate(TestCase):
     
     def test_OptionalTruncate(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageBruteForce(MESSAGE_NAME)
-        msg.newVariableInt("x")
+        message = m.newMessageBruteForce(MESSAGE_NAME)
+        message.newVariableInt("x")
         a = m.newAgent(AGENT_NAME)
         a.newVariableUInt("count")
         a.newVariableUInt("do_out")
         fo = a.newRTCFunction(OUT_FUNCTION_NAME, OptionalOut_AppendTruncate)
         fo.setMessageOutputOptional(True)
-        fo.setMessageOutput(msg)
+        fo.setMessageOutput(message)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, In_AppendTruncate)
-        fi.setMessageInput(msg)
+        fi.setMessageInput(message)
         result_count = 0
         pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         for ai in pop:
@@ -204,20 +204,20 @@ class TestMessageAppendTruncate(TestCase):
     
     def test_OptionalAppend_KeepData(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageBruteForce(MESSAGE_NAME)
-        msg.newVariableInt("x")
+        message = m.newMessageBruteForce(MESSAGE_NAME)
+        message.newVariableInt("x")
         a = m.newAgent(AGENT_NAME)
         a.newVariableUInt("count0")
         a.newVariableUInt("count1")
         a.newVariableUInt("do_out")
         fo = a.newRTCFunction(OUT_FUNCTION_NAME, OptionalOut_AppendTruncate)
         fo.setMessageOutputOptional(True)
-        fo.setMessageOutput(msg)
+        fo.setMessageOutput(message)
         fo2 = a.newRTCFunction(OUT_FUNCTION_NAME2, OptionalOut_AppendTruncate2)
         fo2.setMessageOutputOptional(True)
-        fo2.setMessageOutput(msg)
+        fo2.setMessageOutput(message)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, In_AppendTruncate2)
-        fi.setMessageInput(msg)
+        fi.setMessageInput(message)
         result_count = 0
         pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         for ai in pop:

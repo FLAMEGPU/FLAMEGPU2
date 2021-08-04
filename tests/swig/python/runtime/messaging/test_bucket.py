@@ -6,7 +6,7 @@ import random as rand
 AGENT_COUNT = 24
 
 out_mandatory = """
-FLAMEGPU_AGENT_FUNCTION(out_mandatory, flamegpu::MsgNone, flamegpu::MsgBucket) {
+FLAMEGPU_AGENT_FUNCTION(out_mandatory, flamegpu::MessageNone, flamegpu::MessageBucket) {
     int id = FLAMEGPU->getVariable<int>("id");
     FLAMEGPU->message_out.setVariable<int>("id", id);
     FLAMEGPU->message_out.setKey(12 + (id/2));
@@ -14,7 +14,7 @@ FLAMEGPU_AGENT_FUNCTION(out_mandatory, flamegpu::MsgNone, flamegpu::MsgBucket) {
 }
 """
 out_optional = """
-FLAMEGPU_AGENT_FUNCTION(out_optional, flamegpu::MsgNone, flamegpu::MsgBucket) {
+FLAMEGPU_AGENT_FUNCTION(out_optional, flamegpu::MessageNone, flamegpu::MessageBucket) {
     if (FLAMEGPU->getVariable<int>("do_output")) {
         int id = FLAMEGPU->getVariable<int>("id");
         FLAMEGPU->message_out.setVariable<int>("id", id);
@@ -24,12 +24,12 @@ FLAMEGPU_AGENT_FUNCTION(out_optional, flamegpu::MsgNone, flamegpu::MsgBucket) {
 }
 """
 out_optionalNone = """
-FLAMEGPU_AGENT_FUNCTION(out_optionalNone, flamegpu::MsgNone, flamegpu::MsgBucket) {
+FLAMEGPU_AGENT_FUNCTION(out_optionalNone, flamegpu::MessageNone, flamegpu::MessageBucket) {
     return flamegpu::ALIVE;
 }
 """
 in_fn = """
-FLAMEGPU_AGENT_FUNCTION(in, flamegpu::MsgBucket, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(in, flamegpu::MessageBucket, flamegpu::MessageNone) {
     const int id = FLAMEGPU->getVariable<int>("id");
     const int id_m1 = id == 0 ? 0 : id-1;
     unsigned int count = 0;
@@ -45,7 +45,7 @@ FLAMEGPU_AGENT_FUNCTION(in, flamegpu::MsgBucket, flamegpu::MsgNone) {
 }
 """
 in_range = """
-FLAMEGPU_AGENT_FUNCTION(in_range, flamegpu::MsgBucket, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(in_range, flamegpu::MessageBucket, flamegpu::MessageNone) {
     const int id = FLAMEGPU->getVariable<int>("id");
     const int id_m4 = 12 + ((id / 8) * 4);
     unsigned int count = 0;
@@ -64,57 +64,57 @@ FLAMEGPU_AGENT_FUNCTION(in_range, flamegpu::MsgBucket, flamegpu::MsgNone) {
 class TestMessage_Bucket(TestCase):
 
     def test_DescriptionValidation(self): 
-        m = pyflamegpu.ModelDescription("BucketMsgTest")
+        m = pyflamegpu.ModelDescription("BucketMessageTest")
         # Test description accessors
-        msg = m.newMessageBucket("buckets")
+        message = m.newMessageBucket("buckets")
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            msg.setUpperBound(0); # Min should default to 0, this would mean no buckets
+            message.setUpperBound(0); # Min should default to 0, this would mean no buckets
         assert e.value.type() == "InvalidArgument"
-        msg.setLowerBound(10);
-        msg.setUpperBound(11);
+        message.setLowerBound(10);
+        message.setUpperBound(11);
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            msg.setUpperBound(0); # Max < Min
+            message.setUpperBound(0); # Max < Min
         assert e.value.type() == "InvalidArgument"
-        msg.setUpperBound(12);
+        message.setUpperBound(12);
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            msg.setLowerBound(13); # Min > Max
-        assert e.value.type() == "InvalidArgument"
-        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            msg.setBounds(12, 12); # Min == Max
+            message.setLowerBound(13); # Min > Max
         assert e.value.type() == "InvalidArgument"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            msg.setBounds(13, 12); # Min > Max
+            message.setBounds(12, 12); # Min == Max
         assert e.value.type() == "InvalidArgument"
-        msg.setBounds(12, 13);
-        msg.newVariableInt("somevar")
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
+            message.setBounds(13, 12); # Min > Max
+        assert e.value.type() == "InvalidArgument"
+        message.setBounds(12, 13);
+        message.newVariableInt("somevar")
         
     def test_DataValidation(self): 
-        m = pyflamegpu.ModelDescription("BucketMsgTest")
+        m = pyflamegpu.ModelDescription("BucketMessageTest")
         # Test Data copy constructor knows when bounds have not been init
-        msg = m.newMessageBucket("buckets")
+        message = m.newMessageBucket("buckets")
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             cudaSimulation = pyflamegpu.CUDASimulation(m)  # Max not set
         assert e.value.type() == "InvalidMessage"
-        msg.setLowerBound(1);  # It should default to 0
+        message.setLowerBound(1);  # It should default to 0
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             cudaSimulation = pyflamegpu.CUDASimulation(m)  # Min not set
         assert e.value.type() == "InvalidMessage"
-        msg.setUpperBound(10);
+        message.setUpperBound(10);
         cudaSimulation = pyflamegpu.CUDASimulation(m)
         
     def test_reserved_name(self):
-        m = pyflamegpu.ModelDescription("BucketMsgTest")
-        msg = m.newMessageBucket("buckets")
+        m = pyflamegpu.ModelDescription("BucketMessageTest")
+        message = m.newMessageBucket("buckets")
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            msg.newVariableInt("_")
+            message.newVariableInt("_")
         assert e.value.type() == "ReservedName"
         
     def test_Mandatory(self):
         bucket_count = {};
         bucket_sum = {};
         # Construct model
-        model = pyflamegpu.ModelDescription("BucketMsgTest");
-        # MsgBucket::Description
+        model = pyflamegpu.ModelDescription("BucketMessageTest");
+        # MessageBucket::Description
         message = model.newMessageBucket("bucket")
         message.setBounds(12, int(12 +(AGENT_COUNT/2))); # None zero lowerBound, to check that's working
         message.newVariableInt("id")
@@ -172,8 +172,8 @@ class TestMessage_Bucket(TestCase):
         bucket_count = {};
         bucket_sum = {};
         # Construct model
-        model = pyflamegpu.ModelDescription("BucketMsgTest");
-        # MsgBucket::Description
+        model = pyflamegpu.ModelDescription("BucketMessageTest");
+        # MessageBucket::Description
         message = model.newMessageBucket("bucket")
         message.setBounds(12, int(12 +(AGENT_COUNT/2))); # None zero lowerBound, to check that's working
         message.newVariableInt("id")
@@ -236,8 +236,8 @@ class TestMessage_Bucket(TestCase):
         bucket_count = {};
         bucket_sum = {};
         # Construct model
-        model = pyflamegpu.ModelDescription("BucketMsgTest");
-        # MsgBucket::Description
+        model = pyflamegpu.ModelDescription("BucketMessageTest");
+        # MessageBucket::Description
         message = model.newMessageBucket("bucket")
         message.setBounds(12, int(12 +(AGENT_COUNT/2))); # None zero lowerBound, to check that's working
         message.newVariableInt("id")
@@ -294,8 +294,8 @@ class TestMessage_Bucket(TestCase):
         bucket_count = {};
         bucket_sum = {};
         # Construct model
-        model = pyflamegpu.ModelDescription("BucketMsgTest");
-        # MsgBucket::Description
+        model = pyflamegpu.ModelDescription("BucketMessageTest");
+        # MessageBucket::Description
         message = model.newMessageBucket("bucket")
         message.setBounds(12, int(12 +(AGENT_COUNT/2))); # None zero lowerBound, to check that's working
         message.newVariableInt("id")

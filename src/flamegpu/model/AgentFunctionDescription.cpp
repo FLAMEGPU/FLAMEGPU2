@@ -140,14 +140,14 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
     auto a = mdl->messages.find(message_name);
     if (a != mdl->messages.end()) {
         // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
-        auto msg_in_classname = util::detail::cxxname::getUnqualifiedName(this->function->msg_in_type);
+        auto message_in_classname = util::detail::cxxname::getUnqualifiedName(this->function->message_in_type);
         auto demangledClassName = util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
-        if (msg_in_classname == demangledClassName) {
+        if (message_in_classname == demangledClassName) {
             this->function->message_input = a->second;
         } else {
             THROW exception::InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION ('%s'), "
                 "in AgentFunctionDescription::setMessageInput().",
-                message_name.c_str(), demangledClassName.c_str(), msg_in_classname.c_str(), this->function->name.c_str());
+                message_name.c_str(), demangledClassName.c_str(), message_in_classname.c_str(), this->function->name.c_str());
         }
     } else {
         THROW exception::InvalidMessageName("Model ('%s') does not contain message '%s', "
@@ -155,7 +155,7 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
             mdl->name.c_str(), message_name.c_str());
     }
 }
-void AgentFunctionDescription::setMessageInput(MsgBruteForce::Description &message) {
+void AgentFunctionDescription::setMessageInput(MessageBruteForce::Description &message) {
     if (message.model.lock() != function->description->model.lock()) {
         THROW exception::DifferentModel("Attempted to use agent description from a different model, "
             "in AgentFunctionDescription::setAgentOutput().");
@@ -176,14 +176,14 @@ void AgentFunctionDescription::setMessageInput(MsgBruteForce::Description &messa
     if (a != mdl->messages.end()) {
         if (a->second->description.get() == &message) {
             // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
-            auto msg_in_classname = util::detail::cxxname::getUnqualifiedName(this->function->msg_in_type);
+            auto message_in_classname = util::detail::cxxname::getUnqualifiedName(this->function->message_in_type);
             auto demangledClassName = util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
-            if (msg_in_classname == demangledClassName) {
+            if (message_in_classname == demangledClassName) {
                 this->function->message_input = a->second;
             } else {
                 THROW exception::InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION ('%s'), "
                     "in AgentFunctionDescription::setMessageInput().",
-                    a->second->name.c_str(), demangledClassName.c_str(), msg_in_classname.c_str(), this->function->name.c_str());
+                    a->second->name.c_str(), demangledClassName.c_str(), message_in_classname.c_str(), this->function->name.c_str());
             }
         } else {
             THROW exception::InvalidMessage("Message '%s' is not from Model '%s', "
@@ -218,9 +218,9 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
     auto a = mdl->messages.find(message_name);
     if (a != mdl->messages.end()) {
         // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
-        auto msg_out_classname = util::detail::cxxname::getUnqualifiedName(this->function->msg_out_type);
+        auto message_out_classname = util::detail::cxxname::getUnqualifiedName(this->function->message_out_type);
         auto demangledClassName = util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
-        if (msg_out_classname == demangledClassName) {
+        if (message_out_classname == demangledClassName) {
             this->function->message_output = a->second;
             if (this->function->message_output_optional) {
                 a->second->optional_outputs++;
@@ -228,7 +228,7 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
         } else {
             THROW exception::InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION ('%s'), "
                 "in AgentFunctionDescription::setMessageOutput().",
-                message_name.c_str(), demangledClassName.c_str(), msg_out_classname.c_str(), this->function->name.c_str());
+                message_name.c_str(), demangledClassName.c_str(), message_out_classname.c_str(), this->function->name.c_str());
         }
     } else {
         THROW exception::InvalidMessageName("Model ('%s') does not contain message '%s', "
@@ -236,7 +236,7 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
             mdl->name.c_str(), message_name.c_str());
     }
 }
-void AgentFunctionDescription::setMessageOutput(MsgBruteForce::Description &message) {
+void AgentFunctionDescription::setMessageOutput(MessageBruteForce::Description &message) {
     if (message.model.lock() != function->description->model.lock()) {
         THROW exception::DifferentModel("Attempted to use agent description from a different model, "
             "in AgentFunctionDescription::setAgentOutput().");
@@ -263,9 +263,9 @@ void AgentFunctionDescription::setMessageOutput(MsgBruteForce::Description &mess
     if (a != mdl->messages.end()) {
         if (a->second->description.get() == &message) {
             // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
-            auto msg_out_classname = util::detail::cxxname::getUnqualifiedName(this->function->msg_out_type);
+            auto message_out_classname = util::detail::cxxname::getUnqualifiedName(this->function->message_out_type);
             auto demangledClassName = util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
-            if (msg_out_classname == demangledClassName) {
+            if (message_out_classname == demangledClassName) {
                 this->function->message_output = a->second;
                 if (this->function->message_output_optional) {
                     a->second->optional_outputs++;
@@ -273,7 +273,7 @@ void AgentFunctionDescription::setMessageOutput(MsgBruteForce::Description &mess
             } else {
                 THROW exception::InvalidMessageType("Message ('%s') type '%s' does not match type '%s' applied to FLAMEGPU_AGENT_FUNCTION ('%s'), "
                     "in AgentFunctionDescription::setMessageOutput().",
-                    a->second->name.c_str(), demangledClassName.c_str(), msg_out_classname.c_str(), this->function->name.c_str());
+                    a->second->name.c_str(), demangledClassName.c_str(), message_out_classname.c_str(), this->function->name.c_str());
             }
         } else {
             THROW exception::InvalidMessage("Message '%s' is not from Model '%s', "
@@ -395,13 +395,13 @@ void AgentFunctionDescription::setRTCFunctionCondition(std::string func_cond_src
     function->rtc_condition_source = func_cond_src_str;
 }
 
-MsgBruteForce::Description &AgentFunctionDescription::MessageInput() {
+MessageBruteForce::Description &AgentFunctionDescription::MessageInput() {
     if (auto m = function->message_input.lock())
         return *m->description;
     THROW exception::OutOfBoundsException("Message input has not been set, "
         "in AgentFunctionDescription::MessageInput().");
 }
-MsgBruteForce::Description &AgentFunctionDescription::MessageOutput() {
+MessageBruteForce::Description &AgentFunctionDescription::MessageOutput() {
     if (auto m = function->message_output.lock())
         return *m->description;
     THROW exception::OutOfBoundsException("Message output has not been set, "
@@ -426,13 +426,13 @@ std::string AgentFunctionDescription::getInitialState() const {
 std::string AgentFunctionDescription::getEndState() const {
     return function->end_state;
 }
-const MsgBruteForce::Description &AgentFunctionDescription::getMessageInput() const {
+const MessageBruteForce::Description &AgentFunctionDescription::getMessageInput() const {
     if (auto m = function->message_input.lock())
         return *m->description;
     THROW exception::OutOfBoundsException("Message input has not been set, "
         "in AgentFunctionDescription::getMessageInput().");
 }
-const MsgBruteForce::Description &AgentFunctionDescription::getMessageOutput() const {
+const MessageBruteForce::Description &AgentFunctionDescription::getMessageOutput() const {
     if (auto m = function->message_output.lock())
         return *m->description;
     THROW exception::OutOfBoundsException("Message output has not been set, "
@@ -493,11 +493,11 @@ AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& fu
                 // set the runtime agent function source in agent function data
                 std::string func_src_str = std::string(function_name + "_program\n").append("#include \"flamegpu/runtime/DeviceAPI.cuh\"\n");
                 // Include the required headers for the input message type.
-                std::string in_type_include_name = in_type_name.substr(in_type_name.find_last_of("Msg") + 1);
+                std::string in_type_include_name = in_type_name.substr(in_type_name.find_last_of("::") + 1);
                 func_src_str = func_src_str.append("#include \"flamegpu/runtime/messaging/"+ in_type_include_name + "/" + in_type_include_name + "Device.cuh\"\n");
                 // If the message input and output types do not match, also include the input type
                 if (in_type_name != out_type_name) {
-                    std::string out_type_include_name = out_type_name.substr(in_type_name.find_last_of("Msg") + 1);
+                    std::string out_type_include_name = out_type_name.substr(out_type_name.find_last_of("::") + 1);
                     func_src_str = func_src_str.append("#include \"flamegpu/runtime/messaging/"+ out_type_include_name + "/" + out_type_include_name + "Device.cuh\"\n");
                 }
                 // Append the function source

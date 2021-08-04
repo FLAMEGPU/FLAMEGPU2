@@ -4,7 +4,7 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/exception/FLAMEGPUException.h"
-#include "flamegpu/runtime/messaging/BruteForce.h"
+#include "flamegpu/runtime/messaging/MessageBruteForce.h"
 #include "flamegpu/model/SubModelData.h"
 #include "flamegpu/model/SubModelDescription.h"
 
@@ -45,11 +45,11 @@ AgentDescription& ModelDescription::Agent(const std::string &agent_name) {
         agent_name.c_str());
 }
 
-MsgBruteForce::Description& ModelDescription::newMessage(const std::string &message_name) {
-    return newMessage<MsgBruteForce>(message_name);
+MessageBruteForce::Description& ModelDescription::newMessage(const std::string &message_name) {
+    return newMessage<MessageBruteForce>(message_name);
 }
-MsgBruteForce::Description& ModelDescription::Message(const std::string &message_name) {
-    return Message<MsgBruteForce>(message_name);
+MessageBruteForce::Description& ModelDescription::Message(const std::string &message_name) {
+    return Message<MessageBruteForce>(message_name);
 }
 
 EnvironmentDescription& ModelDescription::Environment() {
@@ -187,8 +187,8 @@ const AgentDescription& ModelDescription::getAgent(const std::string &agent_name
         "in ModelDescription::getAgent().",
         agent_name.c_str());
 }
-const MsgBruteForce::Description& ModelDescription::getMessage(const std::string &message_name) const {
-    return getMessage<MsgBruteForce>(message_name);
+const MessageBruteForce::Description& ModelDescription::getMessage(const std::string &message_name) const {
+    return getMessage<MessageBruteForce>(message_name);
 }
 const SubModelDescription &ModelDescription::getSubModel(const std::string &submodel_name) const {
     const auto rtn = model->submodels.find(submodel_name);

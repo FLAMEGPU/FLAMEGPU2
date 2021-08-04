@@ -13,14 +13,14 @@ namespace flamegpu {
 
 namespace test_message_spatial2d {
 
-FLAMEGPU_AGENT_FUNCTION(out_mandatory2D, MsgNone, MsgSpatial2D) {
+FLAMEGPU_AGENT_FUNCTION(out_mandatory2D, MessageNone, MessageSpatial2D) {
     FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
     FLAMEGPU->message_out.setLocation(
         FLAMEGPU->getVariable<float>("x"),
         FLAMEGPU->getVariable<float>("y"));
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(out_optional2D, MsgNone, MsgSpatial2D) {
+FLAMEGPU_AGENT_FUNCTION(out_optional2D, MessageNone, MessageSpatial2D) {
     if (FLAMEGPU->getVariable<int>("do_output")) {
         FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
         FLAMEGPU->message_out.setLocation(
@@ -29,10 +29,10 @@ FLAMEGPU_AGENT_FUNCTION(out_optional2D, MsgNone, MsgSpatial2D) {
     }
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(out_optional2DNone, MsgNone, MsgSpatial2D) {
+FLAMEGPU_AGENT_FUNCTION(out_optional2DNone, MessageNone, MessageSpatial2D) {
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(in2D, MsgSpatial2D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(in2D, MessageSpatial2D, MessageNone) {
     const float x1 = FLAMEGPU->getVariable<float>("x");
     const float y1 = FLAMEGPU->getVariable<float>("y");
     unsigned int count = 0;
@@ -45,13 +45,13 @@ FLAMEGPU_AGENT_FUNCTION(in2D, MsgSpatial2D, MsgNone) {
     // This is all those which fall within the 3x3x3 Moore neighbourhood
     // Not our search radius
     for (const auto &message : FLAMEGPU->message_in(x1, y1)) {
-         unsigned int msgBin[2] = {
+         unsigned int messageBin[2] = {
              static_cast<unsigned int>(message.getVariable<float>("x")),
              static_cast<unsigned int>(message.getVariable<float>("y"))
          };
          bool isBad = false;
          for (unsigned int i = 0; i < 2; ++i) {  // Iterate axis
-             int binDiff = myBin[i] - msgBin[i];
+             int binDiff = myBin[i] - messageBin[i];
              if (binDiff > 1 || binDiff < -1) {
                  isBad = true;
              }
@@ -63,12 +63,12 @@ FLAMEGPU_AGENT_FUNCTION(in2D, MsgSpatial2D, MsgNone) {
     FLAMEGPU->setVariable<unsigned int>("badCount", badCount);
     return ALIVE;
 }
-TEST(Spatial2DMsgTest, Mandatory) {
+TEST(Spatial2DMessageTest, Mandatory) {
     std::unordered_map<int, unsigned int> bin_counts;
     // Construct model
-    ModelDescription model("Spatial2DMsgTestModel");
+    ModelDescription model("Spatial2DMessageTestModel");
     {   // Location message
-        MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+        MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
         message.setMin(0, 0);
         message.setMax(11, 11);
         message.setRadius(1);
@@ -185,7 +185,7 @@ TEST(Spatial2DMsgTest, Mandatory) {
     EXPECT_EQ(badCountWrong, 0u);
 }
 
-TEST(Spatial2DMsgTest, Optional) {
+TEST(Spatial2DMessageTest, Optional) {
     /**
      * This test is same as Mandatory, however extra flag has been added to block certain agents from outputting messages
      * Look for NEW!
@@ -193,9 +193,9 @@ TEST(Spatial2DMsgTest, Optional) {
     std::unordered_map<int, unsigned int> bin_counts;
     std::unordered_map<int, unsigned int> bin_counts_optional;
     // Construct model
-    ModelDescription model("Spatial2DMsgTestModel");
+    ModelDescription model("Spatial2DMessageTestModel");
     {   // Location message
-        MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+        MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
         message.setMin(0, 0);
         message.setMax(11, 11);
         message.setRadius(1);
@@ -321,7 +321,7 @@ TEST(Spatial2DMsgTest, Optional) {
     }
     EXPECT_EQ(badCountWrong, 0u);
 }
-TEST(Spatial2DMsgTest, OptionalNone) {
+TEST(Spatial2DMessageTest, OptionalNone) {
     /**
      * This test is same as Mandatory, however extra flag has been added to block certain agents from outputting messages
      * Look for NEW!
@@ -329,9 +329,9 @@ TEST(Spatial2DMsgTest, OptionalNone) {
     std::unordered_map<int, unsigned int> bin_counts;
     std::unordered_map<int, unsigned int> bin_counts_optional;
     // Construct model
-    ModelDescription model("Spatial2DMsgTestModel");
+    ModelDescription model("Spatial2DMessageTestModel");
     {   // Location message
-        MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+        MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
         message.setMin(0, 0);
         message.setMax(11, 11);
         message.setRadius(1);
@@ -413,49 +413,49 @@ TEST(Spatial2DMsgTest, OptionalNone) {
     EXPECT_EQ(badCountWrong, 0u);
 }
 
-TEST(Spatial2DMsgTest, BadRadius) {
-    ModelDescription model("Spatial2DMsgTestModel");
-    MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+TEST(Spatial2DMessageTest, BadRadius) {
+    ModelDescription model("Spatial2DMessageTestModel");
+    MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
     EXPECT_THROW(message.setRadius(0), exception::InvalidArgument);
     EXPECT_THROW(message.setRadius(-10), exception::InvalidArgument);
 }
-TEST(Spatial2DMsgTest, BadMin) {
-    ModelDescription model("Spatial2DMsgTestModel");
-    MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+TEST(Spatial2DMessageTest, BadMin) {
+    ModelDescription model("Spatial2DMessageTestModel");
+    MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
     message.setMax(5, 5);
     EXPECT_THROW(message.setMin(5, 0), exception::InvalidArgument);
     EXPECT_THROW(message.setMin(0, 5), exception::InvalidArgument);
     EXPECT_THROW(message.setMin(6, 0), exception::InvalidArgument);
     EXPECT_THROW(message.setMin(0, 6), exception::InvalidArgument);
 }
-TEST(Spatial2DMsgTest, BadMax) {
-    ModelDescription model("Spatial2DMsgTestModel");
-    MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+TEST(Spatial2DMessageTest, BadMax) {
+    ModelDescription model("Spatial2DMessageTestModel");
+    MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
     message.setMin(5, 5);
     EXPECT_THROW(message.setMax(5, 0), exception::InvalidArgument);
     EXPECT_THROW(message.setMax(0, 5), exception::InvalidArgument);
     EXPECT_THROW(message.setMax(4, 0), exception::InvalidArgument);
     EXPECT_THROW(message.setMax(0, 4), exception::InvalidArgument);
 }
-TEST(Spatial2DMsgTest, UnsetMax) {
-    ModelDescription model("Spatial2DMsgTestModel");
-    MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+TEST(Spatial2DMessageTest, UnsetMax) {
+    ModelDescription model("Spatial2DMessageTestModel");
+    MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
     message.setMin(5, 5);
     EXPECT_THROW(CUDASimulation m(model), exception::InvalidMessage);
 }
-TEST(Spatial2DMsgTest, UnsetMin) {
-    ModelDescription model("Spatial2DMsgTestModel");
-    MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+TEST(Spatial2DMessageTest, UnsetMin) {
+    ModelDescription model("Spatial2DMessageTestModel");
+    MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
     message.setMin(5, 5);
     EXPECT_THROW(CUDASimulation m(model), exception::InvalidMessage);
 }
-TEST(Spatial2DMsgTest, reserved_name) {
-    ModelDescription model("Spatial2DMsgTestModel");
-    MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+TEST(Spatial2DMessageTest, reserved_name) {
+    ModelDescription model("Spatial2DMessageTestModel");
+    MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
     EXPECT_THROW(message.newVariable<int>("_"), exception::ReservedName);
 }
 
-FLAMEGPU_AGENT_FUNCTION(count2D, MsgSpatial2D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(count2D, MessageSpatial2D, MessageNone) {
     unsigned int count = 0;
     // Count how many messages we received (including our own)
     // This is all those which fall within the 3x3 Moore neighbourhood
@@ -465,11 +465,11 @@ FLAMEGPU_AGENT_FUNCTION(count2D, MsgSpatial2D, MsgNone) {
     FLAMEGPU->setVariable<unsigned int>("count", count);
     return ALIVE;
 }
-TEST(Spatial2DMsgTest, ReadEmpty) {
+TEST(Spatial2DMessageTest, ReadEmpty) {
 // What happens if we read a message list before it has been output?
     ModelDescription model("Model");
     {   // Location message
-        MsgSpatial2D::Description &message = model.newMessage<MsgSpatial2D>("location");
+        MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
         message.setMin(-3, -3);
         message.setMax(3, 3);
         message.setRadius(2);
@@ -498,7 +498,7 @@ TEST(Spatial2DMsgTest, ReadEmpty) {
     EXPECT_EQ(pop_out[0].getVariable<unsigned int>("count"), 0u);
 }
 
-FLAMEGPU_AGENT_FUNCTION(ArrayOut, MsgNone, MsgSpatial2D) {
+FLAMEGPU_AGENT_FUNCTION(ArrayOut, MessageNone, MessageSpatial2D) {
     const unsigned int x = FLAMEGPU->getVariable<unsigned int, 2>("index", 0);
     const unsigned int y = FLAMEGPU->getVariable<unsigned int, 2>("index", 1);
     FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 0, x * 3);
@@ -507,7 +507,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayOut, MsgNone, MsgSpatial2D) {
     FLAMEGPU->message_out.setLocation(static_cast<float>(x), static_cast<float>(y));
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(ArrayIn, MsgSpatial2D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(ArrayIn, MessageSpatial2D, MessageNone) {
     const unsigned int x = FLAMEGPU->getVariable<unsigned int, 2>("index", 0);
     const unsigned int y = FLAMEGPU->getVariable<unsigned int, 2>("index", 1);
     for (auto &message : FLAMEGPU->message_in(static_cast<float>(x), static_cast<float>(y))) {
@@ -521,7 +521,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, MsgSpatial2D, MsgNone) {
     }
     return ALIVE;
 }
-TEST(Spatial2DMsgTest, ArrayVariable) {
+TEST(Spatial2DMessageTest, ArrayVariable) {
     const char* MODEL_NAME = "Model";
     const char* AGENT_NAME = "Agent";
     const char* MESSAGE_NAME = "Message";
@@ -531,18 +531,18 @@ TEST(Spatial2DMsgTest, ArrayVariable) {
     const char* OUT_LAYER_NAME = "OutLayer";
     const unsigned int SQRT_AGENT_COUNT = 64;
     ModelDescription m(MODEL_NAME);
-    MsgSpatial2D::Description &msg = m.newMessage<MsgSpatial2D>(MESSAGE_NAME);
-    msg.setMin(0, 0);
-    msg.setMax(static_cast<float>(SQRT_AGENT_COUNT), static_cast<float>(SQRT_AGENT_COUNT));
-    msg.setRadius(1);
-    msg.newVariable<unsigned int, 3>("v");
+    MessageSpatial2D::Description &message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
+    message.setMin(0, 0);
+    message.setMax(static_cast<float>(SQRT_AGENT_COUNT), static_cast<float>(SQRT_AGENT_COUNT));
+    message.setRadius(1);
+    message.newVariable<unsigned int, 3>("v");
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
-    fo.setMessageOutput(msg);
+    fo.setMessageOutput(message);
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
-    fi.setMessageInput(msg);
+    fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
     LayerDescription &li = m.newLayer(IN_LAYER_NAME);
@@ -570,7 +570,7 @@ TEST(Spatial2DMsgTest, ArrayVariable) {
     }
 }
 const char* rtc_ArrayOut_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MsgNone, flamegpu::MsgSpatial2D) {
+FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MessageNone, flamegpu::MessageSpatial2D) {
     const unsigned int x = FLAMEGPU->getVariable<unsigned int, 2>("index", 0);
     const unsigned int y = FLAMEGPU->getVariable<unsigned int, 2>("index", 1);
     FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 0, x * 3);
@@ -581,7 +581,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MsgNone, flamegpu::MsgSpatial2D) {
 }
 )###";
 const char* rtc_ArrayIn_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MsgSpatial2D, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageSpatial2D, flamegpu::MessageNone) {
     const unsigned int x = FLAMEGPU->getVariable<unsigned int, 2>("index", 0);
     const unsigned int y = FLAMEGPU->getVariable<unsigned int, 2>("index", 1);
     for (auto &message : FLAMEGPU->message_in(static_cast<float>(x), static_cast<float>(y))) {
@@ -596,7 +596,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MsgSpatial2D, flamegpu::MsgNone) {
     return flamegpu::ALIVE;
 }
 )###";
-TEST(RTCSpatial2DMsgTest, ArrayVariable) {
+TEST(RTCSpatial2DMessageTest, ArrayVariable) {
     const char* MODEL_NAME = "Model";
     const char* AGENT_NAME = "Agent";
     const char* MESSAGE_NAME = "Message";
@@ -606,18 +606,18 @@ TEST(RTCSpatial2DMsgTest, ArrayVariable) {
     const char* OUT_LAYER_NAME = "OutLayer";
     const unsigned int SQRT_AGENT_COUNT = 64;
     ModelDescription m(MODEL_NAME);
-    MsgSpatial2D::Description& msg = m.newMessage<MsgSpatial2D>(MESSAGE_NAME);
-    msg.setMin(0, 0);
-    msg.setMax(static_cast<float>(SQRT_AGENT_COUNT), static_cast<float>(SQRT_AGENT_COUNT));
-    msg.setRadius(1);
-    msg.newVariable<unsigned int, 3>("v");
+    MessageSpatial2D::Description& message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
+    message.setMin(0, 0);
+    message.setMax(static_cast<float>(SQRT_AGENT_COUNT), static_cast<float>(SQRT_AGENT_COUNT));
+    message.setRadius(1);
+    message.newVariable<unsigned int, 3>("v");
     AgentDescription& a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
     AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
-    fo.setMessageOutput(msg);
+    fo.setMessageOutput(message);
     AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
-    fi.setMessageInput(msg);
+    fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
     LayerDescription& li = m.newLayer(IN_LAYER_NAME);
@@ -646,7 +646,7 @@ TEST(RTCSpatial2DMsgTest, ArrayVariable) {
 }
 
 #if defined(USE_GLM)
-FLAMEGPU_AGENT_FUNCTION(ArrayOut_glm, MsgNone, MsgSpatial2D) {
+FLAMEGPU_AGENT_FUNCTION(ArrayOut_glm, MessageNone, MessageSpatial2D) {
     const unsigned int x = FLAMEGPU->getVariable<unsigned int, 2>("index", 0);
     const unsigned int y = FLAMEGPU->getVariable<unsigned int, 2>("index", 1);
     glm::uvec3 t = glm::uvec3(x * 3, y * 7, y * 11);
@@ -654,7 +654,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayOut_glm, MsgNone, MsgSpatial2D) {
     FLAMEGPU->message_out.setLocation(static_cast<float>(x), static_cast<float>(y));
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(ArrayIn_glm, MsgSpatial2D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(ArrayIn_glm, MessageSpatial2D, MessageNone) {
     const unsigned int x = FLAMEGPU->getVariable<unsigned int, 2>("index", 0);
     const unsigned int y = FLAMEGPU->getVariable<unsigned int, 2>("index", 1);
     for (auto &message : FLAMEGPU->message_in(static_cast<float>(x), static_cast<float>(y))) {
@@ -666,7 +666,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn_glm, MsgSpatial2D, MsgNone) {
     }
     return ALIVE;
 }
-TEST(Spatial2DMsgTest, ArrayVariable_glm) {
+TEST(Spatial2DMessageTest, ArrayVariable_glm) {
     const char* MODEL_NAME = "Model";
     const char* AGENT_NAME = "Agent";
     const char* MESSAGE_NAME = "Message";
@@ -676,18 +676,18 @@ TEST(Spatial2DMsgTest, ArrayVariable_glm) {
     const char* OUT_LAYER_NAME = "OutLayer";
     const unsigned int SQRT_AGENT_COUNT = 64;
     ModelDescription m(MODEL_NAME);
-    MsgSpatial2D::Description &msg = m.newMessage<MsgSpatial2D>(MESSAGE_NAME);
-    msg.setMin(0, 0);
-    msg.setMax(static_cast<float>(SQRT_AGENT_COUNT), static_cast<float>(SQRT_AGENT_COUNT));
-    msg.setRadius(1);
-    msg.newVariable<unsigned int, 3>("v");
+    MessageSpatial2D::Description &message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
+    message.setMin(0, 0);
+    message.setMax(static_cast<float>(SQRT_AGENT_COUNT), static_cast<float>(SQRT_AGENT_COUNT));
+    message.setRadius(1);
+    message.newVariable<unsigned int, 3>("v");
     AgentDescription &a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
-    fo.setMessageOutput(msg);
+    fo.setMessageOutput(message);
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
-    fi.setMessageInput(msg);
+    fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
     LayerDescription &li = m.newLayer(IN_LAYER_NAME);
@@ -715,7 +715,7 @@ TEST(Spatial2DMsgTest, ArrayVariable_glm) {
     }
 }
 const char* rtc_ArrayOut_func_glm = R"###(
-FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MsgNone, flamegpu::MsgSpatial2D) {
+FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MessageNone, flamegpu::MessageSpatial2D) {
     const unsigned int x = FLAMEGPU->getVariable<unsigned int, 2>("index", 0);
     const unsigned int y = FLAMEGPU->getVariable<unsigned int, 2>("index", 1);
     glm::uvec3 t = glm::uvec3(x * 3, y * 7, y * 11);
@@ -725,7 +725,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MsgNone, flamegpu::MsgSpatial2D) {
 }
 )###";
 const char* rtc_ArrayIn_func_glm = R"###(
-FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MsgSpatial2D, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageSpatial2D, flamegpu::MessageNone) {
     const unsigned int x = FLAMEGPU->getVariable<unsigned int, 2>("index", 0);
     const unsigned int y = FLAMEGPU->getVariable<unsigned int, 2>("index", 1);
     for (auto &message : FLAMEGPU->message_in(static_cast<float>(x), static_cast<float>(y))) {
@@ -738,7 +738,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MsgSpatial2D, flamegpu::MsgNone) {
     return flamegpu::ALIVE;
 }
 )###";
-TEST(RTCSpatial2DMsgTest, ArrayVariable_glm) {
+TEST(RTCSpatial2DMessageTest, ArrayVariable_glm) {
     const char* MODEL_NAME = "Model";
     const char* AGENT_NAME = "Agent";
     const char* MESSAGE_NAME = "Message";
@@ -748,18 +748,18 @@ TEST(RTCSpatial2DMsgTest, ArrayVariable_glm) {
     const char* OUT_LAYER_NAME = "OutLayer";
     const unsigned int SQRT_AGENT_COUNT = 64;
     ModelDescription m(MODEL_NAME);
-    MsgSpatial2D::Description& msg = m.newMessage<MsgSpatial2D>(MESSAGE_NAME);
-    msg.setMin(0, 0);
-    msg.setMax(static_cast<float>(SQRT_AGENT_COUNT), static_cast<float>(SQRT_AGENT_COUNT));
-    msg.setRadius(1);
-    msg.newVariable<unsigned int, 3>("v");
+    MessageSpatial2D::Description& message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
+    message.setMin(0, 0);
+    message.setMax(static_cast<float>(SQRT_AGENT_COUNT), static_cast<float>(SQRT_AGENT_COUNT));
+    message.setRadius(1);
+    message.newVariable<unsigned int, 3>("v");
     AgentDescription& a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
     AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
-    fo.setMessageOutput(msg);
+    fo.setMessageOutput(message);
     AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
-    fi.setMessageInput(msg);
+    fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
     LayerDescription& li = m.newLayer(IN_LAYER_NAME);
@@ -787,8 +787,8 @@ TEST(RTCSpatial2DMsgTest, ArrayVariable_glm) {
     }
 }
 #else
-TEST(Spatial2DMsgTest, DISABLED_ArrayVariable_glm) { }
-TEST(RTCSpatial2DMsgTest, DISABLED_ArrayVariable_glm) { }
+TEST(Spatial2DMessageTest, DISABLED_ArrayVariable_glm) { }
+TEST(RTCSpatial2DMessageTest, DISABLED_ArrayVariable_glm) { }
 #endif
 
 }  // namespace test_message_spatial2d

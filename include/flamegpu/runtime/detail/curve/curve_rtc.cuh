@@ -273,11 +273,11 @@ class CurveRTCHost {
     /**
      * Offset into h_data_buffer where output message variable data begins
      */
-    size_t msgOut_data_offset = 0;
+    size_t messageOut_data_offset = 0;
     /**
      * Offset into h_data_buffer where input message variable data begins
      */
-    size_t msgIn_data_offset = 0;
+    size_t messageIn_data_offset = 0;
     /**
      * Offset into h_data_buffer where output agent (device agent birth) variable data begins
      */

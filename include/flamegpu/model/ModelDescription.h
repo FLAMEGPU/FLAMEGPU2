@@ -10,7 +10,7 @@
 #include "flamegpu/gpu/CUDAEnsemble.h"
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/gpu/CUDASimulation.h"
-#include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
+#include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h"
 
 namespace flamegpu {
 
@@ -90,18 +90,18 @@ class ModelDescription {
      * @return A mutable reference to the new MessageDescription
      * @throws exception::InvalidMessageName If a message with the same name already exists within the model description hierarchy
      */
-    template<typename MsgType>
-    typename MsgType::Description& newMessage(const std::string &message_name) {
-        if (!hasMessage<MsgType>(message_name)) {
-            auto rtn = std::shared_ptr<typename MsgType::Data>(new typename MsgType::Data(model, message_name));
+    template<typename MessageType>
+    typename MessageType::Description& newMessage(const std::string &message_name) {
+        if (!hasMessage<MessageType>(message_name)) {
+            auto rtn = std::shared_ptr<typename MessageType::Data>(new typename MessageType::Data(model, message_name));
             model->messages.emplace(message_name, rtn);
-            return *reinterpret_cast<typename MsgType::Description*>(rtn->description.get());
+            return *reinterpret_cast<typename MessageType::Description*>(rtn->description.get());
         }
         THROW exception::InvalidMessageName("Message with name '%s' already exists, "
             "in ModelDescription::newMessage().",
             message_name.c_str());
     }
-    MsgBruteForce::Description& newMessage(const std::string &message_name);
+    MessageBruteForce::Description& newMessage(const std::string &message_name);
     /**
      * Returns a mutable reference to the named message, which can be used to configure the message
      * @param message_name Name used to refer to the desired message within the model description hierarchy
@@ -109,12 +109,12 @@ class ModelDescription {
      * @throws exception::InvalidMessageName If a message with the name does not exist within the model description hierarchy
      * @see ModelDescription::getMessage(const std::string &) for the immutable version
      */
-    template<typename MsgType>
-    typename MsgType::Description& Message(const std::string &message_name) {
+    template<typename MessageType>
+    typename MessageType::Description& Message(const std::string &message_name) {
         auto rtn = model->messages.find(message_name);
         if (rtn != model->messages.end()) {
-            if (auto r = std::dynamic_pointer_cast<typename MsgType::Data>(rtn->second)) {
-                return *reinterpret_cast<typename MsgType::Description*>(r->description.get());
+            if (auto r = std::dynamic_pointer_cast<typename MessageType::Data>(rtn->second)) {
+                return *reinterpret_cast<typename MessageType::Description*>(r->description.get());
             }
             THROW exception::InvalidMessageName("Message ('%s') is not of correct type, "
                 "in ModelDescription::Message().",
@@ -124,7 +124,7 @@ class ModelDescription {
             "in ModelDescription::Message().",
             message_name.c_str());
     }
-    MsgBruteForce::Description& Message(const std::string &message_name);
+    MessageBruteForce::Description& Message(const std::string &message_name);
     /**
      * Returns a mutable reference to the environment description for the model description hierarchy
      * This can be used to configure environment properties
@@ -279,12 +279,12 @@ class ModelDescription {
      * @throws exception::InvalidMessageName If a message with the name does not exist within the model description hierarchy
      * @see ModelDescription::Message(const std::string &) for the mutable version
      */
-    template<typename MsgType>
-    const typename MsgType::Description& getMessage(const std::string &message_name) const {
+    template<typename MessageType>
+    const typename MessageType::Description& getMessage(const std::string &message_name) const {
         auto rtn = model->messages.find(message_name);
         if (rtn != model->messages.end()) {
-            if (auto r = std::dynamic_pointer_cast<typename MsgType::Data>(rtn->second)) {
-                return *reinterpret_cast<typename MsgType::Description*>(r->description.get());
+            if (auto r = std::dynamic_pointer_cast<typename MessageType::Data>(rtn->second)) {
+                return *reinterpret_cast<typename MessageType::Description*>(r->description.get());
             }
             THROW exception::InvalidMessageType("Message ('%s') is not of correct type, "
                 "in ModelDescription::getMessage().",
@@ -294,7 +294,7 @@ class ModelDescription {
             "in ModelDescription::getMessage().",
             message_name.c_str());
     }
-    const MsgBruteForce::Description& getMessage(const std::string &message_name) const;
+    const MessageBruteForce::Description& getMessage(const std::string &message_name) const;
     /**
      * Returns an immutable reference to the specified submodel, which can be used to view the submodel's configuration
      * @param submodel_name Name which can be used to the refer to the desired submodel within the model description hierarchy
@@ -337,11 +337,11 @@ class ModelDescription {
      * @param message_name Name of the message to check
      * @return True when a message with the specified name exists within the model's hierarchy
      */
-    template<typename MsgType>
+    template<typename MessageType>
     bool hasMessage(const std::string &message_name) const {
         auto a = model->messages.find(message_name);
         if (a != model->messages.end()) {
-            if (std::dynamic_pointer_cast<typename MsgType::Data>(a->second))
+            if (std::dynamic_pointer_cast<typename MessageType::Data>(a->second))
                 return true;
         }
         return false;

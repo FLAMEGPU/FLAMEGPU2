@@ -24,7 +24,7 @@ namespace test_cuda_simulation {
     const int MULTIPLIER = 3;
     __device__ const int dMULTIPLIER = 3;
     int externalCounter = 0;
-FLAMEGPU_AGENT_FUNCTION(DeathTestFunc, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(DeathTestFunc, MessageNone, MessageNone) {
     unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
     // Agents with even value for 'x' die
     if (x % 2 == 0)
@@ -186,7 +186,7 @@ TEST(TestCUDASimulation, ArgParse_device_short) {
     EXPECT_EQ(c.getCUDAConfig().device_id, 0);
     ASSERT_EQ(cudaGetLastError(), cudaSuccess);
 }
-FLAMEGPU_AGENT_FUNCTION(SetGetFn, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SetGetFn, MessageNone, MessageNone) {
     int i = FLAMEGPU->getVariable<int>(dVARIABLE_NAME);
     FLAMEGPU->setVariable<int>(dVARIABLE_NAME, i * dMULTIPLIER);
     return ALIVE;
@@ -285,7 +285,7 @@ TEST(TestCUDASimulation, Step) {
     EXPECT_EQ(externalCounter, 5);
     EXPECT_EQ(c.getStepCounter(), 5u);
 }
-FLAMEGPU_AGENT_FUNCTION(add_fn, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(add_fn, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<int>("i", FLAMEGPU->getVariable<int>("i") + 1);
     FLAMEGPU->setVariable<int>("j", FLAMEGPU->getVariable<int>("j") + 1);
     return ALIVE;
@@ -475,7 +475,7 @@ TEST(TestCUDASimulation, stepElapsedTime) {
 }
 
 /* const char* rtc_empty_agent_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MessageNone, MessageNone) {
     return ALIVE;
 }
 )###"; */
@@ -507,7 +507,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MsgNone, MsgNone) {
 
 
 const char* rtc_empty_agent_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     return flamegpu::ALIVE;
 }
 )###";
@@ -547,7 +547,7 @@ TEST(TestCUDASimulation, MultipleInstances) {
     EXPECT_NO_THROW(CUDASimulation c2(m); c2.setPopulationData(pop););
 }
 
-FLAMEGPU_AGENT_FUNCTION(CopyID, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(CopyID, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<id_t>("id_copy", FLAMEGPU->getID());
     return ALIVE;
 }

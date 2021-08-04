@@ -17,7 +17,7 @@ LAYER_NAME2 = "Layer2"
 class TestAgentStateTransitions(TestCase):
 
     AgentGood = """
-	FLAMEGPU_AGENT_FUNCTION(AgentGood, flamegpu::MsgNone, flamegpu::MsgNone) {
+	FLAMEGPU_AGENT_FUNCTION(AgentGood, flamegpu::MessageNone, flamegpu::MessageNone) {
 		FLAMEGPU->setVariable("x", 11);
 		FLAMEGPU->setVariable<int, 4>("y", 0, 23);
 		FLAMEGPU->setVariable<int, 4>("y", 1, 24);
@@ -28,7 +28,7 @@ class TestAgentStateTransitions(TestCase):
     """
     
     AgentBad = """
-	FLAMEGPU_AGENT_FUNCTION(AgentBad, flamegpu::MsgNone, flamegpu::MsgNone) {
+	FLAMEGPU_AGENT_FUNCTION(AgentBad, flamegpu::MessageNone, flamegpu::MessageNone) {
 		FLAMEGPU->setVariable("x", 13);
 		FLAMEGPU->setVariable<int, 4>("y", 0, 3);
 		FLAMEGPU->setVariable<int, 4>("y", 1, 4);
@@ -39,7 +39,7 @@ class TestAgentStateTransitions(TestCase):
     """
     
     AgentDecrement = """
-	FLAMEGPU_AGENT_FUNCTION(AgentDecrement, flamegpu::MsgNone, flamegpu::MsgNone) {
+	FLAMEGPU_AGENT_FUNCTION(AgentDecrement, flamegpu::MessageNone, flamegpu::MessageNone) {
 		unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
 		FLAMEGPU->setVariable("x", x == 0 ? 0 : x - 1);
 		FLAMEGPU->setVariable<int, 4>("z", 0, 23);
@@ -51,7 +51,7 @@ class TestAgentStateTransitions(TestCase):
     """
     
     AgentNull = """
-	FLAMEGPU_AGENT_FUNCTION(AgentNull, flamegpu::MsgNone, flamegpu::MsgNone) {
+	FLAMEGPU_AGENT_FUNCTION(AgentNull, flamegpu::MessageNone, flamegpu::MessageNone) {
 		FLAMEGPU->setVariable("x", UINT_MAX);
 		FLAMEGPU->setVariable<int, 4>("z", 0, 3);
 		FLAMEGPU->setVariable<int, 4>("z", 1, 4);

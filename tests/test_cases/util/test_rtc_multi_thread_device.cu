@@ -15,7 +15,7 @@ const char *MESSAGE_NAME = "Message1";
 const char *FUNCTION_NAME1 = "Fn1";
 const char *FUNCTION_NAME2 = "Fn2";
 const char* rtc_SlowFn = R"###(
-FLAMEGPU_AGENT_FUNCTION(SlowFn, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowFn, flamegpu::MessageNone, flamegpu::MessageNone) {
     int x = FLAMEGPU->getVariable<int>("x");
     // Do nothing, just waste time. Get values from environment to prevent optimisation
     for (int i = 0; i < FLAMEGPU->environment.getProperty<int>("ten thousand"); ++i) {
@@ -26,14 +26,14 @@ FLAMEGPU_AGENT_FUNCTION(SlowFn, flamegpu::MsgNone, flamegpu::MsgNone) {
 }
 )###";
 const char* rtc_FastFn = R"###(
-FLAMEGPU_AGENT_FUNCTION(FastFn, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(FastFn, flamegpu::MessageNone, flamegpu::MessageNone) {
     const int x = FLAMEGPU->getVariable<int>("x");
     FLAMEGPU->setVariable<int>("x", x + 1);
     return flamegpu::ALIVE;
 }
 )###";
-const char* rtc_SlowFnMsg = R"###(
-FLAMEGPU_AGENT_FUNCTION(SlowFnMsg, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
+const char* rtc_SlowFnMessage = R"###(
+FLAMEGPU_AGENT_FUNCTION(SlowFnMessage, flamegpu::MessageBruteForce, flamegpu::MessageNone) {
     int x = FLAMEGPU->getVariable<int>("x");
     int y = 0;
     // Do nothing, just waste time. Get values from environment to prevent optimisation
@@ -44,15 +44,15 @@ FLAMEGPU_AGENT_FUNCTION(SlowFnMsg, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
     return flamegpu::ALIVE;
 }
 )###";
-const char* rtc_FastFnMsg = R"###(
-FLAMEGPU_AGENT_FUNCTION(FastFnMsg, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
+const char* rtc_FastFnMessage = R"###(
+FLAMEGPU_AGENT_FUNCTION(FastFnMessage, flamegpu::MessageNone, flamegpu::MessageBruteForce) {
     const int x = FLAMEGPU->getVariable<int>("x");
     FLAMEGPU->message_out.setVariable<int>("x", 1);
     return flamegpu::ALIVE;
 }
 )###";
 const char* rtc_SlowFn2 = R"###(
-FLAMEGPU_AGENT_FUNCTION(SlowFn2, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowFn2, flamegpu::MessageNone, flamegpu::MessageNone) {
     int x = FLAMEGPU->getVariable<int>("x");
     // Do nothing, just waste time. Get values from environment to prevent optimisation
     for (int i = 0; i < FLAMEGPU->environment.getProperty<int>("ten thousand"); ++i) {
@@ -63,14 +63,14 @@ FLAMEGPU_AGENT_FUNCTION(SlowFn2, flamegpu::MsgNone, flamegpu::MsgNone) {
 }
 )###";
 const char* rtc_FastFn2 = R"###(
-FLAMEGPU_AGENT_FUNCTION(FastFn2, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(FastFn2, flamegpu::MessageNone, flamegpu::MessageNone) {
     const int x = FLAMEGPU->getVariable<int>("x");
     FLAMEGPU->setVariable<int>("x", x + FLAMEGPU->environment.getProperty<int>("three"));
     return flamegpu::ALIVE;
 }
 )###";
 const char* rtc_SlowFn3 = R"###(
-FLAMEGPU_AGENT_FUNCTION(SlowFn3, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowFn3, flamegpu::MessageNone, flamegpu::MessageNone) {
     int x = FLAMEGPU->getVariable<int>("x");
     // Do nothing, just waste time. Get values from environment to prevent optimisation
     for (int i = 0; i < FLAMEGPU->environment.getProperty<int>("ten thousand"); ++i) {
@@ -113,13 +113,13 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Message) {
 
     ModelDescription m(MODEL_NAME);
     AgentDescription &a = m.newAgent(AGENT_NAME);
-    MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
-    msg.newVariable<int>("x");
+    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    message.newVariable<int>("x");
     a.newVariable<int>("x", 0);
-    auto &fn1 = a.newRTCFunction(FUNCTION_NAME1, rtc_FastFnMsg);
-    auto &fn2 = a.newRTCFunction(FUNCTION_NAME2, rtc_SlowFnMsg);
-    fn1.setMessageOutput(msg);
-    fn2.setMessageInput(msg);
+    auto &fn1 = a.newRTCFunction(FUNCTION_NAME1, rtc_FastFnMessage);
+    auto &fn2 = a.newRTCFunction(FUNCTION_NAME2, rtc_SlowFnMessage);
+    fn1.setMessageOutput(message);
+    fn2.setMessageInput(message);
     m.newLayer().addAgentFunction(fn1);
     m.newLayer().addAgentFunction(fn2);
 

@@ -15,14 +15,14 @@ AGENT_COUNT = 128
 
 
 OutFunction = """
-FLAMEGPU_AGENT_FUNCTION(OutFunction, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(OutFunction, flamegpu::MessageNone, flamegpu::MessageBruteForce) {
     FLAMEGPU->message_out.setVariable("x", FLAMEGPU->getVariable<int>("x"));
     return flamegpu::ALIVE;
 }
 """
 
 OutFunction_Optional = """
-FLAMEGPU_AGENT_FUNCTION(OutFunction_Optional, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(OutFunction_Optional, flamegpu::MessageNone, flamegpu::MessageBruteForce) {
     const int x = FLAMEGPU->getVariable<int>("x");
     if (x) FLAMEGPU->message_out.setVariable("x", x);
     return flamegpu::ALIVE;
@@ -30,7 +30,7 @@ FLAMEGPU_AGENT_FUNCTION(OutFunction_Optional, flamegpu::MsgNone, flamegpu::MsgBr
 """
 
 InFunction = """
-FLAMEGPU_AGENT_FUNCTION(InFunction, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InFunction, flamegpu::MessageBruteForce, flamegpu::MessageNone) {
     int sum = FLAMEGPU->getVariable<int>("sum");
     int product = FLAMEGPU->getVariable<int>("product");
     for (auto &message : FLAMEGPU->message_in) {
@@ -46,7 +46,7 @@ FLAMEGPU_AGENT_FUNCTION(InFunction, flamegpu::MsgBruteForce, flamegpu::MsgNone) 
 """
 
 InFunction2 = """
-FLAMEGPU_AGENT_FUNCTION(InFunction2, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InFunction2, flamegpu::MessageBruteForce, flamegpu::MessageNone) {
     int sum = FLAMEGPU->getVariable<int>("sum");
     int product = FLAMEGPU->getVariable<int>("product");
     for (auto &message : FLAMEGPU->message_in) {
@@ -64,7 +64,7 @@ FLAMEGPU_AGENT_FUNCTION(InFunction2, flamegpu::MsgBruteForce, flamegpu::MsgNone)
 """
 
 countBF = """
-FLAMEGPU_AGENT_FUNCTION(countBF, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(countBF, flamegpu::MessageBruteForce, flamegpu::MessageNone) {
     unsigned int count = 0;
     // Count how many messages we received (including our own)
     // This is all those which fall within the 3x3 Moore neighbourhood
@@ -84,16 +84,16 @@ class TestMessage_BruteForce(TestCase):
         Test whether a group of agents can output unique messages which can then all be read back by the same (all) agents
         """
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageBruteForce(MESSAGE_NAME)
-        msg.newVariableInt("x")
+        message = m.newMessageBruteForce(MESSAGE_NAME)
+        message.newVariableInt("x")
         a = m.newAgent(AGENT_NAME)
         a.newVariableInt("x")
         a.newVariableInt("sum")
         a.newVariableInt("product")
         fo = a.newRTCFunction(OUT_FUNCTION_NAME, OutFunction)
-        fo.setMessageOutput(msg)
+        fo.setMessageOutput(message)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, InFunction)
-        fi.setMessageInput(msg)
+        fi.setMessageInput(message)
         pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         sum = 0
         product = 1
@@ -127,16 +127,16 @@ class TestMessage_BruteForce(TestCase):
         Ensures messages are correct on 2nd step
         """
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageBruteForce(MESSAGE_NAME)
-        msg.newVariableInt("x")
+        message = m.newMessageBruteForce(MESSAGE_NAME)
+        message.newVariableInt("x")
         a = m.newAgent(AGENT_NAME)
         a.newVariableInt("x")
         a.newVariableInt("sum")
         a.newVariableInt("product")
         fo = a.newRTCFunction(OUT_FUNCTION_NAME, OutFunction)
-        fo.setMessageOutput(msg)
+        fo.setMessageOutput(message)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, InFunction2)
-        fi.setMessageInput(msg)
+        fi.setMessageInput(message)
         pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         sum = 0
         product = 1
@@ -174,17 +174,17 @@ class TestMessage_BruteForce(TestCase):
         Test whether a group of agents can optionally output unique messages which can then all be read back by the same agents
         """
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageBruteForce(MESSAGE_NAME)
-        msg.newVariableInt("x")
+        message = m.newMessageBruteForce(MESSAGE_NAME)
+        message.newVariableInt("x")
         a = m.newAgent(AGENT_NAME)
         a.newVariableInt("x")
         a.newVariableInt("sum")
         a.newVariableInt("product")
         fo = a.newRTCFunction(OUT_FUNCTION_NAME, OutFunction_Optional)
         fo.setMessageOutputOptional(True)
-        fo.setMessageOutput(msg)
+        fo.setMessageOutput(message)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, InFunction)
-        fi.setMessageInput(msg)
+        fi.setMessageInput(message)
 
         pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         sum = 0
@@ -218,17 +218,17 @@ class TestMessage_BruteForce(TestCase):
 
     def test_Optional2(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageBruteForce(MESSAGE_NAME)
-        msg.newVariableInt("x")
+        message = m.newMessageBruteForce(MESSAGE_NAME)
+        message.newVariableInt("x")
         a = m.newAgent(AGENT_NAME)
         a.newVariableInt("x")
         a.newVariableInt("sum")
         a.newVariableInt("product")
         fo = a.newRTCFunction(OUT_FUNCTION_NAME, OutFunction_Optional)
         fo.setMessageOutputOptional(True)
-        fo.setMessageOutput(msg)
+        fo.setMessageOutput(message)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, InFunction2)
-        fi.setMessageInput(msg)
+        fi.setMessageInput(message)
 
         pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         sum = 0
@@ -269,9 +269,9 @@ class TestMessage_BruteForce(TestCase):
         
     def test_reserved_name(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageBruteForce(MESSAGE_NAME)
+        message = m.newMessageBruteForce(MESSAGE_NAME)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            msg.newVariableInt("_")
+            message.newVariableInt("_")
         assert e.value.type() == "ReservedName"
 
 

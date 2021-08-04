@@ -1,13 +1,13 @@
 #include "flamegpu/flamegpu.h"
 
-FLAMEGPU_AGENT_FUNCTION(output_message, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(output_message, flamegpu::MessageNone, flamegpu::MessageBruteForce) {
     FLAMEGPU->message_out.setVariable<flamegpu::id_t>("id", FLAMEGPU->getID());
     FLAMEGPU->message_out.setVariable<float>("x", FLAMEGPU->getVariable<float>("x"));
     FLAMEGPU->message_out.setVariable<float>("y", FLAMEGPU->getVariable<float>("y"));
     FLAMEGPU->message_out.setVariable<float>("z", FLAMEGPU->getVariable<float>("z"));
     return flamegpu::ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(move, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(move, flamegpu::MessageBruteForce, flamegpu::MessageNone) {
     const flamegpu::id_t ID = FLAMEGPU->getID();
     const float REPULSE_FACTOR = FLAMEGPU->environment.getProperty<float>("repulse");
     const float RADIUS = FLAMEGPU->environment.getProperty<float>("radius");
@@ -72,7 +72,7 @@ int main(int argc, const char ** argv) {
     const unsigned int AGENT_COUNT = 16384;
     const float ENV_MAX = static_cast<float>(floor(cbrt(AGENT_COUNT)));
     {   // Location message
-        flamegpu::MsgBruteForce::Description &message = model.newMessage("location");
+        flamegpu::MessageBruteForce::Description &message = model.newMessage("location");
         message.newVariable<flamegpu::id_t>("id");
         message.newVariable<float>("x");
         message.newVariable<float>("y");

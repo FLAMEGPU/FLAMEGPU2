@@ -17,13 +17,13 @@
 namespace flamegpu {
 
 namespace test_device_agent_creation {
-FLAMEGPU_AGENT_FUNCTION(MandatoryOutput, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MandatoryOutput, MessageNone, MessageNone) {
     unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
     FLAMEGPU->agent_out.setVariable<float>("x", id + 12.0f);
     FLAMEGPU->agent_out.setVariable<unsigned int>("id", id);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(OptionalOutput, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(OptionalOutput, MessageNone, MessageNone) {
     unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
     if (threadIdx.x % 2 == 0) {
         FLAMEGPU->agent_out.setVariable<float>("x", id + 12.0f);
@@ -31,13 +31,13 @@ FLAMEGPU_AGENT_FUNCTION(OptionalOutput, MsgNone, MsgNone) {
     }
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(MandatoryOutputWithDeath, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MandatoryOutputWithDeath, MessageNone, MessageNone) {
     unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
     FLAMEGPU->agent_out.setVariable<float>("x", id + 12.0f);
     FLAMEGPU->agent_out.setVariable<unsigned int>("id", id);
     return DEAD;
 }
-FLAMEGPU_AGENT_FUNCTION(OptionalOutputWithDeath, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(OptionalOutputWithDeath, MessageNone, MessageNone) {
     unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
     if (threadIdx.x % 2 == 0) {
         FLAMEGPU->agent_out.setVariable<float>("x", id + 12.0f);
@@ -49,7 +49,7 @@ FLAMEGPU_AGENT_FUNCTION(OptionalOutputWithDeath, MsgNone, MsgNone) {
 }
 TEST(DeviceAgentCreationTest, Mandatory_Output_SameState) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
@@ -89,7 +89,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState) {
 }
 TEST(DeviceAgentCreationTest, Optional_Output_SameState) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
@@ -129,7 +129,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState) {
 }
 TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
@@ -171,7 +171,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState) {
 }
 TEST(DeviceAgentCreationTest, Optional_Output_DifferentState) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
@@ -213,7 +213,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState) {
 }
 TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
@@ -254,7 +254,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath) {
 }
 TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
@@ -295,7 +295,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath) {
 }
 TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
@@ -335,7 +335,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath) {
 }
 TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
@@ -379,7 +379,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath) {
     // Tests beyond here all also check id % 2 or id % 4
 TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     AgentDescription &agent2 = model.newAgent("agent2");
     agent.newState("a");
@@ -439,7 +439,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent) {
 }
 TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     AgentDescription &agent2 = model.newAgent("agent2");
     agent.newState("a");
@@ -494,7 +494,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent_WithDeath) {
     // every agent outputs a new agent  (type 'agent') with value 12, and then dies
 
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     AgentDescription &agent2 = model.newAgent("agent2");
     agent.newState("a");
@@ -553,7 +553,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent_WithDeath) {
 }
 TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent_WithDeath) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     AgentDescription &agent2 = model.newAgent("agent2");
     agent.newState("a");
@@ -600,7 +600,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent_WithDeath) {
 }
 TEST(DeviceAgentCreationTest, DefaultVariableValue) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     AgentDescription &agent2 = model.newAgent("agent2");
     agent.newVariable<float>("x");
@@ -653,7 +653,7 @@ FLAMEGPU_AGENT_FUNCTION_CONDITION(EvenThreadsOnlyCdn) {
 }
 TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithAgentFunctionCondition) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
@@ -717,7 +717,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithAgentFunctionCondit
 }
 TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithAgentFunctionCondition) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
@@ -775,7 +775,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithAgentFunctionConditi
 }
 TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithAgentFunctionCondition) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
@@ -836,7 +836,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithAgentFunctionC
 }
 TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithAgentFunctionCondition) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
@@ -889,7 +889,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithAgentFunctionCo
 }
 TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath_WithAgentFunctionCondition) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
@@ -942,7 +942,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath_WithAgentFunc
 }
 TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath_WithAgentFunctionCondition) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
@@ -999,7 +999,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath_WithAgentFunct
 }
 TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath_WithAgentFunctionCondition) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
@@ -1045,7 +1045,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath_WithAgen
 }
 TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath_WithAgentFunctionCondition) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription &agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
@@ -1103,7 +1103,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath_WithAgent
 
 // Agent arrays
 const unsigned int AGENT_COUNT = 1024;
-FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth, MessageNone, MessageNone) {
     unsigned int i = FLAMEGPU->getVariable<unsigned int>("id") * 3;
     FLAMEGPU->agent_out.setVariable<unsigned int>("id", i);
     FLAMEGPU->agent_out.setVariable<int, 4>("array_var", 0, 3 + i);
@@ -1113,12 +1113,12 @@ FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth, MsgNone, MsgNone) {
     FLAMEGPU->agent_out.setVariable<float>("y", 14.0f + i);
     return DEAD;
 }
-FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth_DefaultWorks, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth_DefaultWorks, MessageNone, MessageNone) {
     unsigned int i = FLAMEGPU->getVariable<unsigned int>("id") * 3;
     FLAMEGPU->agent_out.setVariable<unsigned int>("id", i);
     return DEAD;
 }
-FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth_ArrayUnsuitable, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth_ArrayUnsuitable, MessageNone, MessageNone) {
     FLAMEGPU->agent_out.setVariable<int>("array_var", 0);
     return DEAD;
 }
@@ -1190,11 +1190,11 @@ TEST(DeviceAgentCreationTest, DeviceAgentBirth_DefaultWorks) {
     }
 }
 
-FLAMEGPU_AGENT_FUNCTION(CopyID, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(CopyID, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<id_t>("id_copy", FLAMEGPU->getID());
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(DeviceBirth, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(DeviceBirth, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<id_t>("id_other", FLAMEGPU->agent_out.getID());
     FLAMEGPU->agent_out.setVariable<id_t>("id_other", FLAMEGPU->getID());
     return ALIVE;
@@ -1347,7 +1347,7 @@ TEST(DeviceAgentCreationTest, AgentID_RTC_MultipleStatesUniqueIDs) {
     agent.newState("a");
     agent.newState("b");
     const char* RTC_DeviceBirth = R"###(
-FLAMEGPU_AGENT_FUNCTION(DeviceBirth, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(DeviceBirth, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->setVariable<flamegpu::id_t>("id_other", FLAMEGPU->agent_out.getID());
     FLAMEGPU->agent_out.setVariable<flamegpu::id_t>("id_other", FLAMEGPU->getID());
     return flamegpu::ALIVE;
@@ -1433,7 +1433,7 @@ FLAMEGPU_AGENT_FUNCTION(DeviceBirth, flamegpu::MsgNone, flamegpu::MsgNone) {
     }
 }
 
-FLAMEGPU_AGENT_FUNCTION(MandatoryOutputArray, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MandatoryOutputArray, MessageNone, MessageNone) {
     unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
     FLAMEGPU->agent_out.setVariable<float, 2>("x", 0, id + 12.0f);
     FLAMEGPU->agent_out.setVariable<float, 2>("x", 1, id + 13.0f);
@@ -1442,7 +1442,7 @@ FLAMEGPU_AGENT_FUNCTION(MandatoryOutputArray, MsgNone, MsgNone) {
 }
 TEST(DeviceAgentCreationTest, Output_Array) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription& agent = model.newAgent("agent");
     agent.newVariable<float, 2>("x");
     agent.newVariable<unsigned int>("id");
@@ -1480,7 +1480,7 @@ TEST(DeviceAgentCreationTest, Output_Array) {
     EXPECT_EQ(is_12, AGENT_COUNT);
 }
 #ifdef USE_GLM
-FLAMEGPU_AGENT_FUNCTION(MandatoryOutputArray_glm, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MandatoryOutputArray_glm, MessageNone, MessageNone) {
     unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
     FLAMEGPU->agent_out.setVariable<glm::vec2>("x", glm::vec2(id + 12.0f, id + 13.0f));
     FLAMEGPU->agent_out.setVariable<unsigned int>("id", id);
@@ -1488,7 +1488,7 @@ FLAMEGPU_AGENT_FUNCTION(MandatoryOutputArray_glm, MsgNone, MsgNone) {
 }
 TEST(DeviceAgentCreationTest, Output_Array_glm) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription& agent = model.newAgent("agent");
     agent.newVariable<float, 2>("x");
     agent.newVariable<unsigned int>("id");
@@ -1526,7 +1526,7 @@ TEST(DeviceAgentCreationTest, Output_Array_glm) {
     EXPECT_EQ(is_12, AGENT_COUNT);
 }
 const char* rtc_MandatoryOutputArray_glm = R"###(
-FLAMEGPU_AGENT_FUNCTION(MandatoryOutputArray_glm, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MandatoryOutputArray_glm, flamegpu::MessageNone, flamegpu::MessageNone) {
     unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
     FLAMEGPU->agent_out.setVariable<glm::vec2>("x", glm::vec2(id + 12.0f, id + 13.0f));
     FLAMEGPU->agent_out.setVariable<unsigned int>("id", id);
@@ -1535,7 +1535,7 @@ FLAMEGPU_AGENT_FUNCTION(MandatoryOutputArray_glm, flamegpu::MsgNone, flamegpu::M
 )###";
 TEST(DeviceRTCAgentCreationTest, Output_Array_glm) {
     // Define model
-    ModelDescription model("Spatial3DMsgTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription& agent = model.newAgent("agent");
     agent.newVariable<float, 2>("x");
     agent.newVariable<unsigned int>("id");
