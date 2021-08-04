@@ -44,12 +44,19 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     endif()
 endif()
 
-# CUDA 10.0 is the current minimum supported verison.
-set(MINIMUM_SUPPORTED_CUDA_VERSION 10.0)
+# CUDA 10.0 is the current minimum working but deprecated verison, which will be removed.
+set(MINIMUM_CUDA_VERSION 10.0)
 # If the CUDA compiler is too old, trigger a docs only build.
-if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_SUPPORTED_CUDA_VERSION})
+if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_CUDA_VERSION})
     set(DOCUMENTATION_ONLY_BUILD ON)
     message(STATUS "Documentation-only build: CUDA ${MINIMUM_SUPPORTED_CUDA_VERSION} or greater is required for compilation.")
+endif()
+
+# CUDA 11.0 is the current minimum supported version.
+set(MINIMUM_SUPPORTED_CUDA_VERSION 11.0)
+# If the CUDA compiler is atleast the minimum deprecated version, but less than the minimum actually supported version, issue a dev warning.
+if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL ${MINIMUM_CUDA_VERSION} AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_SUPPORTED_CUDA_VERSION})
+    message(DEPRECATION "Support for CUDA verisons <= ${MINIMUM_SUPPORTED_CUDA_VERSION} is deprecated and will be removed in a future release.")
 endif()
 
 # If CUDA is not available, or the minimum version is too low only build the docs.

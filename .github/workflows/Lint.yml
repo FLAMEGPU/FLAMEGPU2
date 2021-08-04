@@ -34,7 +34,7 @@ jobs:
 
     # Configure cmake, including tests to make sure they are linted.
     - name: Configure cmake
-      run: cmake . -B ${{ env.build_dir }} -DBUILD_TESTS=${{ env.build_tests }} 
+      run: cmake . -B ${{ env.build_dir }} -DBUILD_TESTS=${{ env.build_tests }} -DCMAKE_WARN_DEPRECATED=OFF
 
     # Run the linter.
     - name: Lint

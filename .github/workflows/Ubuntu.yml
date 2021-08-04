@@ -64,7 +64,7 @@ jobs:
       run: sudo apt-get install python3-venv
 
     - name: Configure cmake
-      run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DBUILD_TESTS=${{ env.build_tests }} -DWARNINGS_AS_ERRORS=${{ env.Werror }} -DCUDA_ARCH="${{ matrix.cuda_arch }}" -Werror=dev -DBUILD_SWIG_PYTHON=ON -DUSE_NVTX=ON
+      run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DBUILD_TESTS=${{ env.build_tests }} -DWARNINGS_AS_ERRORS=${{ env.Werror }} -DCUDA_ARCH="${{ matrix.cuda_arch }}" -Werror=dev -DCMAKE_WARN_DEPRECATED=OFF -DBUILD_SWIG_PYTHON=ON -DUSE_NVTX=ON
 
     - name: Build flamegpu
       run: cmake --build . --target flamegpu --verbose -j `nproc`
@@ -84,7 +84,7 @@ jobs:
       working-directory: ${{ env.build_dir }}
 
     - name: Configure Individual example
-      run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DWARNINGS_AS_ERRORS=${{ env.Werror }} -DCUDA_ARCH="${{ matrix.cuda_arch }}" -Werror=dev
+      run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DWARNINGS_AS_ERRORS=${{ env.Werror }} -DCUDA_ARCH="${{ matrix.cuda_arch }}" -Werror=dev -DCMAKE_WARN_DEPRECATED=OFF
       working-directory: examples/${{ env.individual_example }}
     
     - name: Build Individual example
