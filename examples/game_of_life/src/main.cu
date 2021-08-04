@@ -1,18 +1,18 @@
 #include "flamegpu/flamegpu.h"
 
-FLAMEGPU_AGENT_FUNCTION(output, flamegpu::MsgNone, flamegpu::MsgArray2D) {
+FLAMEGPU_AGENT_FUNCTION(output, flamegpu::MessageNone, flamegpu::MessageArray2D) {
     FLAMEGPU->message_out.setVariable<char>("is_alive", FLAMEGPU->getVariable<unsigned int>("is_alive"));
     FLAMEGPU->message_out.setIndex(FLAMEGPU->getVariable<unsigned int, 2>("pos", 0), FLAMEGPU->getVariable<unsigned int, 2>("pos", 1));
     return flamegpu::ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(update, flamegpu::MsgArray2D, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(update, flamegpu::MessageArray2D, flamegpu::MessageNone) {
     const unsigned int my_x = FLAMEGPU->getVariable<unsigned int, 2>("pos", 0);
     const unsigned int my_y = FLAMEGPU->getVariable<unsigned int, 2>("pos", 1);
 
     unsigned int living_neighbours = 0;
     // Iterate 3x3 Moore neighbourhood (this does no include the central cell)
-    for (auto &msg : FLAMEGPU->message_in.wrap(my_x, my_y)) {
-        living_neighbours += msg.getVariable<char>("is_alive") ? 1 : 0;
+    for (auto &message : FLAMEGPU->message_in.wrap(my_x, my_y)) {
+        living_neighbours += message.getVariable<char>("is_alive") ? 1 : 0;
     }
     // Using count, decide and output new value for is_alive
     char is_alive = FLAMEGPU->getVariable<unsigned int>("is_alive");
@@ -38,7 +38,7 @@ int main(int argc, const char ** argv) {
     flamegpu::ModelDescription model("Game_of_Life_example");
 
     {   // Location message
-        flamegpu::MsgArray2D::Description &message = model.newMessage<flamegpu::MsgArray2D>("is_alive_msg");
+        flamegpu::MessageArray2D::Description &message = model.newMessage<flamegpu::MessageArray2D>("is_alive_message");
         message.newVariable<char>("is_alive");
         message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     }
@@ -51,8 +51,8 @@ int main(int argc, const char ** argv) {
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
 #endif
-        agent.newFunction("output", output).setMessageOutput("is_alive_msg");
-        agent.newFunction("update", update).setMessageInput("is_alive_msg");
+        agent.newFunction("output", output).setMessageOutput("is_alive_message");
+        agent.newFunction("update", update).setMessageInput("is_alive_message");
     }
 
     /**

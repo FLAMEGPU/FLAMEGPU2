@@ -21,7 +21,7 @@ class MiniSim:
     def get_agent_function(c_type:str) -> str:
 
         return f"""
-        FLAMEGPU_AGENT_FUNCTION(get_{c_type}, flamegpu::MsgNone, flamegpu::MsgNone) {{
+        FLAMEGPU_AGENT_FUNCTION(get_{c_type}, flamegpu::MessageNone, flamegpu::MessageNone) {{
             {c_type} a_out = FLAMEGPU->environment.getProperty<{c_type}>("a");
             int contains_a = FLAMEGPU->environment.containsProperty("a");
             FLAMEGPU->setVariable<{c_type}>("a_out", a_out);
@@ -34,7 +34,7 @@ class MiniSim:
     def get_agent_array_function(c_type:str) -> str:
 
         return f"""
-        FLAMEGPU_AGENT_FUNCTION(get_{c_type}, flamegpu::MsgNone, flamegpu::MsgNone) {{
+        FLAMEGPU_AGENT_FUNCTION(get_{c_type}, flamegpu::MessageNone, flamegpu::MessageNone) {{
             {c_type} a1_out = FLAMEGPU->environment.getProperty<{c_type}>("a", 1);
             int contains_b = FLAMEGPU->environment.containsProperty("b");
             FLAMEGPU->setVariable<{c_type}>("a1_out", a1_out);

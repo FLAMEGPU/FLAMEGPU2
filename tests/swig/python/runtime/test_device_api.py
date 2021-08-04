@@ -9,7 +9,7 @@ class DeviceAPITest(TestCase):
 
 
     agent_fn_da_set = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn_da_set, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn_da_set, flamegpu::MessageNone, flamegpu::MessageNone) {
         // Read array from `array_var`
         // Store it's values back in `a1` -> `a4`
         FLAMEGPU->setVariable<int, 4>("array_var", 0, 2 + FLAMEGPU->getVariable<int>("id"));
@@ -20,7 +20,7 @@ class DeviceAPITest(TestCase):
     }"""
     
     agent_fn_da_get = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn_da_get, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn_da_get, flamegpu::MessageNone, flamegpu::MessageNone) {
         // Read array from `array_var`
         // Store it's values back in `a1` -> `a4`
         FLAMEGPU->setVariable<int>("a1", FLAMEGPU->getVariable<int, 4>("array_var", 0));
@@ -32,7 +32,7 @@ class DeviceAPITest(TestCase):
     """
     
     agent_fn_da_arrayunsuitable = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn_da_arrayunsuitable, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn_da_arrayunsuitable, flamegpu::MessageNone, flamegpu::MessageNone) {
         FLAMEGPU->setVariable<int>("array_var", 0);
         FLAMEGPU->setVariable<int>("array_var", 0);
         FLAMEGPU->setVariable<int>("array_var", 0);
@@ -43,7 +43,7 @@ class DeviceAPITest(TestCase):
     """
 
     agent_fn_ad_array = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn_ad_array, flamegpu::MsgNone, flamegpu::MsgNone){
+    FLAMEGPU_AGENT_FUNCTION(agent_fn_ad_array, flamegpu::MessageNone, flamegpu::MessageNone){
         if (threadIdx.x % 2 == 0)
             return flamegpu::DEAD;
         return flamegpu::ALIVE;

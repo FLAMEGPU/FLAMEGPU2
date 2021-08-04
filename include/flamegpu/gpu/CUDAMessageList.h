@@ -13,11 +13,11 @@ class CUDAMessage;
 /**
  * Map used to map a variable name to buffer
  */
-typedef std::map <std::string, void*> CUDAMsgMap;
+typedef std::map <std::string, void*> CUDAMessageMap;
 /**
- * Key Value pair of CUDAMsgMap
+ * Key Value pair of CUDAMessageMap
  */
-typedef std::pair <std::string, void*> CUDAMsgMapPair;
+typedef std::pair <std::string, void*> CUDAMessageMapPair;
 
 /**
  * This is the internal device memory handler for CUDAMessage
@@ -60,7 +60,7 @@ class CUDAMessageList {
      */
     virtual void swap();
     /**
-     * Perform a compaction using d_msg_scan_flag and d_msg_position
+     * Perform a compaction using d_message_scan_flag and d_message_position
      * @param newCount Number of new messages to be scattered
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
@@ -81,38 +81,38 @@ class CUDAMessageList {
     /**
      * @return Returns the map<variable_name, device_ptr> for reading message data
      */
-    const CUDAMsgMap &getReadList() { return d_list; }
+    const CUDAMessageMap &getReadList() { return d_list; }
     /**
      * @return Returns the map<variable_name, device_ptr> for writing message data (aka swap buffers)
      */
-    const CUDAMsgMap &getWriteList() { return d_swap_list; }
+    const CUDAMessageMap &getWriteList() { return d_swap_list; }
 
  protected:
      /**
       * Allocates device memory for the provided message list
       * @param memory_map Message list to perform operation on
       */
-     void allocateDeviceMessageList(CUDAMsgMap &memory_map);
+     void allocateDeviceMessageList(CUDAMessageMap &memory_map);
      /**
       * Frees device memory for the provided message list
       * @param memory_map Message list to perform operation on
       */
-     void releaseDeviceMessageList(CUDAMsgMap &memory_map);
+     void releaseDeviceMessageList(CUDAMessageMap &memory_map);
      /**
       * Zeros device memory for the provided message list
       * @param memory_map Message list to perform operation on
       */
-     void zeroDeviceMessageList(CUDAMsgMap &memory_map);
+     void zeroDeviceMessageList(CUDAMessageMap &memory_map);
 
  private:
      /**
       * Message storage for reading
       */
-    CUDAMsgMap d_list;
+    CUDAMessageMap d_list;
     /**
      * Message storage for writing
      */
-    CUDAMsgMap d_swap_list;
+    CUDAMessageMap d_swap_list;
     /**
      * Parent which this provides storage for
      */

@@ -5,7 +5,7 @@
 
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
-#include "flamegpu/runtime/messaging/BruteForce/BruteForceHost.h"
+#include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h"
 #include "flamegpu/gpu/CUDAScatter.cuh"
 
 namespace flamegpu {
@@ -47,7 +47,7 @@ void CUDAMessageList::cleanupAllocatedData() {
     releaseDeviceMessageList(d_swap_list);
 }
 
-void CUDAMessageList::allocateDeviceMessageList(CUDAMsgMap &memory_map) {
+void CUDAMessageList::allocateDeviceMessageList(CUDAMessageMap &memory_map) {
     // we use the  messages memory map to iterate the  message variables and do allocation within our GPU hash map
     const auto &mem = message.getMessageDescription().variables;
 
@@ -71,21 +71,21 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMsgMap &memory_map) {
 #endif
 
         // store the pointer in the map
-        memory_map.insert(CUDAMsgMap::value_type(var_name, d_ptr));
+        memory_map.insert(CUDAMessageMap::value_type(var_name, d_ptr));
     }
 }
 
-void CUDAMessageList::releaseDeviceMessageList(CUDAMsgMap& memory_map) {
+void CUDAMessageList::releaseDeviceMessageList(CUDAMessageMap& memory_map) {
     // for each device pointer in the cuda memory map we need to free these
-    for (const CUDAMsgMapPair& mm : memory_map) {
+    for (const CUDAMessageMapPair& mm : memory_map) {
         // free the memory on the device
         gpuErrchk(cudaFree(mm.second));
     }
 }
 
-void CUDAMessageList::zeroDeviceMessageList(CUDAMsgMap& memory_map) {
+void CUDAMessageList::zeroDeviceMessageList(CUDAMessageMap& memory_map) {
     // for each device pointer in the cuda memory map set the values to 0
-    for (const CUDAMsgMapPair& mm : memory_map) {
+    for (const CUDAMessageMapPair& mm : memory_map) {
         // get the variable size from message description
         const auto var = message.getMessageDescription().variables.at(mm.first);
         const size_t var_size = var.type_size * var.elements;
@@ -96,7 +96,7 @@ void CUDAMessageList::zeroDeviceMessageList(CUDAMsgMap& memory_map) {
 }
 
 void* CUDAMessageList::getReadMessageListVariablePointer(std::string variable_name) {
-    CUDAMsgMap::iterator mm = d_list.find(variable_name);
+    CUDAMessageMap::iterator mm = d_list.find(variable_name);
     if (mm == d_list.end()) {
         THROW exception::InvalidMessageVar("Variable '%s' was not found in message '%s', "
           "in CUDAMessageList::getReadMessageListVariablePointer()",
@@ -106,7 +106,7 @@ void* CUDAMessageList::getReadMessageListVariablePointer(std::string variable_na
     return mm->second;
 }
 void* CUDAMessageList::getWriteMessageListVariablePointer(std::string variable_name) {
-    CUDAMsgMap::iterator mm = d_swap_list.find(variable_name);
+    CUDAMessageMap::iterator mm = d_swap_list.find(variable_name);
     if (mm == d_swap_list.end()) {
         THROW exception::InvalidMessageVar("Variable '%s' was not found in message '%s', "
             "in CUDAMessageList::getWriteMessageListVariablePointer()",

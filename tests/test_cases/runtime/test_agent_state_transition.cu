@@ -27,7 +27,7 @@ namespace test_agent_state_transitions {
     const char *END_STATE2 = "End2";
     const char *LAYER_NAME1 = "Layer1";
     const char *LAYER_NAME2 = "Layer2";
-FLAMEGPU_AGENT_FUNCTION(AgentGood, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(AgentGood, MessageNone, MessageNone) {
     FLAMEGPU->setVariable("x", 11);
     FLAMEGPU->setVariable<int, 4>("y", 0, 23);
     FLAMEGPU->setVariable<int, 4>("y", 1, 24);
@@ -35,7 +35,7 @@ FLAMEGPU_AGENT_FUNCTION(AgentGood, MsgNone, MsgNone) {
     FLAMEGPU->setVariable<int, 4>("y", 3, 26);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(AgentBad, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(AgentBad, MessageNone, MessageNone) {
     FLAMEGPU->setVariable("x", 13);
     FLAMEGPU->setVariable<int, 4>("y", 0, 3);
     FLAMEGPU->setVariable<int, 4>("y", 1, 4);
@@ -43,7 +43,7 @@ FLAMEGPU_AGENT_FUNCTION(AgentBad, MsgNone, MsgNone) {
     FLAMEGPU->setVariable<int, 4>("y", 3, 6);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(AgentDecrement, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(AgentDecrement, MessageNone, MessageNone) {
     unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
     FLAMEGPU->setVariable("x", x == 0 ? 0 : x - 1);
     FLAMEGPU->setVariable<int, 4>("z", 0, 23);
@@ -52,7 +52,7 @@ FLAMEGPU_AGENT_FUNCTION(AgentDecrement, MsgNone, MsgNone) {
     FLAMEGPU->setVariable<int, 4>("z", 3, 26);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(AgentNull, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(AgentNull, MessageNone, MessageNone) {
     FLAMEGPU->setVariable("x", UINT_MAX);
     FLAMEGPU->setVariable<int, 4>("z", 0, 3);
     FLAMEGPU->setVariable<int, 4>("z", 1, 4);

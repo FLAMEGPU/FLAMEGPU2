@@ -530,18 +530,18 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
     if (!function_condition) {
         // Set input message variables in curve
         if (auto im = func.message_input.lock()) {
-            for (auto msg_in_var : im->variables) {
+            for (auto message_in_var : im->variables) {
                 // register message variables using combined hash
-                curve_header.registerMessageInVariable(msg_in_var.first.c_str(),
-                msg_in_var.second.type.name(), msg_in_var.second.type_size, msg_in_var.second.elements, true, false);
+                curve_header.registerMessageInVariable(message_in_var.first.c_str(),
+                message_in_var.second.type.name(), message_in_var.second.type_size, message_in_var.second.elements, true, false);
             }
         }
         // Set output message variables in curve
         if (auto om = func.message_output.lock()) {
-            for (auto msg_out_var : om->variables) {
+            for (auto message_out_var : om->variables) {
                 // register message variables using combined hash
-                curve_header.registerMessageOutVariable(msg_out_var.first.c_str(),
-                msg_out_var.second.type.name(), msg_out_var.second.type_size, msg_out_var.second.elements, false, true);
+                curve_header.registerMessageOutVariable(message_out_var.first.c_str(),
+                message_out_var.second.type.name(), message_out_var.second.type_size, message_out_var.second.elements, false, true);
             }
         }
         // Set agent output variables in curve
@@ -618,7 +618,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
     // switch between normal agent function and agent function condition
     if (!function_condition) {
         const std::string t_func_impl = std::string(func.rtc_func_name).append("_impl");
-        const std::vector<std::string> template_args = { t_func_impl.c_str(), func.msg_in_type.c_str(), func.msg_out_type.c_str() };
+        const std::vector<std::string> template_args = { t_func_impl.c_str(), func.message_in_type.c_str(), func.message_out_type.c_str() };
         auto kernel_inst = jitify.loadKernel(func.rtc_func_name, template_args, func.rtc_source, curve_dynamic_header);
         // add kernel instance to map
         rtc_func_map.insert(CUDARTCFuncMap::value_type(func.name, std::move(kernel_inst)));

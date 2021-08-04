@@ -19,15 +19,15 @@ namespace test_message_AppendTruncate {
     const char *OUT_LAYER2_NAME = "OutLayer2";
     const unsigned int AGENT_COUNT = 1024;
 
-    FLAMEGPU_AGENT_FUNCTION(Out_AppendTruncate, MsgNone, MsgBruteForce) {
+    FLAMEGPU_AGENT_FUNCTION(Out_AppendTruncate, MessageNone, MessageBruteForce) {
         FLAMEGPU->message_out.setVariable("x", 0);
         return ALIVE;
     }
-    FLAMEGPU_AGENT_FUNCTION(Out_AppendTruncate2, MsgNone, MsgBruteForce) {
+    FLAMEGPU_AGENT_FUNCTION(Out_AppendTruncate2, MessageNone, MessageBruteForce) {
         FLAMEGPU->message_out.setVariable("x", 1);
         return ALIVE;
     }
-    FLAMEGPU_AGENT_FUNCTION(In_AppendTruncate, MsgBruteForce, MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(In_AppendTruncate, MessageBruteForce, MessageNone) {
         int count = 0;
         for (auto &message : FLAMEGPU->message_in) {
             count++;
@@ -35,7 +35,7 @@ namespace test_message_AppendTruncate {
         FLAMEGPU->setVariable<unsigned int>("count", count);
         return ALIVE;
     }
-    FLAMEGPU_AGENT_FUNCTION(In_AppendTruncate2, MsgBruteForce, MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(In_AppendTruncate2, MessageBruteForce, MessageNone) {
         int count0 = 0;
         int count1 = 0;
         for (auto &message : FLAMEGPU->message_in) {
@@ -49,7 +49,7 @@ namespace test_message_AppendTruncate {
         FLAMEGPU->setVariable<unsigned int>("count1", count1);
         return ALIVE;
     }
-    FLAMEGPU_AGENT_FUNCTION(OptionalOut_AppendTruncate, MsgNone, MsgBruteForce) {
+    FLAMEGPU_AGENT_FUNCTION(OptionalOut_AppendTruncate, MessageNone, MessageBruteForce) {
         if (FLAMEGPU->getVariable<unsigned int>("do_out") > 0) {
             FLAMEGPU->message_out.setVariable("x", 0);
             FLAMEGPU->setVariable<unsigned int>("do_out", 0);
@@ -58,7 +58,7 @@ namespace test_message_AppendTruncate {
         }
         return ALIVE;
     }
-    FLAMEGPU_AGENT_FUNCTION(OptionalOut_AppendTruncate2, MsgNone, MsgBruteForce) {
+    FLAMEGPU_AGENT_FUNCTION(OptionalOut_AppendTruncate2, MessageNone, MessageBruteForce) {
         if (FLAMEGPU->getVariable<unsigned int>("do_out") > 0) {
             FLAMEGPU->message_out.setVariable("x", 1);
         }
@@ -71,14 +71,14 @@ namespace test_message_AppendTruncate {
     */
     TEST(TestMessage_AppendTruncate, Truncate) {
         ModelDescription m(MODEL_NAME);
-        MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
-        msg.newVariable<int>("x");
+        MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+        message.newVariable<int>("x");
         AgentDescription &a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count");
         AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, Out_AppendTruncate);
-        fo.setMessageOutput(msg);
+        fo.setMessageOutput(message);
         AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate);
-        fi.setMessageInput(msg);
+        fi.setMessageInput(message);
 
         AgentVector pop(a, (unsigned int)AGENT_COUNT);
         for (AgentVector::Agent ai : pop) {
@@ -105,17 +105,17 @@ namespace test_message_AppendTruncate {
     }
     TEST(TestMessage_AppendTruncate, Append_KeepData) {
         ModelDescription m(MODEL_NAME);
-        MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
-        msg.newVariable<int>("x");
+        MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+        message.newVariable<int>("x");
         AgentDescription &a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count0");
         a.newVariable<unsigned int>("count1");
         AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, Out_AppendTruncate);
-        fo.setMessageOutput(msg);
+        fo.setMessageOutput(message);
         AgentFunctionDescription &fo2 = a.newFunction(OUT_FUNCTION_NAME2, Out_AppendTruncate2);
-        fo2.setMessageOutput(msg);
+        fo2.setMessageOutput(message);
         AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate2);
-        fi.setMessageInput(msg);
+        fi.setMessageInput(message);
 
         AgentVector pop(a, (unsigned int)AGENT_COUNT);
         for (AgentVector::Agent ai : pop) {
@@ -147,16 +147,16 @@ namespace test_message_AppendTruncate {
     }
     TEST(TestMessage_AppendTruncate, OptionalTruncate) {
         ModelDescription m(MODEL_NAME);
-        MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
-        msg.newVariable<int>("x");
+        MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+        message.newVariable<int>("x");
         AgentDescription &a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count");
         a.newVariable<unsigned int>("do_out");
         AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OptionalOut_AppendTruncate);
         fo.setMessageOutputOptional(true);
-        fo.setMessageOutput(msg);
+        fo.setMessageOutput(message);
         AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate);
-        fi.setMessageInput(msg);
+        fi.setMessageInput(message);
         std::default_random_engine rng;
         std::uniform_real_distribution<double> dist(0.0, 1.0);
         unsigned int result_count = 0;
@@ -191,20 +191,20 @@ namespace test_message_AppendTruncate {
     }
     TEST(TestMessage_AppendTruncate, OptionalAppend_KeepData) {
         ModelDescription m(MODEL_NAME);
-        MsgBruteForce::Description &msg = m.newMessage(MESSAGE_NAME);
-        msg.newVariable<int>("x");
+        MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+        message.newVariable<int>("x");
         AgentDescription &a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count0");
         a.newVariable<unsigned int>("count1");
         a.newVariable<unsigned int>("do_out");
         AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OptionalOut_AppendTruncate);
         fo.setMessageOutputOptional(true);
-        fo.setMessageOutput(msg);
+        fo.setMessageOutput(message);
         AgentFunctionDescription &fo2 = a.newFunction(OUT_FUNCTION_NAME2, OptionalOut_AppendTruncate2);
         fo2.setMessageOutputOptional(true);
-        fo2.setMessageOutput(msg);
+        fo2.setMessageOutput(message);
         AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate2);
-        fi.setMessageInput(msg);
+        fi.setMessageInput(message);
         std::default_random_engine rng;
         std::uniform_real_distribution<double> dist(0.0, 1.0);
         unsigned int result_count = 0;

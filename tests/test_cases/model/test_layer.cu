@@ -6,39 +6,39 @@ namespace flamegpu {
 
 
 namespace test_layer {
-FLAMEGPU_AGENT_FUNCTION(agent_fn1, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn1, MessageNone, MessageNone) {
     // do nothing
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn2, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn2, MessageNone, MessageNone) {
     // do nothing
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn3, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn3, MessageNone, MessageNone) {
     // do nothing
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn4, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn4, MessageNone, MessageNone) {
     // do nothing
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn5, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn5, MessageNone, MessageNone) {
     // do nothing
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn_msgout1, MsgNone, MsgSpatial3D) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn_messageout1, MessageNone, MessageSpatial3D) {
     // do nothing
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn_msgout2, MsgNone, MsgSpatial3D) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn_messageout2, MessageNone, MessageSpatial3D) {
     // do nothing
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn_msgin1, MsgSpatial3D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn_messagein1, MessageSpatial3D, MessageNone) {
     // do nothing
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(agent_fn_msgin2, MsgSpatial3D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_fn_messagein2, MessageSpatial3D, MessageNone) {
     // do nothing
     return ALIVE;
 }
@@ -254,49 +254,49 @@ TEST(LayerDescriptionTest, SameMessageListOutOut) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription& a1 = _m.newAgent(AGENT_NAME);
     AgentDescription& a2 = _m.newAgent(AGENT_NAME2);
-    MsgSpatial3D::Description& msg = _m.newMessage<MsgSpatial3D>(MESSAGE_NAME);
-    AgentFunctionDescription& f1 = a1.newFunction(FUNCTION_NAME1, agent_fn_msgout1);
-    AgentFunctionDescription& f2 = a2.newFunction(FUNCTION_NAME1, agent_fn_msgout2);
-    f1.setMessageOutput(msg);
-    f2.setMessageOutput(msg);
+    MessageSpatial3D::Description& message = _m.newMessage<MessageSpatial3D>(MESSAGE_NAME);
+    AgentFunctionDescription& f1 = a1.newFunction(FUNCTION_NAME1, agent_fn_messageout1);
+    AgentFunctionDescription& f2 = a2.newFunction(FUNCTION_NAME1, agent_fn_messageout2);
+    f1.setMessageOutput(message);
+    f2.setMessageOutput(message);
     LayerDescription& l = _m.newLayer();
     // Both agent functions output to same message list
     EXPECT_NO_THROW(l.addAgentFunction(f1));
     EXPECT_THROW(l.addAgentFunction(f2), exception::InvalidLayerMember);
     EXPECT_THROW(l.addAgentFunction(AGENT_NAME2, FUNCTION_NAME1), exception::InvalidLayerMember);
-    EXPECT_THROW(l.addAgentFunction(agent_fn_msgout2), exception::InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(agent_fn_messageout2), exception::InvalidLayerMember);
 }
 TEST(LayerDescriptionTest, SameMessageListOutIn) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription& a1 = _m.newAgent(AGENT_NAME);
     AgentDescription& a2 = _m.newAgent(AGENT_NAME2);
-    MsgSpatial3D::Description& msg = _m.newMessage<MsgSpatial3D>(MESSAGE_NAME);
-    AgentFunctionDescription& f1 = a1.newFunction(FUNCTION_NAME1, agent_fn_msgout1);
-    AgentFunctionDescription& f2 = a2.newFunction(FUNCTION_NAME1, agent_fn_msgin2);
-    f1.setMessageOutput(msg);
-    f2.setMessageInput(msg);
+    MessageSpatial3D::Description& message = _m.newMessage<MessageSpatial3D>(MESSAGE_NAME);
+    AgentFunctionDescription& f1 = a1.newFunction(FUNCTION_NAME1, agent_fn_messageout1);
+    AgentFunctionDescription& f2 = a2.newFunction(FUNCTION_NAME1, agent_fn_messagein2);
+    f1.setMessageOutput(message);
+    f2.setMessageInput(message);
     LayerDescription& l = _m.newLayer();
     // Both agent functions output to same message list
     EXPECT_NO_THROW(l.addAgentFunction(f1));
     EXPECT_THROW(l.addAgentFunction(f2), exception::InvalidLayerMember);
     EXPECT_THROW(l.addAgentFunction(AGENT_NAME2, FUNCTION_NAME1), exception::InvalidLayerMember);
-    EXPECT_THROW(l.addAgentFunction(agent_fn_msgin2), exception::InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(agent_fn_messagein2), exception::InvalidLayerMember);
 }
 TEST(LayerDescriptionTest, SameMessageListInOut) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription& a1 = _m.newAgent(AGENT_NAME);
     AgentDescription& a2 = _m.newAgent(AGENT_NAME2);
-    MsgSpatial3D::Description& msg = _m.newMessage<MsgSpatial3D>(MESSAGE_NAME);
-    AgentFunctionDescription& f1 = a1.newFunction(FUNCTION_NAME1, agent_fn_msgin1);
-    AgentFunctionDescription& f2 = a2.newFunction(FUNCTION_NAME1, agent_fn_msgout2);
-    f1.setMessageInput(msg);
-    f2.setMessageOutput(msg);
+    MessageSpatial3D::Description& message = _m.newMessage<MessageSpatial3D>(MESSAGE_NAME);
+    AgentFunctionDescription& f1 = a1.newFunction(FUNCTION_NAME1, agent_fn_messagein1);
+    AgentFunctionDescription& f2 = a2.newFunction(FUNCTION_NAME1, agent_fn_messageout2);
+    f1.setMessageInput(message);
+    f2.setMessageOutput(message);
     LayerDescription& l = _m.newLayer();
     // Both agent functions output to same message list
     EXPECT_NO_THROW(l.addAgentFunction(f1));
     EXPECT_THROW(l.addAgentFunction(f2), exception::InvalidLayerMember);
     EXPECT_THROW(l.addAgentFunction(AGENT_NAME2, FUNCTION_NAME1), exception::InvalidLayerMember);
-    EXPECT_THROW(l.addAgentFunction(agent_fn_msgout2), exception::InvalidLayerMember);
+    EXPECT_THROW(l.addAgentFunction(agent_fn_messageout2), exception::InvalidLayerMember);
 }
 TEST(LayerDescriptionTest, AgentOutMatchesInputState1) {
     // Can't add an agent function which outputs to the same agent state that is an input state for another agent function
@@ -347,7 +347,7 @@ TEST(LayerDescriptionTest, NoSuitableAgentFunctions) {
     a2.newFunction(FUNCTION_NAME1, agent_fn2);
     LayerDescription& l = _m.newLayer();
     // No agent functions within the model use this agent function body
-    EXPECT_THROW(l.addAgentFunction(agent_fn_msgout1), exception::InvalidAgentFunc);
+    EXPECT_THROW(l.addAgentFunction(agent_fn_messageout1), exception::InvalidAgentFunc);
 }
 TEST(LayerDescriptionTest, MultipleSuitableAgentFunctions) {
     ModelDescription _m(MODEL_NAME);

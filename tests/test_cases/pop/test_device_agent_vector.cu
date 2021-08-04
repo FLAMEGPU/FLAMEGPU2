@@ -111,7 +111,7 @@ TEST(DeviceAgentVectorTest, SetGetHalf) {
         }
     }
 }
-FLAMEGPU_AGENT_FUNCTION(MasterIncrement, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MasterIncrement, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<unsigned int>("uint", FLAMEGPU->getVariable<unsigned int>("uint") + 1);
     return ALIVE;
 }

@@ -23,7 +23,7 @@
 #define VIS_MODE 1
 
 
-FLAMEGPU_AGENT_FUNCTION(metabolise_and_growback, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(metabolise_and_growback, flamegpu::MessageNone, flamegpu::MessageNone) {
     int sugar_level = FLAMEGPU->getVariable<int>("sugar_level");
     int env_sugar_level = FLAMEGPU->getVariable<int>("env_sugar_level");
     int env_max_sugar_level = FLAMEGPU->getVariable<int>("env_max_sugar_level");
@@ -67,7 +67,7 @@ FLAMEGPU_AGENT_FUNCTION(metabolise_and_growback, flamegpu::MsgNone, flamegpu::Ms
 
     return flamegpu::ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(output_cell_status, flamegpu::MsgNone, flamegpu::MsgArray2D) {
+FLAMEGPU_AGENT_FUNCTION(output_cell_status, flamegpu::MessageNone, flamegpu::MessageArray2D) {
     unsigned int agent_x = FLAMEGPU->getVariable<unsigned int, 2>("pos", 0);
     unsigned int agent_y = FLAMEGPU->getVariable<unsigned int, 2>("pos", 1);
     FLAMEGPU->message_out.setVariable("location_id", FLAMEGPU->getID());
@@ -76,7 +76,7 @@ FLAMEGPU_AGENT_FUNCTION(output_cell_status, flamegpu::MsgNone, flamegpu::MsgArra
     FLAMEGPU->message_out.setIndex(agent_x, agent_y);
     return flamegpu::ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(movement_request, flamegpu::MsgArray2D, flamegpu::MsgArray2D) {
+FLAMEGPU_AGENT_FUNCTION(movement_request, flamegpu::MessageArray2D, flamegpu::MessageArray2D) {
     int best_sugar_level = -1;
     float best_sugar_random = -1;
     flamegpu::id_t best_location_id = flamegpu::ID_NOT_SET;
@@ -94,12 +94,12 @@ FLAMEGPU_AGENT_FUNCTION(movement_request, flamegpu::MsgArray2D, flamegpu::MsgArr
             // if location is unoccupied then check for empty locations
             if (current_message.getVariable<int>("status") == AGENT_STATUS_UNOCCUPIED) {
                 // if the sugar level at current location is better than currently stored then update
-                int msg_env_sugar_level = current_message.getVariable<int>("env_sugar_level");
-                float msg_priority = FLAMEGPU->random.uniform<float>();
-                if ((msg_env_sugar_level > best_sugar_level) ||
-                    (msg_env_sugar_level == best_sugar_level && msg_priority > best_sugar_random)) {
-                    best_sugar_level = msg_env_sugar_level;
-                    best_sugar_random = msg_priority;
+                int message_env_sugar_level = current_message.getVariable<int>("env_sugar_level");
+                float message_priority = FLAMEGPU->random.uniform<float>();
+                if ((message_env_sugar_level > best_sugar_level) ||
+                    (message_env_sugar_level == best_sugar_level && message_priority > best_sugar_random)) {
+                    best_sugar_level = message_env_sugar_level;
+                    best_sugar_random = message_priority;
                     best_location_id = current_message.getVariable<flamegpu::id_t>("location_id");
                 }
             }
@@ -120,7 +120,7 @@ FLAMEGPU_AGENT_FUNCTION(movement_request, flamegpu::MsgArray2D, flamegpu::MsgArr
 
     return flamegpu::ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(movement_response, flamegpu::MsgArray2D, flamegpu::MsgArray2D) {
+FLAMEGPU_AGENT_FUNCTION(movement_response, flamegpu::MessageArray2D, flamegpu::MessageArray2D) {
     int best_request_id = -1;
     float best_request_priority = -1;
     int best_request_sugar_level = -1;
@@ -163,7 +163,7 @@ FLAMEGPU_AGENT_FUNCTION(movement_response, flamegpu::MsgArray2D, flamegpu::MsgAr
 
     return flamegpu::ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(movement_transaction, flamegpu::MsgArray2D, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(movement_transaction, flamegpu::MessageArray2D, flamegpu::MessageNone) {
     int status = FLAMEGPU->getVariable<int>("status");
     int agent_id = FLAMEGPU->getVariable<int>("agent_id");
     unsigned int agent_x = FLAMEGPU->getVariable<unsigned int, 2>("pos", 0);
@@ -237,14 +237,14 @@ int main(int argc, const char ** argv) {
          * Messages
          */
         {   // cell_status message
-            flamegpu::MsgArray2D::Description &message = submodel.newMessage<flamegpu::MsgArray2D>("cell_status");
+            flamegpu::MessageArray2D::Description &message = submodel.newMessage<flamegpu::MessageArray2D>("cell_status");
             message.newVariable<flamegpu::id_t>("location_id");
             message.newVariable<int>("status");
             message.newVariable<int>("env_sugar_level");
             message.setDimensions(GRID_WIDTH, GRID_HEIGHT);
         }
         {   // movement_request message
-            flamegpu::MsgArray2D::Description &message = submodel.newMessage<flamegpu::MsgArray2D>("movement_request");
+            flamegpu::MessageArray2D::Description &message = submodel.newMessage<flamegpu::MessageArray2D>("movement_request");
             message.newVariable<int>("agent_id");
             message.newVariable<flamegpu::id_t>("location_id");
             message.newVariable<int>("sugar_level");
@@ -252,7 +252,7 @@ int main(int argc, const char ** argv) {
             message.setDimensions(GRID_WIDTH, GRID_HEIGHT);
         }
         {   // movement_response message
-            flamegpu::MsgArray2D::Description &message = submodel.newMessage<flamegpu::MsgArray2D>("movement_response");
+            flamegpu::MessageArray2D::Description &message = submodel.newMessage<flamegpu::MessageArray2D>("movement_response");
             message.newVariable<flamegpu::id_t>("location_id");
             message.newVariable<int>("agent_id");
             message.setDimensions(GRID_WIDTH, GRID_HEIGHT);

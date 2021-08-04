@@ -9,7 +9,7 @@ namespace test_rtc_device_api {
 const unsigned int AGENT_COUNT = 64;
 
 const char* rtc_empty_agent_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     return flamegpu::ALIVE;
 }
 )###";
@@ -62,7 +62,7 @@ TEST(DeviceRTCAPITest, AgentFunction_differentName) {
 }
 
 const char* rtc_error_agent_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     compile_error_here;
     return flamegpu::ALIVE;
 }
@@ -97,7 +97,7 @@ TEST(DeviceRTCAPITest, AgentFunction_compile_error) {
 */
 
 const char* rtc_death_agent_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     if (threadIdx.x % 2 == 0)
         return flamegpu::DEAD;
     return flamegpu::ALIVE;
@@ -134,7 +134,7 @@ TEST(DeviceRTCAPITest, AgentFunction_death) {
 
 
 const char* rtc_get_agent_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     int id = FLAMEGPU->getVariable<int>("id");
     if (id % 2 == 0)
         return flamegpu::DEAD;
@@ -171,7 +171,7 @@ TEST(DeviceRTCAPITest, AgentFunction_get) {
 }
 
 const char* rtc_getset_agent_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     int id = FLAMEGPU->getVariable<int>("id");
     FLAMEGPU->setVariable<int>("id_out", id);
     return flamegpu::ALIVE;
@@ -212,7 +212,7 @@ TEST(DeviceRTCAPITest, AgentFunction_getset) {
 }
 
 const char* rtc_array_get_agent_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     // Read array from `array_var`
     // Store it's values back in `a1` -> `a4`
     FLAMEGPU->setVariable<int>("a1", FLAMEGPU->getVariable<int, 4>("array_var", 0));
@@ -263,7 +263,7 @@ TEST(DeviceRTCAPITest, AgentFunction_array_get) {
 }
 
 const char* rtc_array_set_agent_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     // Read variables a1 to a4
     // Store as array in array_var
     int a0 = 0;
@@ -332,7 +332,7 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set) {
 
 #ifdef USE_GLM
 const char* rtc_array_get_agent_func_glm = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     // Read array from `array_var`
     // Store it's values back in `a1` -> `a4`
     const glm::ivec4 t = FLAMEGPU->getVariable<glm::ivec4>("array_var");
@@ -384,7 +384,7 @@ TEST(DeviceRTCAPITest, AgentFunction_array_get_glm) {
 }
 
 const char* rtc_array_set_agent_func_glm = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     // Read array from `array_var`
     // Store it's values back in `a1` -> `a4`
     const int id = FLAMEGPU->getVariable<int>("id");
@@ -447,15 +447,15 @@ TEST(DeviceRTCAPITest, DISABLED_AgentFunction_array_get_glm) { }
 TEST(DeviceRTCAPITest, DISABLED_AgentFunction_array_set_glm) { }
 #endif
 
-const char* rtc_msg_out_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_msg_out_func, flamegpu::MsgNone, flamegpu::MsgBruteForce) {
+const char* rtc_message_out_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_message_out_func, flamegpu::MessageNone, flamegpu::MessageBruteForce) {
     FLAMEGPU->message_out.setVariable("x", FLAMEGPU->getVariable<int>("x"));
     return flamegpu::ALIVE;
 }
 )###";
 
-const char* rtc_msg_in_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_msg_in_func, flamegpu::MsgBruteForce, flamegpu::MsgNone) {
+const char* rtc_message_in_func = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_message_in_func, flamegpu::MessageBruteForce, flamegpu::MessageNone) {
     int sum = 0;
     for (auto& message : FLAMEGPU->message_in) {
         const int x = message.getVariable<int>("x");
@@ -469,18 +469,18 @@ FLAMEGPU_AGENT_FUNCTION(rtc_msg_in_func, flamegpu::MsgBruteForce, flamegpu::MsgN
  * Tests RTC behaviour of messages (using brute force messaging) to ensure correct mapping of message variables to RTC device pointers
  * As messages are derived from a common CUDAMessage type there is no need to perform the same test with every message type.
  */
-TEST(DeviceRTCAPITest, AgentFunction_msg_bruteforce) {
+TEST(DeviceRTCAPITest, AgentFunction_message_bruteforce) {
     ModelDescription m("model");
-    MsgBruteForce::Description& msg = m.newMessage("message_x");
-    msg.newVariable<int>("x");
+    MessageBruteForce::Description& message = m.newMessage("message_x");
+    message.newVariable<int>("x");
     AgentDescription& a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription& fo = a.newRTCFunction("rtc_msg_out_func", rtc_msg_out_func);
-    fo.setMessageOutput(msg);
-    AgentFunctionDescription& fi = a.newRTCFunction("rtc_msg_in_func", rtc_msg_in_func);
-    fi.setMessageInput(msg);
+    AgentFunctionDescription& fo = a.newRTCFunction("rtc_message_out_func", rtc_message_out_func);
+    fo.setMessageOutput(message);
+    AgentFunctionDescription& fi = a.newRTCFunction("rtc_message_in_func", rtc_message_in_func);
+    fi.setMessageInput(message);
     std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
@@ -506,7 +506,7 @@ TEST(DeviceRTCAPITest, AgentFunction_msg_bruteforce) {
 }
 
 const char* rtc_rand_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_rand_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_rand_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->setVariable<float>("a", FLAMEGPU->random.uniform<float>());
     FLAMEGPU->setVariable<float>("b", FLAMEGPU->random.uniform<float>());
     FLAMEGPU->setVariable<float>("c", FLAMEGPU->random.uniform<float>());
@@ -566,7 +566,7 @@ TEST(DeviceRTCAPITest, AgentFunction_random) {
 
 
 const char* rtc_env_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_env_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_env_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     // get environment variable and set it as an agent variable (environment variable does not change)
     int e1_out = FLAMEGPU->environment.getProperty<int>("e1");
     int e1_exists = FLAMEGPU->environment.containsProperty("e1");
@@ -670,7 +670,7 @@ TEST(DeviceRTCAPITest, AgentFunction_env) {
 }
 
 const char* rtc_agent_output_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_agent_output_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_agent_output_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
     if (threadIdx.x % 2 == 0) {
         FLAMEGPU->agent_out.setVariable<unsigned int>("x", id + 12);
@@ -724,7 +724,7 @@ TEST(DeviceRTCAPITest, AgentFunction_agent_output) {
 }
 
 const char* rtc_func_cond_non_rtc_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     int id = FLAMEGPU->getVariable<int>("id");
     FLAMEGPU->setVariable<int>("id_out", id);
     return flamegpu::ALIVE;
@@ -787,7 +787,7 @@ TEST(DeviceRTCAPITest, AgentFunction_cond_non_rtc) {
 }
 
 const char* rtc_func_cond_func = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     int id = FLAMEGPU->getVariable<int>("id");
     FLAMEGPU->setVariable<int>("id_out", id);
     return flamegpu::ALIVE;
@@ -856,7 +856,7 @@ TEST(DeviceRTCAPITest, AgentFunction_cond_rtc) {
  * Test device_api::getStepCounter() in RTC code.
  */
 const char* rtc_testGetStepCounter = R"###(
-FLAMEGPU_AGENT_FUNCTION(rtc_testGetStepCounter, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(rtc_testGetStepCounter, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->setVariable<unsigned int>("step", FLAMEGPU->getStepCounter());
     return flamegpu::ALIVE;
 }

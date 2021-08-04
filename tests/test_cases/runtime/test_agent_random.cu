@@ -13,7 +13,7 @@
 namespace flamegpu {
 
 namespace test_agent_random {
-FLAMEGPU_AGENT_FUNCTION(random1_func, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(random1_func, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<float>("a", FLAMEGPU->random.uniform<float>());
     FLAMEGPU->setVariable<float>("b", FLAMEGPU->random.uniform<float>());
     FLAMEGPU->setVariable<float>("c", FLAMEGPU->random.uniform<float>());
@@ -153,7 +153,7 @@ TEST(AgentRandomTest, AgentRandomCheck) {
     }
 }
 
-FLAMEGPU_AGENT_FUNCTION(random2_func, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(random2_func, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<float>("uniform_float", FLAMEGPU->random.uniform<float>());
     FLAMEGPU->setVariable<double>("uniform_double", FLAMEGPU->random.uniform<double>());
 

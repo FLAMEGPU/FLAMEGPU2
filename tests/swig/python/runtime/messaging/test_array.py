@@ -17,7 +17,7 @@ AGENT_COUNT = 128
 UINT_MAX = 4294967295
 
 OutFunction = """
-FLAMEGPU_AGENT_FUNCTION(OutFunction, flamegpu::MsgNone, flamegpu::MsgArray) {
+FLAMEGPU_AGENT_FUNCTION(OutFunction, flamegpu::MessageNone, flamegpu::MessageArray) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("message_write");
     FLAMEGPU->message_out.setVariable<unsigned int>("index_times_3", index * 3);
     FLAMEGPU->message_out.setIndex(index);
@@ -25,7 +25,7 @@ FLAMEGPU_AGENT_FUNCTION(OutFunction, flamegpu::MsgNone, flamegpu::MsgArray) {
 }"""
 
 OutOptionalFunction = """
-FLAMEGPU_AGENT_FUNCTION(OutOptionalFunction, flamegpu::MsgNone, flamegpu::MsgArray) {
+FLAMEGPU_AGENT_FUNCTION(OutOptionalFunction, flamegpu::MessageNone, flamegpu::MessageArray) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("message_write");
     if (index % 2 == 0) {
         FLAMEGPU->message_out.setVariable<unsigned int>("index_times_3", index * 3);
@@ -36,7 +36,7 @@ FLAMEGPU_AGENT_FUNCTION(OutOptionalFunction, flamegpu::MsgNone, flamegpu::MsgArr
 """
 
 OutBad = """
-FLAMEGPU_AGENT_FUNCTION(OutBad, flamegpu::MsgNone, flamegpu::MsgArray) {
+FLAMEGPU_AGENT_FUNCTION(OutBad, flamegpu::MessageNone, flamegpu::MessageArray) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("message_write");
     FLAMEGPU->message_out.setVariable<unsigned int>("index_times_3", index * 3);
     FLAMEGPU->message_out.setIndex(index == 13 ? 0 : index);
@@ -45,7 +45,7 @@ FLAMEGPU_AGENT_FUNCTION(OutBad, flamegpu::MsgNone, flamegpu::MsgArray) {
 """
 
 InFunction = """
-FLAMEGPU_AGENT_FUNCTION(InFunction, flamegpu::MsgArray, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InFunction, flamegpu::MessageArray, flamegpu::MessageNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     const auto &message = FLAMEGPU->message_in.at(my_index);
     FLAMEGPU->setVariable("message_read", message.getVariable<unsigned int>("index_times_3"));
@@ -54,7 +54,7 @@ FLAMEGPU_AGENT_FUNCTION(InFunction, flamegpu::MsgArray, flamegpu::MsgNone) {
 """
 
 OutSimple = """
-FLAMEGPU_AGENT_FUNCTION(OutSimple, flamegpu::MsgNone, flamegpu::MsgArray) {
+FLAMEGPU_AGENT_FUNCTION(OutSimple, flamegpu::MessageNone, flamegpu::MessageArray) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     FLAMEGPU->message_out.setIndex(index);
     return flamegpu::ALIVE;
@@ -62,21 +62,21 @@ FLAMEGPU_AGENT_FUNCTION(OutSimple, flamegpu::MsgNone, flamegpu::MsgArray) {
 """
 
 MooreTest1 = """
-FLAMEGPU_AGENT_FUNCTION(MooreTest1, flamegpu::MsgArray, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MooreTest1, flamegpu::MessageArray, flamegpu::MessageNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
 
     // Iterate and check it aligns
     auto filter = FLAMEGPU->message_in.wrap(my_index);
-    auto msg = filter.begin();
+    auto message = filter.begin();
     unsigned int message_read = 0;
     for (int i = -1; i <= 1; ++i) {
         // Skip ourself
         if (i != 0) {
             // Wrap over boundaries
             const unsigned int their_x = (my_index + i + FLAMEGPU->message_in.size()) % FLAMEGPU->message_in.size();
-            if (msg->getX() == their_x)
+            if (message->getX() == their_x)
                 message_read++;
-            ++msg;
+            ++message;
         }
     }
     FLAMEGPU->setVariable<unsigned int>("message_read", message_read);
@@ -85,21 +85,21 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest1, flamegpu::MsgArray, flamegpu::MsgNone) {
 """
 
 MooreTest2 = """
-FLAMEGPU_AGENT_FUNCTION(MooreTest2, flamegpu::MsgArray, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MooreTest2, flamegpu::MessageArray, flamegpu::MessageNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
 
     // Iterate and check it aligns
     auto filter = FLAMEGPU->message_in.wrap(my_index, 2);
-    auto msg = filter.begin();
+    auto message = filter.begin();
     unsigned int message_read = 0;
     for (int i = -2; i <= 2; ++i) {
         // Skip ourself
         if (i != 0) {
             // Wrap over boundaries
             const unsigned int their_x = (my_index + i + FLAMEGPU->message_in.size()) % FLAMEGPU->message_in.size();
-            if (msg->getX() == their_x)
+            if (message->getX() == their_x)
                 message_read++;
-            ++msg;
+            ++message;
         }
     }
     FLAMEGPU->setVariable<unsigned int>("message_read", message_read);
@@ -108,7 +108,7 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest2, flamegpu::MsgArray, flamegpu::MsgNone) {
 """
 
 countArray = """
-FLAMEGPU_AGENT_FUNCTION(countArray, flamegpu::MsgArray, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(countArray, flamegpu::MessageArray, flamegpu::MessageNone) {
     unsigned int value = FLAMEGPU->message_in.at(0).getVariable<unsigned int>("value");
     FLAMEGPU->setVariable<unsigned int>("value", value);
     return flamegpu::ALIVE;
@@ -119,17 +119,17 @@ class TestMessage_Array(TestCase):
 
     def test_Mandatory(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageArray(MESSAGE_NAME)
-        msg.setLength(AGENT_COUNT)
-        msg.newVariableUInt("index_times_3")
+        message = m.newMessageArray(MESSAGE_NAME)
+        message.setLength(AGENT_COUNT)
+        message.newVariableUInt("index_times_3")
         a = m.newAgent(AGENT_NAME)
         a.newVariableUInt("index")
         a.newVariableUInt("message_read", UINT_MAX)
         a.newVariableUInt("message_write")
         fo = a.newRTCFunction(OUT_FUNCTION_NAME, OutFunction)
-        fo.setMessageOutput(msg)
+        fo.setMessageOutput(message)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, InFunction)
-        fi.setMessageInput(msg)
+        fi.setMessageInput(message)
         lo = m.newLayer(OUT_LAYER_NAME)
         lo.addAgentFunction(fo)
         li = m.newLayer(IN_LAYER_NAME)
@@ -163,18 +163,18 @@ class TestMessage_Array(TestCase):
 
     def test_Optional(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageArray(MESSAGE_NAME)
-        msg.setLength(AGENT_COUNT)
-        msg.newVariableUInt("index_times_3")
+        message = m.newMessageArray(MESSAGE_NAME)
+        message.setLength(AGENT_COUNT)
+        message.newVariableUInt("index_times_3")
         a = m.newAgent(AGENT_NAME)
         a.newVariableUInt("index")
         a.newVariableUInt("message_read", UINT_MAX)
         a.newVariableUInt("message_write")
         fo = a.newRTCFunction(OUT_FUNCTION_NAME, OutOptionalFunction)
-        fo.setMessageOutput(msg)
+        fo.setMessageOutput(message)
         fo.setMessageOutputOptional(True)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, InFunction)
-        fi.setMessageInput(msg)
+        fi.setMessageInput(message)
         lo = m.newLayer(OUT_LAYER_NAME)
         lo.addAgentFunction(fo)
         li = m.newLayer(IN_LAYER_NAME)
@@ -212,15 +212,15 @@ class TestMessage_Array(TestCase):
 
     def test_Moore1W(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageArray(MESSAGE_NAME)
-        msg.setLength(AGENT_COUNT)
+        message = m.newMessageArray(MESSAGE_NAME)
+        message.setLength(AGENT_COUNT)
         a = m.newAgent(AGENT_NAME)
         a.newVariableUInt("index")
         a.newVariableUInt("message_read", UINT_MAX)
         fo = a.newRTCFunction(OUT_FUNCTION_NAME, OutSimple)
-        fo.setMessageOutput(msg)
+        fo.setMessageOutput(message)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, MooreTest1)
-        fi.setMessageInput(msg)
+        fi.setMessageInput(message)
         lo = m.newLayer(OUT_LAYER_NAME)
         lo.addAgentFunction(fo)
         li = m.newLayer(IN_LAYER_NAME)
@@ -245,15 +245,15 @@ class TestMessage_Array(TestCase):
 
     def test_Moore2W(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageArray(MESSAGE_NAME)
-        msg.setLength(AGENT_COUNT)
+        message = m.newMessageArray(MESSAGE_NAME)
+        message.setLength(AGENT_COUNT)
         a = m.newAgent(AGENT_NAME)
         a.newVariableUInt("index")
         a.newVariableUInt("message_read", UINT_MAX)
         fo = a.newRTCFunction(OUT_FUNCTION_NAME, OutSimple)
-        fo.setMessageOutput(msg)
+        fo.setMessageOutput(message)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, MooreTest2)
-        fi.setMessageInput(msg)
+        fi.setMessageInput(message)
         lo = m.newLayer(OUT_LAYER_NAME)
         lo.addAgentFunction(fo)
         li = m.newLayer(IN_LAYER_NAME)
@@ -281,17 +281,17 @@ class TestMessage_Array(TestCase):
         if not pyflamegpu.SEATBELTS:
             pytest.skip("Test requires SEATBELTS to be ON")
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageArray(MESSAGE_NAME)
-        msg.setLength(AGENT_COUNT)
-        msg.newVariableUInt("index_times_3")
+        message = m.newMessageArray(MESSAGE_NAME)
+        message.setLength(AGENT_COUNT)
+        message.newVariableUInt("index_times_3")
         a = m.newAgent(AGENT_NAME)
         a.newVariableUInt("index")
         a.newVariableUInt("message_read", UINT_MAX)
         a.newVariableUInt("message_write")
         fo = a.newRTCFunction(OUT_FUNCTION_NAME, OutBad)
-        fo.setMessageOutput(msg)
+        fo.setMessageOutput(message)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, InFunction)
-        fi.setMessageInput(msg)
+        fi.setMessageInput(message)
         lo = m.newLayer(OUT_LAYER_NAME)
         lo.addAgentFunction(fo)
         li = m.newLayer(IN_LAYER_NAME)
@@ -320,9 +320,9 @@ class TestMessage_Array(TestCase):
 
     def test_ArrayLenZeroException(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageArray(MESSAGE_NAME)
+        message = m.newMessageArray(MESSAGE_NAME)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            msg.setLength(0)
+            message.setLength(0)
         assert e.value.type() == "InvalidArgument"
 
     def test_UnsetLength(self): 
@@ -335,9 +335,9 @@ class TestMessage_Array(TestCase):
 
     def test_reserved_name(self): 
         model = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = model.newMessageArray(MESSAGE_NAME)
+        message = model.newMessageArray(MESSAGE_NAME)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            msg.newVariableInt("_")
+            message.newVariableInt("_")
         assert e.value.type() == "ReservedName"
 
     def test_ReadEmpty(self): 
@@ -368,5 +368,5 @@ class TestMessage_Array(TestCase):
         cudaSimulation.getPopulationData(pop_out)
         assert len(pop_out) == 1
         ai = pop_out.front()
-        assert ai.getVariableUInt("value") == 0  # Unset array msgs should be 0
+        assert ai.getVariableUInt("value") == 0  # Unset array messages should be 0
 

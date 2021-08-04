@@ -8,7 +8,7 @@ namespace test_host_api {
 
 // Test host_api::getStepCounter()
 
-FLAMEGPU_AGENT_FUNCTION(agent_function_getStepCounter, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(agent_function_getStepCounter, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<unsigned int>("step", FLAMEGPU->getStepCounter());
     return ALIVE;
 }
@@ -69,7 +69,7 @@ FLAMEGPU_STEP_FUNCTION(reduce_value) {
     // Perform a reduction
     EXPECT_NO_THROW(FLAMEGPU->agent("foo").sum<float>("bar"));
 }
-FLAMEGPU_AGENT_FUNCTION(birth_agent, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(birth_agent, MessageNone, MessageNone) {
     FLAMEGPU->agent_out.setVariable<float>("bar", 1.0f);
     return ALIVE;
 }

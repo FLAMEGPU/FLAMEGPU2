@@ -34,7 +34,7 @@ std::shared_ptr<ModelData> ModelData::clone() const {
 
     // Manually copy construct maps of shared ptr
     for (const auto &m : this->messages) {
-        rtn->messages.emplace(m.first, std::shared_ptr<MsgBruteForce::Data>(m.second->clone(rtn)));  // Need to convert this to shared_ptr, how to force shared copy construct?
+        rtn->messages.emplace(m.first, std::shared_ptr<MessageBruteForce::Data>(m.second->clone(rtn)));  // Need to convert this to shared_ptr, how to force shared copy construct?
     }
     // Copy all agents first
     for (const auto &a : this->agents) {

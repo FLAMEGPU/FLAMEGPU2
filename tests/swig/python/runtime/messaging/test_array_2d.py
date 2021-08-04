@@ -17,7 +17,7 @@ AGENT_COUNT = SQRT_AGENT_COUNT * (SQRT_AGENT_COUNT+1)
 UINT_MAX = 4294967295
 
 OutFunction = """
-FLAMEGPU_AGENT_FUNCTION(OutFunction, flamegpu::MsgNone, flamegpu::MsgArray2D) {
+FLAMEGPU_AGENT_FUNCTION(OutFunction, flamegpu::MessageNone, flamegpu::MessageArray2D) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("message_write");
     FLAMEGPU->message_out.setVariable<unsigned int>("index_times_3", index * 3);
     const unsigned int index_x = index % 12;
@@ -28,7 +28,7 @@ FLAMEGPU_AGENT_FUNCTION(OutFunction, flamegpu::MsgNone, flamegpu::MsgArray2D) {
 """
 
 OutOptionalFunction = """
-FLAMEGPU_AGENT_FUNCTION(OutOptionalFunction, flamegpu::MsgNone, flamegpu::MsgArray2D) {
+FLAMEGPU_AGENT_FUNCTION(OutOptionalFunction, flamegpu::MessageNone, flamegpu::MessageArray2D) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("message_write");
     if (index % 2 == 0) {
         FLAMEGPU->message_out.setVariable<unsigned int>("index_times_3", index * 3);
@@ -41,7 +41,7 @@ FLAMEGPU_AGENT_FUNCTION(OutOptionalFunction, flamegpu::MsgNone, flamegpu::MsgArr
 """
 
 OutBad = """
-FLAMEGPU_AGENT_FUNCTION(OutBad, flamegpu::MsgNone, flamegpu::MsgArray2D) {
+FLAMEGPU_AGENT_FUNCTION(OutBad, flamegpu::MessageNone, flamegpu::MessageArray2D) {
     unsigned int index = FLAMEGPU->getVariable<unsigned int>("message_write");
     FLAMEGPU->message_out.setVariable<unsigned int>("index_times_3", index * 3);
     index = index == 13 ? 0 : index;
@@ -53,7 +53,7 @@ FLAMEGPU_AGENT_FUNCTION(OutBad, flamegpu::MsgNone, flamegpu::MsgArray2D) {
 """
 
 InFunction = """
-FLAMEGPU_AGENT_FUNCTION(InFunction, flamegpu::MsgArray2D, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(InFunction, flamegpu::MessageArray2D, flamegpu::MessageNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int index_x = my_index % 12;
     const unsigned int index_y = my_index / 12;
@@ -64,7 +64,7 @@ FLAMEGPU_AGENT_FUNCTION(InFunction, flamegpu::MsgArray2D, flamegpu::MsgNone) {
 """
 
 OutSimple = """
-FLAMEGPU_AGENT_FUNCTION(OutSimple, flamegpu::MsgNone, flamegpu::MsgArray2D) {
+FLAMEGPU_AGENT_FUNCTION(OutSimple, flamegpu::MessageNone, flamegpu::MessageArray2D) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int index_x = index % 12;
     const unsigned int index_y = index / 12;
@@ -74,14 +74,14 @@ FLAMEGPU_AGENT_FUNCTION(OutSimple, flamegpu::MsgNone, flamegpu::MsgArray2D) {
 """
 
 MooreTest1 = """
-FLAMEGPU_AGENT_FUNCTION(MooreTest1, flamegpu::MsgArray2D, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MooreTest1, flamegpu::MessageArray2D, flamegpu::MessageNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int index_x = my_index % 12;
     const unsigned int index_y = my_index / 12;
 
     // Iterate and check it aligns
     auto filter = FLAMEGPU->message_in.wrap(index_x, index_y);
-    auto msg = filter.begin();
+    auto message = filter.begin();
     unsigned int message_read = 0;
     for (int i = -1; i <= 1; ++i) {
         for (int j = -1; j <= 1; ++j) {
@@ -90,9 +90,9 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest1, flamegpu::MsgArray2D, flamegpu::MsgNone) {
                 // Wrap over boundaries
                 const unsigned int their_x = (index_x + i + FLAMEGPU->message_in.getDimX()) % FLAMEGPU->message_in.getDimX();
                 const unsigned int their_y = (index_y + j + FLAMEGPU->message_in.getDimY()) % FLAMEGPU->message_in.getDimY();
-                if (msg->getX() == their_x && msg->getY() == their_y)
+                if (message->getX() == their_x && message->getY() == their_y)
                     message_read++;
-                ++msg;
+                ++message;
             }
         }
     }
@@ -102,14 +102,14 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest1, flamegpu::MsgArray2D, flamegpu::MsgNone) {
 """
 
 MooreTest2 = """
-FLAMEGPU_AGENT_FUNCTION(MooreTest2, flamegpu::MsgArray2D, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(MooreTest2, flamegpu::MessageArray2D, flamegpu::MessageNone) {
     const unsigned int my_index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int index_x = my_index % 12;
     const unsigned int index_y = my_index / 12;
 
     // Iterate and check it aligns
     auto filter = FLAMEGPU->message_in.wrap(index_x, index_y, 2);
-    auto msg = filter.begin();
+    auto message = filter.begin();
     unsigned int message_read = 0;
     for (int i = -2; i <= 2; ++i) {
         for (int j = -2; j <= 2; ++j) {
@@ -118,9 +118,9 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest2, flamegpu::MsgArray2D, flamegpu::MsgNone) {
                 // Wrap over boundaries
                 const unsigned int their_x = (index_x + i + FLAMEGPU->message_in.getDimX()) % FLAMEGPU->message_in.getDimX();
                 const unsigned int their_y = (index_y + j + FLAMEGPU->message_in.getDimY()) % FLAMEGPU->message_in.getDimY();
-                if (msg->getX() == their_x && msg->getY() == their_y)
+                if (message->getX() == their_x && message->getY() == their_y)
                     message_read++;
-                ++msg;
+                ++message;
             }
         }
     }
@@ -130,7 +130,7 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest2, flamegpu::MsgArray2D, flamegpu::MsgNone) {
 """
 
 countArray2D = """
-FLAMEGPU_AGENT_FUNCTION(countArray2D, flamegpu::MsgArray2D, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(countArray2D, flamegpu::MessageArray2D, flamegpu::MessageNone) {
     unsigned int value = FLAMEGPU->message_in.at(0, 0).getVariable<unsigned int>("value");
     FLAMEGPU->setVariable<unsigned int>("value", value);
     return flamegpu::ALIVE;
@@ -141,17 +141,17 @@ class TestMessage_Array2D(TestCase):
 
     def test_Mandatory(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageArray2D(MESSAGE_NAME)
-        msg.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1)
-        msg.newVariableUInt("index_times_3")
+        message = m.newMessageArray2D(MESSAGE_NAME)
+        message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1)
+        message.newVariableUInt("index_times_3")
         a = m.newAgent(AGENT_NAME)
         a.newVariableUInt("index")
         a.newVariableUInt("message_read", UINT_MAX)
         a.newVariableUInt("message_write")
         fo = a.newRTCFunction(OUT_FUNCTION_NAME, OutFunction)
-        fo.setMessageOutput(msg)
+        fo.setMessageOutput(message)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, InFunction)
-        fi.setMessageInput(msg)
+        fi.setMessageInput(message)
         lo = m.newLayer(OUT_LAYER_NAME)
         lo.addAgentFunction(fo)
         li = m.newLayer(IN_LAYER_NAME)
@@ -185,18 +185,18 @@ class TestMessage_Array2D(TestCase):
 
     def test_Optional(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageArray2D(MESSAGE_NAME)
-        msg.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1)
-        msg.newVariableUInt("index_times_3")
+        message = m.newMessageArray2D(MESSAGE_NAME)
+        message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1)
+        message.newVariableUInt("index_times_3")
         a = m.newAgent(AGENT_NAME)
         a.newVariableUInt("index")
         a.newVariableUInt("message_read", UINT_MAX)
         a.newVariableUInt("message_write")
         fo = a.newRTCFunction(OUT_FUNCTION_NAME, OutOptionalFunction)
-        fo.setMessageOutput(msg)
+        fo.setMessageOutput(message)
         fo.setMessageOutputOptional(True)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, InFunction)
-        fi.setMessageInput(msg)
+        fi.setMessageInput(message)
         lo = m.newLayer(OUT_LAYER_NAME)
         lo.addAgentFunction(fo)
         li = m.newLayer(IN_LAYER_NAME)
@@ -234,15 +234,15 @@ class TestMessage_Array2D(TestCase):
 
     def test_Moore1W(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageArray2D(MESSAGE_NAME)
-        msg.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1)
+        message = m.newMessageArray2D(MESSAGE_NAME)
+        message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1)
         a = m.newAgent(AGENT_NAME)
         a.newVariableUInt("index")
         a.newVariableUInt("message_read", UINT_MAX)
         fo = a.newRTCFunction(OUT_FUNCTION_NAME, OutSimple)
-        fo.setMessageOutput(msg)
+        fo.setMessageOutput(message)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, MooreTest1)
-        fi.setMessageInput(msg)
+        fi.setMessageInput(message)
         lo = m.newLayer(OUT_LAYER_NAME)
         lo.addAgentFunction(fo)
         li = m.newLayer(IN_LAYER_NAME)
@@ -267,15 +267,15 @@ class TestMessage_Array2D(TestCase):
 
     def test_Moore2W(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageArray2D(MESSAGE_NAME)
-        msg.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1)
+        message = m.newMessageArray2D(MESSAGE_NAME)
+        message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1)
         a = m.newAgent(AGENT_NAME)
         a.newVariableUInt("index")
         a.newVariableUInt("message_read", UINT_MAX)
         fo = a.newRTCFunction(OUT_FUNCTION_NAME, OutSimple)
-        fo.setMessageOutput(msg)
+        fo.setMessageOutput(message)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, MooreTest2)
-        fi.setMessageInput(msg)
+        fi.setMessageInput(message)
         lo = m.newLayer(OUT_LAYER_NAME)
         lo.addAgentFunction(fo)
         li = m.newLayer(IN_LAYER_NAME)
@@ -303,17 +303,17 @@ class TestMessage_Array2D(TestCase):
         if not pyflamegpu.SEATBELTS:
             pytest.skip("Test requires SEATBELTS to be ON")
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageArray2D(MESSAGE_NAME)
-        msg.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1)
-        msg.newVariableUInt("index_times_3")
+        message = m.newMessageArray2D(MESSAGE_NAME)
+        message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1)
+        message.newVariableUInt("index_times_3")
         a = m.newAgent(AGENT_NAME)
         a.newVariableUInt("index")
         a.newVariableUInt("message_read", UINT_MAX)
         a.newVariableUInt("message_write")
         fo = a.newRTCFunction(OUT_FUNCTION_NAME, OutBad)
-        fo.setMessageOutput(msg)
+        fo.setMessageOutput(message)
         fi = a.newRTCFunction(IN_FUNCTION_NAME, InFunction)
-        fi.setMessageInput(msg)
+        fi.setMessageInput(message)
         lo = m.newLayer(OUT_LAYER_NAME)
         lo.addAgentFunction(fo)
         li = m.newLayer(IN_LAYER_NAME)
@@ -342,18 +342,18 @@ class TestMessage_Array2D(TestCase):
 
     def test_ArrayLenZeroException(self): 
         m = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = m.newMessageArray2D(MESSAGE_NAME)       
+        message = m.newMessageArray2D(MESSAGE_NAME)       
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            msg.setDimensions(0, SQRT_AGENT_COUNT)
+            message.setDimensions(0, SQRT_AGENT_COUNT)
         assert e.value.type() == "InvalidArgument"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            msg.setDimensions([ 0, SQRT_AGENT_COUNT ])
+            message.setDimensions([ 0, SQRT_AGENT_COUNT ])
         assert e.value.type() == "InvalidArgument"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            msg.setDimensions(SQRT_AGENT_COUNT, 0)
+            message.setDimensions(SQRT_AGENT_COUNT, 0)
         assert e.value.type() == "InvalidArgument"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            msg.setDimensions([ SQRT_AGENT_COUNT, 0 ])
+            message.setDimensions([ SQRT_AGENT_COUNT, 0 ])
         assert e.value.type() == "InvalidArgument"
 
     def test_UnsetLength(self): 
@@ -366,9 +366,9 @@ class TestMessage_Array2D(TestCase):
 
     def test_reserved_name(self): 
         model = pyflamegpu.ModelDescription(MODEL_NAME)
-        msg = model.newMessageArray2D(MESSAGE_NAME)
+        message = model.newMessageArray2D(MESSAGE_NAME)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            msg.newVariableInt("_")
+            message.newVariableInt("_")
         assert e.value.type() == "ReservedName"
 
     def test_ReadEmpty(self): 
@@ -399,5 +399,5 @@ class TestMessage_Array2D(TestCase):
         cudaSimulation.getPopulationData(pop_out)
         assert len(pop_out) == 1
         ai = pop_out.front()
-        assert ai.getVariableUInt("value") == 0  # Unset array msgs should be 0
+        assert ai.getVariableUInt("value") == 0  # Unset array messages should be 0
 

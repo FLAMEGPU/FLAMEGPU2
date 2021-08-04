@@ -23,7 +23,7 @@ namespace test_agent_function_conditions {
     const char *STATE1 = "Start";
     const char *STATE2 = "End";
     const char *STATE3 = "End2";
-    FLAMEGPU_AGENT_FUNCTION(NullFn1, MsgNone, MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(NullFn1, MessageNone, MessageNone) {
         FLAMEGPU->setVariable<int>("x", FLAMEGPU->getVariable<int>("x") + 1);
         FLAMEGPU->setVariable<int, 4>("y", 0, 3);
         FLAMEGPU->setVariable<int, 4>("y", 1, 4);
@@ -31,7 +31,7 @@ namespace test_agent_function_conditions {
         FLAMEGPU->setVariable<int, 4>("y", 3, 6);
         return ALIVE;
     }
-    FLAMEGPU_AGENT_FUNCTION(NullFn2, MsgNone, MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(NullFn2, MessageNone, MessageNone) {
         FLAMEGPU->setVariable<int>("x", FLAMEGPU->getVariable<int>("x") - 1);
         FLAMEGPU->setVariable<int, 4>("y", 0, 23);
         FLAMEGPU->setVariable<int, 4>("y", 1, 24);

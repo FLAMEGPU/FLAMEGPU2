@@ -42,17 +42,17 @@ typedef void(AgentFunctionWrapper)(
  * @param agent_output_hash CURVE hash of "_agent_birth" or 0 if agent birth not present
  * @param d_agent_output_nextID If agent output is enabled, this points to a global memory src of the next suitable agent id, this will be atomically incremented at birth
  * @param popNo Total number of agents executing the function (number of threads launched)
- * @param in_messagelist_metadata Pointer to the MsgIn metadata struct, it is interpreted by MsgIn
- * @param out_messagelist_metadata Pointer to the MsgOut metadata struct, it is interpreted by MsgOut
+ * @param in_messagelist_metadata Pointer to the MessageIn metadata struct, it is interpreted by MessageIn
+ * @param out_messagelist_metadata Pointer to the MessageOut metadata struct, it is interpreted by MessageOut
  * @param d_rng Array of curand states for this kernel
  * @param scanFlag_agentDeath Scanflag array for agent death
  * @param scanFlag_messageOutput Scanflag array for optional message output
  * @param scanFlag_agentOutput Scanflag array for optional agent output
  * @tparam AgentFunction The modeller defined agent function (defined as FLAMEGPU_AGENT_FUNCTION in model code)
- * @tparam MsgIn Message handler for input messages (e.g. MsgNone, MsgBruteForce, MsgSpatial3D)
- * @tparam MsgOut Message handler for output messages (e.g. MsgNone, MsgBruteForce, MsgSpatial3D)
+ * @tparam MessageIn Message handler for input messages (e.g. MessageNone, MessageBruteForce, MessageSpatial3D)
+ * @tparam MessageOut Message handler for output messages (e.g. MessageNone, MessageBruteForce, MessageSpatial3D)
  */
-template<typename AgentFunction, typename MsgIn, typename MsgOut>
+template<typename AgentFunction, typename MessageIn, typename MessageOut>
 __global__ void agent_function_wrapper(
 #if !defined(SEATBELTS) || SEATBELTS
     exception::DeviceExceptionBuffer *error_buffer,
@@ -83,24 +83,24 @@ __global__ void agent_function_wrapper(
     #endif  // __CUDACC__
 #endif
     // Must be terminated here, else AgentRandom has bounds issues inside DeviceAPI constructor
-    if (DeviceAPI<MsgIn, MsgOut>::getThreadIndex() >= popNo)
+    if (DeviceAPI<MessageIn, MessageOut>::getThreadIndex() >= popNo)
         return;
     // create a new device FLAME_GPU instance
-    DeviceAPI<MsgIn, MsgOut> api = DeviceAPI<MsgIn, MsgOut>(
+    DeviceAPI<MessageIn, MessageOut> api = DeviceAPI<MessageIn, MessageOut>(
         instance_id_hash,
         agent_func_name_hash,
         agent_output_hash,
         d_agent_output_nextID,
         d_rng,
         scanFlag_agentOutput,
-        MsgIn::In(agent_func_name_hash, messagename_inp_hash, in_messagelist_metadata),
-        MsgOut::Out(agent_func_name_hash, messagename_outp_hash, out_messagelist_metadata, scanFlag_messageOutput));
+        MessageIn::In(agent_func_name_hash, messagename_inp_hash, in_messagelist_metadata),
+        MessageOut::Out(agent_func_name_hash, messagename_outp_hash, out_messagelist_metadata, scanFlag_messageOutput));
 
     // call the user specified device function
     AGENT_STATUS flag = AgentFunction()(&api);
     if (scanFlag_agentDeath) {
         // (scan flags will not be processed unless agent death has been requested in model definition)
-        scanFlag_agentDeath[DeviceAPI<MsgIn, MsgOut>::getThreadIndex()] = flag;
+        scanFlag_agentDeath[DeviceAPI<MessageIn, MessageOut>::getThreadIndex()] = flag;
 #if !defined(SEATBELTS) || SEATBELTS
     } else if (flag == DEAD) {
         DTHROW("Agent death must be enabled per agent function when defining the model.\n");

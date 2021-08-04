@@ -25,21 +25,21 @@ OTHER_STATE_NAME = "State4"
 class AgentFunctionDescriptionTest(TestCase):
 
     agent_fn1 = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn1, flamegpu::MsgBruteForce, flamegpu::MsgBruteForce) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn1, flamegpu::MessageBruteForce, flamegpu::MessageBruteForce) {
         # do nothing
         return flamegpu::ALIVE
     }
     """
     
     agent_fn2 = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn2, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn2, flamegpu::MessageNone, flamegpu::MessageNone) {
         # do nothing
         return flamegpu::ALIVE
     }
     """
     
     agent_fn3 = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn3, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn3, flamegpu::MessageNone, flamegpu::MessageNone) {
         # do nothing
         return flamegpu::ALIVE
     }
@@ -120,8 +120,8 @@ class AgentFunctionDescriptionTest(TestCase):
     def test_message_input(self):
         m = pyflamegpu.ModelDescription("test_message_input")
         a = m.newAgent(AGENT_NAME)
-        msg1 = m.newMessageBruteForce(MESSAGE_NAME1)
-        msg2 = m.newMessageBruteForce(MESSAGE_NAME2)
+        message1 = m.newMessageBruteForce(MESSAGE_NAME1)
+        message2 = m.newMessageBruteForce(MESSAGE_NAME2)
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
         # Begins empty
         assert f.hasMessageInput() == False
@@ -129,21 +129,21 @@ class AgentFunctionDescriptionTest(TestCase):
             f.getMessageInput()
         assert e.value.type() == "OutOfBoundsException"
         # Can be set
-        f.setMessageInput(msg1)
+        f.setMessageInput(message1)
         assert f.hasMessageInput()
         # Returns the expected value
-        assert f.getMessageInput() == msg1
+        assert f.getMessageInput() == message1
         # Can be updated
-        f.setMessageInput(msg2)
+        f.setMessageInput(message2)
         assert f.hasMessageInput()
         # Returns the expected value
-        assert f.getMessageInput() == msg2
+        assert f.getMessageInput() == message2
 
     def test_message_output(self):
         m = pyflamegpu.ModelDescription("test_message_output")
         a = m.newAgent(AGENT_NAME)
-        msg1 = m.newMessageBruteForce(MESSAGE_NAME1)
-        msg2 = m.newMessageBruteForce(MESSAGE_NAME2)
+        message1 = m.newMessageBruteForce(MESSAGE_NAME1)
+        message2 = m.newMessageBruteForce(MESSAGE_NAME2)
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
         # Begins empty
         assert f.hasMessageOutput() == False
@@ -151,15 +151,15 @@ class AgentFunctionDescriptionTest(TestCase):
             f.getMessageOutput()
         assert e.value.type() == "OutOfBoundsException"
         # Can be set
-        f.setMessageOutput(msg1)
+        f.setMessageOutput(message1)
         assert f.hasMessageOutput()
         # Returns the expected value
-        assert f.getMessageOutput() == msg1
+        assert f.getMessageOutput() == message1
         # Can be updated
-        f.setMessageOutput(msg2)
+        f.setMessageOutput(message2)
         assert f.hasMessageOutput()
         # Returns the expected value
-        assert f.getMessageOutput() == msg2
+        assert f.getMessageOutput() == message2
 
     def test_message_output_optional(self):
         m = pyflamegpu.ModelDescription("test_message_output_optional")
@@ -248,25 +248,25 @@ class AgentFunctionDescriptionTest(TestCase):
         m = pyflamegpu.ModelDescription("test_message_input_wrong_model")
         m2 = pyflamegpu.ModelDescription(WRONG_MODEL_NAME)
         a = m.newAgent(AGENT_NAME)
-        msg1 = m.newMessageBruteForce(MESSAGE_NAME1)
-        msg2 = m2.newMessageBruteForce(MESSAGE_NAME2)
+        message1 = m.newMessageBruteForce(MESSAGE_NAME1)
+        message2 = m2.newMessageBruteForce(MESSAGE_NAME2)
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
-            f.setMessageInput(msg2)
+            f.setMessageInput(message2)
         assert e.value.type() == "DifferentModel"
-        f.setMessageInput(msg1)
+        f.setMessageInput(message1)
 
     def test_message_output_wrong_model(self):
         m = pyflamegpu.ModelDescription("test_message_output_wrong_model")
         m2 = pyflamegpu.ModelDescription(WRONG_MODEL_NAME)
         a = m.newAgent(AGENT_NAME)
-        msg1 = m.newMessageBruteForce(MESSAGE_NAME1)
-        msg2 = m2.newMessageBruteForce(MESSAGE_NAME2)
+        message1 = m.newMessageBruteForce(MESSAGE_NAME1)
+        message2 = m2.newMessageBruteForce(MESSAGE_NAME2)
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
-            f.setMessageOutput(msg2)
+            f.setMessageOutput(message2)
         assert e.value.type() == "DifferentModel"
-        f.setMessageOutput(msg1)
+        f.setMessageOutput(message1)
 
     def test_agent_output_wrong_model(self):
         m = pyflamegpu.ModelDescription("test_agent_output_wrong_model")
@@ -282,28 +282,28 @@ class AgentFunctionDescriptionTest(TestCase):
     def test_message_input_output(self):
         m = pyflamegpu.ModelDescription("test_message_input_output")
         a = m.newAgent(AGENT_NAME)
-        msg1 = m.newMessageBruteForce(MESSAGE_NAME1)
-        msg2 = m.newMessageBruteForce(MESSAGE_NAME2)
+        message1 = m.newMessageBruteForce(MESSAGE_NAME1)
+        message2 = m.newMessageBruteForce(MESSAGE_NAME2)
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
         # Cannot bind same message to input and output
-        f.setMessageInput(msg1)
+        f.setMessageInput(message1)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
-            f.setMessageOutput(msg1)
+            f.setMessageOutput(message1)
         assert e.value.type() == "InvalidMessageName"
-        f.setMessageOutput(msg2)
+        f.setMessageOutput(message2)
 
     def test_message_output_input(self):
         m = pyflamegpu.ModelDescription("test_message_output_input")
         a = m.newAgent(AGENT_NAME)
-        msg1 = m.newMessageBruteForce(MESSAGE_NAME1)
-        msg2 = m.newMessageBruteForce(MESSAGE_NAME2)
+        message1 = m.newMessageBruteForce(MESSAGE_NAME1)
+        message2 = m.newMessageBruteForce(MESSAGE_NAME2)
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
         # Cannot bind same message to input and output
-        f.setMessageOutput(msg1)
+        f.setMessageOutput(message1)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e: 
-            f.setMessageInput(msg1)
+            f.setMessageInput(message1)
         assert e.value.type() == "InvalidMessageName"
-        f.setMessageInput(msg2)
+        f.setMessageInput(message2)
 
     def test_same_agent_and_state_in_layer(self):
         m = pyflamegpu.ModelDescription("test_message_output_input")

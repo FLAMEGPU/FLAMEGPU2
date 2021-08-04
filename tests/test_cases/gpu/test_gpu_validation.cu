@@ -9,7 +9,7 @@
 namespace flamegpu {
 
 namespace test_gpu_validation {
-FLAMEGPU_AGENT_FUNCTION(add_func, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(add_func, MessageNone, MessageNone) {
     // should've returned error if the type was not correct. Needs type check
     double x = FLAMEGPU->getVariable<double>("x");
 
@@ -18,7 +18,7 @@ FLAMEGPU_AGENT_FUNCTION(add_func, MsgNone, MsgNone) {
     return ALIVE;
 }
 
-FLAMEGPU_AGENT_FUNCTION(subtract_func, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(subtract_func, MessageNone, MessageNone) {
     double x = FLAMEGPU->getVariable<double>("x");
     double y = FLAMEGPU->getVariable<double>("y");
 
@@ -27,7 +27,7 @@ FLAMEGPU_AGENT_FUNCTION(subtract_func, MsgNone, MsgNone) {
     return ALIVE;
 }
 
-FLAMEGPU_AGENT_FUNCTION(output_func, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(output_func, MessageNone, MessageNone) {
     float x = FLAMEGPU->getVariable<float>("x");
     FLAMEGPU->setVariable<float>("x", x + 2);
     x = FLAMEGPU->getVariable<float>("x");
@@ -35,7 +35,7 @@ FLAMEGPU_AGENT_FUNCTION(output_func, MsgNone, MsgNone) {
     return ALIVE;
 }
 
-// FLAMEGPU_AGENT_FUNCTION(move_func, MsgNone, MsgNone) {
+// FLAMEGPU_AGENT_FUNCTION(move_func, MessageNone, MessageNone) {
 //     float x = FLAMEGPU->getVariable<float>("x");
 //    FLAMEGPU->setVariable<float>("x", x + 2);
 //    x = FLAMEGPU->getVariable<float>("x");
@@ -47,15 +47,15 @@ FLAMEGPU_AGENT_FUNCTION(output_func, MsgNone, MsgNone) {
 //    return ALIVE;
 // }
 
-FLAMEGPU_AGENT_FUNCTION(input_func, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(input_func, MessageNone, MessageNone) {
     return ALIVE;
 }
 
-FLAMEGPU_AGENT_FUNCTION(move_func, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(move_func, MessageNone, MessageNone) {
     return ALIVE;
 }
 
-FLAMEGPU_AGENT_FUNCTION(stay_func, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(stay_func, MessageNone, MessageNone) {
     return ALIVE;
 }
 /**

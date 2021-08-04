@@ -20,7 +20,7 @@ UNMAPPED_STATE1 = "unmapped1";
 UNMAPPED_STATE2 = "unmapped2";
 
 AddT = """
-FLAMEGPU_AGENT_FUNCTION(AddT, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(AddT, flamegpu::MessageNone, flamegpu::MessageNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("AVar1");
     const unsigned int t = FLAMEGPU->getVariable<unsigned int>("t");
     FLAMEGPU->setVariable<unsigned int>("AVar1", v + t);
@@ -29,7 +29,7 @@ FLAMEGPU_AGENT_FUNCTION(AddT, flamegpu::MsgNone, flamegpu::MsgNone) {
 }
 """
 AddOne = """
-FLAMEGPU_AGENT_FUNCTION(AddOne, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(AddOne, flamegpu::MessageNone, flamegpu::MessageNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("AVar1");
     const unsigned int sub_v = FLAMEGPU->getVariable<unsigned int>("SubVar1");
     if (sub_v == 12) {
@@ -45,7 +45,7 @@ FLAMEGPU_AGENT_FUNCTION(AddOne, flamegpu::MsgNone, flamegpu::MsgNone) {
 }
 """
 AddSubVar = """
-FLAMEGPU_AGENT_FUNCTION(AddSubVar, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(AddSubVar, flamegpu::MessageNone, flamegpu::MessageNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("AVar1");
     const unsigned int sub_v = FLAMEGPU->getVariable<unsigned int>("SubVar1");
     FLAMEGPU->setVariable<unsigned int>("AVar1", v + sub_v);
@@ -54,14 +54,14 @@ FLAMEGPU_AGENT_FUNCTION(AddSubVar, flamegpu::MsgNone, flamegpu::MsgNone) {
 }
 """
 AddOne2 = """
-FLAMEGPU_AGENT_FUNCTION(AddOne2, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(AddOne2, flamegpu::MessageNone, flamegpu::MessageNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("AVar1");
     FLAMEGPU->setVariable<unsigned int>("AVar1", v + 1);
     return flamegpu::ALIVE;
 }
 """
 AddTen = """
-FLAMEGPU_AGENT_FUNCTION(AddTen, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(AddTen, flamegpu::MessageNone, flamegpu::MessageNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("AVar1");
     FLAMEGPU->setVariable<unsigned int>("AVar1", v + 10);
     const unsigned int v2 = FLAMEGPU->getVariable<unsigned int>("AVar2");
@@ -70,7 +70,7 @@ FLAMEGPU_AGENT_FUNCTION(AddTen, flamegpu::MsgNone, flamegpu::MsgNone) {
 }
 """
 KillEven = """
-FLAMEGPU_AGENT_FUNCTION(KillEven, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(KillEven, flamegpu::MessageNone, flamegpu::MessageNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("i");
     FLAMEGPU->setVariable<unsigned int>("i", v * 3);
     if (FLAMEGPU->getVariable<unsigned int>("AVar2") > UINT_MAX-1000) {
@@ -86,7 +86,7 @@ FLAMEGPU_AGENT_FUNCTION(KillEven, flamegpu::MsgNone, flamegpu::MsgNone) {
 }
 """
 BirthEven = """
-FLAMEGPU_AGENT_FUNCTION(BirthEven, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(BirthEven, flamegpu::MessageNone, flamegpu::MessageNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("i");
     FLAMEGPU->setVariable<unsigned int>("i", v * 3);
     if (FLAMEGPU->getVariable<unsigned int>("AVar2") > UINT_MAX - 2000) {
@@ -116,7 +116,7 @@ FLAMEGPU_AGENT_FUNCTION_CONDITION(AllowEven) {
 }
 """
 UpdateId100 = """
-FLAMEGPU_AGENT_FUNCTION(UpdateId100, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(UpdateId100, flamegpu::MessageNone, flamegpu::MessageNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("i");
     FLAMEGPU->setVariable<unsigned int>("i", v + 100);
     return flamegpu::ALIVE;
@@ -143,7 +143,7 @@ FLAMEGPU_HOST_FUNCTION(HostBirth2) {
 }
 """
 HostBirthUpdate = """
-FLAMEGPU_AGENT_FUNCTION(HostBirthUpdate, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(HostBirthUpdate, flamegpu::MessageNone, flamegpu::MessageNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("AVar1");
     if (v == 5) {
         FLAMEGPU->setVariable<unsigned int>("AVar1", 500);

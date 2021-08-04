@@ -11,7 +11,7 @@
 #include "flamegpu/runtime/AgentFunctionCondition.cuh"
 #include "flamegpu/model/DependencyNode.h"
 #include "flamegpu/model/LayerDescription.h"
-#include "flamegpu/runtime/messaging/BruteForce.h"
+#include "flamegpu/runtime/messaging/MessageBruteForce.h"
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 
 #ifdef _MSC_VER
@@ -113,7 +113,7 @@ class AgentFunctionDescription : public DependencyNode {
      * @throws exception::InvalidMessageName If the same message is already bound to the message output of this agent function
      * @see AgentFunctionDescription::setMessageInput(const std::string &)
      */
-    void setMessageInput(MsgBruteForce::Description &message);
+    void setMessageInput(MessageBruteForce::Description &message);
     /**
      * Sets the message type that can be output during this agent function
      * This is optional, and only one type of message can be output per agent function
@@ -134,7 +134,7 @@ class AgentFunctionDescription : public DependencyNode {
      * @see AgentFunctionDescription::setMessageInput(const std::string &)
      * @see AgentFunctionDescription::setMessageOutputOptional(const bool &) To configure whether all agents must output messages
      */
-    void setMessageOutput(MsgBruteForce::Description &message);
+    void setMessageOutput(MessageBruteForce::Description &message);
     /**
      * Configures whether message output from this agent function is optional
      * (e.g. whether all agents must output a message each time the function is called)
@@ -197,13 +197,13 @@ class AgentFunctionDescription : public DependencyNode {
      * @see AgentFunctionDescription::getMessageInput() for the immutable version
      * @throw exception::OutOfBoundsException If the message input has not been set
      */
-    MsgBruteForce::Description &MessageInput();
+    MessageBruteForce::Description &MessageInput();
     /**
      * @return An mutable reference to the message output of this agent function
      * @see AgentFunctionDescription::getMessageOutput() for the immutable version
      * @throw exception::OutOfBoundsException If the message output has not been set
      */
-    MsgBruteForce::Description &MessageOutput();
+    MessageBruteForce::Description &MessageOutput();
     /**
      * @return A mutable reference to the message output optional configuration flag
      * @see AgentFunctionDescription::getAgentOutputOptional()
@@ -234,13 +234,13 @@ class AgentFunctionDescription : public DependencyNode {
      * @see AgentFunctionDescription::MessageInput() for the mutable version
      * @throw exception::OutOfBoundsException If the message input has not been set
      */
-    const MsgBruteForce::Description &getMessageInput() const;
+    const MessageBruteForce::Description &getMessageInput() const;
     /**
      * @return An immutable reference to the message output of this agent function
      * @see AgentFunctionDescription::MessageOutput() for the mutable version
      * @throw exception::OutOfBoundsException If the message output has not been set
      */
-    const MsgBruteForce::Description &getMessageOutput() const;
+    const MessageBruteForce::Description &getMessageOutput() const;
     /**
      * @return True if message output from this agent function is optional
      */

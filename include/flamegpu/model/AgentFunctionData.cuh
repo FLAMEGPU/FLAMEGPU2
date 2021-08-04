@@ -51,11 +51,11 @@ struct AgentFunctionData {
     /**
      * If set, this type of message is input to the function
      */
-    std::weak_ptr<MsgBruteForce::Data> message_input;
+    std::weak_ptr<MessageBruteForce::Data> message_input;
     /**
      * If set, this type of message is output by the function
      */
-    std::weak_ptr<MsgBruteForce::Data> message_output;
+    std::weak_ptr<MessageBruteForce::Data> message_output;
     /**
      * If set, message outputs from this function are optional
      */
@@ -117,11 +117,11 @@ struct AgentFunctionData {
     /**
      * Input messaging type (as string) specified in FLAMEGPU_AGENT_FUNCTION. Used for type checking in model specification.
      */
-    std::string msg_in_type;
+    std::string message_in_type;
     /**
      * Output messaging type (as string) specified in FLAMEGPU_AGENT_FUNCTION. Used for type checking in model specification.
      */
-    std::string msg_out_type;
+    std::string message_out_type;
 
  protected:
     /**

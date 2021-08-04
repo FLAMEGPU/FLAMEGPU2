@@ -102,7 +102,7 @@ float concurrentLayerSpeedup(const int REPETITIONS, CUDASimulation &s, std::vect
 /**
  * Slow and uninteresting agent function which will take a while to run for accurate timing
  */
-FLAMEGPU_AGENT_FUNCTION(SlowAgentFunction, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowAgentFunction, MessageNone, MessageNone) {
     // Repeatedly do some pointless maths on the value in register
     const int INTERNAL_REPETITIONS = 65536;
     for (int i = 0; i < INTERNAL_REPETITIONS; i++) {
@@ -116,7 +116,7 @@ FLAMEGPU_AGENT_FUNCTION(SlowAgentFunction, MsgNone, MsgNone) {
 /**
  * Agent function which outputs to a message list + some slow work.
  */
-FLAMEGPU_AGENT_FUNCTION(SlowMessageOutputAgentFunction, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(SlowMessageOutputAgentFunction, MessageNone, MessageBruteForce) {
     // Repeatedly do some pointless maths on the value in register
     const int INTERNAL_REPETITIONS = 65536;
     for (int i = 0; i < INTERNAL_REPETITIONS; i++) {
@@ -131,7 +131,7 @@ FLAMEGPU_AGENT_FUNCTION(SlowMessageOutputAgentFunction, MsgNone, MsgBruteForce) 
 /**
  * Agent function which inputs from a message list + some slow work.
  */
-FLAMEGPU_AGENT_FUNCTION(SlowMessageInputAgentFunction, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowMessageInputAgentFunction, MessageBruteForce, MessageNone) {
     // Repeatedly do some pointless maths on the value in register
     const int INTERNAL_REPETITIONS = 65536;
     for (int i = 0; i < INTERNAL_REPETITIONS; i++) {
@@ -150,7 +150,7 @@ FLAMEGPU_AGENT_FUNCTION(SlowMessageInputAgentFunction, MsgBruteForce, MsgNone) {
 /**
  * Agent function which outputs to an optional message list + some slow work.
  */
-FLAMEGPU_AGENT_FUNCTION(SlowOptionalMessageOutputAgentFunction, MsgNone, MsgBruteForce) {
+FLAMEGPU_AGENT_FUNCTION(SlowOptionalMessageOutputAgentFunction, MessageNone, MessageBruteForce) {
     // Repeatedly do some pointless maths on the value in register
     const int INTERNAL_REPETITIONS = 65536;
     for (int i = 0; i < INTERNAL_REPETITIONS; i++) {
@@ -167,7 +167,7 @@ FLAMEGPU_AGENT_FUNCTION(SlowOptionalMessageOutputAgentFunction, MsgNone, MsgBrut
 /**
  * Agent function which inputs from an optional message list + some slow work.
  */
-FLAMEGPU_AGENT_FUNCTION(SlowOptionalMessageInputAgentFunction, MsgBruteForce, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowOptionalMessageInputAgentFunction, MessageBruteForce, MessageNone) {
     // Repeatedly do some pointless maths on the value in register
     const int INTERNAL_REPETITIONS = 65536;
     for (int i = 0; i < INTERNAL_REPETITIONS; i++) {
@@ -191,7 +191,7 @@ FLAMEGPU_AGENT_FUNCTION(SlowOptionalMessageInputAgentFunction, MsgBruteForce, Ms
 /**
  * Agent function which outputs to a Spatial2D message list + some slow work.
  */
-FLAMEGPU_AGENT_FUNCTION(SlowMessageOutputAgentFunctionSpatial2D, MsgNone, MsgSpatial2D) {
+FLAMEGPU_AGENT_FUNCTION(SlowMessageOutputAgentFunctionSpatial2D, MessageNone, MessageSpatial2D) {
     // Repeatedly do some pointless maths on the value in register
     const int INTERNAL_REPETITIONS = 65536;
     for (int i = 0; i < INTERNAL_REPETITIONS; i++) {
@@ -209,7 +209,7 @@ FLAMEGPU_AGENT_FUNCTION(SlowMessageOutputAgentFunctionSpatial2D, MsgNone, MsgSpa
 /**
  * Agent function which inputs from a Spatial2D message list + some slow work.
  */
-FLAMEGPU_AGENT_FUNCTION(SlowMessageInputAgentFunctionSpatial2D, MsgSpatial2D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowMessageInputAgentFunctionSpatial2D, MessageSpatial2D, MessageNone) {
     // Repeatedly do some pointless maths on the value in register
     const int INTERNAL_REPETITIONS = 65536;
     for (int i = 0; i < INTERNAL_REPETITIONS; i++) {
@@ -230,7 +230,7 @@ FLAMEGPU_AGENT_FUNCTION(SlowMessageInputAgentFunctionSpatial2D, MsgSpatial2D, Ms
 /**
  * Agent function which outputs to a Spatial3D message list + some slow work.
  */
-FLAMEGPU_AGENT_FUNCTION(SlowMessageOutputAgentFunctionSpatial3D, MsgNone, MsgSpatial3D) {
+FLAMEGPU_AGENT_FUNCTION(SlowMessageOutputAgentFunctionSpatial3D, MessageNone, MessageSpatial3D) {
     // Repeatedly do some pointless maths on the value in register
     const int INTERNAL_REPETITIONS = 65536;
     for (int i = 0; i < INTERNAL_REPETITIONS; i++) {
@@ -249,7 +249,7 @@ FLAMEGPU_AGENT_FUNCTION(SlowMessageOutputAgentFunctionSpatial3D, MsgNone, MsgSpa
 /**
  * Agent function which inputs from a Spatial3D message list + some slow work.
  */
-FLAMEGPU_AGENT_FUNCTION(SlowMessageInputAgentFunctionSpatial3D, MsgSpatial3D, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowMessageInputAgentFunctionSpatial3D, MessageSpatial3D, MessageNone) {
     // Repeatedly do some pointless maths on the value in register
     const int INTERNAL_REPETITIONS = 65536;
     for (int i = 0; i < INTERNAL_REPETITIONS; i++) {
@@ -272,7 +272,7 @@ FLAMEGPU_AGENT_FUNCTION(SlowMessageInputAgentFunctionSpatial3D, MsgSpatial3D, Ms
  * Slow and uninteresting agent function which will take a while to run for accurate timing.
  * Agents birth an agent of the same type.
  */
-FLAMEGPU_AGENT_FUNCTION(SlowAgentFunctionBirth, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowAgentFunctionBirth, MessageNone, MessageNone) {
     // Repeatedly do some pointless maths on the value in register
     const int INTERNAL_REPETITIONS = 65536;
     for (int i = 0; i < INTERNAL_REPETITIONS; i++) {
@@ -289,7 +289,7 @@ FLAMEGPU_AGENT_FUNCTION(SlowAgentFunctionBirth, MsgNone, MsgNone) {
  * Slow and uninteresting agent function which will take a while to run for accurate timing.
  * Agents die.
  */
-FLAMEGPU_AGENT_FUNCTION(SlowAgentFunctionDeath, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowAgentFunctionDeath, MessageNone, MessageNone) {
     // Repeatedly do some pointless maths on the value in register
     const int INTERNAL_REPETITIONS = 65536;
     for (int i = 0; i < INTERNAL_REPETITIONS; i++) {
@@ -351,7 +351,7 @@ FLAMEGPU_AGENT_FUNCTION_CONDITION(SlowCondition5050) {
 /**
  * Agent function which causes a device exception. Slow just to ensure it runs at the same time. No way of timing accurately.)
  */
-FLAMEGPU_AGENT_FUNCTION(SlowAgentFunctionWithDeviceException, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(SlowAgentFunctionWithDeviceException, MessageNone, MessageNone) {
     // Repeatedly do some pointless maths on the value in register
     const int INTERNAL_REPETITIONS = 65536;
     for (int i = 0; i < INTERNAL_REPETITIONS; i++) {
@@ -367,7 +367,7 @@ FLAMEGPU_AGENT_FUNCTION(SlowAgentFunctionWithDeviceException, MsgNone, MsgNone) 
 /**
  * Fast but uninteresting agent function. not useful to time, but allows timing of post processing (to a certain degree)
  */
-FLAMEGPU_AGENT_FUNCTION(FastAgentFunction, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(FastAgentFunction, MessageNone, MessageNone) {
     // Repeatedly do some pointless maths on the value in register
     const int INTERNAL_REPETITIONS = 1;
     for (int i = 0; i < INTERNAL_REPETITIONS; i++) {
@@ -501,11 +501,11 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutput) {
         std::string message_name(agent_name + "_messages");
         AgentDescription &a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        MsgBruteForce::Description &msg = m.newMessage(message_name);
-        msg.newVariable<float>("v");
+        MessageBruteForce::Description &message = m.newMessage(message_name);
+        message.newVariable<float>("v");
 
         auto &f = a.newFunction(agent_function, SlowMessageOutputAgentFunction);
-        f.setMessageOutput(msg);
+        f.setMessageOutput(message);
 
         layer.addAgentFunction(f);
 
@@ -550,16 +550,16 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInput) {
         std::string message_name(agent_name + "_messages");
         AgentDescription &a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        MsgBruteForce::Description &msg = m.newMessage(message_name);
-        msg.newVariable<float>("v");
+        MessageBruteForce::Description &message = m.newMessage(message_name);
+        message.newVariable<float>("v");
 
         auto &f_out = a.newFunction(agent_function_out, SlowMessageOutputAgentFunction);
-        f_out.setMessageOutput(msg);
+        f_out.setMessageOutput(message);
 
         layer0.addAgentFunction(f_out);
 
         auto &f_in = a.newFunction(agent_function_in, SlowMessageInputAgentFunction);
-        f_in.setMessageInput(msg);
+        f_in.setMessageInput(message);
 
         layer1.addAgentFunction(f_in);
 
@@ -595,7 +595,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSam
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
-    std::string msg_in_name("agent_0_messages");
+    std::string message_in_name("agent_0_messages");
 
     // Add a few agent types, each with a single agent function.
     for (int i = 0; i < CONCURRENCY_DEGREE; i++) {
@@ -606,18 +606,18 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSam
         std::string message_name(agent_name + "_messages");
         AgentDescription &a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        MsgBruteForce::Description &msg = m.newMessage(message_name);
-        msg.newVariable<float>("v");
+        MessageBruteForce::Description &message = m.newMessage(message_name);
+        message.newVariable<float>("v");
 
-        MsgBruteForce::Description &msg_in = m.Message(msg_in_name);
+        MessageBruteForce::Description &message_in = m.Message(message_in_name);
 
         auto &f_out = a.newFunction(agent_function_out, SlowMessageOutputAgentFunction);
-        f_out.setMessageOutput(msg);
+        f_out.setMessageOutput(message);
 
         layer0.addAgentFunction(f_out);
 
         auto &f_in = a.newFunction(agent_function_in, SlowMessageInputAgentFunction);
-        f_in.setMessageInput(msg_in);
+        f_in.setMessageInput(message_in);
 
         layer1.addAgentFunction(f_in);
 
@@ -652,7 +652,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentOptionalMessageOutput
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
-    std::string msg_in_name("agent_0_messages");
+    std::string message_in_name("agent_0_messages");
 
     // Add a few agent types, each with a single agent function.
     for (int i = 0; i < CONCURRENCY_DEGREE; i++) {
@@ -664,19 +664,19 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentOptionalMessageOutput
         AgentDescription &a = m.newAgent(agent_name);
         a.newVariable<unsigned int>("id");
         a.newVariable<float>("v");
-        MsgBruteForce::Description &msg = m.newMessage(message_name);
-        msg.newVariable<float>("v");
+        MessageBruteForce::Description &message = m.newMessage(message_name);
+        message.newVariable<float>("v");
 
-        MsgBruteForce::Description &msg_in = m.Message(msg_in_name);
+        MessageBruteForce::Description &message_in = m.Message(message_in_name);
 
         auto &f_out = a.newFunction(agent_function_out, SlowOptionalMessageOutputAgentFunction);
         f_out.setMessageOutputOptional(true);
-        f_out.setMessageOutput(msg);
+        f_out.setMessageOutput(message);
 
         layer0.addAgentFunction(f_out);
 
         auto &f_in = a.newFunction(agent_function_in, SlowOptionalMessageInputAgentFunction);
-        f_in.setMessageInput(msg_in);
+        f_in.setMessageInput(message_in);
 
         layer1.addAgentFunction(f_in);
 
@@ -729,21 +729,21 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
         a.newVariable<float>("x");
         a.newVariable<float>("y");
 
-        MsgSpatial2D::Description &msg = m.newMessage<MsgSpatial2D>(message_name);
-        msg.newVariable<float>("v");
-        // msg.newVariable<float>("x");
-        // msg.newVariable<float>("y");
-        msg.setMin(MESSAGE_BOUNDS_MIN, MESSAGE_BOUNDS_MIN);
-        msg.setMax(MESSAGE_BOUNDS_MAX, MESSAGE_BOUNDS_MAX);
-        msg.setRadius(MESSAGE_BOUNDS_RADIUS);
+        MessageSpatial2D::Description &message = m.newMessage<MessageSpatial2D>(message_name);
+        message.newVariable<float>("v");
+        // message.newVariable<float>("x");
+        // message.newVariable<float>("y");
+        message.setMin(MESSAGE_BOUNDS_MIN, MESSAGE_BOUNDS_MIN);
+        message.setMax(MESSAGE_BOUNDS_MAX, MESSAGE_BOUNDS_MAX);
+        message.setRadius(MESSAGE_BOUNDS_RADIUS);
 
         auto &f_out = a.newFunction(agent_function_out, SlowMessageOutputAgentFunctionSpatial2D);
-        f_out.setMessageOutput(msg);
+        f_out.setMessageOutput(message);
 
         layer0.addAgentFunction(f_out);
 
         auto &f_in = a.newFunction(agent_function_in, SlowMessageInputAgentFunctionSpatial2D);
-        f_in.setMessageInput(msg);
+        f_in.setMessageInput(message);
 
         layer1.addAgentFunction(f_in);
 
@@ -800,22 +800,22 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
         a.newVariable<float>("y");
         a.newVariable<float>("z");
 
-        MsgSpatial3D::Description &msg = m.newMessage<MsgSpatial3D>(message_name);
-        msg.newVariable<float>("v");
-        // msg.newVariable<float>("x");
-        // msg.newVariable<float>("y");
-        // msg.newVariable<float>("z");
-        msg.setMin(MESSAGE_BOUNDS_MIN, MESSAGE_BOUNDS_MIN, MESSAGE_BOUNDS_MIN);
-        msg.setMax(MESSAGE_BOUNDS_MAX, MESSAGE_BOUNDS_MAX, MESSAGE_BOUNDS_MAX);
-        msg.setRadius(MESSAGE_BOUNDS_RADIUS);
+        MessageSpatial3D::Description &message = m.newMessage<MessageSpatial3D>(message_name);
+        message.newVariable<float>("v");
+        // message.newVariable<float>("x");
+        // message.newVariable<float>("y");
+        // message.newVariable<float>("z");
+        message.setMin(MESSAGE_BOUNDS_MIN, MESSAGE_BOUNDS_MIN, MESSAGE_BOUNDS_MIN);
+        message.setMax(MESSAGE_BOUNDS_MAX, MESSAGE_BOUNDS_MAX, MESSAGE_BOUNDS_MAX);
+        message.setRadius(MESSAGE_BOUNDS_RADIUS);
 
         auto &f_out = a.newFunction(agent_function_out, SlowMessageOutputAgentFunctionSpatial3D);
-        f_out.setMessageOutput(msg);
+        f_out.setMessageOutput(message);
 
         layer0.addAgentFunction(f_out);
 
         auto &f_in = a.newFunction(agent_function_in, SlowMessageInputAgentFunctionSpatial3D);
-        f_in.setMessageInput(msg);
+        f_in.setMessageInput(message);
 
         layer1.addAgentFunction(f_in);
 
@@ -1234,7 +1234,7 @@ RELEASE_ONLY_SEATBELTS_TEST(TestCUDASimulationConcurrency, LayerConcurrencyDevic
  * Slow and uninteresting RTC agent function which will take a while to run for accurate timing
  */
 const char* rtc_slowAgentFunction = R"###(
-    FLAMEGPU_AGENT_FUNCTION(rtc_slowAgentFunction, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(rtc_slowAgentFunction, flamegpu::MessageNone, flamegpu::MessageNone) {
         // Repeatedly do some pointless maths on the value in register
         const int INTERNAL_REPETITIONS = 65536;
         for (int i = 0; i < INTERNAL_REPETITIONS; i++) {

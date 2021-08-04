@@ -2,7 +2,7 @@
 
 const unsigned int AGENT_COUNT = 1024;
 
-FLAMEGPU_AGENT_FUNCTION(device_function, flamegpu::MsgNone, flamegpu::MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(device_function, flamegpu::MessageNone, flamegpu::MessageNone) {
     const float &prop_float = FLAMEGPU->environment.getProperty<float>("float");
     const int16_t &prop_int16 = FLAMEGPU->environment.getProperty<int16_t>("int16_t");
     const uint64_t &prop_uint64_0 = FLAMEGPU->environment.getProperty<uint64_t>("uint64_t", 0);

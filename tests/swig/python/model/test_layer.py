@@ -31,35 +31,35 @@ class EmptyHostFunc(pyflamegpu.HostFunctionCallback):
 class LayerDescriptionTest(TestCase):
     
     agent_fn1 = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn1, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn1, flamegpu::MessageNone, flamegpu::MessageNone) {
         # do nothing
         return flamegpu::ALIVE
     }
     """
     
     agent_fn2 = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn2, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn2, flamegpu::MessageNone, flamegpu::MessageNone) {
         # do nothing
         return flamegpu::ALIVE
     }
     """
     
     agent_fn3 = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn3, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn3, flamegpu::MessageNone, flamegpu::MessageNone) {
         # do nothing
         return flamegpu::ALIVE
     }
     """
     
     agent_fn4 = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn4, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn4, flamegpu::MessageNone, flamegpu::MessageNone) {
         # do nothing
         return flamegpu::ALIVE
     }
     """
     
     agent_fn5 = """
-    FLAMEGPU_AGENT_FUNCTION(agent_fn5, flamegpu::MsgNone, flamegpu::MsgNone) {
+    FLAMEGPU_AGENT_FUNCTION(agent_fn5, flamegpu::MessageNone, flamegpu::MessageNone) {
         # do nothing
         return flamegpu::ALIVE
     }

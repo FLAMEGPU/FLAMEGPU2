@@ -52,14 +52,14 @@ namespace test_cuda_sub_agent {
     const char *MAPPED_STATE2 = "mapped2";
     const char *UNMAPPED_STATE1 = "unmapped1";
     const char *UNMAPPED_STATE2 = "unmapped2";
-FLAMEGPU_AGENT_FUNCTION(AddT, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(AddT, MessageNone, MessageNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("AVar1");
     const unsigned int t = FLAMEGPU->getVariable<unsigned int>("t");
     FLAMEGPU->setVariable<unsigned int>("AVar1", v + t);
     FLAMEGPU->setVariable<unsigned int>("t", t + 1);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(AddOne, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(AddOne, MessageNone, MessageNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("AVar1");
     const unsigned int sub_v = FLAMEGPU->getVariable<unsigned int>("SubVar1");
     if (sub_v == 12) {
@@ -73,26 +73,26 @@ FLAMEGPU_AGENT_FUNCTION(AddOne, MsgNone, MsgNone) {
     }
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(AddSubVar, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(AddSubVar, MessageNone, MessageNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("AVar1");
     const unsigned int sub_v = FLAMEGPU->getVariable<unsigned int>("SubVar1");
     FLAMEGPU->setVariable<unsigned int>("AVar1", v + sub_v);
     FLAMEGPU->setVariable<unsigned int>("SubVar1", sub_v * 2);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(AddOne2, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(AddOne2, MessageNone, MessageNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("AVar1");
     FLAMEGPU->setVariable<unsigned int>("AVar1", v + 1);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(AddTen, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(AddTen, MessageNone, MessageNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("AVar1");
     FLAMEGPU->setVariable<unsigned int>("AVar1", v + 10);
     const unsigned int v2 = FLAMEGPU->getVariable<unsigned int>("AVar2");
     FLAMEGPU->setVariable<unsigned int>("AVar2", v2 - 1000);
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(KillEven, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(KillEven, MessageNone, MessageNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("i");
     FLAMEGPU->setVariable<unsigned int>("i", v * 3);
     if (FLAMEGPU->getVariable<unsigned int>("AVar2") > UINT_MAX-1000) {
@@ -106,7 +106,7 @@ FLAMEGPU_AGENT_FUNCTION(KillEven, MsgNone, MsgNone) {
     }
     return ALIVE;
 }
-FLAMEGPU_AGENT_FUNCTION(BirthEven, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(BirthEven, MessageNone, MessageNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("i");
     FLAMEGPU->setVariable<unsigned int>("i", v * 3);
     if (FLAMEGPU->getVariable<unsigned int>("AVar2") > UINT_MAX - 2000) {
@@ -132,7 +132,7 @@ FLAMEGPU_AGENT_FUNCTION_CONDITION(AllowEven) {
     }
     return false;
 }
-FLAMEGPU_AGENT_FUNCTION(UpdateId100, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(UpdateId100, MessageNone, MessageNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("i");
     FLAMEGPU->setVariable<unsigned int>("i", v + 100);
     return ALIVE;
@@ -149,7 +149,7 @@ FLAMEGPU_HOST_FUNCTION(HostBirth2) {
     auto a = FLAMEGPU->agent(AGENT_NAME).newAgent();
     a.setVariable<unsigned int>(AGENT_VAR1_NAME, 5);
 }
-FLAMEGPU_AGENT_FUNCTION(HostBirthUpdate, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(HostBirthUpdate, MessageNone, MessageNone) {
     const unsigned int v = FLAMEGPU->getVariable<unsigned int>("AVar1");
     if (v == 5) {
         FLAMEGPU->setVariable<unsigned int>("AVar1", 500);
@@ -2255,7 +2255,7 @@ TEST(TestCUDASubAgent, UnmappedVariablesResetToDefaultBetweenSubmodelRuns) {
     }
 }
 
-FLAMEGPU_AGENT_FUNCTION(CopyID, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(CopyID, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<id_t>("id_copy", FLAMEGPU->getID());
     return ALIVE;
 }
@@ -2293,7 +2293,7 @@ TEST(TestCUDASubAgent, AgentID_BindsID) {
     }
 }
 // Submodel unbound agents id counter resets
-FLAMEGPU_AGENT_FUNCTION(BirthAndCopyID, MsgNone, MsgNone) {
+FLAMEGPU_AGENT_FUNCTION(BirthAndCopyID, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<id_t>("id_copy", FLAMEGPU->agent_out.getID());
     return ALIVE;
 }

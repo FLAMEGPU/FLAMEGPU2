@@ -140,13 +140,13 @@ class ReadOnlyDeviceAPI {
  *
  * This class should only be used by the device and never created on the host. It is safe for each agent function to create a copy of this class on the device. Any singleton type
  * behaviour is handled by the curveInstance class. This will ensure that initialisation of the curve (C) library is done only once.
- * @tparam MsgIn Input message type (the form found in flamegpu/runtime/messaging.h, MsgNone etc)
- * @tparam MsgOut Output message type (the form found in flamegpu/runtime/messaging.h, MsgNone etc)
+ * @tparam MessageIn Input message type (the form found in flamegpu/runtime/messaging.h, MessageNone etc)
+ * @tparam MessageOut Output message type (the form found in flamegpu/runtime/messaging.h, MessageNone etc)
  */
-template<typename MsgIn, typename MsgOut>
+template<typename MessageIn, typename MessageOut>
 class DeviceAPI : public ReadOnlyDeviceAPI{
     // Friends have access to TID() & TS_ID()
-    template<typename AgentFunction, typename _MsgIn, typename _MsgOut>
+    template<typename AgentFunction, typename _MessageIn, typename _MessageOut>
     friend __global__ void agent_function_wrapper(
 #if !defined(SEATBELTS) || SEATBELTS
         exception::DeviceExceptionBuffer *error_buffer,
@@ -247,8 +247,8 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
      * @param d_agent_output_nextID If agent birth is enabled, a pointer to the next available ID in global memory. Device agent birth will atomically increment this value to allocate IDs.
      * @param d_rng Device pointer to curand state for this kernel, index 0 should for TID()==0
      * @param scanFlag_agentOutput Array for agent output scan flag
-     * @param msg_in Input message handler
-     * @param msg_out Output message handler
+     * @param message_in Input message handler
+     * @param message_out Output message handler
      */
     __device__ DeviceAPI(
         const detail::curve::Curve::NamespaceHash &instance_id_hash,
@@ -257,11 +257,11 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
         id_t *&d_agent_output_nextID,
         curandState *&d_rng,
         unsigned int *&scanFlag_agentOutput,
-        typename MsgIn::In &&msg_in,
-        typename MsgOut::Out &&msg_out)
+        typename MessageIn::In &&message_in,
+        typename MessageOut::Out &&message_out)
         : ReadOnlyDeviceAPI(instance_id_hash, agentfuncname_hash, d_rng)
-        , message_in(msg_in)
-        , message_out(msg_out)
+        , message_in(message_in)
+        , message_out(message_out)
         , agent_out(AgentOut(_agent_output_hash, d_agent_output_nextID, scanFlag_agentOutput))
     { }
     /**
@@ -293,11 +293,11 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
     /**
      * Provides access to message read functionality inside agent functions
      */
-    const typename MsgIn::In message_in;
+    const typename MessageIn::In message_in;
     /**
      * Provides access to message write functionality inside agent functions
      */
-    const typename MsgOut::Out message_out;
+    const typename MessageOut::Out message_out;
     /**
      * Provides access to agent output functionality inside agent functions
      */
@@ -319,9 +319,9 @@ __device__ T ReadOnlyDeviceAPI::getVariable(const char(&variable_name)[N]) const
     return value;
 }
 
-template<typename MsgIn, typename MsgOut>
+template<typename MessageIn, typename MessageOut>
 template<typename T, unsigned int N>
-__device__ void DeviceAPI<MsgIn, MsgOut>::setVariable(const char(&variable_name)[N], T value) {
+__device__ void DeviceAPI<MessageIn, MessageOut>::setVariable(const char(&variable_name)[N], T value) {
     if (variable_name[0] == '_') {
         return;  // Fail silently
     }
@@ -330,6 +330,7 @@ __device__ void DeviceAPI<MsgIn, MsgOut>::setVariable(const char(&variable_name)
     // set the variable using curve
     detail::curve::Curve::setAgentVariable<T>(variable_name, agent_func_name_hash,  value, index);
 }
+
 template<typename T, unsigned int N, unsigned int M>
 __device__ T ReadOnlyDeviceAPI::getVariable(const char(&variable_name)[M], const unsigned int &array_index) const {
     // simple indexing assumes index is the thread number (this may change later)
@@ -341,9 +342,10 @@ __device__ T ReadOnlyDeviceAPI::getVariable(const char(&variable_name)[M], const
     // return the variable from curve
     return value;
 }
-template<typename MsgIn, typename MsgOut>
+
+template<typename MessageIn, typename MessageOut>
 template<typename T, unsigned int N, unsigned int M>
-__device__ void DeviceAPI<MsgIn, MsgOut>::setVariable(const char(&variable_name)[M], const unsigned int &array_index, const T &value) {
+__device__ void DeviceAPI<MessageIn, MessageOut>::setVariable(const char(&variable_name)[M], const unsigned int &array_index, const T &value) {
     if (variable_name[0] == '_') {
         return;  // Fail silently
     }
@@ -354,9 +356,9 @@ __device__ void DeviceAPI<MsgIn, MsgOut>::setVariable(const char(&variable_name)
     detail::curve::Curve::setAgentArrayVariable<T, N>(variable_name , agent_func_name_hash,  value, index, array_index);
 }
 
-template<typename MsgIn, typename MsgOut>
+template<typename MessageIn, typename MessageOut>
 template<typename T, unsigned int N>
-__device__ void DeviceAPI<MsgIn, MsgOut>::AgentOut::setVariable(const char(&variable_name)[N], T value) const {
+__device__ void DeviceAPI<MessageIn, MessageOut>::AgentOut::setVariable(const char(&variable_name)[N], T value) const {
     if (agent_output_hash) {
         if (variable_name[0] == '_') {
             return;  // Fail silently
@@ -377,9 +379,9 @@ __device__ void DeviceAPI<MsgIn, MsgOut>::AgentOut::setVariable(const char(&vari
 #endif
     }
 }
-template<typename MsgIn, typename MsgOut>
+template<typename MessageIn, typename MessageOut>
 template<typename T, unsigned int N, unsigned int M>
-__device__ void DeviceAPI<MsgIn, MsgOut>::AgentOut::setVariable(const char(&variable_name)[M], const unsigned int &array_index, T value) const {
+__device__ void DeviceAPI<MessageIn, MessageOut>::AgentOut::setVariable(const char(&variable_name)[M], const unsigned int &array_index, T value) const {
     if (agent_output_hash) {
         if (variable_name[0] == '_') {
             return;  // Fail silently
@@ -399,8 +401,8 @@ __device__ void DeviceAPI<MsgIn, MsgOut>::AgentOut::setVariable(const char(&vari
     }
 }
 
-template<typename MsgIn, typename MsgOut>
-__device__ id_t DeviceAPI<MsgIn, MsgOut>::AgentOut::getID() const {
+template<typename MessageIn, typename MessageOut>
+__device__ id_t DeviceAPI<MessageIn, MessageOut>::AgentOut::getID() const {
     if (agent_output_hash) {
         genID();
         return this->id;
@@ -411,8 +413,8 @@ __device__ id_t DeviceAPI<MsgIn, MsgOut>::AgentOut::getID() const {
     return ID_NOT_SET;
 }
 #ifdef __CUDACC__
-template<typename MsgIn, typename MsgOut>
-__device__ void DeviceAPI<MsgIn, MsgOut>::AgentOut::genID() const {
+template<typename MessageIn, typename MessageOut>
+__device__ void DeviceAPI<MessageIn, MessageOut>::AgentOut::genID() const {
     // Only assign id and scan flag once
     if (this->id == ID_NOT_SET) {
         this->id = atomicInc(this->nextID, std::numeric_limits<id_t>().max());

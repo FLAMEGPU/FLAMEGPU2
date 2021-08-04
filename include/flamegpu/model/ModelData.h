@@ -10,7 +10,7 @@
 
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/runtime/HostAPI_macros.h"
-#include "flamegpu/runtime/messaging/BruteForce.h"
+#include "flamegpu/runtime/messaging/MessageBruteForce.h"
 
 namespace flamegpu {
 
@@ -49,7 +49,7 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      * Map of name:message definition
      * map<string, MessageData>
      */
-    typedef std::unordered_map<std::string, std::shared_ptr<MsgBruteForce::Data>> MessageMap;
+    typedef std::unordered_map<std::string, std::shared_ptr<MessageBruteForce::Data>> MessageMap;
     /**
      * Map of name:message definition
      * map<string, MessageData>
