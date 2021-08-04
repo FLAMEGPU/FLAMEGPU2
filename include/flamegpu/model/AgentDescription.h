@@ -293,7 +293,7 @@ void AgentDescription::newVariable(const std::string &variable_name, const std::
             "in AgentDescription::newVariable().");
     }
     if (lower_variable_name == "fgpu2_reserved_bin_index") {
-        THROW ReservedName("The variable name 'fgpu2_reserved_bin_index' is reserved for internal usage, "
+        THROW exception::ReservedName("The variable name 'fgpu2_reserved_bin_index' is reserved for internal usage, "
             "in AgentDescription::newVariable().");
     }
     // Array length 0 makes no sense

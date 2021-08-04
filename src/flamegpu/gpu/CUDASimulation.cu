@@ -322,7 +322,7 @@ void CUDASimulation::determineAgentsToSort() {
         const auto& mf = it->second->functions;
         for (auto it_f = mf.cbegin(); it_f != mf.cend(); ++it_f) {
             // Check if this agent function uses 3D spatial messages
-            if (it_f->second->msg_in_type == CurveRTCHost::demangle(std::type_index(typeid(MsgSpatial3D)))) {
+            if (it_f->second->msg_in_type == detail::curve::CurveRTCHost::demangle(std::type_index(typeid(MsgSpatial3D)))) {
                 // Agent uses spatial, check it has correct variables
                 const auto& ad = *(it->second->description);
                 if (ad.hasVariable("x") && ad.hasVariable("y") && ad.hasVariable("z")) {
@@ -330,7 +330,7 @@ void CUDASimulation::determineAgentsToSort() {
                 }
             }
             // Check if this agent function uses 2D spatial messages
-            if (it_f->second->msg_in_type == CurveRTCHost::demangle(std::type_index(typeid(MsgSpatial2D)))) {
+            if (it_f->second->msg_in_type == detail::curve::CurveRTCHost::demangle(std::type_index(typeid(MsgSpatial2D)))) {
                 // Agent uses spatial, check it has correct variables
                 const auto& ad = *(it->second->description);
                 if (ad.hasVariable("x") && ad.hasVariable("y")) {
@@ -355,7 +355,7 @@ void CUDASimulation::spatialSortAgents() {
         envMax = {host_api->environment.getProperty<float>("MAX_POSITION"), host_api->environment.getProperty<float>("MAX_POSITION"), host_api->environment.getProperty<float>("MAX_POSITION")};
         envWidth = {(envMax.x-envMin.x), (envMax.y-envMin.y), (envMax.z-envMin.z)};
         gridDim = {static_cast<unsigned int>(ceilf(envWidth.x / radius)), static_cast<unsigned int>(ceilf(envWidth.y / radius)), static_cast<unsigned int>(ceilf(envWidth.z / radius))};
-    } catch (InvalidEnvProperty& e) {
+    } catch (exception::InvalidEnvProperty& e) {
         std::cout << "WARNING: Please set the INTERACTION_RADIUS, MIN_POSITION and MAX_POSITION environment properties to enable spatial sorting\n";
         this->setSortAgentsEveryNSteps(UINT_MAX);
         return;
