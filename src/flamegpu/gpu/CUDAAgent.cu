@@ -581,8 +581,14 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
         }
     }
 
+    std::string header_filename = std::string(func.rtc_func_name).append("_impl");
+    if (function_condition)
+        header_filename.append("_condition");
+    header_filename.append("_curve_rtc_dynamic.h");
+    curve_header.setFileName(header_filename);
+
     // get the dynamically generated header from curve rtc
-    std::string curve_dynamic_header = curve_header.getDynamicHeader();
+    const std::string curve_dynamic_header = curve_header.getDynamicHeader();
 
     // output to disk if OUTPUT_RTC_DYNAMIC_FILES macro is set
 #ifdef OUTPUT_RTC_DYNAMIC_FILES

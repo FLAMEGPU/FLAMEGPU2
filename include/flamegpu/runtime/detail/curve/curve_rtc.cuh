@@ -143,6 +143,12 @@ class CurveRTCHost {
      */
     void unregisterEnvVariable(const char* propertyName);
     /**
+     * Set the filename tagged in the file (goes into a #line statement)
+     * @param filename Name to be used for the file in compile errors
+     * @note Do not include quotes
+     */
+    void setFileName(const std::string& filename);
+    /**
      * Generates and returns the dynamic header based on the currently registered variables and properties
      * @return The dynamic Curve header
      */
