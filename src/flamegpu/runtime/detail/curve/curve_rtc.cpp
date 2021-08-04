@@ -19,6 +19,7 @@ namespace curve {
 
 
 const char* CurveRTCHost::curve_rtc_dynamic_h_template = R"###(dynamic/curve_rtc_dynamic.h
+#line 1 "$FILENAME"
 #ifndef CURVE_RTC_DYNAMIC_H_
 #define CURVE_RTC_DYNAMIC_H_
 
@@ -918,6 +919,10 @@ void CurveRTCHost::initDataBuffer() {
     for (auto &element : newAgent_variables) {
         element.second.h_data_ptr = h_data_buffer + newAgent_data_offset + (ct++ * sizeof(void*));
     }
+}
+
+void CurveRTCHost::setFileName(const std::string &filename) {
+    setHeaderPlaceholder("$FILENAME", filename);
 }
 
 std::string CurveRTCHost::getDynamicHeader() {
