@@ -93,11 +93,11 @@ option(BUILD_SWIG_PYTHON "Enable python bindings via SWIG" OFF)
 # By default, build into a venv, otherwise it is set to ON anyway. 
 cmake_dependent_option(BUILD_SWIG_PYTHON_VENV "Enable the use of a venv for swig/python installation" ON "BUILD_SWIG_PYTHON" ON)
 
-
 # Option to enable/disable tests.
 option(BUILD_TESTS "Enable building tests" OFF)
+
 # Option to enable the development tests target, test_dev. This is independant from build_tests
-option(BUILD_TESTS_DEV "Enable building test_dev" ON)
+option(BUILD_TESTS_DEV "Enable building test_dev" OFF)
 
 # Option to enable/disable NVTX markers for improved profiling
 option(USE_NVTX "Build with NVTX markers enabled" OFF)
