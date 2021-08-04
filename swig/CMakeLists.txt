@@ -15,9 +15,17 @@ if(POLICY CMP0086)
   cmake_policy(SET CMP0086 NEW)
 endif()
 
-# Make sure python 3 is available before bothering with SWIG.
-find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
-message(STATUS "Python found at " ${Python3_EXECUTABLE})
+if (BUILD_SWIG_PYTHON)
+  # Make sure python 3 is available before bothering with SWIG.
+  find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+  message(STATUS "Python found at " ${Python3_EXECUTABLE})
+endif()
+
+if (BUILD_SWIG_R)
+  # Make sure R is available before bothering with SWIG.?
+  find_package(R_EXEC)
+  message(STATUS "R found at " ${R_EXECUTABLE})
+endif()
 
 # Define the minimum version of cmake we support.
 # Swig 4.0+ is required for c++14 (and c++11 std::unordered_map). 
@@ -148,19 +156,16 @@ set(CMAKE_SWIG_FLAGS)
 #include(${SWIG_USE_FILE})
 include(UseSWIG)
 
-# enable doxygen translation
-if (SWIG_VERSION VERSION_GREATER_EQUAL 4)
-	list(APPEND CMAKE_SWIG_FLAGS "-doxygen")
-endif()
-
-if(Python_VERSION VERSION_GREATER_EQUAL 3)
-	list(APPEND CMAKE_SWIG_FLAGS "-py3")
-endif()
-
 # If on a system with 64bit longs, need to pass -DSWIGWORDSIZE64 to swig.
 if(NOT WIN32)
     list(APPEND CMAKE_SWIG_FLAGS "-DSWIGWORDSIZE64")
 endif()
 
-# Add the python swig subdirectory
-add_subdirectory(python)
+if (BUILD_SWIG_PYTHON)
+  # Add the python swig subdirectory
+  add_subdirectory(python)
+endif()
+if (BUILD_SWIG_R)
+  # Add the R swig subdirectory
+  add_subdirectory(r)
+endif()

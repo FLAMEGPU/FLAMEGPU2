@@ -47,6 +47,15 @@ set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY SWIG_MODULE_NAME ${PYTHON
 set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY SWIG_FLAGS "-threads")
 #set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY SWIG_FLAGS "-builtin")
 
+# enable doxygen translation
+if (SWIG_VERSION VERSION_GREATER_EQUAL 4)
+  set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY SWIG_FLAGS "-doxygen")
+endif()
+
+if(Python_VERSION VERSION_GREATER_EQUAL 3)
+  set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY SWIG_FLAGS "-py3")
+endif()
+
 # Add swig module
 swig_add_library(${PYTHON_MODULE_NAME}
 	TYPE SHARED

@@ -89,6 +89,7 @@ if(NOT NO_EXAMPLES)
     option(BUILD_EXAMPLE_SUGARSCAPE "Enable building examples/sugarscape" OFF)
 endif()
 
+option(BUILD_SWIG_R "Enable R bindings via SWIG" OFF)
 option(BUILD_SWIG_PYTHON "Enable python bindings via SWIG" OFF)
 # By default, build into a venv, otherwise it is set to ON anyway. 
 cmake_dependent_option(BUILD_SWIG_PYTHON_VENV "Enable the use of a venv for swig/python installation" ON "BUILD_SWIG_PYTHON" ON)
@@ -182,7 +183,7 @@ if(BUILD_TESTS OR BUILD_TESTS_DEV)
     endif()
 endif()
 
-if(BUILD_SWIG_PYTHON)
+if(BUILD_SWIG_PYTHON OR BUILD_SWIG_R)
     add_subdirectory(swig)
 endif()
 
