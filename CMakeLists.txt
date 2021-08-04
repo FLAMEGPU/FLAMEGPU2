@@ -1,6 +1,13 @@
 # CMake 3.15+ for Thrust/Cub support
 cmake_minimum_required(VERSION VERSION 3.15 FATAL_ERROR)
 
+# Emit a deprecation warning if CMAKE < 3.18 which is required for c++17 in the future.
+set(CMAKE_MINIMUM_SUPPORTED_VERSION 3.18)
+if(${CMAKE_VERSION} VERSION_LESS ${CMAKE_MINIMUM_SUPPORTED_VERSION})
+    message(DEPRECATION "Support for CMake < ${CMAKE_MINIMUM_SUPPORTED_VERSION} is deprecated and will be removed in a  future release.")
+endif()
+
+
 project(FLAMEGPU LANGUAGES NONE)
 
 # Don't create installation scripts (and hide CMAKE_INSTALL_PREFIX from cmake-gui)
