@@ -116,12 +116,22 @@ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DJITIFY_PRINT_LOG")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DJITIFY_PRINT_LOG")
 
 # Set the minimum supported cuda version, if not already set. Currently duplicated due to docs only build logic.
-if(NOT DEFINED MINIMUM_SUPPORTED_CUDA_VERSION)
-    set(MINIMUM_SUPPORTED_CUDA_VERSION 10.0)
+# CUDA 10.0 is the current minimum working but deprecated verison, which will be removed.
+if(NOT DEFINED MINIMUM_CUDA_VERSION)
+    set(MINIMUM_CUDA_VERSION 10.0)
+    # Require a minimum cuda version
+    if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_CUDA_VERSION})
+        message(FATAL_ERROR "CUDA version must be at least ${MINIMUM_CUDA_VERSION}")
+    endif()
 endif()
-# Require a minimum cuda version
-if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_SUPPORTED_CUDA_VERSION})
-    message(FATAL_ERROR "CUDA version must be at least ${MINIMUM_SUPPORTED_CUDA_VERSION}")
+# CUDA 11.0 is the current minimum supported version.
+if(NOT DEFINED MINIMUM_SUPPORTED_CUDA_VERSION)
+    set(MINIMUM_SUPPORTED_CUDA_VERSION 11.0)
+    # Warn on deprecated cuda version.
+    # If the CUDA compiler is atleast the minimum deprecated version, but less than the minimum actually supported version, issue a dev warning.
+    if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL ${MINIMUM_CUDA_VERSION} AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_SUPPORTED_CUDA_VERSION})
+        message(DEPRECATION "Support for CUDA verisons <= ${MINIMUM_SUPPORTED_CUDA_VERSION} is deprecated and will be removed in a future release.")
+    endif()
 endif()
 
 # Specify some additional compiler flags

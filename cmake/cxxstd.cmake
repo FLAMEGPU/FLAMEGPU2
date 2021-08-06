@@ -9,6 +9,7 @@ if(NOT FLAMEGPU_CXX_STD)
     if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
         # 17 OK
     elseif(CMAKE_VERSION VERSION_GREATER_EQUAL 3.10)
+        # No need for deprecation warning here, already warning about CMAKE < 3.18 being deprecated elsewhere.
         set(CXX17_SUPPORTED OFF)
     else()
         message(FATAL_ERROR "CMAKE ${CMAKE_VERSION} does not support -std=c++14")
@@ -19,6 +20,7 @@ if(NOT FLAMEGPU_CXX_STD)
         # 17 is ok.
     elseif(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 9.0.0)
         # 14 is ok, 17 is not.
+        # no need for an extra deprecation warning here, already warning in common about CUDA version.
         set(CXX17_SUPPORTED OFF)
     else()
         # Fatal Error.
@@ -37,6 +39,8 @@ if(NOT FLAMEGPU_CXX_STD)
         elseif(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.11)
             # 17 available?
         elseif(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.10)
+            # Emit a deprecation warning for VS20XX that is not c++17 supporting. I think this is VS2017 which will be broken anyway with CUDA 
+            message(DEPRECATION "Use of MSVC ${CMAKE_CXX_COMPILER_VERSION} is deprecated. A C++17 compiler (>= 19.11) will be required in a future release.")
             set(CXX17_SUPPORTED OFF)
         else()
             message(FATAL_ERROR "MSVC ${CMAKE_CXX_COMPILER_VERSION} does not support -std=c++14")
