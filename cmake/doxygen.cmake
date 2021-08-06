@@ -78,6 +78,8 @@ function(create_doxygen_target FLAMEGPU_ROOT DOXY_OUT_DIR XML_PATH)
         set(DOXYGEN_EXPAND_ONLY_PREDEF    YES)
         set(DOXYGEN_PREDEFINED            "DERIVED_FLAMEGPUException(name,default_message)=class name: public flamegpu::FLAMEGPUException { public: explicit name(const char *format = default_message)\; }" "VISUALISATION= ")
         set(DOXY_INPUT_FILES              "${FLAMEGPU_ROOT}/include;${FLAMEGPU_ROOT}/src;${FLAMEGPU_ROOT}/README.md")
+        # Do not generate a todo list page
+        set(DOXYGEN_GENERATE_TODOLIST             NO)
         # Create doxygen target            
         if("${XML_PATH}" STREQUAL "")
             set(DOXYGEN_GENERATE_HTML     YES)
