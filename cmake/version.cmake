@@ -3,7 +3,7 @@ set(FLAMEGPU_VERSION_MAJOR 2)
 set(FLAMEGPU_VERSION_MINOR 0)
 set(FLAMEGPU_VERSION_PATCH 0)
 # Prerelease must be empty, alpha[.N], beta[.N] or rc[.N] for python version compatibility
-set(FLAMEGPU_VERSION_PRERELEASE "alpha") 
+set(FLAMEGPU_VERSION_PRERELEASE "alpha.1") 
 
 
 # Validate the major version
