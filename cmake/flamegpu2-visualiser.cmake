@@ -6,6 +6,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/modules/ ${CMAKE_MODULE_PATH})
 include(FetchContent)
 cmake_policy(SET CMP0079 NEW)
 
+# Set the visualiser repo and tag to use unless overridden by the user.
+set(DEFAULT_VISUALISATION_GIT_VERSION "flamegpu-2.0.0-alpha")
+set(DEFAULT_VISUALISATION_REPOSITORY "https://github.com/FLAMEGPU/FLAMEGPU2-visualiser.git")
+
 # If overridden by the user, attempt to use that
 if (VISUALISATION_ROOT)
     # @todo - we should make the visualisation package find_package() compatible, and check it exists if VISUALISATION_ROOT is set. 
@@ -38,16 +42,27 @@ if (VISUALISATION_ROOT)
     endif()
 
 else()
+    # If a VISUALISATION_GIT_VERSION has not been defined, set it to the default option.
+    if(NOT DEFINED VISUALISATION_GIT_VERSION OR VISUALISATION_GIT_VERSION STREQUAL "")
+        set(VISUALISATION_GIT_VERSION "${DEFAULT_VISUALISATION_GIT_VERSION}" CACHE STRING "Git branch or tag to use for the FLAMEPGU2_visualiaer")
+    endif()
+
+    # Allow users to switch to forks with relative ease.
+    if(NOT DEFINED VISUALISATION_REPOSITORY OR VISUALISATION_REPOSITORY STREQUAL "")
+        set(VISUALISATION_REPOSITORY "${DEFAULT_VISUALISATION_REPOSITORY}" CACHE STRING "Remote Git Repository for the FLAMEPGU2_visualiaer")
+    endif()
+
     # Otherwise download.
     FetchContent_Declare(
         flamegpu_visualiser
-        GIT_REPOSITORY https://github.com/FLAMEGPU/FLAMEGPU2-visualiser.git
-        GIT_TAG        master
+        GIT_REPOSITORY ${VISUALISATION_REPOSITORY}
+        GIT_TAG        ${VISUALISATION_GIT_VERSION}
         GIT_PROGRESS   ON
         # UPDATE_DISCONNECTED   ON
         )
         FetchContent_GetProperties(flamegpu_visualiser)
     if(NOT flamegpu_visualiser_POPULATED)
+        message(STATUS "using flamegpu_visualiser ${VISUALISATION_GIT_VERSION} from ${VISUALISATION_REPOSITORY}")
         FetchContent_Populate(flamegpu_visualiser)
     
         add_subdirectory(${flamegpu_visualiser_SOURCE_DIR} ${flamegpu_visualiser_BINARY_DIR} EXCLUDE_FROM_ALL)
@@ -57,3 +72,5 @@ else()
         set(VISUALISATION_BUILD ${flamegpu_visualiser_BINARY_DIR} CACHE INTERNAL "flamegpu_visualiser_BINARY_DIR")
     endif()
 endif()
+unset(DEFAULT_VISUALISATION_GIT_VERSION)
+unset(DEFAULT_VISUALISATION_REPOSITORY)
