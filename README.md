@@ -24,19 +24,28 @@ If you encounter issues while using FLAME GPU, please provide bug reports, feedb
 
 ## Documentation and Support
 
-+ [Website](https://flamegpu.com/)
++ [Quickstart Guide](https://docs.flamegpu.com/quickstart)
 + [Documentation and User Guide](https://docs.flamegpu.com)
 + [GitHub Discussions](https://github.com/FLAMEGPU/FLAMEGPU2/discussions)
 + [GitHub Issues](https://github.com/FLAMEGPU/FLAMEGPU2/issues)
++ [Website](https://flamegpu.com/)
 
 ## Installation
 
 Pre-compiled python wheels are available for installations from [Releases](https://github.com/FLAMEGPU/FLAMEGPU2/releases/).
 Please see the [latest release](https://github.com/FLAMEGPU/FLAMEGPU2/releases/latest) for more information on the available wheels and installation instructions.
 
-C++/CUDA installation is not currently available. Please refer to the section on [Building](#Building) FLAME GPU.
+C++/CUDA installation is not currently available. Please refer to the section on [Building FLAME GPU](#Building-FLAME-GPU).
 
-## Building
+## Creating your own FLAME GPU Model
+
+Template repositories are provided as a simple starting point for your own FLAME GPU models, with separate template repositories for the CUDA C++ and Python interfaces.
+See the template repositories for further information on their use.
+
++ CUDA C++: [FLAME GPU 2 example template project](https://github.com/FLAMEGPU/FLAMEGPU2-example-template)
++ Python3: [FLAME GPU 2 python example template project](https://github.com/FLAMEGPU/FLAMEGPU2-python-example-template)
+
+## Building FLAME GPU
 
 FLAME GPU 2 uses [CMake](https://cmake.org/), as a cross-platform process, for configuring and generating build directives, e.g. `Makefile` or `.vcxproj`.
 This is used to build the FLAMEGPU2 library, examples, tests and documentation.
@@ -263,17 +272,6 @@ To run the python test suite:
     python3 -m pytest ../tests/swig/python
     ```
 
-## Creating your own FLAME GPU Model
-
-### C++/CUDA
-
-To create your own FLAME GPU model using the CUDA/C++ interface, you can use the [FLAME GPU 2 example template project](https://github.com/FLAMEGPU/FLAMEGPU2_example_template). This provides a simple standalone example with CMake files ready to build a model using FLAME GPU.
-
-### Python
-
-To create your own FLAME GPU model using the Python3 interface, you can use the [FLAME GPU 2 python example template project](https://github.com/FLAMEGPU/FLAMEGPU2_python_example_template).
-This provides a simple standalone example model, and python installation instructions.
-
 ## Contributing
 
 Feel free to submit [Pull Requests](https://github.com/FLAMEGPU/FLAMEGPU2/pulls), create [Issues](https://github.com/FLAMEGPU/FLAMEGPU2/issues) or open [Discussions](https://github.com/FLAMEGPU/FLAMEGPU2/discussions).
@@ -288,7 +286,7 @@ See [Contributors](https://github.com/FLAMEGPU/FLAMEGPU2/graphs/contributors) fo
 
 ## License
 
-FLAME GPU is distributed under the [MIT Licence](https://github.com/FLAMEGPU/FLAMEGPU2/LICENSE.md).
+FLAME GPU is distributed under the [MIT Licence](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/LICENSE.md).
 
 ## Known issues
 
@@ -298,10 +296,10 @@ For a full list of known issues pleases see the [Issue Tracker](https://github.c
 + Performance regressions in CUDA 11.3+, due to changes in compiler register usage ([#560](https://github.com/FLAMEGPU/FLAMEGPU2/issues/560)).
 + Segfault when using `flamegpu::DependencyGraph` via the default constructor ([#555](https://github.com/FLAMEGPU/FLAMEGPU2/issues/555)). This will require an API break to resolve.
 + Warnings and a loss of performance due to hash collisions in device code ([#356](https://github.com/FLAMEGPU/FLAMEGPU2/issues/356))
-+ Multiple known areas where performance can be improved (e.g. Concurrency [#449](https://github.com/FLAMEGPU/FLAMEGPU2/issues/449), RTC Compilation [#402](https://github.com/FLAMEGPU/FLAMEGPU2/issues/402))
++ Multiple known areas where performance can be improved (e.g. [#449](https://github.com/FLAMEGPU/FLAMEGPU2/issues/449), [#402](https://github.com/FLAMEGPU/FLAMEGPU2/issues/402))
 + Windows/MSVC builds using CUDA < 11.0 may encounter intermittent compiler failures. Please use CUDA 11.0+.
-  + This will be resolved by dropping CUDA 10 support in a future release
+  + This will be resolved by dropping CUDA 10 support in a future release.
 + Windows/MSVC builds using CUDA 11.0 may encounter errors when performing incremental builds if the static library has been recompiled. If this presents itself, re-save any `.cu` file in your executable producing project and re-trigger the build.
-+ Debug builds under linux with CUDA 11.0 may encounter cuda errors during `validateIDCollisions`. Consider using an alternate CUDA version if this is required. See [FLAMEGPU/FLAMEGPU2#569](https://github.com/FLAMEGPU/FLAMEGPU2/issues/569)
++ Debug builds under linux with CUDA 11.0 may encounter cuda errors during `validateIDCollisions`. Consider using an alternate CUDA version if this is required ([#569](https://github.com/FLAMEGPU/FLAMEGPU2/issues/569)).
 + CUDA 11.0 with GCC 9 may encounter a segmentation fault during compilation of the test suite. Consider using GCC 8 with CUDA 11.0.
 + CMake 3.16 has known issues on some platforms. CMake versions less than 3.18 are deprecated and support will be removed in a future release.
