@@ -37,6 +37,10 @@ jobs:
             cuda_arch: "35"
             hostcxx: gcc-11
             os: ubuntu-22.04
+          - cuda: "11.8"
+            cuda_arch: "35"
+            hostcxx: clang-14
+            os: ubuntu-22.04
           - cuda: "11.0"
             cuda_arch: "35"
             hostcxx: gcc-8
@@ -112,6 +116,16 @@ jobs:
         echo "CC=/usr/bin/gcc-${gcc_version}" >> $GITHUB_ENV
         echo "CXX=/usr/bin/g++-${gcc_version}" >> $GITHUB_ENV
         echo "CUDAHOSTCXX=/usr/bin/g++-${gcc_version}" >> $GITHUB_ENV
+
+    - name: Install/Select clang and clang++
+      if: ${{ startsWith(env.HOSTCXX, 'clang')}}
+      run: |
+        clang=${{ env.HOSTCXX }}
+        clang_version=${clang/clang-/}
+        sudo apt-get install -y clang-${clang_version} clang-tools-${clang_version}
+        echo "CC=/usr/bin/clang-${clang_version}" >> $GITHUB_ENV
+        echo "CXX=/usr/bin/clang++-${clang_version}" >> $GITHUB_ENV
+        echo "CUDAHOSTCXX=/usr/bin/clang++-${clang_version}" >> $GITHUB_ENV
 
     - name: Select Python
       if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
