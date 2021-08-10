@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
++ Use `IntT` in `MessageBucketDevice` to resolve clang sign comparison warnings ([#554](https://github.com/FLAMEGPU/FLAMEGPU2/issues/554))
 
 ### Deprecated
 
