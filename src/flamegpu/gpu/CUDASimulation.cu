@@ -304,12 +304,30 @@ __global__ void calculateSpatialHash(float* x, float* y, float* z, unsigned int*
         int gridPos[3] = {
             static_cast<int>(floorf(((x[TID]-envMin.x) / envWidth.x)*gridDim.x)),
             static_cast<int>(floorf(((y[TID]-envMin.y) / envWidth.y)*gridDim.y)),
-            static_cast<int>(floorf(((z[TID]-envMin.z) / envWidth.z)*gridDim.z))
+            0
         };
-        unsigned int bindex = (unsigned int)(
+
+        // If 3D, set 3rd component
+        if (z) {
+            gridPos[2] = static_cast<int>(floorf(((z[TID]-envMin.z) / envWidth.z)*gridDim.z));
+        }
+
+        // Compute and set the bin index
+        unsigned int bindex;
+        
+        if (z) {
+            bindex = (unsigned int)(
             (gridPos[2] * gridDim.x * gridDim.y +   // z
             (gridPos[1] * gridDim.x) +              // y
             gridPos[0]));                           // x
+  
+        } else {
+
+            bindex = (unsigned int)(
+            (gridPos[1] * gridDim.x) +              // y
+            gridPos[0]));                           // x
+        }
+       
         binIndex[TID] = bindex;
     }
 }
@@ -392,6 +410,41 @@ void CUDASimulation::spatialSortAgents() {
         calculateSpatialHash<<<gridSize, blockSize, sm_size, this->getStream(streamIdx) >>> (reinterpret_cast<float*>(xPtr),
         reinterpret_cast<float*>(yPtr),
         reinterpret_cast<float*>(zPtr),
+        reinterpret_cast<unsigned int*>(binIndexPtr),
+        envMin,
+        envWidth,
+        gridDim,
+        state_list_size);
+    }
+
+    for (const std::string& agentName : agentsToSort2D) {
+        
+        // Any agent in this list is guaranteed to have x, y and fgpu2_reserved_bin_index vars - used in the computation of spatial hash
+        void* xPtr = cuda_agent.getStateVariablePtr("default", "x");
+        void* yPtr = cuda_agent.getStateVariablePtr("default", "y");
+        void* binIndexPtr = cuda_agent.getStateVariablePtr("default", "fgpu2_reserved_bin_index");
+
+        // Compute occupancy
+        int blockSize = 0;  // The launch configurator returned block size
+        int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+        int gridSize = 0;  // The actual grid size needed, based on input size
+        const unsigned int state_list_size = cuda_agent.getStateSize("default");
+        cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, calculateSpatialHash, 0, state_list_size);
+
+        //! Round up according to CUDAAgent state list size
+        gridSize = (state_list_size + blockSize - 1) / blockSize;
+
+        unsigned int sm_size = 0;
+        unsigned int streamIdx = 0;
+#if !defined(SEATBELTS) || SEATBELTS
+        auto *error_buffer = this->singletons->exception.getDevicePtr(streamIdx, this->getStream(streamIdx));
+        sm_size = sizeof(error_buffer);
+#endif
+
+        // Launch kernel
+        calculateSpatialHash<<<gridSize, blockSize, sm_size, this->getStream(streamIdx) >>> (reinterpret_cast<float*>(xPtr),
+        reinterpret_cast<float*>(yPtr),
+        reinterpret_cast<float*>(nullptr),
         reinterpret_cast<unsigned int*>(binIndexPtr),
         envMin,
         envWidth,
