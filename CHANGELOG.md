@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 + Created `CHANGELOG.md` ([#630](https://github.com/FLAMEGPU/FLAMEGPU2/pull/630))
 
 ### Changed
++ Use `IntT` in `MessageBucketDevice` to resolve clang sign comparison warnings ([#554](https://github.com/FLAMEGPU/FLAMEGPU2/issues/554))
 
 + Default value of `-s/--steps` set to `1` rather than `0` ([#634](https://github.com/FLAMEGPU/FLAMEGPU2/issues/634))
 

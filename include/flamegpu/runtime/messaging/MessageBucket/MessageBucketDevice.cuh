@@ -39,14 +39,14 @@ class MessageBucket::In {
             /**
             * This is the index of the currently accessed message, relative to the full message list
             */
-            unsigned int cell_index;
+            IntT cell_index;
 
          public:
             /**
             * Constructs a message and directly initialises all of it's member variables
             * @note See member variable documentation for their purposes
             */
-            __device__ Message(const Filter &parent, const unsigned int &_cell_index)
+            __device__ Message(const Filter &parent, const IntT &_cell_index)
                 : _parent(parent)
                 , cell_index(_cell_index) { }
             /**
@@ -106,7 +106,7 @@ class MessageBucket::In {
             * This iterator is constructed by MessageBucket::In::Filter::begin()(IntT)
             * @see MessageBucket::In::Operator()(IntT)
             */
-            __device__ iterator(const Filter &parent, const unsigned int &cell_index)
+            __device__ iterator(const Filter &parent, const IntT &cell_index)
                 : _message(parent, cell_index) {
                 // Increment to find first message
                 ++_message;
@@ -171,7 +171,7 @@ class MessageBucket::In {
         /**
         * Returns the number of messages in the filtered bucket
         */
-        inline __device__ unsigned int size(void) const {
+        inline __device__ IntT size(void) const {
             return bucket_end - bucket_begin;
         }
 
