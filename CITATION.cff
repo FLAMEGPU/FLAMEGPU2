@@ -1,0 +1,35 @@
+# YAML 1.2
+---
+cff-version: 1.2.0
+title: "FLAME GPU"
+license: MIT
+repository-code: "https://github.com/FLAMEGPU/FLAMEGPU2"
+url: "https://flamegpu.com"
+version: "2.0.0-alpha"
+date-released: 2021-08-10
+type: software
+authors: 
+  - given-names: Paul
+    family-names: Richmond
+    affiliation: The University of Sheffield
+    alias: mondus
+    orcid: "https://orcid.org/0000-0002-4657-5518"
+  - given-names: Robert
+    family-names: Chisholm
+    affiliation: The University of Sheffield
+    alias: Robadob
+    orcid: "https://orcid.org/0000-0003-3379-9042"
+  - given-names: Peter
+    family-names: Heywood
+    affiliation: The University of Sheffield
+    alias: ptheywood
+    orcid: "https://orcid.org/0000-0001-9277-8394"
+  - given-names: Matthew
+    family-names: Leach
+    affiliation: The University of Sheffield
+    alias: MILeach
+  - given-names: Mozhgan
+    family-names: Kabiri Chimeh
+    alias: mozhgan-kch 
+    orcid: "https://orcid.org/0000-0002-2561-7926"
+message: "If you use this software, please cite it using these metadata."
