@@ -60,7 +60,7 @@ Building FLAME GPU has the following requirements. There are also optional depen
   + CUDA `>= 10.0` currently works, but support will be dropped in a future release.
 + C++17 capable C++ compiler (host), compatible with the installed CUDA version
   + [Microsoft Visual Studio 2019](https://visualstudio.microsoft.com/) (Windows)
-  + [make](https://www.gnu.org/software/make/) and either [GCC](https://gcc.gnu.org/) `>= 7` or [Clang](https://clang.llvm.org/) `>= 5` (Linux)
+  + [make](https://www.gnu.org/software/make/) and [GCC](https://gcc.gnu.org/) `>= 7` (Linux)
   + Older C++ compilers which support C++14 may currently work, but support will be dropped in a future release.
 + [git](https://git-scm.com/)
 

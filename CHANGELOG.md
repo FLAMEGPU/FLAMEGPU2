@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
++ Do not suggest that Clang is a working/valid host C++ compiler at this time ([#633](https://github.com/FLAMEGPU/FLAMEGPU2/issues/633))
+
 ### Fixed
 
 <!-- 
