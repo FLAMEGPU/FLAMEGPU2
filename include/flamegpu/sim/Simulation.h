@@ -48,7 +48,7 @@ class Simulation {
         std::string common_log_file;
         bool truncate_log_files = true;
         unsigned int random_seed;
-        unsigned int steps = 0;
+        unsigned int steps = 1;
         bool verbose = false;
         bool timing = false;
 #ifdef VISUALISATION

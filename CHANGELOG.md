@@ -9,7 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
++ Created `CHANGELOG.md` ([#630](https://github.com/FLAMEGPU/FLAMEGPU2/pull/630))
+
 ### Changed
+
++ Default value of `-s/--steps` set to `1` rather than `0` ([#634](https://github.com/FLAMEGPU/FLAMEGPU2/issues/634))
 
 ### Deprecated
 

@@ -59,25 +59,25 @@ class TestSimulation(TestCase):
         m = pyflamegpu.ModelDescription("test_argparse_steps_long")
         c = pyflamegpu.CUDASimulation(m)
         argv = [ "prog.exe", "--steps", "12" ]
-        assert c.getSimulationConfig().steps == 0
+        assert c.getSimulationConfig().steps == 1
         c.initialise(argv)
         assert c.getSimulationConfig().steps == 12
         # Blank init resets value to default
         argv = []
         c.initialise(argv)
-        assert c.getSimulationConfig().steps == 0
+        assert c.getSimulationConfig().steps == 1
         
     def test_argparse_steps_short(self):
         m = pyflamegpu.ModelDescription("test_argparse_steps_short")
         c = pyflamegpu.CUDASimulation(m)
         argv = [ "prog.exe", "-s", "12" ]
-        assert c.getSimulationConfig().steps == 0
+        assert c.getSimulationConfig().steps == 1
         c.initialise(argv)
         assert c.getSimulationConfig().steps == 12
         # Blank init resets value to default
         argv = []
         c.initialise(argv)
-        assert c.getSimulationConfig().steps == 0
+        assert c.getSimulationConfig().steps == 1
         
     def test_argparse_randomseed_long(self):
         m = pyflamegpu.ModelDescription("test_argparse_randomseed_long")
