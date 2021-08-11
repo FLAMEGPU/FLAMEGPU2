@@ -114,23 +114,23 @@ TEST(TestSimulation, ArgParse_steps_long) {
     ModelDescription m(MODEL_NAME);
     CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "--steps", "12" };
-    EXPECT_EQ(c.getSimulationConfig().steps, 0u);
+    EXPECT_EQ(c.getSimulationConfig().steps, 1u);
     c.initialise(sizeof(argv) / sizeof(char*), argv);
     EXPECT_EQ(c.getSimulationConfig().steps, 12u);
     // Blank init resets value to default
     c.initialise(0, nullptr);
-    EXPECT_EQ(c.getSimulationConfig().steps, 0u);
+    EXPECT_EQ(c.getSimulationConfig().steps, 1u);
 }
 TEST(TestSimulation, ArgParse_steps_short) {
     ModelDescription m(MODEL_NAME);
     CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "-s", "12" };
-    EXPECT_EQ(c.getSimulationConfig().steps, 0u);
+    EXPECT_EQ(c.getSimulationConfig().steps, 1u);
     c.initialise(sizeof(argv) / sizeof(char*), argv);
     EXPECT_EQ(c.getSimulationConfig().steps, 12u);
     // Blank init resets value to default
     c.initialise(0, nullptr);
-    EXPECT_EQ(c.getSimulationConfig().steps, 0u);
+    EXPECT_EQ(c.getSimulationConfig().steps, 1u);
 }
 TEST(TestSimulation, ArgParse_randomseed_long) {
     ModelDescription m(MODEL_NAME);
