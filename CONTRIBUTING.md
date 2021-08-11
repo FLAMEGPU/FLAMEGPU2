@@ -78,3 +78,33 @@ This ensure that users on both Linux and Windows can continue to build FLAME GPU
 
 ## License
 By contributing your code, you agree to license your contribution under the [MIT License](LICENSE.md).
+
+## Creating a Release
+
+> Note: This section is for project maintainers, who have the ability to create new GitHub Releases
+
+The process for creating a new Release of FLAME GPU is as follows:
+
+1. Ensure that the `HEAD` of the `master` branch is in a good working state, which is intended to be released. Including:
+    * The version information in `cmake/version.cmake` must be correct
+    * Ensure `CHANGELOG.md` is up to date
+    * Update `CITATION.cff` if required
+    * All CI jobs should have passed for the commit
+    * All Tests suite should have been executed on this commit, on Windows and Linux
+    * The CMake version pinning of the visualisation repo is correct. Ideally to a tag specific to the main repo release (i.e. `flamegpu-2.0.0-alpha`)
+2. Optionally invoke the [Draft Release Action](https://github.com/FLAMEGPU/FLAMEGPU2/actions/workflows/Draft-Release.yml) on the master branch, to ensure that the thoroguh build CI will pass.
+    * When this CI is manually triggered, it will not create a draft release
+    * This will take some time to complete.
+    * Optionally download the zip of wheels, and test as appropriate.
+3. Tag the commit using the format `v[0-9]+.[0-9]+.[0-9]+(-(alpha|beta|rc)(\.([0-9]+))?`
+    * I.e. `v2.0.0`, `v2.0.1-alpha`, `2.0.1-alpha.1`, `2.1.0-beta.12`, `2.1.1-rc`, `2.2.2-rc.2`
+    * This will trigger the CI process to perform a thorough build, build binary artifacts and create a draft release.
+    * This may take some time to complete.
+4. Once the draft is created, edit it from the [GitHub Releases page](https://github.com/FLAMEGPU/FLAMEGPU2/releases)
+    * Fill in the Release notes, see previous releases for inspiration.
+    * Check the checkbox to create a discussions post about the release.
+    * Optionally check that the python wheels behave as intended
+    * Publish the Release
+5. Create a PR to bump the version number to the next intended release number
+    * This will allow development versions to supersede installed versions.
+    * This practice is subject to change
