@@ -194,12 +194,14 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/util/StringPair.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/StringUint32Pair.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/compute_capability.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/wddm.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/CUDAEventTimer.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/cxxname.hpp
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/filesystem.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/SignalHandlers.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/StaticAssert.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/SteadyClockTimer.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/Timer.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/JitifyCache.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubModelData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubAgentData.h
@@ -267,6 +269,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/RandomManager.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/HostRandom.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/detail/compute_capability.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/util/detail/wddm.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/detail/JitifyCache.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubModelData.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubAgentData.cpp

@@ -1,7 +1,7 @@
 #include <thread>
 #include <chrono>
 #include "flamegpu/util/detail/CUDAEventTimer.cuh"
-#include "flamegpu/util/nvtx.h"
+#include "flamegpu/util/detail/wddm.cuh"
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 
 #include "gtest/gtest.h"
@@ -19,34 +19,31 @@ namespace test_CUDAEventTimer {
  *   - Needs further investigation at some point (@todo). May be worth falling back to chrono::steady_clock and notify the reduced precision if wddm? 
  */
 TEST(TestUtilCUDAEventTimer, CUDAEventTimer) {
-    NVTX_RANGE("TestUtilCUDAEventTimer:CUDAEventTimer");
     // Create an event timer, time should be 0 initially.
-    util::detail::CUDAEventTimer * timer = nullptr;
+    util::detail::Timer * timer = nullptr;
     EXPECT_NO_THROW(timer = new util::detail::CUDAEventTimer());
-    EXPECT_THROW(timer->getElapsedMilliseconds(), exception::UnsycnedCUDAEventTimer);
+    // Expect an exception if sync is called via getElapsed* if start() has not yet been called.
+    EXPECT_THROW(timer->getElapsedMilliseconds(), exception::TimerException);
     // Time an arbitrary event, and check the value is approximately correct.
     timer->start();
+    // Expect an exception if sync is called via getElapsed* if stop() has not yet been called.
+    EXPECT_THROW(timer->getElapsedMilliseconds(), exception::TimerException);
     const int sleep_duration_seconds = 1;
-    const int min_expected_millis = static_cast<int>(sleep_duration_seconds * 1000. * 0.9);
-    // WDDM check (windows only)
-#ifdef _MSC_VER
-    int deviceIndex = 0;
-    int tccDriver = 0;  // Assume WDDM initially.
-    gpuErrchk(cudaGetDevice(&deviceIndex));
-    gpuErrchk(cudaDeviceGetAttribute(&tccDriver, cudaDevAttrTccDriver, deviceIndex));
-    if (tccDriver != 1) {
-        // Sync before the sleep to ensure the event has been recorded by wddm.
-        // checking the status of the default stream did not appear to fix this?
+    const float min_expected_seconds = sleep_duration_seconds * 0.9f;
+    const float min_expected_millis = min_expected_seconds * 1000.0f;
+    // If the WDDM driver is being used, this test is only accurate if the  start event is synchronised (pushed to the device) prior to the sleep.
+    // Essentially, CUDAEventTimers should not be used to time host code, they are only accurate for  the device code which they wrap.
+    if (util::detail::wddm::deviceIsWDDM()) {
         gpuErrchk(cudaDeviceSynchronize());
     }
-#endif
     // Sleep for some amount of time.
     std::this_thread::sleep_for(std::chrono::seconds(sleep_duration_seconds));
     // Stop the timer.
     timer->stop();
-    // Sync the timer and compare the recorded against the expected time.
-    EXPECT_GE(timer->sync(), min_expected_millis);
+    // Get the elapsed time. This implicitly synchronises the timer.
     EXPECT_GE(timer->getElapsedMilliseconds(), min_expected_millis);
+    // Also check the seconds method.
+    EXPECT_GE(timer->getElapsedSeconds(), min_expected_seconds);
     // Trigger the destructor.
     EXPECT_NO_THROW(delete timer);
     // Reset the device for profiling?

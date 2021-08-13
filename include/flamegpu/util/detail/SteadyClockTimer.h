@@ -3,6 +3,10 @@
 
 #include <chrono>
 
+#include "flamegpu/util/detail/Timer.h"
+#include "flamegpu/exception/FLAMEGPUException.h"
+
+
 namespace flamegpu {
 namespace util {
 namespace detail {
@@ -10,31 +14,80 @@ namespace detail {
 /** 
  * Class to simplify the finding of elapsed time using a chrono::steady_clock timer.
  */
-class SteadyClockTimer {
+class SteadyClockTimer : public virtual Timer {
  public:
+    /** 
+     * Default constructor, initialising values.
+     */
     SteadyClockTimer() :
-        _start(),
-        _stop() { }
+        startTime(),
+        stopTime(),
+        startEventRecorded(false),
+        stopEventRecorded(false) { }
 
+    /** 
+     * Default destructor
+     */
     ~SteadyClockTimer() { }
 
+    /**
+     * Record the start steady clock time
+     */ 
     void start() {
-        _start = std::chrono::steady_clock::now();
+        this->startTime = std::chrono::steady_clock::now();
+        this->startEventRecorded = true;
+        this->stopEventRecorded = false;
     }
 
+    /**
+     * Record the start steady clock stop time
+     */
     void stop() {
-        _stop = std::chrono::steady_clock::now();
+        this->stopTime = std::chrono::steady_clock::now();
+        this->stopEventRecorded = true;
     }
 
+    /**
+     * Get the elapsed time between calls to start() and stop() in milliseconds
+     * @return elapsed time in milliseconds
+     */
     float getElapsedMilliseconds() {
-        std::chrono::duration<double> elapsed = this->_stop - this->_start;
+        if (!startEventRecorded) {
+            THROW exception::TimerException("start() must be called prior to getElapsed*");
+        }
+        if (!stopEventRecorded) {
+            THROW exception::TimerException("stop() must be called prior to getElapsed*");
+        }
+        std::chrono::duration<double> elapsed = this->stopTime - this->startTime;
         float ms = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count());
         return ms;
     }
 
+    /**
+     * Get the elapsed time between calls to start() and stop() in seconds
+     * @return elapsed time in milliseconds
+     */
+    float getElapsedSeconds() {
+        return this->getElapsedMilliseconds() / 1000.0f;
+    }
+
  private:
-    std::chrono::time_point<std::chrono::steady_clock> _start;
-    std::chrono::time_point<std::chrono::steady_clock> _stop;
+    /** 
+     * Time point for the start event
+     */
+    std::chrono::time_point<std::chrono::steady_clock> startTime;
+    /** 
+     * Time point for the stop event
+     */
+    std::chrono::time_point<std::chrono::steady_clock> stopTime;
+    /**
+     * Flag indicating if the start event has been recorded or not.
+     */
+    bool startEventRecorded;
+    /**
+     * Flag indicating if the start event has been recorded or not.
+     */
+    bool stopEventRecorded;
 };
 
 }  // namespace detail
