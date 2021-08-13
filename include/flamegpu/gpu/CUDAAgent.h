@@ -208,10 +208,11 @@ class CUDAAgent : public AgentInterface {
      * 
      * Uses Jitify to create an instantiation of the program. Any compilation errors in the user provided agent function will be reported here.
      * @param func The Agent function data structu containing the src for the function
+     * @param macro_env Object containing environment macro properties for the simulation instance
      * @param function_condition If true then this function will instantiate a function condition rather than an agent function
      * @throw exception::InvalidAgentFunc thrown if the user supplied agent function has compilation errors
      */
-    void addInstantitateRTCFunction(const AgentFunctionData& func, bool function_condition = false);
+    void addInstantitateRTCFunction(const AgentFunctionData& func, const CUDAMacroEnvironment& macro_env, bool function_condition = false);
     /**
      * Returns the jitify kernel instantiation of the agent function.
      * Will throw an exception::InvalidAgentFunc excpetion if the function name does not have a valid instantiation

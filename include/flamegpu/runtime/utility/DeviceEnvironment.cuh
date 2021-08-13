@@ -2,9 +2,10 @@
 #define INCLUDE_FLAMEGPU_RUNTIME_UTILITY_DEVICEENVIRONMENT_CUH_
 
 // #include <cuda_runtime.h>
-#include <cstdint>
 #include <string>
 #include <cassert>
+
+#include "flamegpu/runtime/utility/DeviceMacroProperty.cuh"
 
 namespace flamegpu {
 
@@ -16,6 +17,8 @@ namespace detail {
     extern __constant__ char c_envPropBuffer[EnvironmentManager::MAX_BUFFER_SIZE];
 }  // namespace detail
 #endif
+
+
 
 /**
  * Utility for accessing environmental properties
@@ -31,11 +34,17 @@ class DeviceEnvironment {
      * Performs runtime validation that CURVE_NAMESPACE_HASH matches host value
      */
     friend class EnvironmentManager;
+    friend class CUDAMacroEnvironment;
     /**
      * Device accessible copy of curve namespace hash, this is precomputed from EnvironmentManager::CURVE_NAMESPACE_HASH
-     * EnvironmentManager::EnvironmentManager() validates that this value matches
+     * EnvironmentManager::initialiseDevice() validates that this value matches
      */
     __host__ __device__ static constexpr unsigned int CURVE_NAMESPACE_HASH() { return 0X1428F902u; }
+    /**
+     * Device accessible copy of macro namespace hash, this is precomputed from CUDAMacroEnvironment::MACRO_NAMESPACE_HASH
+     * CUDAMacroEnvironment::CUDAMacroEnvironment() validates that this value matches
+     */
+    __host__ __device__ static constexpr unsigned int MACRO_NAMESPACE_HASH() { return 0xF3ABEB4F; }
     /**
      * Hash of the model's name, this is added to CURVE_NAMESPACE_HASH and variable name hash to find curve hash
      */
@@ -78,6 +87,9 @@ class DeviceEnvironment {
      */
     template<unsigned int N>
     __device__ __forceinline__ bool containsProperty(const char(&name)[N]) const;
+
+    template<typename T, unsigned int I = 1, unsigned int J = 1, unsigned int K = 1, unsigned int W = 1, unsigned int N>
+    __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W> getMacroProperty(const char(&name)[N]) const;
 };
 
 // Mash compilation of these functions from RTC builds as this requires a dynamic implementation of the function in curve_rtc
@@ -136,6 +148,26 @@ __device__ __forceinline__ bool DeviceEnvironment::containsProperty(const char(&
     return detail::curve::Curve::getVariable(cvh) != detail::curve::Curve::UNKNOWN_VARIABLE;
 }
 
+template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W, unsigned int N>
+__device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W> DeviceEnvironment::getMacroProperty(const char(&name)[N]) const {
+    detail::curve::Curve::VariableHash cvh = MACRO_NAMESPACE_HASH() + modelname_hash + detail::curve::Curve::variableHash(name);
+    const auto cv = detail::curve::Curve::getVariable(cvh);
+#if !defined(SEATBELTS) || SEATBELTS
+    if (cv == detail::curve::Curve::UNKNOWN_VARIABLE) {
+        DTHROW("Environment macro property name: %s was not found.\n", name);
+    } else if (detail::curve::detail::d_sizes[cv] != sizeof(T)) {
+        DTHROW("Environment macro property with name: %s type size mismatch %llu != %llu.\n", name, detail::curve::detail::d_sizes[cv], sizeof(T));
+    } else if (detail::curve::detail::d_lengths[cv] != I * J * K * W) {
+        DTHROW("Environment macro property with name: %s total length mismatch (%u != %u).\n", name, detail::curve::detail::d_lengths[cv], I * J * K * W);
+    } else {
+        return DeviceMacroProperty<T, I, J, K, W>(reinterpret_cast<T*>(detail::curve::detail::d_variables[cv]),
+        reinterpret_cast<unsigned int*>(detail::curve::detail::d_variables[cv] + (I * J * K * W * sizeof(T))));  // Read-write flag resides in 8 bits at the end of the buffer
+    }
+    return DeviceMacroProperty<T, I, J, K, W>(nullptr, nullptr);
+#else
+    return DeviceMacroProperty<T, I, J, K, W>(reinterpret_cast<T*>(detail::curve::detail::d_variables[cv]));
+#endif
+}
 #endif  // __CUDACC_RTC__
 
 }  // namespace flamegpu

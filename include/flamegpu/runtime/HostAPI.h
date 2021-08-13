@@ -19,6 +19,7 @@ namespace flamegpu {
 class CUDAScatter;
 class CUDASimulation;
 class HostAgentAPI;
+class CUDAMacroEnvironment;
 
 /**
  * @brief    A flame gpu api class for use by host functions only
@@ -51,6 +52,7 @@ class HostAPI {
           CUDAScatter &scatter,
           const AgentOffsetMap &agentOffsets,
           AgentDataMap &agentData,
+          CUDAMacroEnvironment &macro_env,
           const unsigned int &streamId,
          cudaStream_t stream);
     /**
