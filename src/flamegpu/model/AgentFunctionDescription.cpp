@@ -409,6 +409,20 @@ void AgentFunctionDescription::setRTCFunctionCondition(std::string func_cond_src
     function->rtc_func_condition_name = func_cond_name;
     function->rtc_condition_source = func_cond_src_str;
 }
+void AgentFunctionDescription::setRTCFunctionConditionFile(const std::string& file_path) {
+    // Load file and forward to regular RTC method
+    std::ifstream file;
+    file.open(file_path);
+    if (file.is_open()) {
+        std::stringstream sstream;
+        sstream << file.rdbuf();
+        const std::string func_src = sstream.str();
+        setRTCFunctionCondition(func_src);
+    }
+    THROW exception::InvalidFilePath("Unable able to open file '%s', "
+        "in AgentDescription::newRTCFunctionFile().",
+        file_path.c_str());
+}
 
 MessageBruteForce::Description &AgentFunctionDescription::MessageInput() {
     if (auto m = function->message_input.lock())
