@@ -11,10 +11,13 @@
 # @todo - pass this in from outside the script? 
 # @todo - check the specified subpackages exist via apt pre-install?  apt-rdepends cuda-9-0 | grep "^cuda-"?
 
-# Ideally choose from the list of meta-packages to minimise variance between cuda versions (although it does change too)
+# Ideally choose from the list of meta-packages to minimise variance between cuda versions (although it does change too). Some of these packages may not be availble pre cuda 10.
 CUDA_PACKAGES_IN=(
-    "command-line-tools"
-    "libraries-dev"
+    "cuda-compiler"
+    "cuda-cudart-dev"
+    "cuda-nvtx"
+    "cuda-nvrtc-dev"
+    "libcurand-dev" # 11-0+
 )
 
 ## -------------------
@@ -93,13 +96,16 @@ for package in "${CUDA_PACKAGES_IN[@]}"
 do : 
     # @todo This is not perfect. Should probably provide a separate list for diff versions
     # cuda-compiler-X-Y if CUDA >= 9.1 else cuda-nvcc-X-Y
-    if [[ "${package}" == "nvcc" ]] && version_ge "$CUDA_VERSION_MAJOR_MINOR" "9.1" ; then
-        package="compiler"
-    elif [[ "${package}" == "compiler" ]] && version_lt "$CUDA_VERSION_MAJOR_MINOR" "9.1" ; then
-        package="nvcc"
+    if [[ "${package}" == "cuda-nvcc" ]] && version_ge "$CUDA_VERSION_MAJOR_MINOR" "9.1" ; then
+        package="cuda-compiler"
+    elif [[ "${package}" == "cuda-compiler" ]] && version_lt "$CUDA_VERSION_MAJOR_MINOR" "9.1" ; then
+        package="cuda-nvcc"
+    elif [[ ${package} == libcu* ]] && version_lt "$CUDA_VERSION_MAJOR_MINOR" "11.0" ; then
+        # CUDA 11+ includes lib* / lib*-dev packages, which if they existed previously where cuda-cu*- / cuda-cu*-dev-
+        package="${package/libcu/cuda-cu}"
     fi
     # Build the full package name and append to the string.
-    CUDA_PACKAGES+=" cuda-${package}-${CUDA_MAJOR}-${CUDA_MINOR}"
+    CUDA_PACKAGES+=" ${package}-${CUDA_MAJOR}-${CUDA_MINOR}"
 done
 echo "CUDA_PACKAGES ${CUDA_PACKAGES}"
 
