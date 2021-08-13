@@ -17,20 +17,18 @@ bool EnvironmentDescription::operator==(const EnvironmentDescription& rhs) const
             auto _v = rhs.properties.find(v.first);
             if (_v == rhs.properties.end())
                 return false;
-            if (v.second.isConst != _v->second.isConst
-                || v.second.data.elements != _v->second.data.elements
-                || v.second.data.type != _v->second.data.type)
+            if (v.second != _v->second)
                 return false;
-            if (v.second.data.ptr == _v->second.data.ptr &&
-                v.second.data.length == _v->second.data.length)
-                continue;
-            if (v.second.data.length == _v->second.data.length) {
-                for (size_t i = 0; i < v.second.data.length; ++i)
-                    if (reinterpret_cast<char*>(v.second.data.ptr)[i] != reinterpret_cast<char*>(_v->second.data.ptr)[i])
-                        return false;
-                continue;
-            }
-            return false;
+        }
+        return true;
+    }
+    if (macro_properties.size() == rhs.macro_properties.size()) {
+        for (auto& v : macro_properties) {
+            auto _v = rhs.macro_properties.find(v.first);
+            if (_v == rhs.macro_properties.end())
+                return false;
+            if (v.second != _v->second)
+                return false;
         }
         return true;
     }
@@ -57,6 +55,9 @@ bool EnvironmentDescription::getConst(const std::string &name) {
 
 const std::unordered_map<std::string, EnvironmentDescription::PropData> EnvironmentDescription::getPropertiesMap() const {
     return properties;
+}
+const std::unordered_map<std::string, EnvironmentDescription::MacroPropData> EnvironmentDescription::getMacroPropertiesMap() const {
+    return macro_properties;
 }
 
 }  // namespace flamegpu

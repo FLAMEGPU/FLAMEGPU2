@@ -62,6 +62,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model)
     , elapsedMillisecondsInitFunctions(0.f)
     , elapsedMillisecondsExitFunctions(0.f)
     , elapsedMillisecondsRTCInitialisation(0.f)
+    , macro_env(*_model->environment, *this)
     , run_log(std::make_unique<RunLog>())
     , streams(std::vector<cudaStream_t>())
     , singletons(nullptr)
@@ -114,6 +115,7 @@ bool CUDASimulation::detectPureRTC(const std::shared_ptr<const ModelData>& _mode
 CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_desc, CUDASimulation *master_model)
     : Simulation(submodel_desc, master_model)
     , step_count(0)
+    , macro_env(*submodel_desc->submodel->environment, *this)
     , run_log(std::make_unique<RunLog>())
     , streams(std::vector<cudaStream_t>())
     , singletons(nullptr)
@@ -201,6 +203,7 @@ CUDASimulation::~CUDASimulation() {
     message_map.clear();
     submodel_map.clear();
     host_api.reset();
+    macro_env.free();
 #ifdef VISUALISATION
     visualisation.reset();
 #endif
@@ -834,6 +837,12 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     // Execute the host functions.
     layerHostFunctions(layer, layerIndex);
 
+#if !defined(SEATBELTS) || SEATBELTS
+    // Reset macro-environment read-write flags
+    // Note this does not synchronise threads, it relies on synchronizeAllStreams() post host fns
+    macro_env.resetFlagsAsync(streams);
+#endif
+
     // Synchronise  after the host layer functions to ensure that the device is up to date? This can potentially be removed.
     this->synchronizeAllStreams();
 }
@@ -1292,6 +1301,7 @@ void CUDASimulation::initialiseSingletons() {
                 singletons->scatter.purge();
             }
             EnvironmentManager::getInstance().purge();
+            macro_env.purge();
             // Reset flag
             DEVICE_HAS_RESET_CHECK = 0;  // Any value that doesnt match DEVICE_HAS_RESET_FLAG
             gpuErrchk(cudaMemcpyToSymbol(DEVICE_HAS_RESET, &DEVICE_HAS_RESET_CHECK, sizeof(unsigned int)));
@@ -1307,7 +1317,7 @@ void CUDASimulation::initialiseSingletons() {
         singletons->rng.reseed(getSimulationConfig().random_seed);
 
         // Pass created RandomManager to host api
-        host_api = std::make_unique<HostAPI>(*this, singletons->rng, singletons->scatter, agentOffsets, agentData, 0, getStream(0));  // Host fns are currently all serial
+        host_api = std::make_unique<HostAPI>(*this, singletons->rng, singletons->scatter, agentOffsets, agentData, macro_env, 0, getStream(0));  // Host fns are currently all serial
 
         for (auto &cm : message_map) {
             cm.second->init(singletons->scatter, 0);
@@ -1316,8 +1326,10 @@ void CUDASimulation::initialiseSingletons() {
         // Populate the environment properties
         if (!submodel) {
             singletons->environment.init(instance_id, *model->environment, isPureRTC);
+            macro_env.init();
         } else {
             singletons->environment.init(instance_id, *model->environment, isPureRTC, mastermodel->getInstanceID(), *submodel->subenvironment);
+            macro_env.init(*submodel->subenvironment, mastermodel->macro_env);
         }
 
         // Propagate singleton init to submodels
@@ -1364,12 +1376,12 @@ void CUDASimulation::initialiseRTC() {
                 // check rtc source to see if this is a RTC function
                 if (!it_f->second->rtc_source.empty()) {
                     // create CUDA agent RTC function by calling addInstantitateRTCFunction on CUDAAgent with AgentFunctionData
-                    a_it->second->addInstantitateRTCFunction(*it_f->second);
+                    a_it->second->addInstantitateRTCFunction(*it_f->second, macro_env);
                 }
                 // check rtc source to see if the function condition is an rtc condition
                 if (!it_f->second->rtc_condition_source.empty()) {
                     // create CUDA agent RTC function condition by calling addInstantitateRTCFunction on CUDAAgent with AgentFunctionData
-                    a_it->second->addInstantitateRTCFunction(*it_f->second, true);
+                    a_it->second->addInstantitateRTCFunction(*it_f->second, macro_env, true);
                 }
             }
         }

@@ -1,6 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_RTC_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_RTC_CUH_
 
+#include <array>
 #include <cstring>
 #include <string>
 #include <cstdio>
@@ -143,6 +144,22 @@ class CurveRTCHost {
      */
     void unregisterEnvVariable(const char* propertyName);
     /**
+     * Specify an environment macro property to be included in the dynamic header
+     * @param propertyName The property's name
+     * @param d_ptr Pointer to the buffer in device memory
+     * @param type The name of the property's type (%std::type_index::name())
+     * @param type_size The type size of the property's base type (sizeof()), this is the size of a single element if the property is an array property.
+     * @param dimensions The number of elements in the property (1 unless the property is an array property)
+     * @throws exception::UnknownInternalError If an environment property with the same name is already registered
+     */
+    void registerEnvMacroProperty(const char* propertyName, void* d_ptr, const char* type, size_t type_size, const std::array<unsigned int, 4>& dimensions);
+    /**
+     * Unregister an environment property, so that it is nolonger included in the dynamic header
+     * @param propertyName The property's name
+     * @throws exception::UnknownInternalError If the specified property is not registered
+     */
+    void unregisterEnvMacroProperty(const char* propertyName);
+    /**
      * Set the filename tagged in the file (goes into a #line statement)
      * @param filename Name to be used for the file in compile errors
      * @note Do not include quotes
@@ -243,6 +260,32 @@ class CurveRTCHost {
          */
         size_t type_size;
     };
+    /**
+     * Properties for a registered environment macro property
+     */
+    struct RTCEnvMacroPropertyProperties {
+        /**
+         * Name of the property's base type (e.g. type of an individual element if array property)
+         */
+        std::string type;
+        /**
+         * Number of elemements in each dimension
+         */
+        std::array<unsigned int, 4> dimensions;
+        /**
+         * Size of the property's base type (e.g. size of an individual element if array property)
+         */
+        size_t type_size;
+        /**
+         * Copy of the device pointer
+         * @note This assumes it will never be reallocated/resized after registration
+         */
+        void* d_ptr;
+        /**
+         * Pointer to a location in host memory where the device pointer to this variables buffer must be stored
+         */
+        void* h_data_ptr;
+    };
 
  private:
     /**
@@ -289,6 +332,10 @@ class CurveRTCHost {
      */
     size_t newAgent_data_offset = 0;
     /**
+     * Offset into h_data_buffer where output agent (device agent birth) variable data begins
+     */
+    size_t envMacro_data_offset = 0;
+    /**
      * Size of the allocation pointed to by h_data_buffer
      */
     size_t data_buffer_size = 0;
@@ -321,6 +368,11 @@ class CurveRTCHost {
      * <name, RTCVariableProperties>
      */
     std::map<std::string, RTCEnvVariableProperties> RTCEnvVariables;
+    /**
+     * Registered environment macro property properties
+     * <name, RTCVariableProperties>
+     */
+    std::map<std::string, RTCEnvMacroPropertyProperties> RTCEnvMacroProperties;
 };
 
 }  // namespace curve

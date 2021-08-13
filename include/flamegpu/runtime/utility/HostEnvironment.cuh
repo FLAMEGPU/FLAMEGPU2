@@ -11,8 +11,10 @@
 #include <set>
 #include <vector>
 
+#include "flamegpu/gpu/CUDAMacroEnvironment.h"
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/runtime/utility/EnvironmentManager.cuh"
+#include "flamegpu/runtime/utility/HostMacroProperty.cuh"
 
 namespace flamegpu {
 
@@ -33,11 +35,15 @@ class HostEnvironment {
     /**
      * Constructor, to be called by HostAPI
      */
-    explicit HostEnvironment(const unsigned int &instance_id);
+    explicit HostEnvironment(const unsigned int &instance_id, CUDAMacroEnvironment &_macro_env);
     /**
      * Provides access to EnvironmentManager singleton
      */
     EnvironmentManager &env_mgr;
+    /**
+     * Provides access to macro properties for the instance
+     */
+    CUDAMacroEnvironment& macro_env;
     /**
      * Access to instance id of the CUDASimulation
      * This is used to augment all variable names
@@ -132,6 +138,20 @@ class HostEnvironment {
     template<typename T>
     std::vector<T> setPropertyArray(const std::string &name, const std::vector<T> &value) const;
 #endif
+    /**
+     * Returns an interface for accessing the named host macro property
+     * @param name The name of the environment macro property to return
+     */
+    template<typename T, unsigned int I = 1, unsigned int J = 1, unsigned int K = 1, unsigned int W = 1>
+    HostMacroProperty<T, I, J, K, W> getMacroProperty(const std::string& name) const;
+#ifdef SWIG
+    /**
+     * None-templated dimensions version of getMacroProperty() for SWIG interface
+     * @param name The name of the environment macro property to return
+     */
+    template<typename T>
+    HostMacroProperty_swig<T> getMacroProperty_swig(const std::string& name) const;
+#endif
 };
 
 /**
@@ -194,6 +214,17 @@ std::vector<T> HostEnvironment::getPropertyArray(const std::string& name) const 
 }
 #endif  // SWIG
 
+template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
+HostMacroProperty<T, I, J, K, W> HostEnvironment::getMacroProperty(const std::string& name) const {
+    return macro_env.getProperty<T, I, J, K, W>(name);
+}
+
+#ifdef SWIG
+template<typename T>
+HostMacroProperty_swig<T> HostEnvironment::getMacroProperty_swig(const std::string& name) const {
+    return macro_env.getProperty_swig<T>(name);
+}
+#endif
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_UTILITY_HOSTENVIRONMENT_CUH_

@@ -172,22 +172,33 @@ $DYNAMIC_SETNEWAGENTARRAYVARIABLE_IMPL
 
 // has to be included after definition of curve namespace
 #include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
+//#include "flamegpu/runtime/utility/DeviceMacroProperty.cuh"
 
 namespace flamegpu {
 
 template<typename T, unsigned int N>
-__device__ __forceinline__ T DeviceEnvironment::getProperty(const char(&name)[N]) const {
+__device__ __forceinline__ T ReadOnlyDeviceEnvironment::getProperty(const char(&name)[N]) const {
 $DYNAMIC_ENV_GETVARIABLE_IMPL
 }
 
 template<typename T, unsigned int N>
-__device__ __forceinline__ T DeviceEnvironment::getProperty(const char(&name)[N], const unsigned int &index) const {
+__device__ __forceinline__ T ReadOnlyDeviceEnvironment::getProperty(const char(&name)[N], const unsigned int &index) const {
 $DYNAMIC_ENV_GETARRAYVARIABLE_IMPL
 }
 
 template<unsigned int N>
-__device__ __forceinline__ bool DeviceEnvironment::containsProperty(const char(&name)[N]) const {
+__device__ __forceinline__ bool ReadOnlyDeviceEnvironment::containsProperty(const char(&name)[N]) const {
 $DYNAMIC_ENV_CONTAINTS_IMPL
+}
+
+
+template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W, unsigned int N>
+__device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, I, J, K, W> ReadOnlyDeviceEnvironment::getMacroProperty(const char(&name)[N]) const {
+$DYNAMIC_ENV_GETREADONLYMACROPROPERTY_IMPL
+}
+template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W, unsigned int N>
+__device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W> DeviceEnvironment::getMacroProperty(const char(&name)[N]) const {
+$DYNAMIC_ENV_GETMACROPROPERTY_IMPL
 }
 
 }  // namespace flamegpu
@@ -330,6 +341,26 @@ void CurveRTCHost::unregisterEnvVariable(const char* propertyName) {
         THROW exception::UnknownInternalError("Environment property '%s' not found when removing environment property, in CurveRTCHost::unregisterEnvVariable()", propertyName);
     }
 }
+void CurveRTCHost::registerEnvMacroProperty(const char* propertyName, void *d_ptr, const char* type, size_t type_size, const std::array<unsigned int, 4> &dimensions) {
+    RTCEnvMacroPropertyProperties props;
+    props.type = CurveRTCHost::demangle(type);
+    props.dimensions = dimensions;
+    props.d_ptr = d_ptr;
+    props.h_data_ptr = nullptr;
+    props.type_size = type_size;
+    if (!RTCEnvMacroProperties.emplace(propertyName, props).second) {
+        THROW exception::UnknownInternalError("Environment property with name '%s' is already registered, in CurveRTCHost::registerEnvMacroProperty()", propertyName);
+    }
+}
+
+void CurveRTCHost::unregisterEnvMacroProperty(const char* propertyName) {
+    auto i = RTCEnvMacroProperties.find(propertyName);
+    if (i != RTCEnvMacroProperties.end()) {
+        RTCEnvMacroProperties.erase(propertyName);
+    } else {
+        THROW exception::UnknownInternalError("Environment macro property '%s' not found when removing environment property, in CurveRTCHost::unregisterEnvMacroProperty()", propertyName);
+    }
+}
 
 
 void CurveRTCHost::initHeaderEnvironment() {
@@ -343,6 +374,7 @@ void CurveRTCHost::initHeaderEnvironment() {
     messageOut_data_offset = data_buffer_size;    data_buffer_size += messageOut_variables.size() * sizeof(void*);
     messageIn_data_offset = data_buffer_size;     data_buffer_size += messageIn_variables.size() * sizeof(void*);
     newAgent_data_offset = data_buffer_size;  data_buffer_size += newAgent_variables.size() * sizeof(void*);
+    envMacro_data_offset = data_buffer_size;  data_buffer_size += RTCEnvMacroProperties.size() * sizeof(void*);
     variables << "__constant__  char " << getVariableSymbolName() << "[" << data_buffer_size << "];\n";
     setHeaderPlaceholder("$DYNAMIC_VARIABLES", variables.str());
     // generate Environment::get func implementation ($DYNAMIC_ENV_GETVARIABLE_IMPL)
@@ -418,6 +450,76 @@ void CurveRTCHost::initHeaderEnvironment() {
         }
         containsEnvVariableImpl <<           "    return false;\n";
         setHeaderPlaceholder("$DYNAMIC_ENV_CONTAINTS_IMPL", containsEnvVariableImpl.str());
+    }
+    // generate Environment::getMacroProperty func implementation ($DYNAMIC_ENV_GETREADONLYMACROPROPERTY_IMPL)
+    {
+        size_t ct = 0;
+        std::stringstream getMacroPropertyImpl;
+        for (std::pair<std::string, RTCEnvMacroPropertyProperties> element : RTCEnvMacroProperties) {
+            RTCEnvMacroPropertyProperties props = element.second;
+            getMacroPropertyImpl << "    if (strings_equal(name, \"" << element.first << "\")) {\n";
+            getMacroPropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+            getMacroPropertyImpl << "        if(sizeof(T) != " << element.second.type_size << ") {\n";
+            getMacroPropertyImpl << "            DTHROW(\"Environment macro property '%s' type mismatch.\\n\", name);\n";
+            getMacroPropertyImpl << "        } else if (I != " << element.second.dimensions[0] << " ||\n";
+            getMacroPropertyImpl << "            J != " << element.second.dimensions[1] << " |\n";
+            getMacroPropertyImpl << "            K != " << element.second.dimensions[2] << " |\n";
+            getMacroPropertyImpl << "            W != " << element.second.dimensions[3] << ") {\n";
+            getMacroPropertyImpl << "            DTHROW(\"Environment macro property '%s' dimensions do not match (%u, %u, %u, %u) != (%u, %u, %u, %u).\\n\", name,\n";
+            getMacroPropertyImpl << "                I, J, K, W, " << element.second.dimensions[0] << ", " << element.second.dimensions[1] << ", " << element.second.dimensions[2] << ", " << element.second.dimensions[3] << ");\n";
+            getMacroPropertyImpl << "        } else {\n";
+            getMacroPropertyImpl << "            return ReadOnlyDeviceMacroProperty<T, I, J, K, W>(*reinterpret_cast<T**>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << envMacro_data_offset + (ct * sizeof(void*)) << "),\n";
+            // Read-write flag resides in 8 bits at the end of the buffer
+            getMacroPropertyImpl << "                reinterpret_cast<unsigned int*>(*reinterpret_cast<char**>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << envMacro_data_offset + (ct * sizeof(void*)) << ") + (I * J * K * W * sizeof(T))));\n";
+            getMacroPropertyImpl << "        }\n";
+            getMacroPropertyImpl << "#else\n";
+            getMacroPropertyImpl << "        return ReadOnlyDeviceMacroProperty<T, I, J, K, W>(*reinterpret_cast<T**>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << envMacro_data_offset + (ct * sizeof(void*)) << "));\n";
+            getMacroPropertyImpl << "#endif\n";
+            getMacroPropertyImpl << "    };\n";
+            ++ct;
+        }
+        getMacroPropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getMacroPropertyImpl << "    DTHROW(\"Environment macro property '%s' was not found.\\n\", name);\n";
+        getMacroPropertyImpl << "    return ReadOnlyDeviceMacroProperty<T, I, J, K, W>(nullptr, nullptr);\n";
+        getMacroPropertyImpl << "#else\n";
+        getMacroPropertyImpl << "    return ReadOnlyDeviceMacroProperty<T, I, J, K, W>(nullptr);\n";
+        getMacroPropertyImpl << "#endif\n";
+        setHeaderPlaceholder("$DYNAMIC_ENV_GETREADONLYMACROPROPERTY_IMPL", getMacroPropertyImpl.str());
+    }
+    // generate Environment::getMacroProperty func implementation ($DYNAMIC_ENV_GETMACROPROPERTY_IMPL)
+    {
+        size_t ct = 0;
+        std::stringstream getMacroPropertyImpl;
+        for (std::pair<std::string, RTCEnvMacroPropertyProperties> element : RTCEnvMacroProperties) {
+            RTCEnvMacroPropertyProperties props = element.second;
+            getMacroPropertyImpl << "    if (strings_equal(name, \"" << element.first << "\")) {\n";
+            getMacroPropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+            getMacroPropertyImpl << "        if(sizeof(T) != " << element.second.type_size << ") {\n";
+            getMacroPropertyImpl << "            DTHROW(\"Environment macro property '%s' type mismatch.\\n\", name);\n";
+            getMacroPropertyImpl << "        } else if (I != " << element.second.dimensions[0] << " ||\n";
+            getMacroPropertyImpl << "            J != " << element.second.dimensions[1] << " |\n";
+            getMacroPropertyImpl << "            K != " << element.second.dimensions[2] << " |\n";
+            getMacroPropertyImpl << "            W != " << element.second.dimensions[3] << ") {\n";
+            getMacroPropertyImpl << "            DTHROW(\"Environment macro property '%s' dimensions do not match (%u, %u, %u, %u) != (%u, %u, %u, %u).\\n\", name,\n";
+            getMacroPropertyImpl << "                I, J, K, W, " << element.second.dimensions[0] << ", " << element.second.dimensions[1] << ", " << element.second.dimensions[2] << ", " << element.second.dimensions[3] << ");\n";
+            getMacroPropertyImpl << "        } else {\n";
+            getMacroPropertyImpl << "            return DeviceMacroProperty<T, I, J, K, W>(*reinterpret_cast<T**>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << envMacro_data_offset + (ct * sizeof(void*)) << "),\n";
+            // Read-write flag resides in 8 bits at the end of the buffer
+            getMacroPropertyImpl << "                reinterpret_cast<unsigned int*>(*reinterpret_cast<char**>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << envMacro_data_offset + (ct * sizeof(void*)) << ") + (I * J * K * W * sizeof(T))));\n";
+            getMacroPropertyImpl << "        }\n";
+            getMacroPropertyImpl << "#else\n";
+            getMacroPropertyImpl << "        return DeviceMacroProperty<T, I, J, K, W>(*reinterpret_cast<T**>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << envMacro_data_offset + (ct * sizeof(void*)) << "));\n";
+            getMacroPropertyImpl << "#endif\n";
+            getMacroPropertyImpl << "    };\n";
+            ++ct;
+        }
+        getMacroPropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getMacroPropertyImpl << "    DTHROW(\"Environment macro property '%s' was not found.\\n\", name);\n";
+        getMacroPropertyImpl << "    return DeviceMacroProperty<T, I, J, K, W>(nullptr, nullptr);\n";
+        getMacroPropertyImpl << "#else\n";
+        getMacroPropertyImpl << "    return DeviceMacroProperty<T, I, J, K, W>(nullptr);\n";
+        getMacroPropertyImpl << "#endif\n";
+        setHeaderPlaceholder("$DYNAMIC_ENV_GETMACROPROPERTY_IMPL", getMacroPropertyImpl.str());
     }
 }
 void CurveRTCHost::initHeaderSetters() {
@@ -918,6 +1020,12 @@ void CurveRTCHost::initDataBuffer() {
     ct = 0;
     for (auto &element : newAgent_variables) {
         element.second.h_data_ptr = h_data_buffer + newAgent_data_offset + (ct++ * sizeof(void*));
+    }
+    ct = 0;
+    for (auto& element : RTCEnvMacroProperties) {
+        element.second.h_data_ptr = h_data_buffer + envMacro_data_offset + (ct++ * sizeof(void*));
+        // Env macro properties don't update, so fill them as we go
+        memcpy(element.second.h_data_ptr, &element.second.d_ptr, sizeof(void*));
     }
 }
 

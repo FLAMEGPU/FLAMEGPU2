@@ -12,10 +12,11 @@ HostAPI::HostAPI(CUDASimulation &_agentModel,
     CUDAScatter &_scatter,
     const AgentOffsetMap &_agentOffsets,
     AgentDataMap &_agentData,
+    CUDAMacroEnvironment &macro_env,
     const unsigned int& _streamId,
     cudaStream_t _stream)
     : random(rng)
-    , environment(_agentModel.getInstanceID())
+    , environment(_agentModel.getInstanceID(), macro_env)
     , agentModel(_agentModel)
     , d_cub_temp(nullptr)
     , d_cub_temp_size(0)

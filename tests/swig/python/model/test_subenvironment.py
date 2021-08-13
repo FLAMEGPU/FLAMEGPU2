@@ -119,4 +119,108 @@ class SubEnvironmentDescriptionTest(TestCase):
             senv.mapProperty("a_", "b");
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
             senv.mapProperty("a2_", "b2");
+            
+    def test_Macro_InvalidNames(self):
+        m2 = pyflamegpu.ModelDescription("sub");
+        # Define SubModel
+        exitcdn = ExitAlways()
+        m2.addExitConditionCallback(exitcdn);
+        m2.Environment().newMacroPropertyFloat("a");
+        m2.Environment().newMacroPropertyFloat("a2", 2, 3, 4, 5);
+        m = pyflamegpu.ModelDescription("host");
+        # Define Model
+        m.Environment().newMacroPropertyFloat("b");
+        m.Environment().newMacroPropertyFloat("b2", 2, 3, 4, 5);
+        sm = m.newSubModel("sub", m2);
+        senv = sm.SubEnvironment();
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+            senv.mapMacroProperty("c", "b");
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+            senv.mapMacroProperty("c", "b2");
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+            senv.mapMacroProperty("a", "c");
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+            senv.mapMacroProperty("a2", "c");
+        senv.mapMacroProperty("a2", "b2");
+        senv.mapMacroProperty("a", "b");
 
+    def test_Macro_TypesDoNotMatch(self):
+        m2 = pyflamegpu.ModelDescription("sub");
+        # Define SubModel
+        exitcdn = ExitAlways()
+        m2.addExitConditionCallback(exitcdn);
+        m2.Environment().newMacroPropertyFloat("a");
+        m2.Environment().newMacroPropertyInt("a2");
+        m = pyflamegpu.ModelDescription("host");
+        # Define Model
+        m.Environment().newMacroPropertyUInt("b");
+        m.Environment().newMacroPropertyFloat("b2", 2, 3, 4);
+        sm = m.newSubModel("sub", m2);
+        senv = sm.SubEnvironment();
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+            senv.mapMacroProperty("a", "b");
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+            senv.mapMacroProperty("a2", "b2");
+
+    def test_Macro_DimensionsDoNotMatch(self):
+        m2 = pyflamegpu.ModelDescription("sub");
+        # Define SubModel
+        exitcdn = ExitAlways()
+        m2.addExitConditionCallback(exitcdn);
+        m2.Environment().newMacroPropertyFloat("a", 4, 3, 2, 1);
+        m2.Environment().newMacroPropertyFloat("a2", 1, 2, 3, 4);
+        m2.Environment().newMacroPropertyFloat("a3", 1, 2, 3);
+        m2.Environment().newMacroPropertyFloat("a4", 2, 3, 4);
+        m2.Environment().newMacroPropertyFloat("a5");
+        m = pyflamegpu.ModelDescription("host");
+        # Define Model
+        m.Environment().newMacroPropertyFloat("b", 4, 3, 2, 1);
+        m.Environment().newMacroPropertyFloat("b2", 1, 2, 3, 4);
+        sm = m.newSubModel("sub", m2);
+        senv = sm.SubEnvironment();
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+          senv.mapMacroProperty("a", "b2");
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+          senv.mapMacroProperty("a", "b3");
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+          senv.mapMacroProperty("a", "b4");
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+          senv.mapMacroProperty("a", "b5");
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+          senv.mapMacroProperty("a2", "b");
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+          senv.mapMacroProperty("a3", "b");
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+          senv.mapMacroProperty("a4", "b");
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+          senv.mapMacroProperty("a5", "b");
+        senv.mapMacroProperty("a2", "b2");
+        senv.mapMacroProperty("a", "b");
+
+    def test_Macro_AlreadyBound(self):
+        m2 = pyflamegpu.ModelDescription("sub");
+        # Define SubModel
+        exitcdn = ExitAlways()
+        m2.addExitConditionCallback(exitcdn);
+        m2.Environment().newMacroPropertyFloat("a");
+        m2.Environment().newMacroPropertyFloat("a2", 2);
+        m2.Environment().newMacroPropertyFloat("a_");
+        m2.Environment().newMacroPropertyFloat("a2_", 2);
+        m = pyflamegpu.ModelDescription("host");
+        # Define Model
+        m.Environment().newMacroPropertyFloat("b");
+        m.Environment().newMacroPropertyFloat("b2", 2);
+        m.Environment().newMacroPropertyFloat("b_");
+        m.Environment().newMacroPropertyFloat("b2_", 2);
+        sm = m.newSubModel("sub", m2);
+        senv = sm.SubEnvironment();
+        senv.mapMacroProperty("a", "b");
+        senv.mapMacroProperty("a2", "b2");
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+          senv.mapMacroProperty("a", "b_");
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+          senv.mapMacroProperty("a2", "b2_");
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+          senv.mapMacroProperty("a_", "b");
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+          senv.mapMacroProperty("a2_", "b2");
