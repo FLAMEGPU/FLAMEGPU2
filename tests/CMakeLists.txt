@@ -62,6 +62,7 @@ SET(TESTS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_bucket.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_append_truncate.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_compute_capability.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_wddm.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_nvtx.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_dependency_versions.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_multi_thread_device.cu

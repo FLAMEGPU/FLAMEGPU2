@@ -218,35 +218,30 @@ class CUDASimulation : public Simulation {
 
    /**
      * Get the duration of the last time RTC was iniitliased 
-     * With a resolution of around 0.5 microseconds (cudaEventElapsedtime)
      * @return elapsed time of last simulation call in milliseconds.
      */
     float getElapsedTimeRTCInitialisation() const;
 
     /**
      * Get the duration of the last call to simulate() in milliseconds. 
-     * With a resolution of around 0.5 microseconds (cudaEventElapsedtime)
      * @return elapsed time of last simulation call in milliseconds.
      */
     float getElapsedTimeSimulation() const;
 
     /**
      * Get the duration of the last call to initFunctions() in milliseconds. 
-     * With a resolution of around 0.5 microseconds (cudaEventElapsedtime)
      * @return elapsed time of last simulation call in milliseconds.
      */
     float getElapsedTimeInitFunctions() const;
 
     /**
      * Get the duration of the last call to stepFunctions() in milliseconds. 
-     * With a resolution of around 0.5 microseconds (cudaEventElapsedtime)
      * @return elapsed time of last simulation call in milliseconds.
      */
     float getElapsedTimeExitFunctions() const;
 
     /**
      * Get the duration of each step() since the last call to `reset`
-     * Timing resolution of around 0.5 microseconds (CudaEventElapsedTime)
      * @return vector of step times 
      */
     std::vector<float> getElapsedTimeSteps() const;
@@ -254,7 +249,6 @@ class CUDASimulation : public Simulation {
 
     /** 
      * Get the duration of an individual step in milliseconds.
-     * Timing resolution of around 0.5 microseconds.
      * @param step Index of step, must be less than the number of steps executed.
      * @return elapsed time of required step in milliseconds
      */

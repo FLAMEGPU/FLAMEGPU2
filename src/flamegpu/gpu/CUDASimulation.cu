@@ -15,6 +15,8 @@
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/util/detail/compute_capability.cuh"
 #include "flamegpu/util/detail/SignalHandlers.h"
+#include "flamegpu/util/detail/wddm.cuh"
+#include "flamegpu/util/detail/SteadyClockTimer.h"
 #include "flamegpu/util/detail/CUDAEventTimer.cuh"
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 #include "flamegpu/runtime/HostFunctionCallback.h"
@@ -27,6 +29,19 @@
 #endif
 
 namespace flamegpu {
+
+namespace {
+    // file-scope only variable used to cache the driver mode
+    bool deviceUsingWDDM = false;
+    // Inlined method in the anonymous namespace to create a new timer, subject to the driver model.
+    std::unique_ptr<util::detail::Timer> getDriverAppropriateTimer() {
+        if (!deviceUsingWDDM) {
+            return std::unique_ptr<util::detail::Timer>(new util::detail::CUDAEventTimer());
+        } else {
+            return std::unique_ptr<util::detail::Timer>(new util::detail::SteadyClockTimer());
+        }
+    }
+}  // anonymous namespace
 
 std::map<int, std::atomic<int>> CUDASimulation::active_device_instances;
 std::map<int, std::shared_timed_mutex> CUDASimulation::active_device_mutex;
@@ -213,8 +228,8 @@ CUDASimulation::~CUDASimulation() {
 
 void CUDASimulation::initFunctions() {
     NVTX_RANGE("CUDASimulation::initFunctions");
-    util::detail::CUDAEventTimer initFunctionsTimer = util::detail::CUDAEventTimer();
-    initFunctionsTimer.start();
+    std::unique_ptr<util::detail::Timer> initFunctionsTimer(new util::detail::SteadyClockTimer());
+    initFunctionsTimer->start();
 
     // Execute normal init functions
     for (auto &initFn : model->initFunctions) {
@@ -230,9 +245,8 @@ void CUDASimulation::initFunctions() {
     }
 
     // Record, store and output the elapsed time of the step.
-    initFunctionsTimer.stop();
-    initFunctionsTimer.sync();
-    this->elapsedMillisecondsInitFunctions = initFunctionsTimer.getElapsedMilliseconds();
+    initFunctionsTimer->stop();
+    this->elapsedMillisecondsInitFunctions = initFunctionsTimer->getElapsedMilliseconds();
     if (getSimulationConfig().timing) {
         fprintf(stdout, "Init Function Processing time: %.3f ms\n", this->elapsedMillisecondsInitFunctions);
     }
@@ -240,8 +254,8 @@ void CUDASimulation::initFunctions() {
 
 void CUDASimulation::exitFunctions() {
     NVTX_RANGE("CUDASimulation::exitFunctions");
-    util::detail::CUDAEventTimer exitFunctionsTimer = util::detail::CUDAEventTimer();
-    exitFunctionsTimer.start();
+    std::unique_ptr<util::detail::Timer> exitFunctionsTimer(new util::detail::SteadyClockTimer());
+    exitFunctionsTimer->start();
 
     // Execute exit functions
     for (auto &exitFn : model->exitFunctions) {
@@ -253,9 +267,8 @@ void CUDASimulation::exitFunctions() {
     }
 
     // Record, store and output the elapsed time of the step.
-    exitFunctionsTimer.stop();
-    exitFunctionsTimer.sync();
-    this->elapsedMillisecondsExitFunctions = exitFunctionsTimer.getElapsedMilliseconds();
+    exitFunctionsTimer->stop();
+    this->elapsedMillisecondsExitFunctions = exitFunctionsTimer->getElapsedMilliseconds();
     if (getSimulationConfig().timing) {
         fprintf(stdout, "Exit Function Processing time: %.3f ms\n", this->elapsedMillisecondsExitFunctions);
     }
@@ -266,9 +279,9 @@ bool CUDASimulation::step() {
     // Ensure singletons have been initialised
     initialiseSingletons();
 
-    // Time the individual step.
-    util::detail::CUDAEventTimer stepTimer = util::detail::CUDAEventTimer();
-    stepTimer.start();
+    // Time the individual step, using a CUDAEventTimer if possible, else a steadyClockTimer.
+    std::unique_ptr<util::detail::Timer> stepTimer = getDriverAppropriateTimer();
+    stepTimer->start();
 
     // Init any unset agent IDs
     this->assignAgentIDs();
@@ -304,9 +317,8 @@ bool CUDASimulation::step() {
     bool exitRequired = this->stepExitConditions();
 
     // Record, store and output the elapsed time of the step.
-    stepTimer.stop();
-    stepTimer.sync();
-    float stepMilliseconds = stepTimer.getElapsedMilliseconds();
+    stepTimer->stop();
+    float stepMilliseconds = stepTimer->getElapsedMilliseconds();
     this->elapsedMillisecondsPerStep.push_back(stepMilliseconds);
     if (getSimulationConfig().timing) {
         // Resolution is 0.5 microseconds, so print to 1 us.
@@ -926,9 +938,9 @@ void CUDASimulation::simulate() {
     // Ensure singletons have been initialised
     initialiseSingletons();
 
-    // Create the event timing object.
-    util::detail::CUDAEventTimer simulationTimer = util::detail::CUDAEventTimer();
-    simulationTimer.start();
+    // Create the event timing object, using an appropriate timer implementation.
+    std::unique_ptr<util::detail::Timer> simulationTimer = getDriverAppropriateTimer();
+    simulationTimer->start();
 
     // Create as many streams as required
     unsigned int nStreams = getMaximumLayerWidth();
@@ -997,9 +1009,8 @@ void CUDASimulation::simulate() {
     #endif
 
     // Record, store and output the elapsed simulation time
-    simulationTimer.stop();
-    simulationTimer.sync();
-    elapsedMillisecondsSimulation = simulationTimer.getElapsedMilliseconds();
+    simulationTimer->stop();
+    elapsedMillisecondsSimulation = simulationTimer->getElapsedMilliseconds();
     if (getSimulationConfig().timing) {
         // Resolution is 0.5 microseconds, so print to 1 us.
         fprintf(stdout, "Total Processing time: %.3f ms\n", elapsedMillisecondsSimulation);
@@ -1313,6 +1324,10 @@ void CUDASimulation::initialiseSingletons() {
         for (auto &sm : submodel_map) {
             sm.second->initialiseSingletons();
         }
+
+        // Store the WDDM/TCC driver mode status, for timer class decisions. Result is cached in the anon namespace to avoid multiple queries
+        deviceUsingWDDM = util::detail::wddm::deviceIsWDDM();
+
         singletonsInitialised = true;
     } else {
         int t = -1;
@@ -1337,8 +1352,8 @@ void CUDASimulation::initialiseRTC() {
     // Only do this once.
     if (!rtcInitialised) {
         NVTX_RANGE("CUDASimulation::initialiseRTC");
-        util::detail::CUDAEventTimer rtcTimer = util::detail::CUDAEventTimer();
-        rtcTimer.start();
+        std::unique_ptr<util::detail::Timer> rtcTimer(new util::detail::SteadyClockTimer());
+        rtcTimer->start();
         // Build any RTC functions
         const auto& am = model->agents;
         // iterate agents and then agent functions to find any rtc functions or function conditions
@@ -1365,9 +1380,8 @@ void CUDASimulation::initialiseRTC() {
         rtcInitialised = true;
 
         // Record, store and output the elapsed time of the step.
-        rtcTimer.stop();
-        rtcTimer.sync();
-        this->elapsedMillisecondsRTCInitialisation = rtcTimer.getElapsedMilliseconds();
+        rtcTimer->stop();
+        this->elapsedMillisecondsRTCInitialisation = rtcTimer->getElapsedMilliseconds();
         if (getSimulationConfig().timing) {
             fprintf(stdout, "RTC Initialisation Processing time: %.3f ms\n", this->elapsedMillisecondsRTCInitialisation);
         }

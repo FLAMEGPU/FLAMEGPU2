@@ -399,9 +399,9 @@ DERIVED_FLAMEGPUException(VersionMismatch, "Versions do not match");
  */
 DERIVED_FLAMEGPUException(InvalidFilePath, "File does not exist.");
 /**
- * Defines an error indicating that a CUDAEventTimer was queried without being synced.
+ * Defines an exception indicating that the flamegpu::util::detail::Timer has been used incorrectly.
  */
-DERIVED_FLAMEGPUException(UnsycnedCUDAEventTimer, "Elapsed time requested for Un-synced CUDAEventTimer");
+DERIVED_FLAMEGPUException(TimerException, "Invalid use of Timer");
 /**
  * Defines an error reported by AgentFunctionDependencyGraph if the graph is invalid
  */
