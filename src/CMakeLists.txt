@@ -132,6 +132,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAFatAgent.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAFatAgentStateList.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAScatter.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAMacroEnvironment.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentInterface.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentLoggingConfig.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentLoggingConfig_Reductions.cuh
@@ -183,8 +184,10 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageBucket/MessageBucketDevice.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/AgentRandom.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/DeviceEnvironment.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/DeviceMacroProperty.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/EnvironmentManager.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/HostEnvironment.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/HostMacroProperty.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/HostRandom.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/RandomManager.cuh    
     ${FLAMEGPU_ROOT}/include/flamegpu/util/Any.h
@@ -237,6 +240,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAScatter.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDASimulation.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAEnsemble.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAMacroEnvironment.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/AgentLoggingConfig.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/LoggingConfig.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/LogFrame.cu

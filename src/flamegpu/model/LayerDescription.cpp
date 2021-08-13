@@ -137,7 +137,7 @@ void LayerDescription::addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER func_p) {
         "in LayerDescription::addHostFunction()\n");
     }
     if (!layer->host_functions.empty() || !layer->agent_functions.empty() || !layer->host_functions_callbacks.empty()) {
-        THROW exception::InvalidLayerMember("A layer containing agent functions or a host function may not also contain a host function, "
+        THROW exception::InvalidLayerMember("A layer containing agent functions or a host function may not have another host function added, "
         "in LayerDescription::addHostFunction()\n");
     }
     if (!layer->host_functions.insert(func_p).second) {

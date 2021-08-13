@@ -10,7 +10,7 @@ bool SubEnvironmentData::operator==(const SubEnvironmentData& rhs) const {
     if (this == &rhs)  // They point to same object
         return true;
     // Compare members
-    if (properties == rhs.properties) {
+    if (properties == rhs.properties && macro_properties == rhs.macro_properties) {
         return true;
     }
     return false;
@@ -25,6 +25,7 @@ SubEnvironmentData::SubEnvironmentData(const std::shared_ptr<const ModelData> &m
     , parent(_parent)
     , description(model ? new SubEnvironmentDescription(model, this) : nullptr) {
     properties.insert(other.properties.begin(), other.properties.end());
+    macro_properties.insert(other.macro_properties.begin(), other.macro_properties.end());
 }
 SubEnvironmentData::SubEnvironmentData(
     const std::shared_ptr<const ModelData> &model,

@@ -89,6 +89,14 @@ class ReadOnlyDeviceAPI {
     }
 
     /**
+     * Access the current stepCount
+     * @return the current step count, 0 indexed unsigned.
+     */
+    __forceinline__ __device__ unsigned int getStepCounter() const {
+        return environment.getProperty<unsigned int>("_stepCount");
+    }
+
+    /**
      * Provides access to random functionality inside agent functions
      * @note random state isn't stored within the object, so it can be const
      */
@@ -96,15 +104,7 @@ class ReadOnlyDeviceAPI {
     /**
      * Provides access to environment variables inside agent functions
      */
-    const DeviceEnvironment environment;
-
-    /**
-     * Access the current stepCount
-     * @return the current step count, 0 indexed unsigned.
-     */
-    __forceinline__ __device__ unsigned int getStepCounter() const {
-        return environment.getProperty<unsigned int>("_stepCount");
-    }
+    const ReadOnlyDeviceEnvironment environment;
 
     /**
      * Returns the current CUDA thread of the agent
@@ -144,7 +144,7 @@ class ReadOnlyDeviceAPI {
  * @tparam MessageOut Output message type (the form found in flamegpu/runtime/messaging.h, MessageNone etc)
  */
 template<typename MessageIn, typename MessageOut>
-class DeviceAPI : public ReadOnlyDeviceAPI{
+class DeviceAPI {
     // Friends have access to TID() & TS_ID()
     template<typename AgentFunction, typename _MessageIn, typename _MessageOut>
     friend __global__ void agent_function_wrapper(
@@ -259,11 +259,36 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
         unsigned int *&scanFlag_agentOutput,
         typename MessageIn::In &&message_in,
         typename MessageOut::Out &&message_out)
-        : ReadOnlyDeviceAPI(instance_id_hash, agentfuncname_hash, d_rng)
-        , message_in(message_in)
+        : message_in(message_in)
         , message_out(message_out)
         , agent_out(AgentOut(_agent_output_hash, d_agent_output_nextID, scanFlag_agentOutput))
+        , random(AgentRandom(&d_rng[getThreadIndex()]))
+        , environment(DeviceEnvironment(instance_id_hash))
+        , agent_func_name_hash(agentfuncname_hash)
     { }
+        /**
+     * Returns the specified variable from the currently executing agent
+     * @param variable_name name used for accessing the variable, this value should be a string literal e.g. "foobar"
+     * @tparam T Type of the agent variable being accessed
+     * @tparam N Length of variable name, this should always be implicit if passing a string literal
+     * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+     */
+    template<typename T, unsigned int N> __device__
+    T getVariable(const char(&variable_name)[N]) const;
+    /**
+     * Returns the specified variable array element from the currently executing agent
+     * @param variable_name name used for accessing the variable, this value should be a string literal e.g. "foobar"
+     * @param index Index of the element within the variable array to return
+     * @tparam T Type of the agent variable being accessed
+     * @tparam N The length of the array variable, as set within the model description hierarchy
+     * @tparam M Length of variable_name, this should always be implicit if passing a string literal
+     * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+     */
+    template<typename T, unsigned int N, unsigned int M> __device__
+    T getVariable(const char(&variable_name)[M], const unsigned int &index) const;
     /**
      * Sets a variable within the currently executing agent
      * @param variable_name The name of the variable
@@ -289,6 +314,44 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
      */
     template<typename T, unsigned int N, unsigned int M>
     __device__ void setVariable(const char(&variable_name)[M], const unsigned int &index, const T &value);
+    /**
+     * Returns the agent's unique identifier
+     */
+    __device__ id_t getID() {
+        return getVariable<id_t>("_id");
+    }
+
+    /**
+     * Access the current stepCount
+     * @return the current step count, 0 indexed unsigned.
+     */
+    __forceinline__ __device__ unsigned int getStepCounter() const {
+        return environment.getProperty<unsigned int>("_stepCount");
+    }
+
+    /**
+     * Returns the current CUDA thread of the agent
+     * All agents execute in a unique thread, but their associated thread may change between agent functions
+     * Thread indices begin at 0 and continue to 1 below the number of agents executing
+     */
+    __forceinline__ __device__ static unsigned int getThreadIndex() {
+        /*
+        // 3D version
+        auto blockId = blockIdx.x + blockIdx.y * gridDim.x
+        + gridDim.x * gridDim.y * blockIdx.z;
+        auto threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
+        + (threadIdx.z * (blockDim.x * blockDim.y))
+        + (threadIdx.y * blockDim.x)
+        + threadIdx.x;
+        return threadId;*/
+#ifdef SEATBELTS
+        assert(blockDim.y == 1);
+        assert(blockDim.z == 1);
+        assert(gridDim.y == 1);
+        assert(gridDim.z == 1);
+#endif
+        return blockIdx.x * blockDim.x + threadIdx.x;
+    }
 
     /**
      * Provides access to message read functionality inside agent functions
@@ -302,6 +365,18 @@ class DeviceAPI : public ReadOnlyDeviceAPI{
      * Provides access to agent output functionality inside agent functions
      */
     const AgentOut agent_out;
+    /**
+     * Provides access to random functionality inside agent functions
+     * @note random state isn't stored within the object, so it can be const
+     */
+    const AgentRandom random;
+    /**
+     * Provides access to environment variables inside agent functions
+     */
+    const DeviceEnvironment environment;
+
+ protected:
+     detail::curve::Curve::NamespaceHash agent_func_name_hash;
 };
 
 
@@ -318,19 +393,6 @@ __device__ T ReadOnlyDeviceAPI::getVariable(const char(&variable_name)[N]) const
     // return the variable from curve
     return value;
 }
-
-template<typename MessageIn, typename MessageOut>
-template<typename T, unsigned int N>
-__device__ void DeviceAPI<MessageIn, MessageOut>::setVariable(const char(&variable_name)[N], T value) {
-    if (variable_name[0] == '_') {
-        return;  // Fail silently
-    }
-    // simple indexing assumes index is the thread number (this may change later)
-    const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
-    // set the variable using curve
-    detail::curve::Curve::setAgentVariable<T>(variable_name, agent_func_name_hash,  value, index);
-}
-
 template<typename T, unsigned int N, unsigned int M>
 __device__ T ReadOnlyDeviceAPI::getVariable(const char(&variable_name)[M], const unsigned int &array_index) const {
     // simple indexing assumes index is the thread number (this may change later)
@@ -343,6 +405,43 @@ __device__ T ReadOnlyDeviceAPI::getVariable(const char(&variable_name)[M], const
     return value;
 }
 
+template<typename MessageIn, typename MessageOut>
+template<typename T, unsigned int N>
+__device__ T DeviceAPI<MessageIn, MessageOut>::getVariable(const char(&variable_name)[N]) const {
+    // simple indexing assumes index is the thread number (this may change later)
+    const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
+
+    // get the value from curve
+    T value = detail::curve::Curve::getAgentVariable<T>(variable_name, agent_func_name_hash , index);
+
+    // return the variable from curve
+    return value;
+}
+
+template<typename MessageIn, typename MessageOut>
+template<typename T, unsigned int N, unsigned int M>
+__device__ T DeviceAPI<MessageIn, MessageOut>::getVariable(const char(&variable_name)[M], const unsigned int &array_index) const {
+    // simple indexing assumes index is the thread number (this may change later)
+    const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
+
+    // get the value from curve
+    T value = detail::curve::Curve::getAgentArrayVariable<T, N>(variable_name, agent_func_name_hash , index, array_index);
+
+    // return the variable from curve
+    return value;
+}
+
+template<typename MessageIn, typename MessageOut>
+template<typename T, unsigned int N>
+__device__ void DeviceAPI<MessageIn, MessageOut>::setVariable(const char(&variable_name)[N], T value) {
+    if (variable_name[0] == '_') {
+        return;  // Fail silently
+    }
+    // simple indexing assumes index is the thread number (this may change later)
+    const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
+    // set the variable using curve
+    detail::curve::Curve::setAgentVariable<T>(variable_name, agent_func_name_hash, value, index);
+}
 template<typename MessageIn, typename MessageOut>
 template<typename T, unsigned int N, unsigned int M>
 __device__ void DeviceAPI<MessageIn, MessageOut>::setVariable(const char(&variable_name)[M], const unsigned int &array_index, const T &value) {
