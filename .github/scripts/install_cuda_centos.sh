@@ -1,19 +1,23 @@
-# @todo - better / more robust parsing of inputs from env vars.
+# Install CUDA on CentOS/manylinux2014. 
+
 ## -------------------
 ## Constants
 ## -------------------
+
+# yum install cuda-nvrtc-devel-11-4 cuda-compiler-11-4 cuda-cudart-devel-11-4 cuda-nvcc-11-4 cuda-nvrtc-11-4 cuda-nvtx-11-4 libcurand-devel-11-4 
 
 # List of sub-packages to install.
 # @todo - pass this in from outside the script? 
 # @todo - check the specified subpackages exist via apt pre-install?  apt-rdepends cuda-9-0 | grep "^cuda-"?
 
-# Ideally choose from the list of meta-packages to minimise variance between cuda versions (although it does change too). Some of these packages may not be availble pre cuda 10.
+# Ideally choose from the list of meta-packages to minimise variance between cuda versions (although it does change too)
 CUDA_PACKAGES_IN=(
     "cuda-compiler"
-    "cuda-cudart-dev"
+    "cuda-cudart-devel" # libcudart.so
+    "cuda-driver-devel" # libcuda.so
     "cuda-nvtx"
-    "cuda-nvrtc-dev"
-    "libcurand-dev" # 11-0+
+    "cuda-nvrtc-devel"
+    "libcurand-devel" # 11-0+
 )
 
 ## -------------------
@@ -40,6 +44,7 @@ function version_lt() {
     [ "$1" = "$2" ] && return 1 || version_le $1 $2
 }
 
+
 ## -------------------
 ## Select CUDA version
 ## -------------------
@@ -52,15 +57,13 @@ CUDA_VERSION_MAJOR_MINOR=${cuda}
 CUDA_MAJOR=$(echo "${CUDA_VERSION_MAJOR_MINOR}" | cut -d. -f1)
 CUDA_MINOR=$(echo "${CUDA_VERSION_MAJOR_MINOR}" | cut -d. -f2)
 CUDA_PATCH=$(echo "${CUDA_VERSION_MAJOR_MINOR}" | cut -d. -f3)
-# use lsb_release to find the OS.
-UBUNTU_VERSION=$(lsb_release -sr)
-UBUNTU_VERSION="${UBUNTU_VERSION//.}"
+# query rpm to find the major centos release
+CENTOS_MAJOR=$(rpm -E %{rhel})
 
 echo "CUDA_MAJOR: ${CUDA_MAJOR}"
 echo "CUDA_MINOR: ${CUDA_MINOR}"
 echo "CUDA_PATCH: ${CUDA_PATCH}"
-# echo "UBUNTU_NAME: ${UBUNTU_NAME}"
-echo "UBUNTU_VERSION: ${UBUNTU_VERSION}"
+echo "CENTOS_MAJOR: ${CENTOS_MAJOR}"
 
 # If we don't know the CUDA_MAJOR or MINOR, error.
 if [ -z "${CUDA_MAJOR}" ] ; then
@@ -72,11 +75,10 @@ if [ -z "${CUDA_MINOR}" ] ; then
     exit 1
 fi
 # If we don't know the Ubuntu version, error.
-if [ -z ${UBUNTU_VERSION} ]; then
-    echo "Error: Unknown Ubuntu version. Aborting."
+if [ -z ${CENTOS_MAJOR} ]; then
+    echo "Error: Unknown CentOS version. Aborting."
     exit 1
 fi
-
 
 ## -------------------------------
 ## Select CUDA packages to install
@@ -84,18 +86,15 @@ fi
 CUDA_PACKAGES=""
 for package in "${CUDA_PACKAGES_IN[@]}"
 do : 
-    # @todo This is not perfect. Should probably provide a separate list for diff versions
-    # cuda-compiler-X-Y if CUDA >= 9.1 else cuda-nvcc-X-Y
-    if [[ "${package}" == "cuda-nvcc" ]] && version_ge "$CUDA_VERSION_MAJOR_MINOR" "9.1" ; then
-        package="cuda-compiler"
-    elif [[ "${package}" == "cuda-compiler" ]] && version_lt "$CUDA_VERSION_MAJOR_MINOR" "9.1" ; then
-        package="cuda-nvcc"
-    fi
-    # CUDA 11+ includes lib* / lib*-dev packages, which if they existed previously where cuda-cu*- / cuda-cu*-dev-
+    # for centos 7, cuda-9.1 appears to be the earliest supported pacakge. cuda-nvcc- and cuda-compiler subpackages both exist.
+    # CUDA < 11, lib* packages were actaully cuda-cu* (generally, this might be greedy.)
     if [[ ${package} == libcu* ]] && version_lt "$CUDA_VERSION_MAJOR_MINOR" "11.0" ; then
         package="${package/libcu/cuda-cu}"
     fi
-
+    # CUDA < 11, -devel- packages were actually -dev
+    if [[ ${package} == *devel* ]] && version_lt "$CUDA_VERSION_MAJOR_MINOR" "11.0" ; then
+        package="${package//devel/dev}"
+    fi
     # Build the full package name and append to the string.
     CUDA_PACKAGES+=" ${package}-${CUDA_MAJOR}-${CUDA_MINOR}"
 done
@@ -105,14 +104,9 @@ echo "CUDA_PACKAGES ${CUDA_PACKAGES}"
 ## Prepare to install
 ## -----------------
 
-PIN_FILENAME="cuda-ubuntu${UBUNTU_VERSION}.pin"
-PIN_URL="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu${UBUNTU_VERSION}/x86_64/${PIN_FILENAME}"
-APT_KEY_URL="http://developer.download.nvidia.com/compute/cuda/repos/ubuntu${UBUNTU_VERSION}/x86_64/7fa2af80.pub"
-REPO_URL="http://developer.download.nvidia.com/compute/cuda/repos/ubuntu${UBUNTU_VERSION}/x86_64/"
+YUM_REPO_URI="https://developer.download.nvidia.com/compute/cuda/repos/rhel${CENTOS_MAJOR}/x86_64/cuda-rhel${CENTOS_MAJOR}.repo"
 
-echo "PIN_FILENAME ${PIN_FILENAME}"
-echo "PIN_URL ${PIN_URL}"
-echo "APT_KEY_URL ${APT_KEY_URL}"
+echo "YUM_REPO_URI ${YUM_REPO_URI}"
 
 ## -----------------
 ## Check for root/sudo
@@ -142,14 +136,11 @@ fi
 ## Install
 ## -----------------
 echo "Adding CUDA Repository"
-wget ${PIN_URL}
-$USE_SUDO mv ${PIN_FILENAME} /etc/apt/preferences.d/cuda-repository-pin-600
-$USE_SUDO apt-key adv --fetch-keys ${APT_KEY_URL}
-$USE_SUDO add-apt-repository "deb ${REPO_URL} /"
-$USE_SUDO apt-get update
+$USE_SUDO yum-config-manager --add-repo ${YUM_REPO_URI}
+$USE_SUDO yum clean all
 
 echo "Installing CUDA packages ${CUDA_PACKAGES}"
-$USE_SUDO apt-get -y install ${CUDA_PACKAGES}
+$USE_SUDO yum -y install ${CUDA_PACKAGES}
 
 if [[ $? -ne 0 ]]; then
     echo "CUDA Installation Error."
@@ -168,7 +159,6 @@ export LD_LIBRARY_PATH="$CUDA_PATH/lib:$LD_LIBRARY_PATH"
 export LD_LIBRARY_PATH="$CUDA_PATH/lib64:$LD_LIBRARY_PATH"
 # Check nvcc is now available.
 nvcc -V
-
 
 # If executed on github actions, make the appropriate echo statements to update the environment
 if [[ $GITHUB_ACTIONS ]]; then

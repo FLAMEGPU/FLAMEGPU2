@@ -5,92 +5,160 @@ on:
   push:
     branches:
       - '**'
+    paths:
+      - "**"
+      - "!.github/**"
+      - ".github/scripts/install_cuda_ubuntu.sh"
+      - ".github/workflows/Ubuntu.yml"
   pull_request:
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.cudacxx.os }}
     strategy:
       fail-fast: false
-      # explicit include-based build matrix, of known valid options
+      # Multiplicative build matrix
+      # optional exclude: can be partial, include: must be specific
       matrix:
-        include:
-          # 20.04 supports CUDA 11.0+ (gcc >= 5 && gcc <= 10.2). SM < 52 deprecated since 11.0
-          - os: ubuntu-20.04
-            cuda: "11.4"
-            cuda_arch: "52"
-            gcc: 9
-          # 18.04 supports CUDA 10.0+ (gcc <=8), 11.0+ (gcc<=9), 11.1+ (gcc<=10)
-          - os: ubuntu-18.04
-            cuda: "10.0"
+        cudacxx:
+          - cuda: "11.4"
             cuda_arch: "35"
-            gcc: 7
+            hostcxx: gcc-9
+            os: ubuntu-20.04
+          - cuda: "11.0"
+            cuda_arch: "35"
+            hostcxx: gcc-8
+            os: ubuntu-20.04
+          - cuda: "10.0"
+            cuda_arch: "35"
+            hostcxx: gcc-7
+            os: ubuntu-18.04
+        python: 
+          - "3.8"
+        config:
+          - name: "Release"
+            config: "Release"
+            SEATBELTS: "ON"
+        VISUALISATION: 
+          - "ON"
+          - "OFF"
+
+    # Name the job based on matrix/env options
+    name: "build (${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
+
+    # Define job-wide env constants, and promote matrix elements to env constants for portable steps.
     env:
-      build_dir: "build"
-      config: "Release"
-      build_tests: "ON"
-      Werror: "ON"
-      individual_example: "game_of_life"
-      build_individual_example: "ON"
+      # Workflow specific constants for building a specific example
+      INDIVIDUAL_EXAMPLE: "game_of_life"
+      # Define constants
+      BUILD_DIR: "build"
+      BUILD_TESTS: "ON"
+      # Conditional based on matrix via awkward almost ternary
+      BUILD_SWIG_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
+      # Port matrix options to environment, for more portability.
+      CUDA: ${{ matrix.cudacxx.cuda }}
+      CUDA_ARCH: ${{ matrix.cudacxx.cuda_arch }}
+      HOSTCXX: ${{ matrix.cudacxx.hostcxx }}
+      OS: ${{ matrix.cudacxx.os }}
+      CONFIG: ${{ matrix.config.config }}
+      SEATBELTS: ${{ matrix.config.SEATBELTS }}
+      PYTHON: ${{ matrix.python}}
+      VISUALISATION: ${{ matrix.VISUALISATION }}
 
     steps:
     - uses: actions/checkout@v2
 
-    # Install a specific cmake version to avoid gtest issues.
-    # - name: Install Specific Cmake version via Pip.
-    #   run: |
-    #     python3 -m pip install --user cmake==3.18.4
-    #     echo "$(python3 -m site --user-base)/bin" >> $GITHUB_PATH
-
     - name: Install CUDA
+      if: ${{ startswith(env.OS, 'ubuntu') && env.CUDA != '' }}
       env:
-        cuda: ${{ matrix.cuda }}
-      shell: bash
+        cuda: ${{ env.CUDA }}
       run: .github/scripts/install_cuda_ubuntu.sh
 
-    # Specify the correct host compilers
-    - name: Install/Select gcc and g++ 
+    - name: Install/Select gcc and g++
+      if: ${{ startsWith(env.HOSTCXX, 'gcc-') }}
       run: |
-        sudo apt-get install -y gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }}
-        echo "CC=/usr/bin/gcc-${{ matrix.gcc }}" >> $GITHUB_ENV
-        echo "CXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
-        echo "CUDAHOSTCXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
+        gcc_version=${HOSTCXX//gcc-/}
+        sudo apt-get install -y gcc-${gcc_version} g++-${gcc_version}
+        echo "CC=/usr/bin/gcc-${gcc_version}" >> $GITHUB_ENV
+        echo "CXX=/usr/bin/g++-${gcc_version}" >> $GITHUB_ENV
+        echo "CUDAHOSTCXX=/usr/bin/g++-${gcc_version}" >> $GITHUB_ENV
 
-    - name: install setuptools with an appropriate version
-      run: | 
+    - name: Select Python
+      if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }} 
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ env.PYTHON }}
+
+    # @todo - is some/all of this still required when using select Python?
+    - name: Install python dependencies
+      if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }}
+      run: |
+        sudo apt-get install python3-venv
         python3 -m pip install --upgrade wheel
         python3 -m pip install --upgrade 'setuptools; python_version >= "3.6"' 'setuptools<51.3.0; python_version < "3.6" and python_version >= "3.0"'
 
-
-    - name: Install Python Venv
-      run: sudo apt-get install python3-venv
+    - name: Install Visualisation Dependencies
+      if: ${{ startswith(env.OS, 'ubuntu') && env.VISUALISATION == 'ON' }}
+      run: |
+        # Install ubuntu-20.04 packages
+        if [ "$OS" == 'ubuntu-20.04' ]; then 
+          sudo apt-get install -y libglew-dev libglu1-mesa-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
+        fi
+        # Install Ubuntu 18.04 packages
+        if [ "$OS" == 'ubuntu-18.04' ]; then 
+          sudo apt-get install -y libglew-dev libglu1-mesa-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype6-dev libgl1-mesa-dev
+        fi
 
     - name: Configure cmake
-      run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DBUILD_TESTS=${{ env.build_tests }} -DWARNINGS_AS_ERRORS=${{ env.Werror }} -DCUDA_ARCH="${{ matrix.cuda_arch }}" -Werror=dev -DCMAKE_WARN_DEPRECATED=OFF -DBUILD_SWIG_PYTHON=ON -DUSE_NVTX=ON
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}"
+        -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
+        -Werror=dev
+        -DCMAKE_WARN_DEPRECATED="OFF" 
+        -DWARNINGS_AS_ERRORS="ON"
+        -DCUDA_ARCH="${{ env.CUDA_ARCH }}"
+        -DBUILD_TESTS="${{ env.BUILD_TESTS }}"
+        -DBUILD_SWIG_PYTHON="${{ env.BUILD_SWIG_PYTHON }}"
+        -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
+        -DVISUALISATION="${{ env.VISUALISATION }}"
+        -DUSE_NVTX="ON"
 
-    - name: Build flamegpu
+    - name: Build static library
+      working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --target flamegpu --verbose -j `nproc`
-      working-directory: ${{ env.build_dir }}
 
-    - name: Build pyflamegpu
+    - name: Build python wheel
+      if: ${{ env.BUILD_SWIG_PYTHON == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --target pyflamegpu --verbose -j `nproc`
-      working-directory: ${{ env.build_dir }}
 
     - name: Build tests
-      if: env.build_tests == 'ON' && matrix.gcc > 6
+      if: ${{ env.BUILD_TESTS == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --target tests --verbose -j `nproc`
-      working-directory: ${{ env.build_dir }}
 
-    - name: Build everything else
+    - name: Build all remaining targets
+      working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --target all --verbose -j `nproc`
-      working-directory: ${{ env.build_dir }}
 
     - name: Configure Individual example
-      run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ env.config }} -DWARNINGS_AS_ERRORS=${{ env.Werror }} -DCUDA_ARCH="${{ matrix.cuda_arch }}" -Werror=dev -DCMAKE_WARN_DEPRECATED=OFF
-      working-directory: examples/${{ env.individual_example }}
+      if: ${{ env.INDIVIDUAL_EXAMPLE != '' }}
+      working-directory: examples/${{ env.INDIVIDUAL_EXAMPLE }}
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}"
+        -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
+        -Werror=dev
+        -DCMAKE_WARN_DEPRECATED="OFF" 
+        -DWARNINGS_AS_ERRORS="ON"
+        -DCUDA_ARCH="${{ env.CUDA_ARCH }}"
+        -DUSE_NVTX="ON"
     
     - name: Build Individual example
-      if: env.build_individual_example == 'ON'
-      run: cmake --build . --target ${{ env.individual_example }} --verbose -j `nproc`
-      working-directory: examples/${{ env.individual_example }}/${{ env.build_dir }}
+      if: ${{ env.INDIVIDUAL_EXAMPLE != '' }}
+      working-directory: examples/${{ env.INDIVIDUAL_EXAMPLE }}/${{ env.BUILD_DIR }}
+      run: cmake --build . --target ${{ env.INDIVIDUAL_EXAMPLE }} --verbose -j `nproc`
 

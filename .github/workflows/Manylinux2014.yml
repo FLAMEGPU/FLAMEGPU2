@@ -1,0 +1,176 @@
+# Build manylinux wheels, and upload them to the action for testing within a short time frame
+name: Manylinux2014
+
+# Run on branch push events (i.e. not tag pushes) and on pull requests
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - "**"
+      - "!.github/**"
+      - ".github/scripts/install_cuda_centos.sh"
+      - ".github/workflows/Manylinux2014.yml"
+  pull_request:
+
+defaults:
+  run:
+    shell: bash
+
+# A single job, which builds manylinux2014 wheels, which ships with GCC 10.2.1 at the time of writing. If this bumps to unpatched 10.3 we might have issues w/ cuda. 
+jobs:
+  build:
+    runs-on: ${{ matrix.cudacxx.os }}
+    # Run steps inside a manylinux container.
+    container: quay.io/pypa/manylinux2014_x86_64
+    strategy:
+      fail-fast: false
+      # Multiplicative build matrix
+      # optional exclude: can be partial, include: must be specific
+      matrix:
+        cudacxx:
+          - cuda: "11.2"
+            cuda_arch: "35"
+            hostcxx: devtoolset-9
+            os: ubuntu-20.04
+          - cuda: "11.0"
+            cuda_arch: "35"
+            hostcxx: devtoolset-8
+            os: ubuntu-20.04
+          # - cuda: "10.0"
+          #   cuda_arch: "35"
+          #   hostcxx: devtoolset-7
+          #   os: ubuntu-18.04
+        python: 
+          - "3.8"
+        config:
+          - name: "Release"
+            config: "Release"
+            SEATBELTS: "ON"
+        VISUALISATION: 
+          - "ON"
+          - "OFF"
+
+    # Name the job based on matrix/env options
+    name: "build (${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
+
+    env:
+      # Control if we should create wheels claiming to be manylinux, even if they aren't
+      # @todo - replace this option which actual auditwheel repair + dlopen + packaged .so
+      RENAME_MANYLINUX: "OFF"
+      # Control if the wheel should be repaired. This will fail until .so's are addressed
+      AUDITWHEEL_REPAIR: "OFF"
+      MANYLINUX: "manylinux2014"
+      ARCH: "x86_64"
+      # Define constants
+      BUILD_DIR: "build"
+      BUILD_TESTS: "OFF"
+      # Conditional based on matrix via awkward almost ternary
+      BUILD_SWIG_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
+      # Port matrix options to environment, for more portability.
+      CUDA: ${{ matrix.cudacxx.cuda }}
+      CUDA_ARCH: ${{ matrix.cudacxx.cuda_arch }}
+      HOSTCXX: ${{ matrix.cudacxx.hostcxx }}
+      OS: ${{ matrix.cudacxx.os }}
+      CONFIG: ${{ matrix.config.config }}
+      SEATBELTS: ${{ matrix.config.SEATBELTS }}
+      PYTHON: ${{ matrix.python}}
+      VISUALISATION: ${{ matrix.VISUALISATION }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    # Downgrade the devtoolset in the image based on the build matrix, using:
+    # gcc-10 for CUDA >= 11.2. Unclear if devtoolset-10 will upgrade to unpatched 11.3 which breaks CUDA builds that use <chrono>. 
+    # gcc-9 for CUDA >= 11.0
+    # gcc-8 for CUDA >= 10.1
+    # gcc-7 for CUDA >= 10.0 (and probably 9.x).
+    # these are not the officially supported toolset on centos by cuda, but it's what works.
+    - name: Install RHEL devtoolset (CentOS)
+      if: ${{ startsWith(env.HOSTCXX, 'devtoolset-') }}
+      run: |
+        # Install devtoolset-X
+        yum install -y ${{ env.HOSTCXX }}
+        # Enable the toolset via source not scl enable which doesn't get on with multi-step GHA 
+        source /opt/rh/${{ env.HOSTCXX }}/enable
+        # Export the new environment / compilers for subsequent steps.
+        echo "PATH=${PATH}" >> $GITHUB_ENV
+        echo "CC=$(which gcc)" >> $GITHUB_ENV
+        echo "CXX=$(which g++)" >> $GITHUB_ENV
+        echo "CUDAHOSTCXX=$(which g++)" >> $GITHUB_ENV
+
+    - name: Install CUDA (CentOS)
+      if: ${{ env.CUDA != '' }}
+      env:
+        cuda: ${{ env.CUDA }}
+      run: .github/scripts/install_cuda_centos.sh
+
+    - name: Install Visualisation Dependencies (CentOS)
+      if: ${{ env.VISUALISATION == 'ON' }}
+      run: |
+        yum install -y mesa-libGLU-devel glew-devel fontconfig-devel SDL2-devel freetype-devel 
+        # Build/Install DevIL from source.
+        yum install -y freeglut-devel
+        git clone --depth 1 https://github.com/DentonW/DevIL.git
+        cd DevIL/DevIL
+        mkdir -p build
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=${{ env.CONFIG }} -Wno-error=dev
+        make -j `nproc`
+        make install
+
+    - name: Configure cmake
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}"
+        -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
+        -Werror=dev
+        -DCMAKE_WARN_DEPRECATED="OFF" 
+        -DWARNINGS_AS_ERRORS="ON"
+        -DCUDA_ARCH="${{ env.CUDA_ARCH }}"
+        -DBUILD_TESTS="${{ env.BUILD_TESTS }}"
+        -DBUILD_SWIG_PYTHON="${{ env.BUILD_SWIG_PYTHON }}"
+        -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
+        -DVISUALISATION="${{ env.VISUALISATION }}"
+        -DUSE_NVTX="ON"
+
+    - name: Build python wheel
+      if: ${{ env.BUILD_SWIG_PYTHON == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target pyflamegpu --verbose -j `nproc`
+
+    # Run audithweel show for information, but do not repair.
+    - name: Run auditwheel show
+      working-directory: ${{ env.BUILD_DIR }}
+      run: auditwheel show lib/${{ env.CONFIG }}/python/dist/*whl
+
+    # Ideally we should use auditwheel repair to check/enforce conformity
+    # But we cannot due to cuda shared object (libcuda.so.1) dependencies which we cannot/shouldnot/wil not package into the wheel. 
+    - name: Run auditwheel repair
+      if: ${{ env.AUDITWHEEL_REPAIR == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
+      run: auditwheel repair --plat ${{ env.MANYLINUX }}_${{ env.ARCH }} lib/${{ env.CONFIG }}/python/dist/*whl -w lib/${{ env.CONFIG }}/python/dist
+
+    # Instead, rename the wheel.
+    # Wheels are not strictly manylinux complaint due to libcuda.so, so we shouldn't enable this really.
+    - name: Mock auditwheel repair
+      if: ${{ env.RENAME_MANYLINUX == 'ON'}}
+      run: |
+        wheels_in=$(find ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/ -name "*.whl")
+        for wheel_path in ${wheels_in}; do
+          wheel_dir=$(dirname "${wheel_path}")
+          wheel_name=$(basename "${wheel_path}")
+          wheel_name_out="${wheel_name//linux/${{ env.MANYLINUX }}}"
+          wheel_path_out="${wheel_dir}/${wheel_name_out}"
+          # Move the wheel, renaming it
+          mv ${wheel_path} ${wheel_path_out}
+          echo "Moved ${wheel_path} to ${wheel_path_out}"
+        done
+
+    # Upload wheel artifacts to the job on GHA, for a very short duration. This might not be desirable in practice.
+    - name: Upload Wheel Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: wheelhouse
+        path: ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/*.whl
+        if-no-files-found: error
+        retention-days: 7
