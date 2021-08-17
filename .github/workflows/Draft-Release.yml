@@ -1,5 +1,4 @@
-# Thorough build for pushed tags.
-# Builds all supported binary platforms to ensure that release artifacts can be generated.
+# Perform thorough builds, and potentially create a draft CI workflow. 
 name: Draft Release
 
 on:
@@ -15,295 +14,537 @@ defaults:
     # Default to using bash regardless of OS unless otherwise specified.
     shell: bash
 
+# @todo - add a job/step which validates the version is of the correct format (for pre releases) and that the git tag matches the CMake/header version(s) 
+
+# Several jobs with some dependencies between them.
+# + Thorough Ubuntu builds
+#   + Oldest and newest cuda, lots of arch, vis off, tests on
+# + Thorough Windows builds
+#   + Oldest and newest cuda, lots of arch, vis off, tests on
+# + Wheel producing manylinux builds
+#   + CUDA 11.0 and 11.2, py 3.6-9, vis on/off, py only.
+# + Wheel producing Windows builds
+#   + CUDA 11.0 and 11.2, py 3.6-9, vis on/off, py only.
+# + Draft github release workflow.
+
 jobs:
-  # Perform a thorough build, including test suite on all platforums with a wide range of compute capabilities.
-  # Build artifacts are saved to attach to a draft release if successful 
-  build:
-    runs-on: ${{ matrix.os }}
+  build-ubuntu:
+    runs-on: ${{ matrix.cudacxx.os }}
     strategy:
       fail-fast: false
-      # Large build matrix, with linux vis, linux console, windows vis builds to produce .whl's.
-      # Single CUDA version, building for each supported major architecture, using each python version. Release builds with SEATBELTS=ON for now. GCC 8 for CUDA 11.0 builds of the test suite.
-      # Only one build per python config is set to build the test suite (as it would be the same work otherwise)
-      # Additionally an linux vis build using cuda 10.0 to ensure oldest supported CUDA builds OK, but does not produce binaries.
+      # Multiplicative build matrix
+      # optional exclude: can be partial, include: must be specific
       matrix:
-        include:
-          # CUDA 11.0 Linux builds
-          - os: ubuntu-20.04
-            cuda: "11.0"
-            python: "3.9"
-            cuda_arch: "35 52 60 70 80"
-            gcc: 8
+        # CUDA_ARCH values are reduced compared to wheels due to CI memory issues while compiling the test suite.
+        cudacxx:
+          - cuda: "11.4"
+            cuda_arch: "35 60 80"
+            hostcxx: gcc-9
+            os: ubuntu-20.04
+          - cuda: "11.0"
+            cuda_arch: "35 60 80"
+            hostcxx: gcc-8
+            os: ubuntu-20.04
+        python:
+          - "3.8"
+        config:
+          - name: "Release"
             config: "Release"
             SEATBELTS: "ON"
-            VISUALISATION: "ON"
-            build_tests: "ON"
-            binary_release: "ON"
-          - os: ubuntu-20.04
-            cuda: "11.0"
-            python: "3.8"
-            cuda_arch: "35 52 60 70 80"
-            gcc: 8
-            config: "Release"
-            SEATBELTS: "ON"
-            VISUALISATION: "ON"
-            build_tests: "OFF"
-            binary_release: "ON"
-          - os: ubuntu-20.04
-            cuda: "11.0"
-            python: "3.7"
-            cuda_arch: "35 52 60 70 80"
-            gcc: 8
-            config: "Release"
-            SEATBELTS: "ON"
-            VISUALISATION: "ON"
-            build_tests: "OFF"
-            binary_release: "ON"
-          - os: ubuntu-20.04
-            cuda: "11.0"
-            python: "3.6"
-            cuda_arch: "35 52 60 70 80"
-            gcc: 8
-            config: "Release"
-            SEATBELTS: "ON"
-            VISUALISATION: "ON"
-            build_tests: "OFF"
-            binary_release: "ON"
+        VISUALISATION: 
+          - "OFF"
 
-          # CUDA 11.0 headless/console-only Linux builds
-          - os: ubuntu-20.04
-            cuda: "11.0"
-            python: "3.9"
-            cuda_arch: "35 52 60 70 80"
-            gcc: 8
-            config: "Release"
-            SEATBELTS: "ON"
-            VISUALISATION: "OFF"
-            build_tests: "ON"
-            binary_release: "ON"
-          - os: ubuntu-20.04
-            cuda: "11.0"
-            python: "3.8"
-            cuda_arch: "35 52 60 70 80"
-            gcc: 8
-            config: "Release"
-            SEATBELTS: "ON"
-            VISUALISATION: "OFF"
-            build_tests: "OFF"
-            binary_release: "ON"
-          - os: ubuntu-20.04
-            cuda: "11.0"
-            python: "3.7"
-            cuda_arch: "35 52 60 70 80"
-            gcc: 8
-            config: "Release"
-            SEATBELTS: "ON"
-            VISUALISATION: "OFF"
-            build_tests: "OFF"
-            binary_release: "ON"
-          - os: ubuntu-20.04
-            cuda: "11.0"
-            python: "3.6"
-            cuda_arch: "35 52 60 70 80"
-            gcc: 8
-            config: "Release"
-            SEATBELTS: "ON"
-            VISUALISATION: "OFF"
-            build_tests: "OFF"
-            binary_release: "ON"
+    # Name the job based on matrix/env options
+    name: "build-ubuntu (${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
 
-          # CUDA 11.0 Windows build
-          - os: windows-2019
-            cuda: "11.0.3"
-            python: "3.9"
-            cuda_arch: 35 52 60 70 80
-            visual_studio: "Visual Studio 16 2019"
-            config: "Release"
-            SEATBELTS: "ON"
-            VISUALISATION: "ON"
-            build_tests: "ON"
-            binary_release: "ON"
-          - os: windows-2019
-            cuda: "11.0.3"
-            python: "3.8"
-            cuda_arch: 35 52 60 70 80
-            visual_studio: "Visual Studio 16 2019"
-            config: "Release"
-            SEATBELTS: "ON"
-            VISUALISATION: "ON"
-            build_tests: "OFF"
-            binary_release: "ON"
-          - os: windows-2019
-            cuda: "11.0.3"
-            python: "3.7"
-            cuda_arch: 35 52 60 70 80
-            visual_studio: "Visual Studio 16 2019"
-            config: "Release"
-            SEATBELTS: "ON"
-            VISUALISATION: "ON"
-            build_tests: "OFF"
-            binary_release: "ON"
-          - os: windows-2019
-            cuda: "11.0.3"
-            python: "3.6"
-            cuda_arch: 35 52 60 70 80
-            visual_studio: "Visual Studio 16 2019"
-            config: "Release"
-            SEATBELTS: "ON"
-            VISUALISATION: "ON"
-            build_tests: "OFF"
-            binary_release: "ON"
-
-          # CUDA 10.0 Linux build, no artifacts.
-          - os: ubuntu-18.04
-            python: "3.6"
-            cuda: "10.0"
-            cuda_arch: "35 50 60 70"
-            gcc: 7
-            config: "Release"
-            SEATBELTS: "ON"
-            VISUALISATION: "ON"
-            build_tests: "ON"
-            binary_release: "OFF"
+    # Define job-wide env constants, and promote matrix elements to env constants for portable steps.
     env:
-      build_dir: "build"
+      # Define constants
+      BUILD_DIR: "build"
+      BUILD_TESTS: "ON"
+      # Conditional based on matrix via awkward almost ternary
+      BUILD_SWIG_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
+      # Port matrix options to environment, for more portability.
+      CUDA: ${{ matrix.cudacxx.cuda }}
+      CUDA_ARCH: ${{ matrix.cudacxx.cuda_arch }}
+      HOSTCXX: ${{ matrix.cudacxx.hostcxx }}
+      OS: ${{ matrix.cudacxx.os }}
+      CONFIG: ${{ matrix.config.config }}
+      SEATBELTS: ${{ matrix.config.SEATBELTS }}
+      PYTHON: ${{ matrix.python}}
+      VISUALISATION: ${{ matrix.VISUALISATION }}
 
     steps:
     - uses: actions/checkout@v2
 
-    # Enable a specific python version
-    - name: Select Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python }}
-
-    # Setup Linux Dependencies
-    - name: Install CUDA (linux)
-      if: ${{ runner.os == 'Linux' }}
+    - name: Install CUDA
+      if: ${{ startswith(env.OS, 'ubuntu') && env.CUDA != '' }}
       env:
-        cuda: ${{ matrix.cuda }}
-      shell: bash
+        cuda: ${{ env.CUDA }}
       run: .github/scripts/install_cuda_ubuntu.sh
 
-    # Specify the correct host compilers
-    - name: Install/Select gcc and g++ (linux)
-      if: ${{ runner.os == 'Linux' }}
+    - name: Install/Select gcc and g++
+      if: ${{ startsWith(env.HOSTCXX, 'gcc-') }}
       run: |
-        sudo apt-get install -y gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }}
-        echo "CC=/usr/bin/gcc-${{ matrix.gcc }}" >> $GITHUB_ENV
-        echo "CXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
-        echo "CUDAHOSTCXX=/usr/bin/g++-${{ matrix.gcc }}" >> $GITHUB_ENV
+        gcc_version=${HOSTCXX//gcc-/}
+        sudo apt-get install -y gcc-${gcc_version} g++-${gcc_version}
+        echo "CC=/usr/bin/gcc-${gcc_version}" >> $GITHUB_ENV
+        echo "CXX=/usr/bin/g++-${gcc_version}" >> $GITHUB_ENV
+        echo "CUDAHOSTCXX=/usr/bin/g++-${gcc_version}" >> $GITHUB_ENV
 
-    # Install vis build dependencies for most ubuntu targets (2004, latest)
-    - name: Install visualisation dev dependencies (linux, != 18.04)
-      if: ${{ runner.os == 'Linux' && matrix.VISUALISATION == 'ON' && matrix.os != 'ubuntu-18.04' }}
-      run: sudo apt-get install libsdl2-dev libglew-dev libfreetype-dev libdevil-dev libglu1-mesa-dev libfontconfig1-dev
+    - name: Select Python
+      if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }} 
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ env.PYTHON }}
 
-    # Install vis build dependencies for ubuntu 18.04. Freetype is the main difference.
-    - name: Install visualisation dev dependencies (linux, 18.04)
-      if: ${{ runner.os == 'Linux' && matrix.VISUALISATION == 'ON' && matrix.os == 'ubuntu-18.04' }}
-      run: sudo apt-get install libsdl2-dev libglew-dev libfreetype6-dev libdevil-dev libglu1-mesa-dev libfontconfig1-dev libgl1-mesa-dev
-
-    # Install linux specific python dependencies
-    - name: Install Python related dependencies (linux)
-      if: ${{ runner.os == 'Linux' }}
+    # @todo - is some/all of this still required when using select Python?
+    - name: Install python dependencies
+      if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }}
       run: |
         sudo apt-get install python3-venv
         python3 -m pip install --upgrade wheel
         python3 -m pip install --upgrade 'setuptools; python_version >= "3.6"' 'setuptools<51.3.0; python_version < "3.6" and python_version >= "3.0"'
 
-    # CMake Configuration under linux.
-    - name: Configure cmake (linux)
-      if: ${{ runner.os == 'Linux' }}
-      run: cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DBUILD_TESTS=${{ matrix.build_tests }} -DWARNINGS_AS_ERRORS=ON -DCUDA_ARCH="${{ matrix.cuda_arch }}" -Werror=dev -DCMAKE_WARN_DEPRECATED=OFF -DBUILD_SWIG_PYTHON=ON -DUSE_NVTX=ON -DSEATBELTS=${{ matrix.SEATBELTS }} -DVISUALISATION=${{ matrix.VISUALISATION }}
-    
-    # Setup Windows dependencies.
-    - name: Install CUDA (windows)
-      if: ${{ runner.os == 'Windows' }}
-      env:
-        cuda: ${{ matrix.cuda }}
-        visual_studio: ${{ matrix.visual_studio }}
-      shell: powershell
-      run: .github\scripts\install_cuda_windows.ps1
+    - name: Install Visualisation Dependencies
+      if: ${{ startswith(env.OS, 'ubuntu') && env.VISUALISATION == 'ON' }}
+      run: |
+        # Install ubuntu-20.04 packages
+        if [ "$OS" == 'ubuntu-20.04' ]; then 
+          sudo apt-get install -y libglew-dev libglu1-mesa-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
+        fi
+        # Install Ubuntu 18.04 packages
+        if [ "$OS" == 'ubuntu-18.04' ]; then 
+          sudo apt-get install -y libglew-dev libglu1-mesa-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype6-dev libgl1-mesa-dev
+        fi
 
-    # CMake Configuration under windows
-    - name: Configure cmake (windows)
-      if: ${{ runner.os == 'Windows' }}
-      run: cmake . -B ${{ env.build_dir }} -G "${{ matrix.visual_studio }}" -A x64 -DBUILD_TESTS=${{ matrix.build_tests }} -DWARNINGS_AS_ERRORS=ON -DCUDA_ARCH="${{ matrix.cuda_arch }}" -Werror=dev -DCMAKE_WARN_DEPRECATED=OFF -DBUILD_SWIG_PYTHON=ON -DPython3_ROOT_DIR=$(dirname $(which python)) -DPython3_EXECUTABLE=$(which python) -DUSE_NVTX=ON -DSEATBELTS=${{ matrix.SEATBELTS }} -DVISUALISATION=${{ matrix.VISUALISATION }}
+    - name: Configure cmake
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}"
+        -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
+        -Werror=dev
+        -DCMAKE_WARN_DEPRECATED="OFF" 
+        -DWARNINGS_AS_ERRORS="ON"
+        -DCUDA_ARCH="${{ env.CUDA_ARCH }}"
+        -DBUILD_TESTS="${{ env.BUILD_TESTS }}"
+        -DBUILD_SWIG_PYTHON="${{ env.BUILD_SWIG_PYTHON }}"
+        -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
+        -DVISUALISATION="${{ env.VISUALISATION }}"
+        -DUSE_NVTX="ON"
 
-    # Build the core static library
-    - name: Build flamegpu
-      run: cmake --build . --config ${{ matrix.config }} --target flamegpu --verbose -j `nproc`
-      working-directory: ${{ env.build_dir }}
+    - name: Build static library
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target flamegpu --verbose -j `nproc`
 
-    # Build the python wheel
-    - name: Build pyflamegpu
-      run: cmake --build . --config ${{ matrix.config }} --target pyflamegpu --verbose -j `nproc`
-      working-directory: ${{ env.build_dir }}
+    - name: Build python wheel
+      if: ${{ env.BUILD_SWIG_PYTHON == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target pyflamegpu --verbose -j `nproc`
 
-    # Build the test suite
     - name: Build tests
-      if: ${{ matrix.build_tests == 'ON' }}
-      run: cmake --build . --config ${{ matrix.config }} --target tests --verbose -j `nproc`
-      working-directory: ${{ env.build_dir }}
+      if: ${{ env.BUILD_TESTS == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target tests --verbose -j `nproc`
 
-    # Build all other targets (linux)
-    - name: Build everything else (linux)
-      if: ${{ runner.os == 'Linux' }}
-      run: cmake --build . --config ${{ matrix.config }} --target all --verbose -j `nproc`
-      working-directory: ${{ env.build_dir }}
+    - name: Build all remaining targets
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target all --verbose -j `nproc`
 
-    # Build all other targets (windows)
-    - name: Build everything else (Windows)
-      if: ${{ runner.os == 'Windows' }}
-      run: cmake --build . --config ${{ matrix.config }} --target ALL_BUILD --verbose -j `nproc`
-      working-directory: ${{ env.build_dir }}
 
-    # Rename console only wheels to allow visualisation=on and visualisation=off builds in the release. 
-    # This breaks the wheel filename conventions, so an alternative long-term solution must be found.
-    - name: Rename console-only pyflamegpu wheels
-      if: ${{ matrix.VISUALISATION == 'OFF' }}
-      run: |
-        path=$(find ${{ env.build_dir }}/lib/${{ matrix.config }}/python/dist/ -name "pyflamegpu*.whl" | head -n 1)
-        whldir=$(dirname ${path})
-        filename_in=$(basename ${path})
-        filename_out=${filename_in/pyflamegpu/pyflamegpu-console}
-        mv ${whldir}/${filename_in} ${whldir}/${filename_out}
+  # Thorough Windows builds
+  build-windows:
+    runs-on: ${{ matrix.cudacxx.os }}
+    strategy:
+      fail-fast: false
+      # Multiplicative build matrix
+      # optional exclude: can be partial, include: must be specific
+      matrix:
+        # CUDA_ARCH values are reduced compared to wheels due to CI memory issues while compiling the test suite.
+        cudacxx:
+          - cuda: "11.4.1"
+            cuda_arch: "35 60 80"
+            hostcxx: "Visual Studio 16 2019"
+            os: windows-2019
+          - cuda: "11.0.3"
+            cuda_arch: "35 60 80"
+            hostcxx: "Visual Studio 16 2019"
+            os: windows-2019
+        python: 
+          - "3.8"
+        config:
+          - name: "Release"
+            config: "Release"
+            SEATBELTS: "ON"
+        VISUALISATION: 
+          - "OFF"
 
-    # Extract the path and name of the first (and only) python wheel
-    - name: Find pyflamegpu wheels
-      id: findwheel
-      run: |
-        path=$(find ${{ env.build_dir }}/lib/${{ matrix.config }}/python/dist/ -name "pyflamegpu*.whl" | head -n 1)
-        echo "path: ${path}"
-        echo "::set-output name=path::${path}"
-        echo "::set-output name=file::$(basename ${path})"
+    # Name the job based on matrix/env options
+    name: "build-windows (${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
 
-    # If required, upload the .whl file as an artifact for use in dependent jobs
-    - name: Upload Wheel Artifacts
-      uses: actions/upload-artifact@v2
-      if: ${{matrix.binary_release == 'ON' }}
-      with:
-        name: wheels
-        path: ${{ steps.findwheel.outputs.path }}
-        if-no-files-found: error
-        retention-days: 21
-
-  # Dependent job which creates a draft release based on the tag, and uploads compiled artifacts. Only runs for tag based events.
-  create-draft-release:
-    needs: build
-    if: ${{ success() && startsWith(github.ref, 'refs/tags/v') && github.event_name != 'workflow_dispatch' }}
-    runs-on: ubuntu-20.04
+    # Define job-wide env constants, and promote matrix elements to env constants for portable steps.
+    env:
+      # Define constants
+      BUILD_DIR: "build"
+      BUILD_TESTS: "ON"
+      # Conditional based on matrix via awkward almost ternary
+      BUILD_SWIG_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
+      # Port matrix options to environment, for more portability.
+      CUDA: ${{ matrix.cudacxx.cuda }}
+      CUDA_ARCH: ${{ matrix.cudacxx.cuda_arch }}
+      HOSTCXX: ${{ matrix.cudacxx.hostcxx }}
+      OS: ${{ matrix.cudacxx.os }}
+      CONFIG: ${{ matrix.config.config }}
+      SEATBELTS: ${{ matrix.config.SEATBELTS }}
+      PYTHON: ${{ matrix.python}}
+      VISUALISATION: ${{ matrix.VISUALISATION }}
 
     steps:
     - uses: actions/checkout@v2
 
-    # Download pyhton wheels from previous jobs.
+    - name: Install CUDA (Windows)
+      if: ${{ runner.os == 'Windows' && env.CUDA != '' }}
+      shell: powershell
+      env:
+        cuda: ${{ env.CUDA }}
+        visual_studio: ${{ env.HOSTCXX }}
+      run: .github\scripts\install_cuda_windows.ps1
+
+    - name: Select Python
+      if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }} 
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ env.PYTHON }}
+
+    # Must pass -G -A for windows, and -DPython3_ROOT_DIR/-DPYTHON3_EXECUTABLE as a github action workaround
+    - name: Configure cmake
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}" 
+        -G "${{ env.HOSTCXX }}" -A x64
+        -Werror=dev
+        -DCMAKE_WARN_DEPRECATED="OFF"
+        -DWARNINGS_AS_ERRORS="ON"
+        -DCUDA_ARCH="${{ env.CUDA_ARCH }}"
+        -DBUILD_TESTS="${{ env.BUILD_TESTS }}"
+        -DBUILD_SWIG_PYTHON="${{ env.BUILD_SWIG_PYTHON }}" 
+        -DPython3_ROOT_DIR="$(dirname $(which python))" 
+        -DPython3_EXECUTABLE="$(which python)"
+        -DVISUALISATION="${{ env.VISUALISATION }}"
+        -DUSE_NVTX="ON"
+
+    - name: Build static library
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --config ${{ env.CONFIG }} --target flamegpu --verbose -j `nproc`
+
+    - name: Build python wheel
+      if: ${{ env.BUILD_SWIG_PYTHON == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --config ${{ env.CONFIG }} --target pyflamegpu --verbose -j `nproc`
+
+    - name: Build tests
+      if: ${{ env.BUILD_TESTS == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --config ${{ env.CONFIG }} --target tests --verbose -j `nproc`
+
+    - name: Build all remaining targets
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --config ${{ env.CONFIG }} --target ALL_BUILD --verbose -j `nproc`
+
+
+  # Manylinux2014 Wheel builds, using the manylinux2014 container
+  wheel-manylinux2014:
+    runs-on: ${{ matrix.cudacxx.os }}
+    # Run steps inside a manylinux container.
+    container: quay.io/pypa/manylinux2014_x86_64
+    strategy:
+      fail-fast: false
+      # Multiplicative build matrix
+      # optional exclude: can be partial, include: must be specific
+      matrix:
+        cudacxx:
+          - cuda: "11.2"
+            cuda_arch: "35 52 60 70 80"
+            hostcxx: devtoolset-9
+            os: ubuntu-20.04
+          - cuda: "11.0"
+            cuda_arch: "35 52 60 70 80"
+            hostcxx: devtoolset-8
+            os: ubuntu-20.04
+        python: 
+          - "3.9"
+          - "3.8"
+          - "3.7"
+          - "3.6"
+        config:
+          - name: "Release"
+            config: "Release"
+            SEATBELTS: "ON"
+        VISUALISATION: 
+          - "ON"
+          - "OFF"
+
+    # Name the job based on matrix/env options
+    name: "wheel-manylinux2014 (${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
+
+    env:
+      # Control if we should create wheels claiming to be manylinux, even if they aren't
+      # @todo - replace this option which actual auditwheel repair + dlopen + packaged .so
+      RENAME_MANYLINUX: "OFF"
+      # Control if the wheel should be repaired. This will fail until .so's are addressed
+      AUDITWHEEL_REPAIR: "OFF"
+      MANYLINUX: "manylinux2014"
+      ARCH: "x86_64"
+      # Compute the wheelhouse name which should be unique within the matrix. This must be unique per build matrix/job combination
+      ARTIFACT_NAME: wheel-manylinux2014-${{ matrix.cudacxx.cuda }}-${{matrix.python}}-${{ matrix.VISUALISATION }}-${{ matrix.config.name }}-${{ matrix.cudacxx.os }}
+      # Define constants
+      BUILD_DIR: "build"
+      BUILD_TESTS: "OFF"
+      # Conditional based on matrix via awkward almost ternary
+      BUILD_SWIG_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
+      # Port matrix options to environment, for more portability.
+      CUDA: ${{ matrix.cudacxx.cuda }}
+      CUDA_ARCH: ${{ matrix.cudacxx.cuda_arch }}
+      HOSTCXX: ${{ matrix.cudacxx.hostcxx }}
+      OS: ${{ matrix.cudacxx.os }}
+      CONFIG: ${{ matrix.config.config }}
+      SEATBELTS: ${{ matrix.config.SEATBELTS }}
+      PYTHON: ${{ matrix.python}}
+      VISUALISATION: ${{ matrix.VISUALISATION }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    # Downgrade the devtoolset in the image based on the build matrix, using:
+    # gcc-10 for CUDA >= 11.2. Unclear if devtoolset-10 will upgrade to unpatched 11.3 which breaks CUDA builds that use <chrono>. 
+    # gcc-9 for CUDA >= 11.0
+    # gcc-8 for CUDA >= 10.1
+    # gcc-7 for CUDA >= 10.0 (and probably 9.x).
+    # these are not the officially supported toolset on centos by cuda, but it's what works.
+    - name: Install RHEL devtoolset (CentOS)
+      if: ${{ startsWith(env.HOSTCXX, 'devtoolset-') }}
+      run: |
+        # Install devtoolset-X
+        yum install -y ${{ env.HOSTCXX }}
+        # Enable the toolset via source not scl enable which doesn't get on with multi-step GHA 
+        source /opt/rh/${{ env.HOSTCXX }}/enable
+        # Export the new environment / compilers for subsequent steps.
+        echo "PATH=${PATH}" >> $GITHUB_ENV
+        echo "CC=$(which gcc)" >> $GITHUB_ENV
+        echo "CXX=$(which g++)" >> $GITHUB_ENV
+        echo "CUDAHOSTCXX=$(which g++)" >> $GITHUB_ENV
+
+    - name: Install CUDA (CentOS)
+      if: ${{ env.CUDA != '' }}
+      env:
+        cuda: ${{ env.CUDA }}
+      run: .github/scripts/install_cuda_centos.sh
+
+    - name: Install Visualisation Dependencies (CentOS)
+      if: ${{ env.VISUALISATION == 'ON' }}
+      run: |
+        yum install -y mesa-libGLU-devel glew-devel fontconfig-devel SDL2-devel freetype-devel 
+        # Build/Install DevIL from source.
+        yum install -y freeglut-devel
+        git clone --depth 1 https://github.com/DentonW/DevIL.git
+        cd DevIL/DevIL
+        mkdir -p build
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=${{ env.CONFIG }} -Wno-error=dev
+        make -j `nproc`
+        make install
+
+    - name: Configure cmake
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}"
+        -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
+        -Werror=dev
+        -DCMAKE_WARN_DEPRECATED="OFF" 
+        -DWARNINGS_AS_ERRORS="ON"
+        -DCUDA_ARCH="${{ env.CUDA_ARCH }}"
+        -DBUILD_TESTS="${{ env.BUILD_TESTS }}"
+        -DBUILD_SWIG_PYTHON="${{ env.BUILD_SWIG_PYTHON }}"
+        -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
+        -DVISUALISATION="${{ env.VISUALISATION }}"
+        -DUSE_NVTX="ON"
+
+    - name: Build python wheel
+      if: ${{ env.BUILD_SWIG_PYTHON == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target pyflamegpu --verbose -j `nproc`
+
+    # Run audithweel show for information, but do not repair.
+    - name: Run auditwheel show
+      working-directory: ${{ env.BUILD_DIR }}
+      run: auditwheel show lib/${{ env.CONFIG }}/python/dist/*whl
+
+    # Ideally we should use auditwheel repair to check/enforce conformity
+    # But we cannot due to cuda shared object (libcuda.so.1) dependencies which we cannot/shouldnot/wil not package into the wheel. 
+    - name: Run auditwheel repair
+      if: ${{ env.AUDITWHEEL_REPAIR == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
+      run: auditwheel repair --plat ${{ env.MANYLINUX }}_${{ env.ARCH }} lib/${{ env.CONFIG }}/python/dist/*whl -w lib/${{ env.CONFIG }}/python/dist
+
+    # Instead, rename the wheel.
+    # Wheels are not strictly manylinux complaint due to libcuda.so, so we shouldn't enable this really.
+    - name: Mock auditwheel repair
+      if: ${{ env.RENAME_MANYLINUX == 'ON'}}
+      run: |
+        wheels_in=$(find ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/ -name "*.whl")
+        for wheel_path in ${wheels_in}; do
+          wheel_dir=$(dirname "${wheel_path}")
+          wheel_name=$(basename "${wheel_path}")
+          wheel_name_out="${wheel_name//linux/${{ env.MANYLINUX }}}"
+          wheel_path_out="${wheel_dir}/${wheel_name_out}"
+          # Move the wheel, renaming it
+          mv ${wheel_path} ${wheel_path_out}
+          echo "Moved ${wheel_path} to ${wheel_path_out}"
+        done
+
+    # Upload wheel artifacts to the job on GHA, with a short retention
+    # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
+    - name: Upload Wheel Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ env.ARTIFACT_NAME }}
+        path: ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/*.whl
+        if-no-files-found: error
+        retention-days: 7
+
+
+  # Windows Wheel builds
+  wheel-windows:
+    runs-on: ${{ matrix.cudacxx.os }}
+    strategy:
+      fail-fast: false
+      # Multiplicative build matrix
+      # optional exclude: can be partial, include: must be specific
+      matrix:
+        cudacxx:
+          - cuda: "11.2.2"
+            cuda_arch: "35 52 60 70 80"
+            hostcxx: "Visual Studio 16 2019"
+            os: windows-2019
+          - cuda: "11.0.3"
+            cuda_arch: "35 52 60 70 80"
+            hostcxx: "Visual Studio 16 2019"
+            os: windows-2019
+        python: 
+          - "3.9"
+          - "3.8"
+          - "3.7"
+          - "3.6"
+        config:
+          - name: "Release"
+            config: "Release"
+            SEATBELTS: "ON"
+        VISUALISATION: 
+          - "ON"
+          - "OFF"
+
+    # Name the job based on matrix/env options
+    name: "windows-wheel (${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
+    
+
+    # Define job-wide env constants, and promote matrix elements to env constants for portable steps.
+    env:
+      # Compute the wheelhouse name which should be unique within the matrix. This must be unique per build matrix/job combination
+      ARTIFACT_NAME: wheel-windows-${{ matrix.cudacxx.cuda }}-${{matrix.python}}-${{ matrix.VISUALISATION }}-${{ matrix.config.name }}-${{ matrix.cudacxx.os }}
+      # Define constants
+      BUILD_DIR: "build"
+      BUILD_TESTS: "OFF"
+      # Conditional based on matrix via awkward almost ternary
+      BUILD_SWIG_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
+      # Port matrix options to environment, for more portability.
+      CUDA: ${{ matrix.cudacxx.cuda }}
+      CUDA_ARCH: ${{ matrix.cudacxx.cuda_arch }}
+      HOSTCXX: ${{ matrix.cudacxx.hostcxx }}
+      OS: ${{ matrix.cudacxx.os }}
+      CONFIG: ${{ matrix.config.config }}
+      SEATBELTS: ${{ matrix.config.SEATBELTS }}
+      PYTHON: ${{ matrix.python}}
+      VISUALISATION: ${{ matrix.VISUALISATION }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install CUDA (Windows)
+      if: ${{ runner.os == 'Windows' && env.CUDA != '' }}
+      shell: powershell
+      env:
+        cuda: ${{ env.CUDA }}
+        visual_studio: ${{ env.HOSTCXX }}
+      run: .github\scripts\install_cuda_windows.ps1
+
+    - name: Select Python
+      if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }} 
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ env.PYTHON }}
+
+    # Must pass -G -A for windows, and -DPython3_ROOT_DIR/-DPYTHON3_EXECUTABLE as a github action workaround
+    - name: Configure cmake
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}" 
+        -G "${{ env.HOSTCXX }}" -A x64
+        -Werror=dev
+        -DCMAKE_WARN_DEPRECATED="OFF"
+        -DWARNINGS_AS_ERRORS="ON"
+        -DCUDA_ARCH="${{ env.CUDA_ARCH }}"
+        -DBUILD_TESTS="${{ env.BUILD_TESTS }}"
+        -DBUILD_SWIG_PYTHON="${{ env.BUILD_SWIG_PYTHON }}" 
+        -DPython3_ROOT_DIR="$(dirname $(which python))" 
+        -DPython3_EXECUTABLE="$(which python)"
+        -DVISUALISATION="${{ env.VISUALISATION }}"
+        -DUSE_NVTX="ON"
+
+    - name: Build python wheel
+      if: ${{ env.BUILD_SWIG_PYTHON == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --config ${{ env.CONFIG }} --target pyflamegpu --verbose -j `nproc`
+
+     # Upload wheel artifacts to the job on GHA, with a short retention
+    # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
+    - name: Upload Wheel Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ env.ARTIFACT_NAME }}
+        path: ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/*.whl
+        if-no-files-found: error
+        retention-days: 7
+
+
+  # Create a draft release, if all other jobs are successful and if the workflow was triggered by a version tag push event.
+  create-draft-release:
+    needs: 
+      - build-ubuntu
+      - build-windows
+      - wheel-manylinux2014
+      - wheel-windows
+    if: ${{ success() && startsWith(github.ref, 'refs/tags/v') && github.event_name != 'workflow_dispatch' }}
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+
+    # Download python wheels from previous jobs.
     - name: Download Wheel Artifacts
+      id: download
       uses: actions/download-artifact@v2
       with:
-        name: wheels
-        path: wheels
+        path: artifacts
+
+    - name: Find Wheel Artifacts
+      id: find_wheels
+      run: |
+        # Find files, storing in the files variable
+        pattern="${{ steps.download.outputs.download-path }}/*/*.whl"
+        files=""
+        for f in ${pattern}; do
+          # @future - Set human readable display label
+          label="$(basename ${f})"
+          files="${files} \"${f}#${label}\""
+        done
+        echo "files: ${files}"
+        # Set the list of files as the output for this step
+        echo "::set-output name=files::${files}"
 
     # Extract information from the tag which is required for the draft github release
     - name: Process Tag
@@ -322,14 +563,12 @@ jobs:
 
     # Use the gh cli tool to create a draft release
     # @future - use --notes "notes string" or --notes-file file
-    # @future - label individual files via '/path/tofile#Display Label'
-    - name: Create Draft Release 
+    - name: Create Draft Release
       id: create_release
-      run: |
-        gh release create --draft ${{ env.PRERELEASE_FLAG}} ${{ env.TAG }} --title "${{ env.TITLE }}" ${{ env.FILES }}
+      run: gh release create --draft ${{ env.PRERELEASE_FLAG}} --title "${{ env.TITLE }}" ${{ env.TAG }} ${{ env.FILES }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         PRERELEASE_FLAG: "${{ steps.tag.outputs.prerelease_flag }}"
         TAG: "${{ steps.tag.outputs.tag }}"
         TITLE: "FLAME GPU ${{ steps.tag.outputs.version }}"
-        FILES: wheels/*.whl
+        FILES: ${{ steps.find_wheels.outputs.files }}

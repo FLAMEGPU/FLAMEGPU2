@@ -5,13 +5,22 @@ on:
   push:
     branches:
       - '**'
+    paths:
+      - "**"
+      - "!.github/**"
+      - ".github/workflows/Docs.yml"
   pull_request:
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   doxygen:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
-      Werror: "ON"
+      # Define constants
+      BUILD_DIR: "build"
     steps:
     - uses: actions/checkout@v2
 
@@ -29,8 +38,13 @@ jobs:
         echo "$(pwd)/bin" >> $GITHUB_PATH
 
     - name: Configure cmake
-      run: cmake . -B build -DBUILD_API_DOCUMENTATION=ON -DWARNINGS_AS_ERRORS=${{ env.Werror }} -DCMAKE_WARN_DEPRECATED=OFF
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}"
+        -Werror=dev
+        -DCMAKE_WARN_DEPRECATED="OFF"
+        -DWARNINGS_AS_ERRORS="ON"
+        -DBUILD_API_DOCUMENTATION="ON"
 
     - name: Docs
+      working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --target docs --verbose -j `nproc`
-      working-directory: build

@@ -5,40 +5,59 @@ on:
   push:
     branches:
       - '**'
+    paths:
+      - "**"
+      - "!.github/**"
+      - ".github/scripts/install_cuda_ubuntu.sh"
+      - ".github/workflows/Lint.yml"
   pull_request:
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   cpplint:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.cudacxx.os }}
+    name: "cpplint (${{ matrix.cudacxx.cuda }}, ${{ matrix.cudacxx.os }})"
     strategy:
       fail-fast: false
+      # Multiplicative build matrix
+      # optional exclude: can be partial, include: must be specific
       matrix:
-        include:
-          - os: ubuntu-latest
-            cuda: "11.4"
+        cudacxx:
+          - cuda: "11.4"
+            os: ubuntu-20.04
     env:
-      build_dir: "build"
-      build_tests: "ON"
+      # Define constants
+      BUILD_DIR: "build"
+      BUILD_TESTS: "ON"
+      # Port matrix options to environment, for more portability.
+      CUDA: ${{ matrix.cudacxx.cuda }}
+      OS: ${{ matrix.cudacxx.os }}
 
     steps:
     - uses: actions/checkout@v2
 
-    # Linting currently requires cuda to be installed. Ljnux is faster than windows.
     - name: Install CUDA
+      if: ${{ startswith(env.OS, 'ubuntu') && env.CUDA != '' }}
       env:
-        cuda: ${{ matrix.cuda }}
-      shell: bash
+        cuda: ${{ env.CUDA }}
       run: .github/scripts/install_cuda_ubuntu.sh
 
-    # Also install the linter.
     - name: Install cpplint
-      run: pip3 install cpplint && echo "$HOME/.local/bin" >> $GITHUB_PATH
+      run: |
+        python3 -m pip install cpplint
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-    # Configure cmake, including tests to make sure they are linted.
     - name: Configure cmake
-      run: cmake . -B ${{ env.build_dir }} -DBUILD_TESTS=${{ env.build_tests }} -DCMAKE_WARN_DEPRECATED=OFF
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}"
+        -Werror=dev
+        -DCMAKE_WARN_DEPRECATED="OFF"
+        -DWARNINGS_AS_ERRORS="ON"
+        -DBUILD_TESTS="${{ env.BUILD_TESTS }}"
 
-    # Run the linter.
     - name: Lint
+      working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --target all_lint --verbose -j `nproc` 
-      working-directory: ${{ env.build_dir }}
