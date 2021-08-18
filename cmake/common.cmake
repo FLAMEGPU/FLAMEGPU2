@@ -16,6 +16,8 @@ include(${FLAMEGPU_ROOT}/cmake/OutOfSourceOnly.cmake)
 # Adds -gencode argumetns to cuda compiler options
 # Adds -DMIN_COMPUTE_CAPABILITY=VALUE compiler defintions for C, CXX and CUDA 
 include(${CMAKE_CURRENT_LIST_DIR}/cuda_arch.cmake)
+# Include cmake code to control the output directory settings
+include(${CMAKE_CURRENT_LIST_DIR}/set_output_directories.cmake)
 
 # Ensure that other dependencies are downloaded and available. 
 # As flamegpu is a static library, linking only only occurs at consumption not generation, so dependent targets must also know of PRIVATE shared library dependencies such as tinyxml2 and rapidjson, as well any intentionalyl public dependencies (for include dirs)
