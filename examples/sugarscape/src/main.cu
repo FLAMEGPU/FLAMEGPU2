@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
+#include <array>
 
 #include "flamegpu/flamegpu.h"
 
@@ -396,7 +397,7 @@ int main(int argc, const char ** argv) {
     if (cudaSimulation.getSimulationConfig().input_file.empty()) {
         std::default_random_engine rng;
         // Pre init, decide the sugar hotspots
-        std::vector<std::tuple<unsigned int, unsigned int, unsigned int, unsigned int>> sugar_hotspots;
+        std::vector<std::array<unsigned int, 4>> sugar_hotspots;
         {
             std::uniform_int_distribution<unsigned int> width_dist(0, GRID_WIDTH-1);
             std::uniform_int_distribution<unsigned int> height_dist(0, GRID_HEIGHT-1);
@@ -406,7 +407,7 @@ int main(int argc, const char ** argv) {
             float hotspot_area = 0;
             while (hotspot_area < GRID_WIDTH * GRID_HEIGHT) {
                 unsigned int rad = radius_dist(rng);
-                std::tuple<int, int, unsigned int, unsigned int> hs = {width_dist(rng), height_dist(rng), rad, SUGAR_MAX_CAPACITY };
+                std::array<unsigned int, 4> hs = {width_dist(rng), height_dist(rng), rad, SUGAR_MAX_CAPACITY };
                 sugar_hotspots.push_back(hs);
                 hotspot_area += 3.141f * rad * rad;
             }
@@ -444,8 +445,8 @@ int main(int argc, const char ** argv) {
                 const int hotspot_core_size = 5;
                 for (auto &hs : sugar_hotspots) {
                     // Workout the highest sugar lvl from a nearby hotspot
-                    int hs_x = std::get<0>(hs);
-                    int hs_y = std::get<1>(hs);
+                    int hs_x = static_cast<int>(std::get<0>(hs));
+                    int hs_y = static_cast<int>(std::get<1>(hs));
                     unsigned int hs_rad = std::get<2>(hs);
                     unsigned int hs_level = std::get<3>(hs);
                     float hs_dist = static_cast<float>(sqrt(pow(hs_x-static_cast<int>(x), 2.0) + pow(hs_y-static_cast<int>(y), 2.0)));
