@@ -11,12 +11,24 @@ include(${FLAMEGPU_ROOT}/cmake/cxxstd.cmake)
 # Get FLAMEGPU Version information
 include(${FLAMEGPU_ROOT}/cmake/version.cmake)
 
-# Python module name (must match module name in swig input *.i file)
+# Python module name (must match module name in swig input *.i file), leading to import <x>
 SET(PYTHON_MODULE_NAME pyflamegpu)
+# Set the python distribution name for uniquely naming wheels based on build config. 
+# This is subject to change as opinion on python package distributions change (i.e. can we dlopen visualiastion @todo)
+set(PYTHON_DISTRIBUTION_NAME ${PYTHON_MODULE_NAME})
+# If the vis is enabled, suffix it onto the python distribution name.
+if(VISUALISATION)
+  # Python doesn't like dashes, so use underscores.
+  # The recommendations for package / distribution names are also to keep them short and all lowercase, although _ are allowed to improve readability.
+  set(PYTHON_DISTRIBUTION_NAME "${PYTHON_DISTRIBUTION_NAME}_vis")
+endif()
+# @todo - Embed seatbelts/Debug status in the distribution name?
+# @todo - could embed build-meta data in the downstream version too? (for dev builds not tagged releases?)
+
 message(STATUS "-----Configuring Project: ${PYTHON_MODULE_NAME}-----")
 
 if(FLAMEGPU_VERSION_PYTHON_PUBLIC AND FLAMEGPU_VERSION_PYTHON_LOCAL)
-  message(STATUS "${PYTHON_MODULE_NAME} version ${FLAMEGPU_VERSION_PYTHON_PUBLIC} (${FLAMEGPU_VERSION_PYTHON_LOCAL})")
+  message(STATUS "${PYTHON_DISTRIBUTION_NAME}-${FLAMEGPU_VERSION_PYTHON_PUBLIC} (${FLAMEGPU_VERSION_PYTHON_LOCAL})")
 endif()
 
 # Set the output directory where the wheel etc should be placed.
@@ -276,18 +288,14 @@ if(BUILD_SWIG_PYTHON_VENV)
 	# make a venv to install our python package in it
 	add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
 		# create venv
-		COMMAND ${VENV_EXECUTABLE} ${VENV_DIR}
-
-		# Must not call it in a folder containing the setup.py otherwise pip call it
-		# (i.e. "python setup.py bdist") while we want to consume the wheel package
-		COMMAND ${VENV_PIP} install --force-reinstall --find-links=dist --no-index -U ${PYTHON_MODULE_NAME}
-		# install pytest
-		COMMAND ${VENV_PIP} install pytest
-		BYPRODUCTS ${VENV_BYPRODUCTS}
-		# TODO: Add dependancy to ensure this post build step occurs after the previous post build step which builds the wheel
-		WORKING_DIRECTORY ${PYTHON_LIB_OUTPUT_DIRECTORY})
-	# TODO: Add tests (not supported by VS generator in CMAKE)
-	#add_test(...)
+    COMMAND ${VENV_EXECUTABLE} ${VENV_DIR}
+    # Install the wheel from the dist dir. Specify a version incase the same build dir has been used for a previous build 
+    COMMAND ${VENV_PIP} install --force-reinstall --find-links=dist --no-index -U ${PYTHON_DISTRIBUTION_NAME}==${FLAMEGPU_VERSION_PYTHON}
+    # install pytest
+    COMMAND ${VENV_PIP} install pytest
+    BYPRODUCTS ${VENV_BYPRODUCTS}
+    # TODO: Add dependancy to ensure this post build step occurs after the previous post build step which builds the wheel
+    WORKING_DIRECTORY ${PYTHON_LIB_OUTPUT_DIRECTORY})
 endif()
 
 # set project folders (for better organisation in visual studio)
