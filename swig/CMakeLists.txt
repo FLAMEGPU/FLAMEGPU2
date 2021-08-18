@@ -15,12 +15,17 @@ if(POLICY CMP0086)
   cmake_policy(SET CMP0086 NEW)
 endif()
 
-# Make sure python 3 is available before bothering with SWIG.
-# Provide the cmake option EXACT_PYTHON3_VERSION as an opportunity to override the version used. This is mostly for CI, so not a GUI option.
+# Find Python3, optionally an exact version for windows CI, or use in manylinux
 if(PYTHON3_EXACT_VERSION)
     set(PYTHON3_EXACT_VERSION_ARG ${PYTHON3_EXACT_VERSION} EXACT)
 endif()
-find_package(Python3 ${PYTHON3_EXACT_VERSION_ARG} REQUIRED COMPONENTS Interpreter Development)
+# CMake > 3.18 can use Development.Module which shoudl be all that's required, and should work inside manylinux containers.
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
+    find_package(Python3 ${PYTHON3_EXACT_VERSION_ARG} REQUIRED COMPONENTS Interpreter Development.Module)
+else()
+    # This will not work with Manylinux, but the curreny manylinux image already includes 3.21
+    find_package(Python3 ${PYTHON3_EXACT_VERSION_ARG} REQUIRED COMPONENTS Interpreter Development)
+endif()
 unset(PYTHON3_EXACT_VERSION_ARG)
 message(STATUS "Python found at " ${Python3_EXECUTABLE})
 
