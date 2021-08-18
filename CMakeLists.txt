@@ -107,6 +107,9 @@ endif()
 option(BUILD_SWIG_PYTHON "Enable python bindings via SWIG" OFF)
 # By default, build into a venv, otherwise it is set to ON anyway. 
 cmake_dependent_option(BUILD_SWIG_PYTHON_VENV "Enable the use of a venv for swig/python installation" ON "BUILD_SWIG_PYTHON" ON)
+# Add option to embed the cuda version in the python local version, for pseudo downstream releases / to differentiate wheel files.
+cmake_dependent_option(BUILD_SWIG_PYTHON_LOCALVERSION "Embed CUDA version for the build in the local information" ON "BUILD_SWIG_PYTHON" ON)
+
 
 # Option to enable/disable tests.
 option(BUILD_TESTS "Enable building tests" OFF)

@@ -101,10 +101,26 @@ if(NOT FLAMEGPU_VERSION_PRERELEASE_LABEL STREQUAL "")
 endif()
 
 # Local python version identifiers are: <public version identifier>[+<local version label>]
-# The local version number should apparently not be included in distributed versions other than downstream distributions.
+# Optionally (default on) embed the cuda version in the local version number, to differentiate wheels based on python version.
 set(FLAMEGPU_VERSION_PYTHON_LOCAL "${FLAMEGPU_VERSION_PYTHON_PUBLIC}")
-if(NOT ${FLAMEGPU_VERSION_BUILDMETADATA} STREQUAL "")
-    set(FLAMEGPU_VERSION_PYTHON_LOCAL "${FLAMEGPU_VERSION_PYTHON_LOCAL}+${FLAMEGPU_VERSION_BUILDMETADATA}")
+# Find and attach the `cudaXY` to the local python version number
+# @todo - if FindCUDAToolkit is used, this could be massively simplified.
+string(REPLACE "." ";" CUDA_VERSION_LIST ${CMAKE_CUDA_COMPILER_VERSION})
+list(GET CUDA_VERSION_LIST 0 CUDA_VERSION_MAJOR)
+list(GET CUDA_VERSION_LIST 1 CUDA_VERSION_MINOR)
+set(FLAMEGPU_VERSION_PYTHON_LOCAL_SUFFIX "cuda${CUDA_VERSION_MAJOR}${CUDA_VERSION_MINOR}")
+unset(CUDA_VERSION_LIST)
+unset(CUDA_VERSION_MAJOR)
+unset(CUDA_VERSION_MINOR)
+if(NOT FLAMEGPU_VERSION_PYTHON_LOCAL_SUFFIX STREQUAL "")
+    set(FLAMEGPU_VERSION_PYTHON_LOCAL "${FLAMEGPU_VERSION_PYTHON_LOCAL}+${FLAMEGPU_VERSION_PYTHON_LOCAL_SUFFIX}")
+endif()
+unset(FLAMEGPU_VERSION_PYTHON_LOCAL_SUFFIX)
+
+# Set the python version number to use, based on the local version flag.
+set(FLAMEGPU_VERSION_PYTHON ${FLAMEGPU_VERSION_PYTHON_PUBLIC})
+if(BUILD_SWIG_PYTHON_LOCALVERSION)
+  set(FLAMEGPU_VERSION_PYTHON ${FLAMEGPU_VERSION_PYTHON_LOCAL})
 endif()
 
 # Unset temporary variables.
