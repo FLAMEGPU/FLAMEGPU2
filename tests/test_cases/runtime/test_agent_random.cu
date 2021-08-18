@@ -56,7 +56,8 @@ TEST(AgentRandomTest, AgentRandomCheck) {
     const char *args_1[5] = { "process.exe", "-r", "0", "-s", "1" };
     const char *args_2[5] = { "process.exe", "-r", "1", "-s", "1" };
     std::string _t_unused = std::string();
-    std::vector<std::tuple<float, float, float>> results1, results2;
+    // Not using std::vector<std::tuple<float, float, float>> due to an NVCC 11.0 + GCC 9 bug in C++17 mode. See https://github.com/FLAMEGPU/FLAMEGPU2/issues/650
+    std::vector<std::array<float, 3>> results1, results2;
     {
         /**
         * Test Model 1
@@ -82,7 +83,7 @@ TEST(AgentRandomTest, AgentRandomCheck) {
             a1 = instance.getVariable<float>("a");
             b1 = instance.getVariable<float>("b");
             c1 = instance.getVariable<float>("c");
-            results1.push_back(std::make_tuple(a1, b1, c1));
+            results1.push_back({a1, b1, c1});
             if (i != 0) {
                 // Different agents get different random numbers
                 EXPECT_TRUE(a1 != a2);
@@ -111,10 +112,10 @@ TEST(AgentRandomTest, AgentRandomCheck) {
 
         for (unsigned int i = 0; i < population.size(); i++) {
             AgentVector::Agent instance = population[i];
-            results2.push_back(std::make_tuple(
+            results2.push_back({
                 instance.getVariable<float>("a"),
                 instance.getVariable<float>("b"),
-                instance.getVariable<float>("c")));
+                instance.getVariable<float>("c")});
         }
         EXPECT_TRUE(results2.size() == AGENT_COUNT);
 
@@ -139,10 +140,10 @@ TEST(AgentRandomTest, AgentRandomCheck) {
 
         for (unsigned int i = 0; i < population.size(); i++) {
             AgentVector::Agent instance = population[i];
-            results2.push_back(std::make_tuple(
+            results2.push_back({
                 instance.getVariable<float>("a"),
                 instance.getVariable<float>("b"),
-                instance.getVariable<float>("c")));
+                instance.getVariable<float>("c")});
         }
         EXPECT_EQ(results2.size(), AGENT_COUNT);
 
