@@ -126,10 +126,11 @@ option(EXPORT_RTC_SOURCES "Export RTC source files to disk at runtime" OFF)
 # If CUDA >= 11.2, add an option to enable using NVCC_THREASD
 if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.2)
     option(USE_NVCC_THREADS "Enable parallel compilation of multiple NVCC targets. See NVCC_THREADS for more control." ON)
-    # The number of threads to use defaults to 0, telling the compiler to use as many threads as required.
+    # The number of threads to use defaults to 2, telling the compiler to use up to 2 threads when multiple arch's are specified.
+    # Setting this value to 0 would use as many threads as possible.
     # In some cases, this may increase total runtime due to excessive thread creation, and lowering the number of threads, or lowering the value of `-j` passed to cmake may be beneficial.
     if(NOT DEFINED NVCC_THREADS)
-        set(NVCC_THREADS "0")
+        set(NVCC_THREADS "2")
     endif()
     SET(NVCC_THREADS "${NVCC_THREADS}" CACHE STRING "Number of concurrent threads for building multiple target architectures. 0 indicates use as many as required." FORCE)
 endif()
