@@ -55,13 +55,14 @@ jobs:
     name: "build (${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
 
     env:
-      # Control if we should create wheels claiming to be manylinux, even if they aren't
-      # @todo - replace this option which actual auditwheel repair + dlopen + packaged .so
-      RENAME_MANYLINUX: "OFF"
       # Control if the wheel should be repaired. This will fail until .so's are addressed
       AUDITWHEEL_REPAIR: "OFF"
       MANYLINUX: "manylinux2014"
       ARCH: "x86_64"
+      # Control if static GLEW should be built and used or not.
+      USE_STATIC_GLEW: "ON"
+      # Compute the wheelhouse name which should be unique within the matrix. This must be unique per build matrix/job combination
+      ARTIFACT_NAME: wheel-manylinux2014-${{ matrix.cudacxx.cuda }}-${{matrix.python}}-${{ matrix.VISUALISATION }}-${{ matrix.config.name }}-${{ matrix.cudacxx.os }}
       # Define constants
       BUILD_DIR: "build"
       BUILD_TESTS: "OFF"
@@ -119,6 +120,18 @@ jobs:
         make -j `nproc`
         make install
 
+    - name: Build and install GLEW including static GLEW
+      if: ${{ env.VISUALISATION == 'ON' && env.USE_STATIC_GLEW == 'ON' }}
+      env:
+        GLEW_VERSION: "2.2.0"
+      run: |
+        yum install -y wget
+        wget https://github.com/nigels-com/glew/releases/download/glew-${{ env.GLEW_VERSION }}/glew-${{ env.GLEW_VERSION }}.tgz
+        tar -zxf glew-${{ env.GLEW_VERSION }}.tgz
+        cd glew-${{ env.GLEW_VERSION }}
+        make
+        make install
+
     - name: Configure cmake
       run: >
         cmake . -B "${{ env.BUILD_DIR }}"
@@ -132,6 +145,8 @@ jobs:
         -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
         -DVISUALISATION="${{ env.VISUALISATION }}"
         -DUSE_NVTX="ON"
+        -DGLEW_USE_STATIC_LIBS="${{ env.USE_STATIC_GLEW }}"
+        -DOpenGL_GL_PREFERENCE:STRING=LEGACY
 
     - name: Build python wheel
       if: ${{ env.BUILD_SWIG_PYTHON == 'ON' }}
@@ -150,27 +165,12 @@ jobs:
       working-directory: ${{ env.BUILD_DIR }}
       run: auditwheel repair --plat ${{ env.MANYLINUX }}_${{ env.ARCH }} lib/${{ env.CONFIG }}/python/dist/*whl -w lib/${{ env.CONFIG }}/python/dist
 
-    # Instead, rename the wheel.
-    # Wheels are not strictly manylinux complaint due to libcuda.so, so we shouldn't enable this really.
-    - name: Mock auditwheel repair
-      if: ${{ env.RENAME_MANYLINUX == 'ON'}}
-      run: |
-        wheels_in=$(find ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/ -name "*.whl")
-        for wheel_path in ${wheels_in}; do
-          wheel_dir=$(dirname "${wheel_path}")
-          wheel_name=$(basename "${wheel_path}")
-          wheel_name_out="${wheel_name//linux/${{ env.MANYLINUX }}}"
-          wheel_path_out="${wheel_dir}/${wheel_name_out}"
-          # Move the wheel, renaming it
-          mv ${wheel_path} ${wheel_path_out}
-          echo "Moved ${wheel_path} to ${wheel_path_out}"
-        done
-
-    # Upload wheel artifacts to the job on GHA, for a very short duration. This might not be desirable in practice.
+    # Upload wheel artifacts to the job on GHA, with a short retention
+    # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
     - name: Upload Wheel Artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: wheelhouse
+        name: ${{ env.ARTIFACT_NAME }}
         path: ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/*.whl
         if-no-files-found: error
         retention-days: 7
