@@ -1,5 +1,5 @@
-# CMake 3.15+ for Thrust/Cub support
-cmake_minimum_required(VERSION VERSION 3.15 FATAL_ERROR)
+# Minimum CMake version 3.18 for CUDA --std=c++17 
+cmake_minimum_required(VERSION VERSION 3.18 FATAL_ERROR)
 
 # Only Do anything if BUILD_TESTS or BUILD_TESTS_DEV is set.
 if(NOT (BUILD_TESTS OR BUILD_TESTS_DEV))
@@ -92,7 +92,7 @@ SET(HELPERS_SRC
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 
 # Include googletest as a dependency.
-include(${FLAMEGPU_ROOT}/cmake/googletest.cmake)
+include(${FLAMEGPU_ROOT}/cmake/dependencies/googletest.cmake)
 
 if(BUILD_TESTS)
     # Name the project and set languages
@@ -112,17 +112,12 @@ if(BUILD_TESTS)
         # If called via add_subdirectory()
         SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../bin/${CMAKE_BUILD_TYPE}/)
     endif()
-    # Enable parallel compilation
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
-    endif()
     # Add the executable and set required flags for the target
     add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" "${PROJECT_BINARY_DIR}" FALSE)
     # Add the tests directory to the include path,
     target_include_directories("${PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
     # Add the targets we depend on (this does link and include)
-    target_link_libraries("${PROJECT_NAME}" gtest)
+    target_link_libraries("${PROJECT_NAME}" GTest::gtest)
     # target_link_libraries("${PROJECT_NAME}" gmock) # Currently unused
     # Put Within Tests filter
     CMAKE_SET_TARGET_FOLDER("${PROJECT_NAME}" "Tests")
@@ -152,17 +147,12 @@ if(BUILD_TESTS_DEV)
         # If called via add_subdirectory()
         SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../bin/${CMAKE_BUILD_TYPE}/)
     endif()
-    # Enable parallel compilation
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
-    endif()
     # Add the executable and set required flags for the target
     add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" "${PROJECT_BINARY_DIR}" FALSE)
     # Add the tests directory to the include path,
     target_include_directories("${PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
     # Add the targets we depend on (this does link and include)
-    target_link_libraries("${PROJECT_NAME}" gtest)
+    target_link_libraries("${PROJECT_NAME}" GTest::gtest)
     # target_link_libraries("${PROJECT_NAME}" gmock) # Currently unused
     CMAKE_SET_TARGET_FOLDER("${PROJECT_NAME}" "Tests")
     # Set the default (visual studio) debugger configure_file

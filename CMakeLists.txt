@@ -1,14 +1,13 @@
-# CMake 3.15+ for Thrust/Cub support
-cmake_minimum_required(VERSION VERSION 3.15 FATAL_ERROR)
-
-# Emit a deprecation warning if CMAKE < 3.18 which is required for c++17 in the future.
-set(CMAKE_MINIMUM_SUPPORTED_VERSION 3.18)
-if(${CMAKE_VERSION} VERSION_LESS ${CMAKE_MINIMUM_SUPPORTED_VERSION})
-    message(DEPRECATION "Support for CMake < ${CMAKE_MINIMUM_SUPPORTED_VERSION} is deprecated and will be removed in a  future release.")
-endif()
-
+# Minimum CMake version 3.18 for CUDA --std=c++17 
+cmake_minimum_required(VERSION VERSION 3.18 FATAL_ERROR)
 
 project(FLAMEGPU LANGUAGES NONE)
+
+# Find the root directory
+get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR} REALPATH)
+
+# Ensure this is not an in-source build
+include(${FLAMEGPU_ROOT}/cmake/OutOfSourceOnly.cmake)
 
 # Don't create installation scripts (and hide CMAKE_INSTALL_PREFIX from cmake-gui)
 set(CMAKE_SKIP_INSTALL_RULES TRUE)
@@ -69,8 +68,7 @@ endif()
 # If CUDA is not available, or the minimum version is too low only build the docs.
 if(DOCUMENTATION_ONLY_BUILD)
     # Not able to build code, so just make docs    
-    get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR} REALPATH)
-    include(./cmake/doxygen.cmake)
+    include(./cmake/dependencies/doxygen.cmake)
     if(${BUILD_API_DOCUMENTATION})
         create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}" "")
     endif()

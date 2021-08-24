@@ -37,5 +37,9 @@ find_package_handle_standard_args(Jitify
     VERSION_VAR Jitify_VERSION
 )
 
+# Create a header only (INTERFACE) target which can be linked against to upadte include directories. Mark as IMPORTED as there are no build steps.
+add_library(Jitify::jitify INTERFACE IMPORTED)
+target_include_directories(Jitify::jitify INTERFACE ${Jitify_INCLUDE_DIRS})
+
 # Set returned values as advanced?
 mark_as_advanced(Jitify_INCLUDE_DIRS Jitify_VERSION)

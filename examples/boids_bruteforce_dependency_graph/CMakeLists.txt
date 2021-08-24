@@ -1,5 +1,5 @@
-# CMake 3.15+ for Thrust/Cub support
-cmake_minimum_required(VERSION VERSION 3.15 FATAL_ERROR)
+# Minimum CMake version 3.18 for CUDA --std=c++17 
+cmake_minimum_required(VERSION VERSION 3.18 FATAL_ERROR)
 
 # Name the project and set languages
 project(boids_bruteforce_dependency_graph CUDA CXX)

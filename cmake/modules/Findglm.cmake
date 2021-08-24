@@ -34,6 +34,10 @@ find_package_handle_standard_args(glm
     REQUIRED_VARS glm_INCLUDE_DIRS
     VERSION_VAR glm_VERSION
 )
-
+if(NOT TARGET GLM::glm)
+    # Create a header only (INTERFACE) target which can be linked against to inherit include directories. Mark this as imported, because there are no build steps requred.
+    add_library(GLM::glm INTERFACE IMPORTED)
+    target_include_directories(GLM::glm INTERFACE ${glm_INCLUDE_DIRS})
+endif()
 # Set returned values as advanced?
 mark_as_advanced(glm_INCLUDE_DIRS glm_VERSION)

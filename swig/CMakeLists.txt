@@ -1,5 +1,5 @@
-# CMake 3.15+ for Thrust/Cub support
-cmake_minimum_required(VERSION VERSION 3.15 FATAL_ERROR)
+# Minimum CMake version 3.18 for CUDA --std=c++17 
+cmake_minimum_required(VERSION VERSION 3.18 FATAL_ERROR)
 include(FetchContent)
 
 
@@ -19,13 +19,8 @@ endif()
 if(PYTHON3_EXACT_VERSION)
     set(PYTHON3_EXACT_VERSION_ARG ${PYTHON3_EXACT_VERSION} EXACT)
 endif()
-# CMake > 3.18 can use Development.Module which shoudl be all that's required, and should work inside manylinux containers.
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
-    find_package(Python3 ${PYTHON3_EXACT_VERSION_ARG} REQUIRED COMPONENTS Interpreter Development.Module)
-else()
-    # This will not work with Manylinux, but the curreny manylinux image already includes 3.21
-    find_package(Python3 ${PYTHON3_EXACT_VERSION_ARG} REQUIRED COMPONENTS Interpreter Development)
-endif()
+# CMake > 3.18 can use Development.Module rather than development
+find_package(Python3 ${PYTHON3_EXACT_VERSION_ARG} REQUIRED COMPONENTS Interpreter Development.Module)
 unset(PYTHON3_EXACT_VERSION_ARG)
 message(STATUS "Python found at " ${Python3_EXECUTABLE})
 

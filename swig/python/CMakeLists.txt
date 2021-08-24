@@ -1,10 +1,15 @@
-# Include common rules.
-# Actually dont as the c Warning levels are too damn high
-#include(../../cmake/common.cmake)
-# Just include cuda_arch to suppress CMAKE 3.18 warnings on windows (where nvcc is used even when not neccesary)
+# Minimum CMake version 3.18 for CUDA --std=c++17 
+cmake_minimum_required(VERSION VERSION 3.18 FATAL_ERROR)
+
+# Get the root of the repository to find other CMake files etc.
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../ REALPATH)
 
-# Set CUDA gencode arguments
+# Ensure that the cuda toolkit package is available
+find_package(CUDAToolkit REQUIRED)
+
+# include CMake function to enable setting of warning suppressions
+include(${FLAMEGPU_ROOT}/cmake/warnings.cmake)
+# include CMake function to enable setting of gencode flags
 include(${FLAMEGPU_ROOT}/cmake/cuda_arch.cmake)
 # Set the C++ and CUDA standard to use
 include(${FLAMEGPU_ROOT}/cmake/cxxstd.cmake)
@@ -77,23 +82,30 @@ set_property(TARGET ${PYTHON_MODULE_NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON
 # Build with the SWIG pre-processor macro enabled
 set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS "SWIG")
 # Suppress warnings during compilation of SWIG generated PYTHON_wrap.cxx
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=\"declared_but_not_referenced\"")
-# set bigobj property for windows compiler (needed due to the sheer size of the generated swig file: https://www.reddit.com/r/AbsoluteUnits/)
+# @todo - Split setting warning level and suppressions to separate cmake functions, so swig can be built with suppressions but low warning level.
+
+# Set the gencode arguments for the target 
+SetCUDAGencodes(TARGET "${PYTHON_MODULE_NAME}")
+
+# Disable all compiler warnings, as we do not control the generated code
+DisableCompilerWarnings(TARGET "${PYTHON_MODULE_NAME}")
+
+# Additionally suppress 
+SuppressSomeCompilerWarnings(TARGET "${PYTHON_MODULE_NAME}")
+
+# Set bigobj property for windows compiler, required by the very large generated swig file
 if(MSVC)
-	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler /bigobj")
+  target_compile_options(${PYTHON_MODULE_NAME} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler /bigobj>")
 endif()
+
 # set include directories for module build
-target_include_directories(${PYTHON_MODULE_NAME}
-  PRIVATE
-  ${FLAMEGPU_ROOT}/include
-  ${Python3_INCLUDE_DIRS}
-  )
+target_include_directories(${PYTHON_MODULE_NAME} PRIVATE ${Python3_INCLUDE_DIRS})
   
 # Handle user options
+# This does not use common/CommonCompilerSettings as it appears to rely on swig specific properties (although this is untested.)
 if (VISUALISATION)
   set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS VISUALISATION)
   set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS VISUALISATION)
-  target_include_directories(${PYTHON_MODULE_NAME} PUBLIC "${VISUALISATION_ROOT}/include")
 endif()
 if (SEATBELTS)
   # Debug alwasy has seatbelts.
@@ -117,16 +129,24 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS NOMINMAX)
     set_property(TARGET ${PYTHON_MODULE_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS NOMINMAX)
 endif()
-  
-# link with the static flamegpu and cuda libraries
-target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE flamegpu cuda)
+
+# Use the FindCUDATooklit package (CMake > 3.17) to find other parts of the cuda toolkit not provided by the CMake language support
+find_package(CUDAToolkit REQUIRED)
+
+# link with the static flamegpu, inherriting links on nvrtc and the cuda driver api etc
+target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE flamegpu)
+
+# Requires the development module. 
+target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE Python3::Module)
+
+# @todo - this might need re-enabling subject to CI passing?
 # Variable PYTHON_LIBRARIES can contains keyword `optimized`
 # which won't be interpreted inside a generator expression.
 # i.e. we can't use: $<$<PLATFORM_ID:Windows>:${PYTHON_LIBRARIES}>
 # see: https://cmake.org/cmake/help/git-stage/command/target_link_libraries.html#command:target_link_libraries
-if(MSVC)
-  target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE ${Python3_LIBRARIES} flamegpu cuda)
-endif()
+# if(MSVC)
+#   target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE ${Python3_LIBRARIES})
+# endif()
 
 #######################
 ## Python Packaging  ##
@@ -143,22 +163,11 @@ if(WIN32)
   # @todo - See if there is a dynamic way to achieve this through target properties?  
   set(FLAMEGPU_PYTHON_PACKAGE_DATA_OS_SPECIFIC "${FLAMEGPU_PYTHON_PACKAGE_DATA_OS_SPECIFIC}'glew32.dll', 'SDL2.dll', 'DevIL.dll'")
 endif()
-
-
-# Get the cuda major and minor versions as required for setup.py. There is no easy cmake way to access this that is supported across multiple CMake versions..
-string(REPLACE "." ";" CMAKE_CUDA_COMPILER_VERSION_LIST ${CMAKE_CUDA_COMPILER_VERSION})
-list(GET CMAKE_CUDA_COMPILER_VERSION_LIST 0 CMAKE_CUDA_COMPILER_VERSION_MAJOR)
-list(GET CMAKE_CUDA_COMPILER_VERSION_LIST 1 CMAKE_CUDA_COMPILER_VERSION_MINOR)
-
-
 # configure the python setup.py and __init__.py files for packaging and output to the final lib output folder
 configure_file(
 	setup.py.in
 	${PYTHON_LIB_TEMP_DIRECTORY}/setup.py.in
 	@ONLY)
-unset(CMAKE_CUDA_COMPILER_VERSION_LIST)
-unset(CMAKE_CUDA_COMPILER_VERSION_MAJOR)
-unset(CMAKE_CUDA_COMPILER_VERSION_MINOR)
 unset(FLAMEGPU_PYTHON_PACKAGE_DATA_OS_SPECIFIC)
 
 file(GENERATE

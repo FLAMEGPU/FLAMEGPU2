@@ -51,8 +51,16 @@ if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "10.0")
         REQUIRED_VARS NVTX_INCLUDE_DIRS
         VERSION_VAR NVTX_VERSION
     )
+
+    if(NVTX_FOUND)
+        # Create a header only (INTERFACE) target which can be linked against to inherit include directories. Mark this as imported, because there are no build steps requred.
+        add_library(NVTX::nvtx3 INTERFACE IMPORTED)
+        target_include_directories(NVTX::nvtx3 INTERFACE ${NVTX_INCLUDE_DIRS})
+        set_property(TARGET NVTX::nvtx3 PROPERTY VERSION ${NVTX_VERSION})
+    endif()
 endif()
 
+# @todo - find both if possible, so both targets are avialable?
 # If not yet aware of NVTX, or we found V1/2 while looking for V3, make sure we find the actual V1/2
 if(NOT NVTX_FOUND OR NVTX_VERSION VERSION_LESS 3)
     # Find the header file
@@ -91,7 +99,21 @@ if(NOT NVTX_FOUND OR NVTX_VERSION VERSION_LESS 3)
         REQUIRED_VARS NVTX_INCLUDE_DIRS
         VERSION_VAR NVTX_VERSION
     )
+
+    if(NVTX_FOUND)
+        # Create an imported target which can be linked against to inherit include directories and the shared object(s). Mark this as imported, because there are no build steps requred.
+        add_library(NVTX::nvtx1 SHARED IMPORTED)
+        target_include_directories(NVTX::nvtx1 INTERFACE ${NVTX_INCLUDE_DIRS})
+        target_include_directories(NVTX::nvtx1 INTERFACE ${NVTX_LIBRARIES})
+        set_property(TARGET NVTX::nvtx1 PROPERTY VERSION ${NVTX_VERSION})
+    endif()
 endif()
 
+# Create an alias target which will alias nvtx3 if available, otherwise nvtx1
+if(TARGET NVTX::nvtx3)
+    add_library(NVTX::nvtx ALIAS NVTX::nvtx3)
+elseif(TARGET NVTX::nvtx1)
+    add_library(NVTX::nvtx ALIAS NVTX::nvtx1)
+endif()
 # Set returned values as advanced?
 mark_as_advanced(NVTX_INCLUDE_DIRS NVTX_LIBRARIES NVTX_VERSION)
