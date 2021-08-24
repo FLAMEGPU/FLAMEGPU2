@@ -1,9 +1,10 @@
 # Notify @PYTHON_MODULE_NAME@ of where to find RTC headers (This must occur before module load)
-import sys, os;
+import os, sys, pathlib
 if not "FLAMEGPU_INC_DIR" in os.environ or not "FLAMEGPU2_INC_DIR" in os.environ:
-    os.environ["FLAMEGPU_INC_DIR"] = os.path.dirname(os.path.realpath(__file__)) + "/include";
+    os.environ["FLAMEGPU_INC_DIR"] = str(pathlib.Path(__file__).resolve().parent / "include")
 else:
-  print("@PYTHON_MODULE_NAME@ warning: env var 'FLAMEGPU_INC_DIR' is present, RTC headers may be incorrect.", file=sys.stderr);
+  print("@PYTHON_MODULE_NAME@ warning: env var 'FLAMEGPU_INC_DIR' is present, RTC headers may be incorrect.", file=sys.stderr)
+del os, sys, pathlib
 # Normal module stuff
 __all__ = ["@PYTHON_MODULE_NAME@"]
 from .@PYTHON_MODULE_NAME@ import *
