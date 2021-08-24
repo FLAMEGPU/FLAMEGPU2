@@ -9,6 +9,7 @@ on:
     paths:
       - "**"
       - "!.github/**"
+      - ".github/scripts/auditwheel_repair_skip_cudalibs.sh"
       - ".github/scripts/install_cuda_centos.sh"
       - ".github/workflows/Manylinux2014.yml"
   pull_request:
@@ -157,6 +158,16 @@ jobs:
     - name: Run auditwheel show
       working-directory: ${{ env.BUILD_DIR }}
       run: auditwheel show lib/${{ env.CONFIG }}/python/dist/*whl
+
+
+    # Use patchelf and auditwheel repair to package non-cuda .so's into the wheel.
+    # @note - this requires LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libGLEW.so to run vis on ubuntu 20.04
+    # @todo - once libcuda is dlopened this can be removed, instead just use the regular auditwheel repair. 
+    - name: patchelf remove, auditwheel repair, patchelff add
+      working-directory: ${{ env.BUILD_DIR }}
+      run: |
+        whl=$(find lib/${{ env.CONFIG }}/python/dist/ -maxdepth 1 -name "*.whl" | head -n 1)
+        ../.github/scripts/auditwheel_repair_skip_cudalibs.sh ${whl} ${{ env.MANYLINUX }}_${{ env.ARCH }}
 
     # Ideally we should use auditwheel repair to check/enforce conformity
     # But we cannot due to cuda shared object (libcuda.so.1) dependencies which we cannot/shouldnot/wil not package into the wheel. 
