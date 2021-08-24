@@ -39,4 +39,8 @@ class VersionTest(TestCase):
                 module_prerelease += "0"
         expected_module_version = f"{pyflamegpu.VERSION_MAJOR}.{pyflamegpu.VERSION_MINOR}.{pyflamegpu.VERSION_PATCH}{module_prerelease}"
         if sys.version_info >= (3, 8):
-            assert expected_module_version == version('pyflamegpu')
+            # The module version may include a local version string (+), so we only want to compare up to the first +.
+            split_pub_local_version = version('pyflamegpu').split("+")
+            public_version = split_pub_local_version[0]
+            local_version = split_pub_local_version[1] if len(split_pub_local_version) > 1 else ""
+            assert expected_module_version == public_version

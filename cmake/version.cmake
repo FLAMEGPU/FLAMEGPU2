@@ -1,10 +1,20 @@
-# Define the Major, Minor, Patch and Pre-Release version components, as part of semver
-set(FLAMEGPU_VERSION_MAJOR 2)
-set(FLAMEGPU_VERSION_MINOR 0)
-set(FLAMEGPU_VERSION_PATCH 0)
-# Prerelease must be empty, alpha[.N], beta[.N] or rc[.N] for python version compatibility
-set(FLAMEGPU_VERSION_PRERELEASE "alpha.1") 
+# Extract Major, minor and patch and pre-release from version.h
+# Read the file
+file(READ "${FLAMEGPU_ROOT}/include/flamegpu/version.h" VERSION_FILE_STR)
+# Grab the Macro for major, minor, patch
+# CMake's regex doesn't support [0-9]{3} for 3 digits
+string(REGEX MATCH "\\#define FLAMEGPU_VERSION ([0-9]+)([0-9][0-9][0-9])([0-9][0-9][0-9])" _ ${VERSION_FILE_STR})
+# Must use math expressions to strip potential leading 0s
+math(EXPR FLAMEGPU_VERSION_MAJOR "${CMAKE_MATCH_1}" OUTPUT_FORMAT DECIMAL)
+math(EXPR FLAMEGPU_VERSION_MINOR "${CMAKE_MATCH_2}" OUTPUT_FORMAT DECIMAL)
+math(EXPR FLAMEGPU_VERSION_PATCH "${CMAKE_MATCH_3}" OUTPUT_FORMAT DECIMAL)
 
+# Extract the prerelease
+string(REGEX MATCH "static constexpr char VERSION_PRERELEASE\\[\\] = \"([a-zA-Z0-9\.]+)\"" _ ${VERSION_FILE_STR})
+# string(REGEX MATCH "static constexpr char VERSION_PRERELEASE\[\] = \"([a-zA-Z0-9\.]+)\";" _ ${VERSION_FILE_STR})
+set(FLAMEGPU_VERSION_PRERELEASE "${CMAKE_MATCH_1}")
+
+# @todo - validate that these have been found correctly via regex? Although it should get caught by the below validation, but errors could be better.
 
 # Validate the major version
 if(FLAMEGPU_VERSION_MAJOR LESS 0)

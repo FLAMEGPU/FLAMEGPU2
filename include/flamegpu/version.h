@@ -4,8 +4,6 @@
 #ifndef INCLUDE_FLAMEGPU_VERSION_H_
 #define INCLUDE_FLAMEGPU_VERSION_H_
 
-#include <string>
-
 /**
  * FLAME GPU 2 version number macro
  * 
@@ -14,7 +12,7 @@
  * FLAMEGPU_VERSION % 1000 is the Patch version.
  * Does not include pre-release or build-metadata for the semantic version as these may contain non-numeric characters
  */
-#define FLAMEGPU_VERSION ${FLAMEGPU_VERSION_INTEGER}
+#define FLAMEGPU_VERSION 2000000
 
 namespace flamegpu {
 /**
@@ -42,27 +40,26 @@ static constexpr unsigned int VERSION_PATCH = flamegpu::VERSION % 1000;
 
 /**
  * Namespaced FLAME GPU version Prerelease component
- * A set of . separated pre-release components as a string, following the semver rules for comparison. Not useful in a macro for verisoning?
+ * A set of . separated pre-release components as a string, following the semver rules for comparison.
  */
-static constexpr char VERSION_PRERELEASE[] = "${FLAMEGPU_VERSION_PRERELEASE}";
+static constexpr char VERSION_PRERELEASE[] = "alpha.1";
 
 /**
  * Namespaced FLAME GPU version build metadata component
  * A set of . separated pre-release components as a string, following the semver rules for comparison.
  */
-static constexpr char VERSION_BUILDMETADATA[] = "${FLAMEGPU_VERSION_BUILDMETADATA}";
+extern const char VERSION_BUILDMETADATA[];
 
 /**
  * Namespaced FLAME GPU release version
- * SemVer Release string literatl
+ * SemVer Release string literal
  */
-static constexpr char VERSION_STRING[] = "${FLAMEGPU_VERSION_STRING}";
-
+extern const char VERSION_STRING[];
 
 /**
  * Namespaced FLAME GPU full SemVer version
  */
-static constexpr char VERSION_FULL[] = "${FLAMEGPU_VERSION_FULL}";
+extern const char VERSION_FULL[];
 
 }  // namespace flamegpu
 

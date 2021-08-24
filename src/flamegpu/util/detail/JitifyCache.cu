@@ -197,6 +197,7 @@ break_flamegpu_inc_dir_loop:
 
 /**
  * Confirm that include directory version header matches the version of the static library.
+ * This only compares up to the pre-release version number. Build metadata is only used for the RTC cache.
  * @param flamegpuIncludeDir path to the flamegpu include directory to check.
  * @return boolean indicator of success.
  */
@@ -205,36 +206,46 @@ bool confirmFLAMEGPUHeaderVersion(const std::string flamegpuIncludeDir, const st
 
     if (!header_version_confirmed) {
         std::string fileHash;
-        std::string fileVersion;
+        std::string fileVersionMacro;
+        std::string fileVersionPrerelease;
         // Open version.h
         path version_file = path(flamegpuIncludeDir) /= "flamegpu/version.h";
         std::ifstream vFile(version_file);
         if (vFile.is_open()) {
             // Use a regular expression to match the FLAMEGPU_VERSION number macro against lines in the file.
-            std::regex pattern("^static constexpr char VERSION_FULL\\[\\] = \"(.+)\";$");
+            std::regex macroPattern("^#define FLAMEGPU_VERSION ([0-9]+)$");
+            std::regex prereleasePattern("^static constexpr char VERSION_PRERELEASE\\[\\] = \"(.*)\";$");
             std::smatch match;
             std::string line;
+            bool extractedMacro = false;
+            bool extractedPrerelease = false;
             while (std::getline(vFile, line)) {
-                if (std::regex_search(line, match, pattern)) {
-                    fileVersion = match[1];
+                if (std::regex_search(line, match, macroPattern)) {
+                    fileVersionMacro = match[1];
+                    extractedMacro = true;
+                } else if (std::regex_search(line, match, prereleasePattern)) {
+                    fileVersionPrerelease = match[1];
+                    extractedPrerelease = true;
+                }
+                if (extractedMacro && extractedPrerelease) {
                     break;
                 }
             }
             vFile.close();
-            if (match.length() == 0) {
-                THROW exception::VersionMismatch("Could not extract RTC header version hash.\n");
+            if (!extractedMacro || !extractedPrerelease) {
+                THROW exception::VersionMismatch("Could not extract RTC header version information.\n");
             }
         }
         // Confirm that the version matches, else throw an exception.
-        if (fileVersion == std::string(flamegpu::VERSION_FULL)) {
+        if (fileVersionMacro == std::to_string(flamegpu::VERSION) && fileVersionPrerelease == std::string(flamegpu::VERSION_PRERELEASE)) {
             header_version_confirmed = true;
         } else {
-            THROW exception::VersionMismatch("RTC header version (%s) does not match version flamegpu library was built with (%s). Set the environment variable %s to the correct include directory.\n",
-                fileVersion.c_str(), flamegpu::VERSION_FULL, envVariable.c_str());
+            THROW exception::VersionMismatch("RTC header version (%s, %s) does not match version flamegpu library was built with (%s, %s). Set the environment variable %s to the correct include directory.\n",
+                fileVersionMacro.c_str(), fileVersionPrerelease.c_str(),
+                std::to_string(flamegpu::VERSION).c_str(), flamegpu::VERSION_PRERELEASE,
+                envVariable.c_str());
         }
     }
-
-
     return header_version_confirmed;
 }
 

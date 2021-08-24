@@ -4,9 +4,6 @@
 *.gv
 *.bin
 
-# dynamically generated version file
-include/flamegpu/version.h
-
 # GoogleTest directories (handled by CMake)
 googletest-build/
 googletest-download/
