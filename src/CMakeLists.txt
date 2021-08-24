@@ -55,9 +55,9 @@ if(FLAMEGPU_VERSION_FULL)
 endif()
 
 # Configure the version header file. Ideally this would configure a .cpp file in the build directory, but that doesn't allow for rtc header include checking sub major/minor/patch.
-set(DYNAMIC_VERSION_HEADER_SRC "${FLAMEGPU_ROOT}/cmake/version.h.in")
-set(DYNAMIC_VERSION_HEADER_DEST "${FLAMEGPU_ROOT}/include/flamegpu/version.h")
-configure_file(${DYNAMIC_VERSION_HEADER_SRC} ${DYNAMIC_VERSION_HEADER_DEST})
+set(DYNAMIC_VERSION_SRC_SRC "${FLAMEGPU_ROOT}/cmake/version.cpp.in")
+set(DYNAMIC_VERSION_SRC_DEST "${CMAKE_CURRENT_BINARY_DIR}/src/flamegpu/version.cpp")
+configure_file(${DYNAMIC_VERSION_SRC_SRC} ${DYNAMIC_VERSION_SRC_DEST} @ONLY)
 
 # Define output location of static library
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
@@ -85,7 +85,7 @@ endif()
 # Can't do this automatically, as CMake wouldn't know when to regen (as CMakeLists.txt would be unchanged)
 # version.h is automatically generated so does not exist prior to configure time
 SET(SRC_INCLUDE
-    ${DYNAMIC_VERSION_HEADER_DEST}
+    ${FLAMEGPU_ROOT}/include/flamegpu/version.h
     ${FLAMEGPU_ROOT}/include/flamegpu/defines.h
     ${FLAMEGPU_ROOT}/include/flamegpu/flamegpu.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/StateReader.h
@@ -278,6 +278,9 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubAgentDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubEnvironmentDescription.cpp
 )
+SET(SRC_DYNAMIC
+    ${DYNAMIC_VERSION_SRC_DEST}
+)
 if (VISUALISATION)
     SET(SRC_INCLUDE
         ${SRC_INCLUDE}
@@ -312,23 +315,25 @@ endif()
 SET(ALL_SRC
     ${SRC_INCLUDE}
     ${SRC_FLAMEGPU}
+    ${SRC_DYNAMIC}
 )
 SET(FLAMEGPU_INCLUDE ${SRC_INCLUDE} CACHE INTERNAL "Include files required by FLAMEGPU RTC")
 
 # Setup Visual Studio (and eclipse) filters
 source_group(TREE ${FLAMEGPU_ROOT}/include/flamegpu PREFIX include FILES ${SRC_INCLUDE})
-set(T_SRC "${SRC_FLAMEGPU}")
 list(FILTER T_SRC INCLUDE REGEX ".*\.(h|hpp|cuh)$")
-source_group(TREE ${FLAMEGPU_ROOT}/src/flamegpu PREFIX headers FILES ${T_SRC})
-set(T_SRC "${SRC_FLAMEGPU}")
-list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
-source_group(TREE ${FLAMEGPU_ROOT}/src/flamegpu PREFIX src FILES ${T_SRC})
-set(T_SRC "${SRC_EXTERNAL}")
-list(FILTER T_SRC INCLUDE REGEX ".*\.(h|hpp|cuh)$")
-source_group(TREE ${FLAMEGPU_ROOT}/include PREFIX external FILES ${T_SRC})
-set(T_SRC "${SRC_EXTERNAL}")
-list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
-source_group(TREE ${FLAMEGPU_ROOT}/include PREFIX external FILES ${T_SRC})
+set(T_SRC_FLAMEGPU "${SRC_FLAMEGPU}")
+list(FILTER T_SRC_FLAMEGPU INCLUDE REGEX ".*\.(h|hpp|cuh)$")
+source_group(TREE ${FLAMEGPU_ROOT}/src/flamegpu PREFIX headers FILES ${T_SRC_FLAMEGPU})
+set(T_SRC_FLAMEGPU "${SRC_FLAMEGPU}")
+list(FILTER T_SRC_FLAMEGPU EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
+source_group(TREE ${FLAMEGPU_ROOT}/src/flamegpu PREFIX src FILES ${T_SRC_FLAMEGPU})
+set(T_SRC_EXTERNAL "${SRC_EXTERNAL}")
+list(FILTER T_SRC_EXTERNAL INCLUDE REGEX ".*\.(h|hpp|cuh)$")
+source_group(TREE ${FLAMEGPU_ROOT}/include PREFIX external FILES ${T_SRC_EXTERNAL})
+set(T_SRC_EXTERNAL "${SRC_EXTERNAL}")
+list(FILTER T_SRC_EXTERNAL EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
+source_group(TREE ${FLAMEGPU_ROOT}/include PREFIX external FILES ${T_SRC_EXTERNAL})
 
 # Define which source files are required for the target executable
 add_flamegpu_library("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}")
