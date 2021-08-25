@@ -2,6 +2,7 @@
 name: Windows
 
 on:
+  # Branch pushes that do not only modify other workflow files
   push:
     branches:
       - '**'
@@ -10,7 +11,10 @@ on:
       - "!.github/**"
       - ".github/scripts/install_cuda_windows.ps1"
       - ".github/workflows/Windows.yml"
-  pull_request:
+  # Disabled for now. See https://github.com/FLAMEGPU/FLAMEGPU2/pull/644
+  # pull_request:
+  # Allow manual invocation.
+  workflow_dispatch:
 
 defaults:
   run:
@@ -43,6 +47,12 @@ jobs:
           - "ON"
           - "OFF"
 
+        exclude:
+          # Exclude VIS=ON for old cuda's.
+          - cudacxx:
+              cuda: "11.0.3"
+            VISUALISATION: "ON"
+
     # Name the job based on matrix/env options
     name: "build (${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
 
@@ -50,6 +60,8 @@ jobs:
     env:
       # Workflow specific constants for building a specific example
       INDIVIDUAL_EXAMPLE: "game_of_life"
+      # Compute the wheelhouse name which should be unique within the matrix. This must be unique per build matrix/job combination
+      ARTIFACT_NAME: wheel-windows-${{ matrix.cudacxx.cuda }}-${{matrix.python}}-${{ matrix.VISUALISATION }}-${{ matrix.config.name }}-${{ matrix.cudacxx.os }}
       # Define constants
       BUILD_DIR: "build"
       BUILD_TESTS: "OFF"
@@ -107,6 +119,17 @@ jobs:
       if: ${{ env.BUILD_SWIG_PYTHON == 'ON' }}
       working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --config ${{ env.CONFIG }} --target pyflamegpu --verbose -j `nproc`
+
+    # Upload wheel artifacts to the job on GHA, with a short retention
+    # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
+    - name: Upload Wheel Artifacts
+      if: ${{env.BUILD_SWIG_PYTHON == 'ON' }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ env.ARTIFACT_NAME }}
+        path: ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/*.whl
+        if-no-files-found: error
+        retention-days: 5
 
     - name: Build tests
       if: ${{ env.BUILD_TESTS == 'ON' }}

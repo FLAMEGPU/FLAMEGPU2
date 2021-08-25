@@ -2,6 +2,7 @@
 name: Docs
 
 on:
+  # Branch pushes that do not only modify other workflow files
   push:
     branches:
       - '**'
@@ -9,7 +10,10 @@ on:
       - "**"
       - "!.github/**"
       - ".github/workflows/Docs.yml"
-  pull_request:
+  # Disabled for now. See https://github.com/FLAMEGPU/FLAMEGPU2/pull/644
+  # pull_request:
+  # Allow manual invocation.
+  workflow_dispatch:
 
 defaults:
   run:
