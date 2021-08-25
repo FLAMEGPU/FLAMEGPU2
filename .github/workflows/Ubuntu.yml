@@ -2,6 +2,7 @@
 name: Ubuntu
 
 on:
+  # Branch pushes that do not only modify other workflow files
   push:
     branches:
       - '**'
@@ -10,7 +11,10 @@ on:
       - "!.github/**"
       - ".github/scripts/install_cuda_ubuntu.sh"
       - ".github/workflows/Ubuntu.yml"
-  pull_request:
+  # Disabled for now. See https://github.com/FLAMEGPU/FLAMEGPU2/pull/644
+  # pull_request:
+  # Allow manual invocation.
+  workflow_dispatch:
 
 defaults:
   run:
@@ -46,6 +50,15 @@ jobs:
         VISUALISATION: 
           - "ON"
           - "OFF"
+
+        exclude:
+          # Exclude VIS=ON for old cuda's.
+          - cudacxx:
+              cuda: "11.0"
+            VISUALISATION: "ON"
+          - cudacxx:
+              cuda: "10.0"
+            VISUALISATION: "ON"
 
     # Name the job based on matrix/env options
     name: "build (${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"

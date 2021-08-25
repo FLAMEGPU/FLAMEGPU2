@@ -3,6 +3,7 @@ name: Manylinux2014
 
 # Run on branch push events (i.e. not tag pushes) and on pull requests
 on:
+  # Branch pushes that do not only modify other workflow files
   push:
     branches:
       - '**'
@@ -11,7 +12,10 @@ on:
       - "!.github/**"
       - ".github/scripts/install_cuda_centos.sh"
       - ".github/workflows/Manylinux2014.yml"
-  pull_request:
+  # Disabled for now. See https://github.com/FLAMEGPU/FLAMEGPU2/pull/644
+  # pull_request:
+  # Allow manual invocation.
+  workflow_dispatch:
 
 defaults:
   run:
@@ -33,14 +37,6 @@ jobs:
             cuda_arch: "35"
             hostcxx: devtoolset-9
             os: ubuntu-20.04
-          - cuda: "11.0"
-            cuda_arch: "35"
-            hostcxx: devtoolset-8
-            os: ubuntu-20.04
-          # - cuda: "10.0"
-          #   cuda_arch: "35"
-          #   hostcxx: devtoolset-7
-          #   os: ubuntu-18.04
         python: 
           - "3.8"
         config:
@@ -168,9 +164,10 @@ jobs:
     # Upload wheel artifacts to the job on GHA, with a short retention
     # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
     - name: Upload Wheel Artifacts
+      if: ${{env.BUILD_SWIG_PYTHON == 'ON' }}
       uses: actions/upload-artifact@v2
       with:
         name: ${{ env.ARTIFACT_NAME }}
         path: ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/*.whl
         if-no-files-found: error
-        retention-days: 7
+        retention-days: 5

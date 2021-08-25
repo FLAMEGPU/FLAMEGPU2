@@ -400,6 +400,7 @@ jobs:
     # Upload wheel artifacts to the job on GHA, with a short retention
     # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
     - name: Upload Wheel Artifacts
+      if: ${{ env.BUILD_SWIG_PYTHON == 'ON' }}
       uses: actions/upload-artifact@v2
       with:
         name: ${{ env.ARTIFACT_NAME }}
@@ -499,9 +500,10 @@ jobs:
       working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --config ${{ env.CONFIG }} --target pyflamegpu --verbose -j `nproc`
 
-     # Upload wheel artifacts to the job on GHA, with a short retention
+    # Upload wheel artifacts to the job on GHA, with a short retention
     # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
     - name: Upload Wheel Artifacts
+      if: ${{env.BUILD_SWIG_PYTHON == 'ON' }}
       uses: actions/upload-artifact@v2
       with:
         name: ${{ env.ARTIFACT_NAME }}
