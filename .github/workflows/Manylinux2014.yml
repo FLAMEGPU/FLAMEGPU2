@@ -105,7 +105,7 @@ jobs:
     - name: Install Visualisation Dependencies (CentOS)
       if: ${{ env.VISUALISATION == 'ON' }}
       run: |
-        yum install -y mesa-libGLU-devel glew-devel fontconfig-devel SDL2-devel freetype-devel 
+        yum install -y glew-devel fontconfig-devel SDL2-devel freetype-devel 
         # Build/Install DevIL from source.
         yum install -y freeglut-devel
         git clone --depth 1 https://github.com/DentonW/DevIL.git
