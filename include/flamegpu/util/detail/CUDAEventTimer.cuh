@@ -45,7 +45,7 @@ class CUDAEventTimer : public virtual Timer {
     /**
      * Record the start event, resetting the syncronisation flag.
      */
-    void start() {
+    void start() override {
         gpuErrchk(cudaEventRecord(this->startEvent));
         this->startEventRecorded = true;
         this->stopEventRecorded = false;
@@ -54,7 +54,7 @@ class CUDAEventTimer : public virtual Timer {
     /**
      * Record the stop event, resetting the syncronisation flag.
      */
-    void stop() {
+    void stop() override {
         gpuErrchk(cudaEventRecord(this->stopEvent));
         this->stopEventRecorded = true;
         this->synced = false;
@@ -63,7 +63,7 @@ class CUDAEventTimer : public virtual Timer {
      * Get the elapsed time between the start event being issued and the stop event occuring.
      * @return elapsed time in milliseconds
      */
-    float getElapsedMilliseconds() {
+    float getElapsedMilliseconds() override {
         // If the cuda event timer has not been synchonised, sync it. This stores the time internally.
         if (!this->synced) {
             this->sync();
@@ -76,7 +76,7 @@ class CUDAEventTimer : public virtual Timer {
      * Get the elapsed time between the start event being issued and the stop event occuring.
      * @return elapsed time in seconds
      */
-    float getElapsedSeconds() {
+    float getElapsedSeconds() override {
         // Get the elapsed time in milliseconds, and convert it to seconds.
         return this->getElapsedMilliseconds() / 1000.0f;
     }

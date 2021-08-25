@@ -33,7 +33,7 @@ class SteadyClockTimer : public virtual Timer {
     /**
      * Record the start steady clock time
      */ 
-    void start() {
+    void start() override {
         this->startTime = std::chrono::steady_clock::now();
         this->startEventRecorded = true;
         this->stopEventRecorded = false;
@@ -42,7 +42,7 @@ class SteadyClockTimer : public virtual Timer {
     /**
      * Record the start steady clock stop time
      */
-    void stop() {
+    void stop() override {
         this->stopTime = std::chrono::steady_clock::now();
         this->stopEventRecorded = true;
     }
@@ -51,7 +51,7 @@ class SteadyClockTimer : public virtual Timer {
      * Get the elapsed time between calls to start() and stop() in milliseconds
      * @return elapsed time in milliseconds
      */
-    float getElapsedMilliseconds() {
+    float getElapsedMilliseconds() override {
         if (!startEventRecorded) {
             THROW exception::TimerException("start() must be called prior to getElapsed*");
         }
@@ -67,7 +67,7 @@ class SteadyClockTimer : public virtual Timer {
      * Get the elapsed time between calls to start() and stop() in seconds
      * @return elapsed time in milliseconds
      */
-    float getElapsedSeconds() {
+    float getElapsedSeconds() override {
         return this->getElapsedMilliseconds() / 1000.0f;
     }
 
