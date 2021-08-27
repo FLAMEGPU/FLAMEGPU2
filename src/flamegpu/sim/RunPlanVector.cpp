@@ -4,16 +4,18 @@
 namespace flamegpu {
 
 RunPlanVector::RunPlanVector(const ModelDescription &model, unsigned int initial_length)
-    : std::vector<RunPlan>(initial_length, RunPlan(model)),
-      rand(std::random_device()())
+    : std::vector<RunPlan>(initial_length, RunPlan(model))
+    , randomPropertySeed(std::random_device()())
+    , rand(randomPropertySeed)
     , environment(std::make_shared<std::unordered_map<std::string, EnvironmentDescription::PropData> const>(model.model->environment->getPropertiesMap()))
     , allow_0_steps(model.model->exitConditions.size() + model.model->exitConditionCallbacks.size() > 0) {
     this->resize(initial_length, RunPlan(environment, allow_0_steps));
 }
 
 RunPlanVector::RunPlanVector(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> &_environment, const bool &_allow_0_steps)
-    : std::vector<RunPlan>(),
-      rand(std::random_device()())
+    : std::vector<RunPlan>()
+    , randomPropertySeed(std::random_device()())
+    , rand(randomPropertySeed)
     , environment(_environment)
     , allow_0_steps(_allow_0_steps) { }
 void RunPlanVector::setRandomSimulationSeed(const uint64_t &initial_seed, const unsigned int &step) {
@@ -38,7 +40,12 @@ void RunPlanVector::setOutputSubdirectory(const std::string &subdir) {
     }
 }
 void RunPlanVector::setRandomPropertySeed(const uint64_t &seed) {
-    rand.seed(seed);
+    randomPropertySeed = seed;
+    rand.seed(randomPropertySeed);
+}
+
+uint64_t RunPlanVector::getRandomPropertySeed() {
+    return randomPropertySeed;
 }
 
 RunPlanVector RunPlanVector::operator+(const RunPlan& rhs) const {

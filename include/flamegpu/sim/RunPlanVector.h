@@ -137,6 +137,12 @@ class RunPlanVector : private std::vector<RunPlan>  {
      */
     void setRandomPropertySeed(const uint64_t &seed);
     /**
+     * Get the seed used for the internal random generator used for random property distributions
+     * This will only valid for calls to setPropertyRandom() since the last call toSetRandomPropertySeed
+     * @return the seed used for random properties since the last call to setPropertyRandom
+     */
+    uint64_t getRandomPropertySeed();
+    /**
      * Sweep named environment property over a uniform random distribution
      * Integer types have a range [min, max]
      * Floating point types have a range [min, max)
@@ -283,6 +289,10 @@ class RunPlanVector : private std::vector<RunPlan>  {
 
  private:
     RunPlanVector(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> &environment, const bool &allow_0_steps);
+    /**
+     * Seed used for the current `rand` instance, which is only valid for elements generated since the last call to setRandomPropertySeed
+     */
+    uint64_t randomPropertySeed;
     /**
      * Random distribution used by setPropertyRandom()
      * Initially set to a random seed with std::random_device (which is a platform specific source of random integers)
