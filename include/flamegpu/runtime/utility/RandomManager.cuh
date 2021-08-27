@@ -53,7 +53,7 @@ class RandomManager {
      * Reseeds all owned random generators
      * @note Can be called multiple times to reseed, doing so releases existing memory allocations
      */
-    void reseed(const unsigned int &seed);
+    void reseed(const uint64_t &seed);
     /**
      * Resizes random array according to the rules:
      *   while(length<_length)
@@ -95,7 +95,7 @@ class RandomManager {
     /**
      * Random seed used to initialise all currently allocated curand states
      */
-    unsigned int mSeed = 0;
+    uint64_t mSeed = 0;
     /**
      * Local copy of the length of d_random_state
      */
@@ -135,9 +135,9 @@ class RandomManager {
     /**
      * Seeded host random generator
      * Don't believe this to be thread-safe!
-     * @note - std::default_random_engine is platform (compiler) specific. GCC (7.4) defaults to a linear_congruential_engine, which returns the same sequence for seeds 0 and 1. mt19937 is the default in MSVC and generally seems more sane.
+     * @note - std::default_random_engine is platform (compiler) specific. GCC (7.4) defaults to a linear_congruential_engine, which returns the same sequence for seeds 0 and 1. mt19937 is the default in MSVC and generally seems more sane (but using the 64 bit variant).
      */
-    std::mt19937 host_rng;
+    std::mt19937_64 host_rng;
 
     /**
      * Flag indicating that the device memory has been initialised, and therefore might need resetting

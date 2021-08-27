@@ -16,8 +16,8 @@ RunPlanVector::RunPlanVector(const std::shared_ptr<const std::unordered_map<std:
       rand(std::random_device()())
     , environment(_environment)
     , allow_0_steps(_allow_0_steps) { }
-void RunPlanVector::setRandomSimulationSeed(const unsigned int &initial_seed, const unsigned int &step) {
-    unsigned int current_seed = initial_seed;
+void RunPlanVector::setRandomSimulationSeed(const uint64_t &initial_seed, const unsigned int &step) {
+    uint64_t current_seed = initial_seed;
     for (auto &i : *this) {
         i.setRandomSimulationSeed(current_seed);
         current_seed += step;
@@ -37,7 +37,7 @@ void RunPlanVector::setOutputSubdirectory(const std::string &subdir) {
         i.setOutputSubdirectory(subdir);
     }
 }
-void RunPlanVector::setRandomPropertySeed(const unsigned int &seed) {
+void RunPlanVector::setRandomPropertySeed(const uint64_t &seed) {
     rand.seed(seed);
 }
 

@@ -37,7 +37,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @param step The value added to the previous seed to calculate the next seed
      * @note A step of 0, will give the exact same seed to all RunPlans
      */
-    void setRandomSimulationSeed(const unsigned int &initial_seed, const unsigned int &step = 0);
+    void setRandomSimulationSeed(const uint64_t &initial_seed, const unsigned int &step = 0);
     /**
      * Set the steps of each RunPlan currently within this vector
      * @param steps The number of steps to be executed
@@ -135,7 +135,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * This will only affect subsequent calls to setPropertyRandom()
      * @param seed The random seed to be used
      */
-    void setRandomPropertySeed(const unsigned int &seed);
+    void setRandomPropertySeed(const uint64_t &seed);
     /**
      * Sweep named environment property over a uniform random distribution
      * Integer types have a range [min, max]
@@ -287,7 +287,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * Random distribution used by setPropertyRandom()
      * Initially set to a random seed with std::random_device (which is a platform specific source of random integers)
      */
-    std::mt19937 rand;
+    std::mt19937_64 rand;
     std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> environment;
     const bool allow_0_steps;
 };

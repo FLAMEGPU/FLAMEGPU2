@@ -30,7 +30,7 @@ class Simulation {
      * General simulation runner specific config
      */
     struct Config {
-        Config() : random_seed(static_cast<unsigned int>(time(nullptr))) {
+        Config() : random_seed(static_cast<uint64_t>(time(nullptr))) {
         }
         void operator=(const Config &other) {
             input_file = other.input_file;
@@ -47,7 +47,7 @@ class Simulation {
         std::string exit_log_file;
         std::string common_log_file;
         bool truncate_log_files = true;
-        unsigned int random_seed;
+        uint64_t random_seed;
         unsigned int steps = 1;
         bool verbose = false;
         bool timing = false;

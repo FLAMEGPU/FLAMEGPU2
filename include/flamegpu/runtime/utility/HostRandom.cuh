@@ -50,11 +50,11 @@ class HostRandom {
      * Change the seed used for random generation
      * @param seed New random seed
      */
-    void setSeed(const unsigned int &seed);
+    void setSeed(const uint64_t &seed);
     /**
      * Returns the last value used to seed random generation
      */
-    unsigned int getSeed() const;
+    uint64_t getSeed() const;
 
  private:
     explicit HostRandom(RandomManager &_rng) : rng(_rng) { }

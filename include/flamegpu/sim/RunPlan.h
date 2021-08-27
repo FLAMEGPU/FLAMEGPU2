@@ -44,7 +44,7 @@ class RunPlan {
      * Set the random seed passed to this run of the simulation
      * @param random_seed Seed for random generation during execution
      */
-    void setRandomSimulationSeed(const unsigned int &random_seed);
+    void setRandomSimulationSeed(const uint64_t &random_seed);
     /**
      * Set the number of steps for this instance of the simulation
      * A steps value of 0 requires the ModelDescription to have atleast 1 exit condition
@@ -110,7 +110,7 @@ class RunPlan {
     /**
      * Returns the random seed used for this simulation run
      */
-    unsigned int getRandomSimulationSeed() const;
+    uint64_t getRandomSimulationSeed() const;
     /**
      * Returns the number of steps to be executed for this simulation run
      * 0 means unlimited, and is only available if the model description has an exit condition
@@ -173,7 +173,7 @@ class RunPlan {
 
  private:
     explicit RunPlan(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> &environment, const bool &allow_0);
-    unsigned int random_seed;
+    uint64_t random_seed;
     unsigned int steps;
     std::string output_subdirectory;
     std::unordered_map<std::string, util::Any> property_overrides;

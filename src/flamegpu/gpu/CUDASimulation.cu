@@ -1240,7 +1240,7 @@ void CUDASimulation::applyConfig_derived() {
     reseed(getSimulationConfig().random_seed);
 }
 
-void CUDASimulation::reseed(const unsigned int &seed) {
+void CUDASimulation::reseed(const uint64_t &seed) {
     SimulationConfig().random_seed = seed;
     singletons->rng.reseed(seed);
 

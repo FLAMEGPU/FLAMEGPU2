@@ -290,7 +290,7 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
         if (mode.top() == SimCfg) {
             if (sim_instance) {
                 if (lastKey == "random_seed") {
-                    sim_instance->SimulationConfig().random_seed = static_cast<unsigned int>(val);
+                    sim_instance->SimulationConfig().random_seed = static_cast<uint64_t>(val);
                 } else if (lastKey == "steps") {
                     sim_instance->SimulationConfig().steps = static_cast<unsigned int>(val);
                 } else if (lastKey == "timing") {

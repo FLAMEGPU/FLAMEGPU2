@@ -401,7 +401,7 @@ int main(int argc, const char ** argv) {
         flamegpu::EnvironmentDescription &env = model.Environment();
         // Uniformly distribute agents within space, with uniformly distributed initial velocity.
         // c++ random number generator engine
-        std::mt19937 rngEngine(cudaSimulation.getSimulationConfig().random_seed);
+        std::mt19937_64 rngEngine(cudaSimulation.getSimulationConfig().random_seed);
         // Uniform distribution for agent position components
         std::uniform_real_distribution<float> position_distribution(env.getProperty<float>("MIN_POSITION"), env.getProperty<float>("MAX_POSITION"));
         // Uniform distribution of velocity direction components

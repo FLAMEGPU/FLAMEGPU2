@@ -212,7 +212,7 @@ int Simulation::checkArgs(int argc, const char** argv) {
                 return false;
             }
             // Reinitialise RandomManager state
-            config.random_seed = static_cast<unsigned int>(strtoul(argv[++i], nullptr, 0));
+            config.random_seed = static_cast<uint64_t>(strtoul(argv[++i], nullptr, 0));
             continue;
         }
         // -v/--verbose, Verbose FLAME GPU output.

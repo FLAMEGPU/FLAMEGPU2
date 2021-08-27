@@ -17,7 +17,7 @@ namespace flamegpu {
 
 RandomManager::RandomManager() :
     deviceInitialised(false) {
-    reseed(static_cast<unsigned int>(seedFromTime() % UINT_MAX));
+    reseed(static_cast<uint64_t>(seedFromTime() % UINT_MAX));
 }
 RandomManager::~RandomManager() {
     free();  // @todo call free/freeDevice not in the constructor! instead just log that?
@@ -35,7 +35,7 @@ uint64_t RandomManager::seedFromTime() {
 
 void RandomManager::reseedHost() {
     freeHost();
-    host_rng = std::mt19937();
+    host_rng = std::mt19937_64();
     // Reset host random generator/s
     host_rng.seed(mSeed);
 }
@@ -45,7 +45,7 @@ void RandomManager::reseedDevice() {
     // curand is initialised on access if length does not match. This would need a second device length?
 }
 
-void RandomManager::reseed(const unsigned int &seed) {
+void RandomManager::reseed(const uint64_t &seed) {
     // Set the instance's seed to the new value
     mSeed = seed;
 
