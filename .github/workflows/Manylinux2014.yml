@@ -36,7 +36,7 @@ jobs:
           - cuda: "11.2"
             cuda_arch: "35"
             hostcxx: devtoolset-9
-            os: ubuntu-18.04
+            os: ubuntu-20.04
         python: 
           - "3.8"
         config:
