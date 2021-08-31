@@ -31,7 +31,7 @@ jobs:
       matrix:
         cudacxx:
           - cuda: "11.4"
-            os: ubuntu-18.04
+            os: ubuntu-20.04
     env:
       # Define constants
       BUILD_DIR: "build"
