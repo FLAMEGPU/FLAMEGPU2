@@ -559,7 +559,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
         // Scope the mutex
         auto lock = EnvironmentManager::getInstance().getSharedLock();
         const auto &prop_map = EnvironmentManager::getInstance().getPropertiesMap();
-        for (auto p : prop_map) {
+        for (const auto &p : prop_map) {
             if (p.first.first == cudaSimulation.getInstanceID()) {
                 const char* variableName = p.first.second.c_str();
                 const char* type = p.second.type.name();
@@ -569,7 +569,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, bool f
             }
         }
         // Set mapped environment variables in curve
-        for (const auto mp : EnvironmentManager::getInstance().getMappedProperties()) {
+        for (const auto &mp : EnvironmentManager::getInstance().getMappedProperties()) {
             if (mp.first.first == cudaSimulation.getInstanceID()) {
                 auto p = prop_map.at(mp.second.masterProp);
                 const char* variableName = mp.second.masterProp.second.c_str();

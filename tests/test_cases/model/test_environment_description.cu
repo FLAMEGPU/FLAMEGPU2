@@ -119,7 +119,7 @@ template<typename T>
 void ExceptionPropertyLength_test() {
     EnvironmentDescription ed;
     std::array<T, ARRAY_TEST_LEN> b;
-    std::array<T, 1> _b1;
+    std::array<T, 1> _b1 = {};
     std::array<T, ARRAY_TEST_LEN + 1> _b2;
     std::array<T, ARRAY_TEST_LEN * 2> _b3;
     ed.newProperty<T, ARRAY_TEST_LEN>("a", b);

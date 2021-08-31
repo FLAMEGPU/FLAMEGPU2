@@ -299,7 +299,7 @@ class CUDAAgent : public AgentInterface {
      */
     static size_t calcTotalVarSize(const AgentData &agent) {
         size_t rtn = 0;
-        for (const auto v : agent.variables) {
+        for (const auto &v : agent.variables) {
             rtn += v.second.type_size * v.second.elements;
         }
         return rtn;

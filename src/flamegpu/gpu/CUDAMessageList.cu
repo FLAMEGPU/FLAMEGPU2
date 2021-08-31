@@ -77,7 +77,7 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMessageMap &memory_map) {
 
 void CUDAMessageList::releaseDeviceMessageList(CUDAMessageMap& memory_map) {
     // for each device pointer in the cuda memory map we need to free these
-    for (const CUDAMessageMapPair& mm : memory_map) {
+    for (const auto &mm : memory_map) {
         // free the memory on the device
         gpuErrchk(cudaFree(mm.second));
     }
@@ -85,7 +85,7 @@ void CUDAMessageList::releaseDeviceMessageList(CUDAMessageMap& memory_map) {
 
 void CUDAMessageList::zeroDeviceMessageList(CUDAMessageMap& memory_map) {
     // for each device pointer in the cuda memory map set the values to 0
-    for (const CUDAMessageMapPair& mm : memory_map) {
+    for (const auto &mm : memory_map) {
         // get the variable size from message description
         const auto var = message.getMessageDescription().variables.at(mm.first);
         const size_t var_size = var.type_size * var.elements;

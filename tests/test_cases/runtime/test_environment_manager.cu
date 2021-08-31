@@ -108,7 +108,7 @@ TEST_F(EnvironmentManagerTest, Alignment) {
 
 // Test bounds limit
 TEST_F(EnvironmentManagerTest, OutOfMemory1) {
-    std::array<char, EnvironmentManager::MAX_BUFFER_SIZE / 2> char_5kb_a;
+    std::array<char, EnvironmentManager::MAX_BUFFER_SIZE / 2> char_5kb_a = {};
     std::array<char, EnvironmentManager::MAX_BUFFER_SIZE / 2> char_5kb_b;
     std::array<char, EnvironmentManager::MAX_BUFFER_SIZE / 2> char_5kb_c;
     ms->env.newProperty<char, EnvironmentManager::MAX_BUFFER_SIZE / 2>("char_5kb_a", char_5kb_a);
