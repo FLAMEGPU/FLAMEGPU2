@@ -16,38 +16,23 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL ""  FORCE)
 # If sufficiently new and working CXX / CUDA compilers are not available, then documentation only build is the only option.
 set(DOCUMENTATION_ONLY_BUILD OFF)
 
-# Check if CXX is available, if so enable it.
+# Check compiler functionailty, as there are known issues in some cases, but version checks are not always sufficient.
+include(./cmake/CheckCompilerFunctionality.cmake)
+# If this returned a negative result, set the docs only build. 
+if(NOT CheckCompilerFunctionality_RESULT)
+    set(DOCUMENTATION_ONLY_BUILD ON)      
+    message(STATUS "Documentation-only build: due to Compiler compatability version. See prior warnings.")
+endif()
+
+# If the checks passed, enable CXX and CUDA languages
 include(CheckLanguage)
 check_language(CXX)
 if(CMAKE_CXX_COMPILER)
     enable_language(CXX)
-else()
-    set(DOCUMENTATION_ONLY_BUILD ON)
-    message(STATUS "Documentation-only build: CXX compiler required for compilation.")
 endif()
-# Check if CUDA is available, if so enable it.
 check_language(CUDA)
 if(CMAKE_CUDA_COMPILER)
     enable_language(CUDA)
-else()
-    set(DOCUMENTATION_ONLY_BUILD ON)
-    message(STATUS "Documentation-only build: CUDA toolkit required for compilation.")
-endif()
-
-# The CXX host compiler must be sufficiently new for certain build options. 
-# Additionally, there are some known bad versions which do not agree with CUDA when used to build FLAMEGPU  
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    # g++ 6 is the minimum required G++ version (if it is supported by the current NVCC)
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6)  
-        set(DOCUMENTATION_ONLY_BUILD ON)      
-        message(STATUS "Documentation-only build: GCC/G++ >= 6 is required for compilation.")
-    endif()
-    # GCC 10.3 and 11.1 contain a bug in <chrono> which is exposed by CUDA (or just when used on its own). Block these versions.
-    # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100102 
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 10.3.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 11.1.0)
-        set(DOCUMENTATION_ONLY_BUILD ON)
-        message(STATUS "Documentation-only build: GCC ${CMAKE_CXX_COMPILER_VERSION} is incompatible with CUDA due to a GCC bug.")
-    endif()
 endif()
 
 # CUDA 10.0 is the current minimum working but deprecated verison, which will be removed.
