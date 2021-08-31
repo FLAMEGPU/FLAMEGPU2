@@ -39,12 +39,12 @@ jobs:
         cudacxx:
           - cuda: "11.4"
             cuda_arch: "35 60 80"
-            hostcxx: gcc-9
-            os: ubuntu-20.04
+            hostcxx: gcc-8
+            os: ubuntu-18.04
           - cuda: "11.0"
             cuda_arch: "35 60 80"
             hostcxx: gcc-8
-            os: ubuntu-20.04
+            os: ubuntu-18.04
         python:
           - "3.8"
         config:
@@ -264,11 +264,11 @@ jobs:
           - cuda: "11.2"
             cuda_arch: "35 52 60 70 80"
             hostcxx: devtoolset-9
-            os: ubuntu-20.04
+            os: ubuntu-18.04
           - cuda: "11.0"
             cuda_arch: "35 52 60 70 80"
             hostcxx: devtoolset-8
-            os: ubuntu-20.04
+            os: ubuntu-18.04
         python: 
           - "3.9"
           - "3.8"
@@ -314,7 +314,7 @@ jobs:
 
     # Downgrade the devtoolset in the image based on the build matrix, using:
     # gcc-10 for CUDA >= 11.2. Unclear if devtoolset-10 will upgrade to unpatched 11.3 which breaks CUDA builds that use <chrono>. 
-    # gcc-9 for CUDA >= 11.0
+    # gcc-8 for CUDA >= 11.0
     # gcc-8 for CUDA >= 10.1
     # gcc-7 for CUDA >= 10.0 (and probably 9.x).
     # these are not the officially supported toolset on centos by cuda, but it's what works.
@@ -520,7 +520,7 @@ jobs:
       - wheel-manylinux2014
       - wheel-windows
     if: ${{ success() && startsWith(github.ref, 'refs/tags/v') && github.event_name != 'workflow_dispatch' }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
 
