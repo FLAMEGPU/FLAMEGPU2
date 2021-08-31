@@ -31,12 +31,12 @@ jobs:
         cudacxx:
           - cuda: "11.4"
             cuda_arch: "35"
-            hostcxx: gcc-9
-            os: ubuntu-20.04
+            hostcxx: gcc-8
+            os: ubuntu-18.04
           - cuda: "11.0"
             cuda_arch: "35"
             hostcxx: gcc-8
-            os: ubuntu-20.04
+            os: ubuntu-18.04
           - cuda: "10.0"
             cuda_arch: "35"
             hostcxx: gcc-7
