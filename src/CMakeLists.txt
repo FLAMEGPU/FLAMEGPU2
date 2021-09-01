@@ -1,34 +1,37 @@
-# CMake 3.15+ for Thrust/Cub support
-cmake_minimum_required(VERSION VERSION 3.15 FATAL_ERROR)
-
-# Cmake 3.16 has issues with CUB and Thrust due to the order of the include path it generates.
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.16 AND CMAKE_VERSION VERSION_LESS 3.17)
-    message(WARNING
-    " CMake 3.16 does not use the correct CUDA include paths on some platforms.\n"
-    " Please consider using a different version of CMake.")
-endif()
+# Minimum CMake version 3.18 for CUDA --std=c++17 
+cmake_minimum_required(VERSION VERSION 3.18 FATAL_ERROR)
 
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 
-# See what languages are supported
+# Include versioning CMake logic, to set the project version 
+include(${FLAMEGPU_ROOT}/cmake/version.cmake)
+
+# Set the project  with no languages iniitailly, in case of doxygen only builds.
+project(flamegpu LANGUAGES NONE VERSION ${FLAMEGPU_VERSION})
+
+# See what languages are supported. Must be called within a project.
 # This is primarily here incase someone targets src/CMakeFiles.txt directly
 include(CheckLanguage)
+check_language(CXX)
 check_language(CUDA)
 if(CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
-    project(flamegpu NONE)
     #Not able to build code, so just make docs
     message("Suitable compilers for building code not found.\n" "Attempting generation of minimal documentation only project.")
-    include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)
+    include(${FLAMEGPU_ROOT}/cmake/dependencies/doxygen.cmake)
     if(${BUILD_API_DOCUMENTATION})
         create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}" "")
     endif()
     return()
 endif()
-include(${FLAMEGPU_ROOT}/cmake/version.cmake)
 
-# Name the project and set languages
-project(flamegpu LANGUAGES CUDA CXX VERSION ${FLAMEGPU_VERSION})
+# Enable the required languages for compilation
+enable_language(C)
+enable_language(CXX)
+enable_language(CUDA)
+
+# Ensure this is not an in-source build
+include(${FLAMEGPU_ROOT}/cmake/OutOfSourceOnly.cmake)
 
 # Option to enable/disable runtime checks which may impact performance
 # This will primarily prevent device code from reporting errors
@@ -43,10 +46,12 @@ mark_as_advanced(USE_GLM)
 
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
-include(${FLAMEGPU_ROOT}/cmake/doxygen.cmake)
+# Include the doxygen cmake logic.
+include(${FLAMEGPU_ROOT}/cmake/dependencies/doxygen.cmake)
 
+# Include the visualiser cmake if requested
 if(VISUALISATION)
-  include(${FLAMEGPU_ROOT}/cmake/flamegpu2-visualiser.cmake)
+  include(${FLAMEGPU_ROOT}/cmake/dependencies/flamegpu2-visualiser.cmake)
 endif()
 
 # Output the full FLAMEGPU version
@@ -72,13 +77,6 @@ else()
     if(${BUILD_API_DOCUMENTATION})
         create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/.." "")
     endif()
-endif()
-
-# Enable parallel compilation
-# Only do this for lib, as examples already build target parallel
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
 endif()
 
 # Specify source files for the static library
@@ -335,8 +333,155 @@ set(T_SRC_EXTERNAL "${SRC_EXTERNAL}")
 list(FILTER T_SRC_EXTERNAL EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
 source_group(TREE ${FLAMEGPU_ROOT}/include PREFIX external FILES ${T_SRC_EXTERNAL})
 
+
+# Create the library target and set various properties
+
+# @todo - correctly set PUBLIC/PRIVATE/INTERFACE for the flamegpu library target
+
 # Define which source files are required for the target executable
-add_flamegpu_library("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}")
+add_library(${PROJECT_NAME} STATIC ${ALL_SRC})
+
+# Add the library headers as public so they are forwarded on.
+target_include_directories(${PROJECT_NAME} PUBLIC "${FLAMEGPU_ROOT}/include")
+# Add any private headers.
+target_include_directories(${PROJECT_NAME} PRIVATE "${FLAMEGPU_ROOT}/src")
+
+# Set target level warnings.
+EnableFLAMEGPUCompilerWarnings(TARGET "${PROJECT_NAME}")
+# Apply common compiler settings
+CommonCompilerSettings(TARGET "${PROJECT_NAME}")
+# Set the cuda gencodes, potentially using the user-provided CUDA_ARCH
+SetCUDAGencodes(TARGET "${PROJECT_NAME}")
+
+# enable "fpic" for linux to allow shared libraries to be build from the static library (required for swig)
+set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+# Activate visualisation if requested
+if (VISUALISATION)
+    # @todo - these could/should be private, but must be PUBLIC for swig to build. Alternateively it could be PRIVATE but also set for swig.
+    target_link_libraries(${PROJECT_NAME} PUBLIC flamegpu_visualiser)
+    CMAKE_SET_TARGET_FOLDER(flamegpu_visualiser "FLAMEGPU")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC VISUALISATION)
+
+    # Make the visualisers GLM accessible via include
+    # @todo - make the vis cmake/glm create a target to use.
+    if (USE_GLM)
+        if(glm_FOUND)
+            target_include_directories(${PROJECT_NAME} PUBLIC "${glm_INCLUDE_DIRS}")
+            target_compile_definitions(${PROJECT_NAME} PUBLIC GLM_PATH="${glm_INCLUDE_DIRS}")
+        else()
+            message(WARNING "USE_GLM enabled, but glm_FOUND is False.")
+        endif()
+        target_compile_definitions(${PROJECT_NAME} PRIVATE USE_GLM)
+    endif()   
+endif()
+
+if (NOT RTC_DISK_CACHE)
+    # Only used in source files, so can be private
+    target_compile_definitions(${PROJECT_NAME} PRIVATE DISABLE_RTC_DISK_CACHE)
+endif()    
+if (EXPORT_RTC_SOURCES)
+    # Only used in source files, so can be private
+    target_compile_definitions(${PROJECT_NAME} PRIVATE OUTPUT_RTC_DYNAMIC_FILES)
+endif ()
+
+# Enable RDC
+set_property(TARGET ${PROJECT_NAME}  PROPERTY CUDA_SEPARABLE_COMPILATION ON)
+
+# Link against dependency targets / directories.
+
+# SYSTEM includes prevent warnings from 3rd party includes where possible. This is implied by target_link_libraries if it is an imported target.
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    # CUB (and thrust) cause many compiler warnings at high levels, including Wreorder. 
+    # CUB:CUB does not use -isystem to prevent the automatic -I<cuda_path>/include  from being more important, and the CUDA disributed CUB being used. 
+    # Instead, if possible we pass the include directory directly rather than using the imported target.
+    # And also pass {CUDAToolkit_INCLUDE_DIRS}/../include" as isystem so the include order is correct for isystem to work (a workaround for a workaround). The `../` is required to prevent cmake from removing the duplicate path.
+
+    # Include CUB via isystem if possible (via _CUB_INCLUDE_DIR which may be subject to change), otherwise use it via target_link_libraries.
+    # If we used the system CUB, via find_package (CUDA 11.3+ package the config) then this convoluted approach could be avoided. 
+    if(DEFINED _CUB_INCLUDE_DIR)
+        target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC "${_CUB_INCLUDE_DIR}")
+    else()
+        target_link_libraries(${PROJECT_NAME} PUBLIC CUB::CUB)
+    endif()
+    target_include_directories(${PROJECT_NAME}  SYSTEM PUBLIC "${CUDAToolkit_INCLUDE_DIRS}/../include")  
+else()
+    # MSVC just includes cub via the CUB::CUB target as no isystem to worry about.
+    target_link_libraries(${PROJECT_NAME} PUBLIC CUB::CUB)
+    # Same for Thrust.
+    # Visual studio 2015 needs to suppress deprecation messages from CUB/Thrust.
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.10)
+        target_compile_definitions(${PROJECT_NAME} PUBLIC "CUB_IGNORE_DEPRECATED_CPP_DIALECT")
+        target_compile_definitions(${PROJECT_NAME} PUBLIC "THRUST_IGNORE_DEPRECATED_CPP_DIALECT")
+    endif()
+endif()
+
+# Thrust uses isystem if available
+target_link_libraries(${PROJECT_NAME} PUBLIC Thrust::Thrust)
+
+# tinyxml2 static library
+target_link_libraries(${PROJECT_NAME} PRIVATE Tinyxml2::tinyxml2)
+
+# If rapidjson was found, add it to the include dirs.
+target_link_libraries(${PROJECT_NAME} PRIVATE RapidJSON::rapidjson)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::nvrtc)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::cuda_driver)
+
+if(USE_NVTX AND TARGET NVTX::nvtx)
+    target_link_libraries(${PROJECT_NAME} PUBLIC NVTX::nvtx)
+    # Get the version to set a definition value 
+    get_target_property(nvtxversion NVTX::nvtx VERSION)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<COMPILE_LANGUAGE:C,CXX,CUDA>:USE_NVTX=${nvtxversion}>")
+    unset(nvtxversion)
+endif()
+
+target_link_libraries(${PROJECT_NAME} PUBLIC Jitify::jitify)
+target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<COMPILE_LANGUAGE:C,CXX,CUDA>:JITIFY_PRINT_LOG>")
+
+# If gcc, need to add linker flag for std::experimental::filesystem pre c++17
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_link_libraries(${PROJECT_NAME} PUBLIC stdc++fs)
+endif()
+
+# Link against dl if available. This used to be implied from somewhere...
+if(CMAKE_DL_LIBS)
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${CMAKE_DL_LIBS})
+endif()
+
+# Make GLM accessible via include. PUBLIC so this is usable by downstream projects
+if (USE_GLM)
+    if(TARGET GLM::glm)
+        target_link_libraries(${PROJECT_NAME} PUBLIC GLM::glm)
+        target_compile_definitions(${PROJECT_NAME} PUBLIC USE_GLM)
+    else()
+        message(WARNING "USE_GLM enabled, but glm was not found")
+    endif()
+endif()
+
+# Ensure we link against pthread / windows equilvalent. This was previously implied
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
+
+# Flag the new linter target and the files to be linted.
+new_linter_target(${PROJECT_NAME} "${ALL_SRC}")
+
+# Put within FLAMEGPU filter
+CMAKE_SET_TARGET_FOLDER(${PROJECT_NAME} "FLAMEGPU")
+# Put the tinyxml2 in the folder
+CMAKE_SET_TARGET_FOLDER("tinyxml2" "FLAMEGPU/Dependencies")
+
+# Emit some warnings that should only be issued once and are related to this file (but not this target)
+# @todo - move these author warnigns elsewhere, so they will be emitted if not building FLAMEGPU iteself? Common but with some form of guard?
+if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS_EQUAL "10.2")
+    message(AUTHOR_WARNING "MSVC and NVCC <= 10.2 may encounter compiler errors due to an NVCC bug exposed by Thrust. Cosider using a newer CUDA toolkit.")
+endif()
+if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS_EQUAL "11.0")
+    # https://github.com/FLAMEGPU/FLAMEGPU2/issues/483
+    message(AUTHOR_WARNING "MSVC and NVCC <= 11.0 may encounter errors at link time with incremental rebuilds. Cosider using a newer CUDA toolkit.")
+endif()
 
 # Also set as startup project (if top level project)
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")

@@ -1,25 +1,30 @@
 message(STATUS "-----Configuring Project: ${PROJECT_NAME}-----")
 include_guard(DIRECTORY)
-if(NOT CMAKE_VERSION VERSION_LESS 3.18)
-    cmake_policy(SET CMP0105 NEW) # Use separate device link options
-endif()
+
+# Policy to enable use of separate device link options, introduced in CMake 3.18
+cmake_policy(SET CMP0105 NEW)
+
 # Add custom modules directory
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/modules/ ${CMAKE_MODULE_PATH})
 
+# Ensure this is not an in-source build
+# This might be a little aggressive to go in comon.
+include(${FLAMEGPU_ROOT}/cmake/OutOfSourceOnly.cmake)
+
 # include CUDA_ARCH processing code.
 # Uses -DCUDA_ARCH values (and modifies if appropriate). 
-# Adds -gencode argumetns to CMAKE_CUDA_FLAGS
-# Adds -DMIN_COMPUTE_CAPABILITY=VALUE macro to CMAKE_CC_FLAGS, CMAKE_CXX_FLAGS and CMAKE_CUDA_FLAGS.
+# Adds -gencode argumetns to cuda compiler options
+# Adds -DMIN_COMPUTE_CAPABILITY=VALUE compiler defintions for C, CXX and CUDA 
 include(${CMAKE_CURRENT_LIST_DIR}/cuda_arch.cmake)
 
 # Ensure that other dependencies are downloaded and available. 
-# This could potentially go in the src cmake.list, once headers do not include third party headers.
-include(${CMAKE_CURRENT_LIST_DIR}/Thrust.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/Jitify.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/Tinyxml2.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/rapidjson.cmake)
+# As flamegpu is a static library, linking only only occurs at consumption not generation, so dependent targets must also know of PRIVATE shared library dependencies such as tinyxml2 and rapidjson, as well any intentionalyl public dependencies (for include dirs)
+include(${CMAKE_CURRENT_LIST_DIR}/dependencies/Thrust.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/dependencies/Jitify.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/dependencies/Tinyxml2.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/dependencies/rapidjson.cmake)
 if(USE_GLM)
-include(${CMAKE_CURRENT_LIST_DIR}/glm.cmake)
+    include(${CMAKE_CURRENT_LIST_DIR}/dependencies/glm.cmake)
 endif()
 
 # Common rules for other cmake files
@@ -35,12 +40,6 @@ mark_as_advanced(CMAKE_USE_FOLDERS)
 # Include files which define target specific functions.
 include(${CMAKE_CURRENT_LIST_DIR}/warnings.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cxxstd.cmake)
-
-# Cmake 3.16 has an issue with the order of CUDA includes when using SYSTEM for user-provided thrust. Avoid this by not using SYSTEM for cmake 3.16
-set(INCLUDE_SYSTEM_FLAG SYSTEM)
-if(${CMAKE_VERSION} VERSION_GREATER "3.16" AND ${CMAKE_VERSION} VERSION_LESS "3.17") 
-    set(INCLUDE_SYSTEM_FLAG "")
-endif()
 
 # Set a default build type if not passed
 get_property(GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
@@ -62,58 +61,46 @@ endif()
 # Ask Cmake to output compile_commands.json (if supported). This is useful for vscode include paths, clang-tidy/clang-format etc
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "Control the output of compile_commands.json")
 
-# Declare variables to track extra include dirs / link dirs / link libraries
-set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES)
-set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES)
+# Use the FindCUDATooklit package (CMake > 3.17) to find other parts of the cuda toolkit not provided by the CMake language support
+find_package(CUDAToolkit REQUIRED)
 
-# NVRTC.lib/CUDA.lib
+# Control how we link against the cuda runtime library (CMake >= 3.17)
+# We may wish to use static or none instead, subject to python library handling.
+set(CMAKE_CUDA_RUNTIME_LIBRARY shared)
 
-find_package(NVRTC REQUIRED)
-if(NVRTC_FOUND)
-    set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES} "${NVRTC_INCLUDE_DIRS}")
-    set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} ${NVRTC_LIBRARIES})
-    # Also add the driver api
-    set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} cuda)
-else()
-    message("nvrtc not found @todo gracefully handle this")
+# Ensure the cuda driver API is available, and save it to the list of link targets.
+if(NOT TARGET CUDA::cuda_driver)
+    message(FATAL_ERROR "CUDA::cuda_driver is required.")
 endif()
 
+# Ensure the nvrtc is available, and save it to the list of link targets.
+if(NOT TARGET CUDA::nvrtc)
+    message(FATAL_ERROR "CUDA::nvrtc is required.")
+endif()
 
-# If NVTX is enabled, find the library and update variables accordingly.
+# Ensure that jitify is available. Must be available at binary link time due to flamegpu being a static library. This check may be redundant.
+if(NOT TARGET Jitify::jitify)
+    message(FATAL_ERROR "Jitify is a required dependency")
+endif()
+
+# Ensure that 
+
+# @todo - why do we not have to link against curand? Is that only required for the host API? Use CUDA::curand if required.
+
+# If NVTX is enabled, find the library and update variables accordingly. 
 if(USE_NVTX)
-    # Find the nvtx library using custom cmake module
+    # Find the nvtx library using custom cmake module, providing imported targets
+    # Do not use CUDA::nvToolsExt as this always uses NVTX1 not 3.
     find_package(NVTX)
-    # If it was found, use it.
-    if(NVTX_FOUND)
-        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DUSE_NVTX=${NVTX_VERSION}")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_NVTX=${NVTX_VERSION}")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_NVTX=${NVTX_VERSION}")
-        set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES} "${NVTX_INCLUDE_DIRS}")
-        if(NVTX_VERSION VERSION_LESS "3")
-            set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} ${NVTX_LIBRARIES})
-        endif()
-    else()
-        # If not found, disable.
-        message("-- NVTX not available")
+    # If the targets were not found, emit a warning 
+    if(NOT TARGET NVTX::nvtx)
+        # If not found, emit a warning and continue without NVTX
+        message(WARNING "NVTX could not be found. Proceeding with USE_NVTX=OFF")
         if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
             SET(USE_NVTX "OFF" PARENT_SCOPE)
         endif()
     endif()
 endif(USE_NVTX)
-
-# If jitify was found, add it to the include dirs.
-if(Jitify_FOUND)
-    set(FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES} "${Jitify_INCLUDE_DIRS}")
-endif()
-
-# If gcc, need to add linker flag for std::experimental::filesystem pre c++17
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    set(FLAMEGPU_DEPENDENCY_LINK_LIBRARIES ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES} "-lstdc++fs")
-endif()
-
-# Logging for jitify compilation
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DJITIFY_PRINT_LOG")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DJITIFY_PRINT_LOG")
 
 # Set the minimum supported cuda version, if not already set. Currently duplicated due to docs only build logic.
 # CUDA 10.0 is the current minimum working but deprecated verison, which will be removed.
@@ -134,33 +121,6 @@ if(NOT DEFINED MINIMUM_SUPPORTED_CUDA_VERSION)
     endif()
 endif()
 
-# Specify some additional compiler flags
-# CUDA debug symbols
-set(CMAKE_CUDA_FLAGS_DEBUG "${CMAKE_CUDA_FLAGS_DEBUG} -G -D_DEBUG -DDEBUG")
-
-# Lineinfo for non -G release
-set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} -lineinfo")
-
-# Addresses a cub::histogram warning
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
-
-# On windows, define NOMINMAX to remove the annoying defined min and max macros
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    add_compile_definitions(NOMINMAX)
-endif()
-
-# MSVC handling of SYSTEM for external includes.
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.10)
-        # These flags don't currently have any effect on how CMake passes system-private includes to msvc (VS 2017+)
-        set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I")
-        set(CMAKE_INCLUDE_SYSTEM_FLAG_CUDA "/external:I")
-        # VS 2017+
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /experimental:external")
-    endif()
-endif()
-
-# Common CUDA args
 # Define a function to add a lint target.
 find_file(CPPLINT NAMES cpplint cpplint.exe)
 if(CPPLINT)
@@ -238,8 +198,78 @@ else()
     endif()
 endif()
 
+# Define a function which can be used to set common compiler options for a target
+# We do not want to force these options on end users (although they should be used ideally), hence not just public properties on the library target
+# Function to suppress compiler warnings for a given target
+function(CommonCompilerSettings)
+    # Parse the expected arguments, prefixing variables.
+    cmake_parse_arguments(
+        CCS
+        ""
+        "TARGET"
+        ""
+        ${ARGN}
+    )
+
+    # Ensure that a target has been passed, and that it is a valid target.
+    if(NOT CCS_TARGET)
+        message( FATAL_ERROR "function(CommonCompilerSettings): 'TARGET' argument required")
+    elseif(NOT TARGET ${CCS_TARGET} )
+        message( FATAL_ERROR "function(CommonCompilerSettings): TARGET '${CCS_TARGET}' is not a valid target")
+    endif()
+
+    # Add device debugging symbols to device builds of CUDA objects
+    target_compile_options(${CCS_TARGET} PRIVATE "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CONFIG:Debug>>:-G>")
+    # Ensure DEBUG and _DEBUG are defined for Debug builds
+    target_compile_definitions(${CCS_TARGET} PRIVATE $<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CONFIG:Debug>>:DEBUG>)
+    target_compile_definitions(${CCS_TARGET} PRIVATE $<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CONFIG:Debug>>:_DEBUG>)
+    # Enable -lineinfo for Release builds, for improved profiling output.
+    target_compile_options(${CCS_TARGET} PRIVATE "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CONFIG:Release>>:-lineinfo>")
+
+    # Set an NVCC flag which allows host constexpr to be used on the device.
+    target_compile_options(${CCS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>")
+
+    # Prevent windows.h from defining max and min.
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        target_compile_definitions(${CCS_TARGET} PRIVATE NOMINMAX)
+    endif()
+
+    # Pass the SEATBELTS macro, which when set to off/0 (for non debug builds) removes expensive operations.
+    if (SEATBELTS)
+        # If on, all build configs have  seatbelts
+        target_compile_definitions(${CCS_TARGET} PRIVATE SEATBELTS=1)
+    else()
+        # Id off, debug builds have seatbelts, non debug builds do not.
+        target_compile_definitions(${CCS_TARGET} PRIVATE $<IF:$<CONFIG:Debug>,SEATBELTS=1,SEATBELTS=0>)
+    endif()
+
+    # MSVC handling of SYSTEM for external includes.
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.10)
+        # These flags don't currently have any effect on how CMake passes system-private includes to msvc (VS 2017+)
+        set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I")
+        set(CMAKE_INCLUDE_SYSTEM_FLAG_CUDA "/external:I")
+        # VS 2017+
+        target_compile_options(${CCS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:/experimental:external>")
+    endif()
+
+    # Enable parallel compilation
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        target_compile_options(${CCS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler /MP>")
+        target_compile_options(${CCS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:/MP>")
+    endif()
+
+    # If CUDA 11.2+, can build multiple architectures in parallel. 
+    # Note this will be multiplicative against the number of threads launched for parallel cmake build, which may lead to processes being killed, or excessive memory being consumed.
+    if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.2" AND USE_NVCC_THREADS AND DEFINED NVCC_THREADS AND NVCC_THREADS GREATER_EQUAL 0)
+        target_compile_options(${CCS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--threads ${NVCC_THREADS}>")
+    endif()
+
+endfunction()
+
 # Function to mask some of the steps to create an executable which links against the static library
 function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
+    # @todo - correctly set PUBLIC/PRIVATE/INTERFACE for executables created with this utility function
+
     # Parse optional arugments.
     cmake_parse_arguments(
         ADD_FLAMEGPU_EXECUTABLE
@@ -268,47 +298,28 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     add_executable(${NAME} ${SRC})
 
     # Set target level warnings.
-    EnableCompilerWarnings(TARGET "${NAME}")
-    
-    # @todo - Once public/private/interface is perfected on the library, some includes may need adding back here.
-
-    # Add extra linker targets
-    target_link_libraries(${NAME} ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES})
-    
+    EnableFLAMEGPUCompilerWarnings(TARGET "${NAME}")
+    # Apply common compiler settings
+    CommonCompilerSettings(TARGET "${NAME}")
+    # Set the cuda gencodes, potentially using the user-provided CUDA_ARCH
+    SetCUDAGencodes(TARGET "${PROJECT_NAME}")
+            
     # Enable RDC for the target
     set_property(TARGET ${NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
     # Link against the flamegpu static library target.
-    if (TARGET flamegpu)
-        target_link_libraries(${NAME} flamegpu)
-        # Workaround for incremental rebuilds on MSVC, where device link was not being performed.
-        # https://github.com/FLAMEGPU/FLAMEGPU2/issues/483
-        if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.1")
-            # Provide the absolute path to the lib file, rather than the relative version cmake provides.
-            target_link_libraries(${NAME} "${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE:flamegpu>")
-        endif()
+    target_link_libraries(${NAME} flamegpu)
+    # Workaround for incremental rebuilds on MSVC, where device link was not being performed.
+    # https://github.com/FLAMEGPU/FLAMEGPU2/issues/483
+    if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.1")
+        # Provide the absolute path to the lib file, rather than the relative version cmake provides.
+        target_link_libraries(${NAME} "${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE:flamegpu>")
     endif()
-    
-    # Configure device link options
-    if(NOT CMAKE_VERSION VERSION_LESS 3.18)
-        if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        # Suppress Fatbinc warnings on msvc at link time.
-        target_link_options(${NAME} PRIVATE "$<DEVICE_LINK:SHELL:-Xcompiler /wd4100>")
-        endif()
-        if(WARNINGS_AS_ERRORS)               
-            if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-                target_link_options(${NAME} PRIVATE "$<DEVICE_LINK:SHELL:-Xcompiler /WX>")
-            else()
-                target_link_options(${NAME} PRIVATE "$<DEVICE_LINK:SHELL:-Xcompiler -Werror>")
-            endif()
-        endif()
-    endif()
-    
+        
     # Activate visualisation if requested
     if (VISUALISATION)
-        target_include_directories(${NAME} PUBLIC "${VISUALISATION_ROOT}/include")
         # Copy DLLs
-        # @todo - this would be better to be a post flamegpu2-visualiser build step, so it's only done once not N times?
+        # @todo clean this up. It would be much better if it were dynamic based on the visualisers's runtime dependencies too.
         if(WIN32)
             # sdl
             # if(NOT sdl2_FOUND)
@@ -344,26 +355,8 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
                     ${IL_RUNTIME_LIBRARIES}                               # <--this is in-file
                     $<TARGET_FILE_DIR:${NAME}>)
         endif()
-        add_compile_definitions(VISUALISATION)
-    
-        # Make GLM accessible via include
-        if (USE_GLM)
-            if(glm_FOUND)
-                target_include_directories(${NAME} PUBLIC "${glm_INCLUDE_DIRS}")
-            else()
-                message(WARNING "USE_GLM enabled, but glm_FOUND is False.")
-            endif()
-            add_compile_definitions(USE_GLM)
-        endif()
-    endif()
-    
-    # Pass the SEATBELTS macro, which when set to off/0 (for non debug builds) removes expensive operations.
-    if (SEATBELTS)
-        # If on, all build configs have  seatbelts
-        add_compile_definitions(SEATBELTS=1)
-    else()
-        # Id off, debug builds have seatbelts, non debug builds do not.
-        add_compile_definitions($<IF:$<CONFIG:Debug>,SEATBELTS=1,SEATBELTS=0>)
+        # @todo - this could be inherrited instead? 
+        target_compile_definitions(${NAME} PRIVATE VISUALISATION)
     endif()
 
     # Flag the new linter target and the files to be linted, and pass optional exclusions filters (regex)
@@ -395,135 +388,6 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     # Put within Examples filter
     if(IS_EXAMPLE)
         CMAKE_SET_TARGET_FOLDER(${NAME} "Examples")
-    endif()
-endfunction()
-
-# Function to mask some of the flag setting for the static library
-function(add_flamegpu_library NAME SRC FLAMEGPU_ROOT)
-    # Define which source files are required for the target executable
-    add_library(${NAME} STATIC ${SRC})
-
-    # Set target level warnings.
-    EnableCompilerWarnings(TARGET "${NAME}")
-
-    # enable "fpic" for linux to allow shared libraries to be build from the static library (required for swig)
-    set_property(TARGET ${NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
-    
-    # Activate visualisation if requested
-    if (VISUALISATION)
-        target_include_directories(${NAME} PRIVATE "${VISUALISATION_ROOT}/include")
-        target_link_libraries(${NAME} flamegpu_visualiser)
-        CMAKE_SET_TARGET_FOLDER(flamegpu_visualiser "FLAMEGPU")
-        add_compile_definitions(VISUALISATION)
-        # set(SDL2_DIR ${VISUALISATION_BUILD}/sdl2)
-        # find_package(SDL2 REQUIRED)
-
-        # Make the visualisers GLM accessible via include
-        if (USE_GLM)
-            if(glm_FOUND)
-                target_include_directories(${NAME} PUBLIC "${glm_INCLUDE_DIRS}")
-                add_compile_definitions(GLM_PATH="${glm_INCLUDE_DIRS}")
-            else()
-                message(WARNING "USE_GLM enabled, but glm_FOUND is False.")
-            endif()
-            add_compile_definitions(USE_GLM)
-        endif()   
-    endif()
-    
-    # Pass the SEATBELTS macro, which when set to off/0 (for non debug builds) removes expensive operations.
-    if (SEATBELTS)
-        # If on, all build configs have  seatbelts
-        add_compile_definitions(SEATBELTS=1)
-    else()
-        # Id off, debug builds have seatbelts, non debug builds do not.
-        add_compile_definitions($<IF:$<CONFIG:Debug>,SEATBELTS=1,SEATBELTS=0>)
-    endif()
-    
-    if (NOT RTC_DISK_CACHE)
-        add_compile_definitions(DISABLE_RTC_DISK_CACHE)
-    endif()    
-    if (EXPORT_RTC_SOURCES)
-        add_compile_definitions(OUTPUT_RTC_DYNAMIC_FILES)
-    endif ()
-    
-    # Enable RDC
-    set_property(TARGET ${NAME}  PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-
-    # Link against dependency targets / directories.
-
-    # Linux / not windows has -isystem for suppressing warnings from "system" libraries - ie exeternal dependencies such as thrust.
-    if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        # CUB (and thrust) cause many compiler warnings at high levels, including Wreorder. 
-        # CUB:CUB does not use -isystem to prevent the automatic -I<cuda_path>/include  from being more important, and the CUDA disributed CUB being used. 
-        # Instead, if possible we pass the include directory directly rather than using the imported target.
-        # And also pass {CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}/../include" as isystem so the include order is correct for isystem to work (a workaround for a workaround). The `../` is required to prevent cmake from removing the duplicate path.
-
-        # Include CUB via isystem if possible (via _CUB_INCLUDE_DIR which may be subject to change), otherwise use it via target_link_libraries.
-        if(DEFINED _CUB_INCLUDE_DIR)
-            target_include_directories(${NAME} ${INCLUDE_SYSTEM_FLAG} PUBLIC "${_CUB_INCLUDE_DIR}")
-        else()
-            target_link_libraries(${NAME} CUB::CUB)
-        endif()
-        target_include_directories(${NAME}  ${INCLUDE_SYSTEM_FLAG} PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}/../include")  
-    else()
-        # MSVC just includes cub via the CUB::CUB target as no isystem to worry about.
-        target_link_libraries(${NAME} CUB::CUB)
-        # Same for Thrust.
-        # Visual studio 2015 needs to suppress deprecation messages from CUB/Thrust.
-        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.10)
-            target_compile_definitions(${NAME} PUBLIC "CUB_IGNORE_DEPRECATED_CPP_DIALECT")
-            target_compile_definitions(${NAME} PUBLIC "THRUST_IGNORE_DEPRECATED_CPP_DIALECT")
-        endif()
-    endif()
-
-    # Compiler flags which we do not want to be set to all targets
-    # GNU specific flags.
-    # @todo - make this not just applied to the library, but also executables.
-    # @todo - currently disabled as tinyxml2 include is not marked as system (because it's inherrited via properties on the imported target). Might require https://gitlab.kitware.com/cmake/cmake/-/issues/18040 to be implemented to actually achieve this.
-    # if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        # target_compile_options(${NAME} PRIVATE -Wsuggest-override)
-        # set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wsuggest-override")
-        # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsuggest-override")
-        # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wsuggest-override")
-    # endif() 
-        
-    # Thrust uses isystem if available
-    target_link_libraries(${NAME} Thrust::Thrust)
-
-    # tinyxml2 static library
-    target_link_libraries(${NAME} tinyxml2)
-    
-    # If rapidjson was found, add it to the include dirs.
-    if(RapidJSON_FOUND)
-        target_include_directories(${NAME} ${INCLUDE_SYSTEM_FLAG} PRIVATE "${RapidJSON_INCLUDE_DIRS}")
-    endif()
-    
-    # Add extra includes (jitify, nvtx, nvrtc etc.) @todo improve this.
-    target_include_directories(${NAME}  ${INCLUDE_SYSTEM_FLAG} PUBLIC ${FLAMEGPU_DEPENDENCY_INCLUDE_DIRECTORIES})
-
-    # Add the library headers as public so they are forwarded on.
-    target_include_directories(${NAME}  PUBLIC "${FLAMEGPU_ROOT}/include")
-    # Add any private headers.
-    target_include_directories(${NAME}  PRIVATE "${FLAMEGPU_ROOT}/src")
-
-    # Add extra linker targets
-    target_link_libraries(${NAME} ${FLAMEGPU_DEPENDENCY_LINK_LIBRARIES})
-
-    # Flag the new linter target and the files to be linted.
-    new_linter_target(${NAME} "${SRC}")
-    
-    # Put within FLAMEGPU filter
-    CMAKE_SET_TARGET_FOLDER(${NAME} "FLAMEGPU")
-    # Put the tinyxml2 in the folder
-    CMAKE_SET_TARGET_FOLDER("tinyxml2" "FLAMEGPU/Dependencies")
-
-    # Emit some warnings that should only be issued once and are related to this file (but not this target)
-    if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS_EQUAL "10.2")
-        message(AUTHOR_WARNING "MSVC and NVCC <= 10.2 may encounter compiler errors due to an NVCC bug exposed by Thrust. Cosider using a newer CUDA toolkit.")
-    endif()
-    if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS_EQUAL "11.0")
-        # https://github.com/FLAMEGPU/FLAMEGPU2/issues/483
-        message(AUTHOR_WARNING "MSVC and NVCC <= 11.0 may encounter errors at link time with incremental rebuilds. Cosider using a newer CUDA toolkit.")
     endif()
 endfunction()
 

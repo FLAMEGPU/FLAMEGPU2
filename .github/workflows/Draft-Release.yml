@@ -111,11 +111,11 @@ jobs:
       run: |
         # Install ubuntu-20.04 packages
         if [ "$OS" == 'ubuntu-20.04' ]; then 
-          sudo apt-get install -y libglew-dev libglu1-mesa-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
+          sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
         fi
         # Install Ubuntu 18.04 packages
         if [ "$OS" == 'ubuntu-18.04' ]; then 
-          sudo apt-get install -y libglew-dev libglu1-mesa-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype6-dev libgl1-mesa-dev
+          sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype6-dev libgl1-mesa-dev
         fi
 
     - name: Configure cmake
@@ -340,7 +340,7 @@ jobs:
     - name: Install Visualisation Dependencies (CentOS)
       if: ${{ env.VISUALISATION == 'ON' }}
       run: |
-        yum install -y mesa-libGLU-devel glew-devel fontconfig-devel SDL2-devel freetype-devel 
+        yum install -y glew-devel fontconfig-devel SDL2-devel freetype-devel 
         # Build/Install DevIL from source.
         yum install -y freeglut-devel
         git clone --depth 1 https://github.com/DentonW/DevIL.git

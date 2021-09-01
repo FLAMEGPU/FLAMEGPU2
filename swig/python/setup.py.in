@@ -25,7 +25,7 @@ setup(
   include_package_data=True,
   classifiers=[
   'Development Status :: 3 - Alpha',
-  'Environment :: GPU :: NVIDIA CUDA :: @CMAKE_CUDA_COMPILER_VERSION_MAJOR@.@CMAKE_CUDA_COMPILER_VERSION_MINOR@'
+  'Environment :: GPU :: NVIDIA CUDA :: @CUDAToolkit_VERSION_MAJOR@.@CUDAToolkit_VERSION_MINOR@'
   'Intended Audience :: Developers',
   'License :: OSI Approved :: MIT License',
   'Operating System :: POSIX :: Linux',

@@ -19,7 +19,8 @@ FetchContent_GetProperties(jitify)
 if(NOT jitify_POPULATED)
     FetchContent_Populate(jitify)
     # Jitify is not a cmake project, so cannot use add_subdirectory, use custom find_package.
-    set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${jitify_SOURCE_DIR}/..")
-    find_package(Jitify REQUIRED)
-    # Include path is ${Jitify_INCLUDE_DIRS}
 endif()
+
+set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${jitify_SOURCE_DIR}/..")
+# Always find the package, even if jitify is already populated.
+find_package(Jitify REQUIRED)

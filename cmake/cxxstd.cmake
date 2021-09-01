@@ -3,17 +3,10 @@ if(NOT FLAMEGPU_CXX_STD)
     # FLAME GPU is c++14, however due to MSVC 16.10 regressions we build as 17 if possible, else 14. 
     # 14 Support is still required (CUDA 10.x, swig?).
     # Start by assuming both should be availble.
+    # No need to check CMake version, as our minimum (3.18) supports CUDA c++17
     set(CXX17_SUPPORTED ON)
-    # CMake 3.18 adds CUDA CXX 17, 20
-    # CMake 3.10 adds CUDA CXX 14
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
-        # 17 OK
-    elseif(CMAKE_VERSION VERSION_GREATER_EQUAL 3.10)
-        # No need for deprecation warning here, already warning about CMAKE < 3.18 being deprecated elsewhere.
-        set(CXX17_SUPPORTED OFF)
-    else()
-        message(FATAL_ERROR "CMAKE ${CMAKE_VERSION} does not support -std=c++14")
-    endif()
+
+    # Check the CU
     # CUDA 11.0 adds CXX 17
     # CUDA 9.0 adds CXX 14
     if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.0.0)
@@ -34,7 +27,7 @@ if(NOT FLAMEGPU_CXX_STD)
         if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.29)
             # 17 required.
             if(NOT CXX17_SUPPORTED)
-                message(FATAL_ERROR "MSVC >= 19.29 requires CMake >= 3.18 and CUDA >= 11.0")
+                message(FATAL_ERROR "MSVC >= 19.29 requires CUDA >= 11.0")
             endif()
         elseif(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.11)
             # 17 available?
