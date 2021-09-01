@@ -316,7 +316,7 @@ void RunPlanVector::setProperty(const std::string &name, const T &value) {
             "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
-    if (it->second.data.elements == 1) {
+    if (it->second.data.elements != 1) {
         THROW exception::InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
             "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.elements);
