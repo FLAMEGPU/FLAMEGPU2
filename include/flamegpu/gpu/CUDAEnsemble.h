@@ -77,7 +77,6 @@ class CUDAEnsemble {
 
     /**
      * @return A mutable reference to the ensemble configuration struct
-     * @see CUDAEnsemble::applyConfig() Should be called afterwards to apply changes
      */
     EnsembleConfig &Config() { return config; }
     /**
