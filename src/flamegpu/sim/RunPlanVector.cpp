@@ -125,7 +125,7 @@ RunPlanVector RunPlanVector::operator*(const unsigned int& rhs) const {
             rtn.push_back(j);
         }
     }
-    return *this;
+    return rtn;
 }
 
 }  // namespace flamegpu
