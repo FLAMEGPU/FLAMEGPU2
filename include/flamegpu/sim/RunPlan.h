@@ -246,7 +246,7 @@ void RunPlan::setProperty(const std::string &name, const EnvironmentManager::siz
             "in RunPlan::setProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
-    if (it->second.data.elements >= index) {
+    if (index >= it->second.data.elements) {
         throw std::out_of_range("Environment property array index out of bounds "
             "in RunPlan::setProperty()\n");
     }
@@ -266,22 +266,22 @@ void RunPlan::setPropertyArray(const std::string &name, const EnvironmentManager
     const auto it = environment->find(name);
     if (it == environment->end()) {
         THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
-            "in RunPlan::setProperty()\n",
+            "in RunPlan::setPropertyArray()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
         THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
-            "in RunPlan::setProperty()\n",
+            "in RunPlan::setPropertyArray()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != N) {
         THROW exception::InvalidEnvProperty("Environment property array '%s' length mismatch %u != %u, "
-            "in RunPlan::setProperty()\n",
+            "in RunPlan::setPropertyArray()\n",
             name.c_str(), it->second.data.elements, N);
     }
     if (value.size() != N) {
         THROW exception::InvalidEnvProperty("Environment property array length does not match the value provided, %u != %llu,"
-            "in RunPlan::setProperty()\n",
+            "in RunPlan::setPropertyArray()\n",
             name.c_str(), value.size(), N);
     }
     // Store property
@@ -363,7 +363,7 @@ T RunPlan::getProperty(const std::string &name, const EnvironmentManager::size_t
             "in RunPlan::getProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
-    if (it->second.data.elements >= index) {
+    if (index >= it->second.data.elements) {
         throw std::out_of_range("Environment property array index out of bounds "
             "in RunPlan::getProperty()\n");
     }
