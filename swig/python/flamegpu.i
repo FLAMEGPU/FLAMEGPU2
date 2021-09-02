@@ -353,6 +353,12 @@ class FLAMEGPURuntimeException : public std::exception {
 
 %ignore flamegpu::HostRandom::uniform;
 
+// Ignore const'd accessors for configuration structs, which were mutable in python.
+%ignore flamegpu::CUDASimulation::getCUDAConfig;
+%ignore flamegpu::CUDAEnsemble::getConfig;
+// %ignore flamegpu::Simulation::getConfig; // This doesn't currently exist
+
+// Ignore the detail namespace, as it's not intended to be user-facing
 %ignore flamegpu::detail;
 
 // Do not provide the FLAMEGPU_VERSION macro, instead just the pyflamegpu.VERSION* variants.
