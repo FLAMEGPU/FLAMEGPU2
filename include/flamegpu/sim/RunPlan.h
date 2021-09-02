@@ -310,9 +310,13 @@ T RunPlan::getProperty(const std::string &name) const {
     }
     // Check whether property already exists in property overrides
     const auto it2 = property_overrides.find(name);
-    if (it2 == property_overrides.end())
-      return *static_cast<T *>(it2->second.ptr);
-    return *static_cast<T *>(it->second.data.ptr);
+    if (it2 != property_overrides.end()) {
+        // The property has been overridden, return the value from the override.
+        return *static_cast<T *>(it2->second.ptr);
+    } else {
+        // The property has not been overridden, so return the value from the environment
+        return *static_cast<T *>(it->second.data.ptr);
+    }
 }
 template<typename T, EnvironmentManager::size_type N>
 std::array<T, N> RunPlan::getProperty(const std::string &name) const {
@@ -336,9 +340,11 @@ std::array<T, N> RunPlan::getProperty(const std::string &name) const {
     // Check whether array already exists in property overrides
     const auto it2 = property_overrides.find(name);
     std::array<T, N> rtn;
-    if (it2 == property_overrides.end()) {
+    if (it2 != property_overrides.end()) {
+        // The property has been overridden, return the override
         memcpy(rtn.data(), it2->second.ptr, it2->second.length);
     } else {
+        // The property has not been overridden, return the environment property
         memcpy(rtn.data(), it->second.data.ptr, it->second.data.length);
     }
     return rtn;
@@ -363,9 +369,13 @@ T RunPlan::getProperty(const std::string &name, const EnvironmentManager::size_t
     }
     // Check whether property already exists in property overrides
     const auto it2 = property_overrides.find(name);
-    if (it2 == property_overrides.end())
-      return static_cast<T *>(it2->second.ptr)[index];
-    return static_cast<T *>(it->second.data.ptr)[index];
+    if (it2 != property_overrides.end()) {
+        // The property has been overridden, return the override
+        return static_cast<T *>(it2->second.ptr)[index];
+    } else {
+        // The property has not been overridden, return the environment property
+        return static_cast<T *>(it->second.data.ptr)[index];
+    }
 }
 #ifdef SWIG
 /**
@@ -391,9 +401,11 @@ std::vector<T> RunPlan::getPropertyArray(const std::string &name) {
     // Check whether array already exists in property overrides
     const auto it2 = property_overrides.find(name);
     std::vector<T> rtn(it->second.data.elements);
-    if (it2 == property_overrides.end()) {
+    if (it2 != property_overrides.end()) {
+        // The property has been overridden, return the override
         memcpy(rtn.data(), it2->second.ptr, it2->second.length);
     } else {
+        // The property has not been overridden, return the environment property
         memcpy(rtn.data(), it->second.data.ptr, it->second.data.length);
     }
     return rtn;
