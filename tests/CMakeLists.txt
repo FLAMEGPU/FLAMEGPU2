@@ -13,6 +13,7 @@ SET(TESTS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/exception/test_device_exception.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_simulation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_simulation_concurrency.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_ensemble.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_gpu_validation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_subagent.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_io.cu
@@ -31,6 +32,8 @@ SET(TESTS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/pop/test_agent_instance.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/pop/test_device_agent_vector.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_host_functions.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_RunPlan.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_RunPlanVector.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_environment.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_function_conditions.cu    
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_random.cu
@@ -78,9 +81,6 @@ SET(TESTS_SRC
 )
 # Source files for the tests_dev target 
 SET(TESTS_DEV_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_ensemble.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_RunPlan.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_RunPlanVector.cu
 )
 # Common source files for tests and test_dev
 SET(HELPERS_SRC

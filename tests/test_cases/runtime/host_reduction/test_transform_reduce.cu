@@ -43,7 +43,7 @@ FLAMEGPU_STEP_FUNCTION(step_transformReduceuint64_t) {
 
 TEST_F(HostReductionTest, CustomTransformReduceFloat) {
     ms->model.addStepFunction(step_transformReduceFloat);
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_real_distribution <float> dist(FLT_MIN, FLT_MAX);
     std::array<float, TEST_LEN> in;
     std::array<int, TEST_LEN> inTransform;
@@ -58,7 +58,7 @@ TEST_F(HostReductionTest, CustomTransformReduceFloat) {
 }
 TEST_F(HostReductionTest, CustomTransformReduceDouble) {
     ms->model.addStepFunction(step_transformReduceDouble);
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_real_distribution <double> dist(DBL_MIN, DBL_MAX);
     std::array<double, TEST_LEN> in;
     std::array<int, TEST_LEN> inTransform;
@@ -74,7 +74,7 @@ TEST_F(HostReductionTest, CustomTransformReduceDouble) {
 TEST_F(HostReductionTest, CustomTransformReduceChar) {
     ms->model.addStepFunction(step_transformReducechar);
     std::array<int, TEST_LEN> inTransform;
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_int_distribution <int16_t> dist(CHAR_MIN, CHAR_MAX);
     std::array<char, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
@@ -93,7 +93,7 @@ TEST_F(HostReductionTest, CustomTransformReduceChar) {
 TEST_F(HostReductionTest, CustomTransformReduceUnsignedChar) {
     ms->model.addStepFunction(step_transformReduceuchar);
     std::array<int, TEST_LEN> inTransform;
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_int_distribution <uint16_t> dist(0, UCHAR_MAX);
     std::array<unsigned char, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
@@ -108,7 +108,7 @@ TEST_F(HostReductionTest, CustomTransformReduceUnsignedChar) {
 TEST_F(HostReductionTest, CustomTransformReduceInt16) {
     ms->model.addStepFunction(step_transformReduceint16_t);
     std::array<int, TEST_LEN> inTransform;
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_int_distribution <int16_t> dist(INT16_MIN, INT16_MAX);
     std::array<int16_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
@@ -123,7 +123,7 @@ TEST_F(HostReductionTest, CustomTransformReduceInt16) {
 TEST_F(HostReductionTest, CustomTransformReduceUnsignedInt16) {
     ms->model.addStepFunction(step_transformReduceuint16_t);
     std::array<int, TEST_LEN> inTransform;
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_int_distribution <uint16_t> dist(0, UINT16_MAX);
     std::array<uint16_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
@@ -138,7 +138,7 @@ TEST_F(HostReductionTest, CustomTransformReduceUnsignedInt16) {
 TEST_F(HostReductionTest, CustomTransformReduceInt32) {
     ms->model.addStepFunction(step_transformReduceint32_t);
     std::array<int, TEST_LEN> inTransform;
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_int_distribution <int32_t> dist(INT32_MIN, INT32_MAX);
     std::array<int32_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
@@ -153,7 +153,7 @@ TEST_F(HostReductionTest, CustomTransformReduceInt32) {
 TEST_F(HostReductionTest, CustomTransformReduceUnsignedInt32) {
     ms->model.addStepFunction(step_transformReduceuint32_t);
     std::array<int, TEST_LEN> inTransform;
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_int_distribution <uint32_t> dist(0, UINT32_MAX);
     std::array<uint32_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
@@ -168,7 +168,7 @@ TEST_F(HostReductionTest, CustomTransformReduceUnsignedInt32) {
 TEST_F(HostReductionTest, CustomTransformReduceInt64) {
     ms->model.addStepFunction(step_transformReduceint64_t);
     std::array<int, TEST_LEN> inTransform;
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_int_distribution <int64_t> dist(INT64_MIN, INT64_MAX);
     std::array<int64_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
@@ -183,7 +183,7 @@ TEST_F(HostReductionTest, CustomTransformReduceInt64) {
 TEST_F(HostReductionTest, CustomTransformReduceUnsignedInt64) {
     ms->model.addStepFunction(step_transformReduceuint64_t);
     std::array<int, TEST_LEN> inTransform;
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_int_distribution <uint64_t> dist(0, UINT64_MAX);
     std::array<uint64_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {

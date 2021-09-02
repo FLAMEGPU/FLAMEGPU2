@@ -42,7 +42,7 @@ FLAMEGPU_STEP_FUNCTION(step_sumint64_t) {
 
 TEST_F(HostReductionTest, SumFloat) {
     ms->model.addStepFunction(step_sumfloat);
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_real_distribution <float> dist(FLT_MIN, FLT_MAX);
     std::array<float, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
@@ -55,7 +55,7 @@ TEST_F(HostReductionTest, SumFloat) {
 }
 TEST_F(HostReductionTest, SumDouble) {
     ms->model.addStepFunction(step_sumdouble);
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_real_distribution <double> dist(DBL_MIN, DBL_MAX);
     std::array<double, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
@@ -68,7 +68,7 @@ TEST_F(HostReductionTest, SumDouble) {
 }
 TEST_F(HostReductionTest, SumChar) {
     ms->model.addStepFunction(step_sumchar);
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_int_distribution <int16_t> dist(CHAR_MIN, CHAR_MAX);
     std::array<char, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
@@ -86,7 +86,7 @@ TEST_F(HostReductionTest, SumChar) {
 }
 TEST_F(HostReductionTest, SumUnsignedChar) {
     ms->model.addStepFunction(step_sumuchar);
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_int_distribution <uint16_t> dist(0, UCHAR_MAX);
     std::array<unsigned char, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
@@ -100,7 +100,7 @@ TEST_F(HostReductionTest, SumUnsignedChar) {
 }
 TEST_F(HostReductionTest, SumInt16) {
     ms->model.addStepFunction(step_sumint16_t);
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_int_distribution <int16_t> dist(INT16_MIN, INT16_MAX);
     std::array<int16_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
@@ -114,7 +114,7 @@ TEST_F(HostReductionTest, SumInt16) {
 }
 TEST_F(HostReductionTest, SumUnsignedInt16) {
     ms->model.addStepFunction(step_sumuint16_t);
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_int_distribution <uint16_t> dist(0, UINT16_MAX);
     std::array<uint16_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
@@ -128,7 +128,7 @@ TEST_F(HostReductionTest, SumUnsignedInt16) {
 }
 TEST_F(HostReductionTest, SumInt32) {
     ms->model.addStepFunction(step_sumint32_t);
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_int_distribution <int32_t> dist(INT32_MIN, INT32_MAX);
     std::array<int32_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
@@ -142,7 +142,7 @@ TEST_F(HostReductionTest, SumInt32) {
 }
 TEST_F(HostReductionTest, SumUnsignedInt32) {
     ms->model.addStepFunction(step_sumuint32_t);
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_int_distribution <uint32_t> dist(0, UINT32_MAX);
     std::array<uint32_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
@@ -156,7 +156,7 @@ TEST_F(HostReductionTest, SumUnsignedInt32) {
 }
 TEST_F(HostReductionTest, SumInt64) {
     ms->model.addStepFunction(step_sumint64_t);
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_int_distribution <int64_t> dist(INT64_MIN, INT64_MAX);
     std::array<int64_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
@@ -169,7 +169,7 @@ TEST_F(HostReductionTest, SumInt64) {
 }
 TEST_F(HostReductionTest, SumUnsignedInt64) {
     ms->model.addStepFunction(step_sumuint64_t);
-    std::mt19937 rd;  // Seed does not matter
+    std::mt19937_64 rd;  // Seed does not matter
     std::uniform_int_distribution <uint64_t> dist(0, UINT64_MAX);
     std::array<uint64_t, TEST_LEN> in;
     for (unsigned int i = 0; i < TEST_LEN; i++) {

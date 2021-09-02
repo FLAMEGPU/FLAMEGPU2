@@ -232,7 +232,7 @@ def io_test_fixture(IO_FILENAME):
     assert am.getSimulationConfig().timing == True
     assert am.getSimulationConfig().verbose == False
     assert am.getSimulationConfig().input_file == IO_FILENAME
-    assert am.getCUDAConfig().device_id == 0;
+    assert am.CUDAConfig().device_id == 0;
     pop_a_in = pyflamegpu.AgentVector(a)
     pop_b_in = pyflamegpu.AgentVector(b)
     am.getPopulationData(pop_a_in)

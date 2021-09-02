@@ -28,7 +28,7 @@ TEST(HostAgentSort, Ascending_float) {
     agent.newVariable<float>("float");
     agent.newVariable<int>("spare");
     model.newLayer().addHostFunction(sort_ascending_float);
-    std::mt19937 rd(31313131);  // Fixed seed (at Pete's request)
+    std::mt19937_64 rd(31313131);  // Fixed seed (at Pete's request)
     std::uniform_real_distribution <float> dist(1, 1000000);
 
     // Init pop
@@ -66,7 +66,7 @@ TEST(HostAgentSort, Descending_float) {
     agent.newVariable<float>("float");
     agent.newVariable<int>("spare");
     model.newLayer().addHostFunction(sort_descending_float);
-    std::mt19937 rd(888);  // Fixed seed (at Pete's request)
+    std::mt19937_64 rd(888);  // Fixed seed (at Pete's request)
     std::uniform_real_distribution <float> dist(1, 1000000);
 
     // Init pop
@@ -104,7 +104,7 @@ TEST(HostAgentSort, Ascending_int) {
     agent.newVariable<int>("int");
     agent.newVariable<int>("spare");
     model.newLayer().addHostFunction(sort_ascending_int);
-    std::mt19937 rd(77777);  // Fixed seed (at Pete's request)
+    std::mt19937_64 rd(77777);  // Fixed seed (at Pete's request)
     std::uniform_int_distribution <int> dist(0, 1000000);
 
     // Init pop
@@ -142,7 +142,7 @@ TEST(HostAgentSort, Descending_int) {
     agent.newVariable<int>("int");
     agent.newVariable<int>("spare");
     model.newLayer().addHostFunction(sort_descending_int);
-    std::mt19937 rd(12);  // Fixed seed (at Pete's request)
+    std::mt19937_64 rd(12);  // Fixed seed (at Pete's request)
     std::uniform_int_distribution <int> dist(1, 1000000);
 
     // Init pop
@@ -200,7 +200,7 @@ TEST(HostAgentSort, 2x_Ascending_float) {
     agent.newVariable<float>("float2");
     agent.newVariable<int>("spare");
     model.newLayer().addHostFunction(sort2x_ascending_float);
-    std::mt19937 rd(54323);  // Fixed seed (at Pete's request)
+    std::mt19937_64 rd(54323);  // Fixed seed (at Pete's request)
     std::uniform_int_distribution <int> dist1(0, 9);
     std::uniform_real_distribution <float> dist2(0, 999);
 
@@ -243,7 +243,7 @@ TEST(HostAgentSort, 2x_Descending_float) {
     agent.newVariable<float>("float2");
     agent.newVariable<int>("spare");
     model.newLayer().addHostFunction(sort2x_descending_float);
-    std::mt19937 rd(5422323);  // Fixed seed (at Pete's request)
+    std::mt19937_64 rd(5422323);  // Fixed seed (at Pete's request)
     std::uniform_int_distribution <int> dist1(0, 9);
     std::uniform_real_distribution <float> dist2(0, 999);
 
@@ -286,7 +286,7 @@ TEST(HostAgentSort, 2x_Ascending_int) {
     agent.newVariable<int>("int2");
     agent.newVariable<int>("spare");
     model.newLayer().addHostFunction(sort2x_ascending_int);
-    std::mt19937 rd(123123);  // Fixed seed (at Pete's request)
+    std::mt19937_64 rd(123123);  // Fixed seed (at Pete's request)
     std::uniform_int_distribution <int> dist1(0, 9);
     std::uniform_int_distribution <int> dist2(0, 999);
 
@@ -329,7 +329,7 @@ TEST(HostAgentSort, 2x_Descending_int) {
     agent.newVariable<int>("int2");
     agent.newVariable<int>("spare");
     model.newLayer().addHostFunction(sort2x_descending_int);
-    std::mt19937 rd(12333123);  // Fixed seed (at Pete's request)
+    std::mt19937_64 rd(12333123);  // Fixed seed (at Pete's request)
     std::uniform_int_distribution <int> dist1(0, 9);
     std::uniform_int_distribution <int> dist2(0, 999);
 
@@ -372,7 +372,7 @@ TEST(HostAgentSort, 2x_AscDesc_int) {
     agent.newVariable<int>("int2");
     agent.newVariable<int>("spare");
     model.newLayer().addHostFunction(sort2x_ascdesc_int);
-    std::mt19937 rd(123123);  // Fixed seed (at Pete's request)
+    std::mt19937_64 rd(123123);  // Fixed seed (at Pete's request)
     std::uniform_int_distribution <int> dist1(0, 9);
     std::uniform_int_distribution <int> dist2(0, 999);
 
@@ -415,7 +415,7 @@ TEST(HostAgentSort, 2x_DescAsc_int) {
     agent.newVariable<int>("int2");
     agent.newVariable<int>("spare");
     model.newLayer().addHostFunction(sort2x_descasc_int);
-    std::mt19937 rd(12333123);  // Fixed seed (at Pete's request)
+    std::mt19937_64 rd(12333123);  // Fixed seed (at Pete's request)
     std::uniform_int_distribution <int> dist1(0, 9);
     std::uniform_int_distribution <int> dist2(0, 999);
 
