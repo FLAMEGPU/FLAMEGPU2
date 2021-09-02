@@ -139,7 +139,7 @@ struct NewAgentStorage {
         }
         const auto t_type = std::type_index(typeid(T));
         if (var->second.type != std::type_index(typeid(T))) {
-            THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
+            THROW exception::InvalidVarType("Variable '%s' has type '%s', incorrect  type '%s' was requested, "
                 "in NewAgentStorage.setVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
