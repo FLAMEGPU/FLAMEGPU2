@@ -44,7 +44,7 @@ class RunPlan {
      * Set the random seed passed to this run of the simulation
      * @param random_seed Seed for random generation during execution
      */
-    void setRandomSimulationSeed(const unsigned int &random_seed);
+    void setRandomSimulationSeed(const uint64_t &random_seed);
     /**
      * Set the number of steps for this instance of the simulation
      * A steps value of 0 requires the ModelDescription to have atleast 1 exit condition
@@ -110,7 +110,7 @@ class RunPlan {
     /**
      * Returns the random seed used for this simulation run
      */
-    unsigned int getRandomSimulationSeed() const;
+    uint64_t getRandomSimulationSeed() const;
     /**
      * Returns the number of steps to be executed for this simulation run
      * 0 means unlimited, and is only available if the model description has an exit condition
@@ -173,7 +173,7 @@ class RunPlan {
 
  private:
     explicit RunPlan(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> &environment, const bool &allow_0);
-    unsigned int random_seed;
+    uint64_t random_seed;
     unsigned int steps;
     std::string output_subdirectory;
     std::unordered_map<std::string, util::Any> property_overrides;
@@ -246,7 +246,7 @@ void RunPlan::setProperty(const std::string &name, const EnvironmentManager::siz
             "in RunPlan::setProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
-    if (it->second.data.elements >= index) {
+    if (index >= it->second.data.elements) {
         throw std::out_of_range("Environment property array index out of bounds "
             "in RunPlan::setProperty()\n");
     }
@@ -266,22 +266,22 @@ void RunPlan::setPropertyArray(const std::string &name, const EnvironmentManager
     const auto it = environment->find(name);
     if (it == environment->end()) {
         THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
-            "in RunPlan::setProperty()\n",
+            "in RunPlan::setPropertyArray()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
         THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
-            "in RunPlan::setProperty()\n",
+            "in RunPlan::setPropertyArray()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != N) {
-        THROW exception::InvalidEnvProperty("Environment property array '%s' length mismatch %u != %u, "
-            "in RunPlan::setProperty()\n",
+        THROW exception::InvalidEnvPropertyType("Environment property array '%s' length mismatch %u != %u, "
+            "in RunPlan::setPropertyArray()\n",
             name.c_str(), it->second.data.elements, N);
     }
     if (value.size() != N) {
-        THROW exception::InvalidEnvProperty("Environment property array length does not match the value provided, %u != %llu,"
-            "in RunPlan::setProperty()\n",
+        THROW exception::InvalidEnvPropertyType("Environment property array length does not match the value provided, %u != %llu,"
+            "in RunPlan::setPropertyArray()\n",
             name.c_str(), value.size(), N);
     }
     // Store property
@@ -310,9 +310,13 @@ T RunPlan::getProperty(const std::string &name) const {
     }
     // Check whether property already exists in property overrides
     const auto it2 = property_overrides.find(name);
-    if (it2 == property_overrides.end())
-      return *static_cast<T *>(it2->second.ptr);
-    return *static_cast<T *>(it->second.data.ptr);
+    if (it2 != property_overrides.end()) {
+        // The property has been overridden, return the value from the override.
+        return *static_cast<T *>(it2->second.ptr);
+    } else {
+        // The property has not been overridden, so return the value from the environment
+        return *static_cast<T *>(it->second.data.ptr);
+    }
 }
 template<typename T, EnvironmentManager::size_type N>
 std::array<T, N> RunPlan::getProperty(const std::string &name) const {
@@ -336,9 +340,11 @@ std::array<T, N> RunPlan::getProperty(const std::string &name) const {
     // Check whether array already exists in property overrides
     const auto it2 = property_overrides.find(name);
     std::array<T, N> rtn;
-    if (it2 == property_overrides.end()) {
+    if (it2 != property_overrides.end()) {
+        // The property has been overridden, return the override
         memcpy(rtn.data(), it2->second.ptr, it2->second.length);
     } else {
+        // The property has not been overridden, return the environment property
         memcpy(rtn.data(), it->second.data.ptr, it->second.data.length);
     }
     return rtn;
@@ -357,15 +363,19 @@ T RunPlan::getProperty(const std::string &name, const EnvironmentManager::size_t
             "in RunPlan::getProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
-    if (it->second.data.elements >= index) {
+    if (index >= it->second.data.elements) {
         throw std::out_of_range("Environment property array index out of bounds "
             "in RunPlan::getProperty()\n");
     }
     // Check whether property already exists in property overrides
     const auto it2 = property_overrides.find(name);
-    if (it2 == property_overrides.end())
-      return static_cast<T *>(it2->second.ptr)[index];
-    return static_cast<T *>(it->second.data.ptr)[index];
+    if (it2 != property_overrides.end()) {
+        // The property has been overridden, return the override
+        return static_cast<T *>(it2->second.ptr)[index];
+    } else {
+        // The property has not been overridden, return the environment property
+        return static_cast<T *>(it->second.data.ptr)[index];
+    }
 }
 #ifdef SWIG
 /**
@@ -391,9 +401,11 @@ std::vector<T> RunPlan::getPropertyArray(const std::string &name) {
     // Check whether array already exists in property overrides
     const auto it2 = property_overrides.find(name);
     std::vector<T> rtn(it->second.data.elements);
-    if (it2 == property_overrides.end()) {
+    if (it2 != property_overrides.end()) {
+        // The property has been overridden, return the override
         memcpy(rtn.data(), it2->second.ptr, it2->second.length);
     } else {
+        // The property has not been overridden, return the environment property
         memcpy(rtn.data(), it->second.data.ptr, it->second.data.length);
     }
     return rtn;

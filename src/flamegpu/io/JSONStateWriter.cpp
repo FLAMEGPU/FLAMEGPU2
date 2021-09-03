@@ -51,7 +51,7 @@ void JSONStateWriter::doWrite(T &writer) {
                 writer.Bool(sim_cfg.timing);
                 // Random seed
                 writer.Key("random_seed");
-                writer.Uint(sim_cfg.random_seed);
+                writer.Uint64(sim_cfg.random_seed);
                 // Verbose output
                 writer.Key("verbose");
                 writer.Bool(sim_cfg.verbose);

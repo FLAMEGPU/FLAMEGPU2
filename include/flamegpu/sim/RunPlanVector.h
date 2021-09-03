@@ -37,7 +37,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @param step The value added to the previous seed to calculate the next seed
      * @note A step of 0, will give the exact same seed to all RunPlans
      */
-    void setRandomSimulationSeed(const unsigned int &initial_seed, const unsigned int &step = 0);
+    void setRandomSimulationSeed(const uint64_t &initial_seed, const unsigned int &step = 0);
     /**
      * Set the steps of each RunPlan currently within this vector
      * @param steps The number of steps to be executed
@@ -135,7 +135,13 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * This will only affect subsequent calls to setPropertyRandom()
      * @param seed The random seed to be used
      */
-    void setRandomPropertySeed(const unsigned int &seed);
+    void setRandomPropertySeed(const uint64_t &seed);
+    /**
+     * Get the seed used for the internal random generator used for random property distributions
+     * This will only valid for calls to setPropertyRandom() since the last call toSetRandomPropertySeed
+     * @return the seed used for random properties since the last call to setPropertyRandom
+     */
+    uint64_t getRandomPropertySeed();
     /**
      * Sweep named environment property over a uniform random distribution
      * Integer types have a range [min, max]
@@ -284,10 +290,14 @@ class RunPlanVector : private std::vector<RunPlan>  {
  private:
     RunPlanVector(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> &environment, const bool &allow_0_steps);
     /**
+     * Seed used for the current `rand` instance, which is only valid for elements generated since the last call to setRandomPropertySeed
+     */
+    uint64_t randomPropertySeed;
+    /**
      * Random distribution used by setPropertyRandom()
      * Initially set to a random seed with std::random_device (which is a platform specific source of random integers)
      */
-    std::mt19937 rand;
+    std::mt19937_64 rand;
     std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> environment;
     const bool allow_0_steps;
 };
@@ -306,7 +316,7 @@ void RunPlanVector::setProperty(const std::string &name, const T &value) {
             "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
-    if (it->second.data.elements == 1) {
+    if (it->second.data.elements != 1) {
         THROW exception::InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
             "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.elements);
@@ -331,7 +341,7 @@ void RunPlanVector::setProperty(const std::string &name, const std::array<T, N> 
     }
     if (it->second.data.elements != N) {
         THROW exception::InvalidEnvPropertyType("Environment property array '%s' length mismatch %u != %u "
-            "in RunPlan::setProperty()\n",
+            "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.elements, N);
     }
     for (auto &i : *this) {
@@ -352,9 +362,9 @@ void RunPlanVector::setProperty(const std::string &name, const EnvironmentManage
             "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
-    if (it->second.data.elements >= index) {
+    if (index > it->second.data.elements) {
         throw std::out_of_range("Environment property array index out of bounds "
-            "in RunPlan::setProperty()\n");
+            "in RunPlanVector::setProperty()\n");
     }
     for (auto &i : *this) {
         i.setProperty<T>(name, index, value);
@@ -367,22 +377,22 @@ void RunPlanVector::setPropertyArray(const std::string &name, const EnvironmentM
     const auto it = environment->find(name);
     if (it == environment->end()) {
         THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
-            "in RunPlanVector::setProperty()\n",
+            "in RunPlanVector::setPropertyArray()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
         THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
-            "in RunPlanVector::setProperty()\n",
+            "in RunPlanVector::setPropertyArray()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != N) {
         THROW exception::InvalidEnvPropertyType("Environment property array '%s' length mismatch %u != %u "
-            "in RunPlanVector::setProperty()\n",
+            "in RunPlanVector::setPropertyArray()\n",
             name.c_str(), it->second.data.elements, N);
     }
     if (value.size() != N) {
         THROW exception::InvalidEnvProperty("Environment property array length does not match the value provided, %u != %llu,"
-            "in RunPlanVector::setProperty()\n",
+            "in RunPlanVector::setPropertyArray()\n",
             name.c_str(), value.size(), N);
     }
     for (auto &i : *this) {
@@ -439,9 +449,9 @@ void RunPlanVector::setPropertyUniformDistribution(const std::string &name, cons
             "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
-    if (it->second.data.elements >= index) {
+    if (index > it->second.data.elements) {
         throw std::out_of_range("Environment property array index out of bounds "
-            "in RunPlan::setPropertyUniformDistribution()\n");
+            "in RunPlanVector::setPropertyUniformDistribution()\n");
     }
     unsigned int ct = 0;
     for (auto &i : *this) {
@@ -456,22 +466,22 @@ void RunPlanVector::setPropertyRandom(const std::string &name, rand_dist &distri
     // Validation
     if (this->size() < 2) {
         THROW std::out_of_range("Unable to apply a property distribution a vector with less than 2 elements, "
-            "in RunPlanVector::setPropertyUniformDistribution()\n");
+            "in RunPlanVector::setPropertyRandom()\n");
     }
     const auto it = environment->find(name);
     if (it == environment->end()) {
         THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
-            "in RunPlanVector::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyRandom()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
         THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
-            "in RunPlanVector::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyRandom()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != 1) {
         THROW exception::InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
-            "in RunPlanVector::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyRandom()\n",
             name.c_str(), it->second.data.elements);
     }
     for (auto &i : *this) {
@@ -483,22 +493,22 @@ void RunPlanVector::setPropertyRandom(const std::string &name, const Environment
     // Validation
     if (this->size() < 2) {
         THROW std::out_of_range("Unable to apply a property distribution a vector with less than 2 elements, "
-            "in RunPlanVector::setPropertyUniformDistribution()\n");
+            "in RunPlanVector::setPropertyRandom()\n");
     }
     const auto it = environment->find(name);
     if (it == environment->end()) {
         THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
-            "in RunPlanVector::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyRandom()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
         THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
-            "in RunPlanVector::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyRandom()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
-    if (it->second.data.elements >= index) {
+    if (index > it->second.data.elements) {
         throw std::out_of_range("Environment property array index out of bounds "
-            "in RunPlan::setPropertyUniformDistribution()\n");
+            "in RunPlanVector::setPropertyRandom()\n");
     }
     for (auto &i : *this) {
         i.setProperty<T>(name, index, static_cast<T>(distribution(this->rand)));

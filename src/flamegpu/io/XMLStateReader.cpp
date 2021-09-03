@@ -129,7 +129,7 @@ int XMLStateReader::parse() {
                         sim_instance->SimulationConfig().timing = static_cast<bool>(stoll(val));
                     }
                 } else if (key == "random_seed") {
-                    sim_instance->SimulationConfig().random_seed = static_cast<unsigned int>(stoull(val));
+                    sim_instance->SimulationConfig().random_seed = static_cast<uint64_t>(stoull(val));
                 } else if (key == "verbose") {
                     for (auto& c : val)
                         c = static_cast<char>(::tolower(c));

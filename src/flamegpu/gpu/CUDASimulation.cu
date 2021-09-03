@@ -1240,7 +1240,7 @@ void CUDASimulation::applyConfig_derived() {
     reseed(getSimulationConfig().random_seed);
 }
 
-void CUDASimulation::reseed(const unsigned int &seed) {
+void CUDASimulation::reseed(const uint64_t &seed) {
     SimulationConfig().random_seed = seed;
     singletons->rng.reseed(seed);
 
@@ -1636,12 +1636,12 @@ void CUDASimulation::processExitLog() {
         return;
     // Iterate members of step log to build the step log frame
     std::map<std::string, util::Any> environment_log;
-    for (const auto &prop_name : step_log_config->environment) {
+    for (const auto &prop_name : exit_log_config->environment) {
         // Fetch the named environment prop
         environment_log.emplace(prop_name, singletons->environment.getPropertyAny(instance_id, prop_name));
     }
     std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>> agents_log;
-    for (const auto &name_state : step_log_config->agents) {
+    for (const auto &name_state : exit_log_config->agents) {
         // Create the named sub map
         const std::string &agent_name = name_state.first.first;
         const std::string &agent_state = name_state.first.second;

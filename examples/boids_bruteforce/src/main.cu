@@ -390,7 +390,7 @@ int main(int argc, const char ** argv) {
     if (cudaSimulation.getSimulationConfig().input_file.empty()) {
         flamegpu::EnvironmentDescription &env = model.Environment();
         // Uniformly distribute agents within space, with uniformly distributed initial velocity.
-        std::mt19937 rngEngine(cudaSimulation.getSimulationConfig().random_seed);
+        std::mt19937_64 rngEngine(cudaSimulation.getSimulationConfig().random_seed);
         std::uniform_real_distribution<float> position_distribution(env.getProperty<float>("MIN_POSITION"), env.getProperty<float>("MAX_POSITION"));
         std::uniform_real_distribution<float> velocity_distribution(-1, 1);
         std::uniform_real_distribution<float> velocity_magnitude_distribution(env.getProperty<float>("MIN_INITIAL_SPEED"), env.getProperty<float>("MAX_INITIAL_SPEED"));

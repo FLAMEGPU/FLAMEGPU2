@@ -152,7 +152,7 @@ void JSONLogger::logConfig(T &writer, const RunLog &log) const {
     writer.StartObject();
     {
         writer.Key("random_seed");
-        writer.Uint(log.getRandomSeed());
+        writer.Uint64(log.getRandomSeed());
     }
     writer.EndObject();
 }
@@ -163,7 +163,7 @@ void JSONLogger::logConfig(T &writer, const RunPlan &plan) const {
     {
         // Add static items
         writer.Key("random_seed");
-        writer.Uint(plan.getRandomSimulationSeed());
+        writer.Uint64(plan.getRandomSimulationSeed());
         writer.Key("steps");
         writer.Uint(plan.getSteps());
         // Add dynamic environment overrides

@@ -64,7 +64,8 @@ jobs:
       ARTIFACT_NAME: wheel-windows-${{ matrix.cudacxx.cuda }}-${{matrix.python}}-${{ matrix.VISUALISATION }}-${{ matrix.config.name }}-${{ matrix.cudacxx.os }}
       # Define constants
       BUILD_DIR: "build"
-      BUILD_TESTS: "OFF"
+      # Tests are off for regular builds, but if initiated by a workflow dispatch then they are enabled. Horribly json terriarry to achieve
+      BUILD_TESTS: ${{ fromJSON('{true:"ON",false:"OFF"}')[github.event_name == 'workflow_dispatch' && matrix.VISUALISATION == 'OFF'] }}
       # Conditional based on matrix via awkward almost ternary
       BUILD_SWIG_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
       # Port matrix options to environment, for more portability.

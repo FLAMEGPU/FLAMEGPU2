@@ -298,7 +298,7 @@ class CUDASimulation : public Simulation {
      * Reinitalises random generation for this model and all submodels
      * @param seed New random seed (this updates stored seed in config)
      */
-    void reseed(const unsigned int &seed);
+    void reseed(const uint64_t &seed);
     /**
      * Number of times step() has been called since sim was last reset/init
      */

@@ -107,7 +107,7 @@ struct RunLog {
     /**
      * Returns the random seed used for this run
      */
-    unsigned int getRandomSeed() const { return random_seed; }
+    uint64_t getRandomSeed() const { return random_seed; }
     /**
      * Returns the frequency that steps were logged
      * @note This value is configured via StepLoggingConfig::setFrequency()
@@ -126,7 +126,7 @@ struct RunLog {
     /**
      * Random seed
      */
-    unsigned int random_seed = 0;
+    uint64_t random_seed = 0;
     /**
      * Step log frequency
      */

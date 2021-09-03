@@ -171,10 +171,12 @@ void CUDAEnsemble::initialise(int argc, const char** argv) {
     if (!checkArgs(argc, argv)) {
         exit(EXIT_FAILURE);
     }
+    /* Disabled as this is printed prior to quiet being accessible 
     // If verbsoe, output the flamegpu version.
     if (!config.quiet) {
         fprintf(stdout, "FLAME GPU %s\n", flamegpu::VERSION_FULL);
     }
+    */
 }
 int CUDAEnsemble::checkArgs(int argc, const char** argv) {
     // Parse optional args

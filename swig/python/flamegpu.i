@@ -61,7 +61,7 @@ using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, 
 %include "exception.i"
 
 // Enable the use of argc/argv
-%apply (int ARGC, char **ARGV) { (int argc, const char **) }   
+%apply (int ARGC, char **ARGV) { (int argc, const char **) }
 
 
 // Macros and Templates replated to types.
@@ -353,6 +353,15 @@ class FLAMEGPURuntimeException : public std::exception {
 
 %ignore flamegpu::HostRandom::uniform;
 
+// RunPlanVector::SetPropertyRandom takes a c++ std::distribution as an argument, so not appropriate for wrapping.
+%ignore flamegpu::RunPlanVector::setPropertyRandom;
+
+// Ignore const'd accessors for configuration structs, which were mutable in python.
+%ignore flamegpu::CUDASimulation::getCUDAConfig;
+%ignore flamegpu::CUDAEnsemble::getConfig;
+// %ignore flamegpu::Simulation::getConfig; // This doesn't currently exist
+
+// Ignore the detail namespace, as it's not intended to be user-facing
 %ignore flamegpu::detail;
 
 // Do not provide the FLAMEGPU_VERSION macro, instead just the pyflamegpu.VERSION* variants.
@@ -675,9 +684,9 @@ TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyArray, flamegpu::RunPlan::getPropert
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, flamegpu::RunPlanVector::setProperty)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, flamegpu::RunPlanVector::setPropertyArray)
 TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformDistribution, flamegpu::RunPlanVector::setPropertyUniformDistribution)
-TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformRandomDistribution, flamegpu::RunPlanVector::setPropertyUniformRandom)
-TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyNormalRandomDistribution, flamegpu::RunPlanVector::setPropertyNormalRandom)
-TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyLogNormalRandomDistribution, flamegpu::RunPlanVector::setPropertyLogNormalRandom)
+TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformRandom, flamegpu::RunPlanVector::setPropertyUniformRandom)
+TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyNormalRandom, flamegpu::RunPlanVector::setPropertyNormalRandom)
+TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyLogNormalRandom, flamegpu::RunPlanVector::setPropertyLogNormalRandom)
 
 // Instantiate template versions of AgentLoggingConfig functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(logMean, flamegpu::AgentLoggingConfig::logMean)

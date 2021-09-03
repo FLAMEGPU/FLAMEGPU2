@@ -391,6 +391,37 @@ TEST(TestCUDASimulation, AgentDeath) {
     }
 }
 
+// Test setting the seed with different values/types.
+TEST(TestCUDASimulation, randomseedTypes) {
+    // Define a simple model - doesn't need to do anything other than take some time.
+    ModelDescription model(MODEL_NAME);
+    AgentDescription &a = model.newAgent(AGENT_NAME);
+    AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
+
+    CUDASimulation simulation(model);
+
+    simulation.SimulationConfig().random_seed = 0;
+    EXPECT_EQ(simulation.SimulationConfig().random_seed, 0);
+
+    int32_t int32_v = INT32_MAX;
+    simulation.SimulationConfig().random_seed = int32_v;
+    EXPECT_EQ(simulation.SimulationConfig().random_seed, static_cast<uint64_t>(int32_v));
+
+    uint32_t uint32_v = UINT32_MAX;
+    simulation.SimulationConfig().random_seed = uint32_v;
+    EXPECT_EQ(simulation.SimulationConfig().random_seed, static_cast<uint64_t>(uint32_v));
+
+    int64_t int64_v = INT64_MAX;
+    simulation.SimulationConfig().random_seed = int64_v;
+    EXPECT_EQ(simulation.SimulationConfig().random_seed, static_cast<uint64_t>(int64_v));
+
+    uint64_t uint64_v = UINT64_MAX;
+    simulation.SimulationConfig().random_seed = uint64_v;
+    EXPECT_EQ(simulation.SimulationConfig().random_seed, static_cast<uint64_t>(uint64_v));
+
+    // No need to check for larger values in cudac++
+}
+
 // test the programatically accessible simulation time elapsed.
 TEST(TestCUDASimulation, simulationElapsedTime) {
     // Define a simple model - doesn't need to do anything other than take some time.

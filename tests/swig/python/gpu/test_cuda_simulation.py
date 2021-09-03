@@ -27,6 +27,13 @@ class IncrementCounter(pyflamegpu.HostFunctionCallback):
 
 
 class TestSimulation(TestCase):
+    # Ensure that getCUDAConfig() is disabled, as it would be mutable
+    def test_ignored_getCUDAConfig(self):
+        m = pyflamegpu.ModelDescription("test_ignored_getCUDAConfig")
+        c = pyflamegpu.CUDASimulation(m)
+        with pytest.raises(AttributeError):
+            c.getCUDAConfig()
+
     def test_argparse_inputfile_long(self):
         m = pyflamegpu.ModelDescription("test_argparse_inputfile_long")
         c = pyflamegpu.CUDASimulation(m)
@@ -107,33 +114,33 @@ class TestSimulation(TestCase):
         m = pyflamegpu.ModelDescription("test_argparse_device_long")
         c = pyflamegpu.CUDASimulation(m)
         argv = [ "prog.exe", "--device", "1200" ]
-        assert c.getCUDAConfig().device_id == 0
+        assert c.CUDAConfig().device_id == 0
         # Setting an invalid device ID is the only safe way to do this without making internal methods accessible
         # As can set to a valid device, we haven't build code for
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidCUDAdevice exception
             c.initialise(argv)
         assert e.value.type() == "InvalidCUDAdevice"
-        assert c.getCUDAConfig().device_id == 1200
+        assert c.CUDAConfig().device_id == 1200
         # Blank init resets value to default
         argv = []
         c.initialise(argv)
-        assert c.getCUDAConfig().device_id == 0
+        assert c.CUDAConfig().device_id == 0
         
     def test_argparse_device_short(self):
         m = pyflamegpu.ModelDescription("test_argparse_device_short")
         c = pyflamegpu.CUDASimulation(m)
         argv = [ "prog.exe", "-d", "1200" ]
-        assert c.getCUDAConfig().device_id == 0
+        assert c.CUDAConfig().device_id == 0
         # Setting an invalid device ID is the only safe way to do this without making internal methods accessible
         # As can set to a valid device, we haven't build code for
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidCUDAdevice exception 
             c.initialise(argv)
         assert e.value.type() == "InvalidCUDAdevice"
-        assert c.getCUDAConfig().device_id == 1200
+        assert c.CUDAConfig().device_id == 1200
         # Blank init resets value to default
         argv = []
         c.initialise(argv)
-        assert c.getCUDAConfig().device_id == 0
+        assert c.CUDAConfig().device_id == 0
 
 
     SetGetFn = """
@@ -287,12 +294,57 @@ class TestSimulation(TestCase):
         c = pyflamegpu.CUDASimulation(m)
         argv = []
         # Check it's enabled by deafault
-        assert c.getCUDAConfig().inLayerConcurrency == True
+        assert c.CUDAConfig().inLayerConcurrency == True
         c.initialise(argv)
         # disable concurrency
         c.CUDAConfig().inLayerConcurrency = False
         # Assert that it is disabled.
-        assert c.getCUDAConfig().inLayerConcurrency == False
+        assert c.CUDAConfig().inLayerConcurrency == False
+
+    def test_config_randomseed_types(self):
+        m = pyflamegpu.ModelDescription("test_config_inLayerConcurrency")
+        c = pyflamegpu.CUDASimulation(m)
+        argv = []
+        c.initialise(argv)
+
+        # Set to 0, and check the returned value matches.
+        c.SimulationConfig().random_seed = 0
+        assert c.SimulationConfig().random_seed == 0
+
+        # Check that it can be set to the maximum int32_t value
+        int32_max = 2 ** 31 - 1 
+        c.SimulationConfig().random_seed = int32_max
+        assert c.SimulationConfig().random_seed == int32_max
+
+        # Check that it can be set to the maximum uint32_t value
+        uint32_max = 2 ** 32 - 1
+        c.SimulationConfig().random_seed = uint32_max
+        assert c.SimulationConfig().random_seed == uint32_max
+
+        # Check that it can be set to the maximum int32_t value
+        int64_max = 2 ** 63 - 1 
+        c.SimulationConfig().random_seed = int64_max
+        assert c.SimulationConfig().random_seed == int64_max
+
+        # # Check that it can be set to the maximum uint64_t value
+        uint64_max = 2 ** 64 - 1
+        c.SimulationConfig().random_seed = uint64_max
+        assert c.SimulationConfig().random_seed == uint64_max
+
+        # Check that it **cannot** be set to anyhing larger.
+        uint64_max_plus_one = 2 ** 64
+        # Expect this to throw an 
+        with pytest.raises(OverflowError) as e:
+            c.SimulationConfig().random_seed = uint64_max_plus_one
+            assert c.SimulationConfig().random_seed == uint64_max_plus_one
+
+        # @todo - not sure what tests to do for negative signed values, as -1 doesn't cast to an unsigned int32
+        # Expect this to throw an 
+        with pytest.raises(OverflowError) as e:
+            c.SimulationConfig().random_seed = -1
+            assert c.SimulationConfig().random_seed == -1
+
+
 
     CopyID = """
         FLAMEGPU_AGENT_FUNCTION(CopyID, flamegpu::MessageNone, flamegpu::MessageNone) {
