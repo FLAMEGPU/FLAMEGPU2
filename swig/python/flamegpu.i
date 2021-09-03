@@ -353,6 +353,9 @@ class FLAMEGPURuntimeException : public std::exception {
 
 %ignore flamegpu::HostRandom::uniform;
 
+// RunPlanVector::SetPropertyRandom takes a c++ std::distribution as an argument, so not appropriate for wrapping.
+%ignore flamegpu::RunPlanVector::setPropertyRandom;
+
 // Ignore const'd accessors for configuration structs, which were mutable in python.
 %ignore flamegpu::CUDASimulation::getCUDAConfig;
 %ignore flamegpu::CUDAEnsemble::getConfig;
