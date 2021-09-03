@@ -5,8 +5,8 @@ title: "FLAME GPU"
 license: MIT
 repository-code: "https://github.com/FLAMEGPU/FLAMEGPU2"
 url: "https://flamegpu.com"
-version: "2.0.0-alpha"
-date-released: 2021-08-10
+version: "2.0.0-alpha.1"
+date-released: 2021-09-03
 type: software
 authors: 
   - given-names: Paul
