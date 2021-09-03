@@ -27,20 +27,24 @@ function(CheckCompilerFunctionality)
     # This was patched in subsequent versions, and backported in the release branches, but the broken version is still distributed in some cases (i.e. Ubuntu 20.04, but not 21.04).
     # See https://github.com/FLAMEGPU/FLAMEGPU2/issues/575,  https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100102 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        # CUDA must be available.
-        enable_language(CUDA)
         # Try to compile the test case file for inclusion of chrono.
-        try_compile(
-            GCC_CUDA_STDCHRONO
-            "${CMAKE_CURRENT_BINARY_DIR}/try_compile"
-            "${CMAKE_CURRENT_LIST_DIR}/CheckCompilerFunctionality/CheckStdChrono.cu"
-            CXX_STANDARD 14
-            CUDA_STANDARD 14
-            CXX_STANDARD_REQUIRED "ON"
-            CMAKE_FLAGS 
-                -DCMAKE_CUDA_ARCHITECTURES="OFF"    
-        )
-        # If an error occured while building the simple 
+        if(NOT DEFINED GCC_CUDA_STDCHRONO)
+            # CUDA must be available.
+            enable_language(CUDA)
+            # Disable CMAKE_CUDA_ARCHTIECTURES if not already controlled. This is scoped to the function so safe to control.
+            if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES OR "${CMAKE_CUDA_ARCHITECTURES}" STREQUAL "")
+                set(CMAKE_CUDA_ARCHITECTURES "OFF")
+            endif()
+            try_compile(
+                GCC_CUDA_STDCHRONO
+                "${CMAKE_CURRENT_BINARY_DIR}/try_compile"
+                "${CMAKE_CURRENT_LIST_DIR}/CheckCompilerFunctionality/CheckStdChrono.cu"
+                CXX_STANDARD 14
+                CUDA_STANDARD 14
+                CXX_STANDARD_REQUIRED "ON"
+            )
+        endif()
+        # If an error occured while building the <chrono> snippet, report a warning
         if(NOT GCC_CUDA_STDCHRONO)
             # If the GCC versions is known to be bad, give an appropriate error
             if(CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 10.3.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 11.1.0)
