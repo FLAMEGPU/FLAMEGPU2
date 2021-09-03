@@ -440,7 +440,7 @@ jobs:
           - "OFF"
 
     # Name the job based on matrix/env options
-    name: "windows-wheel (${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
+    name: "wheel-windows (${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
     
 
     # Define job-wide env constants, and promote matrix elements to env constants for portable steps.
