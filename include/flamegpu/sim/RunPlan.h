@@ -275,12 +275,12 @@ void RunPlan::setPropertyArray(const std::string &name, const EnvironmentManager
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != N) {
-        THROW exception::InvalidEnvProperty("Environment property array '%s' length mismatch %u != %u, "
+        THROW exception::InvalidEnvPropertyType("Environment property array '%s' length mismatch %u != %u, "
             "in RunPlan::setPropertyArray()\n",
             name.c_str(), it->second.data.elements, N);
     }
     if (value.size() != N) {
-        THROW exception::InvalidEnvProperty("Environment property array length does not match the value provided, %u != %llu,"
+        THROW exception::InvalidEnvPropertyType("Environment property array length does not match the value provided, %u != %llu,"
             "in RunPlan::setPropertyArray()\n",
             name.c_str(), value.size(), N);
     }
