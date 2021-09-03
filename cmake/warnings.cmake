@@ -55,8 +55,9 @@ function(SetHighWarningLevel)
         # CUB 1.9.10 prevents Wreorder being usable on windows, so linux only. Cannot suppress via diag_suppress pragmas.
         target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--Wreorder>")
         # Add warnings which suggest the use of override
-        target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wsuggest-override>")
-        target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wsuggest-override>")
+        # Disabled, as cpplint occasionally disagrees with gcc concerning override
+        # target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wsuggest-override>")
+        # target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wsuggest-override>")
     endif()
     # Generic options regardless of platform/host compiler:
     # Ensure NVCC outputs warning numbers
