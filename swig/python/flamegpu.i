@@ -61,7 +61,7 @@ using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, 
 %include "exception.i"
 
 // Enable the use of argc/argv
-%apply (int ARGC, char **ARGV) { (int argc, const char **) }   
+%apply (int ARGC, char **ARGV) { (int argc, const char **) }
 
 
 // Macros and Templates replated to types.
@@ -684,9 +684,9 @@ TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyArray, flamegpu::RunPlan::getPropert
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, flamegpu::RunPlanVector::setProperty)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, flamegpu::RunPlanVector::setPropertyArray)
 TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformDistribution, flamegpu::RunPlanVector::setPropertyUniformDistribution)
-TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformRandomDistribution, flamegpu::RunPlanVector::setPropertyUniformRandom)
-TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyNormalRandomDistribution, flamegpu::RunPlanVector::setPropertyNormalRandom)
-TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyLogNormalRandomDistribution, flamegpu::RunPlanVector::setPropertyLogNormalRandom)
+TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformRandom, flamegpu::RunPlanVector::setPropertyUniformRandom)
+TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyNormalRandom, flamegpu::RunPlanVector::setPropertyNormalRandom)
+TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyLogNormalRandom, flamegpu::RunPlanVector::setPropertyLogNormalRandom)
 
 // Instantiate template versions of AgentLoggingConfig functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE(logMean, flamegpu::AgentLoggingConfig::logMean)
