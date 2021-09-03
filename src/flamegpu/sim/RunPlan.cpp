@@ -10,7 +10,7 @@ RunPlan::RunPlan(const ModelDescription &model)
       model.model->exitConditions.size() + model.model->exitConditionCallbacks.size() > 0) { }
 RunPlan::RunPlan(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>>  &environment, const bool &allow_0)
     : random_seed(0)
-    , steps(0)
+    , steps(1)
     , environment(environment)
     , allow_0_steps(allow_0) { }
 
