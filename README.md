@@ -3,7 +3,13 @@
 [![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/LICENSE.MD)
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/FLAMEGPU/FLAMEGPU2?include_prereleases)](https://github.com/FLAMEGPU/FLAMEGPU2/releases/latest)
 [![GitHub issues](https://img.shields.io/github/issues/FLAMEGPU/FLAMEGPU2)](https://github.com/FLAMEGPU/FLAMEGPU2/issues)
-[![Ubuntu](https://github.com/FLAMEGPU/FLAMEGPU2/workflows/Ubuntu/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2/actions?query=workflow%3AUbuntu+branch%3Amaster) [![Windows](https://github.com/FLAMEGPU/FLAMEGPU2/workflows/Windows/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2/actions?query=workflow%3AWindows+branch%3Amaster) [![Lint](https://github.com/FLAMEGPU/FLAMEGPU2/workflows/Lint/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2/actions?query=workflow%3ALint+branch%3Amaster) [![Docs](https://github.com/FLAMEGPU/FLAMEGPU2/workflows/Docs/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2/actions?query=workflow%3ADocs+branch%3Amaster)
+[![DOI](https://zenodo.org/badge/34064755.svg)](https://zenodo.org/badge/latestdoi/34064755)
+[![Website](https://img.shields.io/badge/Website-flamegpu.com-d16525)](https://flamegpu.com)
+[![Userguide](https://img.shields.io/badge/Userguide-docs.flamegpu.com-fed43b)](https://docs.flamegpu.com)
+[![Ubuntu](https://github.com/FLAMEGPU/FLAMEGPU2/workflows/Ubuntu/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2/actions?query=workflow%3AUbuntu+branch%3Amaster)
+[![Windows](https://github.com/FLAMEGPU/FLAMEGPU2/workflows/Windows/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2/actions?query=workflow%3AWindows+branch%3Amaster)
+[![Lint](https://github.com/FLAMEGPU/FLAMEGPU2/workflows/Lint/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2/actions?query=workflow%3ALint+branch%3Amaster)
+[![Docs](https://github.com/FLAMEGPU/FLAMEGPU2/workflows/Docs/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2/actions?query=workflow%3ADocs+branch%3Amaster)
 
 FLAME GPU is a GPU accelerated agent-based simulation library for domain independent complex systems simulations.
 Version 2 is a complete re-write of the existing library offering greater flexibility, an improved interface for agent scripting and better research software engineering, with CUDA/C++ and Python interfaces.
@@ -281,7 +287,10 @@ See [CONTRIBUTING.md](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/CONTRIBU
 
 See [Contributors](https://github.com/FLAMEGPU/FLAMEGPU2/graphs/contributors) for a list of contributors towards this project.
 
-<!-- todo - add how to cite this here? and/or add the citation file. -->
+If you use this software in your work, please cite DOI [10.5281/zenodo.5428984](https://doi.org/10.5281/zenodo.5428984). Release specific DOI are also provided via Zenodo.
+
+Alternatively, [CITATION.cff](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/CITATION.cff) provides citation metadata, which can also be accessed from [GitHub](https://github.com/FLAMEGPU/FLAMEGPU2).
+
 
 ## License
 

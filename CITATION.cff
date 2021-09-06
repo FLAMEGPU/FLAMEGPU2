@@ -33,3 +33,7 @@ authors:
     alias: mozhgan-kch 
     orcid: "https://orcid.org/0000-0002-2561-7926"
 message: "If you use this software, please cite it using these metadata."
+identifiers:
+  - description: The collection of archived snapshots of all versions of FLAME GPU 2
+    type: doi
+    value: "10.5281/zenodo.5428984"
