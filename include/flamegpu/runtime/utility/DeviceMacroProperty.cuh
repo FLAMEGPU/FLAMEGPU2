@@ -436,7 +436,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::exchange(T val)
     this->setCheckWriteFlag();
 #endif
     if (sizeof(T) == sizeof(uint64_t)) {  // Convert all 64 bit types to unsigned long long int (can't build as uint64_t on gcc)
-        const unsigned long long int rval = atomicExch(reinterpret_cast<unsigned long long int*>(ptr), *reinterpret_cast<unsigned long long int*>(&val));  // NOLINT(runtime/int)
+        const unsigned long long int rval = atomicExch(reinterpret_cast<unsigned long long int*>(this->ptr), *reinterpret_cast<unsigned long long int*>(&val));  // NOLINT(runtime/int)
         return *reinterpret_cast<const T*>(&rval);
     }
     // else 32-bit
