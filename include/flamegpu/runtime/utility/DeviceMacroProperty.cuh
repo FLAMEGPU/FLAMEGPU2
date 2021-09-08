@@ -243,12 +243,12 @@ __device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, I, J, K, W>::operator 
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
-    } else if (ptr == nullptr) {
+    } else if (this->ptr == nullptr) {
         return { };
     }
-    setCheckReadFlag();
+    this->setCheckReadFlag();
 #endif
-    return *ptr;
+    return *this->ptr;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& DeviceMacroProperty<T, I, J, K, W>::operator+=(const T& val) {
@@ -260,12 +260,12 @@ __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& DeviceMacroProper
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
-    } else if (ptr == nullptr) {
+    } else if (this->ptr == nullptr) {
         return *this;
     }
-    setCheckWriteFlag();
+    this->setCheckWriteFlag();
 #endif
-    atomicAdd(ptr, val);
+    atomicAdd(this->ptr, val);
     return *this;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
@@ -274,12 +274,12 @@ __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& DeviceMacroProper
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
-    } else if (ptr == nullptr) {
+    } else if (this->ptr == nullptr) {
         return *this;
     }
-    setCheckWriteFlag();
+    this->setCheckWriteFlag();
 #endif
-    atomicSub(ptr, val);
+    atomicSub(this->ptr, val);
     return *this;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
@@ -292,12 +292,12 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator+(const
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
-    } else if (ptr == nullptr) {
+    } else if (this->ptr == nullptr) {
         return { };
     }
-    setCheckWriteFlag();
+    this->setCheckWriteFlag();
 #endif
-    return atomicAdd(ptr, val) + val;
+    return atomicAdd(this->ptr, val) + val;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator-(const T& val) const {
@@ -305,12 +305,12 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator-(const
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
-    } else if (ptr == nullptr) {
+    } else if (this->ptr == nullptr) {
         return { };
     }
-    setCheckWriteFlag();
+    this->setCheckWriteFlag();
 #endif
-    return atomicSub(ptr, val) - val;
+    return atomicSub(this->ptr, val) - val;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator++() {
@@ -318,12 +318,12 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator++() {
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
-    } else if (ptr == nullptr) {
+    } else if (this->ptr == nullptr) {
         return *this;
     }
-    setCheckWriteFlag();
+    this->setCheckWriteFlag();
 #endif
-    const T old = atomicInc(ptr, std::numeric_limits<T>::max());
+    const T old = atomicInc(this->ptr, std::numeric_limits<T>::max());
     return ((old >= std::numeric_limits<T>::max()) ? 0 : (old + 1));
 }
 
@@ -333,12 +333,12 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator--() {
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
-    } else if (ptr == nullptr) {
+    } else if (this->ptr == nullptr) {
         return *this;
     }
-    setCheckWriteFlag();
+    this->setCheckWriteFlag();
 #endif
-    const T old = atomicDec(ptr, std::numeric_limits<T>::max());
+    const T old = atomicDec(this->ptr, std::numeric_limits<T>::max());
     return  (((old == 0) || (old > std::numeric_limits<T>::max())) ? std::numeric_limits<T>::max() : (old - 1));
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
@@ -347,12 +347,12 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator++(int)
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
-    } else if (ptr == nullptr) {
+    } else if (this->ptr == nullptr) {
         return { };
     }
-    setCheckWriteFlag();
+    this->setCheckWriteFlag();
 #endif
-    return atomicInc(ptr, std::numeric_limits<T>::max());
+    return atomicInc(this->ptr, std::numeric_limits<T>::max());
 }
 
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
@@ -361,12 +361,12 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator--(int)
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
-    } else if (ptr == nullptr) {
+    } else if (this->ptr == nullptr) {
         return { };
     }
-    setCheckWriteFlag();
+    this->setCheckWriteFlag();
 #endif
-    return atomicDec(ptr, std::numeric_limits<T>::max());
+    return atomicDec(this->ptr, std::numeric_limits<T>::max());
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::min(T val) {
@@ -376,12 +376,12 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::min(T val) {
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
-    } else if (ptr == nullptr) {
+    } else if (this->ptr == nullptr) {
         return { };
     }
-    setCheckWriteFlag();
+    this->setCheckWriteFlag();
 #endif
-    return std::min(atomicMin(ptr, val), val);
+    return std::min(atomicMin(this->ptr, val), val);
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::max(T val) {
@@ -391,12 +391,12 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::max(T val) {
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
-    } else if (ptr == nullptr) {
+    } else if (this->ptr == nullptr) {
         return { };
     }
-    setCheckWriteFlag();
+    this->setCheckWriteFlag();
 #endif
-    return std::max(atomicMax(ptr, val), val);
+    return std::max(atomicMax(this->ptr, val), val);
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::CAS(T compare, T val) {
@@ -407,12 +407,12 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::CAS(T compare, 
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
-    } else if (ptr == nullptr) {
+    } else if (this->ptr == nullptr) {
         return { };
     }
-    setCheckWriteFlag();
+    this->setCheckWriteFlag();
 #endif
-    return atomicCAS(ptr, compare, val);
+    return atomicCAS(this->ptr, compare, val);
 }
 
 // GCC doesn't like seeing atomicExch with host compiler
@@ -430,19 +430,19 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::exchange(T val)
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
-    } else if (ptr == nullptr) {
+    } else if (this->ptr == nullptr) {
         return { };
     }
-    setCheckWriteFlag();
+    this->setCheckWriteFlag();
 #endif
     if (sizeof(T) == sizeof(uint64_t)) {  // Convert all 64 bit types to unsigned long long int (can't build as uint64_t on gcc)
         const unsigned long long int rval = atomicExch(reinterpret_cast<unsigned long long int*>(ptr), *reinterpret_cast<unsigned long long int*>(&val));  // NOLINT(runtime/int)
         return *reinterpret_cast<const T*>(&rval);
     }
     // else 32-bit
-    const uint32_t rval = atomicExch(reinterpret_cast<uint32_t*>(ptr), *reinterpret_cast<uint32_t*>(&val));
+    const uint32_t rval = atomicExch(reinterpret_cast<uint32_t*>(this->ptr), *reinterpret_cast<uint32_t*>(&val));
     return *reinterpret_cast<const T*>(&rval);
-    // return atomicExch(ptr, val);
+    // return atomicExch(this->ptr, val);
 }
 #pragma diag_default = initialization_not_reachable
 #endif
