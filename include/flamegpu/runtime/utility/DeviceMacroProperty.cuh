@@ -12,7 +12,8 @@ namespace flamegpu {
  * Theoretically the compiler should be able to optimise away most of it at compile time
  */
 template<typename T, unsigned int I = 1, unsigned int J = 1, unsigned int K = 1, unsigned int W = 1>
-class DeviceMacroProperty {
+class ReadOnlyDeviceMacroProperty {
+ protected:
     T* ptr;
 #if !defined(SEATBELTS) || SEATBELTS
     /**
@@ -20,7 +21,7 @@ class DeviceMacroProperty {
      * Reading sets 1<<0
      * Writing sets 1<<1
      */
-    unsigned int *read_write_flag;
+    unsigned int* read_write_flag;
     /**
      * Utility function for setting/checking read flag
      */
@@ -31,6 +32,35 @@ class DeviceMacroProperty {
     __device__ void setCheckWriteFlag() const;
 #endif
 
+ public:
+#if !defined(SEATBELTS) || SEATBELTS
+     /**
+      * Constructor
+      * @param _ptr Pointer to buffer
+      * @param _rwf Pointer to read_write_flag
+      */
+     __device__ explicit ReadOnlyDeviceMacroProperty(T* _ptr, unsigned int* _rwf);
+#else
+     /**
+      * Constructor
+      * @param _ptr Pointer to buffer
+      */
+     __device__ explicit ReadOnlyDeviceMacroProperty(T* _ptr);
+#endif
+     /**
+      * Access the next dimension of the array
+      * @throws exception::DeviceError If i >= I.
+      * @throws exception::DeviceError If template arguments I, J, K , W are all 1. Which denotes the macro property has no dimensions remaining to be indexed.
+      */
+     __device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, J, K, W, 1> operator[](unsigned int i) const;
+     /**
+      * Read-only access to the current element
+      * @throws exception::DeviceError If template arguments I, J, K , W are not all 1. Which denotes the macro property has dimensions remaining to be indexed.
+      */
+     __device__ __forceinline__ operator T() const;
+};
+template<typename T, unsigned int I = 1, unsigned int J = 1, unsigned int K = 1, unsigned int W = 1>
+class DeviceMacroProperty : public ReadOnlyDeviceMacroProperty<T, I, J, K, W> {
  public:
 #if !defined(SEATBELTS) || SEATBELTS
     /**
@@ -52,11 +82,6 @@ class DeviceMacroProperty {
      * @throws exception::DeviceError If template arguments I, J, K , W are all 1. Which denotes the macro property has no dimensions remaining to be indexed. 
      */
     __device__ __forceinline__ DeviceMacroProperty<T, J, K, W, 1> operator[](unsigned int i) const;
-    /**
-     * Read-only access to the current element
-     * @throws exception::DeviceError If template arguments I, J, K , W are not all 1. Which denotes the macro property has dimensions remaining to be indexed. 
-     */
-    __device__ __forceinline__ operator T() const;
     /**
      * atomic add
      * @param val The 2nd operand
@@ -143,20 +168,24 @@ class DeviceMacroProperty {
 
 #if !defined(SEATBELTS) || SEATBELTS
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
-__device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>::DeviceMacroProperty(T* _ptr, unsigned int* _rwf)
+__device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, I, J, K, W>::ReadOnlyDeviceMacroProperty(T* _ptr, unsigned int* _rwf)
     : ptr(_ptr)
     , read_write_flag(_rwf)
 { }
+template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
+__device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>::DeviceMacroProperty(T* _ptr, unsigned int* _rwf)
+    : ReadOnlyDeviceMacroProperty<T, I, J, K, W>(_ptr, _rwf)
+{ }
 #ifdef __CUDACC__
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
-__device__ void DeviceMacroProperty<T, I, J, K, W>::setCheckReadFlag() const {
+__device__ void ReadOnlyDeviceMacroProperty<T, I, J, K, W>::setCheckReadFlag() const {
     const unsigned int old = atomicOr(read_write_flag, 1u << 0);
     if (old & 1u << 1) {
         DTHROW("DeviceMacroProperty read and atomic write operations cannot be mixed in the same layer, as this may cause race conditions.\n");
     }
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
-__device__ void DeviceMacroProperty<T, I, J, K, W>::setCheckWriteFlag() const {
+__device__ void ReadOnlyDeviceMacroProperty<T, I, J, K, W>::setCheckWriteFlag() const {
     const unsigned int old = atomicOr(read_write_flag, 1u << 1);
     if (old & 1u << 0) {
         DTHROW("DeviceMacroProperty read and atomic write operations cannot be mixed in the same layer as this may cause race conditions.\n");
@@ -165,10 +194,32 @@ __device__ void DeviceMacroProperty<T, I, J, K, W>::setCheckWriteFlag() const {
 #endif
 #else
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
-__device__ __forceinline__ DeviceMacroProperty<T, I , J, K, W>::DeviceMacroProperty(T* _ptr)
+__device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, I, J, K, W>::ReadOnlyDeviceMacroProperty(T* _ptr)
     :ptr(_ptr)
 { }
+template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
+__device__ __forceinline__ DeviceMacroProperty<T, I , J, K, W>::DeviceMacroProperty(T* _ptr)
+    : ReadOnlyDeviceMacroProperty<T, I, J, K, W>(_ptr)
+{ }
 #endif
+template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
+__device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, J, K, W, 1> ReadOnlyDeviceMacroProperty<T, I, J, K, W>::operator[](unsigned int i) const {
+#if !defined(SEATBELTS) || SEATBELTS
+    if (I == 1 && J == 1 && K == 1 && W == 1) {
+        DTHROW("Indexing error, property has less dimensions.\n");
+    } else if (i >= I) {
+        DTHROW("Indexing error, out of bounds %u >= %u.\n", i, I);
+    } else if (ptr == nullptr) {
+        return ReadOnlyDeviceMacroProperty<T, J, K, W, 1>(nullptr, nullptr);
+    }
+#endif
+    // (i * J * K * W) + (j * K * W) + (k * W) + w
+#if !defined(SEATBELTS) || SEATBELTS
+    return ReadOnlyDeviceMacroProperty<T, J, K, W, 1>(ptr + (i * J * K * W), read_write_flag);
+#else
+    return DeviceMacroProperty<T, J, K, W, 1>(ptr + (i * J * K * W));
+#endif
+}
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ DeviceMacroProperty<T, J, K, W, 1> DeviceMacroProperty<T, I, J, K, W>::operator[](unsigned int i) const {
 #if !defined(SEATBELTS) || SEATBELTS
@@ -188,7 +239,7 @@ __device__ __forceinline__ DeviceMacroProperty<T, J, K, W, 1> DeviceMacroPropert
 #endif
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
-__device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>::operator T() const {
+__device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, I, J, K, W>::operator T() const {
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
