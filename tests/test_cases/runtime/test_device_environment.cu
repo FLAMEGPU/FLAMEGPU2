@@ -185,7 +185,7 @@ class MiniSim {
 * This defines a common fixture used as a base for all test cases in the file
 * @see https://github.com/google/googletest/blob/master/googletest/samples/sample5_unittest.cc
 */
-class AgentEnvironmentTest : public testing::Test {
+class DeviceEnvironmentTest : public testing::Test {
  protected:
     void SetUp() override {
         ms = new MiniSim();
@@ -224,7 +224,7 @@ class AgentEnvironmentTest : public testing::Test {
 }  // namespace
 
 
-TEST_F(AgentEnvironmentTest, Get_float) {
+TEST_F(DeviceEnvironmentTest, Get_float) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_float);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -239,7 +239,7 @@ TEST_F(AgentEnvironmentTest, Get_float) {
     EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
-TEST_F(AgentEnvironmentTest, Get_double) {
+TEST_F(DeviceEnvironmentTest, Get_double) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_double);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -254,7 +254,7 @@ TEST_F(AgentEnvironmentTest, Get_double) {
     EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
-TEST_F(AgentEnvironmentTest, Get_int8_t) {
+TEST_F(DeviceEnvironmentTest, Get_int8_t) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_int8_t);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -269,7 +269,7 @@ TEST_F(AgentEnvironmentTest, Get_int8_t) {
     EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
-TEST_F(AgentEnvironmentTest, Get_uint8_t) {
+TEST_F(DeviceEnvironmentTest, Get_uint8_t) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_uint8_t);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -284,7 +284,7 @@ TEST_F(AgentEnvironmentTest, Get_uint8_t) {
     EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
-TEST_F(AgentEnvironmentTest, Get_int16_t) {
+TEST_F(DeviceEnvironmentTest, Get_int16_t) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_int16_t);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -299,7 +299,7 @@ TEST_F(AgentEnvironmentTest, Get_int16_t) {
     EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
-TEST_F(AgentEnvironmentTest, Get_uint16_t) {
+TEST_F(DeviceEnvironmentTest, Get_uint16_t) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_uint16_t);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -314,7 +314,7 @@ TEST_F(AgentEnvironmentTest, Get_uint16_t) {
     EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
-TEST_F(AgentEnvironmentTest, Get_int32_t) {
+TEST_F(DeviceEnvironmentTest, Get_int32_t) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_int32_t);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -329,7 +329,7 @@ TEST_F(AgentEnvironmentTest, Get_int32_t) {
     EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
-TEST_F(AgentEnvironmentTest, Get_uint32_t) {
+TEST_F(DeviceEnvironmentTest, Get_uint32_t) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_uint32_t);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -344,7 +344,7 @@ TEST_F(AgentEnvironmentTest, Get_uint32_t) {
     EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
-TEST_F(AgentEnvironmentTest, Get_int64_t) {
+TEST_F(DeviceEnvironmentTest, Get_int64_t) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_int64_t);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -359,7 +359,7 @@ TEST_F(AgentEnvironmentTest, Get_int64_t) {
     EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
-TEST_F(AgentEnvironmentTest, Get_uint64_t) {
+TEST_F(DeviceEnvironmentTest, Get_uint64_t) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_uint64_t);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -375,7 +375,7 @@ TEST_F(AgentEnvironmentTest, Get_uint64_t) {
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 
-TEST_F(AgentEnvironmentTest, Get_arrayElement_float) {
+TEST_F(DeviceEnvironmentTest, Get_arrayElement_float) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_float);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -390,7 +390,7 @@ TEST_F(AgentEnvironmentTest, Get_arrayElement_float) {
     EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
-TEST_F(AgentEnvironmentTest, Get_arrayElement_double) {
+TEST_F(DeviceEnvironmentTest, Get_arrayElement_double) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_double);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -405,7 +405,7 @@ TEST_F(AgentEnvironmentTest, Get_arrayElement_double) {
     EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
-TEST_F(AgentEnvironmentTest, Get_arrayElement_int8_t) {
+TEST_F(DeviceEnvironmentTest, Get_arrayElement_int8_t) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_int8_t);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -420,7 +420,7 @@ TEST_F(AgentEnvironmentTest, Get_arrayElement_int8_t) {
     EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
-TEST_F(AgentEnvironmentTest, Get_arrayElement_uint8_t) {
+TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint8_t) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_uint8_t);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -435,7 +435,7 @@ TEST_F(AgentEnvironmentTest, Get_arrayElement_uint8_t) {
     EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
-TEST_F(AgentEnvironmentTest, Get_arrayElement_int16_t) {
+TEST_F(DeviceEnvironmentTest, Get_arrayElement_int16_t) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_int16_t);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -450,7 +450,7 @@ TEST_F(AgentEnvironmentTest, Get_arrayElement_int16_t) {
     EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
-TEST_F(AgentEnvironmentTest, Get_arrayElement_uint16_t) {
+TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint16_t) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_uint16_t);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -465,7 +465,7 @@ TEST_F(AgentEnvironmentTest, Get_arrayElement_uint16_t) {
     EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
-TEST_F(AgentEnvironmentTest, Get_arrayElement_uint32_t) {
+TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint32_t) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_uint32_t);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -480,7 +480,7 @@ TEST_F(AgentEnvironmentTest, Get_arrayElement_uint32_t) {
     EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
-TEST_F(AgentEnvironmentTest, Get_arrayElement_int32_t) {
+TEST_F(DeviceEnvironmentTest, Get_arrayElement_int32_t) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_int32_t);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -495,7 +495,7 @@ TEST_F(AgentEnvironmentTest, Get_arrayElement_int32_t) {
     EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
-TEST_F(AgentEnvironmentTest, Get_arrayElement_uint64_t) {
+TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint64_t) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_uint64_t);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -510,7 +510,7 @@ TEST_F(AgentEnvironmentTest, Get_arrayElement_uint64_t) {
     EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
-TEST_F(AgentEnvironmentTest, Get_arrayElement_int64_t) {
+TEST_F(DeviceEnvironmentTest, Get_arrayElement_int64_t) {
     // Setup agent fn
     AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_int64_t);
     LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
@@ -533,7 +533,7 @@ FLAMEGPU_AGENT_FUNCTION(get_array_glm, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<float, 3>("k", 2, t[2]);
     return ALIVE;
 }
-TEST_F(AgentEnvironmentTest, Get_array_glm) {
+TEST_F(DeviceEnvironmentTest, Get_array_glm) {
     // Setup agent fn
     ms->agent.newVariable<float, 3>("k");
     AgentFunctionDescription& deviceFn = ms->agent.newFunction("device_function", get_array_glm);

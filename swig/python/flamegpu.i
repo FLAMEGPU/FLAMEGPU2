@@ -12,6 +12,7 @@
 #pragma SWIG nowarn=362
 // operator++ ignored (not supported by python)
 #pragma SWIG nowarn=383
+#pragma SWIG nowarn=384
 // Warning 451 Setting a const char * variable may leak memory. Fix is to use a std::string instead?
 #pragma SWIG nowarn=451
 // LoggingConfig.h:65: Function flamegpu::LoggingConfig::Any(ReductionFn) must have a return type. Ignored. This actually a typedef function pointer?
@@ -225,6 +226,7 @@ class FLAMEGPUIterator(object):
         else:
             raise StopIteration
 %}
+
 
 // Exception handling.
 /** Exception handling
@@ -524,7 +526,14 @@ class ModelVis;
 
 // Must wrap these prior to HostAPI where they are used to avoid issues with no default constructors etc.
 %include "flamegpu/runtime/utility/HostRandom.cuh"
+
+//%ignore flamegpu::HostEnvironment::getMacroProperty();
+//%ignore flamegpu::HostMacroProperty;
+%nodefaultctor flamegpu::HostMacroProperty_swig;
+%include "flamegpu/runtime/utility/HostMacroProperty.cuh"
+//%rename (HostMacroProperty) flamegpu::HostMacroProperty_swig;
 %include "flamegpu/runtime/utility/HostEnvironment.cuh"
+//%rename (getMacroProperty) flamegpu::HostEnvironment::getMacroProperty_swig;
 
 %include "flamegpu/runtime/HostNewAgentAPI.h"
 %include "flamegpu/runtime/HostAgentAPI.cuh"
@@ -657,6 +666,72 @@ TEMPLATE_VARIABLE_INSTANTIATE_ID(getProperty, flamegpu::HostEnvironment::getProp
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyArray, flamegpu::HostEnvironment::getPropertyArray)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, flamegpu::HostEnvironment::setProperty)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, flamegpu::HostEnvironment::setPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getMacroProperty, flamegpu::HostEnvironment::getMacroProperty_swig)
+
+// Instance template versions of the HostMacroProperty class
+// Extend HostMacroProperty so that it is python iterable
+%extend flamegpu::HostMacroProperty_swig {
+    %pythoncode {
+        def __iter__(self):
+            return FLAMEGPUIterator(self)
+        def __add__(self, other):
+            return self.get() + other;
+        def __radd__(self, other):
+            return other + self.get();
+        def __iadd__(self, other):
+            self.set(self.get() + other);
+            return self;
+        def __sub__(self, other):
+            return self.get() - other;
+        def __rsub__(self, other):
+            return other - self.get();
+        def __isub__(self, other):
+            self.set(self.get() - other);
+            return self;
+        def __mul__(self, other):
+            return self.get() * other;
+        def __rmul__(self, other):
+            return other * self.get();
+        def __imul__(self, other):
+            self.set(self.get() * other);
+            return self;
+        def __pow__(self, other):
+            return self.get() ** other;
+        def __rpow__(self, other):
+            return other ** self.get();
+        def __ipow__(self, other):
+            self.set(self.get() ** other);
+            return self;
+        def __truediv__(self, other):
+            return self.get() / other;
+        def __rtruediv__(self, other):
+            return other / self.get();
+        def __itruediv__(self, other):
+            try:
+                self.set(self.get() / other);
+            except:
+                raise FLAMEGPURuntimeException("__itruediv__ does not support the used type combination as it would lead to type conversion of the host object.", "unsupported type")
+            return self;
+        def __floordiv__(self, other):
+            return self.get() // other;
+        def __rfloordiv__(self, other):
+            return other // self.get();
+        def __ifloordiv__(self, other):
+            self.set(self.get() // other);
+            return self;
+        def __mod__(self, other):
+            return self.get() % other;
+        def __rmod__(self, other):
+            return other % self.get();
+        def __imod__(self, other):
+            try:
+                self.set(self.get() % other);
+            except:
+                raise FLAMEGPURuntimeException("__imod__ does not support the used type combination as it would lead to type conversion of the host object.", "unsupported type")
+            return self;
+    }
+}
+TEMPLATE_VARIABLE_INSTANTIATE_ID(HostMacroProperty, flamegpu::HostMacroProperty_swig)
 
 // Instantiate template versions of host agent functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariable, flamegpu::HostNewAgentAPI::getVariable)
@@ -668,6 +743,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariableArray, flamegpu::HostNewAgentAPI::se
 // Instantiate template versions of environment description functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newProperty, flamegpu::EnvironmentDescription::newProperty)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newPropertyArray, flamegpu::EnvironmentDescription::newPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newMacroProperty, flamegpu::EnvironmentDescription::newMacroProperty_swig)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getProperty, flamegpu::EnvironmentDescription::getProperty)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyArray, flamegpu::EnvironmentDescription::getPropertyArray)
 //TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyAt, flamegpu::EnvironmentDescription::getPropertyArrayAtIndex)
@@ -737,8 +813,6 @@ TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MessageArray::Descr
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MessageArray2D::Description::newVariableArray)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MessageArray3D::Description::newVariableArray)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MessageBucket::Description::newVariableArray)
-
-// Instantiate template versions of host random functions from the API
 
 // Instantiate template versions of host random functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(uniform, flamegpu::HostRandom::uniformNoRange)

@@ -16,6 +16,7 @@ SET(TESTS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_ensemble.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_gpu_validation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_subagent.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_submacroenvironment.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_io.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_logging.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_logging_exceptions.cu
@@ -34,17 +35,20 @@ SET(TESTS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_host_functions.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_RunPlan.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_RunPlanVector.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_environment.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_device_environment.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_function_conditions.cu    
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_random.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_state_transition.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_device_agent_creation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_device_api.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_device_environment.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_device_macro_property.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_environment_manager.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_api.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_agent_sort.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_agent_creation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_environment.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_macro_property.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_random.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_min.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_max.cu

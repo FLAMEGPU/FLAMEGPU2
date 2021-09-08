@@ -47,6 +47,10 @@ struct SubEnvironmentData : std::enable_shared_from_this<SubEnvironmentData> {
     */
     Mapping properties;
     /**
+    * Holds all of the model's environment macro property mappings
+    */
+    Mapping macro_properties;
+    /**
      * The model which this environment is a member of
      */
     std::weak_ptr<SubModelData> parent;

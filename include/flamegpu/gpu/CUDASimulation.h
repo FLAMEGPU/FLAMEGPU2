@@ -14,6 +14,7 @@
 #include "flamegpu/gpu/CUDAEnsemble.h"
 #include "flamegpu/runtime/utility/RandomManager.cuh"
 #include "flamegpu/runtime/HostNewAgentAPI.h"
+#include "flamegpu/gpu/CUDAMacroEnvironment.h"
 
 #ifdef VISUALISATION
 #include "flamegpu/visualiser/ModelVis.h"
@@ -332,6 +333,10 @@ class CUDASimulation : public Simulation {
      * Map of agent storage 
      */
     CUDAAgentMap agent_map;
+    /**
+     * Macro env property storage
+     */
+    CUDAMacroEnvironment macro_env;
     /**
      * Internal model config
      */
