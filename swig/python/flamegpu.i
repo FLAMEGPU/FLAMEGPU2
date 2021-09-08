@@ -359,7 +359,7 @@ class FLAMEGPURuntimeException : public std::exception {
 // Ignore const'd accessors for configuration structs, which were mutable in python.
 %ignore flamegpu::CUDASimulation::getCUDAConfig;
 %ignore flamegpu::CUDAEnsemble::getConfig;
-// %ignore flamegpu::Simulation::getConfig; // This doesn't currently exist
+%ignore flamegpu::Simulation::getSimulationConfig; // This doesn't currently exist
 
 // Ignore the detail namespace, as it's not intended to be user-facing
 %ignore flamegpu::detail;

@@ -227,11 +227,11 @@ def io_test_fixture(IO_FILENAME):
     am.SimulationConfig().input_file = IO_FILENAME
     am.applyConfig()
     # Validate config matches
-    assert am.getSimulationConfig().random_seed == 654321
-    assert am.getSimulationConfig().steps == 123
-    assert am.getSimulationConfig().timing == True
-    assert am.getSimulationConfig().verbose == False
-    assert am.getSimulationConfig().input_file == IO_FILENAME
+    assert am.SimulationConfig().random_seed == 654321
+    assert am.SimulationConfig().steps == 123
+    assert am.SimulationConfig().timing == True
+    assert am.SimulationConfig().verbose == False
+    assert am.SimulationConfig().input_file == IO_FILENAME
     assert am.CUDAConfig().device_id == 0;
     pop_a_in = pyflamegpu.AgentVector(a)
     pop_b_in = pyflamegpu.AgentVector(b)
