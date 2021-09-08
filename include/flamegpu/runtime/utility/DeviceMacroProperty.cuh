@@ -209,15 +209,15 @@ __device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, J, K, W, 1> ReadOnlyDe
         DTHROW("Indexing error, property has less dimensions.\n");
     } else if (i >= I) {
         DTHROW("Indexing error, out of bounds %u >= %u.\n", i, I);
-    } else if (ptr == nullptr) {
+    } else if (this->ptr == nullptr) {
         return ReadOnlyDeviceMacroProperty<T, J, K, W, 1>(nullptr, nullptr);
     }
 #endif
     // (i * J * K * W) + (j * K * W) + (k * W) + w
 #if !defined(SEATBELTS) || SEATBELTS
-    return ReadOnlyDeviceMacroProperty<T, J, K, W, 1>(ptr + (i * J * K * W), read_write_flag);
+    return ReadOnlyDeviceMacroProperty<T, J, K, W, 1>(this->ptr + (i * J * K * W), this->read_write_flag);
 #else
-    return DeviceMacroProperty<T, J, K, W, 1>(ptr + (i * J * K * W));
+    return DeviceMacroProperty<T, J, K, W, 1>(this->ptr + (i * J * K * W));
 #endif
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
@@ -227,15 +227,15 @@ __device__ __forceinline__ DeviceMacroProperty<T, J, K, W, 1> DeviceMacroPropert
         DTHROW("Indexing error, property has less dimensions.\n");
     } else if (i >= I) {
         DTHROW("Indexing error, out of bounds %u >= %u.\n", i, I);
-    } else if (ptr == nullptr) {
+    } else if (this->ptr == nullptr) {
         return DeviceMacroProperty<T, J, K, W, 1>(nullptr, nullptr);
     }
 #endif
     // (i * J * K * W) + (j * K * W) + (k * W) + w
 #if !defined(SEATBELTS) || SEATBELTS
-    return DeviceMacroProperty<T, J, K, W, 1>(ptr + (i * J * K * W), read_write_flag);
+    return DeviceMacroProperty<T, J, K, W, 1>(this->ptr + (i * J * K * W), this->read_write_flag);
 #else
-    return DeviceMacroProperty<T, J, K, W, 1>(ptr + (i * J * K * W));
+    return DeviceMacroProperty<T, J, K, W, 1>(this->ptr + (i * J * K * W));
 #endif
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
