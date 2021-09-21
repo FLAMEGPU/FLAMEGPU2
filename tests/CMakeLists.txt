@@ -103,7 +103,13 @@ get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 # Include googletest as a dependency.
 include(${FLAMEGPU_ROOT}/cmake/dependencies/googletest.cmake)
 
+# If CTest's GoogleTest integreation is required, include GoogleTest.
+if((BUILD_TESTS OR BUILD_TESTS_DEV) AND USE_GTEST_DISCOVER)
+    include(GoogleTest)
+endif()
+
 if(BUILD_TESTS)
+    enable_testing()
     # Name the project and set languages
     project(tests CUDA CXX)
     # Include common rules.
@@ -134,10 +140,28 @@ if(BUILD_TESTS)
     # Set the default (visual studio) debugger configure_file
     set_target_properties("${PROJECT_NAME}" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     VS_DEBUGGER_COMMAND_ARGUMENTS "$<$<CONFIG:Debug>:--gtest_catch_exceptions=0> --gtest_filter=*")
+
+    # Add the tests target as to ctest, optionally using the gtest_discover integration.
+    if(USE_GTEST_DISCOVER)
+        # If GTEST_DISCOVER is enabled, add the unit test executable using it. This results in very long test exeuction times due to CUDA context initialisation per test
+        gtest_discover_tests(
+            "${PROJECT_NAME}"
+            WORKING_DIRECTORY
+            ${PROJECT_DIR}
+        )
+    else()
+        # Otherwise add the whole test suite as a single test. Use ctest -VV to view per-test results in this case.
+        add_test(
+            NAME ${PROJECT_NAME} 
+            COMMAND "${PROJECT_NAME}"
+            WORKING_DIRECTORY ${PROJECT_DIR}
+        )
+    endif()
 endif()
 
 # If the tests_dev target is requirest, create it.
 if(BUILD_TESTS_DEV)
+    enable_testing()
     # DEVELOPMENT TESTING THING (Compact repeated version of above)
     project(tests_dev CUDA CXX)
     # Include common rules.
@@ -166,4 +190,21 @@ if(BUILD_TESTS_DEV)
     # Set the default (visual studio) debugger configure_file
     set_target_properties("${PROJECT_NAME}" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     VS_DEBUGGER_COMMAND_ARGUMENTS "$<$<CONFIG:Debug>:--gtest_catch_exceptions=0> --gtest_filter=*")
+    
+    # Add the tests target as to ctest, optionally using the gtest_discover integration.
+    if(USE_GTEST_DISCOVER)
+        # If GTEST_DISCOVER is enabled, add the unit test executable using it. This results in very long test exeuction times due to CUDA context initialisation per test
+        gtest_discover_tests(
+            "${PROJECT_NAME}"
+            WORKING_DIRECTORY
+            ${PROJECT_DIR}
+        )
+    else()
+        # Otherwise add the whole test suite as a single test. Use ctest -VV to view per-test results in this case.
+        add_test(
+            NAME ${PROJECT_NAME} 
+            COMMAND "${PROJECT_NAME}"
+            WORKING_DIRECTORY ${PROJECT_DIR}
+        )
+    endif()
 endif()
