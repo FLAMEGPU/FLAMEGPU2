@@ -148,6 +148,12 @@ class CUDAFatAgent {
      */
     id_t nextID(unsigned int count = 1);
     /**
+     * Returns a device pointer to the value returns by nextID(0), and ayschronously updates a value used on the device using the provided stream.
+     * If the device value is changed, then the internal ID counter must be updated via CUDAAgent::scatterNew()
+     * @param stream the cuda stream in which to perform the asynchronous host to device copy. 
+     */
+    id_t *getDeviceNextIDAsync(cudaStream_t stream);
+    /**
      * Returns a device pointer to the value returns by nextID(0)
      * If the device value is changed, then the internal ID counter must be updated via CUDAAgent::scatterNew()
      */
@@ -161,8 +167,15 @@ class CUDAFatAgent {
     /**
      * Assigns IDs to any agents who's ID has the value ID_NOT_SET
      * @param hostapi HostAPI object, this is used to provide cub temp storage
+     * @param stream Stream to perform the work with asynchronously.
+     */
+    void assignIDsAsync(HostAPI& hostapi, cudaStream_t stream);
+    /**
+     * Assigns IDs to any agents who's ID has the value ID_NOT_SET
+     * @param hostapi HostAPI object, this is used to provide cub temp storage
      */
     void assignIDs(HostAPI& hostapi);
+
     /**
      * Resets the flag agent_ids_have_init
      */
