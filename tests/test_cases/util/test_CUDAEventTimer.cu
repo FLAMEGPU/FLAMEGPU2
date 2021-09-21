@@ -29,8 +29,8 @@ TEST(TestUtilCUDAEventTimer, CUDAEventTimer) {
     // Expect an exception if sync is called via getElapsed* if stop() has not yet been called.
     EXPECT_THROW(timer->getElapsedMilliseconds(), exception::TimerException);
     const int sleep_duration_seconds = 1;
-    const float min_expected_seconds = sleep_duration_seconds * 0.9f;
-    const float min_expected_millis = min_expected_seconds * 1000.0f;
+    const double min_expected_seconds = sleep_duration_seconds * 0.9;
+    const double min_expected_millis = min_expected_seconds * 1000.0;
     // If the WDDM driver is being used, this test is only accurate if the  start event is synchronised (pushed to the device) prior to the sleep.
     // Essentially, CUDAEventTimers should not be used to time host code, they are only accurate for  the device code which they wrap.
     if (util::detail::wddm::deviceIsWDDM()) {

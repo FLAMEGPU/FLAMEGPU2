@@ -309,11 +309,11 @@ FLAMEGPU_INIT_FUNCTION(elapsedInit) {
         agent.newAgent().setVariable<uint32_t>("counter", 0u);
     }
 }
-constexpr uint64_t sleepDurationMilliseconds = 500;
+constexpr double sleepDurationSeconds = 0.5;
 // File scoped atomics
 FLAMEGPU_STEP_FUNCTION(elapsedStep) {
     // Sleep each thread for a duration of time.
-    std::this_thread::sleep_for(std::chrono::milliseconds(sleepDurationMilliseconds));
+    std::this_thread::sleep_for(std::chrono::duration<double>(sleepDurationSeconds));
 }
 TEST(TestCUDAEnsemble, getEnsembleElapsedTime) {
     // Create a model containing atleast one agent type and function.
@@ -343,11 +343,11 @@ TEST(TestCUDAEnsemble, getEnsembleElapsedTime) {
     // Simulate the ensemble,
     EXPECT_NO_THROW(ensemble.simulate(plans));
     // Get the elapsed seconds before the sim has been executed
-    float elapsedMillis = 0.f;
-    EXPECT_NO_THROW(elapsedMillis = ensemble.getEnsembleElapsedTime());
-    // Ensure the elapsedMillis is larger than a threshold.
-    double thresholdMillis = static_cast<double>(sleepDurationMilliseconds) * 0.8;
-    EXPECT_GE(elapsedMillis, thresholdMillis);
+    double elapsedSeconds = 0.f;
+    EXPECT_NO_THROW(elapsedSeconds = ensemble.getEnsembleElapsedTime());
+    // Ensure the elapsed time is larger than a threshold.
+    double threshold = sleepDurationSeconds * 0.8;
+    EXPECT_GE(elapsedSeconds, threshold);
 }
 
 }  // namespace test_cuda_ensemble

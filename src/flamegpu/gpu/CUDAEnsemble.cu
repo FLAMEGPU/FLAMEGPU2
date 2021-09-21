@@ -105,7 +105,7 @@ void CUDAEnsemble::simulate(const RunPlanVector &plans) {
     auto ensemble_timer = util::detail::SteadyClockTimer();
     ensemble_timer.start();
     // Reset the elapsed time.
-    ensemble_elapsed_time = 0.f;
+    ensemble_elapsed_time = 0.;
 
     // Logging thread-safety items
     std::queue<unsigned int> log_export_queue;
@@ -151,7 +151,7 @@ void CUDAEnsemble::simulate(const RunPlanVector &plans) {
 
     // Record and store the elapsed time
     ensemble_timer.stop();
-    ensemble_elapsed_time = ensemble_timer.getElapsedMilliseconds();
+    ensemble_elapsed_time = ensemble_timer.getElapsedSeconds();
 
     // Ensemble has finished, print summary
     if (!config.quiet) {
@@ -160,7 +160,7 @@ void CUDAEnsemble::simulate(const RunPlanVector &plans) {
             printf("There were a total of %u errors.\n", err_ct.load());
     }
     if (config.timing) {
-        printf("Ensemble time elapsed: %fms\n", ensemble_elapsed_time);
+        printf("Ensemble time elapsed: %fs\n", ensemble_elapsed_time);
     }
 
     // Free memory

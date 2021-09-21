@@ -13,7 +13,7 @@ namespace {
 // Experimentally cudaFree(0); takes ~2us (nsys) without context creation,
 // while cudaFree(0) including context creation takes ~> 150ms in my linux titan v system.
 // This test is a little fluffy.
-const double CONTEXT_CREATION_ATLEAST_SECONDS = 0.100;  // atleast 100ms?
+const double CONTEXT_CREATION_ATLEAST_SECONDS = 0.050;  // atleast 50ms?
 
 /* Test that CUDASimulation::applyConfig_derived() is invoked prior to any cuda call which will invoke the CUDA
 Alternative is to use the driver API, call CuCtxGetCurrent(CuContext* pctx) immediatebly before applyConfig, and if pctx is the nullptr then the context had not yet been initialised?
