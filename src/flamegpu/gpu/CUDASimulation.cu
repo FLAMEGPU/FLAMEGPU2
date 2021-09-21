@@ -58,10 +58,10 @@ CUDASimulation::CUDASimulation(const ModelDescription& _model, int argc, const c
 CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model)
     : Simulation(_model)
     , step_count(0)
-    , elapsedMillisecondsSimulation(0.f)
-    , elapsedMillisecondsInitFunctions(0.f)
-    , elapsedMillisecondsExitFunctions(0.f)
-    , elapsedMillisecondsRTCInitialisation(0.f)
+    , elapsedSecondsSimulation(0.)
+    , elapsedSecondsInitFunctions(0.)
+    , elapsedSecondsExitFunctions(0.)
+    , elapsedSecondsRTCInitialisation(0.)
     , macro_env(*_model->environment, *this)
     , run_log(std::make_unique<RunLog>())
     , streams(std::vector<cudaStream_t>())
@@ -249,9 +249,9 @@ void CUDASimulation::initFunctions() {
 
     // Record, store and output the elapsed time of the step.
     initFunctionsTimer->stop();
-    this->elapsedMillisecondsInitFunctions = initFunctionsTimer->getElapsedMilliseconds();
+    this->elapsedSecondsInitFunctions = initFunctionsTimer->getElapsedSeconds();
     if (getSimulationConfig().timing) {
-        fprintf(stdout, "Init Function Processing time: %.3f ms\n", this->elapsedMillisecondsInitFunctions);
+        fprintf(stdout, "Init Function Processing time: %.6f s\n", this->elapsedSecondsInitFunctions);
     }
 }
 
@@ -271,9 +271,9 @@ void CUDASimulation::exitFunctions() {
 
     // Record, store and output the elapsed time of the step.
     exitFunctionsTimer->stop();
-    this->elapsedMillisecondsExitFunctions = exitFunctionsTimer->getElapsedMilliseconds();
+    this->elapsedSecondsExitFunctions = exitFunctionsTimer->getElapsedSeconds();
     if (getSimulationConfig().timing) {
-        fprintf(stdout, "Exit Function Processing time: %.3f ms\n", this->elapsedMillisecondsExitFunctions);
+        fprintf(stdout, "Exit Function Processing time: %.6f s\n", this->elapsedSecondsExitFunctions);
     }
 }
 
@@ -321,11 +321,11 @@ bool CUDASimulation::step() {
 
     // Record, store and output the elapsed time of the step.
     stepTimer->stop();
-    float stepMilliseconds = stepTimer->getElapsedMilliseconds();
-    this->elapsedMillisecondsPerStep.push_back(stepMilliseconds);
+    float stepMilliseconds = stepTimer->getElapsedSeconds();
+    this->elapsedSecondsPerStep.push_back(stepMilliseconds);
     if (getSimulationConfig().timing) {
         // Resolution is 0.5 microseconds, so print to 1 us.
-        fprintf(stdout, "Step %d Processing time: %.3f ms\n", this->step_count, stepMilliseconds);
+        fprintf(stdout, "Step %d Processing time: %.6f s\n", this->step_count, stepMilliseconds);
     }
 
     // Update step count at the end of the step - when it has completed.
@@ -968,10 +968,10 @@ void CUDASimulation::simulate() {
     }
 
     // Reset the class' elapsed time value.
-    this->elapsedMillisecondsSimulation = 0.f;
-    this->elapsedMillisecondsPerStep.clear();
+    this->elapsedSecondsSimulation = 0.f;
+    this->elapsedSecondsPerStep.clear();
     if (getSimulationConfig().steps > 0) {
-        this->elapsedMillisecondsPerStep.reserve(getSimulationConfig().steps);
+        this->elapsedSecondsPerStep.reserve(getSimulationConfig().steps);
     }
 
     // Execute init functions
@@ -1019,10 +1019,10 @@ void CUDASimulation::simulate() {
 
     // Record, store and output the elapsed simulation time
     simulationTimer->stop();
-    elapsedMillisecondsSimulation = simulationTimer->getElapsedMilliseconds();
+    elapsedSecondsSimulation = simulationTimer->getElapsedSeconds();
     if (getSimulationConfig().timing) {
         // Resolution is 0.5 microseconds, so print to 1 us.
-        fprintf(stdout, "Total Processing time: %.3f ms\n", elapsedMillisecondsSimulation);
+        fprintf(stdout, "Total Processing time: %.6f s\n", elapsedSecondsSimulation);
     }
     // Export logs
     if (!SimulationConfig().step_log_file.empty())
@@ -1074,8 +1074,8 @@ void CUDASimulation::reset(bool submodelReset) {
     }
 
     // Reset any timing data.
-    this->elapsedMillisecondsSimulation = 0.f;
-    this->elapsedMillisecondsPerStep.clear();
+    this->elapsedSecondsSimulation = 0.f;
+    this->elapsedSecondsPerStep.clear();
 }
 
 void CUDASimulation::setPopulationData(AgentVector& population, const std::string& state_name) {
@@ -1393,9 +1393,9 @@ void CUDASimulation::initialiseRTC() {
 
         // Record, store and output the elapsed time of the step.
         rtcTimer->stop();
-        this->elapsedMillisecondsRTCInitialisation = rtcTimer->getElapsedMilliseconds();
+        this->elapsedSecondsRTCInitialisation = rtcTimer->getElapsedSeconds();
         if (getSimulationConfig().timing) {
-            fprintf(stdout, "RTC Initialisation Processing time: %.3f ms\n", this->elapsedMillisecondsRTCInitialisation);
+            fprintf(stdout, "RTC Initialisation Processing time: %.6f s\n", this->elapsedSecondsRTCInitialisation);
         }
     }
 }
@@ -1528,36 +1528,36 @@ void CUDASimulation::incrementStepCounter() {
     this->singletons->environment.setProperty({instance_id, "_stepCount"}, this->step_count);
 }
 
-float CUDASimulation::getElapsedTimeSimulation() const {
+double CUDASimulation::getElapsedTimeSimulation() const {
     // Get the value
-    return this->elapsedMillisecondsSimulation;
+    return this->elapsedSecondsSimulation;
 }
 
-float CUDASimulation::getElapsedTimeInitFunctions() const {
+double CUDASimulation::getElapsedTimeInitFunctions() const {
     // Get the value
-    return this->elapsedMillisecondsInitFunctions;
+    return this->elapsedSecondsInitFunctions;
 }
 
-float CUDASimulation::getElapsedTimeExitFunctions() const {
+double CUDASimulation::getElapsedTimeExitFunctions() const {
     // Get the value
-    return this->elapsedMillisecondsExitFunctions;
+    return this->elapsedSecondsExitFunctions;
 }
-float CUDASimulation::getElapsedTimeRTCInitialisation() const {
+double CUDASimulation::getElapsedTimeRTCInitialisation() const {
     // Get the value
-    return this->elapsedMillisecondsRTCInitialisation;
+    return this->elapsedSecondsRTCInitialisation;
 }
 
-std::vector<float> CUDASimulation::getElapsedTimeSteps() const {
+std::vector<double> CUDASimulation::getElapsedTimeSteps() const {
     // returns a copy of the timing vector, to avoid mutabililty issues. This should not be called in a performacne intensive part of the application.
-    std::vector<float> rtn = this->elapsedMillisecondsPerStep;
+    std::vector<double> rtn = this->elapsedSecondsPerStep;
     return rtn;
 }
 
-float CUDASimulation::getElapsedTimeStep(unsigned int step) const {
-    if (step > this->elapsedMillisecondsPerStep.size()) {
+double CUDASimulation::getElapsedTimeStep(unsigned int step) const {
+    if (step > this->elapsedSecondsPerStep.size()) {
         THROW exception::OutOfBoundsException("getElapsedTimeStep out of bounds.\n");
     }
-    return this->elapsedMillisecondsPerStep.at(step);
+    return this->elapsedSecondsPerStep.at(step);
 }
 
 void CUDASimulation::initEnvironmentMgr() {

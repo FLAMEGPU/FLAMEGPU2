@@ -19,8 +19,8 @@ TEST(TestSteadyClockTimer, SteadyClockTimer) {
     // Expect an exception if sync is called via getElapsed* if stop() has not yet been called.
     EXPECT_THROW(timer->getElapsedMilliseconds(), exception::TimerException);
     const int sleep_duration_seconds = 1;
-    const float min_expected_seconds = sleep_duration_seconds * 0.9f;
-    const float min_expected_millis = min_expected_seconds * 1000.0f;
+    const double min_expected_seconds = sleep_duration_seconds * 0.9;
+    const double min_expected_millis = min_expected_seconds * 1000.0;
 
     std::this_thread::sleep_for(std::chrono::seconds(sleep_duration_seconds));
     timer->stop();

@@ -361,7 +361,7 @@ class TestCUDAEnsemble(TestCase):
         # Simulate the ensemble,
         ensemble.simulate(plans)
         # Get the elapsed seconds before the sim has been executed
-        elapsedMillis = ensemble.getEnsembleElapsedTime()
+        elapsedSeconds = ensemble.getEnsembleElapsedTime()
         # Ensure the elapsedMillis is larger than a threshold.
         # Sleep accuracy via callback seems very poor.
-        assert elapsedMillis > 0.0
+        assert elapsedSeconds > 0.0

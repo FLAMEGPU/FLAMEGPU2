@@ -434,18 +434,18 @@ TEST(TestCUDASimulation, simulationElapsedTime) {
     c.setPopulationData(pop);
 
     // Try getting the timer before running simulate, which should return 0
-    EXPECT_EQ(c.getElapsedTimeSimulation(), 0.0f);
+    EXPECT_EQ(c.getElapsedTimeSimulation(), 0.);
     // Call simulate to run 1 steps, which should take some length of time
     c.SimulationConfig().steps = 1;
     c.simulate();
-    EXPECT_GT(c.getElapsedTimeSimulation(), 0.0f);
+    EXPECT_GT(c.getElapsedTimeSimulation(), 0.);
 
     // Then run 10 steps, which should be longer / not the same.
-    float simulate1StepDuration = c.getElapsedTimeSimulation();
+    double simulate1StepDuration = c.getElapsedTimeSimulation();
     c.SimulationConfig().steps = 10;
     c.simulate();
-    float simulate10StepDuration = c.getElapsedTimeSimulation();
-    EXPECT_GT(simulate10StepDuration, 0.0f);
+    double simulate10StepDuration = c.getElapsedTimeSimulation();
+    EXPECT_GT(simulate10StepDuration, 0.);
     EXPECT_NE(simulate1StepDuration, simulate10StepDuration);
 }
 
@@ -464,16 +464,16 @@ TEST(TestCUDASimulation, initExitElapsedTime) {
     c.setPopulationData(pop);
 
     // Try getting the timer before running simulate, which should return 0
-    EXPECT_EQ(c.getElapsedTimeSimulation(), 0.0f);
-    EXPECT_EQ(c.getElapsedTimeInitFunctions(), 0.0f);
-    EXPECT_EQ(c.getElapsedTimeExitFunctions(), 0.0f);
+    EXPECT_EQ(c.getElapsedTimeSimulation(), 0.);
+    EXPECT_EQ(c.getElapsedTimeInitFunctions(), 0.);
+    EXPECT_EQ(c.getElapsedTimeExitFunctions(), 0.);
     // Call simulate to run 1 steps, which should take some length of time
     c.SimulationConfig().steps = 1;
     c.simulate();
     // Afterwards timers should be non 0.
-    EXPECT_GT(c.getElapsedTimeSimulation(), 0.0f);
-    EXPECT_GT(c.getElapsedTimeInitFunctions(), 0.0f);
-    EXPECT_GT(c.getElapsedTimeExitFunctions(), 0.0f);
+    EXPECT_GT(c.getElapsedTimeSimulation(), 0.);
+    EXPECT_GT(c.getElapsedTimeInitFunctions(), 0.);
+    EXPECT_GT(c.getElapsedTimeExitFunctions(), 0.);
 }
 
 // test the programatically accessible per step simulation time.
@@ -488,20 +488,20 @@ TEST(TestCUDASimulation, stepElapsedTime) {
     c.setPopulationData(pop);
 
     // Try getting the timer before running simulate, which should be empty.
-    EXPECT_EQ(c.getElapsedTimeSteps().size(), 0u);
+    EXPECT_EQ(c.getElapsedTimeSteps().size(), 0.);
     // Or gettng an individual element which is out of boudns should have some kind of error.
-    // EXPECT_GT(c.getElapsedTimeStep(1), 0.0f); // @todo
+    // EXPECT_GT(c.getElapsedTimeStep(1), 0.); // @todo
 
     // Call simulate to run 10 steps, which should take some length of time
     const unsigned int STEPS = 10u;
     c.SimulationConfig().steps = STEPS;
     c.simulate();
 
-    std::vector<float> stepTimes = c.getElapsedTimeSteps();
+    std::vector<double> stepTimes = c.getElapsedTimeSteps();
     EXPECT_EQ(stepTimes.size(), STEPS);
     for (unsigned int step = 0; step < STEPS; step++) {
-        EXPECT_GT(stepTimes.at(step), 0.0f);
-        EXPECT_GT(c.getElapsedTimeStep(step), 0.0f);
+        EXPECT_GT(stepTimes.at(step), 0.);
+        EXPECT_GT(c.getElapsedTimeStep(step), 0.);
     }
 }
 
@@ -531,8 +531,8 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MessageNone, MessageNone) {
     CUDASimulation s(m);
     s.setPopulationData(p);
 
-    EXPECT_EQ(s.getElapsedTimeRTCInitialisation(), 0.0f);
-    EXPECT_EQ(s.getElapsedTimeSimulation(), 0.0f);
+    EXPECT_EQ(s.getElapsedTimeRTCInitialisation(), 0.);
+    EXPECT_EQ(s.getElapsedTimeSimulation(), 0.);
 
 } */
 
@@ -556,12 +556,12 @@ TEST(TestCUDASimulation, RTCElapsedTime) {
     AgentVector p(agent, AGENT_COUNT);
     CUDASimulation s(m);
     // The RTC initialisation occurs before anything try to  interact with the device, i.e. population generation so the timer should be 0 here
-    EXPECT_EQ(s.getElapsedTimeRTCInitialisation(), 0.0f);
+    EXPECT_EQ(s.getElapsedTimeRTCInitialisation(), 0.);
     s.SimulationConfig().steps = 1;
     s.setPopulationData(p);
     s.simulate();
     // Afterwards timers should be non 0.
-    EXPECT_GT(s.getElapsedTimeRTCInitialisation(), 0.0f);
+    EXPECT_GT(s.getElapsedTimeRTCInitialisation(), 0.);
 }
 
 // test that we can have 2 instances of the same ModelDescription simultaneously
