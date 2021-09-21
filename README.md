@@ -162,6 +162,7 @@ cmake --build . --target all
 | `BUILD_SWIG_PYTHON_VENV` | `ON`/`OFF`        | Use a python `venv` when building the python Swig target. Default `ON`.                                    |
 | `BUILD_TESTS`            | `ON`/`OFF`        | Build the C++/CUDA test suite. Default `OFF`.                                                              |
 | `BUILD_TESTS_DEV`        | `ON`/`OFF`        | Build the reduced-scope development test suite. Default `OFF`                                              |
+| `USE_GTEST_DISCOVER`     | `ON`/`OFF`        | Run individual CUDA C++ tests as independent `ctest` tests. This dramatically increases test suite runtime. Default `OFF`. |
 | `VISUALISATION`          | `ON`/`OFF`        | Enable Visualisation. Default `OFF`.                                                                       |
 | `VISUALISATION_ROOT`     | `path/to/vis`     | Provide a path to a local copy of the visualisation repository.                                            |
 | `USE_NVTX`               | `ON`/`OFF`        | Enable NVTX markers for improved profiling. Default `OFF`                                                  |
@@ -236,6 +237,25 @@ Several environmental variables are used or required by FLAME GPU 2.
 + `FLAMEGPU_TMP_DIR` - FLAME GPU may cache some files to a temporary directory on the system, using the temporary directory returned by [`std::filesystem::temp_directory_path`](https://en.cppreference.com/w/cpp/filesystem/temp_directory_path). The location can optionally be overridden using the `FLAMEGPU_TMP_DIR` environment variable.
 
 ## Running the Test Suite(s)
+
+### Using CTest
+
+[CTest](https://cmake.org/cmake/help/latest/manual/ctest.1.html) is used to orchestrate running multiple test suites for different aspects of FLAME GPU 2 (i.e. the CUDA/C++ Unit test suite, and python tests if enabled).
+
+The test suites can be executed using `ctest`, or `ctest -VV` for verbose output of sub-tests.
+
+More verbose CTest output for the GoogleTest based CUDA C++ test suite(s) can be enabled by configuring CMake with `USE_GTEST_DISCOVER` set to `ON`.
+This however will dramatically increase test suite execution time.
+
+1. Configure CMake to build the desired tests suites as desired, using `BUILD_TESTS=ON`, `BUILD_TESTS_DEV=ON` and optionally `USE_GTEST_DISCOVER=ON`.
+2. Build the `tests`, `tests_dev` targets as required
+3. Run the test suites via ctest, using `-vv` for more-verbose output. Multiple tests can be ran concurrently using `-j <jobs>`. Use `-R <regex>` to only run matching tests.
+
+    ```bash
+    ctest -vv -j 8
+    ```
+
+### Manually Run each test-suite
 
 To run the CUDA/C++ test suite:
 
