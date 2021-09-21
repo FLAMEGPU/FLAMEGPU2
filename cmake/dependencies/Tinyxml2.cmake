@@ -36,16 +36,6 @@ if(NOT tinyxml2_POPULATED)
         # @todo - make a dynamically generated CMakeLists.txt which can be add_subdirectory'd instead, so that the .vcxproj goes in a folder. Just adding a project doesn't work.
         # project(tinyxml2 LANGUAGES CXX)
 
-        # Set location of static library files
-        # Define output location of static library
-        if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-            # If top level project
-            SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/${CMAKE_BUILD_TYPE}/)
-        else()
-            # If called via add_subdirectory()
-            SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/${CMAKE_BUILD_TYPE}/)
-        endif()
-
         # Depends on the cpp and header files in case of changes
         add_library(tinyxml2 STATIC ${tinyxml2_SOURCE_DIR}/tinyxml2.cpp ${tinyxml2_SOURCE_DIR}/tinyxml2.h)
         # Pic is sensible for any library

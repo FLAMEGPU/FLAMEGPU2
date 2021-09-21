@@ -64,16 +64,14 @@ set(DYNAMIC_VERSION_SRC_SRC "${FLAMEGPU_ROOT}/cmake/version.cpp.in")
 set(DYNAMIC_VERSION_SRC_DEST "${CMAKE_CURRENT_BINARY_DIR}/src/flamegpu/version.cpp")
 configure_file(${DYNAMIC_VERSION_SRC_SRC} ${DYNAMIC_VERSION_SRC_DEST} @ONLY)
 
-# Define output location of static library
+# Define output location of the doxygen target
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
     # If top level project
-    SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/${CMAKE_BUILD_TYPE}/)
     if(${BUILD_API_DOCUMENTATION})
         create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}" "")
     endif()
 else()
     # If called via add_subdirectory()
-    SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/${CMAKE_BUILD_TYPE}/)
     if(${BUILD_API_DOCUMENTATION})
         create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/.." "")
     endif()

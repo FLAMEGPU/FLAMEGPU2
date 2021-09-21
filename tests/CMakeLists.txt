@@ -107,14 +107,7 @@ if(BUILD_TESTS)
         ${TESTS_SRC}
         ${HELPERS_SRC}
     )
-    # Define output location of binary files
-    if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-        # If top level project
-        SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/)
-    else()
-        # If called via add_subdirectory()
-        SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../bin/${CMAKE_BUILD_TYPE}/)
-    endif()
+
     # Add the executable and set required flags for the target
     add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" "${PROJECT_BINARY_DIR}" FALSE)
     # Add the tests directory to the include path,
@@ -142,14 +135,6 @@ if(BUILD_TESTS_DEV)
         ${TESTS_DEV_SRC}
         ${HELPERS_SRC}
     )
-    # Define output location of binary files
-    if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-        # If top level project
-        SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/)
-    else()
-        # If called via add_subdirectory()
-        SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../bin/${CMAKE_BUILD_TYPE}/)
-    endif()
     # Add the executable and set required flags for the target
     add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" "${PROJECT_BINARY_DIR}" FALSE)
     # Add the tests directory to the include path,

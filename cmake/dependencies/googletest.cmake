@@ -27,8 +27,11 @@ if(NOT googletest_POPULATED)
     CMAKE_SET_TARGET_FOLDER("gtest" "Tests/Dependencies")
     # Suppress warnigns from this target.
     include(${CMAKE_CURRENT_LIST_DIR}/../warnings.cmake)
+    # Set output directories
+    include(${CMAKE_CURRENT_LIST_DIR}/../set_output_directories.cmake)
     if(TARGET gtest)
         DisableCompilerWarnings(TARGET gtest)
+        OverwriteOutputDirectoryProperties(TARGET gtest)
     endif()
 endif()
 
