@@ -248,8 +248,8 @@ int main(int argc, const char ** argv) {
         std::array<uint32_t, POPULATION_SIZE> ranks;
         std::iota(ranks.begin(), ranks.end(), 0);
 
-        const uint32_t seed = cuda_simulation.getSimulationConfig().random_seed;
-        std::mt19937 rank_rng(seed);
+        const uint64_t seed = cuda_simulation.getSimulationConfig().random_seed;
+        std::mt19937_64 rank_rng(seed);
 
         {
             flamegpu::AgentVector population(model.Agent("man"), POPULATION_SIZE);
