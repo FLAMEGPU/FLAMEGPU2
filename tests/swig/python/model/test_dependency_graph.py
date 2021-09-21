@@ -79,7 +79,8 @@ class DependencyGraphTest(TestCase):
     
     
     def test_ValidateEmptyGraph(self):
-        graph = pyflamegpu.DependencyGraph()
+        _m = pyflamegpu.ModelDescription(MODEL_NAME)
+        graph = _m.getDependencyGraph()
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             graph.validateDependencyGraph()
         assert e.value.type() == "InvalidDependencyGraph"
