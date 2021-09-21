@@ -40,6 +40,7 @@ mark_as_advanced(CMAKE_USE_FOLDERS)
 # Include files which define target specific functions.
 include(${CMAKE_CURRENT_LIST_DIR}/warnings.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cxxstd.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/embedded_paths.cmake)
 
 # Set a default build type if not passed
 get_property(GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
@@ -303,7 +304,9 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     CommonCompilerSettings(TARGET "${NAME}")
     # Set the cuda gencodes, potentially using the user-provided CUDA_ARCH
     SetCUDAGencodes(TARGET "${PROJECT_NAME}")
-            
+    # Strip absolute paths from binaries if supported by the compiler.
+    TargetStripBuildDirectoryInformation(TARGET "${NAME}")
+
     # Enable RDC for the target
     set_property(TARGET ${NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 

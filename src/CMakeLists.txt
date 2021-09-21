@@ -352,6 +352,8 @@ EnableFLAMEGPUCompilerWarnings(TARGET "${PROJECT_NAME}")
 CommonCompilerSettings(TARGET "${PROJECT_NAME}")
 # Set the cuda gencodes, potentially using the user-provided CUDA_ARCH
 SetCUDAGencodes(TARGET "${PROJECT_NAME}")
+# Strip absolute paths from binaries if supported by the compiler.
+TargetStripBuildDirectoryInformation(TARGET "${PROJECT_NAME}")
 
 # enable "fpic" for linux to allow shared libraries to be build from the static library (required for swig)
 set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
