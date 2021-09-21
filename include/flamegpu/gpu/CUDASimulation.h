@@ -219,41 +219,41 @@ class CUDASimulation : public Simulation {
 
    /**
      * Get the duration of the last time RTC was iniitliased 
-     * @return elapsed time of last simulation call in milliseconds.
+     * @return elapsed time of last simulation call in seconds.
      */
-    float getElapsedTimeRTCInitialisation() const;
+    double getElapsedTimeRTCInitialisation() const;
 
     /**
-     * Get the duration of the last call to simulate() in milliseconds. 
-     * @return elapsed time of last simulation call in milliseconds.
+     * Get the duration of the last call to simulate() in seconds. 
+     * @return elapsed time of last simulation call in seconds.
      */
-    float getElapsedTimeSimulation() const;
+    double getElapsedTimeSimulation() const;
 
     /**
-     * Get the duration of the last call to initFunctions() in milliseconds. 
-     * @return elapsed time of last simulation call in milliseconds.
+     * Get the duration of the last call to initFunctions() in seconds. 
+     * @return elapsed time of last simulation call in seconds.
      */
-    float getElapsedTimeInitFunctions() const;
+    double getElapsedTimeInitFunctions() const;
 
     /**
-     * Get the duration of the last call to stepFunctions() in milliseconds. 
-     * @return elapsed time of last simulation call in milliseconds.
+     * Get the duration of the last call to stepFunctions() in seconds. 
+     * @return elapsed time of last simulation call in seconds.
      */
-    float getElapsedTimeExitFunctions() const;
+    double getElapsedTimeExitFunctions() const;
 
     /**
      * Get the duration of each step() since the last call to `reset`
      * @return vector of step times 
      */
-    std::vector<float> getElapsedTimeSteps() const;
+    std::vector<double> getElapsedTimeSteps() const;
 
 
     /** 
-     * Get the duration of an individual step in milliseconds.
+     * Get the duration of an individual step in seconds.
      * @param step Index of step, must be less than the number of steps executed.
-     * @return elapsed time of required step in milliseconds
+     * @return elapsed time of required step in seconds
      */
-    float getElapsedTimeStep(unsigned int step) const;
+    double getElapsedTimeStep(unsigned int step) const;
 
     /**
      * Returns the unique instance id of this CUDASimulation instance
@@ -305,26 +305,26 @@ class CUDASimulation : public Simulation {
      */
     unsigned int step_count;
     /**
-     * Duration of the last call to simulate() in milliseconds, with a resolution of around 0.5 microseconds (cudaEventElapsedtime)
+     * Duration of the last call to simulate() in seconds
      */
-    float elapsedMillisecondsSimulation;
+    double elapsedSecondsSimulation;
     /**
-     * Duration of the last call to initFunctions() in milliseconds, with a resolution of around 0.5 microseconds (cudaEventElapsedtime)
+     * Duration of the last call to initFunctions() in seconds
      */
-    float elapsedMillisecondsInitFunctions;
+    double elapsedSecondsInitFunctions;
     /**
-     * Duration of the last call to exitFunctions() in milliseconds, with a resolution of around 0.5 microseconds (cudaEventElapsedtime)
+     * Duration of the last call to exitFunctions() in seconds
      */
-    float elapsedMillisecondsExitFunctions;
+    double elapsedSecondsExitFunctions;
    /**
-     * Duration of the last call to initialiseRTC() in milliseconds, with a resolution of around 0.5 microseconds (cudaEventElapsedtime)
+     * Duration of the last call to initialiseRTC() in seconds
      */
-    float elapsedMillisecondsRTCInitialisation;
+    double elapsedSecondsRTCInitialisation;
 
     /**
-     * Vector of per step timing information in milliseconds, with a resolution of around 0.5 microseconds.
+     * Vector of per step timing information in seconds
      */
-    std::vector<float> elapsedMillisecondsPerStep;
+    std::vector<double> elapsedSecondsPerStep;
     /**
      * Update the step counter for host and device.
      */

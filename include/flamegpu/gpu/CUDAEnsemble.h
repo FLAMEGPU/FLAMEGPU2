@@ -103,7 +103,7 @@ class CUDAEnsemble {
     /**
      * Get the duration of the last call to simulate() in milliseconds. 
      */
-    float getEnsembleElapsedTime() const { return ensemble_elapsed_time; }
+    double getEnsembleElapsedTime() const { return ensemble_elapsed_time; }
     /**
      * Return the list of logs collected from the last call to simulate()
      */
@@ -139,9 +139,9 @@ class CUDAEnsemble {
      */
     const std::shared_ptr<const ModelData> model;
     /**
-     * Runtime of previous call to simulate() in milliseconds, initially 0
+     * Runtime of previous call to simulate() in seconds, initially 0.
      */
-    float ensemble_elapsed_time = 0.f;
+    double ensemble_elapsed_time = 0.;
 };
 
 }  // namespace flamegpu

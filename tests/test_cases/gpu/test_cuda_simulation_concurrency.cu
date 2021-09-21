@@ -54,7 +54,7 @@ const unsigned int POPULATION_SIZES = 512;
  * Utility function to time N repetitions of a simulation, returning the mean (but skipping the first)
  */
 float meanSimulationTime(const int REPETITIONS, CUDASimulation &s, std::vector<AgentVector *> const &populations) {
-    float total_time = 0.f;
+    double total_time = 0.f;
     for (int r = 0; r < REPETITIONS + 1; r++) {
         // re-set each population
         for (AgentVector* pop : populations) {
