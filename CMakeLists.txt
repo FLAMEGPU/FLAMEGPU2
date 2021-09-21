@@ -100,6 +100,11 @@ option(BUILD_TESTS "Enable building tests" OFF)
 # Option to enable the development tests target, test_dev. This is independant from build_tests
 option(BUILD_TESTS_DEV "Enable building test_dev" OFF)
 
+if(BUILD_TESTS OR BUILD_TESTS_DEV)
+    # Option to enable detailed ctest for gtest based suites. This reduces test suite performance.
+    option(USE_GTEST_DISCOVER "Enable GTEST_DISCOVER for more detailed ctest output without -VV. This dramitically increases test suite runtime to CUDA context initialisation." OFF)
+endif()
+
 # Option to enable/disable NVTX markers for improved profiling
 option(USE_NVTX "Build with NVTX markers enabled" OFF)
 
@@ -180,6 +185,9 @@ if(BUILD_TESTS OR BUILD_TESTS_DEV)
         set(BUILD_TESTS OFF)
         set(BUILD_TESTS_DEV OFF)
     else()
+        # Enable Ctest
+        enable_testing()
+        # Add the tests subdirectory
         add_subdirectory(tests)
     endif()
 endif()
