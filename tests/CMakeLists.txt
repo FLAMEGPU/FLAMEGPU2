@@ -81,6 +81,8 @@ SET(TESTS_SRC
 )
 # Source files for the tests_dev target 
 SET(TESTS_DEV_SRC
+# ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_simulation.cu
+${CMAKE_CURRENT_SOURCE_DIR}/test_cases/temp_nvhpc.cu
 )
 # Common source files for tests and test_dev
 SET(HELPERS_SRC
