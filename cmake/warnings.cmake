@@ -41,7 +41,6 @@ function(SetHighWarningLevel)
     elseif(NOT TARGET ${SHWL_TARGET})
         message(FATAL_ERROR "SetHighWarningLevel: TARGET '${SHWL_TARGET}' is not a valid target")
     endif()
-    
     # Per host-compiler settings for high warning levels and opt-in warnings.
     if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         # Only set W4 for MSVC, WAll is more like Wall, Wextra and Wpedantic
@@ -53,7 +52,10 @@ function(SetHighWarningLevel)
         target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wall>")
         target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wsign-compare>")
         # CUB 1.9.10 prevents Wreorder being usable on windows, so linux only. Cannot suppress via diag_suppress pragmas.
-        target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--Wreorder>")
+        # Non nvhpc only.
+        if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
+            target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--Wreorder>")
+        endif()
         # Add warnings which suggest the use of override
         # Disabled, as cpplint occasionally disagrees with gcc concerning override
         # target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wsuggest-override>")
@@ -102,6 +104,10 @@ function(SuppressSomeCompilerWarnings)
         endif()
         # Suppress Fatbinc warnings on msvc at link time (CMake >= 3.18)
         target_link_options(${SSCW_TARGET} PRIVATE "$<DEVICE_LINK:SHELL:-Xcompiler /wd4100>")
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
+        # nvc++ etc do not appear to have an equivalent to -isystem. Rather than more pragma warning soup, just tone down warnings when using nvc++ as appropriate. 
+        target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe --diag_suppress=code_is_unreachable>")
+        target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:SHELL:--diag_suppress=code_is_unreachable>")
     else()
         # Linux specific warning suppressions
     endif()
@@ -154,8 +160,10 @@ function(EnableWarningsAsErrors)
             target_link_options(${EWAS_TARGET} PRIVATE "$<DEVICE_LINK:SHELL:-Xcompiler -Werror>")
             # Add cross-execution-space-call. This is blocked under msvc by a jitify related bug (untested > CUDA 10.1): https://github.com/NVIDIA/jitify/issues/62
             target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror cross-execution-space-call>")
-            # Add reorder to Werror. This is blocked under msvc by cub/thrust and the lack of isystem on msvc. Appears unable to suppress the warning via diag_suppress pragmas.
-            target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror reorder>")
+            # Add reorder to Werror. This is blocked under msvc by cub/thrust and the lack of isystem on msvc. Appears unable to suppress the warning via diag_suppress pragmas. Cannot be used with nvhpc
+            if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
+                target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror reorder>")
+            endif()
         endif()
         # Platform/host-compiler indifferent options:
         # Generic WError settings for nvcc
