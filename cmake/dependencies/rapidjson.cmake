@@ -7,14 +7,27 @@ include(FetchContent)
 include(ExternalProject)
 cmake_policy(SET CMP0079 NEW)
 
+# Define some variables to allow condiitoanl fetch content declarations
+set(RapidJSON_GIT_REMOTE "https://github.com/Tencent/rapidjson.git")
+set(RapidJSON_GIT_TAG "f56928de85d56add3ca6ae7cf7f119a42ee1585b")
+
 # Head of master as of 2020-07-14, as last release is ~500 commits behind head
-FetchContent_Declare(
-    rapidjson
-    GIT_REPOSITORY https://github.com/Tencent/rapidjson.git
-    GIT_TAG        f56928de85d56add3ca6ae7cf7f119a42ee1585b
-    GIT_PROGRESS   ON
-    # UPDATE_DISCONNECTED   ON
-)
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
+    FetchContent_Declare(
+        rapidjson
+        GIT_REPOSITORY ${RapidJSON_GIT_REMOTE}
+        GIT_TAG ${RapidJSON_GIT_TAG}
+        GIT_PROGRESS   OFF
+    )
+else()
+    FetchContent_Declare(
+        rapidjson
+        GIT_REPOSITORY ${RapidJSON_GIT_REMOTE}
+        GIT_TAG ${RapidJSON_GIT_TAG}
+        GIT_PROGRESS   OFF
+        PATCH_COMMAND git apply ${CMAKE_CURRENT_LIST_DIR}/patches/rapidjson-nvhpc.patch || true
+    )
+endif()
 FetchContent_GetProperties(rapidjson)
 if(NOT rapidjson_POPULATED)
     FetchContent_Populate(rapidjson)
@@ -32,5 +45,4 @@ if(NOT rapidjson_POPULATED)
     if(TARGET rapidjson)
         add_library(RapidJSON::rapidjson ALIAS rapidjson)
     endif()
-
 endif()
