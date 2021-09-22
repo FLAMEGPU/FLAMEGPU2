@@ -7,16 +7,30 @@ include(FetchContent)
 include(ExternalProject)
 cmake_policy(SET CMP0079 NEW)
 
+# Define some variables to allow co fetch content declarations
+set(RapidJSON_GIT_REMOTE "https://github.com/Tencent/rapidjson.git")
 # a95e013b97ca6523f32da23f5095fcc9dd6067e5 is the last commit before a change which breaks our method of finding rapid json without running a cmake install first.
 # but we also need to patch this to avoid a cmake >= 3.26.4 deprecation
-FetchContent_Declare(
-    rapidjson
-    GIT_REPOSITORY https://github.com/Tencent/rapidjson.git
-    GIT_TAG        a95e013b97ca6523f32da23f5095fcc9dd6067e5
-    GIT_PROGRESS   ON
-    PATCH_COMMAND git apply ${CMAKE_CURRENT_LIST_DIR}/patches/rapidjson-cmake-3.5-deprecation.patch || true
-    # UPDATE_DISCONNECTED   ON
-)
+set(RapidJSON_GIT_TAG "a95e013b97ca6523f32da23f5095fcc9dd6067e5")
+
+# Head of master as of 2020-07-14, as last release is ~500 commits behind head
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
+    FetchContent_Declare(
+        rapidjson
+        GIT_REPOSITORY ${RapidJSON_GIT_REMOTE}
+        GIT_TAG ${RapidJSON_GIT_TAG}
+        GIT_PROGRESS   OFF
+        PATCH_COMMAND git apply ${CMAKE_CURRENT_LIST_DIR}/patches/rapidjson-cmake-3.5-deprecation.patch || true
+    )
+else()
+    FetchContent_Declare(
+        rapidjson
+        GIT_REPOSITORY ${RapidJSON_GIT_REMOTE}
+        GIT_TAG ${RapidJSON_GIT_TAG}
+        GIT_PROGRESS   OFF
+        PATCH_COMMAND git apply ${CMAKE_CURRENT_LIST_DIR}/patches/rapidjson-cmake-3.5-deprecation.patch ${CMAKE_CURRENT_LIST_DIR}/patches/rapidjson-nvhpc.patch || true
+    )
+endif()
 FetchContent_GetProperties(rapidjson)
 if(NOT rapidjson_POPULATED)
     FetchContent_Populate(rapidjson)
@@ -40,7 +54,6 @@ if(NOT rapidjson_POPULATED)
     if(TARGET rapidjson)
         add_library(RapidJSON::rapidjson ALIAS rapidjson)
     endif()
-
 endif()
 
 # Mark some CACHE vars advanced for a cleaner GUI
