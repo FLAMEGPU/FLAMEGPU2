@@ -441,7 +441,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Jitify::jitify)
 target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<COMPILE_LANGUAGE:C,CXX,CUDA>:JITIFY_PRINT_LOG>")
 
 # If gcc, need to add linker flag for std::experimental::filesystem pre c++17
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
     target_link_libraries(${PROJECT_NAME} PUBLIC stdc++fs)
 endif()
 

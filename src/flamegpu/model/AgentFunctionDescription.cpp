@@ -510,12 +510,17 @@ bool AgentFunctionDescription::isRTC() const {
 }
 
 AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& function_name, const std::string& func_src) {
+    printf("::%d\n", __LINE__);
     if (agent->functions.find(function_name) == agent->functions.end()) {
+        printf("::%d\n", __LINE__);
         // Use Regex to get agent function name, and input/output message type
         std::regex rgx(R"###(.*FLAMEGPU_AGENT_FUNCTION\([ \t]*(\w+),[ \t]*([:\w]+),[ \t]*([:\w]+)[ \t]*\))###");
+        printf("::%d\n", __LINE__);
         std::smatch match;
         if (std::regex_search(func_src, match, rgx)) {
+            printf("::%d\n", __LINE__);
             if (match.size() == 4) {
+                printf("::%d\n", __LINE__);
                 std::string code_func_name = match[1];  // not yet clear if this is required
                 std::string in_type_name = match[2];
                 std::string out_type_name = match[3];
@@ -530,9 +535,12 @@ AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& fu
                 func_src_str = func_src_str.append("#include \"flamegpu/runtime/messaging/"+ in_type_include_name + "/" + in_type_include_name + "Device.cuh\"\n");
                 // If the message input and output types do not match, also include the input type
                 if (in_type_name != out_type_name) {
+                    printf("::%d\n", __LINE__);
                     std::string out_type_include_name = out_type_name.substr(out_type_name.find_last_of("::") + 1);
                     func_src_str = func_src_str.append("#include \"flamegpu/runtime/messaging/"+ out_type_include_name + "/" + out_type_include_name + "Device.cuh\"\n");
                 }
+                printf("::%d\n", __LINE__);
+
                 // Append line pragma to correct file/line number in same format as OUTPUT_RTC_DYNAMIC_FILES
 #ifndef OUTPUT_RTC_DYNAMIC_FILES
                 func_src_str.append("#line 1 \"").append(code_func_name).append("_impl.cu\"\n");
@@ -544,8 +552,15 @@ AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& fu
                 } else {
                     func_src_str.append(func_src);
                 }
+                printf("::%d\n", __LINE__);
                 auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, func_src_str, in_type_name, out_type_name, code_func_name));
+                printf("::%d\n", __LINE__);
+                printf("function_name %s\n", function_name.c_str());
+                printf("rtn %p\n", rtn.get());
+                printf("rtn->rtc_func_name %s\n", rtn->rtc_func_name.c_str());
+                printf("agent->functions.size() %zu\n", agent->functions.size());
                 agent->functions.emplace(function_name, rtn);
+                printf("::%d\n", __LINE__);
                 return *rtn->description;
             } else {
                 THROW exception::InvalidAgentFunc("Runtime agent function('%s') is missing FLAMEGPU_AGENT_FUNCTION arguments e.g. (func_name, message_input_type, message_output_type), "

@@ -1,0 +1,26 @@
+diff --git a/include/rapidjson/internal/biginteger.h b/include/rapidjson/internal/biginteger.h
+index 8eb87c7c..5db5a2eb 100644
+--- a/include/rapidjson/internal/biginteger.h
++++ b/include/rapidjson/internal/biginteger.h
+@@ -252,7 +252,7 @@ private:
+         if (low < k)
+             (*outHigh)++;
+         return low;
+-#elif (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)) && defined(__x86_64__)
++#elif (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)) && defined(__x86_64__) && !defined(__NVCOMPILER)
+         __extension__ typedef unsigned __int128 uint128;
+         uint128 p = static_cast<uint128>(a) * static_cast<uint128>(b);
+         p += k;
+diff --git a/include/rapidjson/internal/diyfp.h b/include/rapidjson/internal/diyfp.h
+index 8f7d853a..68039c23 100644
+--- a/include/rapidjson/internal/diyfp.h
++++ b/include/rapidjson/internal/diyfp.h
+@@ -75,7 +75,7 @@ struct DiyFp {
+         if (l & (uint64_t(1) << 63)) // rounding
+             h++;
+         return DiyFp(h, e + rhs.e + 64);
+-#elif (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)) && defined(__x86_64__)
++#elif (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)) && defined(__x86_64__) && !defined(__NVCOMPILER)
+         __extension__ typedef unsigned __int128 uint128;
+         uint128 p = static_cast<uint128>(f) * static_cast<uint128>(rhs.f);
+         uint64_t h = static_cast<uint64_t>(p >> 64);
