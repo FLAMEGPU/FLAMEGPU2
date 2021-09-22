@@ -61,8 +61,8 @@ if(NOT COMMAND flamegpu_set_high_warning_level)
             target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wall$<COMMA>-Wsign-compare>")
             target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wall>")
             target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wsign-compare>")
-            # Reorder errors for device code are caused by some cub/thrust versions (< 2.1.0?), but can be suppressed by pragmas successfully in 11.3+ under linux
-            if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.3.0)
+            # Reorder errors for device code are caused by some cub/thrust versions (< 2.1.0?), but can be suppressed by pragmas successfully in 11.3+ under linux, but not for nvhpc
+            if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.3.0 AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
                 target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--Wreorder>")
             endif()
             # Add warnings which suggest the use of override
@@ -115,6 +115,10 @@ if(NOT COMMAND flamegpu_suppress_some_compiler_warnings)
             if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.6.0)
                 target_compile_definitions(${SSCW_TARGET} PRIVATE "__CDPRT_SUPPRESS_SYNC_DEPRECATION_WARNING")
             endif()
+        elseif(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
+            # nvc++ etc do not appear to have an equivalent to -isystem. Rather than more pragma warning soup, just tone down warnings when using nvc++ as appropriate. 
+            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe --diag_suppress=code_is_unreachable>")
+            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:SHELL:--diag_suppress=code_is_unreachable>")
         else()
             # Linux specific warning suppressions
         endif()
@@ -179,7 +183,7 @@ if(NOT COMMAND flamegpu_enable_warnings_as_errors)
                 # Add cross-execution-space-call. This is blocked under msvc by a jitify related bug (untested > CUDA 10.1): https://github.com/NVIDIA/jitify/issues/62
                 target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror cross-execution-space-call>")
                 # Add reorder to Werror, this is usable with workign nv/diag_suppress pragmas for cub/thrust from CUDA 11.3+ under linux
-                if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.3.0)
+                if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.3.0 AND NOT NOT CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
                     target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror reorder>")
                 endif()
             endif()
