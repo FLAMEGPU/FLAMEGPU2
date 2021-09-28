@@ -421,9 +421,9 @@ if pyflamegpu.VISUALISATION:
 cudaSimulation.initialise(sys.argv);
 
 # If no xml model file was is provided, generate a population.
-if not cudaSimulation.getSimulationConfig().input_file:
+if not cudaSimulation.SimulationConfig().input_file:
     # Uniformly distribute agents within space, with uniformly distributed initial velocity.
-    random.seed(cudaSimulation.getSimulationConfig().random_seed);
+    random.seed(cudaSimulation.SimulationConfig().random_seed);
     min_pos = env.getPropertyFloat("MIN_POSITION");
     max_pos = env.getPropertyFloat("MAX_POSITION");
     min_speed = env.getPropertyFloat("MIN_INITIAL_SPEED");
