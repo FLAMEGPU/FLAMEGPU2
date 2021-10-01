@@ -347,7 +347,7 @@ AgentFunctionDescription AgentDescription::newFunction(const std::string &functi
             }
         }
         auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, f, in_t, out_t));
-        agent->functions.emplace(function_name, rtn);
+        agent->functions.insert({function_name, rtn});  // emplace causes nvhpc with gcc 9 to segfault
         return AgentFunctionDescription(rtn);
     }
     THROW exception::InvalidAgentFunc("Agent ('%s') already contains function '%s', "
