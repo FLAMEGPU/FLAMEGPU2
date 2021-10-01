@@ -264,6 +264,9 @@ T MessageBruteForce::In::Message::getVariable(const char(&variable_name)[M], con
 template<typename T, unsigned int N>
 __device__ void MessageBruteForce::Out::setVariable(const char(&variable_name)[N], T value) const {  // message name or variable name
     if (variable_name[0] == '_') {
+#if !defined(SEATBELTS) || SEATBELTS
+        DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in MessageBruteForce::Out::setVariable().\n", variable_name);
+#endif
         return;  // Fail silently
     }
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
@@ -279,6 +282,9 @@ __device__ void MessageBruteForce::Out::setVariable(const char(&variable_name)[N
 template<typename T, unsigned int N, unsigned int M>
 __device__ void MessageBruteForce::Out::setVariable(const char(&variable_name)[M], const unsigned int& array_index, T value) const {
     if (variable_name[0] == '_') {
+#if !defined(SEATBELTS) || SEATBELTS
+        DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in MessageBruteForce::Out::setVariable().\n", variable_name);
+#endif
         return;  // Fail silently
     }
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
