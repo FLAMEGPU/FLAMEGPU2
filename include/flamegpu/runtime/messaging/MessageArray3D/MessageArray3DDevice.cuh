@@ -776,6 +776,9 @@ T MessageArray3D::In::Filter::Message::getVariable(const char(&variable_name)[M]
 template<typename T, unsigned int N>
 __device__ void MessageArray3D::Out::setVariable(const char(&variable_name)[N], T value) const {  // message name or variable name
     if (variable_name[0] == '_') {
+#if !defined(SEATBELTS) || SEATBELTS
+        DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in MessageArray3D::Out::setVariable().\n", variable_name);
+#endif
         return;  // Fail silently
     }
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
@@ -788,6 +791,9 @@ __device__ void MessageArray3D::Out::setVariable(const char(&variable_name)[N], 
 template<typename T, unsigned int N, unsigned int M>
 __device__ void MessageArray3D::Out::setVariable(const char(&variable_name)[M], const unsigned int& array_index, T value) const {
     if (variable_name[0] == '_') {
+#if !defined(SEATBELTS) || SEATBELTS
+        DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in MessageArray3D::Out::setVariable().\n", variable_name);
+#endif
         return;  // Fail silently
     }
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
