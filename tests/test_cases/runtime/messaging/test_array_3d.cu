@@ -422,13 +422,13 @@ TEST(TestMessage_Array3D, ReadEmpty) {
     auto ai = pop_out[0];
     EXPECT_EQ(ai.getVariable<unsigned int>("value"), 0u);  // Unset array messages should be 0
 }
-#if !defined(SEATBELTS) || SEATBELTS
 FLAMEGPU_AGENT_FUNCTION(InMooreWrapOutOfBoundsX, MessageArray3D, MessageNone) {
     for (auto a : FLAMEGPU->message_in.wrap(dCBRT_AGENT_COUNT, 0, 0)) {
         FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
     }
     return ALIVE;
 }
+#if !defined(SEATBELTS) || SEATBELTS
 TEST(TestMessage_Array3D, MooreWrap_InitOutOfBoundsX) {
 #else
 TEST(TestMessage_Array3D, DISABLED_MooreWrap_InitOutOfBoundsX) {
@@ -462,13 +462,13 @@ TEST(TestMessage_Array3D, DISABLED_MooreWrap_InitOutOfBoundsX) {
     c.setPopulationData(pop);
     EXPECT_THROW(c.step(), flamegpu::exception::DeviceError);
 }
-#if !defined(SEATBELTS) || SEATBELTS
 FLAMEGPU_AGENT_FUNCTION(InMooreWrapOutOfBoundsY, MessageArray3D, MessageNone) {
     for (auto a : FLAMEGPU->message_in.wrap(0, dCBRT_AGENT_COUNT + 1, 0)) {
         FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
     }
     return ALIVE;
 }
+#if !defined(SEATBELTS) || SEATBELTS
 TEST(TestMessage_Array3D, MooreWrap_InitOutOfBoundsY) {
 #else
 TEST(TestMessage_Array3D, DISABLED_MooreWrap_InitOutOfBoundsY) {
@@ -502,13 +502,13 @@ TEST(TestMessage_Array3D, DISABLED_MooreWrap_InitOutOfBoundsY) {
     c.setPopulationData(pop);
     EXPECT_THROW(c.step(), flamegpu::exception::DeviceError);
 }
-#if !defined(SEATBELTS) || SEATBELTS
 FLAMEGPU_AGENT_FUNCTION(InMooreWrapOutOfBoundsZ, MessageArray3D, MessageNone) {
     for (auto a : FLAMEGPU->message_in.wrap(0, 0, dCBRT_AGENT_COUNT + 2)) {
         FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
     }
     return ALIVE;
 }
+#if !defined(SEATBELTS) || SEATBELTS
 TEST(TestMessage_Array3D, MooreWrap_InitOutOfBoundsZ) {
 #else
 TEST(TestMessage_Array3D, DISABLED_MooreWrap_InitOutOfBoundsZ) {
@@ -542,13 +542,13 @@ TEST(TestMessage_Array3D, DISABLED_MooreWrap_InitOutOfBoundsZ) {
     c.setPopulationData(pop);
     EXPECT_THROW(c.step(), flamegpu::exception::DeviceError);
 }
-#if !defined(SEATBELTS) || SEATBELTS
 FLAMEGPU_AGENT_FUNCTION(InMooreWrapBadRadius1, MessageArray3D, MessageNone) {
     for (auto a : FLAMEGPU->message_in.wrap(0, 0, 0, 0)) {
         FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
     }
     return ALIVE;
 }
+#if !defined(SEATBELTS) || SEATBELTS
 TEST(TestMessage_Array3D, MooreWrap_BadRadius1) {
 #else
 TEST(TestMessage_Array3D, DISABLED_MooreWrap_BadRadius1) {
@@ -582,13 +582,13 @@ TEST(TestMessage_Array3D, DISABLED_MooreWrap_BadRadius1) {
     c.setPopulationData(pop);
     EXPECT_THROW(c.step(), flamegpu::exception::DeviceError);
 }
-#if !defined(SEATBELTS) || SEATBELTS
 FLAMEGPU_AGENT_FUNCTION(InMooreWrapBadRadius2, MessageArray3D, MessageNone) {
     for (auto a : FLAMEGPU->message_in.wrap(0, 0, 0, 3)) {
         FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
     }
     return ALIVE;
 }
+#if !defined(SEATBELTS) || SEATBELTS
 TEST(TestMessage_Array3D, MooreWrap_BadRadius2) {
 #else
 TEST(TestMessage_Array3D, DISABLED_MooreWrap_BadRadius2) {
@@ -622,13 +622,13 @@ TEST(TestMessage_Array3D, DISABLED_MooreWrap_BadRadius2) {
     c.setPopulationData(pop);
     EXPECT_THROW(c.step(), flamegpu::exception::DeviceError);
 }
-#if !defined(SEATBELTS) || SEATBELTS
 FLAMEGPU_AGENT_FUNCTION(InMooreOutOfBoundsX, MessageArray3D, MessageNone) {
     for (auto a : FLAMEGPU->message_in(dCBRT_AGENT_COUNT, 0, 0)) {
         FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
     }
     return ALIVE;
 }
+#if !defined(SEATBELTS) || SEATBELTS
 TEST(TestMessage_Array3D, Moore_InitOutOfBoundsX) {
 #else
 TEST(TestMessage_Array3D, DISABLED_Moore_InitOutOfBoundsX) {
@@ -662,13 +662,13 @@ TEST(TestMessage_Array3D, DISABLED_Moore_InitOutOfBoundsX) {
     c.setPopulationData(pop);
     EXPECT_THROW(c.step(), flamegpu::exception::DeviceError);
 }
-#if !defined(SEATBELTS) || SEATBELTS
 FLAMEGPU_AGENT_FUNCTION(InMooreOutOfBoundsY, MessageArray3D, MessageNone) {
     for (auto a : FLAMEGPU->message_in(0, dCBRT_AGENT_COUNT + 1, 0)) {
         FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
     }
     return ALIVE;
 }
+#if !defined(SEATBELTS) || SEATBELTS
 TEST(TestMessage_Array3D, Moore_InitOutOfBoundsY) {
 #else
 TEST(TestMessage_Array3D, DISABLED_Moore_InitOutOfBoundsY) {
@@ -702,13 +702,13 @@ TEST(TestMessage_Array3D, DISABLED_Moore_InitOutOfBoundsY) {
     c.setPopulationData(pop);
     EXPECT_THROW(c.step(), flamegpu::exception::DeviceError);
 }
-#if !defined(SEATBELTS) || SEATBELTS
 FLAMEGPU_AGENT_FUNCTION(InMooreOutOfBoundsZ, MessageArray3D, MessageNone) {
     for (auto a : FLAMEGPU->message_in(0, 0, dCBRT_AGENT_COUNT + 2)) {
         FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
     }
     return ALIVE;
 }
+#if !defined(SEATBELTS) || SEATBELTS
 TEST(TestMessage_Array3D, Moore_InitOutOfBoundsZ) {
 #else
 TEST(TestMessage_Array3D, DISABLED_Moore_InitOutOfBoundsZ) {
@@ -742,13 +742,13 @@ TEST(TestMessage_Array3D, DISABLED_Moore_InitOutOfBoundsZ) {
     c.setPopulationData(pop);
     EXPECT_THROW(c.step(), flamegpu::exception::DeviceError);
 }
-#if !defined(SEATBELTS) || SEATBELTS
 FLAMEGPU_AGENT_FUNCTION(InMooreBadRadius, MessageArray3D, MessageNone) {
     for (auto a : FLAMEGPU->message_in(0, 0, 0, 0)) {
         FLAMEGPU->setVariable<unsigned int>("index", a.getVariable<unsigned int>("index_times_3"));
     }
     return ALIVE;
 }
+#if !defined(SEATBELTS) || SEATBELTS
 TEST(TestMessage_Array3D, Moore_BadRadius) {
 #else
 TEST(TestMessage_Array3D, DISABLED_Moore_BadRadius) {
