@@ -47,14 +47,14 @@ if(${GENERATOR_IS_MULTI_CONFIG})
     # CMAKE_CONFIGURATION_TYPES defaults to something platform specific
     # Therefore can't detect if user has changed value and not reset it
     # So force "Debug;Release"
-    set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE INTERNAL
-        "Choose the types of build, options are: Debug Release." FORCE)#
+    # set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE INTERNAL
+        # "Choose the types of build, options are: Debug Release." FORCE)#
 else()
     if(NOT CMAKE_BUILD_TYPE)
         set(default_build_type "Release")
         message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
         set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING 
-            "Choose the type of build, options are: None Debug Release." FORCE)
+            "Choose the type of build, options are: Release, Debug, RelWithDebInfo, MinSizeRel or leave the value empty for the default." FORCE)
     endif()
 endif()
 

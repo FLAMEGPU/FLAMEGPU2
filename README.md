@@ -155,7 +155,7 @@ cmake --build . --target all
 
 | Option                   | Value             | Description                                                                                                |
 | ------------------------ | ----------------- | ---------------------------------------------------------------------------------------------------------- |
-| `CMAKE_BUILD_TYPE`       | `Release`/`Debug` | Select the build configuration for single-target generators such as `make`                                 |
+| `CMAKE_BUILD_TYPE`       | `Release`/`Debug`/`MinSizeRel`/`RelWithDebInfo` | Select the build configuration for single-target generators such as `make`   |
 | `SEATBELTS`              | `ON`/`OFF`        | Enable / Disable additional runtime checks which harm performance but increase usability. Default `ON`     |
 | `CUDA_ARCH`              | `"52 60 70 80"`   | Select [CUDA Compute Capabilities](https://developer.nvidia.com/cuda-gpus) to build/optimise for, as a space or `;` separated list. Defaults to `""` |
 | `BUILD_SWIG_PYTHON`      | `ON`/`OFF`        | Enable Python target `pyflamegpu` via Swig. Default `OFF`                                                  |
