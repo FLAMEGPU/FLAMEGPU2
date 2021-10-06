@@ -126,6 +126,29 @@ jobs:
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype6-dev libgl1-mesa-dev
         fi
 
+    - name: Install Swig >= 4.0.2
+      run: |
+        # Remove existing swig install, so CMake finds the correct swig
+        if [ "$OS" == 'ubuntu-20.04' ]; then 
+          sudo apt-get remove -y swig swig4.0
+        fi
+        # Install Ubuntu 18.04 packages
+        if [ "$OS" == 'ubuntu-18.04' ]; then 
+          sudo apt-get remove -y swig
+        fi
+        # Install additional apt-based dependencies required to build swig 4.0.2
+        sudo apt-get install -y bison
+        # Create a local directory to build swig in.
+        mkdir -p swig-from-source && cd swig-from-source
+        # Install SWIG building from source dependencies
+        wget https://github.com/swig/swig/archive/refs/tags/v4.0.2.tar.gz
+        tar -zxf v4.0.2.tar.gz
+        cd swig-4.0.2/
+        ./autogen.sh
+        ./configure
+        make
+        sudo make install
+
     - name: Configure cmake
       run: >
         cmake . -B "${{ env.BUILD_DIR }}"
