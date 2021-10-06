@@ -120,8 +120,7 @@ if(BUILD_TESTS)
     # Add the tests directory to the include path,
     target_include_directories("${PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
     # Add the targets we depend on (this does link and include)
-    target_link_libraries("${PROJECT_NAME}" GTest::gtest)
-    # target_link_libraries("${PROJECT_NAME}" gmock) # Currently unused
+    target_link_libraries("${PROJECT_NAME}" PRIVATE GTest::gtest)
     # Put Within Tests filter
     CMAKE_SET_TARGET_FOLDER("${PROJECT_NAME}" "Tests")
     # Also set as startup project (if top level project)
@@ -155,8 +154,8 @@ if(BUILD_TESTS_DEV)
     # Add the tests directory to the include path,
     target_include_directories("${PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
     # Add the targets we depend on (this does link and include)
-    target_link_libraries("${PROJECT_NAME}" GTest::gtest)
-    # target_link_libraries("${PROJECT_NAME}" gmock) # Currently unused
+    target_link_libraries("${PROJECT_NAME}" PRIVATE GTest::gtest)
+    # Put Within Tests filter
     CMAKE_SET_TARGET_FOLDER("${PROJECT_NAME}" "Tests")
     # Set the default (visual studio) debugger configure_file
     set_target_properties("${PROJECT_NAME}" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"

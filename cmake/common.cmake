@@ -308,12 +308,12 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     set_property(TARGET ${NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
     # Link against the flamegpu static library target.
-    target_link_libraries(${NAME} flamegpu)
+    target_link_libraries(${NAME} PRIVATE flamegpu)
     # Workaround for incremental rebuilds on MSVC, where device link was not being performed.
     # https://github.com/FLAMEGPU/FLAMEGPU2/issues/483
     if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.1")
         # Provide the absolute path to the lib file, rather than the relative version cmake provides.
-        target_link_libraries(${NAME} "${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE:flamegpu>")
+        target_link_libraries(${NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE:flamegpu>")
     endif()
         
     # Activate visualisation if requested
