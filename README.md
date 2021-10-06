@@ -137,6 +137,8 @@ REM Alternatively, build from the command line specifying the build configuratio
 cmake --build . --config Release --target flamegpu boids_bruteforce --verbose
 ```
 
+*Note, CUDA must be installed after Visual Studio, otherwise CMake may fail to detect CUDA and the configuration stage will fail.*
+
 #### Configuring and Building a single example
 
 It is also possible to configure and build individual examples as standalone CMake projects.
