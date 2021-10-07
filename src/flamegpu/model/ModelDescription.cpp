@@ -136,29 +136,33 @@ LayerDescription& ModelDescription::Layer(const std::string &name) {
 }
 
 void ModelDescription::addInitFunction(FLAMEGPU_INIT_FUNCTION_POINTER func_p) {
-    if (!model->initFunctions.insert(func_p).second) {
+    if (std::find(model->initFunctions.begin(), model->initFunctions.end(), func_p) != model->initFunctions.end()) {
         THROW exception::InvalidHostFunc("Attempted to add same init function twice,"
             "in ModelDescription::addInitFunction()");
     }
+    model->initFunctions.push_back(func_p);
 }
 void ModelDescription::addStepFunction(FLAMEGPU_STEP_FUNCTION_POINTER func_p) {
-    if (!model->stepFunctions.insert(func_p).second) {
+    if (std::find(model->stepFunctions.begin(), model->stepFunctions.end(), func_p) != model->stepFunctions.end()) {
         THROW exception::InvalidHostFunc("Attempted to add same step function twice,"
             "in ModelDescription::addStepFunction()");
     }
+    model->stepFunctions.push_back(func_p);
 }
 void ModelDescription::addExitFunction(FLAMEGPU_EXIT_FUNCTION_POINTER func_p) {
-    if (!model->exitFunctions.insert(func_p).second) {
+    if (std::find(model->exitFunctions.begin(), model->exitFunctions.end(), func_p) != model->exitFunctions.end()) {
         THROW exception::InvalidHostFunc("Attempted to add same exit function twice,"
             "in ModelDescription::addExitFunction()");
     }
+    model->exitFunctions.push_back(func_p);
 }
 
 void ModelDescription::addExitCondition(FLAMEGPU_EXIT_CONDITION_POINTER func_p) {
-    if (!model->exitConditions.insert(func_p).second) {
+    if (std::find(model->exitConditions.begin(), model->exitConditions.end(), func_p) != model->exitConditions.end()) {
         THROW exception::InvalidHostFunc("Attempted to add same exit condition twice,"
             "in ModelDescription::addExitCondition()");
     }
+    model->exitConditions.push_back(func_p);
 }
 
 void ModelDescription::generateLayers() {

@@ -5,7 +5,7 @@
 #include <list>
 #include <memory>
 #include <typeindex>
-#include <set>
+#include <vector>
 #include <string>
 
 #include "flamegpu/model/EnvironmentDescription.h"
@@ -61,35 +61,35 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      */
     typedef std::list<std::shared_ptr<LayerData>> LayerList;
     /**
-     * Set of Init function pointers
-     * set<FLAMEGPU_INIT_FUNCTION_POINTER>
+     * Vector of Init function pointers.
+     * Uses a vector rather than a set to preserve order.
      */
-    typedef std::set<FLAMEGPU_INIT_FUNCTION_POINTER> InitFunctionSet;
+    typedef std::vector<FLAMEGPU_INIT_FUNCTION_POINTER> InitFunctionVector;
     /**
-     * Set of Step function pointers
-     * set<FLAMEGPU_STEP_FUNCTION_POINTER>
+     * Vector of Step function pointers.
+     * Uses a vector rather than a set to preserve order.
      */
-    typedef std::set<FLAMEGPU_STEP_FUNCTION_POINTER> StepFunctionSet;
+    typedef std::vector<FLAMEGPU_STEP_FUNCTION_POINTER> StepFunctionVector;
     /**
-     * Set of Step function callback pointers
-     * set<HostFunctionCallback>
+     * Vector of Step function callback pointers.
+     * Uses a vector rather than a set to preserve order.
      */
-    typedef std::set<HostFunctionCallback*> HostFunctionCallbackSet;
+    typedef std::vector<HostFunctionCallback*> HostFunctionCallbackVector;
     /**
-     * Set of host condition callback pointers
-     * set<HostFunctionConditionCallback>
+     * Vector of host condition callback pointers.
+     * Uses a vector rather than a set to preserve order.
      */
-    typedef std::set<HostFunctionConditionCallback*> HostFunctionConditionCallbackSet;
+    typedef std::vector<HostFunctionConditionCallback*> HostFunctionConditionCallbackVector;
     /**
-     * Set of Exit function pointers
-     * set<FLAMEGPU_EXIT_FUNCTION_POINTER>
+     * Vector of Exit function pointers.
+     * Uses a vector rather than a set to preserve order.
      */
-    typedef std::set<FLAMEGPU_EXIT_FUNCTION_POINTER> ExitFunctionSet;
+    typedef std::vector<FLAMEGPU_EXIT_FUNCTION_POINTER> ExitFunctionVector;
     /**
-     * Set of Exit condition pointers
-     * set<FLAMEGPU_EXIT_CONDITION_POINTER>
+     * Vector of Exit condition pointers.
+     * Uses a vector rather than a set to preserve order.
      */
-    typedef std::set<FLAMEGPU_EXIT_CONDITION_POINTER> ExitConditionSet;
+    typedef std::vector<FLAMEGPU_EXIT_CONDITION_POINTER> ExitConditionVector;
 
     /**
      * Holds all of the model's agent definitions
@@ -110,23 +110,23 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
     /**
      * Holds pointers to all of the init functions used by the model
      */
-    InitFunctionSet initFunctions;
-    HostFunctionCallbackSet initFunctionCallbacks;
+    InitFunctionVector initFunctions;
+    HostFunctionCallbackVector initFunctionCallbacks;
     /**
      * Holds pointers to all of the step functions used by the model
      */
-    StepFunctionSet stepFunctions;
-    HostFunctionCallbackSet stepFunctionCallbacks;
+    StepFunctionVector stepFunctions;
+    HostFunctionCallbackVector stepFunctionCallbacks;
     /**
      * Holds pointers to all of the exit functions used by the model
      */
-    ExitFunctionSet exitFunctions;
-    HostFunctionCallbackSet exitFunctionCallbacks;
+    ExitFunctionVector exitFunctions;
+    HostFunctionCallbackVector exitFunctionCallbacks;
     /**
      * Holds pointers to all of the exit conditions used by the model
      */
-    ExitConditionSet exitConditions;
-    HostFunctionConditionCallbackSet exitConditionCallbacks;
+    ExitConditionVector exitConditions;
+    HostFunctionConditionCallbackVector exitConditionCallbacks;
     /**
      * Holds all of the model's environment property definitions
      */
