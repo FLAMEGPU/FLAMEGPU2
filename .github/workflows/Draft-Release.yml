@@ -293,6 +293,7 @@ jobs:
             hostcxx: devtoolset-8
             os: ubuntu-20.04
         python: 
+          - "3.10"
           - "3.9"
           - "3.8"
           - "3.7"
@@ -450,6 +451,7 @@ jobs:
             hostcxx: "Visual Studio 16 2019"
             os: windows-2019
         python: 
+          - "3.10"
           - "3.9"
           - "3.8"
           - "3.7"
