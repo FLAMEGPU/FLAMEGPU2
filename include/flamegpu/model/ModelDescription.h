@@ -385,28 +385,32 @@ class ModelDescription {
 
 #ifdef SWIG
 void ModelDescription::addInitFunctionCallback(HostFunctionCallback* func_callback) {
-    if (!model->initFunctionCallbacks.insert(func_callback).second) {
+    if (std::find(model->initFunctionCallbacks.begin(), model->initFunctionCallbacks.end(), func_callback) != model->initFunctionCallbacks.end()) {
             THROW exception::InvalidHostFunc("Attempted to add same init function callback twice,"
                 "in ModelDescription::addInitFunctionCallback()");
-        }
+    }
+    model->initFunctionCallbacks.push_back(func_callback);
 }
 void ModelDescription::addStepFunctionCallback(HostFunctionCallback* func_callback) {
-    if (!model->stepFunctionCallbacks.insert(func_callback).second) {
+    if (std::find(model->stepFunctionCallbacks.begin(), model->stepFunctionCallbacks.end(), func_callback) != model->stepFunctionCallbacks.end()) {
             THROW exception::InvalidHostFunc("Attempted to add same step function callback twice,"
                 "in ModelDescription::addStepFunctionCallback()");
-        }
+    }
+    model->stepFunctionCallbacks.push_back(func_callback);
 }
 void ModelDescription::addExitFunctionCallback(HostFunctionCallback* func_callback) {
-    if (!model->exitFunctionCallbacks.insert(func_callback).second) {
+    if (std::find(model->exitFunctionCallbacks.begin(), model->exitFunctionCallbacks.end(), func_callback) != model->exitFunctionCallbacks.end()) {
             THROW exception::InvalidHostFunc("Attempted to add same exit function callback twice,"
                 "in ModelDescription::addExitFunctionCallback()");
-        }
+    }
+    model->exitFunctionCallbacks.push_back(func_callback);
 }
 void ModelDescription::addExitConditionCallback(HostFunctionConditionCallback *func_callback) {
-    if (!model->exitConditionCallbacks.insert(func_callback).second) {
+    if (std::find(model->exitConditionCallbacks.begin(), model->exitConditionCallbacks.end(), func_callback) != model->exitConditionCallbacks.end()) {
             THROW exception::InvalidHostFunc("Attempted to add same exit condition callback twice,"
                 "in ModelDescription::addExitConditionCallback()");
-        }
+    }
+    model->exitConditionCallbacks.push_back(func_callback);
 }
 #endif
 

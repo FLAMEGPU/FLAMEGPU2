@@ -152,8 +152,12 @@ TEST_F(HostFunctionTest, InitFuncMultiple) {
     EXPECT_EQ(std::find(function_order.begin(), function_order.end(), Init), function_order.end());
     EXPECT_EQ(std::find(function_order.begin(), function_order.end(), Init2), function_order.end());
     ms->run(1);
-    EXPECT_NE(std::find(function_order.begin(), function_order.end(), Init), function_order.end());
-    EXPECT_NE(std::find(function_order.begin(), function_order.end(), Init2), function_order.end());
+    auto it_1 = std::find(function_order.begin(), function_order.end(), Init);
+    auto it_2 = std::find(function_order.begin(), function_order.end(), Init2);
+    EXPECT_NE(it_1, function_order.end());
+    EXPECT_NE(it_2, function_order.end());
+    // Check that the exeuction order is correct. 2 should be after the previously added fn.
+    EXPECT_LT(it_1, it_2);
 }
 TEST_F(HostFunctionTest, HostLayerFuncMultiple) {
     EXPECT_THROW(ms->hostfn_layer.addHostFunction(host_function2), exception::InvalidLayerMember);
@@ -163,24 +167,36 @@ TEST_F(HostFunctionTest, StepFuncMultiple) {
     EXPECT_EQ(std::find(function_order.begin(), function_order.end(), Step), function_order.end());
     EXPECT_EQ(std::find(function_order.begin(), function_order.end(), Step2), function_order.end());
     ms->run(1);
-    EXPECT_NE(std::find(function_order.begin(), function_order.end(), Step), function_order.end());
-    EXPECT_NE(std::find(function_order.begin(), function_order.end(), Step2), function_order.end());
+    auto it_1 = std::find(function_order.begin(), function_order.end(), Step);
+    auto it_2 = std::find(function_order.begin(), function_order.end(), Step2);
+    EXPECT_NE(it_1, function_order.end());
+    EXPECT_NE(it_2, function_order.end());
+    // Check that the exeuction order is correct. 2 should be after the previously added fn.
+    EXPECT_LT(it_1, it_2);
 }
 TEST_F(HostFunctionTest, ExitConditionMultiple) {
     ms->model.addExitCondition(exit_condition2);
     EXPECT_EQ(std::find(function_order.begin(), function_order.end(), ExitCondition), function_order.end());
     EXPECT_EQ(std::find(function_order.begin(), function_order.end(), ExitCondition2), function_order.end());
     ms->run(1);
-    EXPECT_NE(std::find(function_order.begin(), function_order.end(), ExitCondition), function_order.end());
-    EXPECT_NE(std::find(function_order.begin(), function_order.end(), ExitCondition2), function_order.end());
+    auto it_1 = std::find(function_order.begin(), function_order.end(), ExitCondition);
+    auto it_2 = std::find(function_order.begin(), function_order.end(), ExitCondition2);
+    EXPECT_NE(it_1, function_order.end());
+    EXPECT_NE(it_2, function_order.end());
+    // Check that the exeuction order is correct. 2 should be after the previously added fn.
+    EXPECT_LT(it_1, it_2);
 }
 TEST_F(HostFunctionTest, ExitFuncMultiple) {
     ms->model.addExitFunction(exit_function2);
     EXPECT_EQ(std::find(function_order.begin(), function_order.end(), Exit), function_order.end());
     EXPECT_EQ(std::find(function_order.begin(), function_order.end(), Exit2), function_order.end());
     ms->run(1);
-    EXPECT_NE(std::find(function_order.begin(), function_order.end(), Exit), function_order.end());
-    EXPECT_NE(std::find(function_order.begin(), function_order.end(), Exit2), function_order.end());
+    auto it_1 = std::find(function_order.begin(), function_order.end(), Exit);
+    auto it_2 = std::find(function_order.begin(), function_order.end(), Exit2);
+    EXPECT_NE(it_1, function_order.end());
+    EXPECT_NE(it_2, function_order.end());
+    // Check that the exeuction order is correct. 2 should be after the previously added fn.
+    EXPECT_LT(it_1, it_2);
 }
 
 /**
