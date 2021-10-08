@@ -236,15 +236,21 @@ class MessageBruteForce::Description {
     /**
      * @param variable_name Name used to refer to the desired variable
      * @return The type of the named variable
-     * @throws exception::InvalidAgentVar If a variable with the name does not exist within the message
+     * @throws exception::InvalidMessageVar If a variable with the name does not exist within the message
      */
     const std::type_index& getVariableType(const std::string &variable_name) const;
     /**
      * @param variable_name Name used to refer to the desired variable
      * @return The size of the named variable's type
-     * @throws exception::InvalidAgentVar If a variable with the name does not exist within the message
+     * @throws exception::InvalidMessageVar If a variable with the name does not exist within the message
      */
     size_t getVariableSize(const std::string &variable_name) const;
+    /**
+     * @param variable_name Name used to refer to the desired variable
+     * @return The number of elements in the name variable (1 if it isn't an array)
+     * @throws exception::InvalidMessageVar If a variable with the name does not exist within the agent
+     */
+    size_type getVariableLength(const std::string &variable_name) const;
     /**
      * @return The total number of variables within the message
      */
