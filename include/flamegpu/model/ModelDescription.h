@@ -179,7 +179,7 @@ class ModelDescription {
      * Init functions execute once before the simulation begins
      * @param func_p Pointer to the desired init function
      * @throws exception::InvalidHostFunc If the init function has already been added to this model description
-     * @note There is no guarantee on the order in which multiple init functions will be executed
+     * @note Init functions are executed in the order they were added to the model
      */
     void addInitFunction(FLAMEGPU_INIT_FUNCTION_POINTER func_p);
     /**
@@ -187,7 +187,7 @@ class ModelDescription {
      * Step functions execute once per step, after all layers have been executed, before exit conditions
      * @param func_p Pointer to the desired step function
      * @throws exception::InvalidHostFunc If the step function has already been added to this model description
-     * @note There is no guarantee on the order in which multiple step functions will be executed, host-layer functions can be used if order is required.
+     * @note Step functions are executed in the order they were added to the model
      */
     void addStepFunction(FLAMEGPU_STEP_FUNCTION_POINTER func_p);
     /**
@@ -195,7 +195,7 @@ class ModelDescription {
      * Exit functions execute once after all simulation steps have completed or an exit conditions has returned EXIT
      * @param func_p Pointer to the desired exit function
      * @throws exception::InvalidHostFunc If the exit function has already been added to this model description
-     * @note There is no guarantee on the order in which multiple exit functions will be executed
+     * @note Exit functions are executed in the order they were added to the model
      */
     void addExitFunction(FLAMEGPU_EXIT_FUNCTION_POINTER func_p);
 #ifdef SWIG
@@ -205,7 +205,7 @@ class ModelDescription {
      * Init functions execute once before the simulation begins
      * @param func_callback Pointer to the desired init function callback
      * @throws exception::InvalidHostFunc If the init function has already been added to this model description
-     * @note There is no guarantee on the order in which multiple init functions will be executed
+     * @note Init functions are executed in the order they were added to the model
      */
     inline void addInitFunctionCallback(HostFunctionCallback *func_callback);
     /**
@@ -214,7 +214,7 @@ class ModelDescription {
      * Exit functions execute once after the simulation ends
      * @param func_callback Pointer to the desired exit function callback
      * @throws exception::InvalidHostFunc If the step function has already been added to this model description
-     * @note There is no guarantee on the order in which multiple step functions will be executed, host-layer functions can be used if order is required.
+     * @note Step functions are executed in the order they were added to the model
      */
     inline void addStepFunctionCallback(HostFunctionCallback *func_callback);
     /**
@@ -223,7 +223,7 @@ class ModelDescription {
      * Exit functions execute once after all simulation steps have completed or an exit conditions has returned EXIT
      * @param func_callback Pointer to the desired exit function callback
      * @throws exception::InvalidHostFunc If the exit function has already been added to this model description
-     * @note There is no guarantee on the order in which multiple exit functions will be executed
+     * @note Exit functions are executed in the order they were added to the model
      */
     inline void addExitFunctionCallback(HostFunctionCallback *func_callback);
 #endif
@@ -235,7 +235,7 @@ class ModelDescription {
      * @throws exception::InvalidHostFunc If the exit condition has already been added to this model description
      * @note Exit conditions are the last functions to operate each step and can still make changes to the model
      * @note The step counter is updated after exit conditions have completed
-     * @note There is no guarantee on the order in which multiple exit conditions will be executed
+     * @note Exit conditions are executed in the order they were added to the model
      */
     void addExitCondition(FLAMEGPU_EXIT_CONDITION_POINTER func_p);
 #ifdef SWIG
@@ -247,7 +247,7 @@ class ModelDescription {
      * @throws exception::InvalidHostFunc If the exit condition has already been added to this model description
      * @note Exit conditions are the last functions to operate each step and can still make changes to the model
      * @note The step counter is updated after exit conditions have completed
-     * @note There is no guarantee on the order in which multiple exit conditions will be executed
+     * @note Exit conditions are executed in the order they were added to the model
      */
     inline void addExitConditionCallback(HostFunctionConditionCallback *func_callback);
 #endif
