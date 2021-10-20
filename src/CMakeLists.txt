@@ -363,23 +363,23 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 # Activate visualisation if requested
 if (VISUALISATION)
-    # @todo - these could/should be private, but must be PUBLIC for swig to build. Alternateively it could be PRIVATE but also set for swig.
+    # @todo - these could/should be private, but must be PUBLIC for swig to build. Alternatively it could be PRIVATE but also set for swig.
     target_link_libraries(${PROJECT_NAME} PUBLIC flamegpu_visualiser)
     CMAKE_SET_TARGET_FOLDER(flamegpu_visualiser "FLAMEGPU")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC VISUALISATION)
-
-    # Make the visualisers GLM accessible via include
-    # @todo - make the vis cmake/glm create a target to use.
-    if (USE_GLM)
-        if(glm_FOUND)
-            target_include_directories(${PROJECT_NAME} PUBLIC "${glm_INCLUDE_DIRS}")
-            target_compile_definitions(${PROJECT_NAME} PUBLIC GLM_PATH="${glm_INCLUDE_DIRS}")
-        else()
-            message(WARNING "USE_GLM enabled, but glm_FOUND is False.")
-        endif()
-        target_compile_definitions(${PROJECT_NAME} PRIVATE USE_GLM)
-    endif()   
+    target_compile_definitions(${PROJECT_NAME} PUBLIC VISUALISATION) 
 endif()
+
+# Make the visualisers GLM accessible via include
+# @todo - make the vis cmake/glm create a target to use.
+if (USE_GLM)
+    if(glm_FOUND)
+        target_include_directories(${PROJECT_NAME} PUBLIC "${glm_INCLUDE_DIRS}")
+        target_compile_definitions(${PROJECT_NAME} PUBLIC GLM_PATH="${glm_INCLUDE_DIRS}")
+    else()
+        message(WARNING "USE_GLM enabled, but glm_FOUND is False.")
+    endif()
+    target_compile_definitions(${PROJECT_NAME} PRIVATE USE_GLM)
+endif()  
 
 if (NOT RTC_DISK_CACHE)
     # Only used in source files, so can be private

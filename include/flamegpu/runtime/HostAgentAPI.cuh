@@ -519,14 +519,24 @@ InT HostAgentAPI::reduce(const std::string &variable, reductionOperatorT /*reduc
     }
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
+#ifndef USE_GLM
     if (agentDesc.variables.at(variable).elements != 1) {
         THROW exception::UnsupportedVarType("HostAgentAPI::reduce() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
         THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::reduce(). "
             "This call expects '%s', but '%s' was requested.",
-            agentDesc.variables.at(variable).type.name(), typeid(InT).name());
+            typ.name(), typeid(InT).name());
     }
+#else
+    // GLM is awkward, so we need to perform a vaguer check
+    auto var = agentDesc.variables.at(variable);
+    if (sizeof(InT) != var.elements * var.type_size) {
+        THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::transformReduce(). "
+            "This call expects '%s[%u]', but '%s' was requested.",
+            typ.name(), var.elements, typeid(InT).name());
+    }
+#endif
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
     // Check if we need to resize cub storage
@@ -557,14 +567,24 @@ OutT HostAgentAPI::transformReduce(const std::string &variable, transformOperato
     }
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
+#ifndef USE_GLM
     if (agentDesc.variables.at(variable).elements != 1) {
         THROW exception::UnsupportedVarType("HostAgentAPI::transformReduce() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
         THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::transformReduce(). "
             "This call expects '%s', but '%s' was requested.",
-            agentDesc.variables.at(variable).type.name(), typeid(InT).name());
+            typ.name(), typeid(InT).name());
     }
+#else
+    // GLM is awkward, so we need to perform a vaguer check
+    auto var = agentDesc.variables.at(variable);
+    if (sizeof(InT) != var.elements * var.type_size) {
+        THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::transformReduce(). "
+            "This call expects '%s[%u]', but '%s' was requested.",
+            typ.name(), var.elements, typeid(InT).name());
+    }
+#endif
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
     OutT rtn = thrust::transform_reduce(thrust::device_ptr<InT>(reinterpret_cast<InT*>(var_ptr)), thrust::device_ptr<InT>(reinterpret_cast<InT*>(var_ptr) + agentCount),

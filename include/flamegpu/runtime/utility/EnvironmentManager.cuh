@@ -607,6 +607,29 @@ class EnvironmentManager {
      */
     inline std::type_index type(const unsigned int &instance_id, const std::string &var_name) const { return type(toName(instance_id, var_name)); }
     /**
+     * Returns the size of the base type of the named env property (e.g. 4 if float)
+     * @param name name used for accessing the property
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     */
+    inline size_t type_size(const NamePair& name) const {
+        std::shared_lock<std::shared_timed_mutex> lock(mutex);
+        auto a = properties.find(name);
+        if (a != properties.end())
+            return a->second.length;
+        const auto b = mapped_properties.find(name);
+        if (b != mapped_properties.end()) {
+            a = properties.find(b->second.masterProp);
+            if (a != properties.end())
+                return a->second.length;
+            THROW exception::InvalidEnvProperty("Mapped environmental property with name '%u:%s' maps to missing property with name '%u:%s', "
+                "in EnvironmentManager::type_size().",
+                name.first, name.second.c_str(), b->second.masterProp.first, b->second.masterProp.second.c_str());
+        }
+        THROW exception::InvalidEnvProperty("Environmental property with name '%u:%s' does not exist, "
+            "in EnvironmentManager::type_size().",
+            name.first, name.second.c_str());
+    }
+    /**
      * Returns the available space remaining (bytes) for storing environmental properties
      */
     inline size_t freeSpace() const { std::shared_lock<std::shared_timed_mutex> lock(mutex); return m_freeSpace; }
@@ -860,12 +883,27 @@ void EnvironmentManager::newProperty(const unsigned int &instance_id, const std:
  */
 template<typename T>
 T EnvironmentManager::setProperty(const NamePair &name, const T &value) {
+#ifdef USE_GLM
+    // GLM is a bit awkward, so we just do a rough type size check, similar to on device
+    const std::type_index typ_id = type(name);
+    const size_t prop_len = type_size(name);
+    if (prop_len != sizeof(T)) {
+        THROW exception::InvalidEnvPropertyType("Environmental property ('%u:%s') type (%s) does not match template argument T (%s), "
+            "in EnvironmentManager::set().",
+            name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
+    }
+#else
+    // Limited to Arithmetic types
+    // Compound types would allow host pointers inside structs to be passed
+    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
+        "Only arithmetic types can be used as environmental properties");
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
         THROW exception::InvalidEnvPropertyType("Environmental property ('%u:%s') type (%s) does not match template argument T (%s), "
             "in EnvironmentManager::setProperty().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
+#endif
     if (isConst(name)) {
         THROW exception::ReadOnlyEnvProperty("Environmental property ('%u:%s') is marked as const and cannot be changed, "
             "in EnvironmentManager::setProperty().",
@@ -1040,11 +1078,21 @@ T EnvironmentManager::setProperty(const unsigned int &instance_id, const std::st
  */
 template<typename T>
 T EnvironmentManager::getProperty(const NamePair &name) {
+#ifdef USE_GLM
+    // GLM is a bit awkward, so we just do a rough type size check, similar to on device
+    const std::type_index typ_id = type(name);
+    const size_t prop_len = type_size(name);
+    if (prop_len != sizeof(T)) {
+        THROW exception::InvalidEnvPropertyType("Environmental property ('%u:%s') type (%s) does not match template argument T (%s), "
+            "in EnvironmentManager::get().",
+            name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
+    }
+#else
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
         "Only arithmetic types can be used as environmental properties");
-    std::type_index typ_id = type(name);
+    const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
         THROW exception::InvalidEnvPropertyType("Environmental property ('%u:%s') type (%s) does not match template argument T (%s), "
             "in EnvironmentManager::getProperty().",
@@ -1056,6 +1104,7 @@ T EnvironmentManager::getProperty(const NamePair &name) {
             "in EnvironmentManager::getProperty().",
             array_len);
     }
+#endif
     std::shared_lock<std::shared_timed_mutex> lock(mutex);
     // Copy old data to return
     const auto a = properties.find(name);
