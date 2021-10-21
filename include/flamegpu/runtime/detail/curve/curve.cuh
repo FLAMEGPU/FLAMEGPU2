@@ -25,10 +25,14 @@
 
 #ifdef USE_GLM
 #ifdef __CUDACC__
+#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+#pragma nv_diag_suppress = esa_on_defaulted_function_ignored
+#else
 #pragma diag_suppress = esa_on_defaulted_function_ignored
-#endif
+#endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
+#endif  // __CUDACC__
 #include <glm/glm.hpp>
-#endif
+#endif  // USE_GLM
 
 namespace flamegpu {
 namespace detail {
