@@ -417,7 +417,11 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::CAS(T compare, 
 
 // GCC doesn't like seeing atomicExch with host compiler
 #ifdef __CUDACC__
+#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+#pragma nv_diag_suppress = initialization_not_reachable
+#else
 #pragma diag_suppress = initialization_not_reachable
+#endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::exchange(T val) {
     static_assert(std::is_same<T, int32_t>::value ||
@@ -444,8 +448,12 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::exchange(T val)
     return *reinterpret_cast<const T*>(&rval);
     // return atomicExch(this->ptr, val);
 }
+#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+#pragma nv_diag_default = initialization_not_reachable
+#else
 #pragma diag_default = initialization_not_reachable
-#endif
+#endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
+#endif  // __CUDACC__
 
 }  // namespace flamegpu
 
