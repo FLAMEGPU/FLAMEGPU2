@@ -153,6 +153,12 @@ class MessageBucket::In {
         * @param endKey Exclusive final bucket of range to access, this is the final bucket + 1
         */
         inline __device__ Filter(const MetaData *_metadata, const detail::curve::Curve::NamespaceHash &combined_hash, const IntT &beginKey, const IntT &endKey);
+#if !defined(SEATBELTS) || SEATBELTS
+        /**
+         * Creates a null filter which always returns 0 messages
+         */
+        inline __device__ Filter();
+#endif
         /**
         * Returns an iterator to the start of the message list subset about the search origin
         */
@@ -212,8 +218,10 @@ class MessageBucket::In {
         {
             if (key < metadata->min) {
                 DTHROW("Bucket messaging iterator key %d is lower than minimum key (%d).\n", key, metadata->min);
+                return Filter();
             } else if (key >= metadata->max) {
                 DTHROW("Bucket messaging iterator key %d is higher than maximum key (%d).\n", key, metadata->max - 1);
+                return Filter();
             }
         }
 #endif
@@ -231,10 +239,13 @@ class MessageBucket::In {
         {
             if (beginKey < metadata->min) {
                 DTHROW("Bucket messaging iterator begin key %d is lower than minimum key (%d).\n", beginKey, metadata->min);
+                return Filter();
             } else if (endKey > metadata->max) {
                 DTHROW("Bucket messaging iterator end key %d is higher than maximum key + 1 (%d).\n", endKey, metadata->max);
+                return Filter();
             } else if (endKey <= beginKey) {
                 DTHROW("Bucket messaging iterator begin key must be lower than end key (%d !< %d).\n", beginKey, endKey);
+                return Filter();
             }
         }
 #endif
@@ -299,6 +310,13 @@ __device__ MessageBucket::In::Filter::Filter(const MetaData* _metadata, const de
         bucket_end = metadata->PBM[endKey - metadata->min];
     }
 }
+#if !defined(SEATBELTS) || SEATBELTS
+__device__ MessageBucket::In::Filter::Filter()
+    : bucket_begin(0)
+    , bucket_end(0)
+    , metadata(nullptr)
+    , combined_hash(0) { }
+#endif
 
 __device__ void MessageBucket::Out::setKey(const IntT &key) const {
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
@@ -306,6 +324,7 @@ __device__ void MessageBucket::Out::setKey(const IntT &key) const {
 #if !defined(SEATBELTS) || SEATBELTS
     if (key < metadata->min || key >= metadata->max) {
         DTHROW("MessageArray key %u is out of range [%d, %d).\n", key, metadata->min, metadata->max);
+        return;
     }
 #endif
     // set the variables using curve

@@ -852,8 +852,10 @@ __device__ __forceinline__ T Curve::getVariable(const char (&variableName)[N], V
         const auto cv = getVariable(variable_hash+namespace_hash);
         if (cv ==  UNKNOWN_VARIABLE) {
             DTHROW("Curve variable with name '%s' was not found.\n", variableName);
+            return {};
         } else if (curve::detail::d_sizes[cv] != sizeof(T)) {
             DTHROW("Curve variable with name '%s' type size mismatch %llu != %llu.\n", variableName, curve::detail::d_sizes[cv], sizeof(T));
+            return {};
         }
     }
 #endif
@@ -875,8 +877,10 @@ __device__ __forceinline__ T Curve::getVariable_ldg(const char (&variableName)[N
         const auto cv = getVariable(variable_hash+namespace_hash);
         if (cv ==  UNKNOWN_VARIABLE) {
             DTHROW("Curve variable with name '%s' was not found.\n", variableName);
+            return {};
         } else if (curve::detail::d_sizes[cv] != sizeof(T)) {
             DTHROW("Curve variable with name '%s' type size mismatch %llu != %llu.\n", variableName, curve::detail::d_sizes[cv], sizeof(T));
+            return {};
         }
     }
 #endif
@@ -903,13 +907,15 @@ __device__ __forceinline__ T Curve::getArrayVariable(const char(&variableName)[M
         const auto cv = getVariable(variable_hash+namespace_hash);
         if (cv ==  UNKNOWN_VARIABLE) {
             DTHROW("Curve variable array with name '%s' was not found.\n", variableName);
+            return {};
         } else if (curve::detail::d_sizes[cv] != sizeof(T) * N) {
             DTHROW("Curve variable array with name '%s', type size mismatch %llu != %llu.\n", variableName, curve::detail::d_sizes[cv], sizeof(T) * N);
+            return {};
         }
     }
     if (array_index >= N) {
         DTHROW("Curve array index %u is out of bounds for variable with name '%s'.\n", array_index, variableName);
-        return 0;
+        return {};
     }
 #endif
     // Curve currently doesn't store whether a variable is an array
@@ -932,13 +938,15 @@ __device__ __forceinline__ T Curve::getArrayVariable_ldg(const char(&variableNam
         const auto cv = getVariable(variable_hash+namespace_hash);
         if (cv ==  UNKNOWN_VARIABLE) {
             DTHROW("Curve variable array with name '%s' was not found.\n", variableName);
+            return {};
         } else if (curve::detail::d_sizes[cv] != sizeof(T) * N) {
             DTHROW("Curve variable array with name '%s', type size mismatch %llu != %llu.\n", variableName, curve::detail::d_sizes[cv], sizeof(T) * N);
+            return {};
         }
     }
     if (array_index >= N) {
         DTHROW("Curve array index %u is out of bounds for variable with name '%s'.\n", array_index, variableName);
-        return 0;
+        return {};
     }
 #endif
     // Curve currently doesn't store whether a variable is an array
@@ -997,8 +1005,10 @@ __device__ __forceinline__ void Curve::setVariable(const char(&variableName)[N],
         const auto cv = getVariable(variable_hash+namespace_hash);
         if (cv ==  UNKNOWN_VARIABLE) {
             DTHROW("Curve variable with name '%s' was not found.\n", variableName);
+            return;
         } else if (curve::detail::d_sizes[cv] != sizeof(T)) {
             DTHROW("Curve variable with name '%s', type size mismatch %llu != %llu.\n", variableName, curve::detail::d_sizes[cv], sizeof(T));
+            return;
         }
     }
 #endif
@@ -1024,8 +1034,10 @@ __device__ __forceinline__ void Curve::setArrayVariable(const char(&variableName
         const auto cv = getVariable(variable_hash+namespace_hash);
         if (cv ==  UNKNOWN_VARIABLE) {
             DTHROW("Curve variable array with name '%s' was not found.\n", variableName);
+            return;
         } else if (curve::detail::d_sizes[cv] != sizeof(T) * N) {
             DTHROW("Curve variable array with name '%s', size mismatch %llu != %llu.\n", variableName, curve::detail::d_sizes[cv], sizeof(T) * N);
+            return;
         }
     }
     if (array_index >= N) {
@@ -1035,7 +1047,7 @@ __device__ __forceinline__ void Curve::setArrayVariable(const char(&variableName
 #endif
     // Curve currently doesn't store whether a variable is an array
     // Curve stores M * sizeof(T), so this is checked instead
-    return setArrayVariableByHash<T, N>(variable_hash + namespace_hash, variable, agent_index, array_index);
+    setArrayVariableByHash<T, N>(variable_hash + namespace_hash, variable, agent_index, array_index);
 }
 
 }  // namespace curve

@@ -36,6 +36,12 @@ class MessageArray2D::In {
          * @note See member variable documentation for their purposes
          */
         __device__ Message(const MessageArray2D::In &parent, const size_type &_index) : _parent(parent), index(_index) {}
+#if !defined(SEATBELTS) || SEATBELTS
+        /**
+         * A null message which always returns the message at index 0
+         */
+        __device__ Message(const MessageArray2D::In& parent) : _parent(parent), index(0) {}
+#endif
         /**
          * Equality operator
          * Compares all internal member vars for equality
@@ -240,10 +246,20 @@ class MessageArray2D::In {
          * @param _radius Search radius
          */
         inline __device__ WrapFilter(const MetaData *_metadata, const detail::curve::Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &y, const size_type &_radius);
+#if !defined(SEATBELTS) || SEATBELTS
+        /**
+         * A null filter which always returns 0 messages
+         */
+        inline __device__ WrapFilter();
+#endif
         /**
          * Returns an iterator to the start of the message list subset about the search origin
          */
         inline __device__ iterator begin(void) const {
+#if !defined(SEATBELTS) || SEATBELTS
+            if (!this->metadata)
+                return iterator(*this, radius, radius);
+#endif
             // Bin before initial bin, as the constructor calls increment operator
             return iterator(*this, -static_cast<int>(radius), -static_cast<int>(radius)-1);
         }
@@ -439,6 +455,12 @@ class MessageArray2D::In {
          * @param _radius Search radius
          */
         inline __device__ Filter(const MetaData *_metadata, const detail::curve::Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &y, const size_type &_radius);
+#if !defined(SEATBELTS) || SEATBELTS
+        /**
+         * A null filter which always returns 0 messages
+         */
+        inline __device__ Filter();
+#endif
         /**
          * Returns an iterator to the start of the message list subset about the search origin
          */
@@ -468,10 +490,6 @@ class MessageArray2D::In {
          * Max offset to be accessed (inclusive)
          */
         int max_cell[2];
-        /**
-         * Search radius
-         */
-        const size_type radius;
         /**
          * Pointer to message list metadata, e.g. environment bounds, search radius, PBM location
          */
@@ -520,10 +538,12 @@ class MessageArray2D::In {
             DTHROW("%u is not a valid radius for accessing Array2D message lists, as the diameter of messages accessed exceeds one or more of the message list dimensions (%u, %u)."
             " Maximum supported radius for this message list is %u.\n",
             radius, metadata->dimensions[0], metadata->dimensions[1], min_r);
+            return WrapFilter();
         } else if (x >= metadata->dimensions[0] ||
                    y >= metadata->dimensions[1]) {
             DTHROW("(%u, %u) is not a valid position for iterating an Array2D message list of dimensions (%u, %u), location must be within bounds.",
                 x, y, metadata->dimensions[0], metadata->dimensions[1]);
+            return WrapFilter();
         }
 #endif
         return WrapFilter(metadata, combined_hash, x, y, radius);
@@ -545,10 +565,12 @@ class MessageArray2D::In {
 #if !defined(SEATBELTS) || SEATBELTS
         if (radius == 0) {
             DTHROW("%u is not a valid radius for accessing Array2D message lists.\n", radius);
+            return Filter();
         } else if (x >= metadata->dimensions[0] ||
                    y >= metadata->dimensions[1]) {
             DTHROW("(%u, %u) is not a valid position for iterating an Array2D message list of dimensions (%u, %u), location must be within bounds.",
                 x, y, metadata->dimensions[0], metadata->dimensions[1]);
+            return Filter();
         }
 #endif
         return Filter(metadata, combined_hash, x, y, radius);
@@ -576,6 +598,7 @@ class MessageArray2D::In {
 #if !defined(SEATBELTS) || SEATBELTS
         if (x >= metadata->dimensions[0] || y >= metadata->dimensions[1]) {
             DTHROW("Index is out of bounds for Array2D messagelist ([%u, %u] >= [%u, %u]).\n", x, y, metadata->dimensions[0], metadata->dimensions[1]);
+            return Message(*this);
         }
 #endif
         const size_type index_1d =
@@ -797,7 +820,20 @@ __device__ MessageArray2D::In::WrapFilter::WrapFilter(const MetaData* _metadata,
     loc[0] = x;
     loc[1] = y;
 }
+#if !defined(SEATBELTS) || SEATBELTS
+__device__ inline MessageArray2D::In::WrapFilter::WrapFilter()
+    : radius(0)
+    , metadata(nullptr)
+    , combined_hash(0) {
+    loc[0] = 0;
+    loc[1] = 0;
+}
+#endif
 __device__ MessageArray2D::In::WrapFilter::Message& MessageArray2D::In::WrapFilter::Message::operator++() {
+#if !defined(SEATBELTS) || SEATBELTS
+    if (!_parent.metadata)
+        return *this;
+#endif
     if (relative_cell[1] >= static_cast<int>(_parent.radius)) {
         relative_cell[1] = -static_cast<int>(_parent.radius);
         relative_cell[0]++;
@@ -817,8 +853,7 @@ __device__ MessageArray2D::In::WrapFilter::Message& MessageArray2D::In::WrapFilt
     return *this;
 }
 __device__ MessageArray2D::In::Filter::Filter(const MetaData *_metadata, const detail::curve::Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &y, const size_type &_radius)
-    : radius(_radius)
-    , metadata(_metadata)
+    : metadata(_metadata)
     , combined_hash(_combined_hash) {
     loc[0] = x;
     loc[1] = y;
@@ -827,7 +862,23 @@ __device__ MessageArray2D::In::Filter::Filter(const MetaData *_metadata, const d
     max_cell[0] = x + _radius >= _metadata->dimensions[0] ? static_cast<int>(_metadata->dimensions[0]) - 1 - static_cast<int>(x) : static_cast<int>(_radius);
     max_cell[1] = y + _radius >= _metadata->dimensions[1] ? static_cast<int>(_metadata->dimensions[1]) - 1 - static_cast<int>(y) : static_cast<int>(_radius);
 }
+#if !defined(SEATBELTS) || SEATBELTS
+__device__ inline MessageArray2D::In::Filter::Filter()
+    : metadata(nullptr)
+    , combined_hash(0) {
+    loc[0] = 0;
+    loc[1] = 0;
+    min_cell[0] = 0;
+    min_cell[1] = 1;
+    max_cell[0] = 0;
+    max_cell[1] = 0;
+}
+#endif
 __device__ MessageArray2D::In::Filter::Message& MessageArray2D::In::Filter::Message::operator++() {
+#if !defined(SEATBELTS) || SEATBELTS
+    if (!_parent.metadata)
+        return *this;
+#endif
     if (relative_cell[1] >= _parent.max_cell[1]) {
         relative_cell[1] = _parent.min_cell[1];
         relative_cell[0]++;
