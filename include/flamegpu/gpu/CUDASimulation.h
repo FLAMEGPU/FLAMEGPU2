@@ -127,6 +127,11 @@ class CUDASimulation : public Simulation {
      */
     void exitFunctions() override;
     /**
+     * The simulation will sort agents periodically.
+     * @param n Agents will be sorted every n steps. 0 indicates no sorting
+     */
+    void setSortAgentsEveryNSteps(const unsigned int n);
+    /**
      * Execute the simulation until config.steps have been executed, or an exit condition trips
      * Includes init and exit functions calls.
      */
@@ -189,10 +194,6 @@ class CUDASimulation : public Simulation {
      * Returns a reference to the current exit log
      */
     const RunLog &getRunLog() const override;
-    /**
-     * Sets the frequency at which spatial agents are sorted
-     */
-    void setSortAgentsEveryNSteps(const unsigned int n);
 #ifdef VISUALISATION
     /**
      * Creates (on first call) and returns the visualisation configuration options for this model instance

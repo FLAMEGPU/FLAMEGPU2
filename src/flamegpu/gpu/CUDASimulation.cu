@@ -325,7 +325,7 @@ __global__ void calculateSpatialHash(float* x, float* y, float* z, unsigned int*
 
             bindex = (unsigned int)(
             (gridPos[1] * gridDim.x) +              // y
-            gridPos[0]));                           // x
+            gridPos[0]);                            // x
         }
        
         binIndex[TID] = bindex;
@@ -340,7 +340,7 @@ void CUDASimulation::determineAgentsToSort() {
         const auto& mf = it->second->functions;
         for (auto it_f = mf.cbegin(); it_f != mf.cend(); ++it_f) {
             // Check if this agent function uses 3D spatial messages
-            if (it_f->second->msg_in_type == detail::curve::CurveRTCHost::demangle(std::type_index(typeid(MsgSpatial3D)))) {
+            if (it_f->second->message_in_type == detail::curve::CurveRTCHost::demangle(std::type_index(typeid(flamegpu::MessageSpatial3D)))) {
                 // Agent uses spatial, check it has correct variables
                 const auto& ad = *(it->second->description);
                 if (ad.hasVariable("x") && ad.hasVariable("y") && ad.hasVariable("z")) {
@@ -348,7 +348,7 @@ void CUDASimulation::determineAgentsToSort() {
                 }
             }
             // Check if this agent function uses 2D spatial messages
-            if (it_f->second->msg_in_type == detail::curve::CurveRTCHost::demangle(std::type_index(typeid(MsgSpatial2D)))) {
+            if (it_f->second->message_in_type == detail::curve::CurveRTCHost::demangle(std::type_index(typeid(flamegpu::MessageSpatial2D)))) {
                 // Agent uses spatial, check it has correct variables
                 const auto& ad = *(it->second->description);
                 if (ad.hasVariable("x") && ad.hasVariable("y")) {
@@ -418,7 +418,8 @@ void CUDASimulation::spatialSortAgents() {
     }
 
     for (const std::string& agentName : agentsToSort2D) {
-        
+        CUDAAgent& cuda_agent = getCUDAAgent(agentName);
+
         // Any agent in this list is guaranteed to have x, y and fgpu2_reserved_bin_index vars - used in the computation of spatial hash
         void* xPtr = cuda_agent.getStateVariablePtr("default", "x");
         void* yPtr = cuda_agent.getStateVariablePtr("default", "y");
@@ -444,7 +445,7 @@ void CUDASimulation::spatialSortAgents() {
         // Launch kernel
         calculateSpatialHash<<<gridSize, blockSize, sm_size, this->getStream(streamIdx) >>> (reinterpret_cast<float*>(xPtr),
         reinterpret_cast<float*>(yPtr),
-        reinterpret_cast<float*>(nullptr),
+        reinterpret_cast<float*>(0),
         reinterpret_cast<unsigned int*>(binIndexPtr),
         envMin,
         envWidth,
@@ -480,7 +481,7 @@ bool CUDASimulation::step() {
     }
 
     // Spatially sort the agents
-    if (step_count % sortAgentsEveryNSteps == 0) {
+    if ((sortAgentsEveryNSteps != 0) && (step_count % sortAgentsEveryNSteps == 0)) {
         this->spatialSortAgents();
     }
 
