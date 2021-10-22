@@ -449,10 +449,10 @@ template<typename MessageIn, typename MessageOut>
 template<typename T, unsigned int N, unsigned int M>
 __device__ void DeviceAPI<MessageIn, MessageOut>::setVariable(const char(&variable_name)[M], const unsigned int &array_index, const T &value) {
     if (variable_name[0] == '_') {
-        return;  // Fail silently
 #if !defined(SEATBELTS) || SEATBELTS
         DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in DeviceAPI::setVariable().\n", variable_name);
 #endif
+        return;  // Fail silently
     }
     // simple indexing assumes index is the thread number (this may change later)
     const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;

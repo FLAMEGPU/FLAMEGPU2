@@ -182,6 +182,7 @@ __device__ void ReadOnlyDeviceMacroProperty<T, I, J, K, W>::setCheckReadFlag() c
     const unsigned int old = atomicOr(read_write_flag, 1u << 0);
     if (old & 1u << 1) {
         DTHROW("DeviceMacroProperty read and atomic write operations cannot be mixed in the same layer, as this may cause race conditions.\n");
+        return;
     }
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
@@ -189,6 +190,7 @@ __device__ void ReadOnlyDeviceMacroProperty<T, I, J, K, W>::setCheckWriteFlag() 
     const unsigned int old = atomicOr(read_write_flag, 1u << 1);
     if (old & 1u << 0) {
         DTHROW("DeviceMacroProperty read and atomic write operations cannot be mixed in the same layer as this may cause race conditions.\n");
+        return;
     }
 }
 #endif
@@ -207,8 +209,10 @@ __device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, J, K, W, 1> ReadOnlyDe
 #if !defined(SEATBELTS) || SEATBELTS
     if (I == 1 && J == 1 && K == 1 && W == 1) {
         DTHROW("Indexing error, property has less dimensions.\n");
+        return ReadOnlyDeviceMacroProperty<T, J, K, W, 1>(nullptr, nullptr);
     } else if (i >= I) {
         DTHROW("Indexing error, out of bounds %u >= %u.\n", i, I);
+        return ReadOnlyDeviceMacroProperty<T, J, K, W, 1>(nullptr, nullptr);
     } else if (this->ptr == nullptr) {
         return ReadOnlyDeviceMacroProperty<T, J, K, W, 1>(nullptr, nullptr);
     }
@@ -225,8 +229,10 @@ __device__ __forceinline__ DeviceMacroProperty<T, J, K, W, 1> DeviceMacroPropert
 #if !defined(SEATBELTS) || SEATBELTS
     if (I == 1 && J == 1 && K == 1 && W == 1) {
         DTHROW("Indexing error, property has less dimensions.\n");
+        return DeviceMacroProperty<T, J, K, W, 1>(nullptr, nullptr);
     } else if (i >= I) {
         DTHROW("Indexing error, out of bounds %u >= %u.\n", i, I);
+        return DeviceMacroProperty<T, J, K, W, 1>(nullptr, nullptr);
     } else if (this->ptr == nullptr) {
         return DeviceMacroProperty<T, J, K, W, 1>(nullptr, nullptr);
     }
@@ -243,6 +249,7 @@ __device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, I, J, K, W>::operator 
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
+        return { };
     } else if (this->ptr == nullptr) {
         return { };
     }
@@ -260,6 +267,7 @@ __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& DeviceMacroProper
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
+        return *this;
     } else if (this->ptr == nullptr) {
         return *this;
     }
@@ -274,6 +282,7 @@ __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& DeviceMacroProper
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
+        return *this;
     } else if (this->ptr == nullptr) {
         return *this;
     }
@@ -292,6 +301,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator+(const
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
+        return { };
     } else if (this->ptr == nullptr) {
         return { };
     }
@@ -305,6 +315,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator-(const
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
+        return { };
     } else if (this->ptr == nullptr) {
         return { };
     }
@@ -318,6 +329,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator++() {
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
+        return *this;
     } else if (this->ptr == nullptr) {
         return *this;
     }
@@ -333,6 +345,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator--() {
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
+        return *this;
     } else if (this->ptr == nullptr) {
         return *this;
     }
@@ -347,6 +360,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator++(int)
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
+        return { };
     } else if (this->ptr == nullptr) {
         return { };
     }
@@ -361,6 +375,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator--(int)
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
+        return { };
     } else if (this->ptr == nullptr) {
         return { };
     }
@@ -376,6 +391,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::min(T val) {
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
+        return { };
     } else if (this->ptr == nullptr) {
         return { };
     }
@@ -391,6 +407,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::max(T val) {
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
+        return { };
     } else if (this->ptr == nullptr) {
         return { };
     }
@@ -407,6 +424,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::CAS(T compare, 
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
+        return { };
     } else if (this->ptr == nullptr) {
         return { };
     }
@@ -430,6 +448,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::exchange(T val)
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
+        return { };
     } else if (this->ptr == nullptr) {
         return { };
     }

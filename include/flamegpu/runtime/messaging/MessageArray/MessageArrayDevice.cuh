@@ -40,6 +40,12 @@ class MessageArray::In {
         * @note See member variable documentation for their purposes
         */
         __device__ Message(const MessageArray::In &parent, const size_type &_index) : _parent(parent), index(_index) {}
+#if !defined(SEATBELTS) || SEATBELTS
+        /**
+         * A null message which always returns the message at index 0
+         */
+        __device__ Message(const MessageArray::In& parent) : _parent(parent), index(0) {}
+#endif
         /**
         * Equality operator
         * Compares all internal member vars for equality
@@ -231,11 +237,21 @@ class MessageArray::In {
          * @param x Search origin x coord
          * @param _radius Search radius
          */
-        __device__ inline WrapFilter(const size_type &_length, const detail::curve::Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &_radius);
+        inline __device__ WrapFilter(const size_type &_length, const detail::curve::Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &_radius);
+#if !defined(SEATBELTS) || SEATBELTS
+        /**
+         * A null filter which always returns 0 messages
+         */
+        inline __device__ WrapFilter();
+#endif
         /**
          * Returns an iterator to the start of the message list subset about the search origin
          */
         inline __device__ iterator begin(void) const {
+#if !defined(SEATBELTS) || SEATBELTS
+            if (!this->length)
+                return iterator(*this, radius);
+#endif
             // Bin before initial bin, as the constructor calls increment operator
             return iterator(*this, -static_cast<int>(radius) - 1);
         }
@@ -421,7 +437,13 @@ class MessageArray::In {
          * @param _radius Search radius
          */
 
-        __device__ inline Filter(const size_type& _length, const detail::curve::Curve::NamespaceHash& _combined_hash, const size_type& x, const size_type& _radius);
+        inline __device__ Filter(const size_type& _length, const detail::curve::Curve::NamespaceHash& _combined_hash, const size_type& x, const size_type& _radius);
+#if !defined(SEATBELTS) || SEATBELTS
+        /**
+         * A null filter which always returns 0 messages
+         */
+        inline __device__ Filter();
+#endif
         /**
          * Returns an iterator to the start of the message list subset about the search origin
          */
@@ -451,10 +473,6 @@ class MessageArray::In {
          * Max offset to be accessed (inclusive)
          */
         int max_cell;
-        /**
-         * Search radius
-         */
-        const size_type radius;
         /**
          * Message list length
          */
@@ -494,15 +512,18 @@ class MessageArray::In {
 #if !defined(SEATBELTS) || SEATBELTS
         if (radius == 0) {
             DTHROW("Invalid radius %u for accessing array messagelist of length %u\n", radius, length);
+            return WrapFilter();
         } else if ((radius * 2) + 1 > length) {
             unsigned int min_r = length % 2 == 0 ? length - 2 : length - 1;
             min_r /= 2;
             DTHROW("%u is not a valid radius for accessing Array message lists, as the diameter of messages accessed exceeds the message list length (%u)."
                 " Maximum supported radius for this message list is %u.\n",
                 radius, length, min_r);
+            return WrapFilter();
         } else if (x >= length) {
             DTHROW("%u is not a valid position for iterating an Array message list of length %u, location must be within bounds.",
                 x, length);
+            return WrapFilter();
         }
 #endif
         return WrapFilter(length, combined_hash, x, radius);
@@ -524,9 +545,11 @@ class MessageArray::In {
 #if !defined(SEATBELTS) || SEATBELTS
         if (radius == 0) {
             DTHROW("Invalid radius %u for accessing array messagelist of length %u\n", radius, length);
+            return Filter();
         } else if (x >= length) {
             DTHROW("%u is not a valid position for iterating an Array message list of length %u, location must be within bounds.",
                 x, length);
+            return Filter();
         }
 #endif
         return Filter(length, combined_hash, x, radius);
@@ -541,6 +564,7 @@ class MessageArray::In {
 #if !defined(SEATBELTS) || SEATBELTS
         if (index >= length) {
             DTHROW("Index is out of bounds for Array messagelist (%u >= %u).\n", index, length);
+            return Message(*this);
         }
 #endif
         return Message(*this, index);
@@ -759,7 +783,19 @@ __device__ MessageArray::In::WrapFilter::WrapFilter(const size_type &_length, co
     , combined_hash(_combined_hash) {
     loc = x;
 }
+#if !defined(SEATBELTS) || SEATBELTS
+__device__ inline MessageArray::In::WrapFilter::WrapFilter()
+    : radius(0)
+    , length(0)
+    , combined_hash(0) {
+    loc = 0;
+}
+#endif
 __device__ MessageArray::In::WrapFilter::Message& MessageArray::In::WrapFilter::Message::operator++() {
+#if !defined(SEATBELTS) || SEATBELTS
+    if (!_parent.length)
+        return *this;
+#endif
     relative_cell++;
     // Skip origin cell
     if (relative_cell == 0) {
@@ -770,14 +806,26 @@ __device__ MessageArray::In::WrapFilter::Message& MessageArray::In::WrapFilter::
     return *this;
 }
 __device__ MessageArray::In::Filter::Filter(const size_type &_length, const detail::curve::Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &_radius)
-    : radius(_radius)
-    , length(_length)
+    : length(_length)
     , combined_hash(_combined_hash) {
     loc = x;
     min_cell = static_cast<int>(x) - static_cast<int>(_radius) < 0 ? -static_cast<int>(x) : -static_cast<int>(_radius);
     max_cell = x + _radius >= _length ? static_cast<int>(_length) - 1 - static_cast<int>(x) : static_cast<int>(_radius);
 }
+#if !defined(SEATBELTS) || SEATBELTS
+__device__ inline MessageArray::In::Filter::Filter()
+    : length(0)
+    , combined_hash(0) {
+    loc = 0;
+    min_cell = 1;
+    max_cell = 0;
+}
+#endif
 __device__ MessageArray::In::Filter::Message& MessageArray::In::Filter::Message::operator++() {
+#if !defined(SEATBELTS) || SEATBELTS
+    if (!_parent.length)
+        return *this;
+#endif
     relative_cell++;
     // Skip origin cell
     if (relative_cell == 0) {
