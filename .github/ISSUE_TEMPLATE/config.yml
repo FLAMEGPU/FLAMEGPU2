@@ -1,0 +1,14 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Online Userguide and Documentation
+    url: https://docs.flamegpu.com
+    about: Please see the online userguide and documentation
+  - name: Discussions Board / Support
+    url: https://github.com/FLAMEGPU/FLAMEGPU2/discussions
+    about: Please ask and answer questions here.
+  - name: Userguide Bugs and Feature Requests
+    url: https://github.com/FLAMEGPU/FLAMEGPU2-docs/issues
+    about: Please report issues with the Userguide here
+  - name: Website Bugs and suggestions
+    url: https://github.com/FLAMEGPU/flamegpu.github.io/issues
+    about: Please report issues with the website here
