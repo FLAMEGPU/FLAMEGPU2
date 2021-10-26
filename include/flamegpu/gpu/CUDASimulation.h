@@ -430,13 +430,16 @@ class CUDASimulation : public Simulation {
      * Spatially sort the agents.
      * This should only be called within step();
      */
-    void spatialSortAgents();
+    void spatialSortAgent(const std::string& agentName, const std::string& state, const int mode);
+
+   constexpr static int Agent2D = 0;
+   constexpr static int Agent3D = 1;
 
     /**
-     * Store the agents which require spatial sorting
+     * Store the agent functions which require spatial sorting
      */
-    std::set<std::string> agentsToSort2D;
-    std::set<std::string> agentsToSort3D;
+    std::set<std::string> sortTriggers2D;
+    std::set<std::string> sortTriggers3D;
 
     /**
      * How often to sort spatial agents

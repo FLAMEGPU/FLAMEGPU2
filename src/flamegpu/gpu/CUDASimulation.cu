@@ -344,7 +344,7 @@ void CUDASimulation::determineAgentsToSort() {
                 // Agent uses spatial, check it has correct variables
                 const auto& ad = *(it->second->description);
                 if (ad.hasVariable("x") && ad.hasVariable("y") && ad.hasVariable("z")) {
-                    agentsToSort3D.insert(it->first);
+                    sortTriggers3D.insert(it_f->first);
                 }
             }
             // Check if this agent function uses 2D spatial messages
@@ -352,7 +352,7 @@ void CUDASimulation::determineAgentsToSort() {
                 // Agent uses spatial, check it has correct variables
                 const auto& ad = *(it->second->description);
                 if (ad.hasVariable("x") && ad.hasVariable("y")) {
-                    agentsToSort2D.insert(it->first);
+                    sortTriggers2D.insert(it_f->first);
                 }
             }
         }
@@ -360,7 +360,7 @@ void CUDASimulation::determineAgentsToSort() {
 }
 
 
-void CUDASimulation::spatialSortAgents() {
+void CUDASimulation::spatialSortAgent(const std::string& agentName, const std::string& state, const int mode) {
     float radius;
     detail::Dims<float> envMin;
     detail::Dims<float> envMax;
@@ -375,92 +375,48 @@ void CUDASimulation::spatialSortAgents() {
         gridDim = {static_cast<unsigned int>(ceilf(envWidth.x / radius)), static_cast<unsigned int>(ceilf(envWidth.y / radius)), static_cast<unsigned int>(ceilf(envWidth.z / radius))};
     } catch (exception::InvalidEnvProperty& e) {
         std::cout << "WARNING: Please set the INTERACTION_RADIUS, MIN_POSITION and MAX_POSITION environment properties to enable spatial sorting\n";
-        this->setSortAgentsEveryNSteps(UINT_MAX);
+        this->setSortAgentsEveryNSteps(0);
         return;
     }
 
-    // TODO: For each agent state rather than just default
-    for (const std::string& agentName : agentsToSort3D) {
-        CUDAAgent& cuda_agent = getCUDAAgent(agentName);
+    CUDAAgent& cuda_agent = getCUDAAgent(agentName);
 
-        // Any agent in this list is guaranteed to have x, y, z and fgpu2_reserved_bin_index vars - used in the computation of spatial hash
-        void* xPtr = cuda_agent.getStateVariablePtr("default", "x");
-        void* yPtr = cuda_agent.getStateVariablePtr("default", "y");
-        void* zPtr = cuda_agent.getStateVariablePtr("default", "z");
-        void* binIndexPtr = cuda_agent.getStateVariablePtr("default", "fgpu2_reserved_bin_index");
+    // Any agent in this list is guaranteed to have x, y, z and fgpu2_reserved_bin_index vars - used in the computation of spatial hash
+    // TODO: User could supply alternatives to "x", "y", "z" to use alternative variables?
+    void* xPtr = cuda_agent.getStateVariablePtr(state, "x");
+    void* yPtr = cuda_agent.getStateVariablePtr(state, "y");
+    void* zPtr = mode == Agent3D ? cuda_agent.getStateVariablePtr(state, "z") : 0;
+    void* binIndexPtr = cuda_agent.getStateVariablePtr(state, "fgpu2_reserved_bin_index");
 
-        // Compute occupancy
-        int blockSize = 0;  // The launch configurator returned block size
-        int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-        int gridSize = 0;  // The actual grid size needed, based on input size
-        const unsigned int state_list_size = cuda_agent.getStateSize("default");
-        cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, calculateSpatialHash, 0, state_list_size);
+    // Compute occupancy
+    int blockSize = 0;  // The launch configurator returned block size
+    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+    int gridSize = 0;  // The actual grid size needed, based on input size
+    const unsigned int state_list_size = cuda_agent.getStateSize(state);
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, calculateSpatialHash, 0, state_list_size);
 
-        //! Round up according to CUDAAgent state list size
-        gridSize = (state_list_size + blockSize - 1) / blockSize;
+    //! Round up according to CUDAAgent state list size
+    gridSize = (state_list_size + blockSize - 1) / blockSize;
 
-        unsigned int sm_size = 0;
-        unsigned int streamIdx = 0;
+    unsigned int sm_size = 0;
+    unsigned int streamIdx = 0;
 #if !defined(SEATBELTS) || SEATBELTS
-        auto *error_buffer = this->singletons->exception.getDevicePtr(streamIdx, this->getStream(streamIdx));
-        sm_size = sizeof(error_buffer);
+    auto *error_buffer = this->singletons->exception.getDevicePtr(streamIdx, this->getStream(streamIdx));
+    sm_size = sizeof(error_buffer);
 #endif
 
-        // Launch kernel
-        calculateSpatialHash<<<gridSize, blockSize, sm_size, this->getStream(streamIdx) >>> (reinterpret_cast<float*>(xPtr),
-        reinterpret_cast<float*>(yPtr),
-        reinterpret_cast<float*>(zPtr),
-        reinterpret_cast<unsigned int*>(binIndexPtr),
-        envMin,
-        envWidth,
-        gridDim,
-        state_list_size);
-    }
-
-    for (const std::string& agentName : agentsToSort2D) {
-        CUDAAgent& cuda_agent = getCUDAAgent(agentName);
-
-        // Any agent in this list is guaranteed to have x, y and fgpu2_reserved_bin_index vars - used in the computation of spatial hash
-        void* xPtr = cuda_agent.getStateVariablePtr("default", "x");
-        void* yPtr = cuda_agent.getStateVariablePtr("default", "y");
-        void* binIndexPtr = cuda_agent.getStateVariablePtr("default", "fgpu2_reserved_bin_index");
-
-        // Compute occupancy
-        int blockSize = 0;  // The launch configurator returned block size
-        int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-        int gridSize = 0;  // The actual grid size needed, based on input size
-        const unsigned int state_list_size = cuda_agent.getStateSize("default");
-        cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, calculateSpatialHash, 0, state_list_size);
-
-        //! Round up according to CUDAAgent state list size
-        gridSize = (state_list_size + blockSize - 1) / blockSize;
-
-        unsigned int sm_size = 0;
-        unsigned int streamIdx = 0;
-#if !defined(SEATBELTS) || SEATBELTS
-        auto *error_buffer = this->singletons->exception.getDevicePtr(streamIdx, this->getStream(streamIdx));
-        sm_size = sizeof(error_buffer);
-#endif
-
-        // Launch kernel
-        calculateSpatialHash<<<gridSize, blockSize, sm_size, this->getStream(streamIdx) >>> (reinterpret_cast<float*>(xPtr),
-        reinterpret_cast<float*>(yPtr),
-        reinterpret_cast<float*>(0),
-        reinterpret_cast<unsigned int*>(binIndexPtr),
-        envMin,
-        envWidth,
-        gridDim,
-        state_list_size);
-    }
+    // Launch kernel
+    calculateSpatialHash<<<gridSize, blockSize, sm_size, this->getStream(streamIdx) >>> (reinterpret_cast<float*>(xPtr),
+    reinterpret_cast<float*>(yPtr),
+    reinterpret_cast<float*>(zPtr),
+    reinterpret_cast<unsigned int*>(binIndexPtr),
+    envMin,
+    envWidth,
+    gridDim,
+    state_list_size);
 
     assert(host_api);
-    for (const std::string& agentName : agentsToSort3D) {
-        host_api->agent(agentName).sort<unsigned int>("fgpu2_reserved_bin_index", HostAgentAPI::Asc);
-    }
-
-    for (const std::string& agentName : agentsToSort2D) {
-        host_api->agent(agentName).sort<unsigned int>("fgpu2_reserved_bin_index", HostAgentAPI::Asc);
-    }
+    host_api->agent(agentName).sort<unsigned int>("fgpu2_reserved_bin_index", HostAgentAPI::Asc);
 }
 
 bool CUDASimulation::step() {
@@ -480,10 +436,6 @@ bool CUDASimulation::step() {
         fprintf(stdout, "Processing Simulation Step %u\n", step_count);
     }
 
-    // Spatially sort the agents
-    if ((sortAgentsEveryNSteps != 0) && (step_count % sortAgentsEveryNSteps == 0)) {
-        this->spatialSortAgents();
-    }
 
     // Ensure there are enough streams to execute the layer.
     // Taking into consideration if in-layer concurrency is disabled or not.
@@ -548,6 +500,19 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     int streamIdx = 0;
     // Sum the total number of threads being launched in the layer
     unsigned int totalThreads = 0;
+    
+    // Spatially sort the agents
+    if ((sortAgentsEveryNSteps != 0) && (step_count % sortAgentsEveryNSteps == 0)) {
+        for (const auto &func_des : layer->agent_functions) {
+            auto func_agent = func_des->parent.lock();
+            if (sortTriggers3D.find(func_des->name) != sortTriggers3D.end()) {
+                this->spatialSortAgent(func_agent->name, func_des->initial_state, Agent3D);
+            }
+            if (sortTriggers2D.find(func_des->name) != sortTriggers2D.end()) {
+                this->spatialSortAgent(func_agent->name, func_des->initial_state, Agent2D);
+            }
+        }
+    }
 
     // Map agent memory
     bool has_rtc_func_cond = false;
