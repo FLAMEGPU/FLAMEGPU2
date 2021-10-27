@@ -107,8 +107,7 @@ TEST(SubCUDAMacroEnvironmentTest, MasterWriteSubReadHost) {
     }
     auto& agt = m.newAgent("test");
     auto& sm = m.newSubModel("sub", m2);
-    auto& senv = sm.SubEnvironment();
-    senv.autoMap();
+    auto& senv = sm.SubEnvironment(true);
     m.newLayer().addHostFunction(Host_Write_5);
     m.newLayer().addSubModel(sm);
     AgentVector pop(agt, 1);
