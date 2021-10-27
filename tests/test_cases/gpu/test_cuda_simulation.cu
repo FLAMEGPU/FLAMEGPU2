@@ -774,6 +774,174 @@ TEST(TestCUDASimulation, setEnvironmentProperty) {
     s.simulate();
 }
 
+
+/**
+ * Test that simullations work with a large number of agent functions in a single layer (i.e. > 128).
+ * This needs to be a non-trivial model in order to trigger the encountered issue described by #727
+ * https://github.com/FLAMEGPU/FLAMEGPU2/issues/727
+ * Message output, agent output and/or agent death should all trigger compactions which might highlight this issues.
+ * Additionally other uses of CUDAScanCompaction in general should trigger this issue.
+ * @todo - similar tests may be useful for most / all features which can occur in streams
+ */
+FLAMEGPU_AGENT_FUNCTION(VeryWideLayerAgentDeath, MessageNone, MessageNone) {
+    if (FLAMEGPU->getID() % 2) {
+        return flamegpu::DEAD;
+    }
+    return flamegpu::ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(VeryWideLayerAgentBirth, MessageNone, MessageNone) {
+    if (FLAMEGPU->getID() % 2) {
+        FLAMEGPU->agent_out.setVariable<unsigned int>("b", FLAMEGPU->getVariable<unsigned int>("b"));
+    }
+    return flamegpu::ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(VeryWideLayerBucketOut, MessageNone, MessageBucket) {
+    if (FLAMEGPU->getID() % 2) {
+        FLAMEGPU->message_out.setVariable<flamegpu::id_t>("id", FLAMEGPU->getID());
+        FLAMEGPU->message_out.setKey(FLAMEGPU->getVariable<unsigned int>("b"));
+    }
+    return flamegpu::ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(VeryWideLayerBucketIn, MessageBucket, MessageNone) {
+    unsigned int c = 0;
+    for (auto &message : FLAMEGPU->message_in(FLAMEGPU->getVariable<unsigned int>("b"))) {
+        c++;
+    }
+    FLAMEGPU->setVariable<unsigned int>("c", c);
+    return flamegpu::ALIVE;
+}
+TEST(TestCUDASimulation, VeryWideLayerDeath) {
+    // The width of the model, i.e. the number of agent types
+    constexpr unsigned int MODEL_WIDTH = 129;
+    // How many individuals to place in each population. This should be irrelevant.
+    constexpr unsigned int POP_SIZE = 32;
+    // Create a model containing a very large number of different agent types, which all operate in the same layer.
+    ModelDescription model("VeryWideLayerDeath");
+    // Create the layer for all the agent functions to reside in
+    auto& layer = model.newLayer();
+    // Define many agent types
+    for (unsigned int idx = 0; idx < MODEL_WIDTH; idx++) {
+        std::string agent_name("agent_" + std::to_string(idx));
+        std::string agent_function_name(agent_name + "_VeryWideLayerAgentDeath");
+        // Define the agent
+        AgentDescription& agent = model.newAgent(agent_name);
+        // Add a variable, to allow birth / bucket messaging
+        agent.newVariable<unsigned int>("b", 0);
+        // Define an agent function which allows death
+        auto& f = agent.newFunction(agent_function_name, VeryWideLayerAgentDeath);
+        f.setAllowAgentDeath(true);
+        // Add the function to the single model layer
+        layer.addAgentFunction(f);
+    }
+    // Create the simulation
+    CUDASimulation simulation(model);
+    // Populate the simulation
+    for (unsigned int idx = 0; idx < MODEL_WIDTH; idx++) {
+        std::string agent_name("agent_" + std::to_string(idx));
+        AgentDescription& agent = model.Agent(agent_name);
+        AgentVector population(agent, POP_SIZE);
+        simulation.setPopulationData(population);
+    }
+    // Run a single simulation step.
+    simulation.SimulationConfig().steps = 1;
+    simulation.applyConfig();
+    EXPECT_NO_THROW(simulation.simulate());
+    // If this runs then the test can be assumed to have passed, i.e. an error did not occur.
+}
+TEST(TestCUDASimulation, VeryWideLayerBirth) {
+    // The width of the model, i.e. the number of agent types
+    constexpr unsigned int MODEL_WIDTH = 129;
+    // How many individuals to place in each population. This should be irrelevant.
+    constexpr unsigned int POP_SIZE = 32;
+    // Create a model containing a very large number of different agent types, which all operate in the same layer.
+    ModelDescription model("VeryWideLayerBirth");
+    // Create the layer for all the agent functions to reside in
+    auto& layer = model.newLayer();
+    // Define many agent types
+    for (unsigned int idx = 0; idx < MODEL_WIDTH; idx++) {
+        std::string agent_name("agent_" + std::to_string(idx));
+        std::string agent_function_name(agent_name + "_VeryWideLayerAgentBirth");
+        // Define the agent
+        AgentDescription& agent = model.newAgent(agent_name);
+        // Add a variable, to allow birth / bucket messaging
+        agent.newVariable<unsigned int>("b", 0);
+        // Define an agent function which allows birth
+        auto& f = agent.newFunction(agent_function_name, VeryWideLayerAgentBirth);
+        f.setAgentOutput(agent);
+        // Add the function to the single model layer
+        layer.addAgentFunction(f);
+    }
+    // Create the simulation
+    CUDASimulation simulation(model);
+    // Populate the simulation
+    for (unsigned int idx = 0; idx < MODEL_WIDTH; idx++) {
+        std::string agent_name("agent_" + std::to_string(idx));
+        AgentDescription& agent = model.Agent(agent_name);
+        AgentVector population(agent, POP_SIZE);
+        simulation.setPopulationData(population);
+    }
+    // Run a single simulation step.
+    simulation.SimulationConfig().steps = 1;
+    simulation.applyConfig();
+    EXPECT_NO_THROW(simulation.simulate());
+    // If this runs then the test can be assumed to have passed, i.e. an error did not occur.
+}
+TEST(TestCUDASimulation, VeryWideLayerBucketMessaging) {
+    // The width of the model, i.e. the number of agent types
+    constexpr unsigned int MODEL_WIDTH = 129;
+    // How many individuals to place in each population. This should be irrelevant.
+    constexpr unsigned int POP_SIZE = 32;
+    // How many buckets exist.
+    constexpr unsigned int BUCKET_COUNT = POP_SIZE / 2;
+    // Create a model containing a very large number of different agent types, which all operate in the same layer.
+    ModelDescription model("VeryWideLayerBucketMessaging");
+    // Create the layers for all the agent functions to reside in
+    auto& layer_out = model.newLayer();
+    auto& layer_in = model.newLayer();
+    // Define many agent types and message types.
+    for (unsigned int idx = 0; idx < MODEL_WIDTH; idx++) {
+        std::string agent_name("agent_" + std::to_string(idx));
+        std::string agent_function_out_name(agent_name + "_VeryWideLayerBucketOut");
+        std::string agent_function_in_name(agent_name + "_VeryWideLayerBucketIn");
+        std::string message_name("message_" + std::to_string(idx));
+        // Define the message list
+        MessageBucket::Description &message = model.newMessage<MessageBucket>(message_name);
+        message.setBounds(0, BUCKET_COUNT);
+        message.newVariable<flamegpu::id_t>("id");
+        // Define the agent
+        AgentDescription& agent = model.newAgent(agent_name);
+        // Add a variable, to allow bucket messaging
+        agent.newVariable<unsigned int>("b", 0);
+        agent.newVariable<unsigned int>("c", 0);
+        // Define the message output and input agent functions
+        auto& f_out = agent.newFunction(agent_function_out_name, VeryWideLayerBucketOut);
+        f_out.setMessageOutput(message_name);
+        auto& f_in = agent.newFunction(agent_function_in_name, VeryWideLayerBucketIn);
+        f_in.setMessageInput(message_name);
+        // Add the function to the single model layer
+        layer_out.addAgentFunction(f_out);
+        layer_in.addAgentFunction(f_in);
+    }
+    // Create the simulation
+    CUDASimulation simulation(model);
+    // Populate the simulation
+    for (unsigned int idx = 0; idx < MODEL_WIDTH; idx++) {
+        std::string agent_name("agent_" + std::to_string(idx));
+        AgentDescription& agent = model.Agent(agent_name);
+        AgentVector population(agent, POP_SIZE);
+        for (auto instance : population) {
+            instance.setVariable<unsigned int>("b", instance.getID() / BUCKET_COUNT);
+            instance.setVariable<unsigned int>("c", 0);
+        }
+        simulation.setPopulationData(population);
+    }
+    // Run a single simulation step.
+    simulation.SimulationConfig().steps = 1;
+    simulation.applyConfig();
+    EXPECT_NO_THROW(simulation.simulate());
+    // If this runs then the test can be assumed to have passed, i.e. an error did not occur.
+}
+
 }  // namespace test_cuda_simulation
 }  // namespace tests
 }  // namespace flamegpu
