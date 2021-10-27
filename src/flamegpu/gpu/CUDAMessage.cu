@@ -44,21 +44,21 @@ const MessageBruteForce::Data& CUDAMessage::getMessageDescription() const {
     return message_description;
 }
 
-void CUDAMessage::resize(unsigned int newSize, CUDAScatter &scatter, const unsigned int &streamId) {
+void CUDAMessage::resize(unsigned int newSize, CUDAScatter &scatter, const unsigned int &streamId, const unsigned int& keepLen) {
     // Only grow currently
     if (newSize > max_list_size) {
+        const unsigned int _keep_len = std::min(max_list_size, keepLen);
         max_list_size = std::max<unsigned int>(max_list_size, 2u);
         while (max_list_size < newSize) {
             max_list_size = static_cast<unsigned int>(max_list_size * 1.5);
         }
-        // This drops old message data
-        message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this, scatter, streamId));
+        if (message_list) {
+            message_list->resize(scatter, streamId, _keep_len);
+        } else {
+            // If the list has not already been allocated, create a new
+            message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this, scatter, streamId));
+        }
         scatter.Scan().resize(max_list_size, CUDAScanCompaction::MESSAGE_OUTPUT, streamId);
-
-// #ifdef _DEBUG
-        /**set the message list to zero*/
-        zeroAllMessageData();
-// #endif
     }
 }
 

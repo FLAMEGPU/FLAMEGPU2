@@ -19,18 +19,8 @@ CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message, CUDAScatter &scatter
     // allocate message lists
     allocateDeviceMessageList(d_list);
     allocateDeviceMessageList(d_swap_list);
-    if (message.getMessageCount() != 0) {
-        {
-            auto &a = cuda_message.getReadList();
-            auto &_a = d_list;
-            scatter.scatterAll(streamId, 0, message.getMessageDescription().variables, a, _a, message.getMessageCount(), 0);
-        }
-        {  // Is copying writelist redundant?
-            auto &a = cuda_message.getWriteList();
-            auto &_a = d_swap_list;
-            scatter.scatterAll(streamId, 0, message.getMessageDescription().variables, a, _a, message.getMessageCount(), 0);
-        }
-    }
+    zeroDeviceMessageList(d_list);
+    zeroDeviceMessageList(d_swap_list);
 }
 
 /**
@@ -74,6 +64,31 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMessageMap &memory_map) {
         memory_map.insert(CUDAMessageMap::value_type(var_name, d_ptr));
     }
 }
+void CUDAMessageList::resize(CUDAScatter& scatter, const unsigned int& streamId, const unsigned int& keep_len) {
+    // Release d_swap_list, we don't retain this data
+    releaseDeviceMessageList(d_swap_list);
+    // Allocate the new d_list
+    CUDAMessageMap d_list_old;
+    std::swap(d_list, d_list_old);
+    allocateDeviceMessageList(d_list);
+    if (keep_len && keep_len <= message.getMessageCount()) {
+        // Copy data from d_list_old to d_list
+        // Note, if keep_len exceeds length of d_swap_list_old, this will crash
+        scatter.scatterAll(streamId,
+            0,
+            message.getMessageDescription().variables,
+            d_list_old, d_list,
+            keep_len,
+            0);
+    }
+    // Release d_list_old
+    releaseDeviceMessageList(d_list_old);
+    // Allocate the new d_swap_list
+    allocateDeviceMessageList(d_swap_list);
+    // Zero any new buffers with undefined data
+    zeroDeviceMessageList(d_list, keep_len);
+    zeroDeviceMessageList(d_swap_list);
+}
 
 void CUDAMessageList::releaseDeviceMessageList(CUDAMessageMap& memory_map) {
     // for each device pointer in the cuda memory map we need to free these
@@ -81,9 +96,12 @@ void CUDAMessageList::releaseDeviceMessageList(CUDAMessageMap& memory_map) {
         // free the memory on the device
         gpuErrchk(cudaFree(mm.second));
     }
+    memory_map.clear();
 }
 
-void CUDAMessageList::zeroDeviceMessageList(CUDAMessageMap& memory_map) {
+void CUDAMessageList::zeroDeviceMessageList(CUDAMessageMap& memory_map, const unsigned int &skip_offset) {
+    if (skip_offset >= message.getMaximumListSize())
+        return;
     // for each device pointer in the cuda memory map set the values to 0
     for (const auto &mm : memory_map) {
         // get the variable size from message description
@@ -91,7 +109,7 @@ void CUDAMessageList::zeroDeviceMessageList(CUDAMessageMap& memory_map) {
         const size_t var_size = var.type_size * var.elements;
 
         // set the memory to zero
-        gpuErrchk(cudaMemset(mm.second, 0, var_size*message.getMaximumListSize()));
+        gpuErrchk(cudaMemset(static_cast<char*>(mm.second) + (var_size * skip_offset), 0, var_size * (message.getMaximumListSize() - skip_offset)));
     }
 }
 

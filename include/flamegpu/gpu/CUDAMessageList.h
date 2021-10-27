@@ -50,7 +50,16 @@ class CUDAMessageList {
      * @return void pointer to variable array in device memory
      */
     void* getWriteMessageListVariablePointer(std::string variable_name);
-
+    /**
+     * Resize the internal message list buffers to the length of the parent CUDAMessage
+     * Retain keep_len items from d_list during the resize (d_swap_list data is lost)
+     * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
+     * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param keep_len If specified, number of items to retain through the resize
+     * @throw If keep_len exceeds the new buffer length
+     * @note This class has no way of knowing if keep_len exceeds the old buffer length size
+     */
+    void resize(CUDAScatter& scatter, const unsigned int& streamId = 0, const unsigned int& keep_len = 0);
     /**
      * Memset all variable arrays in each list to 0
      */
@@ -101,8 +110,9 @@ class CUDAMessageList {
      /**
       * Zeros device memory for the provided message list
       * @param memory_map Message list to perform operation on
+      * @param skip_offset Number of items at the start of the list to not zero
       */
-     void zeroDeviceMessageList(CUDAMessageMap &memory_map);
+     void zeroDeviceMessageList(CUDAMessageMap &memory_map, const unsigned int& skip_offset = 0);
 
  private:
      /**

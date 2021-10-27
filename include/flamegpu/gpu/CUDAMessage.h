@@ -69,8 +69,9 @@ class CUDAMessage {
      * @param newSize The number of messages that the buffer should be capable of storing
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of stream specific structures used
+     * @param keepLen Number of existing messages worth of data to retain through the resize
      */
-    void resize(unsigned int newSize, CUDAScatter &scatter, const unsigned int &streamId);
+    void resize(unsigned int newSize, CUDAScatter &scatter, const unsigned int &streamId, const unsigned int &keepLen = 0);
     /**
      * Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
      * The read runtime variables are to be used when reading messages
