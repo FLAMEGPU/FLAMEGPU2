@@ -242,5 +242,69 @@ namespace test_message_AppendTruncate {
             ASSERT_EQ(ai.getVariable<unsigned int>("count1"), result_count);
         }
     }
+    FLAMEGPU_AGENT_FUNCTION(Out_1, MessageNone, MessageBruteForce) {
+        FLAMEGPU->message_out.setVariable("x", 1);
+        return ALIVE;
+    }
+    FLAMEGPU_AGENT_FUNCTION(Out_2, MessageNone, MessageBruteForce) {
+        FLAMEGPU->message_out.setVariable("x", 2);
+        return ALIVE;
+    }
+    FLAMEGPU_AGENT_FUNCTION(In, MessageBruteForce, MessageNone) {
+        unsigned int _0 = 0;
+        unsigned int _1 = 0;
+        unsigned int _2 = 0;
+        for (auto& message : FLAMEGPU->message_in) {
+            const int x = message.getVariable<int>("x");
+            if (x == 1) {
+                _1++;
+            } else if (x == 2) {
+                _2++;
+            } else {
+                _0++;
+            }
+        }
+        FLAMEGPU->setVariable<unsigned int>("0", _0);
+        FLAMEGPU->setVariable<unsigned int>("1", _1);
+        FLAMEGPU->setVariable<unsigned int>("2", _2);
+        return ALIVE;
+    }
+    TEST(TestMessage_AppendTruncate, Append_KeepData_Resize) {
+        // This is to a cover a bug (#725), where message list resizing before a message list append, would lose existing message data
+        // Resizing is performed automatically, but by having the 2nd agent population to output messages
+        // twice the size of the initial agent population, automatic resize should be forced
+        ModelDescription m(MODEL_NAME);
+        MessageBruteForce::Description& message = m.newMessage(MESSAGE_NAME);
+        message.newVariable<int>("x");
+        AgentDescription& a = m.newAgent("a");
+        a.newFunction("Out_1", Out_1).setMessageOutput(message);
+        AgentDescription& b = m.newAgent("b");
+        b.newFunction("Out_2", Out_2).setMessageOutput(message);
+        AgentDescription& c = m.newAgent("c");
+        c.newFunction("In", In).setMessageInput(message);
+        c.newVariable<unsigned int>("0", 0);
+        c.newVariable<unsigned int>("1", 0);
+        c.newVariable<unsigned int>("2", 0);
+
+        LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+        lo.addAgentFunction(Out_1);
+        LayerDescription& lo2 = m.newLayer(OUT_LAYER2_NAME);
+        lo2.addAgentFunction(Out_2);
+        LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+        li.addAgentFunction(In);
+        AgentVector pop_a(a, AGENT_COUNT);
+        AgentVector pop_b(b, AGENT_COUNT * 2);
+        AgentVector pop_c(c, 1);
+        CUDASimulation sim(m);
+        sim.setPopulationData(pop_a);
+        sim.setPopulationData(pop_b);
+        sim.setPopulationData(pop_c);
+        sim.step();
+        sim.getPopulationData(pop_c);
+        // Validate
+        ASSERT_EQ(pop_c[0].getVariable<unsigned int>("0"), 0u);
+        ASSERT_EQ(pop_c[0].getVariable<unsigned int>("1"), AGENT_COUNT);
+        ASSERT_EQ(pop_c[0].getVariable<unsigned int>("2"), AGENT_COUNT * 2);
+    }
 }  // namespace test_message_AppendTruncate
 }  // namespace flamegpu

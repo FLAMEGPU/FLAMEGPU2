@@ -571,7 +571,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
             CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
             // Resize message list if required
             const unsigned int existingMessages = cuda_message.getTruncateMessageListFlag() ? 0 : cuda_message.getMessageCount();
-            cuda_message.resize(existingMessages + state_list_size, this->singletons->scatter, streamIdx);
+            cuda_message.resize(existingMessages + state_list_size, this->singletons->scatter, streamIdx, existingMessages);
             cuda_message.mapWriteRuntimeVariables(*func_des, cuda_agent, state_list_size, instance_id);
             singletons->scatter.Scan().resize(state_list_size, CUDAScanCompaction::MESSAGE_OUTPUT, streamIdx);
             // Zero the scan flag that will be written to
