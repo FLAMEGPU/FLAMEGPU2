@@ -176,7 +176,7 @@ TEST(SubEnvironmentManagerTest, SubHostAPISetSub) {
     }
     // Setup submodel bindings
     auto &sm = m.newSubModel("sub", m2);
-    sm.SubEnvironment(true);
+    sm.SubEnvironment().autoMap();
     // Construct model layers
     m.newLayer().addSubModel(sm);  // HostAPISetFn
     m.newLayer().addHostFunction(HostAPIGetFn);
@@ -213,7 +213,7 @@ TEST(SubEnvironmentManagerTest, SubHostAPISetConstSub) {
     // Setup submodel bindings
     auto &sm = m.newSubModel("sub", m2);
     sm.bindAgent("agent", "agent", true, true);
-    sm.SubEnvironment(true);
+    sm.SubEnvironment().autoMapProperties();
     // Construct model layers
     m.newLayer().addSubModel(sm);  // HostAPISetIsConstFn
     m.newLayer().addHostFunction(HostAPIGetFn);

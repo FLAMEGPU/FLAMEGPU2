@@ -98,7 +98,7 @@ const SubAgentDescription &SubModelDescription::getSubAgent(const std::string &s
 }
 
 
-SubEnvironmentDescription &SubModelDescription::SubEnvironment(bool auto_map_props) {
+SubEnvironmentDescription &SubModelDescription::SubEnvironment(bool auto_map) {
     if (!data->subenvironment) {
         auto mdl = model.lock();
         if (!mdl) {
@@ -106,11 +106,13 @@ SubEnvironmentDescription &SubModelDescription::SubEnvironment(bool auto_map_pro
         }
         data->subenvironment = std::shared_ptr<SubEnvironmentData>(new SubEnvironmentData(mdl, data->shared_from_this(), data->submodel->environment));
     }
-    if (auto_map_props)
+    if (auto_map) {
         data->subenvironment->description->autoMapProperties();
+        data->subenvironment->description->autoMapMacroProperties();
+    }
     return *data->subenvironment->description;
 }
-const SubEnvironmentDescription &SubModelDescription::getSubEnvironment(bool auto_map_props) const {
+const SubEnvironmentDescription &SubModelDescription::getSubEnvironment(bool auto_map) const {
     if (!data->subenvironment) {
         auto mdl = model.lock();
         if (!mdl) {
@@ -118,8 +120,10 @@ const SubEnvironmentDescription &SubModelDescription::getSubEnvironment(bool aut
         }
         data->subenvironment = std::shared_ptr<SubEnvironmentData>(new SubEnvironmentData(mdl, data->shared_from_this(), data->submodel->environment));
     }
-    if (auto_map_props)
+    if (auto_map) {
         data->subenvironment->description->autoMapProperties();
+        data->subenvironment->description->autoMapMacroProperties();
+    }
     return *data->subenvironment->description;
 }
 
