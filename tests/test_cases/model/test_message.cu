@@ -30,10 +30,10 @@ TEST(MessageDescriptionTest, variables) {
     // Returned variable data is same
     EXPECT_EQ(sizeof(float), m.getVariableSize(VARIABLE_NAME1));
     EXPECT_EQ(std::type_index(typeid(float)), m.getVariableType(VARIABLE_NAME1));
-    EXPECT_EQ(1, m.getVariableLength(VARIABLE_NAME1));
+    EXPECT_EQ(1u, m.getVariableLength(VARIABLE_NAME1));
     EXPECT_EQ(sizeof(int16_t), m.getVariableSize(VARIABLE_NAME2));
     EXPECT_EQ(std::type_index(typeid(int16_t)), m.getVariableType(VARIABLE_NAME2));
-    EXPECT_EQ(1, m.getVariableLength(VARIABLE_NAME2));
+    EXPECT_EQ(1u, m.getVariableLength(VARIABLE_NAME2));
 }
 TEST(MessageDescriptionTest, variables_array) {
     ModelDescription _m(MODEL_NAME);
@@ -60,8 +60,8 @@ TEST(MessageDescriptionTest, variables_array) {
     EXPECT_EQ(sizeof(int16_t), m.getVariableSize(VARIABLE_NAME2));
     EXPECT_EQ(std::type_index(typeid(float)), m.getVariableType(VARIABLE_NAME1));
     EXPECT_EQ(std::type_index(typeid(int16_t)), m.getVariableType(VARIABLE_NAME2));
-    EXPECT_EQ(2, m.getVariableLength(VARIABLE_NAME1));
-    EXPECT_EQ(2, m.getVariableLength(VARIABLE_NAME2));
+    EXPECT_EQ(2u, m.getVariableLength(VARIABLE_NAME1));
+    EXPECT_EQ(2u, m.getVariableLength(VARIABLE_NAME2));
 }
 
 FLAMEGPU_AGENT_FUNCTION(NoInput, MessageNone, MessageSpatial3D) {
