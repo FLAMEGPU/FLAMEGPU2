@@ -339,20 +339,23 @@ void CUDASimulation::determineAgentsToSort() {
     for (auto it = am.cbegin(); it != am.cend(); ++it) {
         const auto& mf = it->second->functions;
         for (auto it_f = mf.cbegin(); it_f != mf.cend(); ++it_f) {
-            // Check if this agent function uses 3D spatial messages
-            if (it_f->second->message_in_type == detail::curve::CurveRTCHost::demangle(std::type_index(typeid(flamegpu::MessageSpatial3D)))) {
-                // Agent uses spatial, check it has correct variables
-                const auto& ad = *(it->second->description);
-                if (ad.hasVariable("x") && ad.hasVariable("y") && ad.hasVariable("z")) {
-                    sortTriggers3D.insert(it_f->first);
+            if (auto ptr = it_f->second->message_output.lock()) {
+                // Check if this agent function uses 3D spatial messages
+                if (ptr->getSortingType() == flamegpu::MessageSortingType::spatial3D) {
+                    // Agent uses spatial, check it has correct variables
+                    const auto& ad = *(it->second->description);
+                    if (ad.hasVariable("x") && ad.hasVariable("y") && ad.hasVariable("z")) {
+                        sortTriggers3D.insert(it_f->first);
+                    }
                 }
-            }
-            // Check if this agent function uses 2D spatial messages
-            if (it_f->second->message_in_type == detail::curve::CurveRTCHost::demangle(std::type_index(typeid(flamegpu::MessageSpatial2D)))) {
-                // Agent uses spatial, check it has correct variables
-                const auto& ad = *(it->second->description);
-                if (ad.hasVariable("x") && ad.hasVariable("y")) {
-                    sortTriggers2D.insert(it_f->first);
+
+                // Check if this agent function uses 2D spatial messages
+                if (ptr->getSortingType() == flamegpu::MessageSortingType::spatial2D) {
+                    // Agent uses spatial, check it has correct variables
+                    const auto& ad = *(it->second->description);
+                    if (ad.hasVariable("x") && ad.hasVariable("y")) {
+                        sortTriggers2D.insert(it_f->first);
+                    }
                 }
             }
         }

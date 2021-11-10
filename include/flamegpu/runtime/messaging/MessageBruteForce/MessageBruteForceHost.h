@@ -13,7 +13,7 @@
 
 #include "flamegpu/runtime/messaging/MessageNone/MessageNoneHost.h"
 #include "flamegpu/runtime/messaging/MessageBruteForce.h"
-
+#include "flamegpu/runtime/messaging/MessageSortingType.h"
 
 namespace flamegpu {
 
@@ -132,6 +132,10 @@ struct MessageBruteForce::Data {
      * @return The std::type_index of the Message type which must be used.
      */
     virtual std::type_index getType() const;
+    /**
+     * Return the sorting type for this message type
+     */
+    virtual flamegpu::MessageSortingType getSortingType() const;
 
  protected:
     virtual Data *clone(const std::shared_ptr<const ModelData> &newParent);

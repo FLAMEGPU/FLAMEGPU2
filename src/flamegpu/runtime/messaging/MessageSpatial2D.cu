@@ -193,6 +193,9 @@ std::unique_ptr<MessageSpecialisationHandler> MessageSpatial2D::Data::getSpecial
 }
 std::type_index MessageSpatial2D::Data::getType() const { return std::type_index(typeid(MessageSpatial2D)); }
 
+flamegpu::MessageSortingType MessageSpatial2D::Data::getSortingType() const {
+    return flamegpu::MessageSortingType::spatial2D;
+}
 
 MessageSpatial2D::Description::Description(const std::shared_ptr<const ModelData> &_model, Data *const data)
     : MessageBruteForce::Description(_model, data) { }

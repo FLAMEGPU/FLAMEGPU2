@@ -182,6 +182,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageBucket.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageBucket/MessageBucketHost.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageBucket/MessageBucketDevice.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageSortingType.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/AgentRandom.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/DeviceEnvironment.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/DeviceMacroProperty.cuh
