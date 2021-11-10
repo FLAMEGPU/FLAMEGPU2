@@ -314,20 +314,19 @@ __global__ void calculateSpatialHash(float* x, float* y, float* z, unsigned int*
 
         // Compute and set the bin index
         unsigned int bindex;
-        
+
         if (z) {
             bindex = (unsigned int)(
             (gridPos[2] * gridDim.x * gridDim.y +   // z
             (gridPos[1] * gridDim.x) +              // y
             gridPos[0]));                           // x
-  
-        } else {
 
+        } else {
             bindex = (unsigned int)(
             (gridPos[1] * gridDim.x) +              // y
             gridPos[0]);                            // x
         }
-       
+
         binIndex[TID] = bindex;
     }
 }
@@ -339,7 +338,7 @@ void CUDASimulation::determineAgentsToSort() {
     for (auto it = am.cbegin(); it != am.cend(); ++it) {
         const auto& mf = it->second->functions;
         for (auto it_f = mf.cbegin(); it_f != mf.cend(); ++it_f) {
-            if (auto ptr = it_f->second->message_output.lock()) {
+            if (auto ptr = it_f->second->message_input.lock()) {
                 // Check if this agent function uses 3D spatial messages
                 if (ptr->getSortingType() == flamegpu::MessageSortingType::spatial3D) {
                     // Agent uses spatial, check it has correct variables
@@ -503,7 +502,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     int streamIdx = 0;
     // Sum the total number of threads being launched in the layer
     unsigned int totalThreads = 0;
-    
+
     // Spatially sort the agents
     if ((sortAgentsEveryNSteps != 0) && (step_count % sortAgentsEveryNSteps == 0)) {
         for (const auto &func_des : layer->agent_functions) {

@@ -326,7 +326,6 @@ AgentFunctionDescription &AgentDescription::newFunction(const std::string &funct
         AgentFunctionWrapper *f = AgentFunction::fnPtr();
         std::string in_t = detail::curve::CurveRTCHost::demangle(AgentFunction::inType().name());
         std::string out_t = detail::curve::CurveRTCHost::demangle(AgentFunction::outType().name());
-        std::cout << "in_t: " << in_t << " out_t: " << out_t << std::endl;
         if (in_t == "flamegpu::MessageSpatial3D" || in_t == "flamegpu::MessageSpatial2D" || out_t == "flamegpu::MessageSpatial3D" || out_t == "flamegpu::MessageSpatial2D") {
             if (agent->variables.find("fgpu2_reserved_bin_index") == agent->variables.end()) {
                 agent->variables.emplace("fgpu2_reserved_bin_index", Variable(1, std::vector<unsigned int> {0}));

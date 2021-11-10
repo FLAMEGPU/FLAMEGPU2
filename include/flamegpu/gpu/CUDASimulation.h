@@ -253,13 +253,17 @@ class CUDASimulation : public Simulation {
      */
     std::vector<double> getElapsedTimeSteps() const;
 
-
     /** 
      * Get the duration of an individual step in seconds.
      * @param step Index of step, must be less than the number of steps executed.
      * @return elapsed time of required step in seconds
      */
     double getElapsedTimeStep(unsigned int step) const;
+
+    /**
+     * Determines which agents require sorting - only used once during initialisation. Must be called manually if not using .simulate()
+     */
+    void determineAgentsToSort();
 
     /**
      * Returns the unique instance id of this CUDASimulation instance
@@ -422,11 +426,6 @@ class CUDASimulation : public Simulation {
     bool stepExitConditions();
 
     /**
-     * Determines which agents require sorting - only used once during initialisation
-     */
-    void determineAgentsToSort();
-
-    /** 
      * Spatially sort the agents.
      * This should only be called within step();
      */

@@ -10,7 +10,7 @@ namespace flamegpu {
 enum class MessageSortingType {
     none,
     spatial2D,
-    spatial3D 
+    spatial3D
 };
 
 }  // namespace flamegpu
