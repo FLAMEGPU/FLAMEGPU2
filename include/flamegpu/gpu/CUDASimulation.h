@@ -431,8 +431,8 @@ class CUDASimulation : public Simulation {
      */
     void spatialSortAgent(const std::string& agentName, const std::string& state, const int mode);
 
-   constexpr static int Agent2D = 0;
-   constexpr static int Agent3D = 1;
+    constexpr static int Agent2D = 0;
+    constexpr static int Agent3D = 1;
 
     /**
      * Store the agent functions which require spatial sorting

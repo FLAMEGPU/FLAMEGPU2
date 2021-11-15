@@ -136,7 +136,7 @@ struct MessageSpatial2D::Data : public MessageBruteForce::Data {
     /**
      * Return the sorting type for this message type
      */
-    virtual flamegpu::MessageSortingType getSortingType() const override;
+    flamegpu::MessageSortingType getSortingType() const override;
 
  protected:
     Data *clone(const std::shared_ptr<const ModelData> &newParent) override;

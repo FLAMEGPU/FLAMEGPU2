@@ -375,7 +375,7 @@ void CUDASimulation::spatialSortAgent(const std::string& agentName, const std::s
         envMax = {host_api->environment.getProperty<float>("MAX_POSITION"), host_api->environment.getProperty<float>("MAX_POSITION"), host_api->environment.getProperty<float>("MAX_POSITION")};
         envWidth = {(envMax.x-envMin.x), (envMax.y-envMin.y), (envMax.z-envMin.z)};
         gridDim = {static_cast<unsigned int>(ceilf(envWidth.x / radius)), static_cast<unsigned int>(ceilf(envWidth.y / radius)), static_cast<unsigned int>(ceilf(envWidth.z / radius))};
-    } catch (exception::InvalidEnvProperty& e) {
+    } catch (exception::InvalidEnvProperty&) {
         std::cout << "WARNING: Please set the INTERACTION_RADIUS, MIN_POSITION and MAX_POSITION environment properties to enable spatial sorting\n";
         this->setSortAgentsEveryNSteps(0);
         return;
