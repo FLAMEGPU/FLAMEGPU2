@@ -323,6 +323,42 @@ FLAMEGPU_INIT_FUNCTION(logging_ensemble_init) {
         instance.setVariable<unsigned int>("uint_var", static_cast<unsigned int>(i+2));
     }
 }
+TEST(LoggingTest, EmptyMean) {
+    /**
+     * There was a bug, where if an agent population died out
+     * Reductions would log in the form `{"mean":}`, rather than `{"mean":0}`
+     * This led to parsing of the JSON to fail.
+     * This was due to mean dividing by 0, producing an output of NaN
+     * Hence, this test simply checks that mean of empty pop does not return 0
+     * A line can be uncommented to generate the json output file
+     */
+     // Define model
+    ModelDescription m(MODEL_NAME);
+    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    a.newVariable<float>("float_var");
+    AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    m.newLayer().addAgentFunction(f1);
+
+    // Define logging configs
+    LoggingConfig lcfg(m);
+    AgentLoggingConfig alcfg = lcfg.agent(AGENT_NAME1);
+    alcfg.logCount();
+    alcfg.logMean<float>("float_var");
+
+    StepLoggingConfig slcfg(lcfg);
+    slcfg.setFrequency(1);
+
+    // Run model (note there are no agents, so no agent functions will actually run, but the logging will still occur)
+    CUDASimulation sim(m);
+    sim.setStepLog(slcfg);
+    sim.SimulationConfig().steps = 5;
+    // sim.SimulationConfig().step_log_file = "valid.json"; // Enabling this produces the bugged output file
+    sim.simulate();
+    auto& sl = sim.getRunLog().getStepLog();
+    for (auto& step : sl) {  // Check step log doesn't contain NaN
+        EXPECT_EQ(step.getAgent(AGENT_NAME1).getMean("float_var"), 0.0);
+    }
+}
 TEST(LoggingTest, CUDAEnsembleSimulate) {
     /**
      * Ensure the expected data is logged when CUDAEnsemble::simulate() is called

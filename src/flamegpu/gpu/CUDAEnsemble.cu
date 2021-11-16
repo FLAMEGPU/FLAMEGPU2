@@ -114,8 +114,10 @@ void CUDAEnsemble::simulate(const RunPlanVector &plans) {
 
     // Init with placement new
     {
-        if (!config.quiet)
+        if (!config.quiet) {
             printf("\rCUDAEnsemble progress: %u/%u", 0, static_cast<unsigned int>(plans.size()));
+            fflush(stdout);
+        }
         unsigned int i = 0;
         for (auto &d : devices) {
             for (unsigned int j = 0; j < config.concurrent_runs; ++j) {
