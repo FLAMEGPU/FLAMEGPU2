@@ -165,7 +165,9 @@ template <typename T> struct sum_input_t { typedef T result_t; };
  */
 template<typename T>
 util::Any getAgentVariableMeanFunc(HostAgentAPI &ai, const std::string &variable_name) {
-    return util::Any(ai.sum<T, typename sum_input_t<T>::result_t>(variable_name) / static_cast<double>(ai.count()));
+    if (ai.count() > 0)
+        return util::Any(ai.sum<T, typename sum_input_t<T>::result_t>(variable_name) / static_cast<double>(ai.count()));
+    return util::Any(static_cast<double>(0));
 }
 template<typename T>
 util::Any getAgentVariableSumFunc(HostAgentAPI &ai, const std::string &variable_name) {
