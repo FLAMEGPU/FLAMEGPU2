@@ -1,3 +1,19 @@
+// If earlier than VS 2019
+#if defined(_MSC_VER) && _MSC_VER < 1920
+#include <filesystem>
+using std::tr2::sys::exists;
+using std::tr2::sys::path;
+using std::tr2::sys::remove;
+using std::tr2::sys::remove_all;
+#else
+// VS2019 requires this macro, as building pre c++17 cant use std::filesystem
+#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+#include <experimental/filesystem>
+using std::experimental::filesystem::v1::exists;
+using std::experimental::filesystem::v1::path;
+using std::experimental::filesystem::v1::remove;
+using std::experimental::filesystem::v1::remove_all;
+#endif
 #include "gtest/gtest.h"
 
 #include "flamegpu/flamegpu.h"
@@ -202,7 +218,7 @@ TEST(LoggingTest, CUDASimulationSimulate) {
     // Run model
     CUDASimulation sim(m);
     sim.SimulationConfig().steps = 10;
-    // sim.SimulationConfig().common_log_file = "commmon.json";
+    // sim.SimulationConfig().common_log_file = "common.json";
     // sim.SimulationConfig().step_log_file = "step.json";
     // sim.SimulationConfig().exit_log_file = "exit.json";
     sim.SimulationConfig().steps = 10;
@@ -529,6 +545,432 @@ TEST(LoggingTest, CUDAEnsembleSimulate) {
         }
     }
 }
+TEST(TestLogging, Simulation_ToFile_Step) {
+    // Test that if we request a step log file to disk, we only get a step log file to disk
+    // Note, it does not test the contents of the output file
+    const path step_file = "step.json";
+    const path exit_file = "exit.json";
+    const path common_file = "common.json";
+    ASSERT_FALSE(::exists(step_file));
+    ASSERT_FALSE(::exists(exit_file));
+    ASSERT_FALSE(::exists(common_file));
+
+    // Define model
+    ModelDescription m(MODEL_NAME);
+    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    a.newVariable<float>("float_var");
+    a.newVariable<int>("int_var");
+    a.newVariable<unsigned int>("uint_var");
+    AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    m.newLayer().addAgentFunction(f1);
+
+    // Define logging configs
+    LoggingConfig lcfg(m);
+    AgentLoggingConfig alcfg = lcfg.agent(AGENT_NAME1);
+    alcfg.logCount();
+    logAllAgent<float>(alcfg, "float_var");
+    logAllAgent<int>(alcfg, "int_var");
+    logAllAgent<unsigned int>(alcfg, "uint_var");
+
+    StepLoggingConfig slcfg(lcfg);
+    slcfg.setFrequency(2);
+
+    // Create agent population
+    AgentVector pop(a, 101);
+    for (int i = 0; i < 101; ++i) {
+        auto instance = pop[i];
+        instance.setVariable<float>("float_var", static_cast<float>(i));
+        instance.setVariable<int>("int_var", static_cast<int>(i + 1));
+        instance.setVariable<unsigned int>("uint_var", static_cast<unsigned int>(i + 2));
+    }
+
+    // Run model
+    CUDASimulation sim(m);
+    sim.SimulationConfig().steps = 10;
+    // sim.SimulationConfig().common_log_file = "common.json";
+    sim.SimulationConfig().step_log_file = "step.json";
+    // sim.SimulationConfig().exit_log_file = "exit.json";
+    sim.SimulationConfig().steps = 10;
+    sim.setStepLog(slcfg);
+    sim.setExitLog(lcfg);
+    sim.setPopulationData(pop);
+    // Call simulate(), and check step and exit logs match expectations
+    sim.simulate();
+    // Check
+    ASSERT_TRUE(::exists(step_file));
+    EXPECT_FALSE(::exists(exit_file));
+    EXPECT_FALSE(::exists(common_file));
+    // Cleanup
+    ASSERT_TRUE(::remove(step_file));
+    ::remove(exit_file);
+    ::remove(common_file);
+}
+TEST(TestLogging, Simulation_ToFile_Exit) {
+    // Test that if we request a exit log file to disk, we only get a exit log file to disk
+    // Note, it does not test the contents of the output file
+    const path step_file = "step.json";
+    const path exit_file = "exit.json";
+    const path common_file = "common.json";
+    ASSERT_FALSE(::exists(step_file));
+    ASSERT_FALSE(::exists(exit_file));
+    ASSERT_FALSE(::exists(common_file));
+
+    // Define model
+    ModelDescription m(MODEL_NAME);
+    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    a.newVariable<float>("float_var");
+    a.newVariable<int>("int_var");
+    a.newVariable<unsigned int>("uint_var");
+    AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    m.newLayer().addAgentFunction(f1);
+
+    // Define logging configs
+    LoggingConfig lcfg(m);
+    AgentLoggingConfig alcfg = lcfg.agent(AGENT_NAME1);
+    alcfg.logCount();
+    logAllAgent<float>(alcfg, "float_var");
+    logAllAgent<int>(alcfg, "int_var");
+    logAllAgent<unsigned int>(alcfg, "uint_var");
+
+    StepLoggingConfig slcfg(lcfg);
+    slcfg.setFrequency(2);
+
+    // Create agent population
+    AgentVector pop(a, 101);
+    for (int i = 0; i < 101; ++i) {
+        auto instance = pop[i];
+        instance.setVariable<float>("float_var", static_cast<float>(i));
+        instance.setVariable<int>("int_var", static_cast<int>(i + 1));
+        instance.setVariable<unsigned int>("uint_var", static_cast<unsigned int>(i + 2));
+    }
+
+    // Run model
+    CUDASimulation sim(m);
+    sim.SimulationConfig().steps = 10;
+    // sim.SimulationConfig().common_log_file = "common.json";
+    // sim.SimulationConfig().step_log_file = "step.json";
+    sim.SimulationConfig().exit_log_file = "exit.json";
+    sim.SimulationConfig().steps = 10;
+    sim.setStepLog(slcfg);
+    sim.setExitLog(lcfg);
+    sim.setPopulationData(pop);
+    // Call simulate(), and check step and exit logs match expectations
+    sim.simulate();
+    // Check
+    ASSERT_TRUE(::exists(exit_file));
+    EXPECT_FALSE(::exists(step_file));
+    EXPECT_FALSE(::exists(common_file));
+    // Cleanup
+    ASSERT_TRUE(::remove(exit_file));
+    ::remove(step_file);
+    ::remove(common_file);
+}
+TEST(TestLogging, Simulation_ToFile_Common) {
+    // Test that if we request a common log file to disk, we only get a common log file to disk
+    // Note, it does not test the contents of the output file
+    const path step_file = "step.json";
+    const path exit_file = "exit.json";
+    const path common_file = "common.json";
+    ASSERT_FALSE(::exists(step_file));
+    ASSERT_FALSE(::exists(exit_file));
+    ASSERT_FALSE(::exists(common_file));
+
+    // Define model
+    ModelDescription m(MODEL_NAME);
+    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    a.newVariable<float>("float_var");
+    a.newVariable<int>("int_var");
+    a.newVariable<unsigned int>("uint_var");
+    AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    m.newLayer().addAgentFunction(f1);
+
+    // Define logging configs
+    LoggingConfig lcfg(m);
+    AgentLoggingConfig alcfg = lcfg.agent(AGENT_NAME1);
+    alcfg.logCount();
+    logAllAgent<float>(alcfg, "float_var");
+    logAllAgent<int>(alcfg, "int_var");
+    logAllAgent<unsigned int>(alcfg, "uint_var");
+
+    StepLoggingConfig slcfg(lcfg);
+    slcfg.setFrequency(2);
+
+    // Create agent population
+    AgentVector pop(a, 101);
+    for (int i = 0; i < 101; ++i) {
+        auto instance = pop[i];
+        instance.setVariable<float>("float_var", static_cast<float>(i));
+        instance.setVariable<int>("int_var", static_cast<int>(i + 1));
+        instance.setVariable<unsigned int>("uint_var", static_cast<unsigned int>(i + 2));
+    }
+
+    // Run model
+    CUDASimulation sim(m);
+    sim.SimulationConfig().steps = 10;
+    sim.SimulationConfig().common_log_file = "common.json";
+    // sim.SimulationConfig().step_log_file = "step.json";
+    // sim.SimulationConfig().exit_log_file = "exit.json";
+    sim.setStepLog(slcfg);
+    sim.setExitLog(lcfg);
+    sim.setPopulationData(pop);
+    // Call simulate(), and check step and exit logs match expectations
+    sim.simulate();
+    // Check
+    ASSERT_TRUE(::exists(common_file));
+    EXPECT_FALSE(::exists(step_file));
+    EXPECT_FALSE(::exists(exit_file));
+    // Cleanup
+    ASSERT_TRUE(::remove(common_file));
+    ::remove(step_file);
+    ::remove(exit_file);
+}
+TEST(TestLogging, Simulation_ToFile_All) {
+    // Test that if we request a all log files to disk, we only get a all log file to disk
+    // Note, it does not test the contents of the output file
+    const path step_file = "step.json";
+    const path exit_file = "exit.json";
+    const path common_file = "common.json";
+    ASSERT_FALSE(::exists(step_file));
+    ASSERT_FALSE(::exists(exit_file));
+    ASSERT_FALSE(::exists(common_file));
+
+    // Define model
+    ModelDescription m(MODEL_NAME);
+    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    a.newVariable<float>("float_var");
+    a.newVariable<int>("int_var");
+    a.newVariable<unsigned int>("uint_var");
+    AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    m.newLayer().addAgentFunction(f1);
+
+    // Define logging configs
+    LoggingConfig lcfg(m);
+    AgentLoggingConfig alcfg = lcfg.agent(AGENT_NAME1);
+    alcfg.logCount();
+    logAllAgent<float>(alcfg, "float_var");
+    logAllAgent<int>(alcfg, "int_var");
+    logAllAgent<unsigned int>(alcfg, "uint_var");
+
+    StepLoggingConfig slcfg(lcfg);
+    slcfg.setFrequency(2);
+
+    // Create agent population
+    AgentVector pop(a, 101);
+    for (int i = 0; i < 101; ++i) {
+        auto instance = pop[i];
+        instance.setVariable<float>("float_var", static_cast<float>(i));
+        instance.setVariable<int>("int_var", static_cast<int>(i + 1));
+        instance.setVariable<unsigned int>("uint_var", static_cast<unsigned int>(i + 2));
+    }
+
+    // Run model
+    CUDASimulation sim(m);
+    sim.SimulationConfig().steps = 10;
+    sim.SimulationConfig().common_log_file = "common.json";
+    sim.SimulationConfig().step_log_file = "step.json";
+    sim.SimulationConfig().exit_log_file = "exit.json";
+    sim.SimulationConfig().steps = 10;
+    sim.setStepLog(slcfg);
+    sim.setExitLog(lcfg);
+    sim.setPopulationData(pop);
+    // Call simulate(), and check step and exit logs match expectations
+    sim.simulate();
+    // Check
+    ASSERT_TRUE(::exists(common_file));
+    ASSERT_TRUE(::exists(step_file));
+    ASSERT_TRUE(::exists(exit_file));
+    // Cleanup
+    ASSERT_TRUE(::remove(common_file));
+    ASSERT_TRUE(::remove(step_file));
+    ASSERT_TRUE(::remove(exit_file));
+}
+TEST(TestLogging, Ensemble_ToFile_Step) {
+    // Test that if we request a common log file to disk, we only get a common log file to disk
+    // Note, it does not test the contents of the output file
+    const path step_file1 = "out/0.json";
+    const path step_file2 = "out/1.json";
+    const path exit_file = "out/exit.json";
+    ASSERT_FALSE(::exists(step_file1));
+    ASSERT_FALSE(::exists(step_file2));
+    ASSERT_FALSE(::exists(exit_file));
+
+    // Define model
+    ModelDescription m(MODEL_NAME);
+    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    a.newVariable<float>("float_var");
+    a.newVariable<int>("int_var");
+    a.newVariable<unsigned int>("uint_var");
+    AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    m.newLayer().addAgentFunction(f1);
+    m.addInitFunction(logging_ensemble_init);
+    m.Environment().newProperty<int>("instance_id", 0);  // This will act as the modifier for ensemble instances, only impacting the init fn
+
+    // Define logging configs
+    LoggingConfig lcfg(m);
+    AgentLoggingConfig alcfg = lcfg.agent(AGENT_NAME1);
+    alcfg.logCount();
+    logAllAgent<float>(alcfg, "float_var");
+    logAllAgent<int>(alcfg, "int_var");
+    logAllAgent<unsigned int>(alcfg, "uint_var");
+
+    StepLoggingConfig slcfg(lcfg);
+    slcfg.setFrequency(2);
+
+    // Set up the runplan
+    RunPlanVector plan(m, 2);
+    int i_id = 0;
+    for (auto& p : plan) {
+        p.setSteps(10);
+        p.setProperty<int>("instance_id", i_id++);
+        // p.setOutputSubdirectory(i_id%2 == 0 ? "a" : "b");
+    }
+
+    // Run model
+    CUDAEnsemble sim(m);
+    sim.Config().concurrent_runs = 5;
+    sim.Config().quiet = true;
+    sim.Config().timing = false;
+    sim.Config().out_directory = "out";
+    sim.Config().out_format = "json";
+    sim.setStepLog(slcfg);
+    // sim.setExitLog(lcfg);
+    // Call simulate(), and check step and exit logs match expectations
+    sim.simulate(plan);
+
+    // Check
+    ASSERT_TRUE(::exists(step_file1));
+    ASSERT_TRUE(::exists(step_file2));
+    EXPECT_FALSE(::exists(exit_file));
+    // Cleanup
+    ::remove_all("out");
+}
+TEST(TestLogging, Ensemble_ToFile_Exit) {
+    // Test that if we request a common log file to disk, we only get a common log file to disk
+    // Note, it does not test the contents of the output file
+    const path step_file1 = "out/0.json";
+    const path step_file2 = "out/1.json";
+    const path exit_file = "out/exit.json";
+    ASSERT_FALSE(::exists(step_file1));
+    ASSERT_FALSE(::exists(step_file2));
+    ASSERT_FALSE(::exists(exit_file));
+
+    // Define model
+    ModelDescription m(MODEL_NAME);
+    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    a.newVariable<float>("float_var");
+    a.newVariable<int>("int_var");
+    a.newVariable<unsigned int>("uint_var");
+    AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    m.newLayer().addAgentFunction(f1);
+    m.addInitFunction(logging_ensemble_init);
+    m.Environment().newProperty<int>("instance_id", 0);  // This will act as the modifier for ensemble instances, only impacting the init fn
+
+    // Define logging configs
+    LoggingConfig lcfg(m);
+    AgentLoggingConfig alcfg = lcfg.agent(AGENT_NAME1);
+    alcfg.logCount();
+    logAllAgent<float>(alcfg, "float_var");
+    logAllAgent<int>(alcfg, "int_var");
+    logAllAgent<unsigned int>(alcfg, "uint_var");
+
+    StepLoggingConfig slcfg(lcfg);
+    slcfg.setFrequency(2);
+
+    // Set up the runplan
+    RunPlanVector plan(m, 2);
+    int i_id = 0;
+    for (auto& p : plan) {
+        p.setSteps(10);
+        p.setProperty<int>("instance_id", i_id++);
+        // p.setOutputSubdirectory(i_id%2 == 0 ? "a" : "b");
+    }
+
+    // Run model
+    CUDAEnsemble sim(m);
+    sim.Config().concurrent_runs = 5;
+    sim.Config().quiet = true;
+    sim.Config().timing = false;
+    sim.Config().out_directory = "out";
+    sim.Config().out_format = "json";
+    // sim.setStepLog(slcfg);
+    sim.setExitLog(lcfg);
+    // Call simulate(), and check step and exit logs match expectations
+    sim.simulate(plan);
+
+    // Check
+    ASSERT_TRUE(::exists(exit_file));
+    ASSERT_FALSE(::exists(step_file1));
+    ASSERT_FALSE(::exists(step_file2));
+    ASSERT_TRUE(::remove(exit_file));
+    // Cleanup
+    ::remove_all("out");
+}
+TEST(TestLogging, Ensemble_ToFile_All) {
+    // Test that if we request a common log file to disk, we only get a common log file to disk
+    // Note, it does not test the contents of the output file
+    // This test also checks the subdirectory splitting feature
+    const path step_file1 = "out/b/0.json";
+    const path step_file2 = "out/a/1.json";
+    const path exit_file1 = "out/a/exit.json";
+    const path exit_file2 = "out/b/exit.json";
+    ASSERT_FALSE(::exists(step_file1));
+    ASSERT_FALSE(::exists(step_file2));
+    ASSERT_FALSE(::exists(exit_file1));
+    ASSERT_FALSE(::exists(exit_file2));
+    ASSERT_FALSE(::exists("out"));
+
+    // Define model
+    ModelDescription m(MODEL_NAME);
+    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    a.newVariable<float>("float_var");
+    a.newVariable<int>("int_var");
+    a.newVariable<unsigned int>("uint_var");
+    AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    m.newLayer().addAgentFunction(f1);
+    m.addInitFunction(logging_ensemble_init);
+    m.Environment().newProperty<int>("instance_id", 0);  // This will act as the modifier for ensemble instances, only impacting the init fn
+
+    // Define logging configs
+    LoggingConfig lcfg(m);
+    AgentLoggingConfig alcfg = lcfg.agent(AGENT_NAME1);
+    alcfg.logCount();
+    logAllAgent<float>(alcfg, "float_var");
+    logAllAgent<int>(alcfg, "int_var");
+    logAllAgent<unsigned int>(alcfg, "uint_var");
+
+    StepLoggingConfig slcfg(lcfg);
+    slcfg.setFrequency(2);
+
+    // Set up the runplan
+    RunPlanVector plan(m, 2);
+    int i_id = 0;
+    for (auto& p : plan) {
+        p.setSteps(10);
+        p.setProperty<int>("instance_id", i_id++);
+        p.setOutputSubdirectory(i_id%2 == 0 ? "a" : "b");
+    }
+
+    // Run model
+    CUDAEnsemble sim(m);
+    sim.Config().concurrent_runs = 5;
+    sim.Config().quiet = true;
+    sim.Config().timing = false;
+    sim.Config().out_directory = "out";
+    sim.Config().out_format = "json";
+    sim.setStepLog(slcfg);
+    sim.setExitLog(lcfg);
+    // Call simulate(), and check step and exit logs match expectations
+    sim.simulate(plan);
+
+    // Check
+    ASSERT_TRUE(::exists(exit_file1));
+    ASSERT_TRUE(::exists(exit_file2));
+    ASSERT_TRUE(::exists(step_file1));
+    ASSERT_TRUE(::exists(step_file2));
+    // Cleanup
+    ::remove_all("out");
+}
+
 
 }  // namespace test_logging
 }  // namespace flamegpu
