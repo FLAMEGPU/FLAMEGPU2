@@ -564,17 +564,19 @@ void CUDAScatter::arrayMessageReorder(
     }
     assert(d_position);  // Not an array message, lacking ___INDEX var
     size_t t_data_len = 0;
-    {  // Decide curve memory requirements
+    {  // Decide per-stream resource memory requirements based on curve data, and potentially cub temp memory
+#if !defined(SEATBELTS) || SEATBELTS
+        // Query cub to find the number of temporary bytes required.
         gpuErrchk(cub::DeviceReduce::Max(nullptr, t_data_len, d_write_flag, d_position, array_length, stream));
-        if (t_data_len > streamResources[streamResourceId].data_len * sizeof(ScatterData)) {
-            // t_data_len is bigger than current allocation
-            if (t_data_len > sd.size() * sizeof(ScatterData)) {
-                // td_data_len is bigger than sd.size()
-                streamResources[streamResourceId].resize(static_cast<unsigned int>((t_data_len / sizeof(ScatterData)) + 1));
-            } else {
-                // sd.size() is bigger
-                streamResources[streamResourceId].resize(static_cast<unsigned int>(sd.size()));
-            }
+#endif
+        // the num bytes required is maximum of the per message variable ScatterData and the cub temp bytes required
+        const size_t srBytesRequired = std::max(sd.size() * sizeof(ScatterData), t_data_len);
+        // The number of bytes currently allocated
+        const size_t srBytesAllocated = streamResources[streamResourceId].data_len * sizeof(ScatterData);
+        // If not enough bytes are allocated, perform an appropriate resize
+        if (srBytesRequired > srBytesAllocated) {
+            const size_t elementsRequired = ((srBytesRequired - 1) / sizeof(ScatterData)) + 1;
+            streamResources[streamResourceId].resize(static_cast<unsigned int>(elementsRequired));
         }
     }
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
