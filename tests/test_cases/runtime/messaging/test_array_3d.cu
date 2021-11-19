@@ -1307,5 +1307,171 @@ TEST(TestMessage_Array3D, DISABLED_ArrayVariable_glm) { }
 TEST(TestRTCMessage_Array3D, DISABLED_ArrayVariable_glm) { }
 #endif
 
+/**
+ * Tests to check for a previous bug where CUDAScatter::arrayMessageReorder would lead to a cuda error.
+ * The error was triggered when:
+ *   >= 2 array message lists, with different numbers of message variables
+ *   The list with fewer message variables was reorderd prior to the larger message list
+ *   The number of cub temp bytes required for a deviceReduce::Max was fewer than the number of bytes required by the first message list (I.e. relatively small grids, 49x49 still caused the issue)
+ * 
+ * See https://github.com/FLAMEGPU/FLAMEGPU2/issues/735 for more information.
+*/
+
+/*
+ * Agent mesasge output function, for a message with one non-coordinate value
+ */
+FLAMEGPU_AGENT_FUNCTION(OutputA, MessageNone, MessageArray3D) {
+    const unsigned int a = FLAMEGPU->getVariable<unsigned int>("a");
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int>("y");
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int>("z");
+    FLAMEGPU->message_out.setVariable("a", a);
+    FLAMEGPU->message_out.setIndex(x, y, z);
+    return ALIVE;
+}
+/*
+ * Agent mesasge output function, for a message with two non-coordinate value
+ */
+FLAMEGPU_AGENT_FUNCTION(OutputAB, MessageNone, MessageArray3D) {
+    const unsigned int a = FLAMEGPU->getVariable<unsigned int>("a");
+    const unsigned int b = FLAMEGPU->getVariable<unsigned int>("b");
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int>("y");
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int>("z");
+    FLAMEGPU->message_out.setVariable("a", a);
+    FLAMEGPU->message_out.setVariable("b", b);
+    FLAMEGPU->message_out.setIndex(x, y, z);
+    return ALIVE;
+}
+/**
+ * Agent function to read an array message list where messages contain  two variables. 
+ * This is not strictly needed, but will maintain the usefulness of this test incase message list buildIndex is moved to pre input rather than post output.
+ */
+FLAMEGPU_AGENT_FUNCTION(IterateAB, MessageArray3D, MessageNone) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int>("y");
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int>("z");
+    constexpr unsigned int COMRADIUS = 1;
+    // Iterate message list counting how many messages were read.
+    unsigned int count = 0;
+    for (const auto &message : FLAMEGPU->message_in.wrap(x, y, z, COMRADIUS)) {
+        const unsigned int m_a = message.getVariable<unsigned int>("a");
+        const unsigned int m_b = message.getVariable<unsigned int>("b");
+        count++;
+    }
+    // Don't actually do anything, the function just needs to take the message list as input.
+    return ALIVE;
+}
+/**
+ * Agent function to read an array message list where messages contain one variables. 
+ * This is not strictly needed, but will maintain the usefulness of this test incase message list buildIndex is moved to pre input rather than post output.
+ */
+FLAMEGPU_AGENT_FUNCTION(IterateA, MessageArray3D, MessageNone) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int>("y");
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int>("z");
+    constexpr unsigned int COMRADIUS = 1;
+    // Iterate message list counting how many messages were read.
+    unsigned int count = 0;
+    for (const auto &message : FLAMEGPU->message_in.wrap(x, y, z, COMRADIUS)) {
+        const unsigned int m_a = message.getVariable<unsigned int>("a");
+        count++;
+    }
+    // Don't actually do anything, the function just needs to take the message list as input.
+    return ALIVE;
+}
+
+/**
+ * Function which runs a model with multiple message lists containing different numbers of variables to test for a previous memory error
+ */
+void test_arrayMessageReorderError(
+    const unsigned int GRID_WIDTH,
+    const unsigned int GRID_HEIGHT,
+    const unsigned int GRID_DEPTH
+) {
+    // Calc the population
+    const unsigned int agentCount = GRID_WIDTH * GRID_HEIGHT * GRID_DEPTH;
+
+    // Define the model
+    ModelDescription model("ArrayMessageReorderError");
+
+    constexpr char MESSAGE_NAME_ONEVAR[] = "A";
+    constexpr char MESSAGE_NAME_TWOVAR[] = "AB";
+
+    // Define the message list with different numbers of variables.
+    MessageArray3D::Description &messageA = model.newMessage<MessageArray3D>(MESSAGE_NAME_ONEVAR);
+    messageA.newVariable<unsigned int>("a");
+    messageA.setDimensions(GRID_WIDTH, GRID_HEIGHT, GRID_DEPTH);
+    // DEfine the message list with two non coordinate values
+    MessageArray3D::Description &messageAB = model.newMessage<MessageArray3D>(MESSAGE_NAME_TWOVAR);
+    messageAB.newVariable<unsigned int>("a");
+    messageAB.newVariable<unsigned int>("b");
+    messageAB.setDimensions(GRID_WIDTH, GRID_HEIGHT, GRID_DEPTH);
+
+    // Define the agents
+    AgentDescription &agent = model.newAgent(AGENT_NAME);
+    agent.newVariable<unsigned int>("a");
+    agent.newVariable<unsigned int>("b");
+    agent.newVariable<unsigned int>("x");
+    agent.newVariable<unsigned int>("y");
+    agent.newVariable<unsigned int>("z");
+    agent.newVariable<unsigned int>("message_read", UINT_MAX);
+
+    // Define the functions
+    AgentFunctionDescription &outputAFunction = agent.newFunction("OutputA", OutputA);
+    outputAFunction.setMessageOutput(messageA);
+    AgentFunctionDescription &iterateAFunction = agent.newFunction("IterateA", IterateA);
+    iterateAFunction.setMessageInput(messageA);
+    AgentFunctionDescription &outputABFunction = agent.newFunction("OutputAB", OutputAB);
+    outputABFunction.setMessageOutput(messageAB);
+    AgentFunctionDescription &iterateABFunction = agent.newFunction("IterateAB", IterateAB);
+    iterateABFunction.setMessageInput(messageAB);
+
+    // Add the functions to layers. The mesasge list with fewer variables should be output/input prior to the larger list(s)
+    model.newLayer().addAgentFunction(outputAFunction);
+    model.newLayer().addAgentFunction(iterateAFunction);
+    model.newLayer().addAgentFunction(outputABFunction);
+    model.newLayer().addAgentFunction(iterateABFunction);
+
+    // Initialise agent variables.
+    AgentVector population(agent, agentCount);
+    for (unsigned int x = 0; x < GRID_WIDTH; x++) {
+        for (unsigned int y = 0; y < GRID_HEIGHT; y++) {
+            for (unsigned int z = 0; z < GRID_DEPTH; z++) {
+                unsigned int idx = (x * GRID_HEIGHT * GRID_DEPTH) + (y * GRID_DEPTH) + z;
+                AgentVector::Agent instance = population[idx];
+                instance.setVariable<unsigned int>("a", 1u);
+                instance.setVariable<unsigned int>("b", 2u);
+                instance.setVariable<unsigned int>("x", x);
+                instance.setVariable<unsigned int>("y", y);
+                instance.setVariable<unsigned int>("z", z);
+                instance.setVariable<unsigned int>("message_read", 0u);
+            }
+        }
+    }
+    // Construct the simulation object
+    CUDASimulation simulation(model);
+    // Set the agent population
+    simulation.setPopulationData(population);
+    // Run a single step of the model, which should not throw any errors.
+    EXPECT_NO_THROW(simulation.step());
+}
+/**
+ * Test case which ensures tests small grids with multiple message lists of different numbers of variables run without memory erorrs.
+ */ 
+TEST(TestMessage_Array3D, arrayMessageReorderMemorySmall) {
+    test_arrayMessageReorderError(4, 4, 4);
+    test_arrayMessageReorderError(16, 16, 4);
+}
+
+/**
+ * Test case which ensures tests larger grids with multiple message lists of different numbers of variables run without memory erorrs.
+ * This did not previously error, but complements the above tests as temprorary memory from cub operating over the total number of bins can influence the amount of memory allocated.
+ */ 
+TEST(TestMessage_Array3D, arrayMessageReorderMemoryLarge) {
+    // Total number of elements == 256x256 should be sufficient to reproduce the known 2D case
+    test_arrayMessageReorderError(128, 128, 4);
+}
+
 }  // namespace test_message_array_3d
 }  // namespace flamegpu

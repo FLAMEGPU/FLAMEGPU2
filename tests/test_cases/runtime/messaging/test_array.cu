@@ -997,5 +997,155 @@ TEST(TestMessage_Array, DISABLED_ArrayVariable_glm) { }
 TEST(TestRTCMessage_Array, DISABLED_ArrayVariable_glm) { }
 #endif
 
+
+/**
+ * Tests to check for a previous bug where CUDAScatter::arrayMessageReorder would lead to a cuda error.
+ * The error was triggered when:
+ *   >= 2 array message lists, with different numbers of message variables
+ *   The list with fewer message variables was reorderd prior to the larger message list
+ *   The number of cub temp bytes required for a deviceReduce::Max was fewer than the number of bytes required by the first message list (I.e. relatively small grids, 49x49 still caused the issue)
+ * 
+ * See https://github.com/FLAMEGPU/FLAMEGPU2/issues/735 for more information.
+*/
+
+/*
+ * Agent mesasge output function, for a message with one non-coordinate value
+ */
+FLAMEGPU_AGENT_FUNCTION(OutputA, MessageNone, MessageArray) {
+    const unsigned int a = FLAMEGPU->getVariable<unsigned int>("a");
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
+    FLAMEGPU->message_out.setVariable("a", a);
+    FLAMEGPU->message_out.setIndex(x);
+    return ALIVE;
+}
+/*
+ * Agent mesasge output function, for a message with two non-coordinate value
+ */
+FLAMEGPU_AGENT_FUNCTION(OutputAB, MessageNone, MessageArray) {
+    const unsigned int a = FLAMEGPU->getVariable<unsigned int>("a");
+    const unsigned int b = FLAMEGPU->getVariable<unsigned int>("b");
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
+    FLAMEGPU->message_out.setVariable("a", a);
+    FLAMEGPU->message_out.setVariable("b", b);
+    FLAMEGPU->message_out.setIndex(x);
+    return ALIVE;
+}
+/**
+ * Agent function to read an array message list where messages contain  two variables. 
+ * This is not strictly needed, but will maintain the usefulness of this test incase message list buildIndex is moved to pre input rather than post output.
+ */
+FLAMEGPU_AGENT_FUNCTION(IterateAB, MessageArray, MessageNone) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
+    constexpr unsigned int COMRADIUS = 1;
+    // Iterate message list counting how many messages were read.
+    unsigned int count = 0;
+    for (const auto &message : FLAMEGPU->message_in.wrap(x, COMRADIUS)) {
+        const unsigned int m_a = message.getVariable<unsigned int>("a");
+        const unsigned int m_b = message.getVariable<unsigned int>("b");
+        count++;
+    }
+    // Don't actually do anything, the function just needs to take the message list as input.
+    return ALIVE;
+}
+/**
+ * Agent function to read an array message list where messages contain one variables. 
+ * This is not strictly needed, but will maintain the usefulness of this test incase message list buildIndex is moved to pre input rather than post output.
+ */
+FLAMEGPU_AGENT_FUNCTION(IterateA, MessageArray, MessageNone) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
+    constexpr unsigned int COMRADIUS = 1;
+    // Iterate message list counting how many messages were read.
+    unsigned int count = 0;
+    for (const auto &message : FLAMEGPU->message_in.wrap(x, COMRADIUS)) {
+        const unsigned int m_a = message.getVariable<unsigned int>("a");
+        count++;
+    }
+    // Don't actually do anything, the function just needs to take the message list as input.
+    return ALIVE;
+}
+
+/**
+ * Function which runs a model with multiple message lists containing different numbers of variables to test for a previous memory error
+ */
+void test_arrayMessageReorderError(
+    const unsigned int GRID_WIDTH
+) {
+    // Calc the population
+    const unsigned int agentCount = GRID_WIDTH;
+
+    // Define the model
+    ModelDescription model("ArrayMessageReorderError");
+
+    constexpr char MESSAGE_NAME_ONEVAR[] = "A";
+    constexpr char MESSAGE_NAME_TWOVAR[] = "AB";
+
+    // Define the message list with different numbers of variables.
+    MessageArray::Description &messageA = model.newMessage<MessageArray>(MESSAGE_NAME_ONEVAR);
+    messageA.newVariable<unsigned int>("a");
+    messageA.setLength(GRID_WIDTH);
+    // DEfine the message list with two non coordinate values
+    MessageArray::Description &messageAB = model.newMessage<MessageArray>(MESSAGE_NAME_TWOVAR);
+    messageAB.newVariable<unsigned int>("a");
+    messageAB.newVariable<unsigned int>("b");
+    messageAB.setLength(GRID_WIDTH);
+
+    // Define the agents
+    AgentDescription &agent = model.newAgent(AGENT_NAME);
+    agent.newVariable<unsigned int>("a");
+    agent.newVariable<unsigned int>("b");
+    agent.newVariable<unsigned int>("x");
+    agent.newVariable<unsigned int>("message_read", UINT_MAX);
+
+    // Define the functions
+    AgentFunctionDescription &outputAFunction = agent.newFunction("OutputA", OutputA);
+    outputAFunction.setMessageOutput(messageA);
+    AgentFunctionDescription &iterateABFunction = agent.newFunction("IterateAB", IterateAB);
+    iterateABFunction.setMessageInput(messageAB);
+    AgentFunctionDescription &outputABFunction = agent.newFunction("OutputAB", OutputAB);
+    outputABFunction.setMessageOutput(messageAB);
+    AgentFunctionDescription &iterateAFunction = agent.newFunction("IterateA", IterateA);
+    iterateAFunction.setMessageInput(messageA);
+
+    // Add the functions to layers. The mesasge list with fewer variables should be output/input prior to the larger list(s)
+    model.newLayer().addAgentFunction(outputAFunction);
+    model.newLayer().addAgentFunction(iterateAFunction);
+    model.newLayer().addAgentFunction(outputABFunction);
+    model.newLayer().addAgentFunction(iterateABFunction);
+
+    // Initialise agent variables.
+    AgentVector population(agent, agentCount);
+    for (unsigned int x = 0; x < GRID_WIDTH; x++) {
+        unsigned int idx = x;
+        AgentVector::Agent instance = population[idx];
+        instance.setVariable<unsigned int>("a", 1u);
+        instance.setVariable<unsigned int>("b", 2u);
+        instance.setVariable<unsigned int>("x", x);
+        instance.setVariable<unsigned int>("message_read", 0u);
+    }
+    // Construct the simulation object
+    CUDASimulation simulation(model);
+    // Set the agent population
+    simulation.setPopulationData(population);
+    // Run a single step of the model, which should not throw any errors.
+    EXPECT_NO_THROW(simulation.step());
+}
+/**
+ * Test case which ensures tests small grids with multiple message lists of different numbers of variables run without memory erorrs.
+ */ 
+TEST(TestMessage_Array, arrayMessageReorderMemorySmall) {
+    test_arrayMessageReorderError(4);
+    test_arrayMessageReorderError(16);
+    test_arrayMessageReorderError(1024);
+    test_arrayMessageReorderError(2401);  // 49 * 49
+}
+
+/**
+ * Test case which ensures tests larger grids with multiple message lists of different numbers of variables run without memory erorrs.
+ * This did not previously error, but complements the above tests as temprorary memory from cub operating over the total number of bins can influence the amount of memory allocated.
+ */ 
+TEST(TestMessage_Array, arrayMessageReorderMemoryLarge) {
+    test_arrayMessageReorderError(65536);  // 256 * 256
+}
+
 }  // namespace test_message_array
 }  // namespace flamegpu
