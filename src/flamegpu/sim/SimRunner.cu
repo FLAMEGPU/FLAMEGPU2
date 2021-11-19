@@ -97,8 +97,10 @@ void SimRunner::start() {
             }
             log_export_queue_cdn.notify_one();
             // Print progress to console
-            if (verbose)
-                printf("\rCUDAEnsemble progress: %u/%u", run_id + 1, static_cast<unsigned int>(plans.size()));
+            if (verbose) {
+                fprintf(stdout, "\rCUDAEnsemble progress: %u/%u", run_id + 1, static_cast<unsigned int>(plans.size()));
+                fflush(stdout);
+            }
         } catch(std::exception &e) {
             fprintf(stderr, "\nRun %u failed on device %d, thread %u with exception: \n%s\n", run_id, device_id, runner_id, e.what());
         }
