@@ -383,12 +383,12 @@ void CUDASimulation::spatialSortAgent(const std::string& agentName, const std::s
 
     CUDAAgent& cuda_agent = getCUDAAgent(agentName);
 
-    // Any agent in this list is guaranteed to have x, y, z and fgpu2_reserved_bin_index vars - used in the computation of spatial hash
+    // Any agent in this list is guaranteed to have x, y, z and _auto_sort_bin_index vars - used in the computation of spatial hash
     // TODO: User could supply alternatives to "x", "y", "z" to use alternative variables?
     void* xPtr = cuda_agent.getStateVariablePtr(state, "x");
     void* yPtr = cuda_agent.getStateVariablePtr(state, "y");
     void* zPtr = mode == Agent3D ? cuda_agent.getStateVariablePtr(state, "z") : 0;
-    void* binIndexPtr = cuda_agent.getStateVariablePtr(state, "fgpu2_reserved_bin_index");
+    void* binIndexPtr = cuda_agent.getStateVariablePtr(state, "_auto_sort_bin_index");
 
     // Compute occupancy
     int blockSize = 0;  // The launch configurator returned block size
@@ -418,7 +418,7 @@ void CUDASimulation::spatialSortAgent(const std::string& agentName, const std::s
     state_list_size);
 
     assert(host_api);
-    host_api->agent(agentName).sort<unsigned int>("fgpu2_reserved_bin_index", HostAgentAPI::Asc);
+    host_api->agent(agentName).sort<unsigned int>("_auto_sort_bin_index", HostAgentAPI::Asc);
 }
 
 bool CUDASimulation::step() {

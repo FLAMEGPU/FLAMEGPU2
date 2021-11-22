@@ -521,8 +521,8 @@ AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& fu
                 std::string out_type_name = match[3];
                 if (in_type_name == "flamegpu::MessageSpatial3D" || in_type_name == "flamegpu::MessageSpatial2D" || out_type_name == "flamegpu::MessageSpatial3D" || out_type_name == "flamegpu::MessageSpatial2D") {
                     printf("Adding var\n");
-                    if (agent->variables.find("fgpu2_reserved_bin_index") == agent->variables.end()) {
-                        agent->variables.emplace("fgpu2_reserved_bin_index", Variable(1, std::vector<unsigned int> {0}));
+                    if (agent->variables.find("_auto_sort_bin_index") == agent->variables.end()) {
+                        agent->variables.emplace("_auto_sort_bin_index", Variable(1, std::vector<unsigned int> {0}));
                     }
                 }
                 // set the runtime agent function source in agent function data
