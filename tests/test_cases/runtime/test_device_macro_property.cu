@@ -126,6 +126,10 @@ FLAMEGPU_AGENT_FUNCTION(Write_add2, flamegpu::MessageNone, flamegpu::MessageNone
     FLAMEGPU->setVariable<unsigned int>("b", FLAMEGPU->environment.getMacroProperty<unsigned int>("int") + FLAMEGPU->getVariable<unsigned int>("a"));
     return flamegpu::ALIVE;
 }
+FLAMEGPU_AGENT_FUNCTION(Write_2check, flamegpu::MessageNone, flamegpu::MessageNone) {
+    FLAMEGPU->setVariable<unsigned int>("c", FLAMEGPU->environment.getMacroProperty<unsigned int>("int"));
+    return flamegpu::ALIVE;
+}
 TEST(DeviceMacroPropertyTest, add2) {
     ModelDescription model("device_env_test");
     // Setup environment
@@ -134,10 +138,13 @@ TEST(DeviceMacroPropertyTest, add2) {
     AgentDescription& agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
+    agent.newVariable<unsigned int>("c");
     AgentFunctionDescription& initFn = agent.newFunction("init", Init_add);
     AgentFunctionDescription& writeFn = agent.newFunction("write", Write_add2);
+    AgentFunctionDescription& checkFn = agent.newFunction("check", Write_2check);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(writeFn);
+    model.newLayer().addAgentFunction(checkFn);
     AgentVector population(agent, 1);
     population[0].setVariable<unsigned int>("a", 12u);
     // Do Sim
@@ -148,6 +155,8 @@ TEST(DeviceMacroPropertyTest, add2) {
     ASSERT_NO_THROW(cudaSimulation.getPopulationData(population));
     const unsigned int t_out = population.at(0).getVariable<unsigned int>("b");
     ASSERT_EQ(13u, t_out);
+    const unsigned int t_out2 = population.at(0).getVariable<unsigned int>("c");
+    ASSERT_EQ(1u, t_out2);
 }
 FLAMEGPU_AGENT_FUNCTION(Init_sub, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->environment.getMacroProperty<unsigned int>("int").exchange(25);
@@ -198,10 +207,13 @@ TEST(DeviceMacroPropertyTest, sub2) {
     AgentDescription& agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
+    agent.newVariable<unsigned int>("c");
     AgentFunctionDescription& initFn = agent.newFunction("init", Init_sub);
     AgentFunctionDescription& writeFn = agent.newFunction("write", Write_sub2);
+    AgentFunctionDescription& checkFn = agent.newFunction("check", Write_2check);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(writeFn);
+    model.newLayer().addAgentFunction(checkFn);
     AgentVector population(agent, 1);
     population[0].setVariable<unsigned int>("a", 12u);
     // Do Sim
@@ -212,6 +224,8 @@ TEST(DeviceMacroPropertyTest, sub2) {
     ASSERT_NO_THROW(cudaSimulation.getPopulationData(population));
     const unsigned int t_out = population.at(0).getVariable<unsigned int>("b");
     ASSERT_EQ(13u, t_out);
+    const unsigned int t_out2 = population.at(0).getVariable<unsigned int>("c");
+    ASSERT_EQ(25u, t_out2);
 }
 
 FLAMEGPU_AGENT_FUNCTION(Write_postincrement, MessageNone, MessageNone) {
