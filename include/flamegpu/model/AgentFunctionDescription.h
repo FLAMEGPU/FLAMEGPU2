@@ -327,8 +327,8 @@ AgentFunctionDescription &AgentDescription::newFunction(const std::string &funct
         std::string in_t = detail::curve::CurveRTCHost::demangle(AgentFunction::inType().name());
         std::string out_t = detail::curve::CurveRTCHost::demangle(AgentFunction::outType().name());
         if (in_t == "flamegpu::MessageSpatial3D" || in_t == "flamegpu::MessageSpatial2D" || out_t == "flamegpu::MessageSpatial3D" || out_t == "flamegpu::MessageSpatial2D") {
-            if (agent->variables.find("fgpu2_reserved_bin_index") == agent->variables.end()) {
-                agent->variables.emplace("fgpu2_reserved_bin_index", Variable(1, std::vector<unsigned int> {0}));
+            if (agent->variables.find("_auto_sort_bin_index") == agent->variables.end()) {
+                agent->variables.emplace("_auto_sort_bin_index", Variable(1, std::vector<unsigned int> {0}));
             }
         }
         auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, f, in_t, out_t));

@@ -429,7 +429,7 @@ class CUDASimulation : public Simulation {
      * Spatially sort the agents.
      * This should only be called within step();
      */
-    void spatialSortAgent(const std::string& agentName, const std::string& state, const int mode);
+    void spatialSortAgent(const std::string& funcName, const std::string& agentName, const std::string& state, const int mode);
 
     constexpr static int Agent2D = 0;
     constexpr static int Agent3D = 1;

@@ -20,6 +20,7 @@
 #include "flamegpu/util/detail/CUDAEventTimer.cuh"
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 #include "flamegpu/runtime/HostFunctionCallback.h"
+#include "flamegpu/runtime/messaging.h"
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/sim/LoggingConfig.h"
@@ -362,26 +363,46 @@ void CUDASimulation::determineAgentsToSort() {
 }
 
 
-void CUDASimulation::spatialSortAgent(const std::string& agentName, const std::string& state, const int mode) {
+void CUDASimulation::spatialSortAgent(const std::string& funcName, const std::string& agentName, const std::string& state, const int mode) {
+    // Fetch the appropriate message name
+    CUDAAgent& cuda_agent = getCUDAAgent(agentName);
+    auto& agentData = cuda_agent.getAgentDescription();
+    auto& funcData = agentData.functions.at(funcName);
+    std::string messageName;
+    if (auto ptr = funcData->message_input.lock()) {
+        messageName = ptr->name;
+    } else {
+
+        throw("Function " + funcName + " registered for auto-spatial sorting but input message type not found!\n");
+    }
+    MessageBruteForce::Data* msgData = model->messages.at(messageName).get();
+
+    // Get the spatial metadata
     float radius;
     detail::Dims<float> envMin;
     detail::Dims<float> envMax;
     detail::Dims<float> envWidth;
     detail::Dims<unsigned int> gridDim;
 
-    try {
-        radius = host_api->environment.getProperty<float>("INTERACTION_RADIUS");
-        envMin = {host_api->environment.getProperty<float>("MIN_POSITION"), host_api->environment.getProperty<float>("MIN_POSITION"), host_api->environment.getProperty<float>("MIN_POSITION")};
-        envMax = {host_api->environment.getProperty<float>("MAX_POSITION"), host_api->environment.getProperty<float>("MAX_POSITION"), host_api->environment.getProperty<float>("MAX_POSITION")};
+    if(auto spatialData = dynamic_cast<MessageSpatial2D::Data*>(msgData)) {
+        radius = spatialData->radius;
+        envMin = {spatialData->minX, spatialData->minY, 0.0f};
+        envMax = {spatialData->maxX, spatialData->maxY, 0.0f};
+    }
+    else if(auto spatialData = dynamic_cast<MessageSpatial3D::Data*>(msgData)) {
+        radius = spatialData->radius;
+        envMin = {spatialData->minX, spatialData->minY, spatialData->minZ};
+        envMax = {spatialData->maxX, spatialData->maxY, spatialData->maxZ};
+    } else {
+        radius = 0.0f;
+        envMin = {0.0f, 0.0f, 0.0f};
+        envMax = {0.0f, 0.0f, 0.0f};
+    }
+    if (radius) {
         envWidth = {(envMax.x-envMin.x), (envMax.y-envMin.y), (envMax.z-envMin.z)};
         gridDim = {static_cast<unsigned int>(ceilf(envWidth.x / radius)), static_cast<unsigned int>(ceilf(envWidth.y / radius)), static_cast<unsigned int>(ceilf(envWidth.z / radius))};
-    } catch (exception::InvalidEnvProperty&) {
-        std::cout << "WARNING: Please set the INTERACTION_RADIUS, MIN_POSITION and MAX_POSITION environment properties to enable spatial sorting\n";
-        this->setSortAgentsEveryNSteps(0);
-        return;
     }
 
-    CUDAAgent& cuda_agent = getCUDAAgent(agentName);
 
     // Any agent in this list is guaranteed to have x, y, z and _auto_sort_bin_index vars - used in the computation of spatial hash
     // TODO: User could supply alternatives to "x", "y", "z" to use alternative variables?
@@ -508,10 +529,10 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
         for (const auto &func_des : layer->agent_functions) {
             auto func_agent = func_des->parent.lock();
             if (sortTriggers3D.find(func_des->name) != sortTriggers3D.end()) {
-                this->spatialSortAgent(func_agent->name, func_des->initial_state, Agent3D);
+                this->spatialSortAgent(func_des->name, func_agent->name, func_des->initial_state, Agent3D);
             }
             if (sortTriggers2D.find(func_des->name) != sortTriggers2D.end()) {
-                this->spatialSortAgent(func_agent->name, func_des->initial_state, Agent2D);
+                this->spatialSortAgent(func_des->name, func_agent->name, func_des->initial_state, Agent2D);
             }
         }
     }
