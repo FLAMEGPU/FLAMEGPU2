@@ -45,7 +45,6 @@ TEST(AutomaticSpatialAgentSort, SortingDisabled) {
 
     // Setup Model
     CUDASimulation cudaSimulation(model);
-    cudaSimulation.determineAgentsToSort();
     cudaSimulation.setPopulationData(pop);
 
     // Execute step fn
@@ -91,7 +90,6 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep) {
 
     // Setup Model
     CUDASimulation cudaSimulation(model);
-    cudaSimulation.determineAgentsToSort();
     cudaSimulation.setPopulationData(pop);
 
     // Execute step fn

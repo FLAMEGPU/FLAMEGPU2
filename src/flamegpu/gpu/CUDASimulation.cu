@@ -96,6 +96,9 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model)
     for (auto it_sm = smm.cbegin(); it_sm != smm.cend(); ++it_sm) {
         submodel_map.emplace(it_sm->first, std::unique_ptr<CUDASimulation>(new CUDASimulation(it_sm->second, this)));
     }
+
+    // Determine which agents will be spatially sorted
+    this->determineAgentsToSort();
 }
 bool CUDASimulation::detectPureRTC(const std::shared_ptr<const ModelData>& _model) {
     const auto& am = _model->agents;
@@ -1150,9 +1153,6 @@ void CUDASimulation::simulate() {
 
     // Execute init functions
     this->initFunctions();
-
-    // Determine which agents will be spatially sorted
-    this->determineAgentsToSort();
 
     // Reset and log initial state to step log 0
     resetLog();

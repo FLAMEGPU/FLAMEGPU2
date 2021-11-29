@@ -256,11 +256,6 @@ class CUDASimulation : public Simulation {
     double getElapsedTimeStep(unsigned int step) const;
 
     /**
-     * Determines which agents require sorting - only used once during initialisation. Must be called manually if not using .simulate()
-     */
-    void determineAgentsToSort();
-
-    /**
      * Returns the unique instance id of this CUDASimulation instance
      * @note This value is used internally for environment property storage
      */
@@ -434,6 +429,11 @@ class CUDASimulation : public Simulation {
      */
     std::set<std::string> sortTriggers2D;
     std::set<std::string> sortTriggers3D;
+
+    /**
+     * Determines which agents require sorting - only used once during initialisation. Must be called manually if not using .simulate()
+     */
+    void determineAgentsToSort();
 
     /**
      * Struct containing references to the various singletons which may include CUDA code, and therefore can only be initialsed after the deferred arg parsing is completed.
