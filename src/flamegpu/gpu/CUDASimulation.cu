@@ -364,8 +364,8 @@ void CUDASimulation::determineAgentsToSort() {
 void CUDASimulation::spatialSortAgent(const std::string& funcName, const std::string& agentName, const std::string& state, const int mode) {
     // Fetch the appropriate message name
     CUDAAgent& cuda_agent = getCUDAAgent(agentName);
-    auto& agentData = cuda_agent.getAgentDescription();
-    auto& funcData = agentData.functions.at(funcName);
+    auto& cudaAgentData = cuda_agent.getAgentDescription();
+    auto& funcData = cudaAgentData.functions.at(funcName);
     std::string messageName;
     if (auto ptr = funcData->message_input.lock()) {
         messageName = ptr->name;
@@ -381,14 +381,14 @@ void CUDASimulation::spatialSortAgent(const std::string& funcName, const std::st
     detail::Dims<float> envWidth;
     detail::Dims<unsigned int> gridDim;
 
-    if (auto spatialData = dynamic_cast<MessageSpatial2D::Data*>(msgData)) {
-        radius = spatialData->radius;
-        envMin = {spatialData->minX, spatialData->minY, 0.0f};
-        envMax = {spatialData->maxX, spatialData->maxY, 0.0f};
-    } else if (auto spatialData = dynamic_cast<MessageSpatial3D::Data*>(msgData)) {
-        radius = spatialData->radius;
-        envMin = {spatialData->minX, spatialData->minY, spatialData->minZ};
-        envMax = {spatialData->maxX, spatialData->maxY, spatialData->maxZ};
+    if (auto messageSpatialData = dynamic_cast<MessageSpatial2D::Data*>(msgData)) {
+        radius = messageSpatialData->radius;
+        envMin = {messageSpatialData->minX, messageSpatialData->minY, 0.0f};
+        envMax = {messageSpatialData->maxX, messageSpatialData->maxY, 0.0f};
+    } else if (auto messageSpatialData = dynamic_cast<MessageSpatial3D::Data*>(msgData)) {
+        radius = messageSpatialData->radius;
+        envMin = {messageSpatialData->minX, messageSpatialData->minY, messageSpatialData->minZ};
+        envMax = {messageSpatialData->maxX, messageSpatialData->maxY, messageSpatialData->maxZ};
     } else {
         radius = 0.0f;
         envMin = {0.0f, 0.0f, 0.0f};
