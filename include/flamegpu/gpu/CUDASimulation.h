@@ -127,11 +127,6 @@ class CUDASimulation : public Simulation {
      */
     void exitFunctions() override;
     /**
-     * The simulation will sort agents periodically.
-     * @param n Agents will be sorted every n steps. 0 indicates no sorting
-     */
-    void setSortAgentsEveryNSteps(const unsigned int n);
-    /**
      * Execute the simulation until config.steps have been executed, or an exit condition trips
      * Includes init and exit functions calls.
      */
@@ -439,11 +434,6 @@ class CUDASimulation : public Simulation {
      */
     std::set<std::string> sortTriggers2D;
     std::set<std::string> sortTriggers3D;
-
-    /**
-     * How often to sort spatial agents
-     */
-    unsigned int sortAgentsEveryNSteps;
 
     /**
      * Struct containing references to the various singletons which may include CUDA code, and therefore can only be initialsed after the deferred arg parsing is completed.

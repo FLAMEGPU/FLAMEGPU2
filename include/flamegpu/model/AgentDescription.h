@@ -264,6 +264,11 @@ class AgentDescription {
      * @return An immutable reference to the set of states agents of this type can enter
      */
     const std::set<std::string> &getStates() const;
+    /**
+     * Set how often this agent is sorted. Default value is 1.
+     * @param sortPeriod Sort this agent every sortPeriod steps. A value of 0 means no sorting will take place
+     */
+    void setSortPeriod(const unsigned int sortPeriod);
 
  private:
     /**

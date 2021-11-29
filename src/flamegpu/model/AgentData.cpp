@@ -11,7 +11,8 @@ AgentData::AgentData(std::shared_ptr<const ModelData> model, const std::string &
     , agent_outputs(0)
     , description(new AgentDescription(model, this))
     , name(agent_name)
-    , keepDefaultState(false) {
+    , keepDefaultState(false)
+    , sortPeriod(1) {
     states.insert(ModelData::DEFAULT_STATE);
     // All agents have an internal _id variable
     variables.emplace(ID_VARIABLE_NAME, Variable(std::array<id_t, 1>{ ID_NOT_SET }));
@@ -33,7 +34,8 @@ AgentData::AgentData(std::shared_ptr<const ModelData> model, const AgentData &ot
     , agent_outputs(other.agent_outputs)
     , description(model ? new AgentDescription(model, this) : nullptr)
     , name(other.name)
-    , keepDefaultState(other.keepDefaultState) { }
+    , keepDefaultState(other.keepDefaultState)
+    , sortPeriod(other.sortPeriod) { }
 
 bool AgentData::operator==(const AgentData &rhs) const {
     if (this == &rhs)  // They point to same object
@@ -42,6 +44,7 @@ bool AgentData::operator==(const AgentData &rhs) const {
         && initial_state == rhs.initial_state
         && agent_outputs == rhs.agent_outputs
         && keepDefaultState == rhs.keepDefaultState
+        && sortPeriod == rhs.sortPeriod
         && functions.size() == rhs.functions.size()
         && variables.size() == rhs.variables.size()
         && states.size() == rhs.states.size()) {

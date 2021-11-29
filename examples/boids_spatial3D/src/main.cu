@@ -441,7 +441,6 @@ int main(int argc, const char ** argv) {
     /**
      * Execution
      */
-    cudaSimulation.setSortAgentsEveryNSteps(1);
     cudaSimulation.simulate();
 
 

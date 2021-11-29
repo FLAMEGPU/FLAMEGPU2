@@ -66,7 +66,6 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model)
     , macro_env(*_model->environment, *this)
     , run_log(std::make_unique<RunLog>())
     , streams(std::vector<cudaStream_t>())
-    , sortAgentsEveryNSteps(10)
     , singletons(nullptr)
     , singletonsInitialised(false)
     , rtcInitialised(false)
@@ -277,10 +276,6 @@ void CUDASimulation::exitFunctions() {
     if (getSimulationConfig().timing) {
         fprintf(stdout, "Exit Function Processing time: %.6f s\n", this->elapsedSecondsExitFunctions);
     }
-}
-
-void CUDASimulation::setSortAgentsEveryNSteps(const unsigned int n) {
-    sortAgentsEveryNSteps = n;
 }
 
 __global__ void spatialSortInitToThreadIndex(unsigned int *output, unsigned int threadCount) {
@@ -525,9 +520,9 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     unsigned int totalThreads = 0;
 
     // Spatially sort the agents
-    if ((sortAgentsEveryNSteps != 0) && (step_count % sortAgentsEveryNSteps == 0)) {
-        for (const auto &func_des : layer->agent_functions) {
-            auto func_agent = func_des->parent.lock();
+    for (const auto &func_des : layer->agent_functions) {
+        auto func_agent = func_des->parent.lock();
+        if ((func_agent->sortPeriod != 0) && (step_count % func_agent->sortPeriod == 0)) {
             if (sortTriggers3D.find(func_des->name) != sortTriggers3D.end()) {
                 this->spatialSortAgent(func_des->name, func_agent->name, func_des->initial_state, Agent3D);
             }

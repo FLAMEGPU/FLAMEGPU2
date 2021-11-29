@@ -139,6 +139,10 @@ const std::set<std::string> &AgentDescription::getStates() const {
     return agent->states;
 }
 
+void AgentDescription::setSortPeriod(const unsigned int sortPeriod) {
+    agent->sortPeriod = sortPeriod;
+}
+
 bool AgentDescription::hasState(const std::string &state_name) const {
     return agent->states.find(state_name) != agent->states.end();
 }
