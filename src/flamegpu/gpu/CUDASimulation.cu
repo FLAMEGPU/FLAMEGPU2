@@ -370,7 +370,6 @@ void CUDASimulation::spatialSortAgent(const std::string& funcName, const std::st
     if (auto ptr = funcData->message_input.lock()) {
         messageName = ptr->name;
     } else {
-
         throw("Function " + funcName + " registered for auto-spatial sorting but input message type not found!\n");
     }
     MessageBruteForce::Data* msgData = model->messages.at(messageName).get();
