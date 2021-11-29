@@ -381,14 +381,14 @@ void CUDASimulation::spatialSortAgent(const std::string& funcName, const std::st
     detail::Dims<float> envWidth;
     detail::Dims<unsigned int> gridDim;
 
-    if (auto messageSpatialData = dynamic_cast<MessageSpatial2D::Data*>(msgData)) {
-        radius = messageSpatialData->radius;
-        envMin = {messageSpatialData->minX, messageSpatialData->minY, 0.0f};
-        envMax = {messageSpatialData->maxX, messageSpatialData->maxY, 0.0f};
-    } else if (auto messageSpatialData = dynamic_cast<MessageSpatial3D::Data*>(msgData)) {
-        radius = messageSpatialData->radius;
-        envMin = {messageSpatialData->minX, messageSpatialData->minY, messageSpatialData->minZ};
-        envMax = {messageSpatialData->maxX, messageSpatialData->maxY, messageSpatialData->maxZ};
+    if (auto messageSpatialData2D = dynamic_cast<MessageSpatial2D::Data*>(msgData)) {
+        radius = messageSpatialData2D->radius;
+        envMin = {messageSpatialData2D->minX, messageSpatialData2D->minY, 0.0f};
+        envMax = {messageSpatialData2D->maxX, messageSpatialData2D->maxY, 0.0f};
+    } else if (auto messageSpatialData3D = dynamic_cast<MessageSpatial3D::Data*>(msgData)) {
+        radius = messageSpatialData3D->radius;
+        envMin = {messageSpatialData3D->minX, messageSpatialData3D->minY, messageSpatialData3D->minZ};
+        envMax = {messageSpatialData3D->maxX, messageSpatialData3D->maxY, messageSpatialData3D->maxZ};
     } else {
         radius = 0.0f;
         envMin = {0.0f, 0.0f, 0.0f};
