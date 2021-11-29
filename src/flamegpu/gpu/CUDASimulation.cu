@@ -382,12 +382,11 @@ void CUDASimulation::spatialSortAgent(const std::string& funcName, const std::st
     detail::Dims<float> envWidth;
     detail::Dims<unsigned int> gridDim;
 
-    if(auto spatialData = dynamic_cast<MessageSpatial2D::Data*>(msgData)) {
+    if (auto spatialData = dynamic_cast<MessageSpatial2D::Data*>(msgData)) {
         radius = spatialData->radius;
         envMin = {spatialData->minX, spatialData->minY, 0.0f};
         envMax = {spatialData->maxX, spatialData->maxY, 0.0f};
-    }
-    else if(auto spatialData = dynamic_cast<MessageSpatial3D::Data*>(msgData)) {
+    } else if (auto spatialData = dynamic_cast<MessageSpatial3D::Data*>(msgData)) {
         radius = spatialData->radius;
         envMin = {spatialData->minX, spatialData->minY, spatialData->minZ};
         envMax = {spatialData->maxX, spatialData->maxY, spatialData->maxZ};
