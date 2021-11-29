@@ -376,10 +376,10 @@ void CUDASimulation::spatialSortAgent(const std::string& funcName, const std::st
 
     // Get the spatial metadata
     float radius;
-    detail::Dims<float> envMin;
-    detail::Dims<float> envMax;
-    detail::Dims<float> envWidth;
-    detail::Dims<unsigned int> gridDim;
+    detail::Dims<float> envMin {};
+    detail::Dims<float> envMax {};
+    detail::Dims<float> envWidth {};
+    detail::Dims<unsigned int> gridDim {};
 
     if (auto messageSpatialData2D = dynamic_cast<MessageSpatial2D::Data*>(msgData)) {
         radius = messageSpatialData2D->radius;
