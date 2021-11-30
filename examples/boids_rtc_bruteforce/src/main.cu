@@ -195,11 +195,10 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, flamegpu::MessageBruteForce, flamegpu::Messag
     float global_velocity_y = 0.0f;
     float global_velocity_z = 0.0f;
 
-    // Boids short range avoidance centre
-    float collision_centre_x = 0.0f;
-    float collision_centre_y = 0.0f;
-    float collision_centre_z = 0.0f;
-    int collision_count = 0;
+    // Total change in velocity
+    float velocity_change_x = 0.f;
+    float velocity_change_y = 0.f;
+    float velocity_change_z = 0.f;
 
     const float INTERACTION_RADIUS = FLAMEGPU->environment.getProperty<float>("INTERACTION_RADIUS");
     const float SEPARATION_RADIUS = FLAMEGPU->environment.getProperty<float>("SEPARATION_RADIUS");
@@ -215,7 +214,7 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, flamegpu::MessageBruteForce, flamegpu::Messag
             // Check interaction radius
             float separation = vec3Length(agent_x - message_x, agent_y - message_y, agent_z - message_z);
 
-            if (separation < (INTERACTION_RADIUS)) {
+            if (separation < INTERACTION_RADIUS) {
                 // Update the percieved centre
                 perceived_centre_x += message_x;
                 perceived_centre_y += message_y;
@@ -232,66 +231,53 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, flamegpu::MessageBruteForce, flamegpu::Messag
 
                 // Update collision centre
                 if (separation < (SEPARATION_RADIUS)) {  // dependant on model size
-                    collision_centre_x += message_x;
-                    collision_centre_y += message_y;
-                    collision_centre_z += message_z;
-                    collision_count += 1;
+                    // Rule 3) Avoid other nearby boids (Separation)
+                    float normalizedSeparation = (separation / SEPARATION_RADIUS);
+                    float invNormSep = (1.0f - normalizedSeparation);
+                    float invSqSep = invNormSep * invNormSep;
+
+                    const float collisionScale = FLAMEGPU->environment.getProperty<float>("COLLISION_SCALE");
+                    velocity_change_x += collisionScale * (agent_x - message_x) * invSqSep;
+                    velocity_change_y += collisionScale * (agent_y - message_y) * invSqSep;
+                    velocity_change_z += collisionScale * (agent_z - message_z) * invSqSep;
                 }
             }
         }
     }
 
-    // Divide positions/velocities by relevant counts.
-    vec3Div(perceived_centre_x, perceived_centre_y, perceived_centre_z, perceived_count);
-    vec3Div(global_velocity_x, global_velocity_y, global_velocity_z, perceived_count);
-    vec3Div(global_velocity_x, global_velocity_y, global_velocity_z, collision_count);
+    if (perceived_count) {
+        // Divide positions/velocities by relevant counts.
+        vec3Div(perceived_centre_x, perceived_centre_y, perceived_centre_z, perceived_count);
+        vec3Div(global_velocity_x, global_velocity_y, global_velocity_z, perceived_count);
 
-    // Total change in velocity
-    float velocity_change_x = 0.f;
-    float velocity_change_y = 0.f;
-    float velocity_change_z = 0.f;
+        // Rule 1) Steer towards perceived centre of flock (Cohesion)
+        float steer_velocity_x = 0.f;
+        float steer_velocity_y = 0.f;
+        float steer_velocity_z = 0.f;
 
-    // Rule 1) Steer towards perceived centre of flock (Cohesion)
-    float steer_velocity_x = 0.f;
-    float steer_velocity_y = 0.f;
-    float steer_velocity_z = 0.f;
-    if (perceived_count > 0) {
         const float STEER_SCALE = FLAMEGPU->environment.getProperty<float>("STEER_SCALE");
         steer_velocity_x = (perceived_centre_x - agent_x) * STEER_SCALE;
         steer_velocity_y = (perceived_centre_y - agent_y) * STEER_SCALE;
         steer_velocity_z = (perceived_centre_z - agent_z) * STEER_SCALE;
-    }
-    velocity_change_x += steer_velocity_x;
-    velocity_change_y += steer_velocity_y;
-    velocity_change_z += steer_velocity_z;
 
-    // Rule 2) Match neighbours speeds (Alignment)
-    float match_velocity_x = 0.f;
-    float match_velocity_y = 0.f;
-    float match_velocity_z = 0.f;
-    if (collision_count > 0) {
+        velocity_change_x += steer_velocity_x;
+        velocity_change_y += steer_velocity_y;
+        velocity_change_z += steer_velocity_z;
+
+        // Rule 2) Match neighbours speeds (Alignment)
+        float match_velocity_x = 0.f;
+        float match_velocity_y = 0.f;
+        float match_velocity_z = 0.f;
+
         const float MATCH_SCALE = FLAMEGPU->environment.getProperty<float>("MATCH_SCALE");
         match_velocity_x = global_velocity_x * MATCH_SCALE;
         match_velocity_y = global_velocity_y * MATCH_SCALE;
         match_velocity_z = global_velocity_z * MATCH_SCALE;
-    }
-    velocity_change_x += match_velocity_x;
-    velocity_change_y += match_velocity_y;
-    velocity_change_z += match_velocity_z;
 
-    // Rule 3) Avoid close range neighbours (Separation)
-    float avoid_velocity_x = 0.0f;
-    float avoid_velocity_y = 0.0f;
-    float avoid_velocity_z = 0.0f;
-    if (collision_count > 0) {
-        const float COLLISION_SCALE = FLAMEGPU->environment.getProperty<float>("COLLISION_SCALE");
-        avoid_velocity_x = (agent_x - collision_centre_x) * COLLISION_SCALE;
-        avoid_velocity_y = (agent_y - collision_centre_y) * COLLISION_SCALE;
-        avoid_velocity_z = (agent_z - collision_centre_z) * COLLISION_SCALE;
+        velocity_change_x += match_velocity_x - agent_fx;
+        velocity_change_y += match_velocity_y - agent_fy;
+        velocity_change_z += match_velocity_z - agent_fz;
     }
-    velocity_change_x += avoid_velocity_x;
-    velocity_change_y += avoid_velocity_y;
-    velocity_change_z += avoid_velocity_z;
 
     // Global scale of velocity change
     vec3Mult(velocity_change_x, velocity_change_y, velocity_change_z, FLAMEGPU->environment.getProperty<float>("GLOBAL_SCALE"));
@@ -305,6 +291,41 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, flamegpu::MessageBruteForce, flamegpu::Messag
     float agent_fscale = vec3Length(agent_fx, agent_fy, agent_fz);
     if (agent_fscale > 1) {
         vec3Div(agent_fx, agent_fy, agent_fz, agent_fscale);
+    }
+
+    float minSpeed = 0.5f;
+    if (agent_fscale < minSpeed) {
+        // Normalise
+        vec3Div(agent_fx, agent_fy, agent_fz, agent_fscale);
+
+        // Scale to min
+        vec3Mult(agent_fx, agent_fy, agent_fz, minSpeed);
+    }
+
+    // Steer away from walls - Computed post normalization to ensure good avoidance. Prevents constant term getting swamped
+    const float wallInteractionDistance = 0.10f;
+    const float wallSteerStrength = 0.05f;
+    const float minPosition = FLAMEGPU->environment.getProperty<float>("MIN_POSITION");
+    const float maxPosition = FLAMEGPU->environment.getProperty<float>("MAX_POSITION");
+
+    if (agent_x - minPosition < wallInteractionDistance) {
+        agent_fx += wallSteerStrength;
+    }
+    if (agent_y - minPosition < wallInteractionDistance) {
+        agent_fy += wallSteerStrength;
+    }
+    if (agent_z - minPosition < wallInteractionDistance) {
+        agent_fz += wallSteerStrength;
+    }
+
+    if (maxPosition - agent_x < wallInteractionDistance) {
+        agent_fx -= wallSteerStrength;
+    }
+    if (maxPosition - agent_y < wallInteractionDistance) {
+        agent_fy -= wallSteerStrength;
+    }
+    if (maxPosition - agent_z < wallInteractionDistance) {
+        agent_fz -= wallSteerStrength;
     }
 
     // Apply the velocity
@@ -363,7 +384,7 @@ int main(int argc, const char ** argv) {
         flamegpu::EnvironmentDescription &env = model.Environment();
 
         // Population size to generate, if no agents are loaded from disk
-        env.newProperty("POPULATION_TO_GENERATE", 32768u);
+        env.newProperty("POPULATION_TO_GENERATE", 4000u);
 
         // Environment Bounds
         env.newProperty("MIN_POSITION", -0.5f);
@@ -371,20 +392,20 @@ int main(int argc, const char ** argv) {
 
         // Initialisation parameter(s)
         env.newProperty("MAX_INITIAL_SPEED", 1.0f);
-        env.newProperty("MIN_INITIAL_SPEED", 0.01f);
+        env.newProperty("MIN_INITIAL_SPEED", 0.1f);
 
         // Interaction radius
-        env.newProperty("INTERACTION_RADIUS", 0.1f);
-        env.newProperty("SEPARATION_RADIUS", 0.005f);
+        env.newProperty("INTERACTION_RADIUS", 0.05f);
+        env.newProperty("SEPARATION_RADIUS", 0.01f);
 
         // Global Scalers
         env.newProperty("TIME_SCALE", 0.0005f);
         env.newProperty("GLOBAL_SCALE", 0.15f);
 
         // Rule scalers
-        env.newProperty("STEER_SCALE", 0.65f);
-        env.newProperty("COLLISION_SCALE", 0.75f);
-        env.newProperty("MATCH_SCALE", 1.25f);
+        env.newProperty("STEER_SCALE", 0.055f);
+        env.newProperty("COLLISION_SCALE", 10.0f);
+        env.newProperty("MATCH_SCALE", 0.015f);
     }
 
     /**
@@ -423,7 +444,7 @@ int main(int argc, const char ** argv) {
         circ_agt.setForwardYVariable("fy");
         circ_agt.setForwardZVariable("fz");
         circ_agt.setModel(flamegpu::visualiser::Stock::Models::ICOSPHERE);
-        circ_agt.setModelScale(env.getProperty<float>("SEPARATION_RADIUS"));
+        circ_agt.setModelScale(env.getProperty<float>("SEPARATION_RADIUS")/3.0f);
     }
     visualisation.activate();
 #endif
