@@ -1,0 +1,92 @@
+# Build the Tests target under windows
+name: Windows Tests
+
+on:
+  # Only allow manual triggers.
+  workflow_dispatch:
+
+defaults:
+  run:
+    # Default to using bash regardless of OS unless otherwise specified.
+    shell: bash
+
+# A single job, which builds the test suite on windows targets. This is time consuming, so is not part of the regular CI
+# This is provided in addition to the Draft-Release CI so this can be ran more regularly, without triggering the array of wheel builds.
+jobs:
+  # Windows Test suite builds builds
+  build-tests-windows:
+    runs-on: ${{ matrix.cudacxx.os }}
+    strategy:
+      fail-fast: false
+      # Multiplicative build matrix
+      # optional exclude: can be partial, include: must be specific
+      matrix:
+        # CUDA_ARCH values are reduced compared to wheels due to CI memory issues while compiling the test suite.
+        cudacxx:
+          - cuda: "11.5.1"
+            cuda_arch: "35"
+            hostcxx: "Visual Studio 16 2019"
+            os: windows-2019
+          - cuda: "11.0.3"
+            cuda_arch: "35"
+            hostcxx: "Visual Studio 16 2019"
+            os: windows-2019
+        config:
+          - name: "Release"
+            config: "Release"
+            SEATBELTS: "ON"
+        VISUALISATION:
+          - "OFF"
+
+    # Name the job based on matrix/env options
+    name: "build-tests-windows (${{ matrix.cudacxx.cuda }}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
+
+    # Define job-wide env constants, and promote matrix elements to env constants for portable steps.
+    env:
+      # Define constants
+      BUILD_DIR: "build"
+      BUILD_TESTS: "ON"
+      BUILD_SWIG_PYTHON: "OFF"
+      # Port matrix options to environment, for more portability.
+      CUDA: ${{ matrix.cudacxx.cuda }}
+      CUDA_ARCH: ${{ matrix.cudacxx.cuda_arch }}
+      HOSTCXX: ${{ matrix.cudacxx.hostcxx }}
+      OS: ${{ matrix.cudacxx.os }}
+      CONFIG: ${{ matrix.config.config }}
+      SEATBELTS: ${{ matrix.config.SEATBELTS }}
+      VISUALISATION: ${{ matrix.VISUALISATION }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install CUDA (Windows)
+      if: ${{ runner.os == 'Windows' && env.CUDA != '' }}
+      shell: powershell
+      env:
+        cuda: ${{ env.CUDA }}
+        visual_studio: ${{ env.HOSTCXX }}
+      run: .github\scripts\install_cuda_windows.ps1
+
+    # Must pass -G -A for windows, and -DPython3_ROOT_DIR/-DPYTHON3_EXECUTABLE as a github action workaround
+    - name: Configure cmake
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}"
+        -G "${{ env.HOSTCXX }}" -A x64
+        -Werror=dev
+        -DCMAKE_WARN_DEPRECATED="OFF"
+        -DWARNINGS_AS_ERRORS="ON"
+        -DCUDA_ARCH="${{ env.CUDA_ARCH }}"
+        -DBUILD_TESTS="${{ env.BUILD_TESTS }}"
+        -DBUILD_SWIG_PYTHON="${{ env.BUILD_SWIG_PYTHON }}"
+        -DVISUALISATION="${{ env.VISUALISATION }}"
+        -DUSE_NVTX="ON"
+
+    - name: Build static library
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --config ${{ env.CONFIG }} --target flamegpu --verbose -j `nproc`
+
+    - name: Build tests
+      if: ${{ env.BUILD_TESTS == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --config ${{ env.CONFIG }} --target tests --verbose -j `nproc`
+
