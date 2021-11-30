@@ -184,7 +184,7 @@ jobs:
       matrix:
         # CUDA_ARCH values are reduced compared to wheels due to CI memory issues while compiling the test suite.
         cudacxx:
-          - cuda: "11.5.0"
+          - cuda: "11.5.1"
             cuda_arch: "35 60 80"
             hostcxx: "Visual Studio 16 2019"
             os: windows-2019
