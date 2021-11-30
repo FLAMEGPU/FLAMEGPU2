@@ -67,7 +67,7 @@ float meanSimulationTime(const int REPETITIONS, CUDASimulation &s, std::vector<A
             total_time += s.getElapsedTimeSimulation();
         }
     }
-    return total_time / REPETITIONS;
+    return static_cast<float>(total_time / REPETITIONS);
 }
 
 /** 

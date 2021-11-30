@@ -27,7 +27,7 @@ TEST(AutomaticSpatialAgentSort, SortingDisabled) {
     MessageSpatial3D::Description &locationMessage = model.newMessage<MessageSpatial3D>("location");
     locationMessage.setMin(-5, -5, -5);
     locationMessage.setMax(5, 5, 5);
-    locationMessage.setRadius(0.2);
+    locationMessage.setRadius(0.2f);
     AgentFunctionDescription& dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc);
     dummyFunc.setMessageInput("location");
     LayerDescription& layer = model.newLayer();
@@ -38,9 +38,9 @@ TEST(AutomaticSpatialAgentSort, SortingDisabled) {
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
         AgentVector::Agent instance = pop[i];
         instance.setVariable<int>("initial_order", i);
-        instance.setVariable<float>("x", -i);
-        instance.setVariable<float>("y", -i);
-        instance.setVariable<float>("z", -i);
+        instance.setVariable<float>("x", static_cast<float>(-i));
+        instance.setVariable<float>("y", static_cast<float>(-i));
+        instance.setVariable<float>("z", static_cast<float>(-i));
     }
 
     // Setup Model
@@ -72,7 +72,7 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep) {
     MessageSpatial3D::Description &locationMessage = model.newMessage<MessageSpatial3D>("location");
     locationMessage.setMin(-5, -5, -5);
     locationMessage.setMax(5, 5, 5);
-    locationMessage.setRadius(0.2);
+    locationMessage.setRadius(0.2f);
     AgentFunctionDescription& dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc);
     dummyFunc.setMessageInput("location");
     LayerDescription& layer = model.newLayer();
@@ -83,9 +83,9 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep) {
     for (int i = 0; i< static_cast<int>(AGENT_COUNT); i++) {
         AgentVector::Agent instance = pop[i];
         instance.setVariable<int>("initial_order", i);
-        instance.setVariable<float>("x", -i);
-        instance.setVariable<float>("y", -i);
-        instance.setVariable<float>("z", -i);
+        instance.setVariable<float>("x", static_cast<float>(-i));
+        instance.setVariable<float>("y", static_cast<float>(-i));
+        instance.setVariable<float>("z", static_cast<float>(-i));
     }
 
     // Setup Model
