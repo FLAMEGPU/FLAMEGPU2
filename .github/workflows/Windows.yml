@@ -29,7 +29,7 @@ jobs:
       # optional exclude: can be partial, include: must be specific
       matrix:
         cudacxx:
-          - cuda: "11.5.0"
+          - cuda: "11.5.1"
             cuda_arch: "35"
             hostcxx: "Visual Studio 16 2019"
             os: windows-2019
