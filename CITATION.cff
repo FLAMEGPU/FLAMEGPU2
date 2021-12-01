@@ -5,8 +5,8 @@ title: "FLAME GPU"
 license: MIT
 repository-code: "https://github.com/FLAMEGPU/FLAMEGPU2"
 url: "https://flamegpu.com"
-version: "2.0.0-alpha.1"
-date-released: 2021-09-03
+version: "2.0.0-alpha.2"
+date-released: 2021-12-09
 type: software
 authors: 
   - given-names: Paul
@@ -28,6 +28,7 @@ authors:
     family-names: Leach
     affiliation: The University of Sheffield
     alias: MILeach
+    orcud: "https://orcid.org/0000-0002-8901-5609"
   - given-names: Mozhgan
     family-names: Kabiri Chimeh
     alias: mozhgan-kch 
