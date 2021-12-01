@@ -78,7 +78,7 @@ void Simulation::applyConfig() {
                 util::detail::filesystem::recursive_create_dir(t_path);
             }
         } catch(std::exception &e) {
-            THROW exception::InvalidArgument("Failed to init step log file directory '%s': %s\n", t_path.c_str(), e.what());
+            THROW exception::InvalidArgument("Failed to create step log file directory '%s': %s\n", t_path.c_str(), e.what());
         }
     }
     if (!config.exit_log_file.empty()) {
@@ -89,10 +89,21 @@ void Simulation::applyConfig() {
                 util::detail::filesystem::recursive_create_dir(t_path);
             }
         } catch(std::exception &e) {
-            THROW exception::InvalidArgument("Failed to init exit log file directory: '%s': %s\n", t_path.c_str(), e.what());
+            THROW exception::InvalidArgument("Failed to create exit log file directory: '%s': %s\n", t_path.c_str(), e.what());
         }
     }
-    // If verbsoe, output the flamegpu version.
+    if (!config.common_log_file.empty()) {
+        path t_path = config.common_log_file;
+        try {
+            t_path = t_path.parent_path();
+            if (!t_path.empty()) {
+                util::detail::filesystem::recursive_create_dir(t_path);
+            }
+        } catch (std::exception& e) {
+            THROW exception::InvalidArgument("Failed to create common log file directory: '%s': %s\n", t_path.c_str(), e.what());
+        }
+    }
+    // If verbose, output the flamegpu version.
     if (config.verbose) {
         fprintf(stdout, "FLAME GPU %s\n", flamegpu::VERSION_FULL);
     }

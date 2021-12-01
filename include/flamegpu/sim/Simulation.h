@@ -34,6 +34,10 @@ class Simulation {
         }
         void operator=(const Config &other) {
             input_file = other.input_file;
+            step_log_file = other.step_log_file;
+            exit_log_file = other.exit_log_file;
+            common_log_file = other.common_log_file;
+            truncate_log_files = other.truncate_log_files;
             random_seed = other.random_seed;
             steps = other.steps;
             verbose = other.verbose;
