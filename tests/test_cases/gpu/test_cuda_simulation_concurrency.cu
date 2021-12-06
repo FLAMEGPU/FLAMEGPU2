@@ -1236,11 +1236,11 @@ RELEASE_ONLY_SEATBELTS_TEST(TestCUDASimulationConcurrency, LayerConcurrencyDevic
 const char* rtc_slowAgentFunction = R"###(
     FLAMEGPU_AGENT_FUNCTION(rtc_slowAgentFunction, flamegpu::MessageNone, flamegpu::MessageNone) {
         // Repeatedly do some pointless maths on the value in register
-        const int INTERNAL_REPETITIONS = 65536;
+        const int INTERNAL_REPETITIONS = 1048576;  // More repetations for RTC to get reliable timing, it's (much) faster than non rtc. 
         for (int i = 0; i < INTERNAL_REPETITIONS; i++) {
             // Reead and write all the way to global mem each time to make this intentionally slow
             float v = FLAMEGPU->getVariable<float>("v");
-            FLAMEGPU->setVariable("v", v + v);
+            FLAMEGPU->setVariable("v", v + 1);
         }
         return flamegpu::ALIVE;
     }
