@@ -13,7 +13,12 @@ namespace exception {
 /**
  * This allows us to write DTHROW("My Error message: %d", 12); or similar to report an error in device code
  */
+#ifdef __CUDACC__
 #define DTHROW flamegpu::exception::DeviceException::create(__FILE__, __LINE__).setMessage
+#else
+// Just trying to make host compiler happy when it sees device code by mistake
+#define DTHROW(...)
+#endif
 
 /**
  * This struct should exist in device memory per stream
@@ -55,6 +60,7 @@ struct DeviceExceptionBuffer {
      */
     unsigned int arg_offset;
 };
+#ifdef __CUDACC__
 /**
  * This class is used on device for reporting errors
  * It should be used indirectly via the DTHROW macro
@@ -98,7 +104,7 @@ class DeviceException {
      * This is required to process var args, it performs the processing of a single arg
      */
     template<typename T>
-    __device__ void subformat(DeviceExceptionBuffer *buff, T t);
+    __device__ inline void subformat(DeviceExceptionBuffer *buff, T t);
     /**
      * Called by setMessage
      * This is required to process var args, it performs recursion to scrape of each arg
@@ -146,14 +152,14 @@ class DeviceException {
     /**
      * Atomically increments the error flag and returns the return value (previous value)
      */
-    __device__ unsigned int getErrorCount();
+    __device__ inline unsigned int getErrorCount();
     /**
      * True if we won the race to report the error
      */
     const bool hasError;
 };
 template<typename T>
-__device__ void DeviceException::subformat(DeviceExceptionBuffer *buff, T t) {
+__device__ inline void DeviceException::subformat(DeviceExceptionBuffer *buff, T t) {
     if (buff->arg_count < DeviceExceptionBuffer::MAX_ARGS) {
         if (buff->arg_offset + sizeof(T) <= DeviceExceptionBuffer::ARG_BUFF_LEN) {
             // Copy arg size
@@ -166,9 +172,8 @@ __device__ void DeviceException::subformat(DeviceExceptionBuffer *buff, T t) {
         }
     }
 }
-#if defined(__CUDACC_RTC__) || defined(FLAMEGPUDeviceException_CU)
 template<>
-__device__ void DeviceException::subformat(DeviceExceptionBuffer *buff, const char *t) {
+__device__ inline void DeviceException::subformat(DeviceExceptionBuffer *buff, const char *t) {
     if (buff->arg_count < DeviceExceptionBuffer::MAX_ARGS) {
         const unsigned int string_length = strlen(t);
         if (buff->arg_offset + string_length <= DeviceExceptionBuffer::ARG_BUFF_LEN) {
