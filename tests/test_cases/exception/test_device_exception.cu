@@ -28,7 +28,7 @@ class MiniSim {
         model.Environment().newProperty<int>("int", 12);
         model.Environment().newProperty<int, 2>("array", {12, 13});
     }
-    void run(int steps = 2) {
+    void run(int steps = 2, bool test_error_string = false) {
         // CudaModel must be declared here
         // As the initial call to constructor fixes the agent population
         // This means if we haven't called model.newAgent(agent) first
@@ -37,7 +37,21 @@ class MiniSim {
         // This fails as agentMap is empty
         AgentVector population(agent, 1);
         cudaSimulation.setPopulationData(population);
-        EXPECT_THROW(cudaSimulation.simulate(), exception::DeviceError);
+        if (test_error_string) {
+            bool did_except = false;
+            // Special case, catch the exception and test it's string
+            try {
+                cudaSimulation.simulate();
+            } catch (exception::DeviceError &err) {
+                did_except = true;
+                const std::string s1 = err.what();
+                EXPECT_TRUE(s1.find("nope") != std::string::npos);
+            }
+            // The appropriate exception was thrown?
+            ASSERT_TRUE(did_except);
+        } else {
+            EXPECT_THROW(cudaSimulation.simulate(), exception::DeviceError);
+        }
     }
     template<typename T>
     void addFunc(T func) {
@@ -289,7 +303,7 @@ TEST_F(DeviceExceptionTest, GetUnknownAgentVariableArray) {
     // Add required agent function
     ms->addFunc(GetUnknownAgentVariableArray);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(GetAgentVariableArrayBadType, MessageNone, MessageNone) {
     FLAMEGPU->getVariable<double, 3>("array", 0);   // Note type checking only confirms size currently
@@ -321,7 +335,7 @@ TEST_F(DeviceExceptionTest, SetUnknownAgentVariable) {
     // Add required agent function
     ms->addFunc(SetUnknownAgentVariable);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(SetAgentVariableBadType, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<double>("int", 12.0);  // Note type checking only confirms size currently
@@ -343,7 +357,7 @@ TEST_F(DeviceExceptionTest, SetUnknownAgentVariableArray) {
     // Add required agent function
     ms->addFunc(SetUnknownAgentVariableArray);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(SetAgentVariableArrayBadType, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<double, 3>("array", 0, 12.0);  // Note type checking only confirms size currently
@@ -407,7 +421,7 @@ TEST_F(DeviceExceptionTest, DeviceEnvironmentGetUnknownProperty) {
     // Add required agent function
     ms->addFunc(DeviceEnvironmentGetUnknownProperty);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(DeviceEnvironmentGetBadType, MessageNone, MessageNone) {
     FLAMEGPU->environment.getProperty<double>("int");
@@ -439,7 +453,7 @@ TEST_F(DeviceExceptionTest, AgentOutVariableUnknown) {
     // Add required agent function
     ms->addAgentOutFunc(AgentOutVariableUnknown);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(AgentOutVariableBadType, MessageNone, MessageNone) {
     FLAMEGPU->agent_out.setVariable<double>("int", 2.0);
@@ -461,7 +475,7 @@ TEST_F(DeviceExceptionTest, AgentOutVariableArrayUnknown) {
     // Add required agent function
     ms->addAgentOutFunc(AgentOutVariableArrayUnknown);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(AgentOutVariableArrayBadType, MessageNone, MessageNone) {
     FLAMEGPU->agent_out.setVariable<double, 2>("array", 0, 2);
@@ -503,7 +517,7 @@ TEST_F(DeviceExceptionTest, MessageBruteForceOutVariableUnknown) {
     // Add required agent function
     ms->addMessageOutFunc<MessageBruteForce>(MessageBruteForceOutVariableUnknown);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(MessageBruteForceOutVariableBadType, MessageNone, MessageBruteForce) {
     FLAMEGPU->message_out.setVariable<double>("int", 2);
@@ -556,7 +570,7 @@ TEST_F(DeviceExceptionTest, MessageSpatial2DOutVariableUnknown) {
     // Add required agent function
     ms->addMessageS2DOutFunc(MessageSpatial2DOutVariableUnknown);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(MessageSpatial2DOutVariableBadType, MessageNone, MessageSpatial2D) {
     FLAMEGPU->message_out.setVariable<double>("int", 2);
@@ -585,7 +599,7 @@ TEST_F(DeviceExceptionTest, MessageSpatial2DInVariableUnknown) {
     // Add required agent function
     ms->addMessageS2DInFunc(MessageSpatial2DDefaultOut, MessageSpatial2DInVariableUnknown);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(MessageSpatial2DInVariableBadType, MessageSpatial2D, MessageNone) {
     for (auto m : FLAMEGPU->message_in(0 , 0)) {
@@ -609,7 +623,7 @@ TEST_F(DeviceExceptionTest, MessageSpatial3DOutVariableUnknown) {
     // Add required agent function
     ms->addMessageS3DOutFunc(MessageSpatial3DOutVariableUnknown);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(MessageSpatial3DOutVariableBadType, MessageNone, MessageSpatial3D) {
     FLAMEGPU->message_out.setVariable<double>("int", 2);
@@ -638,7 +652,7 @@ TEST_F(DeviceExceptionTest, MessageSpatial3DInVariableUnknown) {
     // Add required agent function
     ms->addMessageS3DInFunc(MessageSpatial3DDefaultOut, MessageSpatial3DInVariableUnknown);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(MessageSpatial3DInVariableBadType, MessageSpatial3D, MessageNone) {
     for (auto m : FLAMEGPU->message_in(0 , 0, 0)) {
@@ -674,7 +688,7 @@ TEST_F(DeviceExceptionTest, MessageArrayOutUnknownVariable) {
     // Add required agent function
     ms->addMessageA1DOutFunc(MessageArrayOutUnknownVariable);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(MessageArrayVariableBadType, MessageNone, MessageArray) {
     FLAMEGPU->message_out.setVariable<double>("int", 11);
@@ -701,7 +715,7 @@ TEST_F(DeviceExceptionTest, MessageArrayInVariableUnknown) {
     // Add required agent function
     ms->addMessageA1DInFunc(MessageArrayDefaultOut, MessageArrayInVariableUnknown);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(MessageArrayInVariableBadType, MessageArray, MessageNone) {
     FLAMEGPU->message_in.at(0).getVariable<double>("int");
@@ -761,7 +775,7 @@ TEST_F(DeviceExceptionTest, MessageArray2DOutUnknownVariable) {
     // Add required agent function
     ms->addMessageA2DOutFunc(MessageArray2DOutUnknownVariable);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(MessageArray2DVariableBadType, MessageNone, MessageArray2D) {
     FLAMEGPU->message_out.setVariable<double>("int", 11);
@@ -788,7 +802,7 @@ TEST_F(DeviceExceptionTest, MessageArray2DInVariableUnknown) {
     // Add required agent function
     ms->addMessageA2DInFunc(MessageArray2DDefaultOut, MessageArray2DInVariableUnknown);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(MessageArray2DInVariableBadType, MessageArray2D, MessageNone) {
     FLAMEGPU->message_in.at(0, 0).getVariable<double>("int");
@@ -858,7 +872,7 @@ TEST_F(DeviceExceptionTest, MessageArray3DOutUnknownVariable) {
     // Add required agent function
     ms->addMessageA3DOutFunc(MessageArray3DOutUnknownVariable);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(MessageArray3DVariableBadType, MessageNone, MessageArray3D) {
     FLAMEGPU->message_out.setVariable<double>("int", 11);
@@ -885,7 +899,7 @@ TEST_F(DeviceExceptionTest, MessageArray3DInVariableUnknown) {
     // Add required agent function
     ms->addMessageA3DInFunc(MessageArray3DDefaultOut, MessageArray3DInVariableUnknown);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(MessageArray3DInVariableBadType, MessageArray3D, MessageNone) {
     FLAMEGPU->message_in.at(0, 0, 0).getVariable<double>("int");
@@ -953,7 +967,7 @@ TEST_F(DeviceExceptionTest, MessageBucketOutUnknownVariable) {
     // Add required agent function
     ms->addMessageBucketOutFunc(MessageBucketOutUnknownVariable);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(MessageBucketVariableBadType, MessageNone, MessageBucket) {
     FLAMEGPU->message_out.setVariable<double>("int", 11);
@@ -1004,7 +1018,7 @@ TEST_F(DeviceExceptionTest, MessageBucketInVariableUnknown) {
     // Add required agent function
     ms->addMessageBucketInFunc(MessageBucketDefaultOut, MessageBucketInVariableUnknown);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 FLAMEGPU_AGENT_FUNCTION(MessageBucketInVariableBadType, MessageBucket, MessageNone) {
     for (auto m : FLAMEGPU->message_in(0)) {
@@ -1088,13 +1102,13 @@ TEST_F(DeviceExceptionTest, AgentFunctionConditionError1) {
     // Add required agent function
     ms->addFuncCdn(GetAgentVariable, AgentFunctionConditionError1);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 TEST_F(DeviceExceptionTest, AgentFunctionConditionError2) {
     // Add required agent function
     ms->addFuncCdn(GetAgentVariable, AgentFunctionConditionError2);
     // Test Something
-    ms->run(1);
+    ms->run(1, true);
 }
 
 // Test error if agent birth/death not enabled
