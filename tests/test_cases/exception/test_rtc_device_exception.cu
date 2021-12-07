@@ -39,7 +39,17 @@ TEST(RTCDeviceExceptionTest, getAgentVar_name) {
     CUDASimulation cudaSimulation(model);
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+    bool did_except = false;
+    // Special case, catch the exception and test it's string
+    try {
+        cudaSimulation.simulate();
+    } catch (exception::DeviceError &err) {
+        did_except = true;
+        const std::string s1 = err.what();
+        EXPECT_TRUE(s1.find("nope") != std::string::npos);
+    }
+    // The appropriate exception was thrown?
+    ASSERT_TRUE(did_except);
 }
 const char* rtc_dthrow_agent_func_getAgentVarType = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
@@ -91,7 +101,17 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_name) {
     CUDASimulation cudaSimulation(model);
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+    bool did_except = false;
+    // Special case, catch the exception and test it's string
+    try {
+        cudaSimulation.simulate();
+    } catch (exception::DeviceError &err) {
+        did_except = true;
+        const std::string s1 = err.what();
+        EXPECT_TRUE(s1.find("nope") != std::string::npos);
+    }
+    // The appropriate exception was thrown?
+    ASSERT_TRUE(did_except);
 }
 const char* rtc_dthrow_agent_func_getAgentArrayVar1 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
@@ -191,7 +211,17 @@ TEST(RTCDeviceExceptionTest, setAgentVar_name) {
     CUDASimulation cudaSimulation(model);
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+    bool did_except = false;
+    // Special case, catch the exception and test it's string
+    try {
+        cudaSimulation.simulate();
+    } catch (exception::DeviceError &err) {
+        did_except = true;
+        const std::string s1 = err.what();
+        EXPECT_TRUE(s1.find("nope") != std::string::npos);
+    }
+    // The appropriate exception was thrown?
+    ASSERT_TRUE(did_except);
 }
 const char* rtc_dthrow_agent_func_setAgentVar2 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
@@ -243,7 +273,17 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_name) {
     CUDASimulation cudaSimulation(model);
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+    bool did_except = false;
+    // Special case, catch the exception and test it's string
+    try {
+        cudaSimulation.simulate();
+    } catch (exception::DeviceError &err) {
+        did_except = true;
+        const std::string s1 = err.what();
+        EXPECT_TRUE(s1.find("nope") != std::string::npos);
+    }
+    // The appropriate exception was thrown?
+    ASSERT_TRUE(did_except);
 }
 const char* rtc_dthrow_agent_func_setAgentArrayVar1 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
@@ -344,7 +384,17 @@ TEST(RTCDeviceExceptionTest, getEnvironmentProp_name) {
     CUDASimulation cudaSimulation(model);
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+    bool did_except = false;
+    // Special case, catch the exception and test it's string
+    try {
+        cudaSimulation.simulate();
+    } catch (exception::DeviceError &err) {
+        did_except = true;
+        const std::string s1 = err.what();
+        EXPECT_TRUE(s1.find("nope") != std::string::npos);
+    }
+    // The appropriate exception was thrown?
+    ASSERT_TRUE(did_except);
 }
 const char* rtc_dthrow_agent_func_getEnvironmentProp1 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
@@ -399,7 +449,17 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_name) {
     CUDASimulation cudaSimulation(model);
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
-    EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+    bool did_except = false;
+    // Special case, catch the exception and test it's string
+    try {
+        cudaSimulation.simulate();
+    } catch (exception::DeviceError &err) {
+        did_except = true;
+        const std::string s1 = err.what();
+        EXPECT_TRUE(s1.find("nope") != std::string::npos);
+    }
+    // The appropriate exception was thrown?
+    ASSERT_TRUE(did_except);
 }
 const char* rtc_dthrow_agent_func_getEnvironmentArrayProp1 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
