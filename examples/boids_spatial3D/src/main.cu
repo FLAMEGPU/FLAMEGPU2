@@ -133,7 +133,7 @@ FLAMEGPU_AGENT_FUNCTION(outputdata, flamegpu::MessageNone, flamegpu::MessageSpat
  */
 FLAMEGPU_AGENT_FUNCTION(inputdata, flamegpu::MessageSpatial3D, flamegpu::MessageNone) {
     // Agent properties in local register
-    const int id = FLAMEGPU->getID();
+    const flamegpu::id_t id = FLAMEGPU->getID();
     // Agent position
     float agent_x = FLAMEGPU->getVariable<float>("x");
     float agent_y = FLAMEGPU->getVariable<float>("y");
