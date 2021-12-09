@@ -54,6 +54,7 @@ using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, 
 %include <std_unordered_map.i>
 %include <std_array.i>
 %include <std_list.i>
+%include <std_set.i>
 %include <stdint.i>
 
 // argc/argv support
@@ -81,6 +82,9 @@ using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, 
 %template(DoubleVector) std::vector<double>;
 //%template(BoolVector) std::vector<bool>;
 //%template(DoubleVector) std::vector<double>;
+
+// Instantiate the set type used by CUDAEnsembleConfig.devices
+%template(IntSet) std::set<int>;
 
 /**
  * TEMPLATE_VARIABLE_INSTANTIATE_FLOATS macro
@@ -820,7 +824,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
 
 // Include visualisation support if enabled.
 #ifdef VISUALISATION
-    // Include relevenat headers in the generated c++
+    // Include relevant headers in the generated c++
     // @todo - Need to put the vis repo into a subfolder for more sensible include paths
     %{
         #include "flamegpu/visualiser/visualiser_api.h"
@@ -867,7 +871,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
     // %extend classes go after %includes.
     // -----------------
     // SWIG is unable to wrap `Color::operator StaticColor()`
-    // Therefore we manually add two functions to handle the implict conversion
+    // Therefore we manually add two functions to handle the implicit conversion
     %extend flamegpu::visualiser::AgentStateVis {
     void flamegpu::visualiser::AgentStateVis::setColor(const flamegpu::visualiser::Color &cf) {
             $self->setColor(cf);
