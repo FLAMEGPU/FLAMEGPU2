@@ -243,7 +243,10 @@ void CUDAFatAgent::setConditionState(const unsigned int &agent_fat_id, const std
 
 void *CUDAFatAgent::allocNewBuffer(const size_t &total_agent_size, const unsigned int &new_agents, const size_t &varCount) {
     std::lock_guard<std::mutex> guard(d_newLists_mutex);
-    const size_t SIZE_REQUIRED = total_agent_size * new_agents + (varCount-1) * 8;
+    // It is assumed that the buffer will be split into sub-buffers, each 64bit aligned
+    // So for total number of variables-1, add 64 bits incase required for alignment.
+    const size_t ALIGN_OVERFLOW = varCount > 0 ? (varCount - 1) * 8 : 0;
+    const size_t SIZE_REQUIRED = total_agent_size * new_agents + ALIGN_OVERFLOW;
     const size_t ALLOCATION_SIZE = static_cast<size_t>(SIZE_REQUIRED * 1.25);  // Premept larger buffer req, reduce reallocations
     // Find the smallest existing buffer with enough size
     for (auto &b : d_newLists) {
