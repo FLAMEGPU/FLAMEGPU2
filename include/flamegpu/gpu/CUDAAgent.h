@@ -288,6 +288,22 @@ class CUDAAgent : public AgentInterface {
      * @param hostapi HostAPI object, this is used to provide cub temp storage
      */
     void assignIDs(HostAPI &hostapi);
+    /**
+     * Used to allow HostAgentAPI to store a persistent DeviceAgentVector
+     * @param state_name Agent state to affect
+     * @param d_vec The DeviceAgentVector to be stored
+     */
+    void setPopulationVec(const std::string& state_name, const std::shared_ptr<DeviceAgentVector_impl>& d_vec);
+    /**
+     * Used to allow HostAgentAPI to retrieve a stored DeviceAgentVector
+     * @param state_name Agent state to affect
+     */
+    std::shared_ptr<DeviceAgentVector_impl> getPopulationVec(const std::string& state_name);
+    /**
+     * Used to allow HostAgentAPI to clear the stored DeviceAgentVector
+     * Any changes will be synchronised first
+     */
+    void resetPopulationVecs();
 
  private:
     /**
@@ -356,6 +372,10 @@ class CUDAAgent : public AgentInterface {
      * Mutex for writing to newBuffs
      */
     std::mutex newBuffsMutex;
+    /**
+     * Nullptr until getPopulationData() is called, after which it holds the return value
+     */
+    std::map<std::string, std::shared_ptr<DeviceAgentVector_impl>> population_dvec;
 };
 
 }  // namespace flamegpu

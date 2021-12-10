@@ -15,8 +15,8 @@ namespace DeviceAgentVectorTest {
     const std::string AGENT_NAME = "agent";
 
 FLAMEGPU_STEP_FUNCTION(SetGet) {
-    HostAgentAPI agent = FLAMEGPU->agent(AGENT_NAME);
-    DeviceAgentVector av = agent.getPopulationData();
+    // Accessing DeviceAgentVector like this would previously lead to an access violation (Issue #522, PR #751)
+    DeviceAgentVector av = FLAMEGPU->agent(AGENT_NAME).getPopulationData();
     for (AgentVector::Agent ai : av) {
         ai.setVariable<int>("int", ai.getVariable<int>("int") + 12);
     }

@@ -73,15 +73,8 @@ class HostAgentAPI {
         : api(_api)
         , agent(_agent)
         , stateName(_stateName)
-        , population(nullptr)
         , agentOffsets(_agentOffsets)
         , newAgentData(_newAgentData) { }
-    /**
-     * Destructor
-     *
-     * Ensures any changes to agent data or births are synchronised prior to the host function returning.
-     */
-    ~HostAgentAPI();
     /**
      * Copy constructor
      * Not actually sure this is required
@@ -90,7 +83,6 @@ class HostAgentAPI {
         : api(other.api)
         , agent(other.agent)
         , stateName(other.stateName)
-        , population(nullptr)  // Never copy DeviceAgentVector
         , agentOffsets(other.agentOffsets)
         , newAgentData(other.newAgentData)
     { }
@@ -272,10 +264,6 @@ class HostAgentAPI {
      */
     const std::string stateName;
     /**
-     * Nullptr until getPopulationData() is called, after which it holds the return value
-     */
-    std::shared_ptr<DeviceAgentVector_impl> population;
-    /**
      * Holds offsets for accessing newAgentData
      * @see newAgent()
      */
@@ -298,6 +286,7 @@ InT HostAgentAPI::sum(const std::string &variable) const {
 template<typename InT, typename OutT>
 OutT HostAgentAPI::sum(const std::string &variable) const {
     static_assert(sizeof(InT) <= sizeof(OutT), "Template arg OutT should not be of a smaller size than InT");
+    std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
@@ -333,6 +322,7 @@ OutT HostAgentAPI::sum(const std::string &variable) const {
 }
 template<typename InT>
 InT HostAgentAPI::min(const std::string &variable) const {
+    std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
@@ -368,6 +358,7 @@ InT HostAgentAPI::min(const std::string &variable) const {
 }
 template<typename InT>
 InT HostAgentAPI::max(const std::string &variable) const {
+    std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
@@ -403,6 +394,7 @@ InT HostAgentAPI::max(const std::string &variable) const {
 }
 template<typename InT>
 unsigned int HostAgentAPI::count(const std::string &variable, const InT &value) {
+    std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
@@ -430,6 +422,7 @@ std::vector<unsigned int> HostAgentAPI::histogramEven(const std::string &variabl
 }
 template<typename InT, typename OutT>
 std::vector<OutT> HostAgentAPI::histogramEven(const std::string &variable, const unsigned int &histogramBins, const InT &lowerBound, const InT &upperBound) const {
+    std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
@@ -471,6 +464,7 @@ std::vector<OutT> HostAgentAPI::histogramEven(const std::string &variable, const
 }
 template<typename InT, typename reductionOperatorT>
 InT HostAgentAPI::reduce(const std::string &variable, reductionOperatorT /*reductionOperator*/, const InT &init) const {
+    std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
@@ -508,6 +502,7 @@ InT HostAgentAPI::reduce(const std::string &variable, reductionOperatorT /*reduc
 }
 template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
 OutT HostAgentAPI::transformReduce(const std::string &variable, transformOperatorT /*transformOperator*/, reductionOperatorT /*reductionOperator*/, const OutT &init) const {
+    std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
@@ -533,6 +528,7 @@ OutT HostAgentAPI::transformReduce(const std::string &variable, transformOperato
 
 template<typename VarT>
 void HostAgentAPI::sort(const std::string &variable, Order order, int beginBit, int endBit) {
+    std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
@@ -595,6 +591,7 @@ void HostAgentAPI::sort(const std::string &variable, Order order, int beginBit, 
 
 template<typename Var1T, typename Var2T>
 void HostAgentAPI::sort(const std::string &variable1, Order order1, const std::string &variable2, Order order2) {
+    std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();

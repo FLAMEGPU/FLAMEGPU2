@@ -3,13 +3,6 @@
 
 namespace flamegpu {
 
-HostAgentAPI::~HostAgentAPI() {
-    if (population) {
-        population->syncChanges();
-        population.reset();
-    }
-}
-
 HostNewAgentAPI HostAgentAPI::newAgent() {
     // Create the agent in our backing data structure
     newAgentData.emplace_back(NewAgentStorage(agentOffsets, agent.nextID(1)));
@@ -18,9 +11,10 @@ HostNewAgentAPI HostAgentAPI::newAgent() {
 }
 
 unsigned HostAgentAPI::count() {
-    if (population) {
+    std::shared_ptr<DeviceAgentVector_impl> d_vec = agent.getPopulationVec(stateName);
+    if (d_vec) {
         // If the user has a DeviceAgentVector out, use that instead
-        return population->size();
+        return d_vec->size();
     }
     return agent.getStateSize(stateName);
 }
@@ -51,10 +45,13 @@ void HostAgentAPI::sortBuffer(void *dest, void*src, unsigned int *position, cons
 
 DeviceAgentVector HostAgentAPI::getPopulationData() {
     // Create and return a new AgentVector
-    if (!population) {
-        population = std::make_shared<DeviceAgentVector_impl>(static_cast<CUDAAgent&>(agent), stateName, agentOffsets, newAgentData, api.scatter, api.streamId, api.stream);
+    std::shared_ptr<DeviceAgentVector_impl> d_vec = agent.getPopulationVec(stateName);
+
+    if (!d_vec) {
+        d_vec = std::make_shared<DeviceAgentVector_impl>(static_cast<CUDAAgent&>(agent), stateName, agentOffsets, newAgentData, api.scatter, api.streamId, api.stream);
+        agent.setPopulationVec(stateName, d_vec);
     }
-    return *population;
+    return *d_vec;
 }
 
 }  // namespace flamegpu

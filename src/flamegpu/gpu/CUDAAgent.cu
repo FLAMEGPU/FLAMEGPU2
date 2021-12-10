@@ -39,6 +39,7 @@ using std::experimental::filesystem::v1::path;
 #include "flamegpu/gpu/CUDAScatter.cuh"
 #include "flamegpu/util/detail/compute_capability.cuh"
 #include "flamegpu/util/nvtx.h"
+#include "flamegpu/pop/DeviceAgentVector_impl.h"
 
 namespace flamegpu {
 
@@ -716,6 +717,25 @@ id_t* CUDAAgent::getDeviceNextID() {
 }
 void CUDAAgent::assignIDs(HostAPI& hostapi) {
     fat_agent->assignIDs(hostapi);
+}
+
+void CUDAAgent::setPopulationVec(const std::string& state_name, const std::shared_ptr<DeviceAgentVector_impl>& d_vec) {
+    population_dvec[state_name] = d_vec;
+}
+std::shared_ptr<DeviceAgentVector_impl> CUDAAgent::getPopulationVec(const std::string& state_name) {
+    auto find = population_dvec.find(state_name);
+    if (find != population_dvec.end())
+        return find->second;
+    return nullptr;
+}
+void CUDAAgent::resetPopulationVecs() {
+    for (auto &vec : population_dvec) {
+        if (vec.second) {
+            vec.second->syncChanges();
+            vec.second.reset();
+        }
+    }
+    population_dvec.clear();
 }
 
 }  // namespace flamegpu

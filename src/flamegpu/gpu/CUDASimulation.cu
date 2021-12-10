@@ -249,6 +249,10 @@ void CUDASimulation::initFunctions() {
     }
     // Check if host agent creation was used in init functions
     if (model->initFunctions.size() || model->initFunctionCallbacks.size()) {
+        // Sync any device vectors, before performing host agent creation
+        for (auto& ca : agent_map) {
+            ca.second->resetPopulationVecs();
+        }
         processHostAgentCreation(0);
     }
 
@@ -1039,6 +1043,10 @@ void CUDASimulation::layerHostFunctions(const std::shared_ptr<LayerData>& layer,
     }
     // If we have host layer functions, we might have host agent creation
     if (layer->host_functions.size() || (layer->host_functions_callbacks.size())) {
+        // Sync any device vectors, before performing host agent creation
+        for (auto& ca : agent_map) {
+            ca.second->resetPopulationVecs();
+        }
         // @todo - What is the most appropriate stream to use here?
         processHostAgentCreation(0);
     }
@@ -1058,6 +1066,10 @@ void CUDASimulation::stepStepFunctions() {
     }
     // If we have step functions, we might have host agent creation
     if (model->stepFunctions.size() || model->stepFunctionCallbacks.size()) {
+        // Sync any device vectors, before performing host agent creation
+        for (auto &ca : agent_map) {
+            ca.second->resetPopulationVecs();
+        }
         processHostAgentCreation(0);
     }
 }
