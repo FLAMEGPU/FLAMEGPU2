@@ -328,7 +328,7 @@ int XMLStateReader::parse() {
                         agentName, variable_name.c_str(), var_data.elements, inputFile.c_str(), el);
                     hasWarnedElements = true;
                 }
-            } else if (!hasWarnedMissingVar) {
+            } else if (!hasWarnedMissingVar && variable_name.find('_', 0) != 0) {
                 fprintf(stderr, "Warning: Agent '%s' variable '%s' is missing from, input file '%s'.\n",
                     agentName, variable_name.c_str(), inputFile.c_str());
                 hasWarnedMissingVar = true;
