@@ -634,6 +634,61 @@ TEST(TestCUDASimulation, AgentID_MultipleStatesUniqueIDs) {
     ASSERT_EQ(ids_original.size(), pop_out_a.size() + pop_out_b.size());
     ASSERT_EQ(ids_copy.size(), pop_out_a.size() + pop_out_b.size());
 }
+/**
+ * Test that CUDASimulation::simulate(RunPlan &), does override environment properties, steps and random seed
+ */
+unsigned int Simulate_RunPlan_stepcheck = 0;
+FLAMEGPU_HOST_FUNCTION(Check_Simulate_RunPlan) {
+    // Check env property has expected value
+    EXPECT_EQ(FLAMEGPU->environment.getProperty<int>("int"), 25);
+    auto t = FLAMEGPU->environment.getProperty<int, 3>("int3");
+    std::array<int, 3 > t_check = { 6, 7, 8 };
+    EXPECT_EQ(t, t_check);
+    EXPECT_EQ(FLAMEGPU->random.getSeed(), 1233333llu);
+    // Increment step counter
+    ++Simulate_RunPlan_stepcheck;
+}
+TEST(TestCUDASimulation, Simulate_RunPlan) {
+    ModelDescription m("m");
+    m.newAgent(AGENT_NAME);
+    m.Environment().newProperty<int>("int", 2);
+    m.Environment().newProperty<int, 3>("int3", {56, 57, 58});
+    m.newLayer().addHostFunction(Check_Simulate_RunPlan);
+
+    CUDASimulation s(m);
+    RunPlan plan(m);
+    plan.setProperty<int>("int", 25);
+    plan.setProperty<int, 3>("int3", {6, 7, 8});
+    plan.setRandomSimulationSeed(1233333llu);
+    plan.setSteps(5);
+    // Run sim
+    Simulate_RunPlan_stepcheck = 0;
+    s.SimulationConfig().steps = 1;
+    s.SimulationConfig().random_seed = 12;
+    EXPECT_NO_THROW(s.simulate(plan));
+    // Afterwards check right number of steps ran
+    EXPECT_EQ(Simulate_RunPlan_stepcheck, 5);
+    // Check that config was returned to it's initial value
+    EXPECT_EQ(s.SimulationConfig().steps, 1);
+    EXPECT_EQ(s.SimulationConfig().random_seed, 12);
+}
+TEST(TestCUDASimulation, Simulate_RunPlan_WrongEnv) {
+    ModelDescription m("m");
+    m.newAgent(AGENT_NAME);
+    m.Environment().newProperty<int>("int", 2);
+    m.Environment().newProperty<int, 3>("int3", { 56, 57, 58 });
+    m.newLayer().addHostFunction(Check_Simulate_RunPlan);
+    ModelDescription m2("m");
+    m2.newAgent(AGENT_NAME);
+    m2.Environment().newProperty<int>("int", 2);
+    m2.Environment().newProperty<int, 4>("int3", { 56, 57, 58, 59 });
+    m2.newLayer().addHostFunction(Check_Simulate_RunPlan);
+
+    CUDASimulation s(m);
+    RunPlan plan(m2);
+    // Run sim
+    EXPECT_THROW(s.simulate(plan), exception::InvalidArgument);
+}
 
 }  // namespace test_cuda_simulation
 }  // namespace tests

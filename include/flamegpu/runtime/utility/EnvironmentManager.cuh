@@ -323,6 +323,17 @@ class EnvironmentManager {
     template<typename T>
     T setProperty(const unsigned int &instance_id, const std::string &var_name, const T &value);
     /**
+     * Convenience method: Sets an environment property
+     * @param instance_id instance_id of the CUDASimulation instance the property is attached to
+     * @param var_name name used for accessing the property
+     * @param data Ptr to source data
+     * @param len Length of source data in bytes
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvProperty If len does not match the data length of the env property
+     * @throws exception::ReadOnlyEnvProperty If the named property is marked as const
+     */
+    void setProperty(const unsigned int& instance_id, const std::string& var_name, void *data, size_t len);
+    /**
      * Sets an environment property array
      * @param name name used for accessing the property array
      * @param value value to set the property array
@@ -852,12 +863,12 @@ T EnvironmentManager::setProperty(const NamePair &name, const T &value) {
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
         THROW exception::InvalidEnvPropertyType("Environmental property ('%u:%s') type (%s) does not match template argument T (%s), "
-            "in EnvironmentManager::set().",
+            "in EnvironmentManager::setProperty().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     if (isConst(name)) {
         THROW exception::ReadOnlyEnvProperty("Environmental property ('%u:%s') is marked as const and cannot be changed, "
-            "in EnvironmentManager::set().",
+            "in EnvironmentManager::setProperty().",
             name.first, name.second.c_str());
     }
     // Copy old data to return
@@ -889,12 +900,12 @@ std::array<T, N> EnvironmentManager::setProperty(const NamePair &name, const std
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
         THROW exception::InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
-            "in EnvironmentManager::set().",
+            "in EnvironmentManager::setProperty().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     if (isConst(name)) {
         THROW exception::ReadOnlyEnvProperty("Environmental property array ('%u:%s') is marked as const and cannot be changed, "
-            "in EnvironmentManager::set().",
+            "in EnvironmentManager::setProperty().",
             name.first, name.second.c_str());
     }
     const size_type array_len = length(name);
@@ -933,18 +944,18 @@ std::vector<T> EnvironmentManager::setPropertyArray(const NamePair& name, const 
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
         THROW exception::InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
-            "in EnvironmentManager::set().",
+            "in EnvironmentManager::setPropertyArray().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     if (isConst(name)) {
         THROW exception::ReadOnlyEnvProperty("Environmental property array ('%u:%s') is marked as const and cannot be changed, "
-            "in EnvironmentManager::set().",
+            "in EnvironmentManager::setPropertyArray().",
             name.first, name.second.c_str());
     }
     const size_type array_len = length(name);
     if (array_len != value.size()) {
         THROW exception::OutOfBoundsException("Length of named environmental property array (%u) does not match length of provided array (%llu)! "
-            "in EnvironmentManager::set().",
+            "in EnvironmentManager::setPropertyArray().",
             array_len, value.size());
     }
     std::unique_lock<std::shared_timed_mutex> lock(mutex);
@@ -978,18 +989,18 @@ T EnvironmentManager::setProperty(const NamePair &name, const size_type &index, 
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
         THROW exception::InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
-            "in EnvironmentManager::set().",
+            "in EnvironmentManager::setProperty().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     if (isConst(name)) {
         THROW exception::ReadOnlyEnvProperty("Environmental property array ('%u:%s') is marked as const and cannot be changed, "
-            "in EnvironmentManager::set().",
+            "in EnvironmentManager::setProperty().",
             name.first, name.second.c_str());
     }
     const size_type array_len = length(name);
     if (index >= array_len) {
         THROW exception::OutOfBoundsException("Index(%u) exceeds named environmental property array's length (%u), "
-            "in EnvironmentManager::set().",
+            "in EnvironmentManager::setProperty().",
             index, array_len);
     }
     std::unique_lock<std::shared_timed_mutex> lock(mutex);
@@ -1030,7 +1041,7 @@ T EnvironmentManager::getProperty(const NamePair &name) {
     std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
         THROW exception::InvalidEnvPropertyType("Environmental property ('%u:%s') type (%s) does not match template argument T (%s), "
-            "in EnvironmentManager::get().",
+            "in EnvironmentManager::getProperty().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     std::shared_lock<std::shared_timed_mutex> lock(mutex);
@@ -1053,13 +1064,13 @@ std::array<T, N> EnvironmentManager::getProperty(const NamePair &name) {
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
         THROW exception::InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
-            "in EnvironmentManager::get().",
+            "in EnvironmentManager::getProperty().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     const size_type array_len = length(name);
     if (array_len != N) {
         THROW exception::OutOfBoundsException("Length of named environmental property array (%u) does not match template argument N (%u)! "
-            "in EnvironmentManager::get().",
+            "in EnvironmentManager::getProperty().",
             array_len, N);
     }
     // Copy old data to return
@@ -1086,13 +1097,13 @@ T EnvironmentManager::getProperty(const NamePair &name, const size_type &index) 
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
         THROW exception::InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
-            "in EnvironmentManager::get().",
+            "in EnvironmentManager::getProperty().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     const size_type array_len = length(name);
     if (index >= array_len) {
         THROW exception::OutOfBoundsException("Index(%u) exceeds named environmental property array's length (%u), "
-            "in EnvironmentManager::set().",
+            "in EnvironmentManager::getProperty().",
             index, array_len);
     }
     std::shared_lock<std::shared_timed_mutex> lock(mutex);
@@ -1112,7 +1123,7 @@ std::vector<T> EnvironmentManager::getPropertyArray(const NamePair& name) {
     const std::type_index typ_id = type(name);
     if (typ_id != std::type_index(typeid(T))) {
         THROW exception::InvalidEnvPropertyType("Environmental property array ('%u:%s') type (%s) does not match template argument T (%s), "
-            "in EnvironmentManager::get().",
+            "in EnvironmentManager::getPropertyArray().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
     const size_type array_len = length(name);

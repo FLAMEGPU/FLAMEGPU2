@@ -741,4 +741,37 @@ util::Any EnvironmentManager::getPropertyAny(const unsigned int &instance_id, co
         name.first, name.second.c_str());
 }
 
+void EnvironmentManager::setProperty(const unsigned int& instance_id, const std::string& var_name, void* data, size_t len) {
+    const NamePair name = { instance_id, var_name };
+    if (isConst(name)) {
+        THROW exception::ReadOnlyEnvProperty("Environmental property ('%u:%s') is marked as const and cannot be changed, "
+            "in EnvironmentManager::setProperty().",
+            instance_id, var_name.c_str());
+    }
+    std::unique_lock<std::shared_timed_mutex> lock(mutex);
+    // Find property offset
+    ptrdiff_t buffOffset = 0;
+    size_t data_len = 0;
+    const auto a = properties.find(name);
+    if (a != properties.end()) {
+        buffOffset = a->second.offset;
+        data_len = a->second.length;
+    } else {
+        const auto& prop = properties.at(mapped_properties.at(name).masterProp);
+        buffOffset = prop.offset;
+        data_len = prop.length;
+    }
+    if (len != data_len) {
+        THROW exception::InvalidEnvPropertyType("Environmental property ('%u:%s') does not match len (%llu != %llu), "
+            "in EnvironmentManager::setProperty().",
+            instance_id, var_name.c_str(), len, data_len);
+    }
+    // Store data
+    memcpy(hc_buffer + buffOffset, data, data_len);
+    // Do rtc too
+    updateRTCValue(name);
+    // Set device update flag
+    setDeviceRequiresUpdateFlag(name.first);
+}
+
 }  // namespace flamegpu
