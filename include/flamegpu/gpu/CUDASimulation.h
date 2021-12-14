@@ -36,6 +36,7 @@ class CUDAAgent;
 class CUDAMessage;
 class LoggingConfig;
 class StepLoggingConfig;
+class RunPlan;
 
 struct RunLog;
 
@@ -131,6 +132,14 @@ class CUDASimulation : public Simulation {
      * Includes init and exit functions calls.
      */
     void simulate() override;
+    /**
+     * Execute the simulation using the configuration and environment properties from the provided RunPlan
+     * @param plan The RunPlan to use to execute the simulation
+     *
+     * @throw exception::InvalidArgument If the provided RunPlan does not match the CUDASimulation's ModelDescription
+     * @note The config.steps and config.random_seed values will be ignored, in favour of those provided by the RunPlan
+     */
+    void simulate(const RunPlan &plan);
     /**
      * Replaces internal population data for the specified agent
      * @param population The agent type and data to replace agents with

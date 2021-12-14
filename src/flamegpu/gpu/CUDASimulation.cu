@@ -25,6 +25,7 @@
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/sim/LoggingConfig.h"
 #include "flamegpu/sim/LogFrame.h"
+#include "flamegpu/sim/RunPlan.h"
 #ifdef VISUALISATION
 #include "flamegpu/visualiser/FLAMEGPU_Visualisation.h"
 #endif
@@ -1206,6 +1207,33 @@ void CUDASimulation::simulate() {
         exportLog(SimulationConfig().exit_log_file, false, true);
     if (!SimulationConfig().common_log_file.empty())
         exportLog(SimulationConfig().common_log_file, true, true);
+}
+
+
+void CUDASimulation::simulate(const RunPlan& plan) {
+    // Validate that RunPlan is for same ModelDesc
+    // RunPlan only holds a copy of env, so we must compare those
+    if (*plan.environment != model->environment->getPropertiesMap()) {
+        THROW exception::InvalidArgument("RunPlan's associated environment does not match the ModelDescription's environment, "
+        "in CUDASimulation::simulate(RunPlan)\n");
+    }
+    // Backup config
+    const uint64_t t_random_seed = SimulationConfig().random_seed;
+    const unsigned int t_steps = SimulationConfig().steps;
+    // Temp override config
+    SimulationConfig().steps = plan.getSteps();
+    SimulationConfig().random_seed = plan.getRandomSimulationSeed();
+    // Ensure singletons have been initialised (so env actually exists in mgr)
+    initialiseSingletons();
+    // Override environment properties
+    for (auto& ovrd : plan.property_overrides) {
+        singletons->environment.setProperty(instance_id, ovrd.first, ovrd.second.ptr, ovrd.second.length);
+    }
+    // Call regular simulate
+    simulate();
+    // Reset config
+    SimulationConfig().random_seed = t_random_seed;
+    SimulationConfig().steps = t_steps;
 }
 
 void CUDASimulation::reset(bool submodelReset) {

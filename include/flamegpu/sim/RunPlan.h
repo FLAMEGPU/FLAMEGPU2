@@ -16,6 +16,7 @@ namespace flamegpu {
 
 class ModelDescription;
 class RunPlanVector;
+class CUDASimulation;
 
 namespace io {
 class JSONLogger;
@@ -28,6 +29,7 @@ class XMLLogger;
 class RunPlan {
     friend class RunPlanVector;
     friend class SimRunner;
+    friend class CUDASimulation;
     friend class io::JSONLogger;
     friend class io::XMLLogger;
 
