@@ -118,6 +118,11 @@ function(SuppressSomeCompilerWarnings)
     endif()
     # Suppress nodiscard warnings from the cuda frontend
     target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe --diag_suppress=2809>")
+    # Suppress Power9 + GCC >= 10 note re: ABI changes in GCC >= 5
+    # "Note: the layout of aggregates containing vectors with x-byte allignment has changed in GCC 5
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "ppc64le" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 10)
+        target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:>-Wno-psabi")
+    endif()
 endfunction()
 
 # Function to promote warnings to errors, controlled by the WARNINGS_AS_ERRORS CMake option.
