@@ -175,7 +175,12 @@ int Simulation::checkArgs(int argc, const char** argv) {
                 const auto env_desc = model->environment->getPropertiesMap();  // For some reason this method returns a copy, not a reference
                 io::StateReader *read__ = io::StateReaderFactory::createReader(model->name, env_desc, env_init, pops, config.input_file.c_str(), this);
                 if (read__) {
-                    read__->parse();
+                    try {
+                        read__->parse();
+                    } catch (const std::exception &e) {
+                        fprintf(stderr, "Loading input file '%s' failed!\nDetail: %s", config.input_file.c_str(), e.what());
+                        return false;
+                    }
                     for (auto &agent : pops) {
                         setPopulationData(*agent.second);
                     }
