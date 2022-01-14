@@ -155,6 +155,65 @@ class CUDASimulation : public Simulation {
      */
     void getPopulationData(AgentVector& population, const std::string& state_name = ModelData::DEFAULT_STATE) override;
     /**
+     * Update the current value of the named environment property
+     * @param property_name Name of the environment property to be updated
+     * @param value New value for the named environment property
+     * @tparam T Type of the environment property
+     * @throws exception::InvalidEnvPropertyType If the named environment property does not exist with the specified type
+     * @throws exception::ReadOnlyEnvProperty If the named environment property is marked as read-only
+     */
+    template<typename T>
+    void setEnvironmentProperty(const std::string &property_name, const T& value);
+    /**
+     * Update the current value of the named environment property array
+     * @param property_name Name of the environment property to be updated
+     * @param value New value for the named environment property
+     * @tparam T Type of the elements of the environment property array
+     * @throws exception::InvalidEnvPropertyType If the named environment property does not exist with the specified type
+     * @throws exception::ReadOnlyEnvProperty If the named environment property is marked as read-only
+     */
+    template<typename T, unsigned int N>
+    void setEnvironmentProperty(const std::string &property_name, const std::array<T, N> &value);
+#ifdef SWIG
+    /**
+     * Update the current value of the named environment property array
+     * @param property_name Name of the environment property to be updated
+     * @param value New value for the named environment property
+     * @tparam T Type of the elements of the environment property array
+     * @return Returns the previous value
+     * @throws exception::InvalidEnvPropertyType If the named environment property does not exist with the specified type
+     * @throws exception::ReadOnlyEnvProperty If the named environment property is marked as read-only
+     */
+    template<typename T>
+    void setEnvironmentPropertyArray(const std::string& property_name, const std::vector<T>& value);
+#endif
+    /**
+     * Return the current value of the named environment property
+     * @param property_name Name of the environment property to be updated
+     * @tparam T Type of the environment property
+     * @throws exception::InvalidEnvPropertyType If the named environment property does not exist with the specified type
+     */
+    template<typename T>
+    T getEnvironmentProperty(const std::string &property_name);
+    /**
+     * Return the current value of the named environment property array
+     * @param property_name Name of the environment property to be updated
+     * @tparam T Type of the elements of the environment property array
+     * @throws exception::InvalidEnvPropertyType If the named environment property does not exist with the specified type
+     */
+    template<typename T, unsigned int N>
+    std::array<T, N> getEnvironmentProperty(const std::string &property_name);
+#ifdef SWIG
+    /**
+     * Return the current value of the named environment property array
+     * @param property_name Name of the environment property to be updated
+     * @tparam T Type of the elements of the environment property array
+     * @throws exception::InvalidEnvProperty If a property array of the name does not exist
+     */
+    template<typename T>
+    std::vector<T> getEnvironmentPropertyArray(const std::string& property_name);
+#endif
+    /**
      * Returns the manager for the specified agent
      * @todo remove? this is mostly internal methods that modeller doesn't need access to
      */
@@ -579,6 +638,56 @@ class CUDASimulation : public Simulation {
     static bool AUTO_CUDA_DEVICE_RESET;
 };
 
+template<typename T>
+void CUDASimulation::setEnvironmentProperty(const std::string& property_name, const T& value) {
+    if (!property_name.empty() && property_name[0] == '_') {
+        THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+            "in CUDASimulation::setEnvironmentProperty().");
+    }
+    if (!singletonsInitialised)
+        initialiseSingletons();
+    singletons->environment.setProperty<T>({instance_id, property_name}, value);
+}
+template<typename T, unsigned int N>
+void CUDASimulation::setEnvironmentProperty(const std::string& property_name, const std::array<T, N>& value) {
+    if (!property_name.empty() && property_name[0] == '_') {
+        THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+            "in CUDASimulation::setEnvironmentProperty().");
+    }
+    if (!singletonsInitialised)
+        initialiseSingletons();
+    singletons->environment.setProperty<T, N>({ instance_id, property_name }, value);
+}
+template<typename T>
+T CUDASimulation::getEnvironmentProperty(const std::string& property_name) {
+    if (!singletonsInitialised)
+        initialiseSingletons();
+    return singletons->environment.getProperty<T>({ instance_id, property_name });
+}
+template<typename T, unsigned int N>
+std::array<T, N> CUDASimulation::getEnvironmentProperty(const std::string& property_name) {
+    if (!singletonsInitialised)
+        initialiseSingletons();
+    return singletons->environment.getProperty<T, N>({ instance_id, property_name });
+}
+#ifdef SWIG
+template<typename T>
+void CUDASimulation::setEnvironmentPropertyArray(const std::string& property_name, const std::vector<T>& value) {
+    if (!property_name.empty() && property_name[0] == '_') {
+        THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
+            "in CUDASimulation::setEnvironmentPropertyArray().");
+    }
+    if (!singletonsInitialised)
+        initialiseSingletons();
+    singletons->environment.setPropertyArray<T>({ instance_id, property_name }, value);
+}
+template<typename T>
+std::vector<T> CUDASimulation::getEnvironmentPropertyArray(const std::string& property_name) {
+    if (!singletonsInitialised)
+        initialiseSingletons();
+    return singletons->environment.getPropertyArray<T>({ instance_id, property_name });
+}
+#endif
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_GPU_CUDASIMULATION_H_

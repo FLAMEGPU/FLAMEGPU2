@@ -861,9 +861,10 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyReadOnly) {
     // array version
     std::array<int, TEST_ARRAY_LEN> b;
     auto setArray = &HostEnvironment::setProperty<int, TEST_ARRAY_LEN>;
-    // EXPECT_THROW(FLAMEGPU->environment.set<int>("read_only_a", b), exception::ReadOnlyEnvProperty);  // Doesn't build on Travis
+    auto getArray = &HostEnvironment::getProperty<int, TEST_ARRAY_LEN>;
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<int>("read_only_a", 0, 0), exception::ReadOnlyEnvProperty);
     EXPECT_THROW((FLAMEGPU->environment.*setArray)("read_only_a", b), exception::ReadOnlyEnvProperty);
-    EXPECT_NO_THROW(FLAMEGPU->environment.getProperty<int>("read_only_a"));
+    EXPECT_NO_THROW((FLAMEGPU->environment.*getArray)("read_only_a"));
     EXPECT_NO_THROW(FLAMEGPU->environment.getProperty<int>("read_only_a", 1));
 }
 

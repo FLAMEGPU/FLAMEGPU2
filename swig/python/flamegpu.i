@@ -669,6 +669,12 @@ TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, flamegpu::HostEnvironment::setProp
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, flamegpu::HostEnvironment::setPropertyArray)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getMacroProperty, flamegpu::HostEnvironment::getMacroProperty_swig)
 
+// Instantiate template versions of CUDASimulation environment functions
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setEnvironmentProperty, flamegpu::CUDASimulation::setEnvironmentProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setEnvironmentPropertyArray, flamegpu::CUDASimulation::setEnvironmentPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getEnvironmentProperty, flamegpu::CUDASimulation::getEnvironmentProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getEnvironmentPropertyArray, flamegpu::CUDASimulation::getEnvironmentPropertyArray)
+
 // Instance template versions of the HostMacroProperty class
 // Extend HostMacroProperty so that it is python iterable
 %extend flamegpu::HostMacroProperty_swig {
