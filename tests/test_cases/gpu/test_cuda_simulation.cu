@@ -667,9 +667,9 @@ TEST(TestCUDASimulation, Simulate_RunPlan) {
     s.SimulationConfig().random_seed = 12;
     EXPECT_NO_THROW(s.simulate(plan));
     // Afterwards check right number of steps ran
-    EXPECT_EQ(Simulate_RunPlan_stepcheck, 5);
+    EXPECT_EQ(Simulate_RunPlan_stepcheck, 5u);
     // Check that config was returned to it's initial value
-    EXPECT_EQ(s.SimulationConfig().steps, 1);
+    EXPECT_EQ(s.SimulationConfig().steps, 1u);
     EXPECT_EQ(s.SimulationConfig().random_seed, 12);
 }
 TEST(TestCUDASimulation, Simulate_RunPlan_WrongEnv) {
@@ -688,6 +688,59 @@ TEST(TestCUDASimulation, Simulate_RunPlan_WrongEnv) {
     RunPlan plan(m2);
     // Run sim
     EXPECT_THROW(s.simulate(plan), exception::InvalidArgument);
+}
+FLAMEGPU_HOST_FUNCTION(Check_setEnvironmentProperty) {
+    // Check env property has expected value
+    EXPECT_EQ(FLAMEGPU->environment.getProperty<int>("int"), 25);
+    auto t = FLAMEGPU->environment.getProperty<int, 3>("int3");
+    std::array<int, 3 > t_check = { 6, 7, 8 };
+    EXPECT_EQ(t, t_check);
+}
+TEST(TestCUDASimulation, setEnvironmentProperty) {
+    ModelDescription m("m");
+    m.newAgent(AGENT_NAME);
+    m.Environment().newProperty<int>("int", 2);
+    m.Environment().newProperty<int, 3>("int3", { 56, 57, 58 });
+    m.newLayer().addHostFunction(Check_setEnvironmentProperty);
+
+    CUDASimulation s(m);
+    s.SimulationConfig().steps = 1;
+    // Test the getters work
+    auto a = s.getEnvironmentProperty<int>("int");
+    auto b = s.getEnvironmentProperty<int, 3>("int3");
+    const std::array<int, 3> t_check = { 56, 57, 58 };
+    EXPECT_EQ(a, 2);
+    EXPECT_EQ(b, t_check);
+    // Test the setters work
+    s.setEnvironmentProperty<int>("int", 25);
+    s.setEnvironmentProperty<int, 3>("int3", { 6, 7, 8 });
+    // Test the exceptions work
+    auto int_s_1 = &CUDASimulation::setEnvironmentProperty<int>;
+    auto float_s_1 = &CUDASimulation::setEnvironmentProperty<float>;
+    auto int_g_1 = &CUDASimulation::getEnvironmentProperty<int>;
+    auto float_g_1 = &CUDASimulation::getEnvironmentProperty<float>;
+    EXPECT_THROW((s.*int_s_1)("float", 2.0f), exception::InvalidEnvProperty);  // Bad name
+    EXPECT_THROW((s.*int_s_1)("int3", 3), exception::InvalidEnvPropertyType);  // Bad length
+    EXPECT_THROW((s.*float_s_1)("int", 3), exception::InvalidEnvPropertyType);  // Bad type
+    EXPECT_THROW((s.*int_g_1)("float"), exception::InvalidEnvProperty);  // Bad name
+    EXPECT_THROW((s.*int_g_1)("int3"), exception::InvalidEnvPropertyType);  // Bad length
+    EXPECT_THROW((s.*float_g_1)("int"), exception::InvalidEnvPropertyType);  // Bad type
+    const std::array<float, 3> tf3 = { 56.0f, 57.0f, 58.0f };
+    const std::array<int, 5> ti5 = { 56, 57, 58, 59, 60 };
+    auto int_s_3 = &CUDASimulation::setEnvironmentProperty<int, 3>;
+    auto int_s_5 = &CUDASimulation::setEnvironmentProperty<int, 5>;
+    auto float_s_3 = &CUDASimulation::setEnvironmentProperty<float, 3>;
+    auto int_g_3 = &CUDASimulation::getEnvironmentProperty<int, 3>;
+    auto int_g_5 = &CUDASimulation::getEnvironmentProperty<int, 5>;
+    auto float_g_3 = &CUDASimulation::getEnvironmentProperty<float, 3>;
+    EXPECT_THROW((s.*int_s_3)("float", t_check), exception::InvalidEnvProperty);  // Bad name
+    EXPECT_THROW((s.*int_s_5)("int3", ti5), exception::OutOfBoundsException);  // Bad length
+    EXPECT_THROW((s.*float_s_3)("int3", tf3), exception::InvalidEnvPropertyType);  // Bad type
+    EXPECT_THROW((s.*int_g_3)("float"), exception::InvalidEnvProperty);  // Bad name
+    EXPECT_THROW((s.*int_g_5)("int3"), exception::OutOfBoundsException);  // Bad length
+    EXPECT_THROW((s.*float_g_3)("int3"), exception::InvalidEnvPropertyType);  // Bad type
+    // Run sim
+    s.simulate();
 }
 
 }  // namespace test_cuda_simulation

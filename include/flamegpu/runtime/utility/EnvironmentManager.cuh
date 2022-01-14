@@ -871,6 +871,12 @@ T EnvironmentManager::setProperty(const NamePair &name, const T &value) {
             "in EnvironmentManager::setProperty().",
             name.first, name.second.c_str());
     }
+    const size_type array_len = length(name);
+    if (array_len != 1) {
+        THROW exception::InvalidEnvPropertyType("Named environmental property is an array of length %u, the array function must be used! "
+            "in EnvironmentManager::setProperty().",
+            array_len);
+    }
     // Copy old data to return
     T rtn = getProperty<T>(name);
     std::unique_lock<std::shared_timed_mutex> lock(mutex);
@@ -911,7 +917,7 @@ std::array<T, N> EnvironmentManager::setProperty(const NamePair &name, const std
     const size_type array_len = length(name);
     if (array_len != N) {
         THROW exception::OutOfBoundsException("Length of named environmental property array (%u) does not match template argument N (%u)! "
-            "in EnvironmentManager::set().",
+            "in EnvironmentManager::setProperty().",
             array_len, N);
     }
     // Copy old data to return
@@ -1043,6 +1049,12 @@ T EnvironmentManager::getProperty(const NamePair &name) {
         THROW exception::InvalidEnvPropertyType("Environmental property ('%u:%s') type (%s) does not match template argument T (%s), "
             "in EnvironmentManager::getProperty().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
+    }
+    const size_type array_len = length(name);
+    if (array_len != 1) {
+        THROW exception::InvalidEnvPropertyType("Named environmental property is an array of length %u, the array function must be used! "
+            "in EnvironmentManager::getProperty().",
+            array_len);
     }
     std::shared_lock<std::shared_timed_mutex> lock(mutex);
     // Copy old data to return

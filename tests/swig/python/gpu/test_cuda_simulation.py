@@ -24,6 +24,13 @@ class IncrementCounter(pyflamegpu.HostFunctionCallback):
         global externalCounter
         print ("Hello from step function")
         externalCounter += 1
+        
+class Check_setEnvironmentProperty(pyflamegpu.HostFunctionCallback):
+    # Override C++ method: virtual void run(FLAMEGPU_HOST_API*);
+    def run(self, FLAMEGPU):
+      # Check env property has expected value
+      assert FLAMEGPU.environment.getPropertyInt("int") == 25
+      assert FLAMEGPU.environment.getPropertyArrayInt("int3") == (6, 7, 8);
 
 
 class TestSimulation(TestCase):
@@ -413,3 +420,55 @@ class TestSimulation(TestCase):
         c = pyflamegpu.CUDASimulation(m)
         with pytest.raises(AttributeError):
             c.getSimulationConfig()
+            
+            
+            
+    def test_setEnvironmentProperty(self):
+        m = pyflamegpu.ModelDescription("test_agentid")
+        m.newAgent("agent");
+        m.Environment().newPropertyInt("int", 2);
+        m.Environment().newPropertyArrayInt("int3", 3, [ 56, 57, 58 ]);
+        m.newLayer().addHostFunctionCallback(Check_setEnvironmentProperty().__disown__());
+        s = pyflamegpu.CUDASimulation(m);
+        s.SimulationConfig().steps = 1;
+        # Test the getters work
+        assert s.getEnvironmentPropertyInt("int") == 2;
+        assert s.getEnvironmentPropertyArrayInt("int3") == (56, 57, 58);
+        # Test the setters work
+        s.setEnvironmentPropertyInt("int", 25);
+        s.setEnvironmentPropertyArrayInt("int3", [6, 7, 8]);
+        # Test the exceptions work
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+            s.setEnvironmentPropertyInt("float", 2);  # Bad name
+        assert e.value.type() == "InvalidEnvProperty"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvPropertyType exception
+            s.setEnvironmentPropertyInt("int3", 3);  # Bad length
+        assert e.value.type() == "InvalidEnvPropertyType"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvPropertyType exception
+            s.setEnvironmentPropertyFloat("int", 3.0);  # Bad type
+        assert e.value.type() == "InvalidEnvPropertyType"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+            s.getEnvironmentPropertyInt("float");  # Bad name
+        assert e.value.type() == "InvalidEnvProperty"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvPropertyType exception
+            s.getEnvironmentPropertyInt("int3");  # Bad length
+        assert e.value.type() == "InvalidEnvPropertyType"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvPropertyType exception
+            s.getEnvironmentPropertyFloat("int");  # Bad type
+        assert e.value.type() == "InvalidEnvPropertyType"
+        # Test the exceptions work (array methods)
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+            s.setEnvironmentPropertyArrayInt("float", [56, 57, 58]);  # Bad name
+        assert e.value.type() == "InvalidEnvProperty"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvPropertyType exception
+            s.setEnvironmentPropertyArrayFloat("int3", [56.0, 57.0, 58.0]);  # Bad type
+        assert e.value.type() == "InvalidEnvPropertyType"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+            s.getEnvironmentPropertyArrayInt("float");  # Bad name
+        assert e.value.type() == "InvalidEnvProperty"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvPropertyType exception
+            s.getEnvironmentPropertyArrayFloat("int3");  # Bad type
+        assert e.value.type() == "InvalidEnvPropertyType"
+        # Run sim
+        s.simulate();
+        
