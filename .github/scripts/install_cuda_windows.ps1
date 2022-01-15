@@ -50,6 +50,7 @@ $CUDA_PACKAGES_IN = @(
     "curand_dev";
     "nvrtc_dev";
     "cudart";
+    "thrust";
 )
 
 
@@ -100,9 +101,11 @@ Foreach ($package in $CUDA_PACKAGES_IN) {
         $package="compiler"
     } elseif($package -eq "compiler" -and [version]$CUDA_VERSION_FULL -ge [version]"9.1") {
         $package="nvcc"
-    }
+    } elseif($package -eq "thrust" -and [version]$CUDA_VERSION_FULL -lt [version]"11.3") {
+        # Thrust is a package from CUDA 11.3, otherwise it should be skipped.
+        continue
+    } 
     $CUDA_PACKAGES += " $($package)_$($CUDA_MAJOR).$($CUDA_MINOR)"
-
 }
 echo "$($CUDA_PACKAGES)"
 ## -----------------
