@@ -12,24 +12,33 @@ cmake_policy(SET CMP0079 NEW)
 # Thrust 1.9.8 is a miniumum as it includes a bugfix that was causing issues.
 set(MIN_REQUIRED_THRUST_VERSION 1.11.0)
 set(MIN_REQUIRED_CUB_VERSION ${MIN_REQUIRED_THRUST_VERSION})
-set(THRUST_DOWNLOAD_VERSION 1.13.0)
+set(THRUST_DOWNLOAD_VERSION 1.14.0)
 
 # Use the FindCUDATooklit package (CMake > 3.17) to get the CUDA version and CUDA include directories for cub/thrust location hints
 find_package(CUDAToolkit REQUIRED)
 
 # Quietly find Thrust and CUB, to check if an appropriate version can be found without downloading.
-find_package(Thrust QUIET CONFIG HINTS ${CUDAToolkit_INCLUDE_DIRS})
-find_package(CUB QUIET CONFIG HINTS ${CUDAToolkit_INCLUDE_DIRS})
+# thrust-config.cmake and cub-config.cmake live in different locations with CUDA (on ubuntu) depending on the CUDA version.
+# CUDA 11.3 and 11.4 they can be found in the CUDA Toolkit include directories.
+# CUDA 11.5+ they can be found in lib/cmake or lib64/cmake
+# CUDA 11.6 ships with CUB 1.15.0 which has a bug when windows.h is included prior to CUB, so don't try to find the regular Thrust/CUB in this case. 
+# Ideally we would detect 1.15.0 and then download the correct version of CUB/Thrust, but getting CMake on windows to behave was proving problematic
+if(NOT (MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.6.0 AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 11.7.0))
+    message("???")
+    find_package(Thrust QUIET CONFIG HINTS ${CUDAToolkit_INCLUDE_DIRS} ${CUDAToolkit_LIBRARY_DIR}/cmake)
+    find_package(CUB QUIET CONFIG HINTS ${CUDAToolkit_INCLUDE_DIRS} ${CUDAToolkit_LIBRARY_DIR}/cmake)
+endif()
 
-# If both were found with supported versions, there is no need to fetch Thrust via Fetch Content.
+# By default, assume we have to fetch thrust/cub
+set(FETCH_THRUST_CUB 1)
+# If a useful version was found, find it again less quietly 
 if(Thrust_FOUND AND Thrust_VERSION VERSION_GREATER_EQUAL MIN_REQUIRED_THRUST_VERSION AND CUB_FOUND AND CUB_VERSION VERSION_GREATER_EQUAL MIN_REQUIRED_CUB_VERSION)
     set(FETCH_THRUST_CUB 0)
     # Find the packages again but less quietly.
-    find_package(Thrust CONFIG REQUIRED HINTS ${CUDAToolkit_INCLUDE_DIRS})
-    find_package(CUB CONFIG REQUIRED HINTS ${CUDAToolkit_INCLUDE_DIRS})
+    find_package(Thrust CONFIG REQUIRED HINTS ${CUDAToolkit_INCLUDE_DIRS} ${CUDAToolkit_LIBRARY_DIR}/cmake)
+    find_package(CUB CONFIG REQUIRED HINTS ${CUDAToolkit_INCLUDE_DIRS} ${CUDAToolkit_LIBRARY_DIR}/cmake)
+# Otherwise unfind Thrust/CUB.
 else()
-    # Otherwise set the variable indicating it needs to be downloaded, and re-set Cmake cache variables so it will be re-searched for.
-    set(FETCH_THRUST_CUB 1)
     # As CONFIG mode was used, only <PackageName>_DIR should need deleting for latter calls to find_package to work.
     unset(Thrust_DIR CACHE)
     unset(Thrust_DIR)
@@ -53,13 +62,9 @@ if(FETCH_THRUST_CUB)
     # Fetch and populate the content if required.
     FetchContent_GetProperties(thrust)
     if(NOT thrust_POPULATED)
-        message(STATUS "Thrust/CUB >= ${MIN_REQUIRED_THRUST_VERSION} required, found ${Thrust_VERSION}. Downloading version ${THRUST_DOWNLOAD_VERSION}")
-
-        FetchContent_Populate(thrust)   
-
+        FetchContent_Populate(thrust)
         # Add thrusts' expected location to the prefix path.
         set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${thrust_SOURCE_DIR}/thrust/cmake")
-
         # Set the location for where to find cub (ideally)
         set(EXPECTED_CUB_CONFIG_LOCATION "${thrust_SOURCE_DIR}/cub/cmake/")
         # Thrust includes CUB as a git submodule, at ${thrust_SOURCE_DIR}/dependencies/cub, with a symlink pointing to it from ${thrust_SOURCE_DIR/cub}. 
