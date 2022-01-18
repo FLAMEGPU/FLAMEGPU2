@@ -186,6 +186,8 @@ template<typename T>
 util::Any getAgentVariableStandardDevFunc(HostAgentAPI &ai, const std::string &variable_name) {
     // Todo, workout how to make this more multi-thread/deviceable.
     // Todo, streams for the memcpy?
+    if (ai.count() == 0)
+        return util::Any(0.0);
     // Work out the Mean
     const double mean = ai.sum<T, typename sum_input_t<T>::result_t>(variable_name) / static_cast<double>(ai.count());
     // Then for each number: subtract the Mean and square the result
