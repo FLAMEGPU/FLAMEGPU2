@@ -18,6 +18,7 @@
 #include <vector>
 #include <functional>
 #include <memory>
+#include <utility>
 
 #include "flamegpu/sim/AgentInterface.h"
 #include "flamegpu/model/AgentDescription.h"
@@ -26,6 +27,7 @@
 #include "flamegpu/gpu/CUDAAgent.h"
 #include "flamegpu/pop/DeviceAgentVector.h"
 #include "flamegpu/pop/DeviceAgentVector_impl.h"
+#include "flamegpu/sim/AgentLoggingConfig_Reductions.cuh"
 
 namespace flamegpu {
 
@@ -118,6 +120,17 @@ class HostAgentAPI {
      */
     template<typename InT, typename OutT>
     OutT sum(const std::string &variable) const;
+    /**
+     * Returns the mean and standard deviation of the specified variable in the agent population
+     * The return value is a pair, where the first item holds the mean and the second item the standard deviation.
+     * @param variable The agent variable to perform the sum reduction across
+     * @tparam InT The type of the variable as specified in the model description hierarchy
+     * @throws exception::InvalidAgentVar If the agent does not contain a variable of the same name
+     * @throws exception::InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
+     * @note If you only require the mean, it is more efficient to use sum()/count()
+     */
+    template<typename InT>
+    std::pair<double, double> meanStandardDeviation(const std::string& variable) const;
     /**
      * Wraps cub::DeviceReduce::Min()
      * @param variable The agent variable to perform the lowerBound reduction across
@@ -319,6 +332,41 @@ OutT HostAgentAPI::sum(const std::string &variable) const {
     OutT rtn;
     gpuErrchk(cudaMemcpy(&rtn, api.d_output_space, sizeof(OutT), cudaMemcpyDeviceToHost));
     return rtn;
+}
+template<typename InT>
+std::pair<double, double> HostAgentAPI::meanStandardDeviation(const std::string& variable) const {
+    std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
+    if (population) {
+        // If the user has a DeviceAgentVector out, sync changes
+        population->syncChanges();
+    }
+    const auto& agentDesc = agent.getAgentDescription();
+
+    std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
+    if (agentDesc.variables.at(variable).elements != 1) {
+        THROW exception::UnsupportedVarType("HostAgentAPI::meanStandardDeviation() does not support agent array variables.");
+    }
+    if (std::type_index(typeid(InT)) != typ) {
+        THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::meanStandardDeviation(). "
+            "This call expects '%s', but '%s' was requested.",
+            agentDesc.variables.at(variable).type.name(), typeid(InT).name());
+    }
+    void* var_ptr = agent.getStateVariablePtr(stateName, variable);
+    const auto agentCount = agent.getStateSize(stateName);
+    if (agentCount == 0) {
+        return std::make_pair(0.0, 0.0);
+    }
+    // Calculate mean
+    const typename sum_input_t<InT>::result_t sum_result = sum<InT, typename sum_input_t<InT>::result_t>(variable);
+    const double mean = sum_result / static_cast<double>(agentCount);
+    // Then for each number: subtract the Mean and square the result
+    // Then work out the mean of those squared differences.
+    auto lock = std::unique_lock<std::mutex>(detail::STANDARD_DEVIATION_MEAN_mutex);
+    gpuErrchk(cudaMemcpyToSymbol(detail::STANDARD_DEVIATION_MEAN, &mean, sizeof(double)));
+    const double variance = transformReduce<InT, double>(variable, detail::standard_deviation_subtract_mean, detail::standard_deviation_add, 0) / static_cast<double>(agentCount);
+    lock.unlock();
+    // Take the square root of that and we are done!
+    return std::make_pair(mean, sqrt(variance));
 }
 template<typename InT>
 InT HostAgentAPI::min(const std::string &variable) const {

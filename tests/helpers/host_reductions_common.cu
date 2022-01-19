@@ -12,6 +12,7 @@ uint32_t uint32_t_out = 0;
 int32_t int32_t_out = 0;
 uint64_t uint64_t_out = 0;
 int64_t int64_t_out = 0;
+std::pair<double, double> mean_sd_out;
 std::vector<unsigned int> uint_vec;
 std::vector<int> int_vec;
 
