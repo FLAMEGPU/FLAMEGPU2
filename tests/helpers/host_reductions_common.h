@@ -16,6 +16,7 @@
 #include <array>
 #include <random>
 #include <vector>
+#include <utility>
 
 #include "flamegpu/flamegpu.h"
 
@@ -34,6 +35,7 @@ extern uint32_t uint32_t_out;
 extern int32_t int32_t_out;
 extern uint64_t uint64_t_out;
 extern int64_t int64_t_out;
+extern std::pair<double, double> mean_sd_out;
 extern std::vector<unsigned int> uint_vec;
 extern std::vector<int> int_vec;
 

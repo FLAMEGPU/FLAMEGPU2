@@ -719,7 +719,7 @@ TEST(TestCUDASimulation, setEnvironmentProperty) {
     auto float_s_1 = &CUDASimulation::setEnvironmentProperty<float>;
     auto int_g_1 = &CUDASimulation::getEnvironmentProperty<int>;
     auto float_g_1 = &CUDASimulation::getEnvironmentProperty<float>;
-    EXPECT_THROW((s.*int_s_1)("float", 2.0f), exception::InvalidEnvProperty);  // Bad name
+    EXPECT_THROW((s.*int_s_1)("float", 2), exception::InvalidEnvProperty);  // Bad name
     EXPECT_THROW((s.*int_s_1)("int3", 3), exception::InvalidEnvPropertyType);  // Bad length
     EXPECT_THROW((s.*float_s_1)("int", 3), exception::InvalidEnvPropertyType);  // Bad type
     EXPECT_THROW((s.*int_g_1)("float"), exception::InvalidEnvProperty);  // Bad name

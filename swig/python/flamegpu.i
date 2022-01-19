@@ -55,6 +55,7 @@ using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, 
 %include <std_array.i>
 %include <std_list.i>
 %include <std_set.i>
+%include <std_pair.i>
 %include <stdint.i>
 
 // argc/argv support
@@ -85,6 +86,9 @@ using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, 
 
 // Instantiate the set type used by CUDAEnsembleConfig.devices
 %template(IntSet) std::set<int>;
+
+// Instance the pair type, as returned by HostAgentAPI::meanStandardDeviation
+%template(DoublePair) std::pair<double, double>;
 
 /**
  * TEMPLATE_VARIABLE_INSTANTIATE_FLOATS macro
@@ -661,6 +665,7 @@ TEMPLATE_VARIABLE_INSTANTIATE(count, flamegpu::HostAgentAPI::count)
 TEMPLATE_VARIABLE_INSTANTIATE(min, flamegpu::HostAgentAPI::min)
 TEMPLATE_VARIABLE_INSTANTIATE(max, flamegpu::HostAgentAPI::max)
 TEMPLATE_SUM_INSTANTIATE(flamegpu::HostAgentAPI)
+TEMPLATE_VARIABLE_INSTANTIATE(meanStandardDeviation, flamegpu::HostAgentAPI::meanStandardDeviation)
 
 // Instantiate template versions of host environment functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getProperty, flamegpu::HostEnvironment::getProperty)
