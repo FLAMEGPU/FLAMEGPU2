@@ -283,7 +283,12 @@ int XMLStateReader::parse() {
         // Find agent state, use initial state if not set (means its old flame gpu 1 input file)
         tinyxml2::XMLElement* pStateElement = pElement->FirstChildElement("state");
         const std::string agentState = pStateElement ? std::string(pStateElement->GetText()) : getInitialState(agentName);
-        std::shared_ptr<AgentVector> &agentVec = model_state.at({agentName, agentState });
+        const auto agentIt = model_state.find({ agentName, agentState });
+        if (agentIt == model_state.end()) {
+            THROW exception::InvalidAgentState("Agent '%s' with state '%s', found in input file '%s', is not part of the model description hierarchy, "
+                "in XMLStateReader::parse()\n Ensure the input file is for the correct model.\n", agentName, agentState.c_str(), inputFile.c_str());
+        }
+        std::shared_ptr<AgentVector> &agentVec = agentIt->second;
         const VariableMap& agentVariables = agentVec->getVariableMetaData();
         // Create instance to store variable data in
         agentVec->push_back();
