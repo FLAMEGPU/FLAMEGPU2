@@ -194,6 +194,15 @@ class CUDAScatter {
         const std::map<std::string, void*> &out,
         const unsigned int &itemCount,
         const unsigned int &out_index_offset);
+
+    void brute_force_sorted_reorder(
+        const unsigned int &streamResourceId,
+        const cudaStream_t &stream,
+        const VariableMap &vars,
+        const std::map<std::string, void*> &in,
+        const std::map<std::string, void*> &out,
+        const unsigned int &itemCount,
+        const unsigned int *d_positions);
     /**
      * Used for reordering messages from SoA to SoA
      * Position information is taken using PBM data, rather than d_position

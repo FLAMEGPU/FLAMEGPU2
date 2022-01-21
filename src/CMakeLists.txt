@@ -164,6 +164,9 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageBruteForce.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceDevice.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageBruteForceSorted.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageBruteForceSorted/MessageBruteForceSortedDevice.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageBruteForceSorted/MessageBruteForceSortedHost.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageSpatial2D.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageSpatial2D/MessageSpatial2DHost.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging/MessageSpatial2D/MessageSpatial2DDevice.cuh
@@ -255,6 +258,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/HostAPI.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/HostAgentAPI.cu 
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/MessageBruteForce.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/MessageBruteForceSorted.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/MessageSpatial2D.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/MessageSpatial3D.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/MessageArray.cu
