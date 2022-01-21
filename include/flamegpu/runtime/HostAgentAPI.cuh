@@ -351,7 +351,6 @@ std::pair<double, double> HostAgentAPI::meanStandardDeviation(const std::string&
             "This call expects '%s', but '%s' was requested.",
             agentDesc.variables.at(variable).type.name(), typeid(InT).name());
     }
-    void* var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
     if (agentCount == 0) {
         return std::make_pair(0.0, 0.0);
