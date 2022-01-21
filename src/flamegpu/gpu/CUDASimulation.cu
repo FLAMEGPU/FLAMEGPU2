@@ -394,6 +394,10 @@ void CUDASimulation::spatialSortAgent(const std::string& funcName, const std::st
         radius = messageSpatialData3D->radius;
         envMin = {messageSpatialData3D->minX, messageSpatialData3D->minY, messageSpatialData3D->minZ};
         envMax = {messageSpatialData3D->maxX, messageSpatialData3D->maxY, messageSpatialData3D->maxZ};
+    } else if (auto messageSpatialData3D = dynamic_cast<MessageBruteForceSorted::Data*>(msgData)) {
+        radius = messageSpatialData3D->radius;
+        envMin = {messageSpatialData3D->minX, messageSpatialData3D->minY, messageSpatialData3D->minZ};
+        envMax = {messageSpatialData3D->maxX, messageSpatialData3D->maxY, messageSpatialData3D->maxZ};
     } else {
         radius = 0.0f;
         envMin = {0.0f, 0.0f, 0.0f};

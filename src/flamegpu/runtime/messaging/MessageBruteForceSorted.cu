@@ -287,4 +287,8 @@ float MessageBruteForceSorted::Description::getMaxZ() const {
     return reinterpret_cast<Data *>(message)->maxZ;
 }
 
+flamegpu::MessageSortingType MessageBruteForceSorted::Data::getSortingType() const {
+    return flamegpu::MessageSortingType::spatial3D;
+}
+
 }  // namespace flamegpu

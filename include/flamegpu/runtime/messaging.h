@@ -14,6 +14,7 @@
 #include "flamegpu/runtime/messaging/MessageArray2D/MessageArray2DHost.h"
 #include "flamegpu/runtime/messaging/MessageArray3D/MessageArray3DHost.h"
 #include "flamegpu/runtime/messaging/MessageBucket/MessageBucketHost.h"
+#include "flamegpu/runtime/messaging/MessageBruteForceSorted/MessageBruteForceSortedHost.h"
 
 /**
  * ######################################################
