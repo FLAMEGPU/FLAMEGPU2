@@ -117,7 +117,7 @@ void MessageBruteForceSorted::CUDAModelHandler::buildIndex(CUDAScatter &scatter,
         // d_keys currently contains hashes, d_vals contains tid 1..message_count
         // Perform pair sort on hashes to get sorted message order
         gpuErrchk(cub::DeviceRadixSort::SortPairs(d_CUB_temp_storage, d_CUB_temp_storage_bytes, d_keys, d_keys_out, d_vals, d_vals_out, MESSAGE_COUNT));
-       
+      
         // Reorder actual messages
         scatter.brute_force_sorted_reorder(streamId, stream, this->sim_message.getMessageDescription().variables, this->sim_message.getReadList(), this->sim_message.getWriteList(), MESSAGE_COUNT, d_vals_out);
         this->sim_message.swap();
@@ -147,6 +147,10 @@ void MessageBruteForceSorted::CUDAModelHandler::resizeKeysVals(const unsigned in
         gpuErrchk(cudaMalloc(&d_keys_out, d_keys_vals_storage_bytes));
         gpuErrchk(cudaMalloc(&d_vals_out, d_keys_vals_storage_bytes));
         gpuErrchk(cub::DeviceRadixSort::SortPairs(nullptr, d_CUB_temp_storage_bytes, d_keys, d_keys_out, d_vals, d_vals_out, newSize));
+        if (d_CUB_temp_storage) {
+            gpuErrchk(cudaFree(d_CUB_temp_storage));
+        }
+        gpuErrchk(cudaMalloc(&d_CUB_temp_storage, d_CUB_temp_storage_bytes));
     }
 }
 

@@ -46,7 +46,12 @@ class MessageBruteForceSorted::In {
         // If there can be many begin, each with diff end, we need a middle layer to host the iterator/s
         return iterator(*this, metadata->length);
     }
-
+/**
+     * Returns the search radius of the message list defined in the model description
+     */
+     __forceinline__ __device__ float radius() const {
+        return metadata->radius;
+    }
     /**
      * Provides access to a specific message
      * Returned by the iterator
@@ -90,7 +95,7 @@ class MessageBruteForceSorted::In {
          * Updates the message to return variables from the next message in the message list
          * @return Returns itself
          */
-        __host__ __device__ Message& operator++() { ++index;  return *this; }
+        __host__ __device__ Message& operator++() { ++index; return *this; }
         /**
          * Returns the index of the message within the full message list
          */
@@ -140,7 +145,7 @@ class MessageBruteForceSorted::In {
         /**
          * Moves to the next message
          */
-        __device__ iterator& operator++() { ++_message;  return *this; }
+        __device__ iterator& operator++() { ++_message; return *this; }
         /**
          * Equality operator
          * Compares message
@@ -194,6 +199,31 @@ class MessageBruteForceSorted::Out : public MessageSpatial3D::Out {
      * @note Convenience wrapper for setVariable()
      */
     __device__ void setLocation(const float &x, const float &y, const float &z) const;
+    
+    /**
+     * Sets the specified variable for this agents message
+     * @param variable_name Name of the variable
+     * @param value The value to set the specified variable
+     * @tparam T type of the variable
+     * @tparam N Length of variable name (this should be implicit if a string literal is passed to variable name)
+     * @return The specified variable, else 0x0 if an error occurs
+     */
+     template<typename T, unsigned int N>
+     __device__ void setVariable(const char(&variable_name)[N], T value) const;
+     /**
+      * Sets an element of an array variable for this agents message
+      * @param variable_name The name of the array variable
+      * @param index The index to set within the array variable
+      * @param value The value to set the element of the array element
+      * @tparam T The type of the variable, as set within the model description hierarchy
+      * @tparam N The length of the array variable, as set within the model description hierarchy
+      * @tparam M variable_name length, this should be ignored as it is implicitly set
+      * @throws exception::DeviceError If name is not a valid variable within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
+      * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
+      * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+      */
+     template<typename T, unsigned int N, unsigned int M>
+     __device__ void setVariable(const char(&variable_name)[M], const unsigned int& index, T value) const;
 };
 
 __device__ __forceinline__ MessageBruteForceSorted::GridPos3D getGridPosition3D(const MessageBruteForceSorted::MetaData *md, float x, float y, float z) {
@@ -263,6 +293,43 @@ T MessageBruteForceSorted::In::Message::getVariable(const char(&variable_name)[M
     // get the value from curve using the stored hashes and message index.
     T value = detail::curve::Curve::getMessageArrayVariable_ldg<T, N>(variable_name, this->_parent.combined_hash, index, array_index);
     return value;
+}
+
+template<typename T, unsigned int N>
+__device__ void MessageBruteForceSorted::Out::setVariable(const char(&variable_name)[N], T value) const {  // message name or variable name
+    if (variable_name[0] == '_') {
+#if !defined(SEATBELTS) || SEATBELTS
+        DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in MessageBruteForceSorted::Out::setVariable().\n", variable_name);
+#endif
+        return;  // Fail silently
+    }
+    unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
+
+    // Todo: checking if the output message type is single or optional?  (d_message_type)
+
+    // set the variable using curve
+    detail::curve::Curve::setMessageVariable<T>(variable_name, combined_hash, value, index);
+
+    // Set scan flag incase the message is optional
+    this->scan_flag[index] = 1;
+}
+template<typename T, unsigned int N, unsigned int M>
+__device__ void MessageBruteForceSorted::Out::setVariable(const char(&variable_name)[M], const unsigned int& array_index, T value) const {
+    if (variable_name[0] == '_') {
+#if !defined(SEATBELTS) || SEATBELTS
+        DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in MessageBruteForceSorted::Out::setVariable().\n", variable_name);
+#endif
+        return;  // Fail silently
+    }
+    unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
+
+    // Todo: checking if the output message type is single or optional?  (d_message_type)
+
+    // set the variable using curve
+    detail::curve::Curve::setMessageArrayVariable<T, N>(variable_name, combined_hash, value, index, array_index);
+
+    // Set scan flag incase the message is optional
+    this->scan_flag[index] = 1;
 }
 }  // namespace flamegpu
 
