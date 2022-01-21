@@ -43,21 +43,35 @@ void JSONStateWriter::doWrite(T &writer) {
                 // Input file
                 writer.Key("input_file");
                 writer.String(sim_cfg.input_file.c_str());
-                // Steps
-                writer.Key("steps");
-                writer.Uint(sim_cfg.steps);
-                // Timing Output
-                writer.Key("timing");
-                writer.Bool(sim_cfg.timing);
+                // Step log file
+                writer.Key("step_log_file");
+                writer.String(sim_cfg.step_log_file.c_str());
+                // Exit log file
+                writer.Key("exit_log_file");
+                writer.String(sim_cfg.exit_log_file.c_str());
+                // Common log file
+                writer.Key("common_log_file");
+                writer.String(sim_cfg.common_log_file.c_str());
+                // Truncate log files
+                writer.Key("truncate_log_files");
+                writer.Bool(sim_cfg.truncate_log_files);
                 // Random seed
                 writer.Key("random_seed");
                 writer.Uint64(sim_cfg.random_seed);
+                // Steps
+                writer.Key("steps");
+                writer.Uint(sim_cfg.steps);
                 // Verbose output
                 writer.Key("verbose");
                 writer.Bool(sim_cfg.verbose);
+                // Timing Output
+                writer.Key("timing");
+                writer.Bool(sim_cfg.timing);
+#ifdef VISUALISATION
                 // Console mode
                 writer.Key("console_mode");
                 writer.Bool(sim_cfg.console_mode);
+#endif
             }
             writer.EndObject();
         }
@@ -71,6 +85,9 @@ void JSONStateWriter::doWrite(T &writer) {
                 // device_id
                 writer.Key("device_id");
                 writer.Uint(cuda_cfg.device_id);
+                // inLayerConcurrency
+                writer.Key("inLayerConcurrency");
+                writer.Bool(cuda_cfg.inLayerConcurrency);
             }
             writer.EndObject();
         }
