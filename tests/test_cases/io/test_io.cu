@@ -159,31 +159,55 @@ class MiniSim {
             am.setPopulationData(pop_b_out, "2");  // Create them in the not initial state
             // Set config files for export too
             am.SimulationConfig().input_file = "invalid";
+            am.SimulationConfig().step_log_file = "step";
+            am.SimulationConfig().exit_log_file = "exit";
+            am.SimulationConfig().common_log_file = "common";
+            am.SimulationConfig().truncate_log_files = false;
             am.SimulationConfig().random_seed = 654321;
             am.SimulationConfig().steps = 123;
-            am.SimulationConfig().timing = true;
             am.SimulationConfig().verbose = false;
+            am.SimulationConfig().timing = true;
+#ifdef VISUALISATION
+            am.SimulationConfig().console_mode = true;
+#endif
             am.CUDAConfig().device_id = 0;
+            am.CUDAConfig().inLayerConcurrency = false;
             am.exportData(test_file_name);
         }
         {  // Run Import
             CUDASimulation am(model);
             // Ensure config doesn;t match
+            am.SimulationConfig().step_log_file = "";
+            am.SimulationConfig().exit_log_file = "";
+            am.SimulationConfig().common_log_file = "";
+            am.SimulationConfig().truncate_log_files = true;
             am.SimulationConfig().random_seed = 0;
             am.SimulationConfig().steps = 0;
-            am.SimulationConfig().timing = false;
             am.SimulationConfig().verbose = true;
+            am.SimulationConfig().timing = false;
+#ifdef VISUALISATION
+            am.SimulationConfig().console_mode = false;
+#endif
             am.CUDAConfig().device_id = 1000;
+            am.CUDAConfig().inLayerConcurrency = true;
             // Perform import
             am.SimulationConfig().input_file = test_file_name;
             EXPECT_NO_THROW(am.applyConfig());  // If loading device id from config file didn't work, this would throw exception::InvalidCUDAdevice
             // Validate config matches
+            EXPECT_EQ(am.getSimulationConfig().input_file, test_file_name);
+            EXPECT_EQ(am.getSimulationConfig().step_log_file, "step");
+            EXPECT_EQ(am.getSimulationConfig().exit_log_file, "exit");
+            EXPECT_EQ(am.getSimulationConfig().common_log_file, "common");
+            EXPECT_EQ(am.getSimulationConfig().truncate_log_files, false);
             EXPECT_EQ(am.getSimulationConfig().random_seed, 654321u);
             EXPECT_EQ(am.getSimulationConfig().steps, 123u);
-            EXPECT_EQ(am.getSimulationConfig().timing, true);
             EXPECT_EQ(am.getSimulationConfig().verbose, false);
-            EXPECT_EQ(am.getSimulationConfig().input_file, test_file_name);
+            EXPECT_EQ(am.getSimulationConfig().timing, true);
+#ifdef VISUALISATION
+            EXPECT_EQ(am.getSimulationConfig().console_mode, true);
+#endif
             EXPECT_EQ(am.getCUDAConfig().device_id, 0);
+            EXPECT_EQ(am.getCUDAConfig().inLayerConcurrency, false);
             AgentVector pop_a_in(a, 5);
             AgentVector pop_b_in(b, 5);
             am.getPopulationData(pop_a_in);

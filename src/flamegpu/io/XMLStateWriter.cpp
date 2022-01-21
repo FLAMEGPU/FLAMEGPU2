@@ -93,26 +93,44 @@ int XMLStateWriter::writeStates(bool prettyPrint) {
             pListElement = doc.NewElement("input_file");
             pListElement->SetText(sim_cfg.input_file.c_str());
             pSimCfg->InsertEndChild(pListElement);
-            // Steps
-            pListElement = doc.NewElement("steps");
-            pListElement->SetText(sim_cfg.steps);
+            // Step log file
+            pListElement = doc.NewElement("step_log_file");
+            pListElement->SetText(sim_cfg.step_log_file.c_str());
             pSimCfg->InsertEndChild(pListElement);
-            // Timing Output
-            pListElement = doc.NewElement("timing");
-            pListElement->SetText(sim_cfg.timing);
+            // Exit log file
+            pListElement = doc.NewElement("exit_log_file");
+            pListElement->SetText(sim_cfg.exit_log_file.c_str());
+            pSimCfg->InsertEndChild(pListElement);
+            // Common log file
+            pListElement = doc.NewElement("common_log_file");
+            pListElement->SetText(sim_cfg.common_log_file.c_str());
+            pSimCfg->InsertEndChild(pListElement);
+            // Truncate log files
+            pListElement = doc.NewElement("truncate_log_files");
+            pListElement->SetText(sim_cfg.truncate_log_files);
             pSimCfg->InsertEndChild(pListElement);
             // Random seed
             pListElement = doc.NewElement("random_seed");
             pListElement->SetText(sim_cfg.random_seed);
             pSimCfg->InsertEndChild(pListElement);
+            // Steps
+            pListElement = doc.NewElement("steps");
+            pListElement->SetText(sim_cfg.steps);
+            pSimCfg->InsertEndChild(pListElement);
             // Verbose output
             pListElement = doc.NewElement("verbose");
             pListElement->SetText(sim_cfg.verbose);
             pSimCfg->InsertEndChild(pListElement);
-            // Verbose output
+            // Timing Output
+            pListElement = doc.NewElement("timing");
+            pListElement->SetText(sim_cfg.timing);
+            pSimCfg->InsertEndChild(pListElement);
+#ifdef VISUALISATION
+            // Console Mode
             pListElement = doc.NewElement("console_mode");
             pListElement->SetText(sim_cfg.console_mode);
             pSimCfg->InsertEndChild(pListElement);
+#endif
         }
         pElement->InsertEndChild(pSimCfg);
 
@@ -122,9 +140,13 @@ int XMLStateWriter::writeStates(bool prettyPrint) {
             {
                 const auto &cuda_cfg = cudamodel_instance->getCUDAConfig();
                 tinyxml2::XMLElement *pListElement = nullptr;
-                // Input file
+                // Device ID
                 pListElement = doc.NewElement("device_id");
                 pListElement->SetText(cuda_cfg.device_id);
+                pCUDACfg->InsertEndChild(pListElement);
+                // inLayerConcurrency
+                pListElement = doc.NewElement("inLayerConcurrency");
+                pListElement->SetText(cuda_cfg.inLayerConcurrency);
                 pCUDACfg->InsertEndChild(pListElement);
             }
             pElement->InsertEndChild(pCUDACfg);

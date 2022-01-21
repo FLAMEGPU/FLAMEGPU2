@@ -289,7 +289,9 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
         }
         if (mode.top() == SimCfg) {
             if (sim_instance) {
-                if (lastKey == "random_seed") {
+                if (lastKey == "truncate_log_files") {
+                    sim_instance->SimulationConfig().truncate_log_files = static_cast<bool>(val);
+                } else if (lastKey == "random_seed") {
                     sim_instance->SimulationConfig().random_seed = static_cast<uint64_t>(val);
                 } else if (lastKey == "steps") {
                     sim_instance->SimulationConfig().steps = static_cast<unsigned int>(val);
@@ -313,6 +315,8 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
             if (cudamodel_instance) {
                 if (lastKey == "device_id") {
                     cudamodel_instance->CUDAConfig().device_id = static_cast<unsigned int>(val);
+                } else if (lastKey == "inLayerConcurrency") {
+                    cudamodel_instance->CUDAConfig().inLayerConcurrency = static_cast<bool>(val);
                 } else {
                     THROW exception::RapidJSONError("Unexpected CUDA config item '%s' in input file '%s'.\n", lastKey.c_str(), filename.c_str());
                 }
@@ -340,6 +344,12 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
                     if (filename != str && str[0] != '\0')
                         printf("Warning: Input file '%s' refers to second input file '%s', this will not be loaded.\n", filename.c_str(), str);
                     // sim_instance->SimulationConfig().input_file = str;
+                } else if (lastKey == "step_log_file") {
+                    sim_instance->SimulationConfig().step_log_file = str;
+                } else if (lastKey == "exit_log_file") {
+                    sim_instance->SimulationConfig().exit_log_file = str;
+                } else if (lastKey == "common_log_file") {
+                    sim_instance->SimulationConfig().common_log_file = str;
                 }
             }
         }

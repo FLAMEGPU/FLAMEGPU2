@@ -116,20 +116,26 @@ int XMLStateReader::parse() {
                     if (inputFile != val && !val.empty())
                         printf("Warning: Input file '%s' refers to second input file '%s', this will not be loaded.\n", inputFile.c_str(), val.c_str());
                     // sim_instance->SimulationConfig().input_file = val;
-                } else if (key == "steps") {
-                    sim_instance->SimulationConfig().steps = static_cast<unsigned int>(stoull(val));
-                } else if (key == "timing") {
+                } else if (key == "step_log_file") {
+                    sim_instance->SimulationConfig().step_log_file = val;
+                } else if (key == "exit_log_file") {
+                    sim_instance->SimulationConfig().exit_log_file = val;
+                } else if (key == "common_log_file") {
+                    sim_instance->SimulationConfig().common_log_file = val;
+                } else if (key == "truncate_log_files") {
                     for (auto& c : val)
                         c = static_cast<char>(::tolower(c));
                     if (val == "true") {
-                        sim_instance->SimulationConfig().timing = true;
+                        sim_instance->SimulationConfig().truncate_log_files = true;
                     } else if (val == "false") {
-                        sim_instance->SimulationConfig().timing = false;
+                        sim_instance->SimulationConfig().truncate_log_files = false;
                     } else {
-                        sim_instance->SimulationConfig().timing = static_cast<bool>(stoll(val));
+                        sim_instance->SimulationConfig().truncate_log_files = static_cast<bool>(stoll(val));
                     }
                 } else if (key == "random_seed") {
                     sim_instance->SimulationConfig().random_seed = static_cast<uint64_t>(stoull(val));
+                } else if (key == "steps") {
+                    sim_instance->SimulationConfig().steps = static_cast<unsigned int>(stoull(val));
                 } else if (key == "verbose") {
                     for (auto& c : val)
                         c = static_cast<char>(::tolower(c));
@@ -139,6 +145,16 @@ int XMLStateReader::parse() {
                         sim_instance->SimulationConfig().verbose = false;
                     } else {
                         sim_instance->SimulationConfig().verbose = static_cast<bool>(stoll(val));
+                    }
+                } else if (key == "timing") {
+                    for (auto& c : val)
+                        c = static_cast<char>(::tolower(c));
+                    if (val == "true") {
+                        sim_instance->SimulationConfig().timing = true;
+                    } else if (val == "false") {
+                        sim_instance->SimulationConfig().timing = false;
+                    } else {
+                        sim_instance->SimulationConfig().timing = static_cast<bool>(stoll(val));
                     }
                 } else if (key == "console_mode") {
 #ifdef VISUALISATION
@@ -170,7 +186,17 @@ int XMLStateReader::parse() {
                 std::string val = cudaCfgElement->GetText();
                 if (key == "device_id") {
                     cudamodel_instance->CUDAConfig().device_id = static_cast<unsigned int>(stoull(val));
-                }  else {
+                } else if (key == "inLayerConcurrency") {
+                    for (auto& c : val)
+                        c = static_cast<char>(::tolower(c));
+                    if (val == "true") {
+                        cudamodel_instance->CUDAConfig().inLayerConcurrency = true;
+                    } else if (val == "false") {
+                        cudamodel_instance->CUDAConfig().inLayerConcurrency = false;
+                    } else {
+                        cudamodel_instance->CUDAConfig().inLayerConcurrency = static_cast<bool>(stoll(val));
+                    }
+                } else {
                     fprintf(stderr, "Warning: Input file '%s' contains unexpected cuda config property '%s'.\n", inputFile.c_str(), key.c_str());
                 }
             }
