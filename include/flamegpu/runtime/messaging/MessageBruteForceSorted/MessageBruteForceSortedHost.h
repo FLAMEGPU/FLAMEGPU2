@@ -94,7 +94,7 @@ class MessageBruteForceSorted::CUDAModelHandler : public MessageSpecialisationHa
     /**
      * Arrays used to store indices when sorting messages
      */
-    unsigned int *d_keys = nullptr, *d_vals = nullptr;
+    unsigned int *d_keys = nullptr, *d_vals = nullptr, *d_keys_out = nullptr, *d_vals_out = nullptr;
     /**
      * Size currently allocated to d_keys, d_vals arrays
      */

@@ -39,6 +39,7 @@ MessageBruteForceSorted::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
 __global__ void computeSpatialHash(
     const MessageBruteForceSorted::MetaData *md,
     unsigned int* bin_index,
+    unsigned int* tid,
     unsigned int message_count,
     const float * __restrict__ x,
     const float * __restrict__ y,
@@ -50,6 +51,7 @@ __global__ void computeSpatialHash(
     MessageBruteForceSorted::GridPos3D gridPos = getGridPosition3D(md, x[index], y[index], z[index]);
     unsigned int hash = getHash3D(md, gridPos);
     bin_index[index] = hash;
+    tid[index] = index;
 }
 
 void MessageBruteForceSorted::CUDAModelHandler::init(CUDAScatter &, const unsigned int &) {
@@ -78,8 +80,12 @@ void MessageBruteForceSorted::CUDAModelHandler::freeMetaDataDevicePtr() {
             d_keys_vals_storage_bytes = 0;
             gpuErrchk(cudaFree(d_keys));
             gpuErrchk(cudaFree(d_vals));
+            gpuErrchk(cudaFree(d_keys_out));
+            gpuErrchk(cudaFree(d_vals_out));
             d_keys = nullptr;
             d_vals = nullptr;
+            d_keys_out = nullptr;
+            d_vals_out = nullptr;
         }
     }
 }
@@ -91,21 +97,29 @@ void MessageBruteForceSorted::CUDAModelHandler::buildIndex(CUDAScatter &scatter,
     if (MESSAGE_COUNT != hd_data.length) {
         hd_data.length = MESSAGE_COUNT;
         gpuErrchk(cudaMemcpy(d_data, &hd_data, sizeof(MetaData), cudaMemcpyHostToDevice));
+        
+        // Resize temp storage
     }
     resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count
-
+    
     { 
         int blockSize;  // The launch configurator returned block size
         gpuErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(&blockSize, computeSpatialHash, 32, 0));  // Randomly 32
                                                                                                          // Round up according to array size
         int gridSize = (MESSAGE_COUNT + blockSize - 1) / blockSize;
-        computeSpatialHash <<<gridSize, blockSize, 0, stream >>>(d_data, d_keys, MESSAGE_COUNT,
+        computeSpatialHash <<<gridSize, blockSize, 0, stream >>>(d_data, d_keys, d_vals, MESSAGE_COUNT,
             reinterpret_cast<float*>(this->sim_message.getReadPtr("x")),
             reinterpret_cast<float*>(this->sim_message.getReadPtr("y")),
             reinterpret_cast<float*>(this->sim_message.getReadPtr("z")));
     }
     {  // Reorder messages
-       // Copy messages from d_messages to d_messages_swap, in hash order
+
+        // d_keys currently contains hashes, d_vals contains tid 1..message_count
+        // Perform pair sort on hashes to get sorted message order
+        gpuErrchk(cub::DeviceRadixSort::SortPairs(d_CUB_temp_storage, d_CUB_temp_storage_bytes, d_keys, d_keys_out, d_vals, d_vals_out, MESSAGE_COUNT));
+       
+        // Reorder actual messages
+        // Copy messages from d_messages to d_messages_swap, in hash order
         //scatter.pbm_reorder(streamId, stream, this->sim_message.getMessageDescription().variables, this->sim_message.getReadList(), this->sim_message.getWriteList(), MESSAGE_COUNT, d_keys, d_vals, hd_data.PBM);
         //this->sim_message.swap();  // Stream id is unused here
         //gpuErrchk(cudaStreamSynchronize(stream));  // Not striclty neceesary while pbm_reorder is synchronous.
@@ -121,10 +135,15 @@ void MessageBruteForceSorted::CUDAModelHandler::resizeKeysVals(const unsigned in
         if (d_keys) {
             gpuErrchk(cudaFree(d_keys));
             gpuErrchk(cudaFree(d_vals));
+            gpuErrchk(cudaFree(d_keys_out));
+            gpuErrchk(cudaFree(d_vals_out));
         }
         d_keys_vals_storage_bytes = bytesCheck;
         gpuErrchk(cudaMalloc(&d_keys, d_keys_vals_storage_bytes));
         gpuErrchk(cudaMalloc(&d_vals, d_keys_vals_storage_bytes));
+        gpuErrchk(cudaMalloc(&d_keys_out, d_keys_vals_storage_bytes));
+        gpuErrchk(cudaMalloc(&d_vals_out, d_keys_vals_storage_bytes));
+        gpuErrchk(cub::DeviceRadixSort::SortPairs(nullptr, d_CUB_temp_storage_bytes, d_keys_in, d_keys_out, d_vals_in, d_vals_out, newSize));
     }
 }
 
