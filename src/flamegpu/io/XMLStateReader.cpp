@@ -94,17 +94,8 @@ int XMLStateReader::parse() {
         THROW exception::TinyXMLError("TinyXML error: Error parsing doc %s.", inputFile.c_str());
     }
 
-    tinyxml2::XMLElement * pElement = pRoot->FirstChildElement("itno");
-    if (pElement == nullptr) {
-        THROW exception::TinyXMLError("TinyXML error: Error parsing element %s.", inputFile.c_str());
-    }
-
-    int error;
-    errorId = pElement->QueryIntText(&error);
-    XMLCheckResult(errorId);
-
     // Read config data
-    pElement = pRoot->FirstChildElement("config");
+    tinyxml2::XMLElement* pElement = pRoot->FirstChildElement("config");
     if (pElement) {
         // Sim config
         if (sim_instance) {
