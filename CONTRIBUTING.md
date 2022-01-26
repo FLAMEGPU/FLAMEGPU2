@@ -91,7 +91,7 @@ The process for creating a new Release of FLAME GPU is as follows:
     * Update `CITATION.cff` if required
     * All CI jobs should have passed for the commit
     * All Tests suite should have been executed on this commit, on Windows and Linux
-    * The CMake version pinning of the visualisation repo is correct. Ideally to a tag specific to the main repo release (i.e. `flamegpu-2.0.0-alpha`)
+    * The CMake version pinning of the visualisation repo is correct. Ideally to a tag specific to the main repo release (i.e. `flamegpu-2.0.0-alpha`). Create a new tag (matching the planned FLAME GPU 2 release) if required.
 2. Optionally invoke the [Draft Release Action](https://github.com/FLAMEGPU/FLAMEGPU2/actions/workflows/Draft-Release.yml) on the master branch, to ensure that the thoroguh build CI will pass.
     * When this CI is manually triggered, it will not create a draft release
     * This will take some time to complete.
