@@ -155,6 +155,13 @@ class MessageArray::In {
                 return (this->_parent.loc + relative_cell + this->_parent.length) % this->_parent.length;
             }
             /**
+             * Returns the x array offset of message relative to the search origin
+             * @note This value is unwrapped, so will always return a value within the search radius
+             */
+            __device__ size_type getOffsetX() const {
+                return relative_cell;
+            }
+            /**
              * Returns the value for the current message attached to the named variable
              * @param variable_name Name of the variable
              * @tparam T type of the variable
@@ -352,6 +359,12 @@ class MessageArray::In {
              */
             __device__ size_type getX() const {
                 return this->_parent.loc + relative_cell;
+            }
+            /**
+             * Returns the x array offset of message relative to the search origin
+             */
+            __device__ int getOffsetX() const {
+                return this->relative_cell;
             }
             /**
              * Returns the value for the current message attached to the named variable

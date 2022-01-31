@@ -176,6 +176,27 @@ class MessageArray3D::In {
                 return (this->_parent.loc[2] + relative_cell[2] + this->_parent.metadata->dimensions[2]) % this->_parent.metadata->dimensions[2];
             }
             /**
+             * Returns the x array offset of message relative to the search origin
+             * @note This value is unwrapped, so will always return a value within the search radius
+             */
+            __device__ size_type getOffsetX() const {
+                return relative_cell[0];
+            }
+            /**
+             * Returns the y array offset of message relative to the search origin
+             * @note This value is unwrapped, so will always return a value within the search radius
+             */
+            __device__ size_type getOffsetY() const {
+                return relative_cell[1];
+            }
+            /**
+             * Returns the z array offset of message relative to the search origin
+             * @note This value is unwrapped, so will always return a value within the search radius
+             */
+            __device__ size_type getOffsetZ() const {
+                return relative_cell[2];
+            }
+            /**
              * Returns the value for the current message attached to the named variable
              * @param variable_name Name of the variable
              * @tparam T type of the variable
@@ -392,6 +413,24 @@ class MessageArray3D::In {
              */
             __device__ size_type getZ() const {
                 return this->_parent.loc[2] + relative_cell[2];
+            }
+            /**
+             * Returns the x array offset of message relative to the search origin
+             */
+            __device__ int getOffsetX() const {
+                return this->relative_cell[0];
+            }
+            /**
+             * Returns the y array offset of message relative to the search origin
+             */
+            __device__ int getOffsetY() const {
+                return this->relative_cell[1];
+            }
+            /**
+             * Returns the z array offset of message relative to the search origin
+             */
+            __device__ int getOffsetZ() const {
+                return this->relative_cell[2];
             }
             /**
              * Returns the value for the current message attached to the named variable
