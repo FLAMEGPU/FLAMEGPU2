@@ -1091,6 +1091,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayOut, MessageNone, MessageArray3D) {
     FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 0, x * 3);
     FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 1, y * 7);
     FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 2, z * 11);
+    FLAMEGPU->message_out.setVariable<unsigned int>("v2",  x * 3);
     FLAMEGPU->message_out.setIndex(x, y, z);
     return ALIVE;
 }
@@ -1109,6 +1110,7 @@ TEST(TestMessage_Array3D, ArrayVariable) {
     MessageArray3D::Description& message = m.newMessage<MessageArray3D>(MESSAGE_NAME);
     message.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT, CBRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
+    message.newVariable<unsigned int>("v2");
     AgentDescription& a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 3>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
@@ -1501,6 +1503,336 @@ TEST(TestMessage_Array3D, arrayMessageReorderMemorySmall) {
 TEST(TestMessage_Array3D, arrayMessageReorderMemoryLarge) {
     // Total number of elements == 256x256 should be sufficient to reproduce the known 2D case
     test_arrayMessageReorderError(128, 128, 4);
+}
+
+
+FLAMEGPU_AGENT_FUNCTION(ArrayIn_vn_r1, MessageArray3D, MessageNone) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int, 3>("index", 0);
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int, 3>("index", 1);
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int, 3>("index", 2);
+    const int relative_x_order[] = { -1, 0, 0, 0, 0, 1 };
+    const int relative_y_order[] = { 0, -1, 0, 0, 1, 0 };
+    const int relative_z_order[] = { 0, 0, -1, 1, 0, 0 };
+    const int len = 6;
+    int i = 0;
+    bool success = true;
+    bool value_success = true;
+    for (auto &msg : FLAMEGPU->message_in.vn(x, y, z)) {
+        if (msg.getVariable<unsigned int, 3>("v", 0) != msg.getX() * 3 ||
+            msg.getVariable<unsigned int, 3>("v", 1) != msg.getY() * 7 ||
+            msg.getVariable<unsigned int, 3>("v", 2) != msg.getZ() * 11 ||
+            msg.getVariable<unsigned int>("v2") != msg.getX() * 3) {
+            value_success = false;
+        }
+        // Skip relative coords which would be out of bounds
+        while (!(static_cast<int>(x) + relative_x_order[i] >= 0 && static_cast<int>(x) + relative_x_order[i] < static_cast<int>(FLAMEGPU->message_in.getDimX()) &&
+            static_cast<int>(y) + relative_y_order[i] >= 0 && static_cast<int>(y) + relative_y_order[i] < static_cast<int>(FLAMEGPU->message_in.getDimY()) &&
+            static_cast<int>(z) + relative_z_order[i] >= 0 && static_cast<int>(z) + relative_z_order[i] < static_cast<int>(FLAMEGPU->message_in.getDimZ()))) {
+            ++i;
+            if (i >= len)
+                break;
+        }
+        if (i < len) {
+            if (msg.getOffsetX() != relative_x_order[i] || msg.getOffsetY() != relative_y_order[i] || msg.getOffsetZ() != relative_z_order[i])
+                success = false;
+        }
+        ++i;
+    }
+    if (i < len) {
+        // Skip trailing relative coords which would be out of bounds
+        while (!(static_cast<int>(x) + relative_x_order[i] >= 0 && static_cast<int>(x) + relative_x_order[i] < static_cast<int>(FLAMEGPU->message_in.getDimX()) &&
+            static_cast<int>(y) + relative_y_order[i] >= 0 && static_cast<int>(y) + relative_y_order[i] < static_cast<int>(FLAMEGPU->message_in.getDimY()) &&
+            static_cast<int>(z) + relative_z_order[i] >= 0 && static_cast<int>(z) + relative_z_order[i] < static_cast<int>(FLAMEGPU->message_in.getDimZ()))) {
+            ++i;
+            if (i >= len)
+                break;
+        }
+    }
+    if (i != len)
+        success = false;
+
+    FLAMEGPU->setVariable<unsigned int>("success", static_cast<unsigned int>(success));
+    FLAMEGPU->setVariable<unsigned int>("value_success", static_cast<unsigned int>(value_success));
+    return ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(ArrayIn_vn_r2, MessageArray3D, MessageNone) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int, 3>("index", 0);
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int, 3>("index", 1);
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int, 3>("index", 2);
+    const int relative_x_order[] = { -2, -1, -1, -1, -1, -1,  0,  0,  0,  0,  0,  0, 0, 0,  0, 0, 0, 0,  1,  1, 1, 1, 1, 2 };
+    const int relative_y_order[] = {  0, -1,  0,  0,  0,  1, -2, -1, -1, -1,  0,  0, 0, 0,  1, 1, 1, 2, -1,  0, 0, 0, 1, 0 };
+    const int relative_z_order[] = {  0,  0, -1,  0,  1,  0,  0, -1,  0,  1, -2, -1, 1, 2, -1, 0, 1, 0,  0, -1, 0, 1, 0, 0 };
+    const int len = 24;
+    int i = 0;
+    bool success = true;
+    bool value_success = true;
+    for (auto& msg : FLAMEGPU->message_in.vn(x, y, z, 2)) {
+        if (msg.getVariable<unsigned int, 3>("v", 0) != msg.getX() * 3 ||
+            msg.getVariable<unsigned int, 3>("v", 1) != msg.getY() * 7 ||
+            msg.getVariable<unsigned int, 3>("v", 2) != msg.getZ() * 11 ||
+            msg.getVariable<unsigned int>("v2") != msg.getX() * 3) {
+            value_success = false;
+        }
+        // Skip relative coords which would be out of bounds
+        while (!(static_cast<int>(x) + relative_x_order[i] >= 0 && static_cast<int>(x) + relative_x_order[i] < static_cast<int>(FLAMEGPU->message_in.getDimX()) &&
+            static_cast<int>(y) + relative_y_order[i] >= 0 && static_cast<int>(y) + relative_y_order[i] < static_cast<int>(FLAMEGPU->message_in.getDimY()) &&
+            static_cast<int>(z) + relative_z_order[i] >= 0 && static_cast<int>(z) + relative_z_order[i] < static_cast<int>(FLAMEGPU->message_in.getDimZ()))) {
+            ++i;
+            if (i >= len)
+                break;
+        }
+        if (i < len) {
+            if (msg.getOffsetX() != relative_x_order[i] || msg.getOffsetY() != relative_y_order[i] || msg.getOffsetZ() != relative_z_order[i])
+                success = false;
+        }
+        ++i;
+    }
+    if (i < len) {
+        // Skip trailing relative coords which would be out of bounds
+        while (!(static_cast<int>(x) + relative_x_order[i] >= 0 && static_cast<int>(x) + relative_x_order[i] < static_cast<int>(FLAMEGPU->message_in.getDimX()) &&
+            static_cast<int>(y) + relative_y_order[i] >= 0 && static_cast<int>(y) + relative_y_order[i] < static_cast<int>(FLAMEGPU->message_in.getDimY()) &&
+            static_cast<int>(z) + relative_z_order[i] >= 0 && static_cast<int>(z) + relative_z_order[i] < static_cast<int>(FLAMEGPU->message_in.getDimZ()))) {
+            ++i;
+            if (i >= len)
+                break;
+        }
+    }
+    if (i != len)
+    success = false;
+
+    FLAMEGPU->setVariable<unsigned int>("success", static_cast<unsigned int>(success));
+    FLAMEGPU->setVariable<unsigned int>("value_success", static_cast<unsigned int>(value_success));
+    return ALIVE;
+}
+TEST(TestMessage_Array3D, VonNeumann_r1) {
+    ModelDescription m(MODEL_NAME);
+    MessageArray3D::Description &message = m.newMessage<MessageArray3D>(MESSAGE_NAME);
+    message.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT, CBRT_AGENT_COUNT);
+    message.newVariable<unsigned int, 3>("v");
+    message.newVariable<unsigned int>("v2");
+    AgentDescription &a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int, 3>("index");
+    a.newVariable<unsigned int>("success", 0);
+    a.newVariable<unsigned int>("value_success", 0);
+    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    fo.setMessageOutput(message);
+    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_r1);
+    fi.setMessageInput(message);
+    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, CBRT_AGENT_COUNT * CBRT_AGENT_COUNT * CBRT_AGENT_COUNT);
+    int w = 0;
+    for (unsigned int i = 0; i < CBRT_AGENT_COUNT; ++i) {
+        for (unsigned int j = 0; j < CBRT_AGENT_COUNT; ++j) {
+            for (unsigned int k = 0; k < CBRT_AGENT_COUNT; ++k) {
+                AgentVector::Agent ai = pop[w++];
+                ai.setVariable<unsigned int, 3>("index", {i, j, k});
+            }
+        }
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    c.step();
+    c.getPopulationData(pop);
+    // Validate each agent has same result
+    for (const AgentVector::Agent &ai : pop) {
+        unsigned int v = ai.getVariable<unsigned int>("success");
+        EXPECT_EQ(v, 1u);
+        unsigned int v2 = ai.getVariable<unsigned int>("value_success");
+        EXPECT_EQ(v2, 1u);
+    }
+}
+TEST(TestMessage_Array3D, VonNeumann_r2) {
+    ModelDescription m(MODEL_NAME);
+    MessageArray3D::Description &message = m.newMessage<MessageArray3D>(MESSAGE_NAME);
+    message.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT, CBRT_AGENT_COUNT);
+    message.newVariable<unsigned int, 3>("v");
+    message.newVariable<unsigned int>("v2");
+    AgentDescription &a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int, 3>("index");
+    a.newVariable<unsigned int>("success", 0);
+    a.newVariable<unsigned int>("value_success", 0);
+    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    fo.setMessageOutput(message);
+    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_r2);
+    fi.setMessageInput(message);
+    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, CBRT_AGENT_COUNT * CBRT_AGENT_COUNT * CBRT_AGENT_COUNT);
+    int w = 0;
+    for (unsigned int i = 0; i < CBRT_AGENT_COUNT; ++i) {
+        for (unsigned int j = 0; j < CBRT_AGENT_COUNT; ++j) {
+            for (unsigned int k = 0; k < CBRT_AGENT_COUNT; ++k) {
+                AgentVector::Agent ai = pop[w++];
+                ai.setVariable<unsigned int, 3>("index", {i, j, k});
+            }
+        }
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    c.step();
+    c.getPopulationData(pop);
+    // Validate each agent has same result
+    for (const AgentVector::Agent &ai : pop) {
+        unsigned int v = ai.getVariable<unsigned int>("success");
+        EXPECT_EQ(v, 1u);
+        unsigned int v2 = ai.getVariable<unsigned int>("value_success");
+        EXPECT_EQ(v2, 1u);
+    }
+}
+FLAMEGPU_AGENT_FUNCTION(ArrayIn_vn_wrap_r1, MessageArray3D, MessageNone) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int, 3>("index", 0);
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int, 3>("index", 1);
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int, 3>("index", 2);
+    const int relative_x_order[] = { -1, 0, 0, 0, 0, 1 };
+    const int relative_y_order[] = { 0, -1, 0, 0, 1, 0 };
+    const int relative_z_order[] = { 0, 0, -1, 1, 0, 0 };
+    const int len = 6;
+    int i = 0;
+    bool success = true;
+    bool value_success = true;
+    for (auto &msg : FLAMEGPU->message_in.vn_wrap(x, y, z)) {
+        if (msg.getVariable<unsigned int, 3>("v", 0) != msg.getX() * 3 ||
+            msg.getVariable<unsigned int, 3>("v", 1) != msg.getY() * 7 ||
+            msg.getVariable<unsigned int, 3>("v", 2) != msg.getZ() * 11 ||
+            msg.getVariable<unsigned int>("v2") != msg.getX() * 3) {
+            value_success = false;
+        }
+        if (i < len) {
+            if (msg.getOffsetX() != relative_x_order[i] || msg.getOffsetY() != relative_y_order[i] || msg.getOffsetZ() != relative_z_order[i])
+                success = false;
+        }
+        ++i;
+    }
+    if (i != len)
+        success = false;
+
+    FLAMEGPU->setVariable<unsigned int>("success", static_cast<unsigned int>(success));
+    FLAMEGPU->setVariable<unsigned int>("value_success", static_cast<unsigned int>(value_success));
+    return ALIVE;
+}
+FLAMEGPU_AGENT_FUNCTION(ArrayIn_vn_wrap_r2, MessageArray3D, MessageNone) {
+    const unsigned int x = FLAMEGPU->getVariable<unsigned int, 3>("index", 0);
+    const unsigned int y = FLAMEGPU->getVariable<unsigned int, 3>("index", 1);
+    const unsigned int z = FLAMEGPU->getVariable<unsigned int, 3>("index", 2);
+    const int relative_x_order[] = { -2, -1, -1, -1, -1, -1,  0,  0,  0,  0,  0,  0, 0, 0,  0, 0, 0, 0,  1,  1, 1, 1, 1, 2 };
+    const int relative_y_order[] = { 0, -1,  0,  0,  0,  1, -2, -1, -1, -1,  0,  0, 0, 0,  1, 1, 1, 2, -1,  0, 0, 0, 1, 0 };
+    const int relative_z_order[] = { 0,  0, -1,  0,  1,  0,  0, -1,  0,  1, -2, -1, 1, 2, -1, 0, 1, 0,  0, -1, 0, 1, 0, 0 };
+    const int len = 24;
+    int i = 0;
+    bool success = true;
+    bool value_success = true;
+    for (auto& msg : FLAMEGPU->message_in.vn_wrap(x, y, z, 2)) {
+        if (msg.getVariable<unsigned int, 3>("v", 0) != msg.getX() * 3 ||
+            msg.getVariable<unsigned int, 3>("v", 1) != msg.getY() * 7 ||
+            msg.getVariable<unsigned int, 3>("v", 2) != msg.getZ() * 11 ||
+            msg.getVariable<unsigned int>("v2") != msg.getX() * 3) {
+            value_success = false;
+        }
+        if (i < len) {
+            if (msg.getOffsetX() != relative_x_order[i] || msg.getOffsetY() != relative_y_order[i] || msg.getOffsetZ() != relative_z_order[i])
+                success = false;
+        }
+        ++i;
+    }
+    if (i != len)
+        success = false;
+
+    FLAMEGPU->setVariable<unsigned int>("success", static_cast<unsigned int>(success));
+    FLAMEGPU->setVariable<unsigned int>("value_success", static_cast<unsigned int>(value_success));
+    return ALIVE;
+}
+TEST(TestMessage_Array3D, VonNeumann_wrap_r1) {
+    ModelDescription m(MODEL_NAME);
+    MessageArray3D::Description &message = m.newMessage<MessageArray3D>(MESSAGE_NAME);
+    message.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT, CBRT_AGENT_COUNT);
+    message.newVariable<unsigned int, 3>("v");
+    message.newVariable<unsigned int>("v2");
+    AgentDescription &a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int, 3>("index");
+    a.newVariable<unsigned int>("success", 0);
+    a.newVariable<unsigned int>("value_success", 0);
+    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    fo.setMessageOutput(message);
+    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_wrap_r1);
+    fi.setMessageInput(message);
+    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, CBRT_AGENT_COUNT * CBRT_AGENT_COUNT * CBRT_AGENT_COUNT);
+    int w = 0;
+    for (unsigned int i = 0; i < CBRT_AGENT_COUNT; ++i) {
+        for (unsigned int j = 0; j < CBRT_AGENT_COUNT; ++j) {
+            for (unsigned int k = 0; k < CBRT_AGENT_COUNT; ++k) {
+                AgentVector::Agent ai = pop[w++];
+                ai.setVariable<unsigned int, 3>("index", {i, j, k});
+            }
+        }
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    c.step();
+    c.getPopulationData(pop);
+    // Validate each agent has same result
+    for (const AgentVector::Agent &ai : pop) {
+        unsigned int v = ai.getVariable<unsigned int>("success");
+        EXPECT_EQ(v, 1u);
+        unsigned int v2 = ai.getVariable<unsigned int>("value_success");
+        EXPECT_EQ(v2, 1u);
+    }
+}
+TEST(TestMessage_Array3D, VonNeumann_wrap_r2) {
+    ModelDescription m(MODEL_NAME);
+    MessageArray3D::Description &message = m.newMessage<MessageArray3D>(MESSAGE_NAME);
+    message.setDimensions(CBRT_AGENT_COUNT, CBRT_AGENT_COUNT, CBRT_AGENT_COUNT);
+    message.newVariable<unsigned int, 3>("v");
+    message.newVariable<unsigned int>("v2");
+    AgentDescription &a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int, 3>("index");
+    a.newVariable<unsigned int>("success", 0);
+    a.newVariable<unsigned int>("value_success", 0);
+    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    fo.setMessageOutput(message);
+    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_wrap_r2);
+    fi.setMessageInput(message);
+    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Assign the numbers in shuffled order to agents
+    AgentVector pop(a, CBRT_AGENT_COUNT * CBRT_AGENT_COUNT * CBRT_AGENT_COUNT);
+    int w = 0;
+    for (unsigned int i = 0; i < CBRT_AGENT_COUNT; ++i) {
+        for (unsigned int j = 0; j < CBRT_AGENT_COUNT; ++j) {
+            for (unsigned int k = 0; k < CBRT_AGENT_COUNT; ++k) {
+                AgentVector::Agent ai = pop[w++];
+                ai.setVariable<unsigned int, 3>("index", {i, j, k});
+            }
+        }
+    }
+    // Set pop in model
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    c.step();
+    c.getPopulationData(pop);
+    // Validate each agent has same result
+    for (const AgentVector::Agent &ai : pop) {
+        unsigned int v = ai.getVariable<unsigned int>("success");
+        EXPECT_EQ(v, 1u);
+        unsigned int v2 = ai.getVariable<unsigned int>("value_success");
+        EXPECT_EQ(v2, 1u);
+    }
 }
 
 }  // namespace test_message_array_3d
