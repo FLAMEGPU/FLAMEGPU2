@@ -78,6 +78,14 @@ FLAMEGPU_STEP_FUNCTION(step_uniform_longlong) {
     for (int64_t &i : longlong_out)
         ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<int64_t>(INT64_MIN, INT64_MAX));
 }
+FLAMEGPU_STEP_FUNCTION(step_uniform_float_range) {
+    for (float& i : float_out)
+        ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<float>(1.0f, 12345.0f));
+}
+FLAMEGPU_STEP_FUNCTION(step_uniform_double_range) {
+    for (double& i : double_out)
+        ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<double>(1.0, 12345.0));
+}
 FLAMEGPU_STEP_FUNCTION(step_uniform_uchar_range) {
     for (auto &i : unsigned_char_out)
         ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<unsigned char>(
@@ -320,7 +328,6 @@ TEST_F(HostRandomTest, UniformDouble) {
     for (unsigned int i = 0; i < double_out.size(); ++i)
         EXPECT_EQ(double_out[i], _double_out[i]);
 }
-
 TEST_F(HostRandomTest, NormalFloat) {
     ms->model.addStepFunction(step_normal_float);
     // Initially 0
@@ -965,8 +972,24 @@ TEST_F(HostRandomTest, UniformDoubleRange) {
     ms->model.addStepFunction(step_uniform_double);
     ms->run();
     for (auto &i : double_out) {
-        EXPECT_GE(i, 0.0f);
-        EXPECT_LT(i, 1.0f);
+        EXPECT_GE(i, 0.0);
+        EXPECT_LT(i, 1.0);
+    }
+}
+TEST_F(HostRandomTest, UniformFloatRange2) {
+    ms->model.addStepFunction(step_uniform_float_range);
+    ms->run();
+    for (auto& i : float_out) {
+        EXPECT_GE(i, 1.0f);
+        EXPECT_LT(i, 12345.0f);
+    }
+}
+TEST_F(HostRandomTest, UniformDoubleRange2) {
+    ms->model.addStepFunction(step_uniform_double_range);
+    ms->run();
+    for (auto& i : double_out) {
+        EXPECT_GE(i, 1.0);
+        EXPECT_LT(i, 12345.0);
     }
 }
 

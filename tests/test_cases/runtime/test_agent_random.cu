@@ -158,6 +158,9 @@ FLAMEGPU_AGENT_FUNCTION(random2_func, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<float>("uniform_float", FLAMEGPU->random.uniform<float>());
     FLAMEGPU->setVariable<double>("uniform_double", FLAMEGPU->random.uniform<double>());
 
+    FLAMEGPU->setVariable<float>("uniform_float_range", FLAMEGPU->random.uniform<float>(-FLT_MAX, FLT_MAX));
+    FLAMEGPU->setVariable<double>("uniform_double_range", FLAMEGPU->random.uniform<double>(-DBL_MAX, DBL_MAX));
+
     FLAMEGPU->setVariable<float>("normal_float", FLAMEGPU->random.normal<float>());
     FLAMEGPU->setVariable<double>("normal_double", FLAMEGPU->random.normal<double>());
 
@@ -191,6 +194,9 @@ TEST(AgentRandomTest, AgentRandomFunctionsNoExcept) {
 
     agent.newVariable<float>("uniform_float");
     agent.newVariable<double>("uniform_double");
+
+    agent.newVariable<float>("uniform_float_range");
+    agent.newVariable<double>("uniform_double_range");
 
     agent.newVariable<float>("normal_float");
     agent.newVariable<double>("normal_double");

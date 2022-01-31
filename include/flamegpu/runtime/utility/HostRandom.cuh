@@ -40,10 +40,12 @@ class HostRandom {
     template<typename T>
     inline T logNormal(const T& mean, const T& stddev) const;
     /**
-    * Returns an integer uniformly distributed in the inclusive range [lowerBound, max]
-    * @tparam T return type (must be integer)
-    * @note Available as signed and unsigned: char, short, int, long long
-    */
+     * Returns an integer uniformly distributed in the inclusive range [min, max]
+     * or
+     * Returns a floating point value uniformly distributed in the inclusive-exclusive range [min, max)
+     * @tparam T return type
+     * @note Available as signed and unsigned: char, short, int, long long
+     */
     template<typename T>
     inline T uniform(const T& min, const T& max) const;
     /**
@@ -110,6 +112,16 @@ template<>
 inline signed char HostRandom::uniform(const signed char& min, const signed char& max) const {
     std::uniform_int_distribution<int16_t> dist(min, max);
     return static_cast<signed char>(rng.getDistribution<int16_t>(dist));
+}
+template<>
+inline float HostRandom::uniform(const float& min, const float& max) const {
+    std::uniform_real_distribution<float> dist(min, max);
+    return rng.getDistribution<float>(dist);
+}
+template<>
+inline double HostRandom::uniform(const double& min, const double& max) const {
+    std::uniform_real_distribution<double> dist(min, max);
+    return rng.getDistribution<double>(dist);
 }
 
 }  // namespace flamegpu

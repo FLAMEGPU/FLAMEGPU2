@@ -43,8 +43,11 @@ class AgentRandom {
     template<typename T>
     __forceinline__ __device__ T logNormal(const T& mean, const T& stddev) const;
     /**
-     * Returns an integer uniformly distributed in the inclusive range [lowerBound, max]
-     * @note Available as signed and unsigned: char, short, int, long long
+     * Returns an integer uniformly distributed in the inclusive range [min, max]
+     * or
+     * Returns a floating point value uniformly distributed in the exclusive-inclusive range (min, max]
+     * @tparam T return type
+     * @note Available as signed and unsigned: char, short, int, long long, float, double
      */
     template<typename T>
     __forceinline__ __device__ T uniform(const T& min, const T& max) const;
@@ -96,7 +99,7 @@ __forceinline__ __device__ double AgentRandom::logNormal(const double& mean, con
     return curand_log_normal_double(d_random_state, mean, stddev);
 }
 /**
-* Uniform Int
+* Uniform Range
 */
 template<typename T>
 __forceinline__ __device__ T AgentRandom::uniform(const T& min, const T& max) const {
@@ -125,6 +128,24 @@ __forceinline__ __device__ uint64_t AgentRandom::uniform(const uint64_t& min, co
     }
 #endif
     return static_cast<uint64_t>(min + (max - min) * uniform<double>());
+}
+template<>
+__forceinline__ __device__ float AgentRandom::uniform(const float& min, const float& max) const {
+#if !defined(SEATBELTS) || SEATBELTS
+    if (min > max) {
+        DTHROW("Invalid arguments passed to AgentRandom::uniform(), %f > %f\n", min, max);
+    }
+#endif
+    return min + (max - min) * uniform<float>();
+}
+template<>
+__forceinline__ __device__ double AgentRandom::uniform(const double& min, const double& max) const {
+#if !defined(SEATBELTS) || SEATBELTS
+    if (min > max) {
+        DTHROW("Invalid arguments passed to AgentRandom::uniform(), %f > %f\n", min, max);
+    }
+#endif
+    return min + (max - min) * uniform<double>();
 }
 
 }  // namespace flamegpu
