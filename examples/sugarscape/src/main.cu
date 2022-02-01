@@ -45,7 +45,7 @@ FLAMEGPU_AGENT_FUNCTION(metabolise_and_growback, flamegpu::MessageNone, flamegpu
         if (sugar_level == 0) {
             status = AGENT_STATUS_UNOCCUPIED;
             FLAMEGPU->setVariable<int>("agent_id", -1);
-            sugar_level = 0;
+            env_sugar_level = 0;
             FLAMEGPU->setVariable<int>("metabolism", 0);
         }
     }
