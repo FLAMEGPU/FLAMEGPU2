@@ -771,7 +771,7 @@ T MessageArray3D::In::WrapFilter::Message::getVariable(const char(&variable_name
     }
 #endif
     // get the value from curve using the stored hashes and message index.
-    T value = detail::curve::Curve::getMessageArrayVariable<T, N>(variable_name, this->_parent.combined_hash, index, array_index);
+    T value = detail::curve::Curve::getMessageArrayVariable<T, N>(variable_name, this->_parent.combined_hash, index_1d, array_index);
     return value;
 }
 template<typename T, unsigned int N>
@@ -797,7 +797,7 @@ T MessageArray3D::In::Filter::Message::getVariable(const char(&variable_name)[M]
     }
 #endif
     // get the value from curve using the stored hashes and message index.
-    T value = detail::curve::Curve::getMessageArrayVariable<T, N>(variable_name, this->_parent.combined_hash, index, array_index);
+    T value = detail::curve::Curve::getMessageArrayVariable<T, N>(variable_name, this->_parent.combined_hash, index_1d, array_index);
     return value;
 }
 
