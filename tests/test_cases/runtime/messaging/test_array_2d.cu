@@ -699,6 +699,10 @@ FLAMEGPU_AGENT_FUNCTION(OutSimpleXY, MessageNone, MessageArray2D) {
     const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
     const unsigned int y = FLAMEGPU->getVariable<unsigned int>("y");
     FLAMEGPU->message_out.setVariable("index", index);
+    FLAMEGPU->message_out.setVariable<unsigned int>("v", x * 3);
+    FLAMEGPU->message_out.setVariable<unsigned int, 3>("v2", 0, x * 3);
+    FLAMEGPU->message_out.setVariable<unsigned int, 3>("v2", 1, y * 7);
+    FLAMEGPU->message_out.setVariable<unsigned int, 3>("v2", 2, y * 11);
     FLAMEGPU->message_out.setIndex(x, y);
     return ALIVE;
 }
@@ -709,11 +713,19 @@ FLAMEGPU_AGENT_FUNCTION(MooreWTestXYC, MessageArray2D, MessageNone) {
     const unsigned int COMRADIUS = FLAMEGPU->environment.getProperty<unsigned int>("COMRADIUS");
     // Iterate message list counting how many messages were read.
     unsigned int count = 0;
-    for (const auto &message : FLAMEGPU->message_in.wrap(x, y, COMRADIUS)) {
+    bool value_success = true;
+    for (const auto &msg : FLAMEGPU->message_in.wrap(x, y, COMRADIUS)) {
         // @todo - check its the correct messages?
         count++;
+        if (msg.getVariable<unsigned int, 3>("v2", 0) != msg.getX() * 3 ||
+            msg.getVariable<unsigned int, 3>("v2", 1) != msg.getY() * 7 ||
+            msg.getVariable<unsigned int, 3>("v2", 2) != msg.getY() * 11 ||
+            msg.getVariable<unsigned int>("v") != msg.getX() * 3) {
+            value_success = false;
+        }
     }
     FLAMEGPU->setVariable<unsigned int>("message_read", count);
+    FLAMEGPU->setVariable<unsigned int>("value_success", static_cast<unsigned int>(value_success));
     return ALIVE;
 }
 
@@ -735,12 +747,15 @@ void test_moore_wrap_comradius(
     // Define the message
     MessageArray2D::Description &message = model.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.newVariable<unsigned int>("index");
+    message.newVariable<unsigned int>("v");
+    message.newVariable<unsigned int, 3>("v2");
     message.setDimensions(GRID_WIDTH, GRID_HEIGHT);
     AgentDescription &agent = model.newAgent(AGENT_NAME);
     agent.newVariable<unsigned int>("index");
     agent.newVariable<unsigned int>("x");
     agent.newVariable<unsigned int>("y");
     agent.newVariable<unsigned int>("message_read", UINT_MAX);
+    agent.newVariable<unsigned int>("value_success", 0);
     // Define the function and layers.
     AgentFunctionDescription &outputFunction = agent.newFunction("OutSimpleXY", OutSimpleXY);
     outputFunction.setMessageOutput(message);
@@ -777,6 +792,8 @@ void test_moore_wrap_comradius(
         for (AgentVector::Agent instance : population) {
             const unsigned int message_read = instance.getVariable<unsigned int>("message_read");
             ASSERT_EQ(expected_count, message_read);
+            const unsigned int value_success = instance.getVariable<unsigned int>("value_success");
+            ASSERT_EQ(value_success, 1u);
         }
     } else {
         // If the comradius would lead to double message reads, a device error is thrown when SEATBELTS is enabled
@@ -825,11 +842,19 @@ FLAMEGPU_AGENT_FUNCTION(MooreTestXYC, MessageArray2D, MessageNone) {
     const unsigned int COMRADIUS = FLAMEGPU->environment.getProperty<unsigned int>("COMRADIUS");
     // Iterate message list counting how many messages were read.
     unsigned int count = 0;
-    for (const auto &message : FLAMEGPU->message_in(x, y, COMRADIUS)) {
+    bool value_success = true;
+    for (const auto &msg : FLAMEGPU->message_in(x, y, COMRADIUS)) {
         // @todo - check its the correct messages?
         count++;
+        if (msg.getVariable<unsigned int, 3>("v2", 0) != msg.getX() * 3 ||
+            msg.getVariable<unsigned int, 3>("v2", 1) != msg.getY() * 7 ||
+            msg.getVariable<unsigned int, 3>("v2", 2) != msg.getY() * 11 ||
+            msg.getVariable<unsigned int>("v") != msg.getX() * 3) {
+            value_success = false;
+        }
     }
     FLAMEGPU->setVariable<unsigned int>("message_read", count);
+    FLAMEGPU->setVariable<unsigned int>("value_success", static_cast<unsigned int>(value_success));
     return ALIVE;
 }
 
@@ -851,12 +876,15 @@ void test_mooore_comradius(
     // Define the message
     MessageArray2D::Description &message = model.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.newVariable<unsigned int>("index");
+    message.newVariable<unsigned int>("v");
+    message.newVariable<unsigned int, 3>("v2");
     message.setDimensions(GRID_WIDTH, GRID_HEIGHT);
     AgentDescription &agent = model.newAgent(AGENT_NAME);
     agent.newVariable<unsigned int>("index");
     agent.newVariable<unsigned int>("x");
     agent.newVariable<unsigned int>("y");
     agent.newVariable<unsigned int>("message_read", UINT_MAX);
+    agent.newVariable<unsigned int>("value_success", 0);
     // Define the function and layers.
     AgentFunctionDescription &outputFunction = agent.newFunction("OutSimpleXY", OutSimpleXY);
     outputFunction.setMessageOutput(message);
@@ -896,6 +924,8 @@ void test_mooore_comradius(
         // ASSERT_EQ(message_read, expected_read);
         if (message_read == expected_read)
             right_count++;
+        const unsigned int value_success = instance.getVariable<unsigned int>("value_success");
+        ASSERT_EQ(value_success, 1u);
     }
     ASSERT_EQ(right_count, population.size());
 }
