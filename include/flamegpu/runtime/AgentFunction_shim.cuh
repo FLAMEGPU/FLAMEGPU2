@@ -8,22 +8,25 @@ template<typename MessageIn, typename MessageOut>
 class DeviceAPI;
 
 /**
- * Macro for defining agent transition functions with the correct input. Must always be a device function to be called by CUDA.
- *
- * struct SomeAgentFunction {
+ * Macro for defining agent transition functions with the correct input and output types. Must always be a device function to be called by CUDA.
+ * 
+ * Saves users from manually defining agent functions, e.g.:
+ * @code{.cpp}
+ * struct SomeAgentFunction_impl {
  *    // User Implemented agent function behaviour
  *     __device__ __forceinline__ AGENT_STATUS operator()(DeviceAPI<message_in, message_out> *FLAMEGPU) const {
  *         // do something
- *         return 0;
+ *         return flamegpu::ALIVE;
  *     }
  *     // Returns a function pointer to the agent function wrapper for this function
  *     // Including it here, force instantiates the template, without requiring the user to specify the template args elsewhere
  *     static constexpr AgentFunctionWrapper *fnPtr() { return &agent_function_wrapper<SomeAgentFunction, message_in, message_out>; }
  *     // These are used to validate that the bound message description matches the specified type
- *     static constexpr std::type_index inType() { return std::type_index(typeid(message_in)); }
- *     static constexpr std::type_index outType() { return std::type_index(typeid(message_out)); }
+ *     static std::type_index inType() { return std::type_index(typeid(message_in)); }
+ *     static std::type_index outType() { return std::type_index(typeid(message_out)); }
  * };
- *}
+ * SomeAgentFunction_impl SomeAgentFunction;
+ * @endcode
  */
 #ifndef __CUDACC_RTC__
 #define FLAMEGPU_AGENT_FUNCTION(funcName, message_in, message_out)\

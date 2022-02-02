@@ -124,7 +124,6 @@ class CUDASimulation : public Simulation {
     bool step() override;
     /**
      * Run the exitFunctions of the Simulation.. 
-     * @return False if an exit condition was triggered
      */
     void exitFunctions() override;
     /**

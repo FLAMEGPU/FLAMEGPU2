@@ -31,6 +31,29 @@
 
 namespace flamegpu {
 
+/**
+ * Macro for defining custom reduction functions with the correct inputs.
+ *
+ * (a, b)->(c) 
+ *
+ * These functions must be valid CUDA code, and have no access to the FLAMEGPU DeviceAPI.
+ *
+ * Saves users from manually defining custom reductions, e.g.:
+ * @code{.cpp}
+ * // User Implemented custom reduction
+ * struct SomeCustomReduction_impl {
+ *  public:
+ *     template <typename OutT>
+ *     struct binary_function {
+ *         __device__ __forceinline__ OutT operator()(const OutT &a, const OutT &b) const {
+ *              // reduce something
+                return a + b;
+ *         }
+ *     };
+ * };
+ * SomeCustomReduction_impl SomeCustomReduction;
+ * @endcode
+ */
 #define FLAMEGPU_CUSTOM_REDUCTION(funcName, a, b)\
 struct funcName ## _impl {\
  public:\
@@ -43,6 +66,29 @@ funcName ## _impl funcName;\
 template <typename OutT>\
 __device__ __forceinline__ OutT funcName ## _impl::binary_function<OutT>::operator()(const OutT & a, const OutT & b) const
 
+ /**
+  * Macro for defining custom transform functions with the correct inputs.
+  *
+  * (a)->(b)
+  *
+  * These functions must be valid CUDA code, and have no access to the FLAMEGPU DeviceAPI.
+  *
+  * Saves users from manually defining custom transformations, e.g.:
+  * @code{.cpp}
+  * // User Implemented custom transform
+  * struct SomeCustomTransform_impl {
+  *  public:
+  *     template<typename InT, typename OutT>
+  *     struct unary_function {
+  *         __device__ __forceinline__ OutT operator()(const InT &a) const {
+  *              // transform something
+                 return a * a;
+  *         }
+  *     };
+  * };
+  * SomeCustomTransform_impl SomeCustomTransform;
+  * @endcode
+  */
 #define FLAMEGPU_CUSTOM_TRANSFORM(funcName, a)\
 struct funcName ## _impl {\
  public:\
