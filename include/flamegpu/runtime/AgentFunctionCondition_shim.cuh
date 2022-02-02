@@ -7,8 +7,10 @@ class ReadOnlyDeviceAPI;
 namespace flamegpu {
 
 /**
- * Macro for defining agent transition functions conditions with the correct input. Must always be a device function to be called by CUDA.
+ * Macro for defining agent transition functions conditions. Must always be a device function to be called by CUDA.
  *
+ * Saves users from manually defining agent function conditions, e.g.:
+ * @code{.cpp}
  * struct SomeAgentFunctionCondition {
  *    // User Implemented agent function condition behaviour
  *     __device__ __forceinline__ bool operator()(ReadOnlyDeviceAPI *FLAMEGPU) const {
@@ -19,7 +21,8 @@ namespace flamegpu {
  *     // Including it here, force instantiates the template, without requiring the user to specify the template args elsewhere
  *     static constexpr AgentFunctionConditionWrapper *fnPtr() { return &agent_function_condition_wrapper<SomeAgentFunctionCondition>; }
  * };
- *}
+ * SomeAgentFunctionCondition_cdn_impl SomeAgentFunctionCondition;
+ * @endcode
  */
 
 #define FLAMEGPU_AGENT_FUNCTION_CONDITION(funcName)\
