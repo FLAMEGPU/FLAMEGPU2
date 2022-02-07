@@ -102,7 +102,7 @@ class MessageSpatial2D::In {
              * @tparam N Length of variable name (this should be implicit if a string literal is passed to variable name)
              * @return The specified variable, else 0x0 if an error occurs
              */
-            template<typename T, size_type N>
+            template<typename T, unsigned int N>
             __device__ T getVariable(const char(&variable_name)[N]) const;
             /**
              * Returns the specified variable array element from the current message attached to the named variable
