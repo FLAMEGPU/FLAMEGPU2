@@ -903,17 +903,17 @@ T EnvironmentManager::setProperty(const NamePair &name, const T &value) {
             "in EnvironmentManager::setProperty().",
             name.first, name.second.c_str(), typ_id.name(), typeid(T).name());
     }
-#endif
-    if (isConst(name)) {
-        THROW exception::ReadOnlyEnvProperty("Environmental property ('%u:%s') is marked as const and cannot be changed, "
-            "in EnvironmentManager::setProperty().",
-            name.first, name.second.c_str());
-    }
     const size_type array_len = length(name);
     if (array_len != 1) {
         THROW exception::InvalidEnvPropertyType("Named environmental property is an array of length %u, the array function must be used! "
             "in EnvironmentManager::setProperty().",
             array_len);
+    }
+#endif
+    if (isConst(name)) {
+        THROW exception::ReadOnlyEnvProperty("Environmental property ('%u:%s') is marked as const and cannot be changed, "
+            "in EnvironmentManager::setProperty().",
+            name.first, name.second.c_str());
     }
     // Copy old data to return
     T rtn = getProperty<T>(name);
