@@ -1,3 +1,5 @@
+#include <chrono>
+#include <thread>
 // If earlier than VS 2019
 #if defined(_MSC_VER) && _MSC_VER < 1920
 #include <filesystem>
@@ -46,6 +48,9 @@ FLAMEGPU_STEP_FUNCTION(step_fn1) {
     FLAMEGPU->environment.setProperty<int, 3>("int_prop_array", {b[0] + 1, b[1] + 1, b[2] + 1});
     FLAMEGPU->environment.setProperty<unsigned int, 4>("uint_prop_array", {c[0] + 1, c[1] + 1, c[2] + 1, c[3] + 1});
 }
+FLAMEGPU_HOST_FUNCTION(Sleep_100_Milliseconds) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+}
 template<typename T>
 void logAllAgent(AgentLoggingConfig &alcfg, const std::string &var_name) {
     alcfg.logMin<T>(var_name);
@@ -88,6 +93,7 @@ TEST(LoggingTest, CUDASimulationStep) {
     lcfg.logEnvironment("float_prop_array");
     lcfg.logEnvironment("int_prop_array");
     lcfg.logEnvironment("uint_prop_array");
+    lcfg.logTiming(true);
 
     StepLoggingConfig slcfg(lcfg);
     slcfg.setFrequency(2);
@@ -202,6 +208,7 @@ TEST(LoggingTest, CUDASimulationSimulate) {
     lcfg.logEnvironment("float_prop_array");
     lcfg.logEnvironment("int_prop_array");
     lcfg.logEnvironment("uint_prop_array");
+    lcfg.logTiming(true);
 
     StepLoggingConfig slcfg(lcfg);
     slcfg.setFrequency(2);
@@ -412,6 +419,7 @@ TEST(LoggingTest, CUDAEnsembleSimulate) {
     lcfg.logEnvironment("float_prop_array");
     lcfg.logEnvironment("int_prop_array");
     lcfg.logEnvironment("uint_prop_array");
+    lcfg.logTiming(true);
 
     StepLoggingConfig slcfg(lcfg);
     slcfg.setFrequency(2);
@@ -571,6 +579,7 @@ TEST(TestLogging, Simulation_ToFile_Step) {
     logAllAgent<float>(alcfg, "float_var");
     logAllAgent<int>(alcfg, "int_var");
     logAllAgent<unsigned int>(alcfg, "uint_var");
+    lcfg.logTiming(true);
 
     StepLoggingConfig slcfg(lcfg);
     slcfg.setFrequency(2);
@@ -631,6 +640,7 @@ TEST(TestLogging, Simulation_ToFile_Exit) {
     logAllAgent<float>(alcfg, "float_var");
     logAllAgent<int>(alcfg, "int_var");
     logAllAgent<unsigned int>(alcfg, "uint_var");
+    lcfg.logTiming(true);
 
     StepLoggingConfig slcfg(lcfg);
     slcfg.setFrequency(2);
@@ -691,6 +701,7 @@ TEST(TestLogging, Simulation_ToFile_Common) {
     logAllAgent<float>(alcfg, "float_var");
     logAllAgent<int>(alcfg, "int_var");
     logAllAgent<unsigned int>(alcfg, "uint_var");
+    lcfg.logTiming(true);
 
     StepLoggingConfig slcfg(lcfg);
     slcfg.setFrequency(2);
@@ -742,6 +753,7 @@ TEST(TestLogging, Simulation_ToFile_All) {
     a.newVariable<unsigned int>("uint_var");
     AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
     m.newLayer().addAgentFunction(f1);
+    m.addStepFunction(Sleep_100_Milliseconds);
 
     // Define logging configs
     LoggingConfig lcfg(m);
@@ -750,6 +762,7 @@ TEST(TestLogging, Simulation_ToFile_All) {
     logAllAgent<float>(alcfg, "float_var");
     logAllAgent<int>(alcfg, "int_var");
     logAllAgent<unsigned int>(alcfg, "uint_var");
+    lcfg.logTiming(true);
 
     StepLoggingConfig slcfg(lcfg);
     slcfg.setFrequency(2);
@@ -812,6 +825,7 @@ TEST(TestLogging, Ensemble_ToFile_Step) {
     logAllAgent<float>(alcfg, "float_var");
     logAllAgent<int>(alcfg, "int_var");
     logAllAgent<unsigned int>(alcfg, "uint_var");
+    lcfg.logTiming(true);
 
     StepLoggingConfig slcfg(lcfg);
     slcfg.setFrequency(2);
@@ -872,6 +886,7 @@ TEST(TestLogging, Ensemble_ToFile_Exit) {
     logAllAgent<float>(alcfg, "float_var");
     logAllAgent<int>(alcfg, "int_var");
     logAllAgent<unsigned int>(alcfg, "uint_var");
+    lcfg.logTiming(true);
 
     StepLoggingConfig slcfg(lcfg);
     slcfg.setFrequency(2);
@@ -927,6 +942,7 @@ TEST(TestLogging, Ensemble_ToFile_All) {
     a.newVariable<unsigned int>("uint_var");
     AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
     m.newLayer().addAgentFunction(f1);
+    m.addStepFunction(Sleep_100_Milliseconds);
     m.addInitFunction(logging_ensemble_init);
     m.Environment().newProperty<int>("instance_id", 0);  // This will act as the modifier for ensemble instances, only impacting the init fn
 
@@ -937,6 +953,7 @@ TEST(TestLogging, Ensemble_ToFile_All) {
     logAllAgent<float>(alcfg, "float_var");
     logAllAgent<int>(alcfg, "int_var");
     logAllAgent<unsigned int>(alcfg, "uint_var");
+    lcfg.logTiming(true);
 
     StepLoggingConfig slcfg(lcfg);
     slcfg.setFrequency(2);

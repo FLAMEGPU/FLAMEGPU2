@@ -35,6 +35,10 @@ class LoggingConfig {
      * CUDASimulation::processStepLog() Requires access for reading the config
      */
     friend class CUDASimulation;
+    /**
+     * Requires access to log_timing
+     */
+    friend void CUDAEnsemble::simulate(const RunPlanVector& plans);
 
  public:
     /**
@@ -114,6 +118,14 @@ class LoggingConfig {
      * @throws InvalidEnvironment
      */
     void logEnvironment(const std::string &property_name);
+    /**
+     * Log timing information for the complete simulation to file
+     * In the case of step log, this will cause the step time to be logged
+     * @param doLogTiming True if timing data should be logged
+     * @note By default, timing information is not logged to file
+     * @note Timing information will always be available in the programmatic logs accessed via code
+     */
+    void logTiming(bool doLogTiming);
 
  private:
     /**
@@ -129,6 +141,10 @@ class LoggingConfig {
      * map<<agent_name:agent_state, variable_reductions:log_count>
      */
     std::map<util::StringPair, std::pair<std::shared_ptr<std::set<NameReductionFn>>, bool>> agents;
+    /**
+     * Flag denoting whether timing information for the simulation/steps should be logged
+     */
+    bool log_timing;
 };
 
 /**

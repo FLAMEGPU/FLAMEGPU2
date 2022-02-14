@@ -133,11 +133,11 @@ void Simulation::exportData(const std::string &path, bool prettyPrint) {
     io::StateWriter *write__ = io::StateWriterFactory::createWriter(model->name, getInstanceID(), pops, getStepCounter(), path, this);
     write__->writeStates(prettyPrint);
 }
-void Simulation::exportLog(const std::string &path, bool steps, bool exit, bool prettyPrint) {
+void Simulation::exportLog(const std::string &path, bool steps, bool exit, bool stepTime, bool exitTime, bool prettyPrint) {
     // Create the correct type of logger
     auto logger = io::LoggerFactory::createLogger(path, prettyPrint, config.truncate_log_files);
     // Perform logging
-    logger->log(getRunLog(), true, steps, exit);
+    logger->log(getRunLog(), true, steps, exit, stepTime, exitTime);
 }
 
 int Simulation::checkArgs(int argc, const char** argv) {

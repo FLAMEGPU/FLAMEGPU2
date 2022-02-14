@@ -8,13 +8,16 @@
 namespace flamegpu {
 
 LoggingConfig::LoggingConfig(const ModelDescription &_model)
-    :model(_model.model->clone()) { }
+    :model(_model.model->clone())
+    , log_timing(false) { }
 LoggingConfig::LoggingConfig(const ModelData &_model)
-    :model(_model.clone()) { }
+    :model(_model.clone())
+    , log_timing(false) { }
 LoggingConfig::LoggingConfig(const LoggingConfig &other)
     : model(other.model->clone())
     , environment(other.environment)
-    , agents(other.agents) { }
+    , agents(other.agents)
+    , log_timing(other.log_timing) { }
 AgentLoggingConfig LoggingConfig::agent(const std::string &agent_name, const std::string &agent_state) {
     // Validate the agent state combination exists
     auto model_agent_it = model->agents.find(agent_name);
@@ -49,6 +52,9 @@ void LoggingConfig::logEnvironment(const std::string &property_name) {
             "in LoggingConfig::logEnvironment()\n",
             property_name.c_str());
     }
+}
+void LoggingConfig::logTiming(bool doLogTiming) {
+    log_timing = doLogTiming;
 }
 StepLoggingConfig::StepLoggingConfig(const ModelDescription &model)
     : LoggingConfig(model)

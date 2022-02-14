@@ -30,6 +30,8 @@ class SimLogger {
      * @param log_export_queue_cdn The condition is notified every time a log has been added to the queue
      * @param _export_step If true step logs will be exported
      * @param _export_exit If true exit logs will be exported
+     * @param _export_step_time If true step log time will be exported
+     * @param _export_exit_time If true exit log time will be exported
      */
     SimLogger(const std::vector<RunLog> &run_logs,
         const RunPlanVector &run_plans,
@@ -39,7 +41,9 @@ class SimLogger {
         std::mutex &log_export_queue_mutex,
         std::condition_variable &log_export_queue_cdn,
         bool _export_step,
-        bool _export_exit);
+        bool _export_exit,
+        bool _export_step_time,
+        bool _export_exit_time);
     /**
      * The thread which the logger is executing on, created by the constructor
      */
@@ -85,6 +89,14 @@ class SimLogger {
      * If true exit log files will be exported
      */
     bool export_exit;
+    /**
+     * If true step time will be included in the step log file
+     */
+    bool export_step_time;
+    /**
+     * If true exit time will be included in the exit log file
+     */
+    bool export_exit_time;
 };
 
 }  // namespace flamegpu

@@ -54,14 +54,14 @@ XMLLogger::XMLLogger(const std::string &outPath, bool _prettyPrint, bool _trunca
     , prettyPrint(_prettyPrint)
     , truncateFile(_truncateFile) { }
 
-void XMLLogger::log(const RunLog &log, const RunPlan &plan, bool logSteps, bool logExit) const {
-  logCommon(log, &plan, false, logSteps, logExit);
+void XMLLogger::log(const RunLog &log, const RunPlan &plan, bool logSteps, bool logExit, bool logStepTime, bool logExitTime) const {
+  logCommon(log, &plan, false, logSteps, logExit, logStepTime, logExitTime);
 }
-void XMLLogger::log(const RunLog &log, bool logConfig, bool logSteps, bool logExit) const {
-  logCommon(log, nullptr, logConfig, logSteps, logExit);
+void XMLLogger::log(const RunLog &log, bool logConfig, bool logSteps, bool logExit, bool logStepTime, bool logExitTime) const {
+  logCommon(log, nullptr, logConfig, logSteps, logExit, logStepTime, logExitTime);
 }
 
-void XMLLogger::logCommon(const RunLog &log, const RunPlan *plan, bool doLogConfig, bool doLogSteps, bool doLogExit) const {
+void XMLLogger::logCommon(const RunLog &log, const RunPlan *plan, bool doLogConfig, bool doLogSteps, bool doLogExit, bool doLogStepTime, bool doLogExitTime) const {
     tinyxml2::XMLDocument doc;
 
     tinyxml2::XMLNode * pRoot = doc.NewElement("log");
@@ -74,14 +74,19 @@ void XMLLogger::logCommon(const RunLog &log, const RunPlan *plan, bool doLogConf
         pRoot->InsertEndChild(logConfig(doc, log));
     }
 
+    // Log performance specs
+    if (doLogStepTime || doLogExitTime) {
+        pRoot->InsertEndChild(logPerformanceSpecs(doc, log));
+    }
+
     // Log step log
     if (doLogSteps) {
-        pRoot->InsertEndChild(logSteps(doc, log));
+        pRoot->InsertEndChild(logSteps(doc, log, doLogStepTime));
     }
 
     // Log exit log
     if (doLogExit) {
-        pRoot->InsertEndChild(logExit(doc, log));
+        pRoot->InsertEndChild(logExit(doc, log, doLogExitTime));
     }
     // export
     FILE *fptr = fopen(out_path.c_str(), truncateFile ? "w" : "a");
@@ -128,99 +133,155 @@ tinyxml2::XMLNode *XMLLogger::logConfig(tinyxml2::XMLDocument &doc, const RunPla
     }
     return pConfigElement;
 }
-tinyxml2::XMLNode *XMLLogger::logSteps(tinyxml2::XMLDocument &doc, const RunLog &log) const {
+tinyxml2::XMLNode* XMLLogger::logPerformanceSpecs(tinyxml2::XMLDocument& doc, const RunLog& log) const {
+    tinyxml2::XMLElement* pConfigElement = doc.NewElement("performance_specs");
+    {
+        tinyxml2::XMLElement* pListElement;
+        // Add static items
+        pListElement = doc.NewElement("device_name");
+        pListElement->SetText(log.getPerformanceSpecs().device_name.c_str());
+        pConfigElement->InsertEndChild(pListElement);
+        pListElement = doc.NewElement("device_cc_major");
+        pListElement->SetText(log.getPerformanceSpecs().device_cc_major);
+        pConfigElement->InsertEndChild(pListElement);
+        pListElement = doc.NewElement("device_cc_minor");
+        pListElement->SetText(log.getPerformanceSpecs().device_cc_minor);
+        pConfigElement->InsertEndChild(pListElement);
+        pListElement = doc.NewElement("cuda_version");
+        pListElement->SetText(log.getPerformanceSpecs().cuda_version);
+        pConfigElement->InsertEndChild(pListElement);
+        pListElement = doc.NewElement("seatbelts");
+        pListElement->SetText(log.getPerformanceSpecs().seatbelts);
+        pConfigElement->InsertEndChild(pListElement);
+        pListElement = doc.NewElement("flamegpu_version");
+        pListElement->SetText(log.getPerformanceSpecs().flamegpu_version.c_str());
+        pConfigElement->InsertEndChild(pListElement);
+    }
+    return pConfigElement;
+}
+tinyxml2::XMLNode *XMLLogger::logSteps(tinyxml2::XMLDocument &doc, const RunLog &log, bool logTime) const {
     tinyxml2::XMLElement *pStepsElement = doc.NewElement("steps");
     {
         for (const auto &step : log.getStepLog()) {
-            pStepsElement->InsertEndChild(writeLogFrame(doc, step));
+            pStepsElement->InsertEndChild(writeLogFrame(doc, step, logTime));
         }
     }
     return pStepsElement;
 }
-tinyxml2::XMLNode *XMLLogger::logExit(tinyxml2::XMLDocument &doc, const RunLog &log) const {
+tinyxml2::XMLNode *XMLLogger::logExit(tinyxml2::XMLDocument &doc, const RunLog &log, bool logTime) const {
     tinyxml2::XMLElement *pExitElement = doc.NewElement("exit");
-    pExitElement->InsertEndChild(writeLogFrame(doc, log.getExitLog()));
+    pExitElement->InsertEndChild(writeLogFrame(doc, log.getExitLog(), logTime));
     return pExitElement;
 }
-
-tinyxml2::XMLNode *XMLLogger::writeLogFrame(tinyxml2::XMLDocument &doc, const LogFrame &frame) const {
-    tinyxml2::XMLElement *pFrameElement = doc.NewElement("step");
+tinyxml2::XMLNode* XMLLogger::writeLogFrame(tinyxml2::XMLDocument& doc, const StepLogFrame& frame, bool logTime) const {
+    tinyxml2::XMLElement* pFrameElement = doc.NewElement("step");
     {
-        tinyxml2::XMLElement *pListElement;
-        // Add static items
-        pListElement = doc.NewElement("step_index");
-        pListElement->SetText(frame.getStepCount());
-        pFrameElement->InsertEndChild(pListElement);
-        // Add dynamic environment values
-        if (frame.getEnvironment().size()) {
-            tinyxml2::XMLElement *pEnvElement = doc.NewElement("environment");
-            {
-                for (const auto &prop : frame.getEnvironment()) {
-                    pListElement = doc.NewElement(prop.first.c_str());
-                    writeAny(pListElement, prop.second, prop.second.elements);
-                    pEnvElement->InsertEndChild(pListElement);
-                }
-            }
-            pFrameElement->InsertEndChild(pEnvElement);
+        if (logTime) {
+            tinyxml2::XMLElement* pListElement;
+            pListElement = doc.NewElement("step_time");
+            pListElement->SetText(frame.getStepTime());
+            pFrameElement->InsertEndChild(pListElement);
         }
-
-        if (frame.getAgents().size()) {
-            // Add dynamic agent values
-            tinyxml2::XMLElement *pAgentsElement = doc.NewElement("agents");
-            {
-                // This assumes that sort order places all agents of same name, different state consecutively
-                std::string current_agent;
-                tinyxml2::XMLElement *pAgentsItemElement = nullptr;
-                for (const auto &agent : frame.getAgents()) {
-                    // Start/end new agent
-                    if (current_agent != agent.first.first) {
-                        if (!current_agent.empty())
-                            pAgentsElement->InsertEndChild(pAgentsItemElement);
-                        current_agent = agent.first.first;
-                        pAgentsItemElement = doc.NewElement(current_agent.c_str());
-                    }
-                    // Start new state
-                    tinyxml2::XMLElement *pStateElement = doc.NewElement(agent.first.second.c_str());
-                    {
-                        // Log agent count if provided
-                        if (agent.second.second != UINT_MAX) {
-                            tinyxml2::XMLElement *pCountElement = doc.NewElement("count");
-                            pCountElement->SetText(agent.second.second);
-                            pStateElement->InsertEndChild(pCountElement);
-                        }
-                        if (agent.second.first.size()) {
-                            tinyxml2::XMLElement *pVariablesBlock = doc.NewElement("variables");
-                            // This assumes that sort order places all variables of same name, different reduction consecutively
-                            std::string current_variable;
-                            tinyxml2::XMLElement *pVariableElement = nullptr;
-                            // Log each reduction
-                            for (auto &var : agent.second.first) {
-                                // Start/end new variable
-                                if (current_variable != var.first.name) {
-                                    if (!current_variable.empty())
-                                        pVariablesBlock->InsertEndChild(pVariableElement);
-                                    current_variable = var.first.name;
-                                    pVariableElement = doc.NewElement(current_variable.c_str());
-                                }
-                                // Build name key for the variable & log value
-                                tinyxml2::XMLElement *pValueElement = doc.NewElement(LoggingConfig::toString(var.first.reduction));
-                                writeAny(pValueElement, var.second, 1);
-                                pVariableElement->InsertEndChild(pValueElement);
-                            }
-                            if (!current_variable.empty())
-                                pVariablesBlock->InsertEndChild(pVariableElement);
-                            pStateElement->InsertEndChild(pVariablesBlock);
-                        }
-                    }
-                    pAgentsItemElement->InsertEndChild(pStateElement);
-                }
-                if (!current_agent.empty())
-                    pAgentsElement->InsertEndChild(pAgentsItemElement);
-            }
-            pFrameElement->InsertEndChild(pAgentsElement);
-        }
+        writeCommonLogFrame(doc, pFrameElement, frame);
     }
     return pFrameElement;
+}
+tinyxml2::XMLNode* XMLLogger::writeLogFrame(tinyxml2::XMLDocument & doc, const ExitLogFrame & frame, bool logTime) const {
+    tinyxml2::XMLElement* pFrameElement = doc.NewElement("exit");
+    {
+        if (logTime) {
+            tinyxml2::XMLElement* pListElement;
+            pListElement = doc.NewElement("rtc_time");
+            pListElement->SetText(frame.getRTCTime());
+            pFrameElement->InsertEndChild(pListElement);
+            pListElement = doc.NewElement("init_time");
+            pListElement->SetText(frame.getInitTime());
+            pFrameElement->InsertEndChild(pListElement);
+            pListElement = doc.NewElement("exit_time");
+            pListElement->SetText(frame.getExitTime());
+            pFrameElement->InsertEndChild(pListElement);
+            pListElement = doc.NewElement("total_time");
+            pListElement->SetText(frame.getTotalTime());
+            pFrameElement->InsertEndChild(pListElement);
+        }
+        writeCommonLogFrame(doc, pFrameElement, frame);
+    }
+    return pFrameElement;
+}
+void XMLLogger::writeCommonLogFrame(tinyxml2::XMLDocument &doc, tinyxml2::XMLElement* pFrameElement, const LogFrame & frame) const {
+    tinyxml2::XMLElement *pListElement;
+    // Add static items
+    pListElement = doc.NewElement("step_index");
+    pListElement->SetText(frame.getStepCount());
+    pFrameElement->InsertEndChild(pListElement);
+    // Add dynamic environment values
+    if (frame.getEnvironment().size()) {
+        tinyxml2::XMLElement *pEnvElement = doc.NewElement("environment");
+        {
+            for (const auto &prop : frame.getEnvironment()) {
+                pListElement = doc.NewElement(prop.first.c_str());
+                writeAny(pListElement, prop.second, prop.second.elements);
+                pEnvElement->InsertEndChild(pListElement);
+            }
+        }
+        pFrameElement->InsertEndChild(pEnvElement);
+    }
+
+    if (frame.getAgents().size()) {
+        // Add dynamic agent values
+        tinyxml2::XMLElement *pAgentsElement = doc.NewElement("agents");
+        {
+            // This assumes that sort order places all agents of same name, different state consecutively
+            std::string current_agent;
+            tinyxml2::XMLElement *pAgentsItemElement = nullptr;
+            for (const auto &agent : frame.getAgents()) {
+                // Start/end new agent
+                if (current_agent != agent.first.first) {
+                    if (!current_agent.empty())
+                        pAgentsElement->InsertEndChild(pAgentsItemElement);
+                    current_agent = agent.first.first;
+                    pAgentsItemElement = doc.NewElement(current_agent.c_str());
+                }
+                // Start new state
+                tinyxml2::XMLElement *pStateElement = doc.NewElement(agent.first.second.c_str());
+                {
+                    // Log agent count if provided
+                    if (agent.second.second != UINT_MAX) {
+                        tinyxml2::XMLElement *pCountElement = doc.NewElement("count");
+                        pCountElement->SetText(agent.second.second);
+                        pStateElement->InsertEndChild(pCountElement);
+                    }
+                    if (agent.second.first.size()) {
+                        tinyxml2::XMLElement *pVariablesBlock = doc.NewElement("variables");
+                        // This assumes that sort order places all variables of same name, different reduction consecutively
+                        std::string current_variable;
+                        tinyxml2::XMLElement *pVariableElement = nullptr;
+                        // Log each reduction
+                        for (auto &var : agent.second.first) {
+                            // Start/end new variable
+                            if (current_variable != var.first.name) {
+                                if (!current_variable.empty())
+                                    pVariablesBlock->InsertEndChild(pVariableElement);
+                                current_variable = var.first.name;
+                                pVariableElement = doc.NewElement(current_variable.c_str());
+                            }
+                            // Build name key for the variable & log value
+                            tinyxml2::XMLElement *pValueElement = doc.NewElement(LoggingConfig::toString(var.first.reduction));
+                            writeAny(pValueElement, var.second, 1);
+                            pVariableElement->InsertEndChild(pValueElement);
+                        }
+                        if (!current_variable.empty())
+                            pVariablesBlock->InsertEndChild(pVariableElement);
+                        pStateElement->InsertEndChild(pVariablesBlock);
+                    }
+                }
+                pAgentsItemElement->InsertEndChild(pStateElement);
+            }
+            if (!current_agent.empty())
+                pAgentsElement->InsertEndChild(pAgentsItemElement);
+        }
+        pFrameElement->InsertEndChild(pAgentsElement);
+    }
 }
 
 void XMLLogger::writeAny(tinyxml2::XMLElement *pElement, const util::Any &value, const unsigned int &elements) const {

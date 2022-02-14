@@ -427,8 +427,9 @@ class CUDASimulation : public Simulation {
     /**
      * Check if step_count is a divisible by step_log_config.frequency
      * If true, add the current simulation state to the step log
+     * @param step_time_seconds Duration of the step to be logged in seconds
      */
-    void processStepLog();
+    void processStepLog(const double &step_time_seconds);
     /**
      * Replace the current exit log with the current simulation state
      */

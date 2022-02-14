@@ -106,10 +106,12 @@ class Simulation {
      * @param path The file to output (must end '.json' or '.xml')
      * @param steps Whether the step log should be included in the log file
      * @param exit Whether the exit log should be included in the log file
+     * @param stepTime Whether the step time should be included in the log file (always treated as false if steps=false)
+     * @param exitTime Whether the simulation time should be included in the log file (always treated as false if exit=false)
      * @param prettyPrint Whether the log file should be minified or not
      * @note The config (possibly just random seed) is always output
      */
-    void exportLog(const std::string &path, bool steps, bool exit, bool prettyPrint = true);
+    void exportLog(const std::string &path, bool steps, bool exit, bool stepTime, bool exitTime, bool prettyPrint = true);
 
     virtual void setPopulationData(AgentVector& population, const std::string& state_name = ModelData::DEFAULT_STATE) = 0;
     virtual void getPopulationData(AgentVector& population, const std::string& state_name = ModelData::DEFAULT_STATE) = 0;
