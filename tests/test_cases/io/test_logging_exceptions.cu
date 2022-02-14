@@ -19,9 +19,9 @@ TEST(LoggingExceptionTest, LoggerSupportedFileType) {
     ModelDescription m(MODEL_NAME);
     m.newAgent(AGENT_NAME1);
     CUDASimulation sim(m);
-    EXPECT_THROW(sim.exportLog("test.csv", true, true), exception::UnsupportedFileType);
-    EXPECT_THROW(sim.exportLog("test.html", true, true), exception::UnsupportedFileType);
-    EXPECT_NO_THROW(sim.exportLog("test.json", true, true));
+    EXPECT_THROW(sim.exportLog("test.csv", true, true, false, false), exception::UnsupportedFileType);
+    EXPECT_THROW(sim.exportLog("test.html", true, true, false, false), exception::UnsupportedFileType);
+    EXPECT_NO_THROW(sim.exportLog("test.json", true, true, false, false));
     // Cleanup
     ASSERT_EQ(::remove("test.json"), 0);
 }

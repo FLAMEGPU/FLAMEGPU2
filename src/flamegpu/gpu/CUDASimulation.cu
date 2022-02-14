@@ -26,6 +26,7 @@
 #include "flamegpu/sim/LoggingConfig.h"
 #include "flamegpu/sim/LogFrame.h"
 #include "flamegpu/sim/RunPlan.h"
+#include "flamegpu/version.h"
 #ifdef VISUALISATION
 #include "flamegpu/visualiser/FLAMEGPU_Visualisation.h"
 #endif
@@ -498,7 +499,7 @@ bool CUDASimulation::step() {
     // Update step count at the end of the step - when it has completed.
     incrementStepCounter();
     // Update the log for the step.
-    processStepLog();
+    processStepLog(this->elapsedSecondsPerStep.back());
     // Return false if any exit condition's passed.
     return !exitRequired;
 }
@@ -1167,7 +1168,7 @@ void CUDASimulation::simulate() {
 
     // Reset and log initial state to step log 0
     resetLog();
-    processStepLog();
+    processStepLog(this->elapsedSecondsRTCInitialisation + this->elapsedSecondsInitFunctions);
 
     #ifdef VISUALISATION
     // Pre step-loop visualisation update
@@ -1181,7 +1182,7 @@ void CUDASimulation::simulate() {
         // Run the step
         bool continueSimulation = step();
         if (!continueSimulation) {
-            processStepLog();
+            processStepLog(this->elapsedSecondsPerStep.back());
             break;
         }
         #ifdef VISUALISATION
@@ -1196,7 +1197,6 @@ void CUDASimulation::simulate() {
 
     // Exit functions
     this->exitFunctions();
-    processExitLog();
 
     // Sync visualistaion after the exit functions
     #ifdef VISUALISATION
@@ -1212,13 +1212,15 @@ void CUDASimulation::simulate() {
         // Resolution is 0.5 microseconds, so print to 1 us.
         fprintf(stdout, "Total Processing time: %.6f s\n", elapsedSecondsSimulation);
     }
+    processExitLog();
+
     // Export logs
     if (!SimulationConfig().step_log_file.empty())
-        exportLog(SimulationConfig().step_log_file, true, false);
+        exportLog(SimulationConfig().step_log_file, true, false, step_log_config && step_log_config->log_timing, false);
     if (!SimulationConfig().exit_log_file.empty())
-        exportLog(SimulationConfig().exit_log_file, false, true);
+        exportLog(SimulationConfig().exit_log_file, false, true, false, exit_log_config && exit_log_config->log_timing);
     if (!SimulationConfig().common_log_file.empty())
-        exportLog(SimulationConfig().common_log_file, true, true);
+        exportLog(SimulationConfig().common_log_file, true, true, step_log_config && step_log_config->log_timing, exit_log_config && exit_log_config->log_timing);
 }
 
 
@@ -1818,12 +1820,29 @@ void CUDASimulation::initEnvironmentMgr() {
     env_init.clear();
 }
 void CUDASimulation::resetLog() {
+    // Track previous device id, so we can avoid costly request for device properties if not required
+    static int previous_device_id = -1;
     run_log->step.clear();
-    run_log->exit = LogFrame();
+    run_log->exit = ExitLogFrame();
     run_log->random_seed = SimulationConfig().random_seed;
     run_log->step_log_frequency = step_log_config ? step_log_config->frequency : 0;
+    if (run_log->performance_specs.device_name.empty() || CUDAConfig().device_id != previous_device_id) {
+        cudaDeviceProp d_props = {};
+        gpuErrchk(cudaGetDeviceProperties(&d_props, CUDAConfig().device_id));
+        run_log->performance_specs.device_name = d_props.name;
+        previous_device_id = CUDAConfig().device_id;
+    }
+    gpuErrchk(cudaDeviceGetAttribute(&run_log->performance_specs.device_cc_major, cudaDevAttrComputeCapabilityMajor, CUDAConfig().device_id));
+    gpuErrchk(cudaDeviceGetAttribute(&run_log->performance_specs.device_cc_minor,  cudaDevAttrComputeCapabilityMinor, CUDAConfig().device_id));
+    gpuErrchk(cudaRuntimeGetVersion(&run_log->performance_specs.cuda_version));
+#if !defined(SEATBELTS) || SEATBELTS
+    run_log->performance_specs.seatbelts = true;
+#else
+    run_log->performance_specs.seatbelts = false;
+#endif
+    run_log->performance_specs.flamegpu_version = VERSION_FULL;
 }
-void CUDASimulation::processStepLog() {
+void CUDASimulation::processStepLog(const double &step_time_seconds) {
     if (!step_log_config)
         return;
     if (step_count % step_log_config->frequency != 0)
@@ -1855,7 +1874,8 @@ void CUDASimulation::processStepLog() {
     }
 
     // Append to step log
-    run_log->step.push_back(LogFrame(std::move(environment_log), std::move(agents_log), step_count));
+    run_log->step.push_back(StepLogFrame(std::move(environment_log), std::move(agents_log), step_count));
+    run_log->step.back().step_time = step_time_seconds;
 }
 
 void CUDASimulation::processExitLog() {
@@ -1888,7 +1908,12 @@ void CUDASimulation::processExitLog() {
     }
 
     // Set Log
-    run_log->exit = LogFrame(std::move(environment_log), std::move(agents_log), step_count);
+    run_log->exit = ExitLogFrame(std::move(environment_log), std::move(agents_log), step_count);
+    // Add the timing info
+    run_log->exit.rtc_time = getElapsedTimeRTCInitialisation();
+    run_log->exit.init_time = getElapsedTimeInitFunctions();
+    run_log->exit.exit_time = getElapsedTimeExitFunctions();
+    run_log->exit.total_time = getElapsedTimeSimulation();
 }
 const RunLog &CUDASimulation::getRunLog() const {
     return *run_log;

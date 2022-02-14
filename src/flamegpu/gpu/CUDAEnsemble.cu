@@ -129,7 +129,7 @@ void CUDAEnsemble::simulate(const RunPlanVector &plans) {
     // Init log worker
     SimLogger *log_worker = nullptr;
     if (!config.out_directory.empty() && !config.out_format.empty()) {
-        log_worker = new SimLogger(run_logs, plans, config.out_directory, config.out_format, log_export_queue, log_export_queue_mutex, log_export_queue_cdn, step_log_config.get(), exit_log_config.get());
+        log_worker = new SimLogger(run_logs, plans, config.out_directory, config.out_format, log_export_queue, log_export_queue_mutex, log_export_queue_cdn, step_log_config.get(), exit_log_config.get(), step_log_config && step_log_config->log_timing, exit_log_config->log_timing);
     } else if (!config.out_directory.empty() ^ !config.out_format.empty())  {
         fprintf(stderr, "Warning: Only 1 of out_directory and out_format is set, both must be set for logging to commence to file.\n");
     }

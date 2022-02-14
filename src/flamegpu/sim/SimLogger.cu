@@ -34,7 +34,9 @@ SimLogger::SimLogger(const std::vector<RunLog> &_run_logs,
         std::mutex &_log_export_queue_mutex,
         std::condition_variable &_log_export_queue_cdn,
         bool _export_step,
-        bool _export_exit)
+        bool _export_exit,
+        bool _export_step_time,
+        bool _export_exit_time)
     : run_logs(_run_logs)
     , run_plans(_run_plans)
     , out_directory(_out_directory)
@@ -43,7 +45,9 @@ SimLogger::SimLogger(const std::vector<RunLog> &_run_logs,
     , log_export_queue_mutex(_log_export_queue_mutex)
     , log_export_queue_cdn(_log_export_queue_cdn)
     , export_step(_export_step)
-    , export_exit(_export_exit) {
+    , export_exit(_export_exit)
+    , export_step_time(_export_step_time)
+    , export_exit_time(_export_exit_time) {
     this->thread = std::thread(&SimLogger::start, this);
     // Attempt to name the thread
 #ifdef _MSC_VER
@@ -85,12 +89,12 @@ void SimLogger::start() {
             if (export_exit) {
                 const path exit_path = p_out_directory / path(run_plans[target_log].getOutputSubdirectory()) / path("exit." + out_format);
                 const auto exit_logger = io::LoggerFactory::createLogger(exit_path.generic_string(), false, false);
-                exit_logger->log(run_logs[target_log], true, false, true);
+                exit_logger->log(run_logs[target_log], true, false, true, false, export_exit_time);
             }
             if (export_step) {
                 const path step_path = p_out_directory/path(run_plans[target_log].getOutputSubdirectory())/path(std::to_string(target_log)+"."+out_format);
                 const auto step_logger = io::LoggerFactory::createLogger(step_path.generic_string(), false, false);
-                step_logger->log(run_logs[target_log], true, true, false);
+                step_logger->log(run_logs[target_log], true, true, false, export_step_time, false);
             }
             // Continue
             ++logs_processed;

@@ -16,6 +16,8 @@
 namespace flamegpu {
 
 struct AgentLogFrame;
+struct StepLogFrame;
+struct ExitLogFrame;
 
 /**
  * Generic frame of logging data
@@ -30,8 +32,8 @@ struct LogFrame {
     /**
      * Creates a log with pre-populated data
      */
-    LogFrame(const std::map<std::string, util::Any> &&_environment,
-    const std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>> &&_agents,
+    LogFrame(const std::map<std::string, util::Any> &_environment,
+    const std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>> &_agents,
     const unsigned int &_step_count);
     /**
      * Returns the step count of the log
@@ -74,11 +76,126 @@ struct LogFrame {
     std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>> agents;
     unsigned int step_count;
 };
+
+/**
+ * Frame of step log data
+ * Extends the common log frame
+ */
+struct StepLogFrame : public LogFrame {
+    friend class CUDASimulation;
+    /**
+     * Default constructor, creates an empty log
+     */
+    StepLogFrame();
+    /**
+     * Creates a log with pre-populated data
+     */
+    StepLogFrame(const std::map<std::string, util::Any>&& _environment,
+        const std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>>&& _agents,
+        const unsigned int& _step_count);
+
+    /**
+     * Return the execution time of the associated step, in seconds
+     */
+    double getStepTime() const { return step_time; }
+
+ private:
+    /**
+     * Execution time of the associated step, in seconds
+     * Only relevant if RTC agent functions are used, time may differ significantly when they are loaded from cache
+     * The step log at step 0 occurs before the first model, as such step_time refers to combined RTC and initialisation time
+     */
+    double step_time;
+};
+
+/**
+ * Frame of exit log data
+ * Extends the common log frame
+ */
+struct ExitLogFrame : public LogFrame {
+    friend class CUDASimulation;
+    /**
+     * Default constructor, creates an empty log
+     */
+    ExitLogFrame();
+    /**
+     * Creates a log with pre-populated data
+     */
+    ExitLogFrame(const std::map<std::string, util::Any>&& _environment,
+        const std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>>&& _agents,
+        const unsigned int& _step_count);
+
+    /**
+     * Return the runtime compilation time, in seconds
+     */
+    double getRTCTime() const { return rtc_time; }
+    /**
+     * Return the time spent executing initialisation functions, in seconds
+     */
+    double getInitTime() const { return init_time; }
+    /**
+     * Return the time spent executing exit functions, in seconds
+     */
+    double getExitTime() const { return exit_time; }
+    /**
+     * Return the total execution time of the call to simulate(), in seconds
+     */
+    double getTotalTime() const { return total_time; }
+
+ private:
+    /**
+     * Runtime compilation time, in seconds
+     * Only relevant if RTC agent functions are used, time may differ significantly when they are loaded from cache
+     */
+    double rtc_time;
+    /**
+     * Time spent executing initialisation functions, in seconds
+     */
+    double init_time;
+    /**
+     * Time spent executing exit functions, in seconds
+     */
+    double exit_time;
+    /**
+     * Total execution time of the call to simulate(), in seconds
+     */
+    double total_time;
+};
 /**
  * A collection of LogFrame's related to a single model run
  * The data available depends on the LoggingConfig used at runtime
  */
 struct RunLog {
+    struct PerformanceSpecs {
+        /**
+         * The name of the selected CUDA device, as returned by cudaGetDeviceProperties()
+         */
+        std::string device_name;
+        /**
+         * The selected CUDA device's compute capability major version number
+         */
+        int device_cc_major;
+        /**
+         * The selected CUDA device's compute capability minor version number
+         */
+        int device_cc_minor;
+        /**
+         * The version number of the current CUDA Runtime instance.
+         * The version is returned as (1000 major + 10 minor). For example, CUDA 9.2 would be represented by 9020.
+         * @note Uses cudaRuntimeGetVersion()
+         */
+        int cuda_version;
+        /**
+         * True if FLAME GPU was built with SEATBELTS enabled at CMake configure time
+         * For maximum performance, this value should be false
+         */
+        bool seatbelts;
+        /**
+         * Full FLAMEGPU version string
+         * @see flamegpu::VERSION_FULL
+         */
+        std::string flamegpu_version;
+    };
     friend class CUDASimulation;
     /**
      * Constructs an empty RunLog
@@ -89,21 +206,21 @@ struct RunLog {
      * @param _exit Exit LogFrame
      * @param _step Ordered list of step LogFrames
      */
-    RunLog(const LogFrame &_exit, const std::list<LogFrame> &_step)
+    RunLog(const ExitLogFrame &_exit, const std::list<StepLogFrame> &_step)
         : exit(_exit)
         , step(_step) { }
      /**
       * Return the exit LogFrame
       * @return The logging information collected after completion of the model run
       */
-    const LogFrame &getExitLog() const { return exit; }
+    const ExitLogFrame &getExitLog() const { return exit; }
     /**
      * Return the ordered list of step LogFrames
      * @return The logging information collected after each model step
      * @note If logging frequency was changed in the StepLoggingConfig, there may be less than 1 LogFrame per step.
      * @see getStepLogFrequency()
      */
-    const std::list<LogFrame> &getStepLog() const {return step; }
+    const std::list<StepLogFrame> &getStepLog() const {return step; }
     /**
      * Returns the random seed used for this run
      */
@@ -113,16 +230,20 @@ struct RunLog {
      * @note This value is configured via StepLoggingConfig::setFrequency()
      */
     unsigned int getStepLogFrequency() const { return step_log_frequency; }
+    /**
+     * Return a copy of a structure containing performance relevant device and software information
+     */
+    PerformanceSpecs getPerformanceSpecs() const { return performance_specs; }
 
  private:
     /**
      * Exit LogFrame
      */
-    LogFrame exit;
+    ExitLogFrame exit;
     /**
      * Ordered list of step LogFrames
      */
-    std::list<LogFrame> step;
+    std::list<StepLogFrame> step;
     /**
      * Random seed
      */
@@ -131,6 +252,10 @@ struct RunLog {
      * Step log frequency
      */
     unsigned int step_log_frequency = 0;
+    /**
+     * Performance relevant device/software info
+     */
+    PerformanceSpecs performance_specs;
 };
 /**
  * Frame of logging data related to a specific agent type and state.

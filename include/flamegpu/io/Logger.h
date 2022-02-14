@@ -20,12 +20,12 @@ class Logger {
      * Log a runlog to file, using a RunPlan in place of config
      * @throws May throw exceptions if logging to file failed for any reason
      */
-    virtual void log(const RunLog &log, const RunPlan &plan, bool logSteps = true, bool logExit = true) const = 0;
+    virtual void log(const RunLog &log, const RunPlan &plan, bool logSteps = true, bool logExit = true, bool logStepTime = false, bool logExitTime = false) const = 0;
     /**
      * Log a runlog to file, uses config data (random seed) from the RunLog
      * @throws May throw exceptions if logging to file failed for any reason
      */
-    virtual void log(const RunLog &log, bool logConfig = true, bool logSteps = true, bool logExit = true) const = 0;
+    virtual void log(const RunLog &log, bool logConfig = true, bool logSteps = true, bool logExit = true, bool logStepTime = false, bool logExitTime = false) const = 0;
 };
 }  // namespace io
 }  // namespace flamegpu

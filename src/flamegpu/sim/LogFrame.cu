@@ -6,8 +6,8 @@ LogFrame::LogFrame()
     : step_count(0) { }
 
 
-LogFrame::LogFrame(const std::map<std::string, util::Any> &&_environment,
-const std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>> &&_agents,
+LogFrame::LogFrame(const std::map<std::string, util::Any> &_environment,
+const std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>> &_agents,
 const unsigned int &_step_count)
     : environment(_environment)
     , agents(_agents)
@@ -58,5 +58,33 @@ double AgentLogFrame::getStandardDev(const std::string &variable_name) const {
     }
     return *static_cast<double *>(it->second.ptr);
 }
+
+StepLogFrame::StepLogFrame()
+    : LogFrame()
+    , step_time(0.0) { }
+
+
+StepLogFrame::StepLogFrame(const std::map<std::string, util::Any>&& _environment,
+    const std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>>&& _agents,
+    const unsigned int& _step_count)
+    : LogFrame(_environment, _agents, _step_count)
+    , step_time(0.0) { }
+
+ExitLogFrame::ExitLogFrame()
+    : LogFrame()
+    , rtc_time(0.0)
+    , init_time(0.0)
+    , exit_time(0.0)
+    , total_time(0.0) { }
+
+
+ExitLogFrame::ExitLogFrame(const std::map<std::string, util::Any>&& _environment,
+    const std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>>&& _agents,
+    const unsigned int& _step_count)
+    : LogFrame(_environment, _agents, _step_count)
+    , rtc_time(0.0)
+    , init_time(0.0)
+    , exit_time(0.0)
+    , total_time(0.0) { }
 
 }  // namespace flamegpu
