@@ -169,9 +169,7 @@ tinyxml2::XMLNode *XMLLogger::logSteps(tinyxml2::XMLDocument &doc, const RunLog 
     return pStepsElement;
 }
 tinyxml2::XMLNode *XMLLogger::logExit(tinyxml2::XMLDocument &doc, const RunLog &log, bool logTime) const {
-    tinyxml2::XMLElement *pExitElement = doc.NewElement("exit");
-    pExitElement->InsertEndChild(writeLogFrame(doc, log.getExitLog(), logTime));
-    return pExitElement;
+    return writeLogFrame(doc, log.getExitLog(), logTime);
 }
 tinyxml2::XMLNode* XMLLogger::writeLogFrame(tinyxml2::XMLDocument& doc, const StepLogFrame& frame, bool logTime) const {
     tinyxml2::XMLElement* pFrameElement = doc.NewElement("step");
