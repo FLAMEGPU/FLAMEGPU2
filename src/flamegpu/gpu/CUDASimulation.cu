@@ -1182,7 +1182,6 @@ void CUDASimulation::simulate() {
         // Run the step
         bool continueSimulation = step();
         if (!continueSimulation) {
-            processStepLog(this->elapsedSecondsPerStep.back());
             break;
         }
         #ifdef VISUALISATION
