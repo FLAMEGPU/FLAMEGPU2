@@ -235,6 +235,7 @@ Several environmental variables are used or required by FLAME GPU 2.
   + Alternatively `CUDA_HOME` may be used if `CUDA_PATH` was not set.
 + `FLAMEGPU_INC_DIR` - When RTC compilation is required, if the location of the `include` directory cannot be found it must be specified using the `FLAMEGPU_INC_DIR` environment variable.
 + `FLAMEGPU_TMP_DIR` - FLAME GPU may cache some files to a temporary directory on the system, using the temporary directory returned by [`std::filesystem::temp_directory_path`](https://en.cppreference.com/w/cpp/filesystem/temp_directory_path). The location can optionally be overridden using the `FLAMEGPU_TMP_DIR` environment variable.
++ `FLAMEGPU_RTC_INCLUDE_DIRS` - A list of include directories that should be provided to the RTC compiler, these should be separated using `;` (Windows) or `:` (Linux). If this variable is not found, the working directory will be used as a default.
 
 ## Running the Test Suite(s)
 
