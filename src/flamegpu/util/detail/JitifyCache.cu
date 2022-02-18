@@ -14,6 +14,7 @@
 #include <filesystem>
 using std::tr2::sys::temp_directory_path;
 using std::tr2::sys::exists;
+using std::tr2::sys::current_path;
 using std::tr2::sys::path;
 using std::tr2::sys::directory_iterator;
 #else
@@ -22,6 +23,7 @@ using std::tr2::sys::directory_iterator;
 #include <experimental/filesystem>
 using std::experimental::filesystem::v1::temp_directory_path;
 using std::experimental::filesystem::v1::exists;
+using std::experimental::filesystem::v1::current_path;
 using std::experimental::filesystem::v1::path;
 using std::experimental::filesystem::v1::directory_iterator;
 #endif
@@ -65,6 +67,35 @@ path getTMP() {
         result = tmp;
     }
     return result;
+}
+/**
+ * Returns the user-defined include directories
+ */
+std::vector<path> getIncludeDirs() {
+    static std::vector<path> rtn;
+    if (rtn.empty()) {
+        if (std::getenv("FLAMEGPU_RTC_INCLUDE_DIRS")) {
+            const std::string s = std::getenv("FLAMEGPU_RTC_INCLUDE_DIRS");
+            // Split the string by ; (windows), : (linux)
+#if defined(_MSC_VER)
+            std::string delimiter = ";";
+#else
+            std::string delimiter = ":";
+#endif
+            size_t start = 0, end = s.find(delimiter);
+            std::string token;
+            do {
+                path p = s.substr(start, end - start);
+                if (!p.empty()) {
+                    rtn.push_back(p);
+                }
+                start = end + delimiter.length();
+            } while ((end = s.find(delimiter, start))!= std::string::npos);
+        } else {
+            rtn.push_back(current_path());
+        }
+    }
+    return rtn;
 }
 std::string loadFile(const path &filepath) {
     std::ifstream ifs;
@@ -271,6 +302,10 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
 
     // cuda include directory (via CUDA_PATH)
     options.push_back(std::string("-I" + cuda_include_dir));
+
+    // Add user specified include paths
+    for (const auto &p : getIncludeDirs())
+        options.push_back(std::string("-I" + p.generic_string()));
 
 #ifdef USE_GLM
     // GLM headers increase build time ~5x, so only enable glm if user is using it
