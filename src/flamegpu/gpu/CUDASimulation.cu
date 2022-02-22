@@ -302,6 +302,47 @@ template <typename T> struct Dims {
 };
 }
 
+__global__ void calculateSpatialHashFloat3(float* xyz, unsigned int* binIndex, detail::Dims<float> envMin, detail::Dims<float> envWidth, detail::Dims<unsigned int> gridDim, unsigned int threadCount) {
+    const unsigned int TID = blockIdx.x * blockDim.x + threadIdx.x;
+    if (TID < threadCount) {
+        // Compute hash (effectivley an index for to a bin within the partitioning grid in this case)
+        int gridPos[3] = {
+            static_cast<int>(floorf(((xyz[TID * 3 + 0] - envMin.x) / envWidth.x) * gridDim.x)),
+            static_cast<int>(floorf(((xyz[TID * 3 + 1] - envMin.y) / envWidth.y) * gridDim.y)),
+            static_cast<int>(floorf(((xyz[TID * 3 + 2] - envMin.z) / envWidth.z) * gridDim.z))
+        };
+
+        // Compute and set the bin index
+        unsigned int bindex;
+
+        bindex = (unsigned int)(
+            (gridPos[2] * gridDim.x * gridDim.y +   // z
+                (gridPos[1] * gridDim.x) +              // y
+                gridPos[0]));                           // x
+
+        binIndex[TID] = bindex;
+    }
+}
+__global__ void calculateSpatialHashFloat2(float* xy, unsigned int* binIndex, detail::Dims<float> envMin, detail::Dims<float> envWidth, detail::Dims<unsigned int> gridDim, unsigned int threadCount) {
+    const unsigned int TID = blockIdx.x * blockDim.x + threadIdx.x;
+    if (TID < threadCount) {
+        // Compute hash (effectivley an index for to a bin within the partitioning grid in this case)
+        int gridPos[3] = {
+            static_cast<int>(floorf(((xy[TID * 2 + 0] - envMin.x) / envWidth.x) * gridDim.x)),
+            static_cast<int>(floorf(((xy[TID * 2 + 1] - envMin.y) / envWidth.y) * gridDim.y)),
+            0
+        };
+
+        // Compute and set the bin index
+        unsigned int bindex;
+
+        bindex = (unsigned int)(
+            (gridPos[1] * gridDim.x) +              // y
+            gridPos[0]);                            // x
+
+        binIndex[TID] = bindex;
+    }
+}
 __global__ void calculateSpatialHash(float* x, float* y, float* z, unsigned int* binIndex, detail::Dims<float> envMin, detail::Dims<float> envWidth, detail::Dims<unsigned int> gridDim, unsigned int threadCount) {
     const unsigned int TID = blockIdx.x * blockDim.x + threadIdx.x;
     if (TID < threadCount) {
@@ -349,7 +390,19 @@ void CUDASimulation::determineAgentsToSort() {
                     // Agent uses spatial, check it has correct variables
                     const auto& ad = *(it->second->description);
                     if (ad.hasVariable("x") && ad.hasVariable("y") && ad.hasVariable("z")) {
-                        sortTriggers3D.insert(it_f->first);
+                        auto& x = it->second->variables.at("x");
+                        auto& y = it->second->variables.at("y");
+                        auto& z = it->second->variables.at("z");
+                        if (x.type == std::type_index(typeid(float)) && x.elements == 1 &&
+                            y.type == std::type_index(typeid(float)) && y.elements == 1 &&
+                            z.type == std::type_index(typeid(float)) && z.elements == 1) {
+                            sortTriggers3D.insert(it_f->first);
+                        }
+                    } else if (ad.hasVariable("xyz")) {
+                        auto& xyz = it->second->variables.at("xyz");
+                        if (xyz.type == std::type_index(typeid(float)) && xyz.elements == 3) {
+                            sortTriggers3D.insert(it_f->first);
+                        }
                     }
                 }
 
@@ -358,7 +411,17 @@ void CUDASimulation::determineAgentsToSort() {
                     // Agent uses spatial, check it has correct variables
                     const auto& ad = *(it->second->description);
                     if (ad.hasVariable("x") && ad.hasVariable("y")) {
-                        sortTriggers2D.insert(it_f->first);
+                        auto& x = it->second->variables.at("x");
+                        auto& y = it->second->variables.at("y");
+                        if (x.type == std::type_index(typeid(float)) && x.elements == 1 &&
+                            y.type == std::type_index(typeid(float)) && y.elements == 1) {
+                            sortTriggers2D.insert(it_f->first);
+                        }
+                    } else if (ad.hasVariable("xy")) {
+                        auto& xy = it->second->variables.at("xy");
+                        if (xy.type == std::type_index(typeid(float)) && xy.elements == 2) {
+                            sortTriggers2D.insert(it_f->first);
+                        }
                     }
                 }
             }
@@ -400,17 +463,26 @@ void CUDASimulation::spatialSortAgent(const std::string& funcName, const std::st
         envMin = {0.0f, 0.0f, 0.0f};
         envMax = {0.0f, 0.0f, 0.0f};
     }
-    if (radius) {
+    if (radius > 0.0f) {
         envWidth = {(envMax.x-envMin.x), (envMax.y-envMin.y), (envMax.z-envMin.z)};
         gridDim = {static_cast<unsigned int>(ceilf(envWidth.x / radius)), static_cast<unsigned int>(ceilf(envWidth.y / radius)), static_cast<unsigned int>(ceilf(envWidth.z / radius))};
     }
 
 
-    // Any agent in this list is guaranteed to have x, y, z and _auto_sort_bin_index vars - used in the computation of spatial hash
+    // Any agent in this list is guaranteed to have x, y, z (or xyz vec versions) and _auto_sort_bin_index vars - used in the computation of spatial hash
     // TODO: User could supply alternatives to "x", "y", "z" to use alternative variables?
-    void* xPtr = cuda_agent.getStateVariablePtr(state, "x");
-    void* yPtr = cuda_agent.getStateVariablePtr(state, "y");
-    void* zPtr = mode == Agent3D ? cuda_agent.getStateVariablePtr(state, "z") : 0;
+    void* xPtr = nullptr, *yPtr = nullptr, *zPtr = nullptr;
+    void* xyPtr = nullptr, * xyzPtr = nullptr;
+    if (mode == Agent3D && cudaAgentData.variables.find("xyz") != cudaAgentData.variables.end()) {
+        xyzPtr = cuda_agent.getStateVariablePtr(state, "xyz");
+    } else if (mode == Agent2D && cudaAgentData.variables.find("xy") != cudaAgentData.variables.end()) {
+        xyPtr = cuda_agent.getStateVariablePtr(state, "xy");
+    } else {
+        xPtr = cuda_agent.getStateVariablePtr(state, "x");
+        yPtr = cuda_agent.getStateVariablePtr(state, "y");
+        zPtr = mode == Agent3D ? cuda_agent.getStateVariablePtr(state, "z") : 0;
+    }
+
     void* binIndexPtr = cuda_agent.getStateVariablePtr(state, "_auto_sort_bin_index");
 
     // Compute occupancy
@@ -431,14 +503,31 @@ void CUDASimulation::spatialSortAgent(const std::string& funcName, const std::st
 #endif
 
     // Launch kernel
-    calculateSpatialHash<<<gridSize, blockSize, sm_size, this->getStream(streamIdx) >>> (reinterpret_cast<float*>(xPtr),
-    reinterpret_cast<float*>(yPtr),
-    reinterpret_cast<float*>(zPtr),
-    reinterpret_cast<unsigned int*>(binIndexPtr),
-    envMin,
-    envWidth,
-    gridDim,
-    state_list_size);
+    if (xyzPtr) {
+        calculateSpatialHashFloat3<<<gridSize, blockSize, sm_size, this->getStream(streamIdx)>>>(reinterpret_cast<float*>(xyzPtr),
+            reinterpret_cast<unsigned int*>(binIndexPtr),
+            envMin,
+            envWidth,
+            gridDim,
+            state_list_size);
+    } else if (xyPtr) {
+        calculateSpatialHashFloat2<<<gridSize, blockSize, sm_size, this->getStream(streamIdx)>>>(reinterpret_cast<float*>(xyPtr),
+            reinterpret_cast<unsigned int*>(binIndexPtr),
+            envMin,
+            envWidth,
+            gridDim,
+            state_list_size);
+    } else {
+        calculateSpatialHash<<<gridSize, blockSize, sm_size, this->getStream(streamIdx)>>>(reinterpret_cast<float*>(xPtr),
+            reinterpret_cast<float*>(yPtr),
+            reinterpret_cast<float*>(zPtr),
+            reinterpret_cast<unsigned int*>(binIndexPtr),
+            envMin,
+            envWidth,
+            gridDim,
+            state_list_size);
+    }
+    gpuErrchkLaunch();
 
     assert(host_api);
     host_api->agent(agentName).sort<unsigned int>("_auto_sort_bin_index", HostAgentAPI::Asc);
