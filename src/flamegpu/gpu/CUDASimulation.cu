@@ -436,6 +436,12 @@ void CUDASimulation::determineAgentsToSort() {
 void CUDASimulation::spatialSortAgent(const std::string& funcName, const std::string& agentName, const std::string& state, const int mode) {
     // Fetch the appropriate message name
     CUDAAgent& cuda_agent = getCUDAAgent(agentName);
+
+    const unsigned int state_list_size = cuda_agent.getStateSize(state);
+    // Can't sort no agents
+    if (!state_list_size)
+        return;
+
     auto& cudaAgentData = cuda_agent.getAgentDescription();
     auto& funcData = cudaAgentData.functions.at(funcName);
     std::string messageName;
@@ -492,7 +498,6 @@ void CUDASimulation::spatialSortAgent(const std::string& funcName, const std::st
     int blockSize = 0;  // The launch configurator returned block size
     int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
     int gridSize = 0;  // The actual grid size needed, based on input size
-    const unsigned int state_list_size = cuda_agent.getStateSize(state);
     cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, calculateSpatialHash, 0, state_list_size);
 
     //! Round up according to CUDAAgent state list size
