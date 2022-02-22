@@ -1,0 +1,169 @@
+# Configure CMake for a number of CMake versions, but do not compile.
+name: CMake
+
+on:
+  # Branch pushes that do not only modify other workflow files
+  push:
+    branches:
+      - '**'
+    paths:
+      - "**"
+      - "!.github/**"
+      - ".github/scripts/install_cuda_ubuntu.sh"
+      - ".github/workflows/CMake.yml"
+  # Allow manual invocation.
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  configure:
+    runs-on: ${{ matrix.cudacxx.os }}
+    strategy:
+      fail-fast: false
+      # Multiplicative build matrix
+      matrix:
+        cudacxx:
+          - cuda: "11.0"
+            cuda_arch: "35"
+            hostcxx: gcc-8
+            os: ubuntu-20.04
+        python: 
+          - "3.8"
+        config:
+          - name: "Release"
+            config: "Release"
+            SEATBELTS: "ON"
+        VISUALISATION: 
+          - "OFF"
+        # 'default' or '' will not install cmake, otherwise provide a full semver version.
+        cmake:
+          - "default"
+          - "3.18.0"
+
+    # Name the job based on matrix/env options
+    name: "configure (${{ matrix.cmake }}, ${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
+
+    # Define job-wide env constants, and promote matrix elements to env constants for portable steps.
+    env:
+      # Workflow specific constants for building a specific example
+      INDIVIDUAL_EXAMPLE: "game_of_life"
+      # Define constants
+      BUILD_DIR: "build"
+      BUILD_TESTS: "ON"
+      # Conditional based on matrix via awkward almost ternary
+      BUILD_SWIG_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
+      # Port matrix options to environment, for more portability.
+      CUDA: ${{ matrix.cudacxx.cuda }}
+      CUDA_ARCH: ${{ matrix.cudacxx.cuda_arch }}
+      HOSTCXX: ${{ matrix.cudacxx.hostcxx }}
+      OS: ${{ matrix.cudacxx.os }}
+      CONFIG: ${{ matrix.config.config }}
+      SEATBELTS: ${{ matrix.config.SEATBELTS }}
+      PYTHON: ${{ matrix.python}}
+      VISUALISATION: ${{ matrix.VISUALISATION }}
+      CMAKE: ${{ matrix.cmake }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install cmake from GitHub Releases
+      if: ${{ env.CMAKE != '' && env.CMAKE != 'default' }}
+      working-directory: ${{ runner.temp }}
+      run: |
+        wget -q https://github.com/Kitware/CMake/releases/download/v${{ env.CMAKE }}/cmake-${{ env.CMAKE }}-linux-x86_64.tar.gz
+        tar -zxvf cmake-${{ env.CMAKE }}-linux-x86_64.tar.gz
+        # Inner directory case changes in some releases, use find to get the right path
+        echo "$(dirname $(find $(pwd) -wholename "*/bin/cmake" -exec echo {} \; -quit))" >> $GITHUB_PATH
+
+    - name: Install CUDA
+      if: ${{ startswith(env.OS, 'ubuntu') && env.CUDA != '' }}
+      env:
+        cuda: ${{ env.CUDA }}
+      run: .github/scripts/install_cuda_ubuntu.sh
+
+    - name: Install/Select gcc and g++
+      if: ${{ startsWith(env.HOSTCXX, 'gcc-') }}
+      run: |
+        gcc_version=${HOSTCXX//gcc-/}
+        sudo apt-get install -y gcc-${gcc_version} g++-${gcc_version}
+        echo "CC=/usr/bin/gcc-${gcc_version}" >> $GITHUB_ENV
+        echo "CXX=/usr/bin/g++-${gcc_version}" >> $GITHUB_ENV
+        echo "CUDAHOSTCXX=/usr/bin/g++-${gcc_version}" >> $GITHUB_ENV
+
+    - name: Select Python
+      if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }} 
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ env.PYTHON }}
+
+    # @todo - is some/all of this still required when using select Python?
+    - name: Install python dependencies
+      if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }}
+      run: |
+        sudo apt-get install python3-venv
+        python3 -m pip install --upgrade wheel
+        python3 -m pip install --upgrade 'setuptools; python_version >= "3.6"' 'setuptools<51.3.0; python_version < "3.6" and python_version >= "3.0"'
+
+    - name: Install Visualisation Dependencies
+      if: ${{ startswith(env.OS, 'ubuntu') && env.VISUALISATION == 'ON' }}
+      run: |
+        # Install ubuntu-20.04 packages
+        if [ "$OS" == 'ubuntu-20.04' ]; then 
+          sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
+        fi
+        # Install Ubuntu 18.04 packages
+        if [ "$OS" == 'ubuntu-18.04' ]; then 
+          sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype6-dev libgl1-mesa-dev
+        fi
+
+    - name: Install Swig >= 4.0.2
+      run: |
+        # Remove existing swig install, so CMake finds the correct swig
+        if [ "$OS" == 'ubuntu-20.04' ]; then 
+          sudo apt-get remove -y swig swig4.0
+        fi
+        # Install Ubuntu 18.04 packages
+        if [ "$OS" == 'ubuntu-18.04' ]; then 
+          sudo apt-get remove -y swig
+        fi
+        # Install additional apt-based dependencies required to build swig 4.0.2
+        sudo apt-get install -y bison
+        # Create a local directory to build swig in.
+        mkdir -p swig-from-source && cd swig-from-source
+        # Install SWIG building from source dependencies
+        wget https://github.com/swig/swig/archive/refs/tags/v4.0.2.tar.gz
+        tar -zxf v4.0.2.tar.gz
+        cd swig-4.0.2/
+        ./autogen.sh
+        ./configure
+        make
+        sudo make install
+
+    - name: Configure cmake
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}"
+        -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
+        -Werror=dev
+        -DCMAKE_WARN_DEPRECATED="OFF" 
+        -DWARNINGS_AS_ERRORS="ON"
+        -DCUDA_ARCH="${{ env.CUDA_ARCH }}"
+        -DBUILD_TESTS="${{ env.BUILD_TESTS }}"
+        -DBUILD_SWIG_PYTHON="${{ env.BUILD_SWIG_PYTHON }}"
+        -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
+        -DVISUALISATION="${{ env.VISUALISATION }}"
+        -DUSE_NVTX="ON"
+
+    - name: Configure Individual example
+      if: ${{ env.INDIVIDUAL_EXAMPLE != '' }}
+      working-directory: examples/${{ env.INDIVIDUAL_EXAMPLE }}
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}"
+        -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
+        -Werror=dev
+        -DCMAKE_WARN_DEPRECATED="OFF" 
+        -DWARNINGS_AS_ERRORS="ON"
+        -DCUDA_ARCH="${{ env.CUDA_ARCH }}"
+        -DUSE_NVTX="ON"
