@@ -175,6 +175,9 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
     // Submodels all run quiet/not verbose by default
     SimulationConfig().verbose = false;
     SimulationConfig().steps = submodel_desc->max_steps;
+
+    // Determine which agents will be spatially sorted
+    this->determineAgentsToSort();
 }
 
 CUDASimulation::~CUDASimulation() {
