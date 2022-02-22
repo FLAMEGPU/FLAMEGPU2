@@ -56,7 +56,10 @@ if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "10.0")
         # Create a header only (INTERFACE) target which can be linked against to inherit include directories. Mark this as imported, because there are no build steps requred.
         add_library(NVTX::nvtx3 INTERFACE IMPORTED)
         target_include_directories(NVTX::nvtx3 INTERFACE ${NVTX_INCLUDE_DIRS})
-        set_property(TARGET NVTX::nvtx3 PROPERTY VERSION ${NVTX_VERSION})
+        # Interface targets only support the version property from 
+        if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
+            set_property(TARGET NVTX::nvtx3 PROPERTY VERSION ${NVTX_VERSION})
+        endif()
     endif()
 endif()
 

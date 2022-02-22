@@ -437,7 +437,13 @@ target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::cuda_driver)
 if(USE_NVTX AND TARGET NVTX::nvtx)
     target_link_libraries(${PROJECT_NAME} PUBLIC NVTX::nvtx)
     # Get the version to set a definition value 
-    get_target_property(nvtxversion NVTX::nvtx VERSION)
+    # Interface targets only support the version property from 3.19
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
+        get_target_property(nvtxversion NVTX::nvtx VERSION)
+    else()
+        # fallback to the old cmake var.
+        set(nvtxversion ${NVTX_VERSION})
+    endif()
     target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<COMPILE_LANGUAGE:C,CXX,CUDA>:USE_NVTX=${nvtxversion}>")
     unset(nvtxversion)
 endif()
