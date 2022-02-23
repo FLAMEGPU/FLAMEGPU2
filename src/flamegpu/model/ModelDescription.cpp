@@ -165,8 +165,12 @@ void ModelDescription::addExitCondition(FLAMEGPU_EXIT_CONDITION_POINTER func_p) 
     model->exitConditions.push_back(func_p);
 }
 
+void ModelDescription::addExecutionRoot(DependencyNode& root) {
+    model->dependencyGraph->addRoot(root);
+}
+
 void ModelDescription::generateLayers() {
-    model->dependencyGraph->generateLayers(*this);
+    model->dependencyGraph->generateLayers();
 }
 
 /**

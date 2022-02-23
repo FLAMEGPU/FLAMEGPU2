@@ -2,7 +2,7 @@
 
 namespace flamegpu {
 
-DependencyGraph::DependencyGraph(const ModelData* _model) : model(_model) {
+DependencyGraph::DependencyGraph(ModelData* _model) : model(_model) {
 }
 
 DependencyGraph::DependencyGraph(const DependencyGraph& other) : model(other.model) {
@@ -73,9 +73,16 @@ bool DependencyGraph::validateDependencyGraph() {
     return true;
 }
 
-void DependencyGraph::generateLayers(ModelDescription& _model) {
+LayerDescription& DependencyGraph::newModelLayer() {
+    std::shared_ptr<ModelData> modelDataAsShared = model->shared_from_this();
+    auto rtn = std::shared_ptr<LayerData>(new LayerData(modelDataAsShared, "", static_cast<unsigned int>(modelDataAsShared->layers.size())));
+    model->layers.push_back(rtn);
+    return *rtn->description;
+}
+
+void DependencyGraph::generateLayers() {
     // Check model doesn't already have layers attached
-    if (_model.getLayersCount() > 0) {
+    if (model->layers.size() > 0) {
         THROW exception::InvalidDependencyGraph("DependencyGraph cannot generate layers on a model which already has layers attached!");
     }
 
@@ -136,7 +143,7 @@ void DependencyGraph::generateLayers(ModelDescription& _model) {
     constructedLayers.clear();
     for (auto idealLayer : idealLayers) {
         // Request a new layer from the model
-        LayerDescription* layer = &_model.newLayer();
+        LayerDescription& layer = newModelLayer();
         constructedLayers.emplace_back();
         // Attempt to add each node in the idealLayer to the layer
         for (auto node : idealLayer) {
@@ -144,18 +151,18 @@ void DependencyGraph::generateLayers(ModelDescription& _model) {
             // Agent function
             if (AgentFunctionDescription* afd = dynamic_cast<AgentFunctionDescription*>(node)) {
                 try {
-                    layer->addAgentFunction(*afd);
+                    layer.addAgentFunction(*afd);
                     constructedLayers.back().emplace_back(DependencyGraph::getNodeName(afd));
                 } catch (const exception::InvalidAgentFunc&) {
                     // Conflict, create new layer and add to that instead
-                    layer = &_model.newLayer();
-                    layer->addAgentFunction(*afd);
+                    LayerDescription& newLayer = newModelLayer();
+                    newLayer.addAgentFunction(*afd);
                     constructedLayers.emplace_back();
                     constructedLayers.back().emplace_back(DependencyGraph::getNodeName(afd));
                     // printf("New function execution layer created - exception::InvalidAgentFunc exception\n");
                 } catch (const exception::InvalidLayerMember&) {
-                    layer = &_model.newLayer();
-                    layer->addAgentFunction(*afd);
+                    LayerDescription& newLayer = newModelLayer();
+                    newLayer.addAgentFunction(*afd);
                     constructedLayers.emplace_back();
                     constructedLayers.back().emplace_back(DependencyGraph::getNodeName(afd));
                     // printf("New function execution layer created - exception::InvalidLayerMember exception\n");
@@ -165,17 +172,17 @@ void DependencyGraph::generateLayers(ModelDescription& _model) {
             // Submodel
             if (SubModelDescription* smd = dynamic_cast<SubModelDescription*>(node)) {
                 try {
-                    layer->addSubModel(*smd);
+                    layer.addSubModel(*smd);
                     constructedLayers.back().emplace_back(DependencyGraph::getNodeName(smd));
                 } catch (const exception::InvalidLayerMember&) {
-                    layer = &_model.newLayer();
-                    layer->addSubModel(*smd);
+                    LayerDescription& newLayer = newModelLayer();
+                    newLayer.addSubModel(*smd);
                     constructedLayers.emplace_back();
                     constructedLayers.back().emplace_back(DependencyGraph::getNodeName(smd));
                     // printf("New submodel layer created - exception::InvalidLayerMember exception\n");
                 } catch (const exception::InvalidSubModel&) {
-                    layer = &_model.newLayer();
-                    layer->addSubModel(*smd);
+                    LayerDescription& newLayer = newModelLayer();
+                    newLayer.addSubModel(*smd);
                     constructedLayers.emplace_back();
                     constructedLayers.back().emplace_back(DependencyGraph::getNodeName(smd));
                     // printf("New submodel layer created - exception::InvalidSubModel exception\n");
@@ -188,22 +195,22 @@ void DependencyGraph::generateLayers(ModelDescription& _model) {
                 // If ptr is available, use that
                 if (hdf->getFunctionPtr() != nullptr) {
                     try {
-                        layer->addHostFunction(hdf->getFunctionPtr());
+                        layer.addHostFunction(hdf->getFunctionPtr());
                         constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
                     } catch (const exception::InvalidLayerMember&) {
-                        layer = &_model.newLayer();
-                        layer->addHostFunction(hdf->getFunctionPtr());
+                        LayerDescription& newLayer = newModelLayer();
+                        newLayer.addHostFunction(hdf->getFunctionPtr());
                         constructedLayers.emplace_back();
                         constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
                         // printf("New host function layer created - exception::InvalidLayerMember exception\n");
                     }
                 } else {
                     try {
-                        layer->_addHostFunctionCallback(hdf->getCallbackObject());
+                        layer._addHostFunctionCallback(hdf->getCallbackObject());
                         constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
                     } catch (const exception::InvalidLayerMember&) {
-                        layer = &_model.newLayer();
-                        layer->_addHostFunctionCallback(hdf->getCallbackObject());
+                        LayerDescription& newLayer = newModelLayer();
+                        newLayer._addHostFunctionCallback(hdf->getCallbackObject());
                         constructedLayers.emplace_back();
                         constructedLayers.back().emplace_back(DependencyGraph::getNodeName(hdf));
                         // printf("New host function layer created - exception::InvalidLayerMember exception\n");
