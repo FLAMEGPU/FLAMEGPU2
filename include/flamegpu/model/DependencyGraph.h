@@ -27,7 +27,7 @@ class DependencyGraph {
     /**
      * Used by ModelData for instantiation
      */
-    explicit DependencyGraph(const ModelData* _model);
+    explicit DependencyGraph(ModelData* _model);
     /**
      * Deep copy
      */
@@ -53,7 +53,7 @@ class DependencyGraph {
      * @param model The model the layers should be added to
      * @throws exception::InvalidDependencyGraph if the model already has layers attached
      */
-    void generateLayers(ModelDescription& model);
+    void generateLayers();
     /**
      * Generates a .gv file containing the DOT representation of the dependencies specified
      * @param outputFileName The name of the output file
@@ -89,6 +89,10 @@ class DependencyGraph {
      */
     void checkForUnattachedFunctions();
     /**
+     * Generates a new layer in the model the dependency graph is associated with
+     */
+    LayerDescription& newModelLayer();
+    /**
      * Returns the name of a given DependencyNode
      * @param node The node to get the name of
      * @returns std::string The name of the node
@@ -101,7 +105,7 @@ class DependencyGraph {
     /**
      * Root of the model hierarchy, used for validating agent functions belong to correct model when added
      */
-    const ModelData* model;
+    ModelData* model;
 };
 
 }  // namespace flamegpu

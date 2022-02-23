@@ -75,6 +75,7 @@ struct LayerData {
     LayerData(const LayerData &other) = delete;
 
  protected:
+    friend DependencyGraph; // Uses normal constructor to directly create layers in ModelData - avoids requiring ModelDescription in DependencyGraph
     /**
      * Copy constructor
      * This is unsafe, should only be used internally, use clone() instead
