@@ -104,7 +104,7 @@ TEST(TestSimulationDeathTest, ArgParse_inputfile_short) {
     CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "-i", "I_DO_NOT_EXIST.xml" };
     EXPECT_EQ(c.getSimulationConfig().input_file, "");
-    EXPECT_EXIT(c.initialise(sizeof(argv) / sizeof(char*), argv), testing::ExitedWithCode(EXIT_FAILURE), "[.]*");  // File doesn't exist
+    EXPECT_EXIT(c.initialise(sizeof(argv) / sizeof(char*), argv), testing::ExitedWithCode(EXIT_FAILURE), ".*Loading input file '.*' failed!.*");  // File doesn't exist
 }
 TEST(TestSimulation, ArgParse_steps_long) {
     ModelDescription m(MODEL_NAME);
