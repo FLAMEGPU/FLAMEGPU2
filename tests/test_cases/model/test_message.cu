@@ -34,6 +34,18 @@ TEST(MessageDescriptionTest, variables) {
     EXPECT_EQ(sizeof(int16_t), m.getVariableSize(VARIABLE_NAME2));
     EXPECT_EQ(std::type_index(typeid(int16_t)), m.getVariableType(VARIABLE_NAME2));
     EXPECT_EQ(1u, m.getVariableLength(VARIABLE_NAME2));
+#ifdef USE_GLM
+    // Can create variable with GLM types
+    m.newVariable<glm::vec3>("vec3");
+    m.newVariable<glm::uvec4>("uvec4");
+    EXPECT_EQ(m.getVariablesCount(), 4u);
+    EXPECT_EQ(3u, m.getVariableLength("vec3"));
+    EXPECT_EQ(4u, m.getVariableLength("uvec4"));
+    EXPECT_EQ(sizeof(float), m.getVariableSize("vec3"));
+    EXPECT_EQ(sizeof(unsigned int), m.getVariableSize("uvec4"));
+    EXPECT_EQ(std::type_index(typeid(float)), m.getVariableType("vec3"));
+    EXPECT_EQ(std::type_index(typeid(unsigned int)), m.getVariableType("uvec4"));
+#endif
 }
 TEST(MessageDescriptionTest, variables_array) {
     ModelDescription _m(MODEL_NAME);
@@ -62,6 +74,18 @@ TEST(MessageDescriptionTest, variables_array) {
     EXPECT_EQ(std::type_index(typeid(int16_t)), m.getVariableType(VARIABLE_NAME2));
     EXPECT_EQ(2u, m.getVariableLength(VARIABLE_NAME1));
     EXPECT_EQ(2u, m.getVariableLength(VARIABLE_NAME2));
+#ifdef USE_GLM
+    // Can create variable array with GLM types
+    m.newVariable<glm::vec3, 5>("vec3_5");
+    m.newVariable<glm::uvec4, 2>("uvec4_2");
+    EXPECT_EQ(m.getVariablesCount(), 5u);
+    EXPECT_EQ(5 * 3u, m.getVariableLength("vec3_5"));
+    EXPECT_EQ(2 * 4u, m.getVariableLength("uvec4_2"));
+    EXPECT_EQ(sizeof(float), m.getVariableSize("vec3_5"));
+    EXPECT_EQ(sizeof(unsigned int), m.getVariableSize("uvec4_2"));
+    EXPECT_EQ(std::type_index(typeid(float)), m.getVariableType("vec3_5"));
+    EXPECT_EQ(std::type_index(typeid(unsigned int)), m.getVariableType("uvec4_2"));
+#endif
 }
 
 FLAMEGPU_AGENT_FUNCTION(NoInput, MessageNone, MessageSpatial3D) {

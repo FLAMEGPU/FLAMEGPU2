@@ -14,6 +14,7 @@
 #include "flamegpu/runtime/messaging/MessageNone/MessageNoneHost.h"
 #include "flamegpu/runtime/messaging/MessageBruteForce.h"
 #include "flamegpu/runtime/messaging/MessageSortingType.h"
+#include "flamegpu/util/type_decode.h"
 
 namespace flamegpu {
 
@@ -289,9 +290,9 @@ void MessageBruteForce::Description::newVariable(const std::string& variable_nam
             "in MessageDescription::newVariable().");
     }
     // Array length 0 makes no sense
-    static_assert(N > 0, "A variable cannot have 0 elements.");
+    static_assert(type_decode<T>::len_t * N > 0, "A variable cannot have 0 elements.");
     if (message->variables.find(variable_name) == message->variables.end()) {
-        message->variables.emplace(variable_name, Variable(std::array<T, N>{}));
+        message->variables.emplace(variable_name, Variable(std::array<typename type_decode<T>::type_t, type_decode<T>::len_t * N>{}));
         return;
     }
     THROW exception::InvalidMessageVar("Message ('%s') already contains variable '%s', "
@@ -310,8 +311,8 @@ void MessageBruteForce::Description::newVariableArray(const std::string& variabl
             "in MessageDescription::newVariable().");
     }
     if (message->variables.find(variable_name) == message->variables.end()) {
-        std::vector<T> temp(static_cast<size_t>(length));
-        message->variables.emplace(variable_name, Variable(length, temp));
+        std::vector<typename type_decode<T>::type_t> temp(static_cast<size_t>(type_decode<T>::len_t * length));
+        message->variables.emplace(variable_name, Variable(type_decode<T>::len_t * length, temp));
         return;
     }
     THROW exception::InvalidMessageVar("Message ('%s') already contains variable '%s', "

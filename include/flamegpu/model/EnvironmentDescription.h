@@ -12,6 +12,7 @@
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/runtime/utility/HostEnvironment.cuh"
 #include "flamegpu/util/Any.h"
+#include "flamegpu/util/type_decode.h"
 #include "flamegpu/gpu/CUDAEnsemble.h"
 
 namespace flamegpu {
@@ -129,7 +130,7 @@ class EnvironmentDescription {
      * @throws exception::DuplicateEnvProperty If a property of the same name already exists
      */
     template<typename T>
-    void newProperty(const std::string &name, const T &value, const bool &isConst = false);
+    void newProperty(const std::string &name, T value, bool isConst = false);
     /**
      * Adds a new environment property array
      * @param name Name used for accessing the property
@@ -140,7 +141,7 @@ class EnvironmentDescription {
      * @throws exception::DuplicateEnvProperty If a property of the same name already exists
      */
     template<typename T, EnvironmentManager::size_type N>
-    void newProperty(const std::string &name, const std::array<T, N> &value, const bool &isConst = false);
+    void newProperty(const std::string &name, const std::array<T, N> &value, bool isConst = false);
 #ifdef SWIG
     /**
      * Adds a new environment property array
@@ -152,7 +153,7 @@ class EnvironmentDescription {
      * @throws exception::DuplicateEnvProperty If a property of the same name already exists
      */
     template<typename T>
-    void newPropertyArray(const std::string &name, const EnvironmentManager::size_type &length, const std::vector<T> &value, const bool &isConst = false);
+    void newPropertyArray(const std::string &name, const EnvironmentManager::size_type length, const std::vector<T> &value, const bool isConst = false);
 #endif
     /**
      * Define a new environment macro property
@@ -212,7 +213,7 @@ class EnvironmentDescription {
      * @throws std::out_of_range
      */
     template<typename T>
-    T getProperty(const std::string &name, const EnvironmentManager::size_type &index) const;
+    T getProperty(const std::string &name, EnvironmentManager::size_type index) const;
 #ifdef SWIG
     /**
      * Gets an environment property array
@@ -239,7 +240,7 @@ class EnvironmentDescription {
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      */
     template<typename T>
-    T setProperty(const std::string &name, const T &value);
+    T setProperty(const std::string &name, T value);
     /**
      * Sets an environment property array
      * @param name name used for accessing the property
@@ -263,7 +264,7 @@ class EnvironmentDescription {
      * @see set(const std::string &, const T &value)
      */
     template<typename T>
-    T setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value);
+    T setProperty(const std::string &name, EnvironmentManager::size_type index, T value);
 #ifdef SWIG
     /**
      * Sets an environment property array
@@ -290,7 +291,7 @@ class EnvironmentDescription {
      * @param elements How many elements does the property have (1 if it's not an array)
      * @param type value returned by typeid()
      */
-    void newProperty(const std::string &name, const char *ptr, const size_t &len, const bool &isConst, const EnvironmentManager::size_type &elements, const std::type_index &type);
+    void newProperty(const std::string &name, const char *ptr, size_t len, bool isConst, EnvironmentManager::size_type elements, const std::type_index &type);
     /**
      * Main storage of all properties
      */
@@ -306,43 +307,43 @@ class EnvironmentDescription {
  * Constructors
  */
 template<typename T>
-void EnvironmentDescription::newProperty(const std::string &name, const T &value, const bool &isConst) {
+void EnvironmentDescription::newProperty(const std::string &name, T value, bool isConst) {
     if (!name.empty() && name[0] == '_') {
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::newProperty().");
     }
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
-    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
+    static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
     if (properties.find(name) != properties.end()) {
         THROW exception::DuplicateEnvProperty("Environmental property with name '%s' already exists, "
             "in EnvironmentDescription::newProperty().",
             name.c_str());
     }
-    newProperty(name, reinterpret_cast<const char*>(&value), sizeof(T), isConst, 1, typeid(T));
+    newProperty(name, reinterpret_cast<const char*>(&value), sizeof(T), isConst, type_decode<T>::len_t, typeid(typename type_decode<T>::type_t));
 }
 template<typename T, EnvironmentManager::size_type N>
-void EnvironmentDescription::newProperty(const std::string &name, const std::array<T, N> &value, const bool &isConst) {
+void EnvironmentDescription::newProperty(const std::string &name, const std::array<T, N> &value, bool isConst) {
     if (!name.empty() && name[0] == '_') {
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::newProperty().");
     }
-    static_assert(N > 0, "Environment property arrays must have a length greater than 0.");
+    static_assert(type_decode<T>::len_t * N > 0, "Environment property arrays must have a length greater than 0.");
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
-    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
+    static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
     if (properties.find(name) != properties.end()) {
         THROW exception::DuplicateEnvProperty("Environmental property with name '%s' already exists, "
             "in EnvironmentDescription::newProperty().",
             name.c_str());
     }
-    newProperty(name, reinterpret_cast<const char*>(value.data()), N * sizeof(T), isConst, N, typeid(T));
+    newProperty(name, reinterpret_cast<const char*>(value.data()), N * sizeof(T), isConst, type_decode<T>::len_t * N, typeid(typename type_decode<T>::type_t));
 }
 #ifdef SWIG
 template<typename T>
-void EnvironmentDescription::newPropertyArray(const std::string &name, const EnvironmentManager::size_type &N, const std::vector<T> &value, const bool& isConst) {
+void EnvironmentDescription::newPropertyArray(const std::string &name, EnvironmentManager::size_type N, const std::vector<T> &value, bool isConst) {
     if (!name.empty() && name[0] == '_') {
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::newPropertyArray().");
@@ -357,14 +358,14 @@ void EnvironmentDescription::newPropertyArray(const std::string &name, const Env
     }
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
-    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
+    static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
     if (properties.find(name) != properties.end()) {
         THROW exception::DuplicateEnvProperty("Environmental property with name '%s' already exists, "
             "in EnvironmentDescription::newPropertyArray().",
             name.c_str());
     }
-    newProperty(name, reinterpret_cast<const char*>(value.data()), N * sizeof(T), isConst, N, typeid(T));
+    newProperty(name, reinterpret_cast<const char*>(value.data()), N * sizeof(T), isConst, type_decode<T>::len_t * N, typeid(typename type_decode<T>::type_t));
 }
 #endif
 /**
@@ -374,14 +375,19 @@ template<typename T>
 T EnvironmentDescription::getProperty(const std::string &name) const {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
-    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
+    static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
     auto &&i = properties.find(name);
     if (i != properties.end()) {
-        if (i->second.data.type != std::type_index(typeid(T))) {
+        if (i->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
             THROW exception::InvalidEnvPropertyType("Environmental property ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::getProperty().",
-                name.c_str(), i->second.data.type.name(), typeid(T).name());
+                name.c_str(), i->second.data.type.name(), typeid(typename type_decode<T>::type_t).name());
+        }
+        if (i->second.data.elements != type_decode<T>::len_t) {
+            THROW exception::InvalidEnvPropertyType("Length of named environmental property (%u) does not match vector length (%u), "
+                "in EnvironmentDescription::getProperty().",
+                i->second.data.elements, type_decode<T>::len_t);
         }
         return *reinterpret_cast<T*>(i->second.data.ptr);
     }
@@ -393,19 +399,19 @@ template<typename T, EnvironmentManager::size_type N>
 std::array<T, N> EnvironmentDescription::getProperty(const std::string &name) const {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
-    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
+    static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
     auto &&i = properties.find(name);
     if (i != properties.end()) {
-        if (i->second.data.type != std::type_index(typeid(T))) {
+        if (i->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
             THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::getProperty().",
-                name.c_str(), i->second.data.type.name(), typeid(T).name());
+                name.c_str(), i->second.data.type.name(), typeid(typename type_decode<T>::type_t).name());
         }
-        if (i->second.data.elements != N) {
-            THROW exception::OutOfBoundsException("Length of named environmental property array (%u) does not match template argument N (%u), "
+        if (i->second.data.elements != type_decode<T>::len_t * N) {
+            THROW exception::InvalidEnvPropertyType("Length of named environmental property array (%u) does not match requested length (%u), "
                 "in EnvironmentDescription::getProperty().",
-                i->second.data.elements, N);
+                i->second.data.elements, type_decode<T>::len_t * N);
         }
         // Copy old data to return
         std::array<T, N> rtn;
@@ -417,22 +423,28 @@ std::array<T, N> EnvironmentDescription::getProperty(const std::string &name) co
         name.c_str());
 }
 template<typename T>
-T EnvironmentDescription::getProperty(const std::string &name, const EnvironmentManager::size_type &index) const {
+T EnvironmentDescription::getProperty(const std::string &name, EnvironmentManager::size_type index) const {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
-    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
+    static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
     auto &&i = properties.find(name);
     if (i != properties.end()) {
-        if (i->second.data.type != std::type_index(typeid(T))) {
+        if (i->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
             THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::getProperty().",
-                name.c_str(), i->second.data.type.name(), typeid(T).name());
+                name.c_str(), i->second.data.type.name(), typeid(typename type_decode<T>::type_t).name());
         }
-        if (i->second.data.elements <= index) {
+        if (i->second.data.elements % type_decode<T>::len_t != 0) {
+            THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') length (%u) does not divide by vector length (%u), "
+                "in EnvironmentDescription::getPropertyArray().",
+                name.c_str(), i->second.data.elements, type_decode<T>::len_t);
+        }
+        const unsigned int t_index = type_decode<T>::len_t * index + type_decode<T>::len_t;
+        if (i->second.data.elements < t_index || t_index < index) {
             THROW exception::OutOfBoundsException("Index (%u) exceeds named environmental property array's length (%u), "
                 "in EnvironmentDescription::getProperty().",
-                index, i->second.data.elements);
+                index, i->second.data.elements / type_decode<T>::len_t);
         }
         // Copy old data to return
         return *(reinterpret_cast<T*>(i->second.data.ptr) + index);
@@ -446,18 +458,23 @@ template<typename T>
 std::vector<T> EnvironmentDescription::getPropertyArray(const std::string& name) const {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
-    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
+    static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
     auto &&i = properties.find(name);
     if (i != properties.end()) {
-        if (i->second.data.type != std::type_index(typeid(T))) {
+        if (i->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
             THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::getPropertyArray().",
-                name.c_str(), i->second.data.type.name(), typeid(T).name());
+                name.c_str(), i->second.data.type.name(), typeid(typename type_decode<T>::type_t).name());
+        }
+        if (i->second.data.elements % type_decode<T>::len_t != 0) {
+            THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') length (%u) does not divide by vector length (%d), "
+                "in EnvironmentDescription::getPropertyArray().",
+                name.c_str(), i->second.data.elements, type_decode<T>::len_t);
         }
         // Copy old data to return
-        std::vector<T> rtn(i->second.data.elements);
-        memcpy(rtn.data(), reinterpret_cast<T*>(i->second.data.ptr), i->second.data.elements * sizeof(T));
+        std::vector<T> rtn(i->second.data.elements / type_decode<T>::len_t);
+        memcpy(rtn.data(), reinterpret_cast<T*>(i->second.data.ptr), i->second.data.elements * sizeof(typename type_decode<T>::type_t));
         return rtn;
     }
     THROW exception::InvalidEnvProperty("Environmental property with name '%s' does not exist, "
@@ -470,21 +487,26 @@ std::vector<T> EnvironmentDescription::getPropertyArray(const std::string& name)
  * Setters
  */
 template<typename T>
-T EnvironmentDescription::setProperty(const std::string &name, const T &value) {
+T EnvironmentDescription::setProperty(const std::string &name, T value) {
     if (!name.empty() && name[0] == '_') {
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::setProperty().");
     }
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
-    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
+    static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
     auto &&i = properties.find(name);
     if (i != properties.end()) {
-        if (i->second.data.type != std::type_index(typeid(T))) {
+        if (i->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
             THROW exception::InvalidEnvPropertyType("Environmental property ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::setProperty().",
-                name.c_str(), i->second.data.type.name(), typeid(T).name());
+                name.c_str(), i->second.data.type.name(), typeid(typename type_decode<T>::type_t).name());
+        }
+        if (i->second.data.elements != type_decode<T>::len_t) {
+            THROW exception::InvalidEnvPropertyType("Length of named environmental property (%u) does not match vector length (%u), "
+                "in EnvironmentDescription::setProperty().",
+                i->second.data.elements, type_decode<T>::len_t);
         }
         // Copy old data to return
         T rtn = *reinterpret_cast<T*>(i->second.data.ptr);
@@ -504,19 +526,19 @@ std::array<T, N> EnvironmentDescription::setProperty(const std::string &name, co
     }
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
-    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
+    static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
     auto &&i = properties.find(name);
     if (i != properties.end()) {
-        if (i->second.data.type != std::type_index(typeid(T))) {
+        if (i->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
             THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::setProperty().",
-                name.c_str(), i->second.data.type.name(), typeid(T).name());
+                name.c_str(), i->second.data.type.name(), typeid(typename type_decode<T>::type_t).name());
         }
-        if (i->second.data.elements != N) {
-            THROW exception::OutOfBoundsException("Length of named environmental property array (%u) does not match template argument N (%u), "
+        if (i->second.data.elements != N * type_decode<T>::len_t) {
+            THROW exception::InvalidEnvPropertyType("Length of named environmental property array (%u) does not match requested length (%u), "
                 "in EnvironmentDescription::setProperty().",
-                i->second.data.elements, N);
+                i->second.data.elements, N * type_decode<T>::len_t);
         }
         // Copy old data to return
         std::array<T, N> rtn;
@@ -530,29 +552,35 @@ std::array<T, N> EnvironmentDescription::setProperty(const std::string &name, co
         name.c_str());
 }
 template<typename T>
-T EnvironmentDescription::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value) {
+T EnvironmentDescription::setProperty(const std::string &name, EnvironmentManager::size_type index, T value) {
     if (!name.empty() && name[0] == '_') {
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::setProperty().");
     }
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
-    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
+    static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
     auto &&i = properties.find(name);
     if (i != properties.end()) {
-        if (i->second.data.type != std::type_index(typeid(T))) {
+        if (i->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
             THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::setProperty().",
-                name.c_str(), i->second.data.type.name(), typeid(T).name());
+                name.c_str(), i->second.data.type.name(), typeid(typename type_decode<T>::type_t).name());
         }
-        if (i->second.data.elements <= index) {
+        if (i->second.data.elements % type_decode<T>::len_t != 0) {
+            THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') length (%u) does not divide by vector length (%u), "
+                "in EnvironmentDescription::setProperty().",
+                name.c_str(), i->second.data.elements, type_decode<T>::len_t);
+        }
+        const unsigned int t_index = type_decode<T>::len_t * index + type_decode<T>::len_t;
+        if (i->second.data.elements < t_index || t_index < index) {
             THROW exception::OutOfBoundsException("Index (%u) exceeds named environmental property array's length (%u), "
                 "in EnvironmentDescription::setProperty().",
-                index, i->second.data.elements);
+                index, i->second.data.elements / type_decode<T>::len_t);
         }
         // Copy old data to return
-        T rtn = *(reinterpret_cast<T*>(i->second.data.ptr) + index);
+        T rtn = *(reinterpret_cast<T*>(i->second.data.ptr) +  index);
         // Store data
         memcpy(reinterpret_cast<T*>(i->second.data.ptr) + index, &value, sizeof(T));
         return rtn;
@@ -570,25 +598,30 @@ std::vector<T> EnvironmentDescription::setPropertyArray(const std::string& name,
     }
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
-    static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value,
+    static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
     auto &&i = properties.find(name);
     if (i != properties.end()) {
-        if (i->second.data.type != std::type_index(typeid(T))) {
+        if (i->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
             THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
-                "in EnvironmentDescription::set().",
-                name.c_str(), i->second.data.type.name(), typeid(T).name());
+                "in EnvironmentDescription::setPropertyArray().",
+                name.c_str(), i->second.data.type.name(), typeid(typename type_decode<T>::type_t).name());
         }
-        if (i->second.data.elements != value.size()) {
+        if (i->second.data.elements % type_decode<T>::len_t != 0) {
+            THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') length (%u) does not divide by vector length (%u), "
+                "in EnvironmentDescription::setPropertyArray().",
+                name.c_str(), i->second.data.elements, type_decode<T>::len_t);
+        }
+        if (i->second.data.elements != value.size() * type_decode<T>::len_t) {
             THROW exception::OutOfBoundsException("Length of named environmental property array (%u) does not match length of provided vector (%llu), "
-                "in EnvironmentDescription::set().",
-                i->second.data.elements, value.size());
+                "in EnvironmentDescription::setPropertyArray().",
+                i->second.data.elements / type_decode<T>::len_t, value.size());
         }
         // Copy old data to return
-        std::vector<T> rtn(i->second.data.elements);
-        memcpy(rtn.data(), reinterpret_cast<T*>(i->second.data.ptr), i->second.data.elements * sizeof(T));
+        std::vector<T> rtn(i->second.data.elements / type_decode<T>::len_t);
+        memcpy(rtn.data(), reinterpret_cast<T*>(i->second.data.ptr), i->second.data.elements * sizeof(typename type_decode<T>::type_t));
         // Store data
-        memcpy(reinterpret_cast<T*>(i->second.data.ptr), value.data(), i->second.data.elements * sizeof(T));
+        memcpy(reinterpret_cast<T*>(i->second.data.ptr), value.data(), i->second.data.elements * sizeof(typename type_decode<T>::type_t));
         return rtn;
     }
     THROW exception::InvalidEnvProperty("Environmental property with name '%s' does not exist, "

@@ -172,5 +172,30 @@ TEST_F(HostReductionTest, CustomReduceUnsignedInt64) {
     ms->run();
     EXPECT_EQ(uint64_t_out, *std::max_element(in.begin(), in.end()));
 }
+#ifdef USE_GLM
+FLAMEGPU_CUSTOM_REDUCTION(customMax_glm, a, b) {
+    return glm::max(a, b);
+}
+
+FLAMEGPU_STEP_FUNCTION(step_reduce_glm) {
+    vec3_t_out = FLAMEGPU->agent("agent").reduce<glm::vec3>("vec3", customMax_glm, glm::vec3(0));
+}
+TEST_F(HostReductionTest, CustomReduce_glm) {
+    ms->model.addStepFunction(step_reduce_glm);
+    std::mt19937_64 rd;  // Seed does not matter
+    std::uniform_int_distribution <int64_t> dist(INT64_MIN, INT64_MAX);
+    std::array<glm::vec3, TEST_LEN> in;
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentVector::Agent instance = ms->population->at(i);
+        in[i] = glm::vec3(dist(rd), dist(rd), dist(rd));
+        instance.setVariable<glm::vec3>("vec3", in[i]);
+    }
+    ms->run();
+    glm::vec3 test_result = std::reduce(in.begin(), in.end(), glm::vec3(0), customMax_glm_impl::binary_function<glm::vec3>());
+    EXPECT_EQ(vec3_t_out, test_result);
+}
+#else
+TEST_F(HostReductionTest, DISABLED_CustomReduce_glm) { }
+#endif
 }  // namespace test_host_reductions
 }  // namespace flamegpu

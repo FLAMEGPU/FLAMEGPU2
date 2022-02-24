@@ -41,6 +41,9 @@ class MiniSim {
         ed.newProperty<uint64_t>("uint64_t_", static_cast<uint64_t>(TEST_VALUE));
         ed.newProperty<float>("read_only", static_cast<float>(TEST_VALUE), true);
         ed.newProperty<bool>("bool", true);
+#ifdef USE_GLM
+        ed.newProperty<glm::vec3>("vec3_", static_cast<glm::vec3>(TEST_VALUE));
+#endif
 
         ed.newProperty<float, TEST_ARRAY_LEN>("float_a_", makeInit<float>());
         ed.newProperty<double, TEST_ARRAY_LEN>("double_a_", makeInit<double>());
@@ -54,13 +57,16 @@ class MiniSim {
         ed.newProperty<uint64_t, TEST_ARRAY_LEN>("uint64_t_a_", makeInit<uint64_t>());
         ed.newProperty<int, TEST_ARRAY_LEN>("read_only_a", makeInit<int>(), true);
         ed.newProperty<bool, 3>("bool_a", {true, false, true});
+#ifdef USE_GLM
+        ed.newProperty<glm::vec3, TEST_ARRAY_LEN>("vec3_a_", makeInit<glm::vec3>());
+#endif
     }
     ~MiniSim() { delete population;  }
     template <typename T>
     static std::array<T, TEST_ARRAY_LEN> makeInit(int offset = 0) {
         std::array<T, TEST_ARRAY_LEN> init;
         for (int i = 0; i < TEST_ARRAY_LEN; ++i)
-            init[i] = static_cast<T>(i + 1 + offset);
+            init[i] = T{static_cast<typename type_decode<T>::type_t>(i + 1 + offset)};
         return init;
     }
     void run(int steps = 2) {
@@ -417,6 +423,7 @@ FLAMEGPU_STEP_FUNCTION(get_set_array_element_uint64_t) {
 
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_float) {
     uint64_t _a = static_cast<uint64_t>(TEST_VALUE);
+    int32_t _a2 = static_cast<int32_t>(TEST_VALUE);
     std::array<float, TEST_ARRAY_LEN> b;
     std::array<uint64_t, TEST_ARRAY_LEN> _b;
     for (int i = 0; i < TEST_ARRAY_LEN; ++i) {
@@ -429,7 +436,8 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_float) {
     */
     auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("float_", _a), exception::InvalidEnvPropertyType);
-    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("float_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<int32_t>("float_", _a2), exception::InvalidEnvPropertyType);
+    // EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("float_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
     EXPECT_THROW((FLAMEGPU->environment.*setArray)("float_a_", _b), exception::InvalidEnvPropertyType);
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("float_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
@@ -447,7 +455,7 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_double) {
     */
     auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("double_", _a), exception::InvalidEnvPropertyType);
-    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("double_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
+    // EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("double_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
     EXPECT_THROW((FLAMEGPU->environment.*setArray)("double_a_", _b), exception::InvalidEnvPropertyType);
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("double_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
@@ -465,12 +473,13 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int8_t) {
     */
     auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int8_t_", _a), exception::InvalidEnvPropertyType);
-    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("int8_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
+    // EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int8_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
     EXPECT_THROW((FLAMEGPU->environment.*setArray)("int8_t_a_", _b), exception::InvalidEnvPropertyType);
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int8_t_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint8_t) {
     uint64_t _a = static_cast<uint64_t>(TEST_VALUE);
+    int8_t _a2 = static_cast<int8_t>(TEST_VALUE);
     std::array<uint8_t, TEST_ARRAY_LEN> b;
     std::array<uint64_t, TEST_ARRAY_LEN> _b;
     for (int i = 0; i < TEST_ARRAY_LEN; ++i) {
@@ -483,7 +492,8 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint8_t) {
     */
     auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint8_t_", _a), exception::InvalidEnvPropertyType);
-    // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("uint8_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<int8_t>("uint8_t_", _a2), exception::InvalidEnvPropertyType);
+    // EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint8_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
     EXPECT_THROW((FLAMEGPU->environment.*setArray)("uint8_t_a_", _b), exception::InvalidEnvPropertyType);
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint8_t_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
@@ -525,6 +535,7 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint16_t) {
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int32_t) {
     uint64_t _a = static_cast<uint64_t>(TEST_VALUE);
+    uint32_t _a2 = static_cast<uint32_t>(TEST_VALUE);
     std::array<int32_t, TEST_ARRAY_LEN> b;
     std::array<uint64_t, TEST_ARRAY_LEN> _b;
     for (int i = 0; i < TEST_ARRAY_LEN; ++i) {
@@ -537,6 +548,7 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int32_t) {
     */
     auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int32_t_", _a), exception::InvalidEnvPropertyType);
+    EXPECT_THROW(FLAMEGPU->environment.setProperty<uint32_t>("int32_t_", _a2), exception::InvalidEnvPropertyType);
     // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("int32_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
     EXPECT_THROW((FLAMEGPU->environment.*setArray)("int32_t_a_", _b), exception::InvalidEnvPropertyType);
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int32_t_a_", 0, _a), exception::InvalidEnvPropertyType);
@@ -1236,6 +1248,100 @@ TEST_F(HostEnvironmentTest, BoolWorks) {
     // Test Something
     ms->run(1);
 }
+
+#ifdef USE_GLM
+FLAMEGPU_STEP_FUNCTION(get_set_vec3_t) {
+// Test Set + Get (Description set value)
+EXPECT_EQ(FLAMEGPU->environment.setProperty<glm::vec3>("vec3_", glm::vec3(static_cast<float>(TEST_VALUE) * 2)), glm::vec3(static_cast<float>(TEST_VALUE)));
+// Test Get (Host func set value)
+EXPECT_EQ(FLAMEGPU->environment.getProperty<glm::vec3>("vec3_"), glm::vec3(static_cast<float>(TEST_VALUE) * 2));
+// Reset for next iteration
+FLAMEGPU->environment.setProperty<glm::vec3>("vec3_", glm::vec3(static_cast<float>(TEST_VALUE)));
+}
+
+FLAMEGPU_STEP_FUNCTION(get_set_array_vec3) {
+    std::array<glm::vec3, TEST_ARRAY_LEN> init1 = MiniSim::makeInit<glm::vec3>();
+    std::array<glm::vec3, TEST_ARRAY_LEN> init2 = MiniSim::makeInit<glm::vec3>(TEST_ARRAY_OFFSET);
+    // Test Set + Get (Description set value)
+    std::array<glm::vec3, TEST_ARRAY_LEN> t = FLAMEGPU->environment.setProperty<glm::vec3, TEST_ARRAY_LEN>("vec3_a_", init2);
+    for (int i = 0; i < TEST_ARRAY_LEN; ++i) {
+        EXPECT_EQ(t[i], init1[i]);
+    }
+    // Test Get (Host func set value)
+    t = FLAMEGPU->environment.getProperty<glm::vec3, TEST_ARRAY_LEN>("vec3_a_");
+    for (int i = 0; i < TEST_ARRAY_LEN; ++i) {
+        EXPECT_EQ(t[i], init2[i]);
+    }
+    // Reset for next iteration
+    FLAMEGPU->environment.setProperty<glm::vec3, TEST_ARRAY_LEN>("vec3_a_", init1);
+}
+FLAMEGPU_STEP_FUNCTION(get_set_array_element_vec3) {
+    std::array<glm::vec3, TEST_ARRAY_LEN> init1 = MiniSim::makeInit<glm::vec3>();
+    // Test Set + Get (Description set value)
+    EXPECT_EQ(FLAMEGPU->environment.setProperty<glm::vec3>("vec3_a_", TEST_ARRAY_LEN - 1, glm::vec3(static_cast<float>(TEST_VALUE) * 2)), init1[TEST_ARRAY_LEN - 1]);
+    // Test Get (Host func set value)
+    EXPECT_EQ(FLAMEGPU->environment.getProperty<glm::vec3>("vec3_a_", TEST_ARRAY_LEN - 1), glm::vec3(static_cast<float>(TEST_VALUE) * 2));
+    // Reset for next iteration
+    FLAMEGPU->environment.setProperty<glm::vec3>("vec3_a_", TEST_ARRAY_LEN - 1, init1[TEST_ARRAY_LEN - 1]);
+}
+TEST_F(HostEnvironmentTest, Get_SetGet_glm_t) {
+    ms->model.addStepFunction(get_set_vec3_t);
+    // Test Something
+    ms->run();
+}
+
+TEST_F(HostEnvironmentTest, Get_SetGetarray_glm) {
+    ms->model.addStepFunction(get_set_array_vec3);
+    // Test Something
+    ms->run();
+}
+TEST_F(HostEnvironmentTest, Get_SetGetarray_element_glm) {
+    ms->model.addStepFunction(get_set_array_element_vec3);
+    // Test Something
+    ms->run();
+}
+FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_vec3) {
+    std::array<glm::vec3, TEST_ARRAY_LEN> b;
+    std::array<glm::vec3, 1> _b1 = {};
+    std::array<glm::vec3, TEST_ARRAY_LEN + 1> _b2;
+    std::array<glm::vec3, TEST_ARRAY_LEN * 2> _b3;
+    /**
+     * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
+     * They don't build on Travis with implied template args
+     */
+    auto setArray1 = &HostEnvironment::setProperty<glm::vec3, TEST_ARRAY_LEN>;
+    auto setArray2 = &HostEnvironment::setProperty<glm::vec3, 1>;
+    auto setArray3 = &HostEnvironment::setProperty<glm::vec3, TEST_ARRAY_LEN + 1>;
+    auto setArray4 = &HostEnvironment::setProperty<glm::vec3, TEST_ARRAY_LEN * 2>;
+    EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("vec3_a_", b));
+    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("vec3_a_", _b1), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("vec3_a_", _b2), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("vec3_a_", _b3), exception::OutOfBoundsException);
+}
+FLAMEGPU_STEP_FUNCTION(ExceptionPropertyRange_vec3) {
+    glm::vec3 c = static_cast<glm::vec3>(TEST_VALUE);
+    for (int i = 0; i < 5; ++i) {
+        EXPECT_THROW(FLAMEGPU->environment.setProperty<glm::vec3>("vec3_a_", TEST_ARRAY_LEN + i, c), exception::OutOfBoundsException);
+        EXPECT_THROW(FLAMEGPU->environment.getProperty<glm::vec3>("vec3_a_", TEST_ARRAY_LEN + i), exception::OutOfBoundsException);
+    }
+}
+TEST_F(HostEnvironmentTest, ExceptionPropertyLength_vec3_t) {
+    ms->model.addStepFunction(ExceptionPropertyRange_vec3);
+    // Test Something
+    ms->run(1);
+}
+TEST_F(HostEnvironmentTest, ExceptionPropertyRange_vec3_t) {
+    ms->model.addStepFunction(ExceptionPropertyRange_vec3);
+    // Test Something
+    ms->run(1);
+}
+#else
+TEST_F(HostEnvironmentTest, DISABLED_Get_SetGet_glm_t) { }
+TEST_F(HostEnvironmentTest, DISABLED_Get_SetGetarray_glm) { }
+TEST_F(HostEnvironmentTest, DISABLED_Get_SetGetarray_element_glm) { }
+TEST_F(HostEnvironmentTest, DISABLED_ExceptionPropertyLength_vec3_t) { }
+TEST_F(HostEnvironmentTest, DISABLED_ExceptionPropertyRange_vec3_t) { }
+#endif
 
 
 FLAMEGPU_STEP_FUNCTION(reserved_name_set_step) {

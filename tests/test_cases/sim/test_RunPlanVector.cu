@@ -62,7 +62,7 @@ TEST(TestRunPlanVector, setSteps) {
         EXPECT_NE(plan.getSteps(), originalValues[idx]);
     }
     // Expect an exception if setting the value to 0?
-    EXPECT_THROW(plans.setSteps(0), std::out_of_range);
+    EXPECT_THROW(plans.setSteps(0), exception::OutOfBoundsException);
 
     // If the model has an exit condition, then it will not throw.
     flamegpu::ModelDescription modelWithExit("modelWithExit");
@@ -101,6 +101,11 @@ TEST(TestRunPlanVector, setProperty) {
     environment.newProperty<int32_t>("i", iOriginal);
     environment.newProperty<uint32_t, 3>("u3", u3Original);
     environment.newProperty<double, 3>("d3", d3Original);
+#ifdef USE_GLM
+    environment.newProperty<glm::ivec3>("ivec3", {});
+    environment.newProperty<glm::ivec3, 2>("ivec32", {});
+    environment.newProperty<glm::ivec3, 3>("ivec33", {});
+#endif
     // Create a vector of plans
     constexpr uint32_t totalPlans = 2u;
     flamegpu::RunPlanVector plans(model, totalPlans);
@@ -121,6 +126,15 @@ TEST(TestRunPlanVector, setProperty) {
     plans.setProperty<double>("d3", 0, d3New[0]);
     plans.setProperty<double>("d3", 1, d3New[1]);
     plans.setProperty<double>("d3", 2, d3New[2]);
+#ifdef USE_GLM
+    const glm::ivec3 ivec3_1_check = glm::ivec3{ 1, 2, 3 };
+    const std::array<glm::ivec3, 2> ivec3_2_check = { glm::ivec3{4, 5, 6}, glm::ivec3{7, 8, 9} };
+    const std::array<glm::ivec3, 3> ivec3_3_check =
+    { glm::ivec3{ 11, 12, 13 }, glm::ivec3{14, 15, 16}, glm::ivec3{17, 18, 19} };
+    plans.setProperty<glm::ivec3>("ivec3", ivec3_1_check);
+    plans.setProperty<glm::ivec3, 2>("ivec32", ivec3_2_check);
+    plans.setProperty<glm::ivec3, 3>("ivec33", ivec3_3_check);
+#endif
     // Check values are as expected by accessing the properties from each plan
     for (const auto &plan : plans) {
         EXPECT_EQ(plan.getProperty<float>("f"), fNew);
@@ -128,6 +142,12 @@ TEST(TestRunPlanVector, setProperty) {
         // Extra brackets allow template commas in macros.
         EXPECT_EQ((plan.getProperty<uint32_t, 3>("u3")), u3New);
         EXPECT_EQ((plan.getProperty<double, 3>("d3")), d3New);
+#ifdef USE_GLM
+        EXPECT_EQ(plan.getProperty<glm::ivec3>("ivec3"), ivec3_1_check);
+        EXPECT_EQ((plan.getProperty<glm::ivec3, 3>)("ivec33"), ivec3_3_check);
+        EXPECT_EQ(plan.getProperty<glm::ivec3>("ivec32", 0), ivec3_2_check[0]);
+        EXPECT_EQ(plan.getProperty<glm::ivec3>("ivec32", 1), ivec3_2_check[1]);
+#endif
     }
 
     // Tests for exceptions
@@ -146,8 +166,12 @@ TEST(TestRunPlanVector, setProperty) {
     // void RunPlanVector::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value)
     EXPECT_THROW((plans.setProperty<float>("does_not_exist", 0u, 3.f)), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW((plans.setProperty<float>("u3", 0u, 3.f)), flamegpu::exception::InvalidEnvPropertyType);
-    EXPECT_THROW((plans.setProperty<double>("d3", static_cast<EnvironmentManager::size_type>(-1), 3)), std::out_of_range);
-    EXPECT_THROW((plans.setProperty<double>("d3", 4u, 3)), std::out_of_range);
+    EXPECT_THROW((plans.setProperty<double>("d3", static_cast<EnvironmentManager::size_type>(-1), 3)), exception::OutOfBoundsException);
+    EXPECT_THROW((plans.setProperty<double>("d3", 4u, 3)), exception::OutOfBoundsException);
+#ifdef USE_GLM
+    EXPECT_THROW((plans.setProperty<glm::ivec3>)("ivec32", 3u, {}), exception::OutOfBoundsException);  // Out of bounds
+    EXPECT_THROW((plans.setProperty<glm::ivec3>)("ivec33", 4u, {}), exception::OutOfBoundsException);  // Out of bounds
+#endif
 }
 template<typename T>
 double t_lerp(const T &_min, const T &_max, const double &a) {
@@ -222,17 +246,17 @@ TEST(TestRunPlanVector, setPropertyUniformDistribution) {
     flamegpu::RunPlanVector singlePlanVector(model, 1);
     // Note literals used must match the templated type not the incorrect types used, to appease MSVC warnings.
     // void RunPlanVector::setPropertyUniformDistribution(const std::string &name, const T &min, const T &max)
-    EXPECT_THROW((singlePlanVector.setPropertyUniformDistribution<float>("f", 1.f, 100.f)), std::out_of_range);
+    EXPECT_THROW((singlePlanVector.setPropertyUniformDistribution<float>("f", 1.f, 100.f)), exception::OutOfBoundsException);
     EXPECT_THROW((plans.setPropertyUniformDistribution<float>("does_not_exist", 1.f, 100.f)), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW((plans.setPropertyUniformDistribution<float>("i", 1.f, 100.f)), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW((plans.setPropertyUniformDistribution<uint32_t>("u3", 1u, 100u)), flamegpu::exception::InvalidEnvPropertyType);
     // void RunPlanVector::setPropertyUniformDistribution(const std::string &name, const EnvironmentManager::size_type
     // Extra brackets within the macro mean commas can be used due to how preproc tokenizers work
-    EXPECT_THROW((singlePlanVector.setPropertyUniformDistribution<uint32_t>("u3", 0u, 1u, 100u)), std::out_of_range);
+    EXPECT_THROW((singlePlanVector.setPropertyUniformDistribution<uint32_t>("u3", 0u, 1u, 100u)), exception::OutOfBoundsException);
     EXPECT_THROW((plans.setPropertyUniformDistribution<float>("does_not_exist", 0u, 1.f, 100.f)), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW((plans.setPropertyUniformDistribution<float>("u3", 0u, 1.f, 100.f)), flamegpu::exception::InvalidEnvPropertyType);
-    EXPECT_THROW((plans.setPropertyUniformDistribution<uint32_t>("u3", static_cast<EnvironmentManager::size_type>(-1), 1u, 100u)), std::out_of_range);
-    EXPECT_THROW((plans.setPropertyUniformDistribution<uint32_t>("u3", 4u, 1u, 100u)), std::out_of_range);
+    EXPECT_THROW((plans.setPropertyUniformDistribution<uint32_t>("u3", static_cast<EnvironmentManager::size_type>(-1), 1u, 100u)), exception::OutOfBoundsException);
+    EXPECT_THROW((plans.setPropertyUniformDistribution<uint32_t>("u3", 4u, 1u, 100u)), exception::OutOfBoundsException);
 }
 // Checking for uniformity of distribution would require a very large samples size.
 // As std:: is used, we trust the distribution is legit, and instead just check for min/max.
@@ -268,6 +292,8 @@ TEST(TestRunPlanVector, setPropertyUniformRandom) {
     plans.setPropertyUniformRandom("u3", 0, u3Min[0], u3Max[0]);
     plans.setPropertyUniformRandom("u3", 1, u3Min[1], u3Max[1]);
     plans.setPropertyUniformRandom("u3", 2, u3Min[2], u3Max[2]);
+    EXPECT_THROW((plans.setPropertyUniformRandom("u3", 3, u3Min[0], u3Max[0])), exception::OutOfBoundsException);
+    EXPECT_THROW((plans.setPropertyUniformRandom("u3", static_cast<EnvironmentManager::size_type>(-1), u3Min[0], u3Max[0])), exception::OutOfBoundsException);
     // Check values are as expected by accessing the properties from each plan
     for (const auto &plan : plans) {
         // Floating point types are inclusive-exclusive [min, Max)
@@ -316,6 +342,8 @@ TEST(TestRunPlanVector, setPropertyNormalRandom) {
     plans.setPropertyNormalRandom("d3", 0, d3Mean[0], d3Stddev[0]);
     plans.setPropertyNormalRandom("d3", 1, d3Mean[1], d3Stddev[1]);
     plans.setPropertyNormalRandom("d3", 2, d3Mean[2], d3Stddev[2]);
+    EXPECT_THROW((plans.setPropertyNormalRandom("d3", 3, d3Mean[0], d3Stddev[0])), exception::OutOfBoundsException);
+    EXPECT_THROW((plans.setPropertyNormalRandom("d3", static_cast<EnvironmentManager::size_type>(-1), d3Mean[0], d3Stddev[0])), exception::OutOfBoundsException);
     bool fAtleastOneNonDefault = false;
     std::array<bool, 3> d3AtleastOneNonDefault = {{false, false, false}};
     // Check values are as expected by accessing the properties from each plan
@@ -457,17 +485,17 @@ TEST(TestRunPlanVector, setPropertyRandom) {
     flamegpu::RunPlanVector singlePlanVector(model, 1);
     // Note litereals used must match the templated type not the incorrect types used, to appease MSVC warnings.
     // void RunPlanVector::setPropertyRandom(const std::string &name, rand_dist &distribution)
-    EXPECT_THROW((singlePlanVector.setPropertyRandom<float>("f", fdist)), std::out_of_range);
+    EXPECT_THROW((singlePlanVector.setPropertyRandom<float>("f", fdist)), exception::OutOfBoundsException);
     EXPECT_THROW((plans.setPropertyRandom<float>("does_not_exist", fdist)), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW((plans.setPropertyRandom<double>("f", d3dist0)), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW((plans.setPropertyRandom<double>("d3", d3dist0)), flamegpu::exception::InvalidEnvPropertyType);
     // void RunPlanVector::setPropertyRandom(const std::string &name, const EnvironmentManager::size_type &index, rand_dist &distribution)
     // Extra brackets within the macro mean commas can be used due to how preproc tokenizers work
-    EXPECT_THROW((singlePlanVector.setPropertyRandom<double>("d3", 0u, d3dist0)), std::out_of_range);
+    EXPECT_THROW((singlePlanVector.setPropertyRandom<double>("d3", 0u, d3dist0)), exception::OutOfBoundsException);
     EXPECT_THROW((plans.setPropertyRandom<float>("does_not_exist", 0u, fdist)), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW((plans.setPropertyRandom<float>("d3", 0u, fdist)), flamegpu::exception::InvalidEnvPropertyType);
-    EXPECT_THROW((plans.setPropertyRandom<double>("d3", static_cast<EnvironmentManager::size_type>(-1), d3dist0)), std::out_of_range);
-    EXPECT_THROW((plans.setPropertyRandom<double>("d3", 4u, d3dist0)), std::out_of_range);
+    EXPECT_THROW((plans.setPropertyRandom<double>("d3", static_cast<EnvironmentManager::size_type>(-1), d3dist0)), exception::OutOfBoundsException);
+    EXPECT_THROW((plans.setPropertyRandom<double>("d3", 4u, d3dist0)), exception::OutOfBoundsException);
 }
 // Test getting the random property seed
 TEST(TestRunPlanVector, getRandomPropertySeed) {

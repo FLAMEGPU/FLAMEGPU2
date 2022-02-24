@@ -29,6 +29,7 @@
 #include "flamegpu/pop/DeviceAgentVector_impl.h"
 #include "flamegpu/sim/AgentLoggingConfig_Reductions.cuh"
 #include "flamegpu/sim/AgentLoggingConfig_SumReturn.h"
+#include "flamegpu/util/type_decode.h"
 
 namespace flamegpu {
 
@@ -60,12 +61,12 @@ struct funcName ## _impl {\
  public:\
     template <typename OutT>\
     struct binary_function {\
-        __device__ __forceinline__ OutT operator()(const OutT &a, const OutT &b) const;\
+        __host__ __device__ __forceinline__ OutT operator()(const OutT &a, const OutT &b) const;\
     };\
 };\
 funcName ## _impl funcName;\
 template <typename OutT>\
-__device__ __forceinline__ OutT funcName ## _impl::binary_function<OutT>::operator()(const OutT & a, const OutT & b) const
+__host__ __device__ __forceinline__ OutT funcName ## _impl::binary_function<OutT>::operator()(const OutT & a, const OutT & b) const
 
  /**
   * Macro for defining custom transform functions with the correct inputs.
@@ -565,24 +566,14 @@ InT HostAgentAPI::reduce(const std::string &variable, reductionOperatorT /*reduc
     }
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
-#ifndef USE_GLM
-    if (agentDesc.variables.at(variable).elements != 1) {
+    if (agentDesc.variables.at(variable).elements != type_decode<InT>::len_t) {
         THROW exception::UnsupportedVarType("HostAgentAPI::reduce() does not support agent array variables.");
     }
-    if (std::type_index(typeid(InT)) != typ) {
+    if (std::type_index(typeid(typename type_decode<InT>::type_t)) != typ) {
         THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::reduce(). "
             "This call expects '%s', but '%s' was requested.",
-            typ.name(), typeid(InT).name());
+            typ.name(), typeid(typename type_decode<InT>::type_t).name());
     }
-#else
-    // GLM is awkward, so we need to perform a vaguer check
-    auto var = agentDesc.variables.at(variable);
-    if (sizeof(InT) != var.elements * var.type_size) {
-        THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::transformReduce(). "
-            "This call expects '%s[%u]', but '%s' was requested.",
-            typ.name(), var.elements, typeid(InT).name());
-    }
-#endif
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
     // Check if we need to resize cub storage
@@ -613,24 +604,14 @@ OutT HostAgentAPI::transformReduce(const std::string &variable, transformOperato
     }
     const auto &agentDesc = agent.getAgentDescription();
     const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
-#ifndef USE_GLM
-    if (agentDesc.variables.at(variable).elements != 1) {
+    if (agentDesc.variables.at(variable).elements != type_decode<InT>::len_t) {
         THROW exception::UnsupportedVarType("HostAgentAPI::transformReduce() does not support agent array variables.");
     }
-    if (std::type_index(typeid(InT)) != typ) {
+    if (std::type_index(typeid(typename type_decode<InT>::type_t)) != typ) {
         THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::transformReduce(). "
             "This call expects '%s', but '%s' was requested.",
-            typ.name(), typeid(InT).name());
+            typ.name(), typeid(typename type_decode<InT>::type_t).name());
     }
-#else
-    // GLM is awkward, so we need to perform a vaguer check
-    auto var = agentDesc.variables.at(variable);
-    if (sizeof(InT) != var.elements * var.type_size) {
-        THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::transformReduce(). "
-            "This call expects '%s[%u]', but '%s' was requested.",
-            typ.name(), var.elements, typeid(InT).name());
-    }
-#endif
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
     OutT rtn = thrust::transform_reduce(thrust::device_ptr<InT>(reinterpret_cast<InT*>(var_ptr)), thrust::device_ptr<InT>(reinterpret_cast<InT*>(var_ptr) + agentCount),

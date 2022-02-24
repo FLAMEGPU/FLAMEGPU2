@@ -38,7 +38,7 @@ bool EnvironmentDescription::operator!=(const EnvironmentDescription& rhs) const
     return !(*this == rhs);
 }
 
-void EnvironmentDescription::newProperty(const std::string &name, const char *ptr, const size_t &length, const bool &isConst, const EnvironmentManager::size_type &elements, const std::type_index &type) {
+void EnvironmentDescription::newProperty(const std::string &name, const char *ptr, size_t length, bool isConst, EnvironmentManager::size_type elements, const std::type_index &type) {
     properties.emplace(name, PropData(isConst, util::Any(ptr, length, type, elements)));
 }
 

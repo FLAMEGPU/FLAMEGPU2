@@ -65,8 +65,9 @@ class TestRunPlanVector(TestCase):
             assert plan.getSteps() != originalValues[idx]
         
         # Expect an exception if setting the value to 0?
-        with pytest.raises(RuntimeError) as e: # std::out_of_range
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             plans.setSteps(0)
+        assert e.value.type() == "OutOfBoundsException"
 
         # If the model has an exit condition, then it will not throw.
         modelWithExit = pyflamegpu.ModelDescription("modelWithExit")
@@ -167,11 +168,13 @@ class TestRunPlanVector(TestCase):
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             plans.setPropertyFloat("u3", 0, 3)
         assert e.value.type() == "InvalidEnvPropertyType"
-        with pytest.raises(RuntimeError) as e: # std::out_of_range
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             minus_one_uint32_t = -1 & 0xffffffff
             plans.setPropertyDouble("d3", minus_one_uint32_t, 3)
-        with pytest.raises(RuntimeError) as e: # std::out_of_range
+        assert e.value.type() == "OutOfBoundsException"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             plans.setPropertyDouble("d3", 4, 3)
+        assert e.value.type() == "OutOfBoundsException"
     
     # Check that all values set lie within the min and max inclusive
     # @todo - should fp be [min, max) like when using RNG?
@@ -226,8 +229,9 @@ class TestRunPlanVector(TestCase):
         singlePlanVector = pyflamegpu.RunPlanVector(model, 1)
         # Note litereals used must match the templated type not the incorrect types used, to appease MSVC warnings.
         # void RunPlanVector::setPropertyUniformDistribution(const std::string &name, const T &min, const T &max)
-        with pytest.raises(RuntimeError) as e: # std::out_of_range
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             singlePlanVector.setPropertyUniformDistributionFloat("f", 1., 100.)
+        assert e.value.type() == "OutOfBoundsException"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             plans.setPropertyUniformDistributionFloat("does_not_exist", 1., 100.)
         assert e.value.type() == "InvalidEnvProperty"
@@ -239,19 +243,22 @@ class TestRunPlanVector(TestCase):
         assert e.value.type() == "InvalidEnvPropertyType"
         # void RunPlanVector::setPropertyUniformDistribution(const std::string &name, const EnvironmentManager::size_type
         # Extra brackets within the macro mean commas can be used due to how preproc tokenizers work
-        with pytest.raises(RuntimeError) as e: # std::out_of_range
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             singlePlanVector.setPropertyUniformDistributionUInt("u3", 0, 1, 100)
+        assert e.value.type() == "OutOfBoundsException"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             plans.setPropertyUniformDistributionFloat("does_not_exist", 0, 1., 100.)
         assert e.value.type() == "InvalidEnvProperty"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             plans.setPropertyUniformDistributionFloat("u3", 0, 1., 100.)
         assert e.value.type() == "InvalidEnvPropertyType"
-        with pytest.raises(RuntimeError) as e: # std::out_of_range
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             minus_one_uint32_t = -1 & 0xffffffff
             plans.setPropertyUniformDistributionUInt("u3", minus_one_uint32_t, 1, 100)
-        with pytest.raises(RuntimeError) as e: # std::out_of_range
+        assert e.value.type() == "OutOfBoundsException"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             plans.setPropertyUniformDistributionUInt("u3", 4, 1, 100)
+        assert e.value.type() == "OutOfBoundsException"
     
     # Checking for uniformity of distribution would require a very large samples size.
     # As std:: is used, we trust the distribution is legit, and instead just check for min/max.

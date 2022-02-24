@@ -51,8 +51,9 @@ class TestRunPlan(TestCase):
         assert updatedSteps == newSteps
 
         # Expected exception tests
-        with pytest.raises(RuntimeError) as e: # std::out_of_range == Runtimeerror
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             plan.setSteps(0)
+        assert e.value.type() == "OutOfBoundsException"
 
     def test_setOutputSubdirectory(self):
         # Create a model
@@ -137,11 +138,13 @@ class TestRunPlan(TestCase):
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             plan.getPropertyFloat("u_a", 0)
         assert e.value.type() == "InvalidEnvPropertyType"
-        with pytest.raises(RuntimeError) as e: # std::out_of_range
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             minus_one_uint32_t = -1 & 0xffffffff
             plan.getPropertyInt("i_a", minus_one_uint32_t)
-        with pytest.raises(RuntimeError) as e: # std::out_of_range
+        assert e.value.type() == "OutOfBoundsException"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             plan.getPropertyInt("i_a", 4)
+        assert e.value.type() == "OutOfBoundsException"
 
     def test_getRandomSimulationSeed(self):
         # Create a model
@@ -226,11 +229,13 @@ class TestRunPlan(TestCase):
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             plan.setPropertyFloat("u_a", 0, 3.)
         assert e.value.type() == "InvalidEnvPropertyType"
-        with pytest.raises(RuntimeError) as e: # std::out_of_range
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             minus_one_uint32_t = -1 & 0xffffffff
             plan.setPropertyInt("i_a", minus_one_uint32_t, 3)
-        with pytest.raises(RuntimeError) as e: # std::out_of_range
+        assert e.value.type() == "OutOfBoundsException"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             plan.setPropertyInt("i_a", 4, 3)
+        assert e.value.type() == "OutOfBoundsException"
 
     def test_operatorAssignment(self):
         # Create a model

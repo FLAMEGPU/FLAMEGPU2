@@ -86,6 +86,18 @@ TEST(AgentDescriptionTest, variables) {
     EXPECT_EQ(sizeof(int16_t), a.getVariableSize(VARIABLE_NAME2));
     EXPECT_EQ(std::type_index(typeid(float)), a.getVariableType(VARIABLE_NAME1));
     EXPECT_EQ(std::type_index(typeid(int16_t)), a.getVariableType(VARIABLE_NAME2));
+#ifdef USE_GLM
+    // Can create variable with GLM types
+    a.newVariable<glm::vec3>("vec3");
+    a.newVariable<glm::uvec4>("uvec4");
+    EXPECT_EQ(a.getVariablesCount(), 5u);
+    EXPECT_EQ(3u, a.getVariableLength("vec3"));
+    EXPECT_EQ(4u, a.getVariableLength("uvec4"));
+    EXPECT_EQ(sizeof(float), a.getVariableSize("vec3"));
+    EXPECT_EQ(sizeof(unsigned int), a.getVariableSize("uvec4"));
+    EXPECT_EQ(std::type_index(typeid(float)), a.getVariableType("vec3"));
+    EXPECT_EQ(std::type_index(typeid(unsigned int)), a.getVariableType("uvec4"));
+#endif
 }
 TEST(AgentDescriptionTest, variables_array) {
     ModelDescription m(MODEL_NAME);
@@ -118,6 +130,18 @@ TEST(AgentDescriptionTest, variables_array) {
     EXPECT_EQ(sizeof(int16_t), a.getVariableSize(VARIABLE_NAME2));
     EXPECT_EQ(std::type_index(typeid(float)), a.getVariableType(VARIABLE_NAME1));
     EXPECT_EQ(std::type_index(typeid(int16_t)), a.getVariableType(VARIABLE_NAME2));
+#ifdef USE_GLM
+    // Can create variable array with GLM types
+    a.newVariable<glm::vec3, 5>("vec3_5");
+    a.newVariable<glm::uvec4, 2>("uvec4_2");
+    EXPECT_EQ(a.getVariablesCount(), 6u);
+    EXPECT_EQ(5 * 3u, a.getVariableLength("vec3_5"));
+    EXPECT_EQ(2 * 4u, a.getVariableLength("uvec4_2"));
+    EXPECT_EQ(sizeof(float), a.getVariableSize("vec3_5"));
+    EXPECT_EQ(sizeof(unsigned int), a.getVariableSize("uvec4_2"));
+    EXPECT_EQ(std::type_index(typeid(float)), a.getVariableType("vec3_5"));
+    EXPECT_EQ(std::type_index(typeid(unsigned int)), a.getVariableType("uvec4_2"));
+#endif
 }
 TEST(AgentDescriptionTest, states) {
     ModelDescription m(MODEL_NAME);
