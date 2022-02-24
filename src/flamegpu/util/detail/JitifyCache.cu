@@ -366,6 +366,9 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
     std::string cassert_h = "cassert\n";
     headers.push_back(cassert_h);
 
+    // Add static list of known headers (this greatly improves compilation speed)
+    getKnownHeaders(headers);
+
     // jitify to create program (with compilation settings)
     try {
         auto program = jitify::experimental::Program(kernel_src, headers, options);
@@ -378,6 +381,77 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
             "in JitifyCache::buildProgram().",
             func_name.c_str());
     }
+}
+void JitifyCache::getKnownHeaders(std::vector<std::string>& headers) {
+    // Add known headers from hierarchy
+    headers.push_back("algorithm");
+    headers.push_back("assert.h");
+    headers.push_back("cassert");
+    headers.push_back("cfloat");
+    headers.push_back("climits");
+    headers.push_back("cmath");
+    headers.push_back("cstddef");
+    headers.push_back("cstdint");
+    headers.push_back("cstring");
+    headers.push_back("cuda_runtime.h");
+    headers.push_back("curand.h");
+    headers.push_back("curand_discrete.h");
+    headers.push_back("curand_discrete2.h");
+    headers.push_back("curand_globals.h");
+    headers.push_back("curand_kernel.h");
+    headers.push_back("curand_lognormal.h");
+    headers.push_back("curand_mrg32k3a.h");
+    headers.push_back("curand_mtgp32.h");
+    headers.push_back("curand_mtgp32_kernel.h");
+    headers.push_back("curand_normal.h");
+    headers.push_back("curand_normal_static.h");
+    headers.push_back("curand_philox4x32_x.h");
+    headers.push_back("curand_poisson.h");
+    headers.push_back("curand_precalc.h");
+    headers.push_back("curand_uniform.h");
+    headers.push_back("device_launch_parameters.h");
+    // headers.push_back("dynamic/curve_rtc_dynamic.h");  // This is already included with source, having this makes a vague compile err
+    headers.push_back("flamegpu/defines.h");
+    headers.push_back("flamegpu/exception/FLAMEGPUDeviceException.cuh");
+    headers.push_back("flamegpu/exception/FLAMEGPUDeviceException_device.cuh");
+    headers.push_back("flamegpu/gpu/CUDAScanCompaction.h");
+    headers.push_back("flamegpu/runtime/AgentFunction.cuh");
+    headers.push_back("flamegpu/runtime/AgentFunctionCondition.cuh");
+    headers.push_back("flamegpu/runtime/AgentFunctionCondition_shim.cuh");
+    headers.push_back("flamegpu/runtime/AgentFunction_shim.cuh");
+    headers.push_back("flamegpu/runtime/DeviceAPI.cuh");
+    headers.push_back("flamegpu/runtime/messaging/MessageArray.h");
+    headers.push_back("flamegpu/runtime/messaging/MessageArray/MessageArrayDevice.cuh");
+    headers.push_back("flamegpu/runtime/messaging/MessageArray2D.h");
+    headers.push_back("flamegpu/runtime/messaging/MessageArray2D/MessageArray2DDevice.cuh");
+    headers.push_back("flamegpu/runtime/messaging/MessageArray3D.h");
+    headers.push_back("flamegpu/runtime/messaging/MessageArray3D/MessageArray3DDevice.cuh");
+    headers.push_back("flamegpu/runtime/messaging/MessageBruteForce.h");
+    headers.push_back("flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceDevice.cuh");
+    headers.push_back("flamegpu/runtime/messaging/MessageBucket.h");
+    headers.push_back("flamegpu/runtime/messaging/MessageBucket/MessageBucketDevice.cuh");
+    headers.push_back("flamegpu/runtime/messaging/MessageSpatial2D.h");
+    headers.push_back("flamegpu/runtime/messaging/MessageSpatial2D/MessageSpatial2DDevice.cuh");
+    headers.push_back("flamegpu/runtime/messaging/MessageSpatial3D.h");
+    headers.push_back("flamegpu/runtime/messaging/MessageSpatial3D/MessageSpatial3DDevice.cuh");
+    headers.push_back("flamegpu/runtime/messaging/MessageNone.h");
+    headers.push_back("flamegpu/runtime/utility/AgentRandom.cuh");
+    headers.push_back("flamegpu/runtime/utility/DeviceEnvironment.cuh");
+    headers.push_back("flamegpu/runtime/utility/DeviceMacroProperty.cuh");
+    headers.push_back("flamegpu/util/detail/StaticAssert.h");
+    // headers.push_back("jitify_preinclude.h");  // I think Jitify adds this itself
+    headers.push_back("limits");
+    headers.push_back("limits.h");
+    headers.push_back("math.h");
+    headers.push_back("memory.h");
+    headers.push_back("stddef.h");
+    headers.push_back("stdint.h");
+    headers.push_back("stdio.h");
+    headers.push_back("stdlib.h");
+    headers.push_back("string");
+    headers.push_back("string.h");
+    headers.push_back("time.h");
+    headers.push_back("type_traits");
 }
 
 std::unique_ptr<KernelInstantiation> JitifyCache::loadKernel(const std::string &func_name, const std::vector<std::string> &template_args, const std::string &kernel_src, const std::string &dynamic_header) {
