@@ -103,6 +103,17 @@ class JitifyCache {
     const std::vector<std::string> &template_args,
     const std::string &kernel_src,
     const std::string &dynamic_header);
+    /**
+     * Fill the provided vector with the list of headers we expect to be loaded
+     * This enables Jitify to find all the required headers with less NVRTC calls
+     *
+     * @param headers The vector to fill.
+     *
+     * @note At current this method has a static list of headers, which is somewhat fragile to changes to our header hierarchy.
+     *       In future, Jitify is planning to rework how it processes headers, so this may be unnecessary.
+     * @note Libraries such as GLM, which use relative includes internally cannot easily be optimised in this way
+     */
+    static void getKnownHeaders(std::vector<std::string> &headers);
 
     /**
      * In-memory map of cached RTC kernels
