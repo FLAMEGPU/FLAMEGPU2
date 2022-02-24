@@ -99,16 +99,12 @@ TEST(TestSimulation, ArgParse_inputfile_long) {
     c.initialise(0, nullptr);
     EXPECT_EQ(c.getSimulationConfig().input_file, "");
 }
-TEST(TestSimulation, ArgParse_inputfile_short) {
+TEST(TestSimulationDeathTest, ArgParse_inputfile_short) {
     ModelDescription m(MODEL_NAME);
     CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "-i", "I_DO_NOT_EXIST.xml" };
     EXPECT_EQ(c.getSimulationConfig().input_file, "");
-    EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), exception::InvalidInputFile);  // File doesn't exist
-    EXPECT_EQ(c.getSimulationConfig().input_file, argv[2]);
-    // Blank init resets value to default
-    c.initialise(0, nullptr);
-    EXPECT_EQ(c.getSimulationConfig().input_file, "");
+    EXPECT_EXIT(c.initialise(sizeof(argv) / sizeof(char*), argv), testing::ExitedWithCode(EXIT_FAILURE), ".*Loading input file '.*' failed!.*");  // File doesn't exist
 }
 TEST(TestSimulation, ArgParse_steps_long) {
     ModelDescription m(MODEL_NAME);

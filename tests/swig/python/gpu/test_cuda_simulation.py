@@ -55,6 +55,7 @@ class TestSimulation(TestCase):
         c.initialise(argv)
         assert c.SimulationConfig().input_file == ""
 
+    @pytest.mark.skip(reason="no way of intercepting exit called with c/c++ code from python")
     def test_argparse_inputfile_short(self):
         m = pyflamegpu.ModelDescription("test_argparse_inputfile_short")
         c = pyflamegpu.CUDASimulation(m)
