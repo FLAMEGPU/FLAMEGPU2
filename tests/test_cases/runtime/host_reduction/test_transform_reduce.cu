@@ -195,5 +195,35 @@ TEST_F(HostReductionTest, CustomTransformReduceUnsignedInt64) {
     std::transform(in.begin(), in.end(), inTransform.begin(), customTransform_impl::unary_function<uint64_t, int>());
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
 }
+#ifdef USE_GLM
+FLAMEGPU_CUSTOM_REDUCTION(customMax2_glm, a, b) {
+    return glm::max(a, b);
+}
+FLAMEGPU_CUSTOM_TRANSFORM(customTransform_glm, a) {
+    return a + glm::vec3(1, 2, 3);
+}
+
+FLAMEGPU_STEP_FUNCTION(step_transformReduce_glm) {
+    vec3_t_out = FLAMEGPU->agent("agent").transformReduce<glm::vec3>("vec3", customTransform_glm, customMax2_glm, glm::vec3(0));
+}
+TEST_F(HostReductionTest, CustomTransformReduce_glm) {
+    ms->model.addStepFunction(step_transformReduceint64_t);
+    std::mt19937_64 rd;  // Seed does not matter
+    std::uniform_int_distribution <int64_t> dist(INT64_MIN, INT64_MAX);
+    std::array<glm::vec3, TEST_LEN> in;
+    for (unsigned int i = 0; i < TEST_LEN; i++) {
+        AgentVector::Agent instance = ms->population->at(i);
+        in[i] = glm::vec3(dist(rd), dist(rd), dist(rd));
+        instance.setVariable<glm::vec3>("vec3", in[i]);
+    }
+    ms->run();
+    std::array<glm::vec3, TEST_LEN> inTransform;
+    std::transform(in.begin(), in.end(), inTransform.begin(), customTransform_glm_impl::unary_function<glm::vec3, glm::vec3>());
+    glm::vec3 test_result = std::reduce(inTransform.begin(), inTransform.end(), glm::vec3(0), customMax2_glm_impl::binary_function<glm::vec3>());
+    EXPECT_EQ(vec3_t_out, test_result);
+}
+#else
+TEST_F(HostReductionTest, DISABLED_CustomTransformReduce_glm) { }
+#endif
 }  // namespace test_host_reductions
 }  // namespace flamegpu

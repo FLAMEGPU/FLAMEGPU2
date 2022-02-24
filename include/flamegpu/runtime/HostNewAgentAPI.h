@@ -7,6 +7,7 @@
 
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/defines.h"
+#include "flamegpu/util/type_decode.h"
 
 namespace flamegpu {
 
@@ -137,16 +138,13 @@ struct NewAgentStorage {
                 "in NewAgentStorage::setVariable().",
                 var_name.c_str());
         }
-#ifndef USE_GLM
-        const auto t_type = std::type_index(typeid(T));
-        // GLM is awkward, so we skip type comparisons and only care about size
+        const auto t_type = std::type_index(typeid(typename type_decode<T>::type_t));
         if (var->second.type != t_type) {
             THROW exception::InvalidVarType("Variable '%s' has type '%s', incorrect  type '%s' was requested, "
                 "in NewAgentStorage::setVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
-#endif
-        if (var->second.len != sizeof(T)) {
+        if (var->second.len != sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t) {
             THROW exception::InvalidAgentVar("This method is not suitable for agent array variables, "
                 " variable '%s' was passed, "
                 "in NewAgentStorage::setVariable().",
@@ -167,16 +165,16 @@ struct NewAgentStorage {
         //         "in NewAgentStorage::setVariable().",
         //         var_name.c_str());
         // }
-        const auto t_type = std::type_index(typeid(T));
-        if (var->second.type != std::type_index(typeid(T))) {
+        const auto t_type = std::type_index(typeid(typename type_decode<T>::type_t));
+        if (var->second.type != t_type) {
             THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
                 "in NewAgentStorage::setVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
-        if (var->second.len != sizeof(T) * N) {
+        if (var->second.len != sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t * N) {
             THROW exception::InvalidVarArrayLen("Variable '%s' is an array with %u elements, incorrect array of length %u was provided, "
                 "in NewAgentStorage::setVariable().",
-                var_name.c_str(), var->second.len / sizeof(T), N);
+                var_name.c_str(), var->second.len / (sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t), N);
         }
         memcpy(data + var->second.offset, val.data(), var->second.len);
     }
@@ -193,18 +191,18 @@ struct NewAgentStorage {
         //         "in NewAgentStorage::setVariable().",
         //         var_name.c_str());
         // }
-        const auto t_type = std::type_index(typeid(T));
-        if (var->second.type != std::type_index(typeid(T))) {
+        const auto t_type = std::type_index(typeid(typename type_decode<T>::type_t));
+        if (var->second.type != t_type) {
             THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
                 "in NewAgentStorage::setVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
-        if (var->second.len < sizeof(T) * (index + 1)) {
+        if (var->second.len < (sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t) * (index + 1)) {
             THROW exception::OutOfRangeVarArray("Variable '%s' is an array with %u elements, index %u is out of range, "
                 "in NewAgentStorage::setVariable().",
-                var_name.c_str(), var->second.len / sizeof(T), index);
+                var_name.c_str(), var->second.len / (sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t), index);
         }
-        memcpy(data + var->second.offset + (index * sizeof(T)), &val, sizeof(T));
+        memcpy(data + var->second.offset + (index * sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t), &val, sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t);
     }
 #ifdef SWIG
     template<typename T>
@@ -220,16 +218,16 @@ struct NewAgentStorage {
         //         "in NewAgentStorage::setVariableArray().",
         //         var_name.c_str());
         // }
-        const auto t_type = std::type_index(typeid(T));
-        if (var->second.type != std::type_index(typeid(T))) {
+        const auto t_type = std::type_index(typeid(typename type_decode<T>::type_t));
+        if (var->second.type != t_type) {
             THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
                 "in NewAgentStorage::setVariableArray().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
-        if (var->second.len != sizeof(T) * val.size()) {
+        if (var->second.len != sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t * val.size()) {
             THROW exception::InvalidVarArrayLen("Variable '%s' is an array with %u elements, incorrect array of length %u was provided, "
                 "in NewAgentStorage::setVariableArray().",
-                var_name.c_str(), var->second.len / sizeof(T), val.size());
+                var_name.c_str(), var->second.len / (sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t), val.size());
         }
         memcpy(data + var->second.offset, val.data(), var->second.len);
     }
@@ -242,16 +240,13 @@ struct NewAgentStorage {
                 "in NewAgentStorage::getVariable()",
                 var_name.c_str());
         }
-#ifndef USE_GLM
-        // GLM is awkward, so we skip type comparisons and only care about size
-        const auto t_type = std::type_index(typeid(T));
-        if (var->second.type != std::type_index(typeid(T))) {
+        const auto t_type = std::type_index(typeid(typename type_decode<T>::type_t));
+        if (var->second.type != t_type) {
             THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
                 "in NewAgentStorage::getVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
-#endif
-        if (var->second.len != sizeof(T)) {
+        if (var->second.len != sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t) {
             THROW exception::InvalidAgentVar("This method is not suitable for agent array variables, "
                 " variable '%s' was passed, "
                 "in NewAgentStorage::getVariable().",
@@ -272,16 +267,16 @@ struct NewAgentStorage {
         //         "in NewAgentStorage::getVariable().",
         //         var_name.c_str());
         // }
-        const auto t_type = std::type_index(typeid(T));
-        if (var->second.type != std::type_index(typeid(T))) {
+        const auto t_type = std::type_index(typeid(typename type_decode<T>::type_t));
+        if (var->second.type != t_type) {
             THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
                 "in NewAgentStorage::getVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
-        if (var->second.len != sizeof(T) * N) {
+        if (var->second.len != sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t * N) {
             THROW exception::InvalidVarArrayLen("Variable '%s' is an array with %u elements, incorrect array of length %u was specified, "
                 "in NewAgentStorage::getVariable().",
-                var_name.c_str(), var->second.len / sizeof(T), N);
+                var_name.c_str(), var->second.len / (sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t), N);
         }
         std::array<T, N> rtn;
         memcpy(rtn.data(), data + var->second.offset, var->second.len);
@@ -300,18 +295,18 @@ struct NewAgentStorage {
         //         "in NewAgentStorage::getVariable().",
         //         var_name.c_str());
         // }
-        const auto t_type = std::type_index(typeid(T));
-        if (var->second.type != std::type_index(typeid(T))) {
+        const auto t_type = std::type_index(typeid(typename type_decode<T>::type_t));
+        if (var->second.type != t_type) {
             THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
                 "in NewAgentStorage::getVariable().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
-        if (var->second.len < sizeof(T) * (index + 1)) {
+        if (var->second.len < sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t * (index + 1)) {
             THROW exception::OutOfRangeVarArray("Variable '%s' is an array with %u elements, index %u is out of range, "
                 "in NewAgentStorage::getVariable().",
-                var_name.c_str(), var->second.len / sizeof(T), index);
+                var_name.c_str(), var->second.len / (sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t), index);
         }
-        return *reinterpret_cast<T*>(data + var->second.offset + (index * sizeof(T)));
+        return *reinterpret_cast<T*>(data + var->second.offset + (index * sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t));
     }
 #ifdef SWIG
     template<typename T>
@@ -322,13 +317,18 @@ struct NewAgentStorage {
                 "in NewAgentStorage::getVariableArray().",
                 var_name.c_str());
         }
-        const auto t_type = std::type_index(typeid(T));
-        if (var->second.type != std::type_index(typeid(T))) {
+        const auto t_type = std::type_index(typeid(typename type_decode<T>::type_t));
+        if (var->second.type != t_type) {
             THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
                 "in NewAgentStorage::getVariableArray().",
                 var_name.c_str(), var->second.type.name(), t_type.name());
         }
-        const size_t elements = var->second.len / sizeof(T);
+        if (var->second.len % (sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t) != 0) {
+            THROW exception::InvalidVarType("Variable '%s' has length (%llu) is not divisible by vector length (%u), "
+                "in NewAgentStorage::getVariableArray().",
+                var_name.c_str(), var->second.len / sizeof(typename type_decode<T>::type_t), type_decode<T>::len_t);
+        }
+        const size_t elements = var->second.len / (sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t);
         std::vector<T> rtn(elements);
         memcpy(rtn.data(), data + var->second.offset, var->second.len);
         return rtn;

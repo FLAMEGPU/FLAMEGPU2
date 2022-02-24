@@ -54,7 +54,7 @@ TEST(TestRunPlan, setSteps) {
     EXPECT_EQ(updatedSteps, newSteps);
 
     // Expected exception tests
-    EXPECT_THROW(plan.setSteps(0u), std::out_of_range);
+    EXPECT_THROW(plan.setSteps(0u), exception::OutOfBoundsException);
 }
 TEST(TestRunPlan, setOutputSubdirectory) {
     // Create a model
@@ -80,6 +80,11 @@ TEST(TestRunPlan, setProperty) {
     environment.newProperty<float, 3>("f_a", {-1.0f, 0.0f, 1.0f});
     environment.newProperty<int32_t, 3>("i_a", {-1, 0, 1 });
     environment.newProperty<uint32_t, 3>("u_a", {0, 1, 2 });
+#ifdef USE_GLM
+    environment.newProperty<glm::ivec3>("ivec3", {});
+    environment.newProperty<glm::ivec3, 2>("ivec32", {});
+    environment.newProperty<glm::ivec3, 3>("ivec33", {});
+#endif
     // Create an individual run plan.
     flamegpu::RunPlan plan(model);
     // Set properties to new values
@@ -97,6 +102,15 @@ TEST(TestRunPlan, setProperty) {
     plan.setProperty<uint32_t>("u_a", 0, 3u);
     plan.setProperty<uint32_t>("u_a", 1, 4u);
     plan.setProperty<uint32_t>("u_a", 2, 5u);
+#ifdef USE_GLM
+    const glm::ivec3 ivec3_1_check = glm::ivec3{ 1, 2, 3 };
+    const std::array<glm::ivec3, 2> ivec3_2_check = { glm::ivec3{4, 5, 6}, glm::ivec3{7, 8, 9} };
+    const std::array<glm::ivec3, 3> ivec3_3_check =
+    { glm::ivec3{ 11, 12, 13 }, glm::ivec3{14, 15, 16}, glm::ivec3{17, 18, 19} };
+    plan.setProperty<glm::ivec3>("ivec3", ivec3_1_check);
+    plan.setProperty<glm::ivec3, 2>("ivec32", ivec3_2_check);
+    plan.setProperty<glm::ivec3, 3>("ivec33", ivec3_3_check);
+#endif
 
     EXPECT_EQ(plan.getProperty<float>("f"), 2.0f);
     EXPECT_EQ(plan.getProperty<int32_t>("i"), 2);
@@ -107,6 +121,12 @@ TEST(TestRunPlan, setProperty) {
     EXPECT_EQ(plan.getProperty<uint32_t>("u_a", 0), 3u);
     EXPECT_EQ(plan.getProperty<uint32_t>("u_a", 1), 4u);
     EXPECT_EQ(plan.getProperty<uint32_t>("u_a", 2), 5u);
+#ifdef USE_GLM
+    EXPECT_EQ(plan.getProperty<glm::ivec3>("ivec3"), ivec3_1_check);
+    EXPECT_EQ((plan.getProperty<glm::ivec3, 3>)("ivec33"), ivec3_3_check);
+    EXPECT_EQ(plan.getProperty<glm::ivec3>("ivec32", 0), ivec3_2_check[0]);
+    EXPECT_EQ(plan.getProperty<glm::ivec3>("ivec32", 1), ivec3_2_check[1]);
+#endif
 
     // Update properties again (previous bug)
     // RunPlan::setProperty(const std::string &name, const T&value)
@@ -122,6 +142,14 @@ TEST(TestRunPlan, setProperty) {
     plan.setProperty<uint32_t>("u_a", 0, 13u);
     plan.setProperty<uint32_t>("u_a", 1, 14u);
     plan.setProperty<uint32_t>("u_a", 2, 15u);
+#ifdef USE_GLM
+    plan.setProperty<glm::ivec3>("ivec3", glm::ivec3{ 31, 32, 33 });
+    const std::array<glm::ivec3, 3> ivec3_3_check2 =
+    { glm::ivec3{ 41, 42, 43 }, glm::ivec3{44, 45, 46}, glm::ivec3{47, 48, 49} };
+    plan.setProperty<glm::ivec3, 3>("ivec33", ivec3_3_check2);
+    plan.setProperty<glm::ivec3>("ivec32", 0, ivec3_2_check[1]);
+    plan.setProperty<glm::ivec3>("ivec32", 1, ivec3_2_check[0]);
+#endif
 
     EXPECT_EQ(plan.getProperty<float>("f"), 3.0f);
     EXPECT_EQ(plan.getProperty<int32_t>("i"), 3);
@@ -132,11 +160,17 @@ TEST(TestRunPlan, setProperty) {
     EXPECT_EQ(plan.getProperty<uint32_t>("u_a", 0), 13u);
     EXPECT_EQ(plan.getProperty<uint32_t>("u_a", 1), 14u);
     EXPECT_EQ(plan.getProperty<uint32_t>("u_a", 2), 15u);
+#ifdef USE_GLM
+    EXPECT_EQ(plan.getProperty<glm::ivec3>("ivec3"), glm::ivec3(31, 32, 33));
+    EXPECT_EQ((plan.getProperty<glm::ivec3, 3>)("ivec33"), ivec3_3_check2);
+    EXPECT_EQ(plan.getProperty<glm::ivec3>("ivec32", 0), ivec3_2_check[1]);
+    EXPECT_EQ(plan.getProperty<glm::ivec3>("ivec32", 1), ivec3_2_check[0]);
+#endif
 
 
     // Tests for exceptions
     // --------------------
-    // Note litereals used must match the templated type not the incorrect types used, to appease MSVC warnings.
+    // Note literals used must match the templated type not the incorrect types used, to appease MSVC warnings.
     // RunPlan::setProperty(const std::string &name, const T&value)
     EXPECT_THROW(plan.setProperty<float>("does_not_exist", 1.f), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW(plan.setProperty<float>("i", 1.f), flamegpu::exception::InvalidEnvPropertyType);
@@ -150,8 +184,30 @@ TEST(TestRunPlan, setProperty) {
     // RunPlan::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value)
     EXPECT_THROW((plan.setProperty<float>("does_not_exist", 0u, 3.f)), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW((plan.setProperty<float>("u_a", 0u, 3.f)), flamegpu::exception::InvalidEnvPropertyType);
-    EXPECT_THROW((plan.setProperty<int32_t>("i_a", static_cast<EnvironmentManager::size_type>(-1), 3)), std::out_of_range);
-    EXPECT_THROW((plan.setProperty<int32_t>("i_a", 4u, 3)), std::out_of_range);
+    EXPECT_THROW((plan.setProperty<int32_t>("i_a", static_cast<EnvironmentManager::size_type>(-1), 3)), exception::OutOfBoundsException);
+    EXPECT_THROW((plan.setProperty<int32_t>("i_a", 4u, 3)), exception::OutOfBoundsException);
+
+    // RunPlan::getProperty(const std::string &name)
+    EXPECT_THROW(plan.getProperty<float>("does_not_exist"), flamegpu::exception::InvalidEnvProperty);
+    EXPECT_THROW(plan.getProperty<float>("i"), flamegpu::exception::InvalidEnvPropertyType);
+    EXPECT_THROW(plan.getProperty<uint32_t>("u_a"), flamegpu::exception::InvalidEnvPropertyType);
+    // RunPlan::getProperty(const std::string &name, const EnvironmentManager::size_type &index)
+    // Extra brackets within the macro mean commas can be used due to how preproc tokenizers work
+    EXPECT_THROW((plan.getProperty<float, 3>("does_not_exist")), flamegpu::exception::InvalidEnvProperty);
+    EXPECT_THROW((plan.getProperty<float, 3>("u_a")), flamegpu::exception::InvalidEnvPropertyType);
+    EXPECT_THROW((plan.getProperty<int32_t, 2>("i_a")), flamegpu::exception::InvalidEnvPropertyType);
+    EXPECT_THROW((plan.getProperty<int32_t, 4>("i_a")), flamegpu::exception::InvalidEnvPropertyType);
+    // RunPlan::getProperty(const std::string &name, const EnvironmentManager::size_type &index)
+    EXPECT_THROW((plan.getProperty<float>("does_not_exist", 0u)), flamegpu::exception::InvalidEnvProperty);
+    EXPECT_THROW((plan.getProperty<float>("u_a", 0u)), flamegpu::exception::InvalidEnvPropertyType);
+    EXPECT_THROW((plan.getProperty<int32_t>("i_a", static_cast<EnvironmentManager::size_type>(-1))), exception::OutOfBoundsException);
+    EXPECT_THROW((plan.getProperty<int32_t>("i_a", 4u)), exception::OutOfBoundsException);
+#ifdef USE_GLM
+    EXPECT_THROW((plan.setProperty<glm::ivec3>)("ivec32", 3u, {}), exception::OutOfBoundsException);  // Out of bounds
+    EXPECT_THROW((plan.setProperty<glm::ivec3>)("ivec33", 4u, {}), exception::OutOfBoundsException);  // Out of bounds
+    EXPECT_THROW((plan.getProperty<glm::ivec3>)("ivec32", 3u), exception::OutOfBoundsException);  // Out of bounds
+    EXPECT_THROW((plan.getProperty<glm::ivec3>)("ivec33", 4u), exception::OutOfBoundsException);  // Out of bounds
+#endif
 }
 TEST(TestRunPlan, getRandomSimulationSeed) {
     // Create a model
@@ -221,8 +277,8 @@ TEST(TestRunPlan, getProperty) {
     // T RunPlan::getProperty(const std::string &name, const EnvironmentManager::size_type &index) const
     EXPECT_THROW((plan.getProperty<float>("does_not_exist", 0u)), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW((plan.getProperty<float>("u_a", 0u)), flamegpu::exception::InvalidEnvPropertyType);
-    EXPECT_THROW((plan.getProperty<int32_t>("i_a", static_cast<EnvironmentManager::size_type>(-1))), std::out_of_range);
-    EXPECT_THROW((plan.getProperty<int32_t>("i_a", 4u)), std::out_of_range);
+    EXPECT_THROW((plan.getProperty<int32_t>("i_a", static_cast<EnvironmentManager::size_type>(-1))), exception::OutOfBoundsException);
+    EXPECT_THROW((plan.getProperty<int32_t>("i_a", 4u)), exception::OutOfBoundsException);
 }
 // @todo - This test could be a lot more thorough.
 TEST(TestRunPlan, operatorAssignment) {

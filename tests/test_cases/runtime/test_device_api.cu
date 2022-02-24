@@ -187,7 +187,7 @@ TEST(DeviceAPITest, ArraySet_glm) {
     ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
-    agent.newVariable<int, 4>("array_var");
+    agent.newVariable<glm::ivec4>("array_var");
     agent.newVariable<float>("y");
     agent.newVariable<int>("id");
     // Do nothing, but ensure variables are made available on device
@@ -219,7 +219,7 @@ TEST(DeviceAPITest, ArraySet_glm) {
         EXPECT_EQ(instance.getVariable<float>("y"), 14.0f);
         int j = instance.getVariable<int>("id");
         // Check array sets are correct
-        auto output_array = instance.getVariable<int, 4>("array_var");
+        auto output_array = instance.getVariable<glm::ivec4>("array_var");
         EXPECT_EQ(output_array[0], 2 + j);
         EXPECT_EQ(output_array[1], 4 + j);
         EXPECT_EQ(output_array[2], 8 + j);
@@ -230,7 +230,7 @@ TEST(DeviceAPITest, ArrayGet_glm) {
     ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
-    agent.newVariable<int, 4>("array_var");
+    agent.newVariable<glm::ivec4>("array_var");
     agent.newVariable<float>("y");
     agent.newVariable<int>("id");
     agent.newVariable<int>("a1");
@@ -245,7 +245,7 @@ TEST(DeviceAPITest, ArrayGet_glm) {
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
         AgentVector::Agent instance = init_population[i];
         instance.setVariable<float>("x", 12.0f);
-        instance.setVariable<int, 4>("array_var", { 2 + i, 4 + i, 8 + i, 16 + i });
+        instance.setVariable<glm::ivec4>("array_var", glm::ivec4(2 + i, 4 + i, 8 + i, 16 + i));
         instance.setVariable<float>("y", 14.0f);
         instance.setVariable<int>("id", i);
     }

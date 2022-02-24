@@ -24,6 +24,7 @@ const char* CurveRTCHost::curve_rtc_dynamic_h_template = R"###(dynamic/curve_rtc
 #define CURVE_RTC_DYNAMIC_H_
 
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
+#include "flamegpu/util/type_decode.h"
 
 namespace flamegpu {
 
@@ -382,19 +383,14 @@ void CurveRTCHost::initHeaderEnvironment() {
         std::stringstream getEnvVariableImpl;
         for (std::pair<std::string, RTCEnvVariableProperties> element : RTCEnvVariables) {
             RTCEnvVariableProperties props = element.second;
-#if !defined(USE_GLM)
-            if (props.elements == 1) {
-#else
             {
-#endif
                 getEnvVariableImpl <<   "    if (strings_equal(name, \"" << element.first << "\")) {\n";
                 getEnvVariableImpl <<   "#if !defined(SEATBELTS) || SEATBELTS\n";
-#if !defined(USE_GLM)
-                getEnvVariableImpl <<   "        if(sizeof(T) != " << element.second.type_size << ") {\n";
-#else
-                getEnvVariableImpl <<   "        if(sizeof(T) != " << element.second.type_size * element.second.elements << ") {\n";
-#endif
+                getEnvVariableImpl <<   "        if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
                 getEnvVariableImpl <<   "            DTHROW(\"Environment property '%s' type mismatch.\\n\", name);\n";
+                getEnvVariableImpl <<   "            return {};\n";
+                getEnvVariableImpl <<   "        } else if(type_decode<T>::len_t != " << element.second.elements << ") {\n";
+                getEnvVariableImpl <<   "            DTHROW(\"Environment property '%s' length mismatch.\\n\", name);\n";
                 getEnvVariableImpl <<   "            return {};\n";
                 getEnvVariableImpl <<   "        }\n";
                 getEnvVariableImpl <<   "#endif\n";
@@ -416,14 +412,15 @@ void CurveRTCHost::initHeaderEnvironment() {
             if (props.elements > 1) {
                 getEnvArrayVariableImpl << "    if (strings_equal(name, \"" << element.first << "\")) {\n";
                 getEnvArrayVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
-                getEnvArrayVariableImpl << "        if(sizeof(T) != " << element.second.type_size << ") {\n";
+                getEnvArrayVariableImpl << "        const unsigned int t_index = type_decode<T>::len_t * index + type_decode<T>::len_t;\n";
+                getEnvArrayVariableImpl << "        if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
                 getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s' type mismatch.\\n\", name);\n";
                 getEnvArrayVariableImpl << "            return {};\n";
                 // Env var doesn't currently require user to specify length
                 // getEnvArrayVariableImpl << "        } else if (N != " << element.second.elements << ") {\n";
                 // getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s' length mismatch.\\n\", name);\n";
                 // getEnvArrayVariableImpl << "            return {};\n";
-                getEnvArrayVariableImpl << "        } else if (index >= " << element.second.elements << ") {\n";
+                getEnvArrayVariableImpl << "        } else if (t_index > " << element.second.elements << " || t_index < index) {\n";
                 getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s', index %d is out of bounds.\\n\", name, index);\n";
                 getEnvArrayVariableImpl << "            return {};\n";
                 getEnvArrayVariableImpl << "        }\n";
@@ -529,21 +526,16 @@ void CurveRTCHost::initHeaderSetters() {
         std::stringstream setAgentVariableImpl;
         for (const auto &element : agent_variables) {
             RTCVariableProperties props = element.second;
-            if (props.write
-#if !defined(USE_GLM)
-                && props.elements == 1
-#endif
-                ) {
+            if (props.write) {
                 setAgentVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
                 setAgentVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
-                setAgentVariableImpl << "#if defined(USE_GLM)\n";
-                setAgentVariableImpl << "                if(sizeof(T) != " << element.second.type_size * element.second.elements << ") {\n";
-                setAgentVariableImpl << "#else\n";
-                setAgentVariableImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
-                setAgentVariableImpl << "#endif\n";
-                setAgentVariableImpl << "                    DTHROW(\"Agent variable '%s' type mismatch during setVariable().\\n\", name);\n";
-                setAgentVariableImpl << "                    return;\n";
-                setAgentVariableImpl << "                }\n";
+                setAgentVariableImpl << "              if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
+                setAgentVariableImpl << "                  DTHROW(\"Agent variable '%s' type mismatch during setVariable().\\n\", name);\n";
+                setAgentVariableImpl << "                  return;\n";
+                setAgentVariableImpl << "              } else if(type_decode<T>::len_t != " << element.second.elements << ") {\n";
+                setAgentVariableImpl << "                  DTHROW(\"Agent variable '%s' length mismatch during setVariable().\\n\", name);\n";
+                setAgentVariableImpl << "                  return;\n";
+                setAgentVariableImpl << "              }\n";
                 setAgentVariableImpl << "#endif\n";
                 setAgentVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[index] = (T) variable;\n";
                 setAgentVariableImpl << "              return;\n";
@@ -561,21 +553,16 @@ void CurveRTCHost::initHeaderSetters() {
         std::stringstream setMessageVariableImpl;
         for (const auto &element : messageOut_variables) {
             RTCVariableProperties props = element.second;
-            if (props.write
-#if !defined(USE_GLM)
-                && props.elements == 1
-#endif
-                ) {
+            if (props.write) {
                 setMessageVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
                 setMessageVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
-                setMessageVariableImpl << "#if defined(USE_GLM)\n";
-                setMessageVariableImpl << "                if(sizeof(T) != " << element.second.type_size * element.second.elements << ") {\n";
-                setMessageVariableImpl << "#else\n";
-                setMessageVariableImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
-                setMessageVariableImpl << "#endif\n";
-                setMessageVariableImpl << "                    DTHROW(\"Message variable '%s' type mismatch during setVariable().\\n\", name);\n";
-                setMessageVariableImpl << "                    return;\n";
-                setMessageVariableImpl << "                }\n";
+                setMessageVariableImpl << "              if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
+                setMessageVariableImpl << "                  DTHROW(\"Message variable '%s' type mismatch during setVariable().\\n\", name);\n";
+                setMessageVariableImpl << "                  return;\n";
+                setMessageVariableImpl << "              } else if(type_decode<T>::len_t != " << element.second.elements << ") {\n";
+                setMessageVariableImpl << "                  DTHROW(\"Message variable '%s' length mismatch during setVariable().\\n\", name);\n";
+                setMessageVariableImpl << "                  return;\n";
+                setMessageVariableImpl << "              }\n";
                 setMessageVariableImpl << "#endif\n";
                 setMessageVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageOut_data_offset + (ct++ * sizeof(void*)) << ")))[index] = (T) variable;\n";
                 setMessageVariableImpl << "              return;\n";
@@ -593,21 +580,16 @@ void CurveRTCHost::initHeaderSetters() {
         std::stringstream setNewAgentVariableImpl;
         for (const auto &element : newAgent_variables) {
             RTCVariableProperties props = element.second;
-            if (props.write
-#if !defined(USE_GLM)
-                && props.elements == 1
-#endif
-                ) {
+            if (props.write) {
                 setNewAgentVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
                 setNewAgentVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
-                setNewAgentVariableImpl << "#if defined(USE_GLM)\n";
-                setNewAgentVariableImpl << "                if(sizeof(T) != " << element.second.type_size * element.second.elements << ") {\n";
-                setNewAgentVariableImpl << "#else\n";
-                setNewAgentVariableImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
-                setNewAgentVariableImpl << "#endif\n";
-                setNewAgentVariableImpl << "                    DTHROW(\"New agent variable '%s' type mismatch during setVariable().\\n\", name);\n";
-                setNewAgentVariableImpl << "                    return;\n";
-                setNewAgentVariableImpl << "                }\n";
+                setNewAgentVariableImpl << "              if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
+                setNewAgentVariableImpl << "                  DTHROW(\"New agent variable '%s' type mismatch during setVariable().\\n\", name);\n";
+                setNewAgentVariableImpl << "                  return;\n";
+                setNewAgentVariableImpl << "              } else if(type_decode<T>::len_t != " << element.second.elements << ") {\n";
+                setNewAgentVariableImpl << "                  DTHROW(\"New agent variable '%s' length mismatch during setVariable().\\n\", name);\n";
+                setNewAgentVariableImpl << "                  return;\n";
+                setNewAgentVariableImpl << "              }\n";
                 setNewAgentVariableImpl << "#endif\n";
                 setNewAgentVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << newAgent_data_offset + (ct++ * sizeof(void*)) << ")))[index] = (T) variable;\n";
                 setNewAgentVariableImpl << "              return;\n";
@@ -624,19 +606,20 @@ void CurveRTCHost::initHeaderSetters() {
         size_t ct = 0;
         std::stringstream setAgentArrayVariableImpl;
         if (!agent_variables.empty())
-            setAgentArrayVariableImpl <<             "    const size_t i = (index * N) + array_index;\n";
+            setAgentArrayVariableImpl <<             "    const size_t i = (index * type_decode<T>::len_t * N) + type_decode<T>::len_t * array_index;\n";
         for (const auto &element : agent_variables) {
             RTCVariableProperties props = element.second;
             if (props.write && props.elements > 1) {
                 setAgentArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
                 setAgentArrayVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
-                setAgentArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
+                setAgentArrayVariableImpl << "              const unsigned int t_index = type_decode<T>::len_t * array_index + type_decode<T>::len_t;\n";
+                setAgentArrayVariableImpl << "              if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
                 setAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s' type mismatch during setVariable().\\n\", name);\n";
                 setAgentArrayVariableImpl << "                  return;\n";
-                setAgentArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
+                setAgentArrayVariableImpl << "              } else if (type_decode<T>::len_t * N != " << element.second.elements << ") {\n";
                 setAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s' length mismatch during setVariable().\\n\", name);\n";
                 setAgentArrayVariableImpl << "                  return;\n";
-                setAgentArrayVariableImpl << "              } else if (array_index >= " << element.second.elements << ") {\n";
+                setAgentArrayVariableImpl << "              } else if (t_index > " << element.second.elements << " || t_index < array_index) {\n";
                 setAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s', index %d is out of bounds during setVariable().\\n\", name, array_index);\n";
                 setAgentArrayVariableImpl << "                  return;\n";
                 setAgentArrayVariableImpl << "              }\n";
@@ -656,19 +639,20 @@ void CurveRTCHost::initHeaderSetters() {
         size_t ct = 0;
         std::stringstream setMessageArrayVariableImpl;
         if (!messageOut_variables.empty())
-            setMessageArrayVariableImpl << "    const size_t i = (index * N) + array_index;\n";
+            setMessageArrayVariableImpl << "    const size_t i = (index * type_decode<T>::len_t * N) + type_decode<T>::len_t * array_index;\n";
         for (const auto& element : messageOut_variables) {
             RTCVariableProperties props = element.second;
             if (props.write && props.elements > 1) {
                 setMessageArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
                 setMessageArrayVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
-                setMessageArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
+                setMessageArrayVariableImpl << "              const unsigned int t_index = type_decode<T>::len_t * array_index + type_decode<T>::len_t;\n";
+                setMessageArrayVariableImpl << "              if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
                 setMessageArrayVariableImpl << "                  DTHROW(\"Message array variable '%s' type mismatch during setVariable().\\n\", name);\n";
                 setMessageArrayVariableImpl << "                  return;\n";
-                setMessageArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
+                setMessageArrayVariableImpl << "              } else if (type_decode<T>::len_t * N != " << element.second.elements << ") {\n";
                 setMessageArrayVariableImpl << "                  DTHROW(\"Message array variable '%s' length mismatch during setVariable().\\n\", name);\n";
                 setMessageArrayVariableImpl << "                  return;\n";
-                setMessageArrayVariableImpl << "              } else if (array_index >= " << element.second.elements << ") {\n";
+                setMessageArrayVariableImpl << "              } else if (t_index > " << element.second.elements << " || t_index < array_index) {\n";
                 setMessageArrayVariableImpl << "                  DTHROW(\"Message array variable '%s', index %d is out of bounds during setVariable().\\n\", name, array_index);\n";
                 setMessageArrayVariableImpl << "                  return;\n";
                 setMessageArrayVariableImpl << "              }\n";
@@ -688,19 +672,20 @@ void CurveRTCHost::initHeaderSetters() {
         size_t ct = 0;
         std::stringstream setNewAgentArrayVariableImpl;
         if (!newAgent_variables.empty())
-            setNewAgentArrayVariableImpl <<             "    const size_t i = (index * N) + array_index;\n";
+            setNewAgentArrayVariableImpl << "    const size_t i = (index * type_decode<T>::len_t * N) + type_decode<T>::len_t * array_index;\n";
         for (const auto &element : newAgent_variables) {
             RTCVariableProperties props = element.second;
             if (props.write && props.elements > 1) {
                 setNewAgentArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
                 setNewAgentArrayVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
-                setNewAgentArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
+                setNewAgentArrayVariableImpl << "              const unsigned int t_index = type_decode<T>::len_t * array_index + type_decode<T>::len_t;\n";
+                setNewAgentArrayVariableImpl << "              if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
                 setNewAgentArrayVariableImpl << "                  DTHROW(\"New agent array variable '%s' type mismatch during setVariable().\\n\", name);\n";
                 setNewAgentArrayVariableImpl << "                  return;\n";
-                setNewAgentArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
+                setNewAgentArrayVariableImpl << "              } else if (type_decode<T>::len_t * N != " << element.second.elements << ") {\n";
                 setNewAgentArrayVariableImpl << "                  DTHROW(\"New agent array variable '%s' length mismatch during setVariable().\\n\", name);\n";
                 setNewAgentArrayVariableImpl << "                  return;\n";
-                setNewAgentArrayVariableImpl << "              } else if (array_index >= " << element.second.elements << ") {\n";
+                setNewAgentArrayVariableImpl << "              } else if (t_index > " << element.second.elements << " || t_index < array_index) {\n";
                 setNewAgentArrayVariableImpl << "                  DTHROW(\"New agent array variable '%s', index %d is out of bounds during setVariable().\\n\", name, array_index);\n";
                 setNewAgentArrayVariableImpl << "                  return;\n";
                 setNewAgentArrayVariableImpl << "              }\n";
@@ -723,19 +708,14 @@ void CurveRTCHost::initHeaderGetters() {
         std::stringstream getAgentVariableImpl;
         for (const auto &element : agent_variables) {
             RTCVariableProperties props = element.second;
-            if (props.read
-#if !defined(USE_GLM)
-                && props.elements == 1
-#endif
-            ) {
+            if (props.read) {
                 getAgentVariableImpl << "            if (strings_equal(name, \"" << element.first << "\")) {\n";
                 getAgentVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
-                getAgentVariableImpl << "#if defined(USE_GLM)\n";
-                getAgentVariableImpl << "                if(sizeof(T) != " << element.second.type_size * element.second.elements << ") {\n";
-                getAgentVariableImpl << "#else\n";
-                getAgentVariableImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
-                getAgentVariableImpl << "#endif\n";
+                getAgentVariableImpl << "                if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
                 getAgentVariableImpl << "                    DTHROW(\"Agent variable '%s' type mismatch during getVariable().\\n\", name);\n";
+                getAgentVariableImpl << "                    return {};\n";
+                getAgentVariableImpl << "                } else if(type_decode<T>::len_t != " << element.second.elements << ") {\n";
+                getAgentVariableImpl << "                    DTHROW(\"Agent variable '%s' length mismatch during getVariable().\\n\", name);\n";
                 getAgentVariableImpl << "                    return {};\n";
                 getAgentVariableImpl << "                }\n";
                 getAgentVariableImpl << "#endif\n";
@@ -755,19 +735,14 @@ void CurveRTCHost::initHeaderGetters() {
         std::stringstream getMessageVariableImpl;
         for (const auto &element : messageIn_variables) {
             RTCVariableProperties props = element.second;
-            if (props.read
-#if !defined(USE_GLM)
-                && props.elements == 1
-#endif
-                ) {
+            if (props.read) {
                 getMessageVariableImpl << "            if (strings_equal(name, \"" << element.first << "\")) {\n";
                 getMessageVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
-                getMessageVariableImpl << "#if defined(USE_GLM)\n";
-                getMessageVariableImpl << "                if(sizeof(T) != " << element.second.type_size * element.second.elements << ") {\n";
-                getMessageVariableImpl << "#else\n";
-                getMessageVariableImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
-                getMessageVariableImpl << "#endif\n";
+                getMessageVariableImpl << "                if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
                 getMessageVariableImpl << "                    DTHROW(\"Message variable '%s' type mismatch during getVariable().\\n\", name);\n";
+                getMessageVariableImpl << "                    return {};\n";
+                getMessageVariableImpl << "                } else if(type_decode<T>::len_t != " << element.second.elements << ") {\n";
+                getMessageVariableImpl << "                    DTHROW(\"Message variable '%s' length mismatch during getVariable().\\n\", name);\n";
                 getMessageVariableImpl << "                    return {};\n";
                 getMessageVariableImpl << "                }\n";
                 getMessageVariableImpl << "#endif\n";
@@ -787,28 +762,15 @@ void CurveRTCHost::initHeaderGetters() {
         std::stringstream getAgentVariableLDGImpl;
         for (const auto &element : agent_variables) {
             RTCVariableProperties props = element.second;
-            if (props.read
-#if !defined(USE_GLM)
-                && props.elements == 1
-#endif
-                ) {
+            if (props.read && props.elements == 1) {  // GLM does not support __ldg() so should not use this
                 getAgentVariableLDGImpl << "            if (strings_equal(name, \"" << element.first << "\")) {\n";
                 getAgentVariableLDGImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
-                getAgentVariableLDGImpl << "#if defined(USE_GLM)\n";
                 getAgentVariableLDGImpl << "                if(sizeof(T) != " << element.second.type_size * element.second.elements << ") {\n";
-                getAgentVariableLDGImpl << "#else\n";
-                getAgentVariableLDGImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
-                getAgentVariableLDGImpl << "#endif\n";
                 getAgentVariableLDGImpl << "                    DTHROW(\"Agent variable '%s' type mismatch during getVariable().\\n\", name);\n";
                 getAgentVariableLDGImpl << "                    return {};\n";
                 getAgentVariableLDGImpl << "                }\n";
                 getAgentVariableLDGImpl << "#endif\n";
-                getAgentVariableLDGImpl << "#if !defined(USE_GLM)\n";
                 getAgentVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct * sizeof(void*)) << "))) + index);\n";
-                getAgentVariableLDGImpl << "#else\n";
-                getAgentVariableLDGImpl << "// GLM types (e.g. uvec3) cannot all be loaded via _ldg()\n";
-                getAgentVariableLDGImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct * sizeof(void*)) << ")))[index];\n";
-                getAgentVariableLDGImpl << "#endif\n";
                 getAgentVariableLDGImpl << "            }\n";
                 ++ct;  // Prev was part of the return line, but don't want confusion
             } else { ++ct; }
@@ -825,28 +787,15 @@ void CurveRTCHost::initHeaderGetters() {
         std::stringstream getMessageVariableLDGImpl;
         for (const auto &element : messageIn_variables) {
             RTCVariableProperties props = element.second;
-            if (props.read
-#if !defined(USE_GLM)
-                && props.elements == 1
-#endif
-                ) {
+            if (props.read && props.elements == 1) {  // GLM does not support __ldg() so should not use this
                 getMessageVariableLDGImpl << "            if (strings_equal(name, \"" << element.first << "\")) {\n";
                 getMessageVariableLDGImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
-                getMessageVariableLDGImpl << "#if defined(USE_GLM)\n";
-                getMessageVariableLDGImpl << "                if(sizeof(T) != " << element.second.type_size * element.second.elements << ") {\n";
-                getMessageVariableLDGImpl << "#else\n";
                 getMessageVariableLDGImpl << "                if(sizeof(T) != " << element.second.type_size << ") {\n";
-                getMessageVariableLDGImpl << "#endif\n";
                 getMessageVariableLDGImpl << "                    DTHROW(\"Message variable '%s' type mismatch during getVariable().\\n\", name);\n";
                 getMessageVariableLDGImpl << "                    return {};\n";
                 getMessageVariableLDGImpl << "                }\n";
                 getMessageVariableLDGImpl << "#endif\n";
-                getMessageVariableLDGImpl << "#if !defined(USE_GLM)\n";
                 getMessageVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageIn_data_offset + (ct * sizeof(void*)) << "))) + index);\n";
-                getMessageVariableLDGImpl << "#else\n";
-                getMessageVariableLDGImpl << "// GLM types (e.g. uvec3) cannot all be loaded via _ldg()\n";
-                getMessageVariableLDGImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageIn_data_offset + (ct * sizeof(void*)) << ")))[index];\n";
-                getMessageVariableLDGImpl << "#endif\n";
                 getMessageVariableLDGImpl << "            }\n";
                 ++ct;  // Prev was part of the return line, but don't want confusion
             } else { ++ct; }
@@ -862,19 +811,20 @@ void CurveRTCHost::initHeaderGetters() {
         size_t ct = 0;
         std::stringstream getAgentArrayVariableImpl;
         if (!agent_variables.empty())
-            getAgentArrayVariableImpl <<             "    const size_t i = (index * N) + array_index;\n";
+            getAgentArrayVariableImpl << "    const size_t i = (index * type_decode<T>::len_t * N) + type_decode<T>::len_t * array_index;\n";
         for (const auto &element : agent_variables) {
             RTCVariableProperties props = element.second;
             if (props.read && props.elements > 1) {
                 getAgentArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
                 getAgentArrayVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
-                getAgentArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
+                getAgentArrayVariableImpl << "              const unsigned int t_index = type_decode<T>::len_t * array_index + type_decode<T>::len_t;\n";
+                getAgentArrayVariableImpl << "              if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
                 getAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s' type mismatch during getVariable().\\n\", name);\n";
                 getAgentArrayVariableImpl << "                  return {};\n";
-                getAgentArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
+                getAgentArrayVariableImpl << "              } else if (type_decode<T>::len_t * N != " << element.second.elements << ") {\n";
                 getAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s' length mismatch during getVariable().\\n\", name);\n";
                 getAgentArrayVariableImpl << "                  return {};\n";
-                getAgentArrayVariableImpl << "              } else if (array_index >= " << element.second.elements << ") {\n";
+                getAgentArrayVariableImpl << "              } else if (t_index > " << element.second.elements << " || t_index < array_index) {\n";
                 getAgentArrayVariableImpl << "                  DTHROW(\"Agent array variable '%s', index %d is out of bounds during getVariable().\\n\", name, array_index);\n";
                 getAgentArrayVariableImpl << "                  return {};\n";
                 getAgentArrayVariableImpl << "              }\n";
@@ -894,19 +844,20 @@ void CurveRTCHost::initHeaderGetters() {
         size_t ct = 0;
         std::stringstream getMessageArrayVariableImpl;
         if (!messageIn_variables.empty())
-            getMessageArrayVariableImpl << "    const size_t i = (index * N) + array_index;\n";
+            getMessageArrayVariableImpl << "    const size_t i = (index * type_decode<T>::len_t * N) + type_decode<T>::len_t * array_index;\n";
         for (const auto& element : messageIn_variables) {
             RTCVariableProperties props = element.second;
             if (props.read && props.elements > 1) {
                 getMessageArrayVariableImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
                 getMessageArrayVariableImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
-                getMessageArrayVariableImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
+                getMessageArrayVariableImpl << "              const unsigned int t_index = type_decode<T>::len_t * array_index + type_decode<T>::len_t;\n";
+                getMessageArrayVariableImpl << "              if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
                 getMessageArrayVariableImpl << "                  DTHROW(\"Message array variable '%s' type mismatch during getVariable().\\n\", name);\n";
                 getMessageArrayVariableImpl << "                  return {};\n";
-                getMessageArrayVariableImpl << "              } else if (N != " << element.second.elements << ") {\n";
+                getMessageArrayVariableImpl << "              } else if (type_decode<T>::len_t * N != " << element.second.elements << ") {\n";
                 getMessageArrayVariableImpl << "                  DTHROW(\"Message array variable '%s' length mismatch during getVariable().\\n\", name);\n";
                 getMessageArrayVariableImpl << "                  return {};\n";
-                getMessageArrayVariableImpl << "              } else if (array_index >= " << element.second.elements << ") {\n";
+                getMessageArrayVariableImpl << "              } else if (t_index > " << element.second.elements << " || t_index < array_index) {\n";
                 getMessageArrayVariableImpl << "                  DTHROW(\"Message array variable '%s', index %d is out of bounds during getVariable().\\n\", name, array_index);\n";
                 getMessageArrayVariableImpl << "                  return {};\n";
                 getMessageArrayVariableImpl << "              }\n";
@@ -929,7 +880,7 @@ void CurveRTCHost::initHeaderGetters() {
             getAgentArrayVariableLDGImpl <<             "    const size_t i = (index * N) + array_index;\n";
         for (std::pair<std::string, RTCVariableProperties> element : agent_variables) {
             RTCVariableProperties props = element.second;
-            if (props.read && props.elements > 1) {
+            if (props.read && props.elements > 1) {  // GLM does not support __ldg() so should not use this
                 getAgentArrayVariableLDGImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
                 getAgentArrayVariableLDGImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
                 getAgentArrayVariableLDGImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
@@ -943,12 +894,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentArrayVariableLDGImpl << "                  return {};\n";
                 getAgentArrayVariableLDGImpl << "              }\n";
                 getAgentArrayVariableLDGImpl << "#endif\n";
-                getAgentArrayVariableLDGImpl << "#if !defined(USE_GLM)\n";
                 getAgentArrayVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct * sizeof(void*)) << "))) + i);\n";
-                getAgentArrayVariableLDGImpl << "#else\n";
-                getAgentArrayVariableLDGImpl << "// GLM types (e.g. uvec3) cannot all be loaded via _ldg()\n";
-                getAgentArrayVariableLDGImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct * sizeof(void*)) << ")))[i];\n";
-                getAgentArrayVariableLDGImpl << "#endif\n";
                 getAgentArrayVariableLDGImpl << "           };\n";
                 ++ct;  // Prev was part of the return line, but don't want confusion
             } else { ++ct; }
@@ -967,7 +913,7 @@ void CurveRTCHost::initHeaderGetters() {
             getMessageArrayVariableLDGImpl << "    const size_t i = (index * N) + array_index;\n";
         for (const auto& element : messageIn_variables) {
             RTCVariableProperties props = element.second;
-            if (props.read && props.elements > 1) {
+            if (props.read && props.elements > 1) {  // GLM does not support __ldg() so should not use this
                 getMessageArrayVariableLDGImpl << "          if (strings_equal(name, \"" << element.first << "\")) {\n";
                 getMessageArrayVariableLDGImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
                 getMessageArrayVariableLDGImpl << "              if(sizeof(T) != " << element.second.type_size << ") {\n";
@@ -981,12 +927,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getMessageArrayVariableLDGImpl << "                  return {};\n";
                 getMessageArrayVariableLDGImpl << "              }\n";
                 getMessageArrayVariableLDGImpl << "#endif\n";
-                getMessageArrayVariableLDGImpl << "#if !defined(USE_GLM)\n";
                 getMessageArrayVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageIn_data_offset + (ct * sizeof(void*)) << "))) + i);\n";
-                getMessageArrayVariableLDGImpl << "#else\n";
-                getMessageArrayVariableLDGImpl << "// GLM types (e.g. uvec3) cannot all be loaded via _ldg()\n";
-                getMessageArrayVariableLDGImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageIn_data_offset + (ct * sizeof(void*)) << ")))[i];\n";
-                getMessageArrayVariableLDGImpl << "#endif\n";
                 getMessageArrayVariableLDGImpl << "           };\n";
                 ++ct;  // Prev was part of the return line, but don't want confusion
             } else { ++ct; }

@@ -173,6 +173,17 @@ class CUDASimulation : public Simulation {
      */
     template<typename T, unsigned int N>
     void setEnvironmentProperty(const std::string &property_name, const std::array<T, N> &value);
+    /**
+     * Update the value of the specified element of the named environment property array
+     * @param property_name Name of the environment property to be updated
+     * @param index Index of the element within the property array to be updated
+     * @param value New value for the named environment property
+     * @tparam T Type of the elements of the environment property array
+     * @throws exception::InvalidEnvPropertyType If the named environment property does not exist with the specified type
+     * @throws exception::ReadOnlyEnvProperty If the named environment property is marked as read-only
+     */
+    template<typename T>
+    void setEnvironmentProperty(const std::string& property_name, const EnvironmentManager::size_type &index, const T& value);
 #ifdef SWIG
     /**
      * Update the current value of the named environment property array
@@ -188,7 +199,7 @@ class CUDASimulation : public Simulation {
 #endif
     /**
      * Return the current value of the named environment property
-     * @param property_name Name of the environment property to be updated
+     * @param property_name Name of the environment property to be returned
      * @tparam T Type of the environment property
      * @throws exception::InvalidEnvPropertyType If the named environment property does not exist with the specified type
      */
@@ -196,12 +207,21 @@ class CUDASimulation : public Simulation {
     T getEnvironmentProperty(const std::string &property_name);
     /**
      * Return the current value of the named environment property array
-     * @param property_name Name of the environment property to be updated
+     * @param property_name Name of the environment property to be returned
      * @tparam T Type of the elements of the environment property array
      * @throws exception::InvalidEnvPropertyType If the named environment property does not exist with the specified type
      */
     template<typename T, unsigned int N>
     std::array<T, N> getEnvironmentProperty(const std::string &property_name);
+    /**
+     * Return the current value of the specified element of the named environment property array
+     * @param property_name Name of the environment property to be returned
+     * @param index Index of the element within the property array to be returned
+     * @tparam T Type of the elements of the environment property array
+     * @throws exception::InvalidEnvPropertyType If the named environment property does not exist with the specified type
+     */
+    template<typename T>
+    T getEnvironmentProperty(const std::string& property_name, const EnvironmentManager::size_type& index);
 #ifdef SWIG
     /**
      * Return the current value of the named environment property array
@@ -659,6 +679,12 @@ void CUDASimulation::setEnvironmentProperty(const std::string& property_name, co
     singletons->environment.setProperty<T, N>({ instance_id, property_name }, value);
 }
 template<typename T>
+void CUDASimulation::setEnvironmentProperty(const std::string& property_name, const EnvironmentManager::size_type& index, const T& value) {
+    if (!singletonsInitialised)
+        initialiseSingletons();
+    singletons->environment.setProperty<T>({ instance_id, property_name }, index, value);
+}
+template<typename T>
 T CUDASimulation::getEnvironmentProperty(const std::string& property_name) {
     if (!singletonsInitialised)
         initialiseSingletons();
@@ -669,6 +695,12 @@ std::array<T, N> CUDASimulation::getEnvironmentProperty(const std::string& prope
     if (!singletonsInitialised)
         initialiseSingletons();
     return singletons->environment.getProperty<T, N>({ instance_id, property_name });
+}
+template<typename T>
+T CUDASimulation::getEnvironmentProperty(const std::string& property_name, const EnvironmentManager::size_type& index) {
+    if (!singletonsInitialised)
+        initialiseSingletons();
+    return singletons->environment.getProperty<T>({ instance_id, property_name }, index);
 }
 #ifdef SWIG
 template<typename T>

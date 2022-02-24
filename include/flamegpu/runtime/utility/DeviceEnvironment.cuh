@@ -6,6 +6,7 @@
 #include <cassert>
 
 #include "flamegpu/runtime/utility/DeviceMacroProperty.cuh"
+#include "flamegpu/util/type_decode.h"
 
 namespace flamegpu {
 
@@ -141,13 +142,8 @@ __device__ __forceinline__ T ReadOnlyDeviceEnvironment::getProperty(const char(&
 #if !defined(SEATBELTS) || SEATBELTS
     if (cv ==  detail::curve::Curve::UNKNOWN_VARIABLE) {
         DTHROW("Environment property with name: %s was not found.\n", name);
-#if defined(USE_GLM)
-    } else if (detail::curve::detail::d_sizes[cv] * detail::curve::detail::d_lengths[cv] != sizeof(T)) {
-        DTHROW("Environment property with name: %s type size mismatch %llu != %llu.\n", name, detail::curve::detail::d_sizes[cv] * detail::curve::detail::d_lengths[cv], sizeof(T));
-#else
-    } else if (detail::curve::detail::d_sizes[cv] != sizeof(T)) {
+    } else if (detail::curve::detail::d_sizes[cv] * detail::curve::detail::d_lengths[cv] != type_decode<T>::len_t * sizeof(typename type_decode<T>::type_t)) {
         DTHROW("Environment property with name: %s type size mismatch %llu != %llu.\n", name, detail::curve::detail::d_sizes[cv], sizeof(T));
-#endif
     } else {
         return *reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(detail::curve::detail::d_variables[cv]));
     }
@@ -161,11 +157,12 @@ __device__ __forceinline__ T ReadOnlyDeviceEnvironment::getProperty(const char(&
     detail::curve::Curve::VariableHash cvh = CURVE_NAMESPACE_HASH() + modelname_hash + detail::curve::Curve::variableHash(name);
     const auto cv = detail::curve::Curve::getVariable(cvh);
 #if !defined(SEATBELTS) || SEATBELTS
+    const unsigned int t_index = type_decode<T>::len_t * index + type_decode<T>::len_t;
     if (cv ==  detail::curve::Curve::UNKNOWN_VARIABLE) {
         DTHROW("Environment property array with name: %s was not found.\n", name);
-    } else if (detail::curve::detail::d_sizes[cv] != sizeof(T)) {
+    } else if (detail::curve::detail::d_sizes[cv] != sizeof(typename type_decode<T>::type_t)) {
         DTHROW("Environment property array with name: %s type size mismatch %llu != %llu.\n", name, detail::curve::detail::d_sizes[cv], sizeof(T));
-    } else if (detail::curve::detail::d_lengths[cv] <= index) {
+    } else if (detail::curve::detail::d_lengths[cv] < t_index || t_index < index) {
         DTHROW("Environment property array with name: %s index %u is out of bounds (length %u).\n", name, index, detail::curve::detail::d_lengths[cv]);
     } else {
         return *(reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(detail::curve::detail::d_variables[cv])) + index);

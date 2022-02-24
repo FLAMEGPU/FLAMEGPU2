@@ -535,15 +535,15 @@ FLAMEGPU_AGENT_FUNCTION(get_array_glm, MessageNone, MessageNone) {
 }
 TEST_F(DeviceEnvironmentTest, Get_array_glm) {
     // Setup agent fn
-    ms->agent.newVariable<float, 3>("k");
+    ms->agent.newVariable<glm::vec3>("k");
     AgentFunctionDescription& deviceFn = ms->agent.newFunction("device_function", get_array_glm);
     LayerDescription& devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
-    const std::array<float, 3> t_in = { 12.0f, -12.5f, 13.0f };
-    ms->env.newProperty<float, 3>("k", t_in);
+    const glm::vec3 t_in = { 12.0f, -12.5f, 13.0f };
+    ms->env.newProperty<glm::vec3>("k", t_in);
     ms->run();
-    const std::array<float, 3> t_out = ms->population->at(0).getVariable<float, 3>("k");
+    const glm::vec3 t_out = ms->population->at(0).getVariable<glm::vec3>("k");
     ASSERT_EQ(t_in, t_out);
 }
 const char* rtc_get_array_glm = R"###(
@@ -558,11 +558,11 @@ FLAMEGPU_AGENT_FUNCTION(get_array_glm, flamegpu::MessageNone, flamegpu::MessageN
 TEST(RTCDeviceEnvironmentTest, Get_array_glm) {
     ModelDescription model("device_env_test");
     // Setup environment
-    const std::array<float, 3> t_in = { 12.0f, -12.5f, 13.0f };
-    model.Environment().newProperty<float, 3>("k", t_in);
+    const glm::vec3 t_in = { 12.0f, -12.5f, 13.0f };
+    model.Environment().newProperty<glm::vec3>("k", t_in);
     // Setup agent fn
     AgentDescription &agent = model.newAgent("agent");
-    agent.newVariable<float, 3>("k");
+    agent.newVariable<glm::vec3>("k");
     AgentFunctionDescription& deviceFn = agent.newRTCFunction("device_function", rtc_get_array_glm);
     LayerDescription& devicefn_layer = model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
@@ -573,10 +573,11 @@ TEST(RTCDeviceEnvironmentTest, Get_array_glm) {
     cudaSimulation.setPopulationData(population);
     ASSERT_NO_THROW(cudaSimulation.simulate());
     ASSERT_NO_THROW(cudaSimulation.getPopulationData(population));
-    const std::array<float, 3> t_out = population.at(0).getVariable<float, 3>("k");
+    const glm::vec3 t_out = population.at(0).getVariable<glm::vec3>("k");
     ASSERT_EQ(t_in, t_out);
 }
 #else
-
+TEST(DeviceEnvironmentTest, DISABLED_Get_array_glm) {}
+TEST(RTCDeviceEnvironmentTest, DISABLED_Get_array_glm) {}
 #endif
 }  // namespace flamegpu

@@ -12,6 +12,9 @@ uint32_t uint32_t_out = 0;
 int32_t int32_t_out = 0;
 uint64_t uint64_t_out = 0;
 int64_t int64_t_out = 0;
+#ifdef USE_GLM
+glm::vec3 vec3_t_out = glm::vec3(0);
+#endif
 std::pair<double, double> mean_sd_out;
 std::vector<unsigned int> uint_vec;
 std::vector<int> int_vec;

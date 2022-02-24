@@ -13,6 +13,7 @@
 #include "flamegpu/pop/AgentVector.h"
 #include "flamegpu/pop/AgentInstance.h"
 #include "flamegpu/model/AgentData.h"
+#include "flamegpu/util/type_decode.h"
 
 namespace flamegpu {
 
@@ -118,6 +119,7 @@ class AgentDescription {
      */
     template<typename T, ModelData::size_type N>
     void newVariable(const std::string &variable_name, const std::array<T, N> &default_value = {});
+#ifndef SWIG
     /**
      * Adds a new variable to the agent
      * @param variable_name Name of the variable
@@ -126,8 +128,20 @@ class AgentDescription {
      * @throws exception::InvalidAgentVar If a variable already exists within the agent with the same name
      */
     template<typename T>
-    void newVariable(const std::string &variable_name, const T&default_value = 0);
-#ifdef SWIG
+    void newVariable(const std::string& variable_name, const T& default_value = {});
+#else
+    /**
+     * Adds a new variable to the agent
+     * @param variable_name Name of the variable
+     * @param default_value Default value of variable for new agents if unset, defaults to 0
+     * @tparam T Type of the agent variable, this must be an arithmetic type
+     * @throws exception::InvalidAgentVar If a variable already exists within the agent with the same name
+     * @note Swig is unable to handle {} default param, however it's required for GLM support
+     * Similarly, can't just provide 2 protoypes which overload, Python doesn't support that
+     * Hence, easiest to require python users to init GLM types as arrays
+     */
+    template<typename T>
+    void newVariable(const std::string& variable_name, const T& default_value = 0);
     /**
      * Adds a new variable array to the agent
      * @param variable_name Name of the variable array
@@ -302,9 +316,11 @@ void AgentDescription::newVariable(const std::string &variable_name, const std::
             "in AgentDescription::newVariable().");
     }
     // Array length 0 makes no sense
-    static_assert(N > 0, "A variable cannot have 0 elements.");
+    static_assert(type_decode<T>::len_t * N > 0, "A variable cannot have 0 elements.");
     if (agent->variables.find(variable_name) == agent->variables.end()) {
-        agent->variables.emplace(variable_name, Variable(default_value));
+        const std::array<typename type_decode<T>::type_t, type_decode<T>::len_t * N> *casted_default =
+        reinterpret_cast<const std::array<typename type_decode<T>::type_t, type_decode<T>::len_t* N>*>(&default_value);
+        agent->variables.emplace(variable_name, Variable(*casted_default));
         return;
     }
     THROW exception::InvalidAgentVar("Agent ('%s') already contains variable '%s', "
@@ -339,12 +355,11 @@ void AgentDescription::newVariableArray(const std::string& variable_name, const 
             length, static_cast<unsigned int>(default_value.size()));
     }
     if (agent->variables.find(variable_name) == agent->variables.end()) {
-        if (!default_value.size()) {
-            std::vector<T> temp(static_cast<size_t>(length));
-            agent->variables.emplace(variable_name, Variable(length, temp));
-        } else {
-            agent->variables.emplace(variable_name, Variable(length, default_value));
+        std::vector<typename type_decode<T>::type_t> temp(static_cast<size_t>(type_decode<T>::len_t * length));
+        if (default_value.size()) {
+            memcpy(temp.data(), default_value.data(), sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t * length);
         }
+        agent->variables.emplace(variable_name, Variable(type_decode<T>::len_t* length, temp));
         return;
     }
     THROW exception::InvalidAgentVar("Agent ('%s') already contains variable '%s', "

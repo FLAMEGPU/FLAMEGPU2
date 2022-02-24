@@ -90,16 +90,16 @@ T AgentInstance::getVariable(const std::string& variable_name) const {
             variable_name.c_str());
     }
     const auto& v_buff = v_it->second;
-    if (v_buff.elements != 1) {
+    if (v_buff.elements != type_decode<T>::len_t) {
         THROW exception::InvalidVarType("Variable '%s' is an array variable, use the array method instead, "
             "in AgentInstance::getVariable().",
             variable_name.c_str());
     }
-    if (v_buff.type != std::type_index(typeid(T))) {
+    if (v_buff.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
         THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentInstance::getVariable().",
-            variable_name.c_str(), v_buff.type.name(), typeid(T).name());
+            variable_name.c_str(), v_buff.type.name(), typeid(typename type_decode<T>::type_t).name());
     }
     return *static_cast<const T*>(v_buff.ptr);
 }
@@ -112,16 +112,16 @@ std::array<T, N> AgentInstance::getVariable(const std::string& variable_name) co
             variable_name.c_str());
     }
     const auto& v_buff = v_it->second;
-    if (v_buff.elements != N) {
+    if (v_buff.elements != N * type_decode<T>::len_t) {
         THROW exception::InvalidVarType("Variable '%s' has '%u' elements, but an array of length %u was passed, "
             "in AgentInstance::getVariable().",
-            variable_name.c_str(), v_buff.elements, N);
+            variable_name.c_str(), v_buff.elements / type_decode<T>::len_t, N);
     }
-    if (v_buff.type != std::type_index(typeid(T))) {
+    if (v_buff.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
         THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentInstance::getVariable().",
-            variable_name.c_str(), v_buff.type.name(), typeid(T).name());
+            variable_name.c_str(), v_buff.type.name(), typeid(typename type_decode<T>::type_t).name());
     }
     std::array<T, N> rtn;
     memcpy(rtn.data(), v_buff.ptr, sizeof(T) * N);
@@ -136,16 +136,22 @@ T AgentInstance::getVariable(const std::string& variable_name, const unsigned in
             variable_name.c_str());
     }
     const auto& v_buff = v_it->second;
-    if (index >= v_buff.elements) {
+    if (v_buff.elements % type_decode<T>::len_t != 0) {
+        THROW exception::InvalidVarType("Variable array length (%u) is not visible by vector length (%u),  "
+            "in AgentInstance::getVariable().",
+            v_buff.elements, type_decode<T>::len_t, variable_name.c_str());
+    }
+    const unsigned int t_index = type_decode<T>::len_t * index + type_decode<T>::len_t;
+    if (t_index > v_buff.elements || t_index < index) {
         THROW exception::OutOfBoundsException("Index '%u' exceeds array bounds [0-%u) of variable '%s',  "
             "in AgentInstance::getVariable().",
             index, v_buff.elements, variable_name.c_str());
     }
-    if (v_buff.type != std::type_index(typeid(T))) {
+    if (v_buff.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
         THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentInstance::getVariable().",
-            variable_name.c_str(), v_buff.type.name(), typeid(T).name());
+            variable_name.c_str(), v_buff.type.name(), typeid(typename type_decode<T>::type_t).name());
     }
     return static_cast<T*>(v_buff.ptr)[index];
 }
@@ -159,13 +165,18 @@ std::vector<T> AgentInstance::getVariableArray(const std::string& variable_name)
             variable_name.c_str());
     }
     const auto& v_buff = v_it->second;
-    if (v_buff.type != std::type_index(typeid(T))) {
+    if (v_buff.elements % type_decode<T>::len_t != 0) {
+        THROW exception::InvalidVarType("Variable array length (%u) is not visible by vector length (%u),  "
+            "in AgentInstance::getVariableArray().",
+            v_buff.elements, type_decode<T>::len_t, variable_name.c_str());
+    }
+    if (v_buff.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
         THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentInstance::getVariableArray().",
-            variable_name.c_str(), v_buff.type.name(), typeid(T).name());
+            variable_name.c_str(), v_buff.type.name(), typeid(typename type_decode<T>::type_t).name());
     }
-    std::vector<T> rtn(static_cast<size_t>(v_buff.elements));
+    std::vector<T> rtn(static_cast<size_t>(v_buff.elements / type_decode<T>::len_t));
     memcpy(rtn.data(), static_cast<T*>(v_buff.ptr), sizeof(T) * v_buff.elements);
     return rtn;
 }
@@ -179,16 +190,16 @@ void AgentInstance::setVariable(const std::string& variable_name, const T& value
             variable_name.c_str());
     }
     auto& v_buff = v_it->second;
-    if (v_buff.elements != 1) {
+    if (v_buff.elements != type_decode<T>::len_t) {
         THROW exception::InvalidVarType("Variable '%s' is an array variable, use the array method instead, "
             "in AgentInstance::setVariable().",
             variable_name.c_str());
     }
-    if (v_buff.type != std::type_index(typeid(T))) {
+    if (v_buff.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
         THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentInstance::setVariable().",
-            variable_name.c_str(), v_buff.type.name(), typeid(T).name());
+            variable_name.c_str(), v_buff.type.name(), typeid(typename type_decode<T>::type_t).name());
     }
     // do the replace
     *static_cast<T*>(v_buff.ptr) = value;
@@ -202,16 +213,16 @@ void AgentInstance::setVariable(const std::string& variable_name, const std::arr
             variable_name.c_str());
     }
     auto& v_buff = v_it->second;
-    if (v_buff.elements != N) {
+    if (v_buff.elements != N * type_decode<T>::len_t) {
         THROW exception::InvalidVarType("Variable '%s' has '%u' elements, but an array of length %u was passed, "
             "in AgentInstance::setVariable().",
             variable_name.c_str(), v_buff.elements, N);
     }
-    if (v_buff.type != std::type_index(typeid(T))) {
+    if (v_buff.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
         THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentInstance::setVariable().",
-            variable_name.c_str(), v_buff.type.name(), typeid(T).name());
+            variable_name.c_str(), v_buff.type.name(), typeid(typename type_decode<T>::type_t).name());
     }
     memcpy(static_cast<T*>(v_buff.ptr), value.data(), sizeof(T) * N);
 }
@@ -224,16 +235,22 @@ void AgentInstance::setVariable(const std::string& variable_name, const unsigned
             variable_name.c_str());
     }
     auto& v_buff = v_it->second;
-    if (index >= v_buff.elements) {
+    if (v_buff.elements % type_decode<T>::len_t != 0) {
+        THROW exception::InvalidVarType("Variable array length (%u) is not visible by vector length (%u),  "
+            "in AgentInstance::setVariable().",
+           v_buff.elements, type_decode<T>::len_t, variable_name.c_str());
+    }
+    const unsigned int t_index = type_decode<T>::len_t * index + type_decode<T>::len_t;
+    if (t_index > v_buff.elements || t_index < index) {
         THROW exception::OutOfBoundsException("Index '%u' exceeds array bounds [0-%u) of variable '%s',  "
             "in AgentInstance::setVariable().",
             index, v_buff.elements, variable_name.c_str());
     }
-    if (v_buff.type != std::type_index(typeid(T))) {
+    if (v_buff.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
         THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentInstance::setVariable().",
-            variable_name.c_str(), v_buff.type.name(), typeid(T).name());
+            variable_name.c_str(), v_buff.type.name(), typeid(typename type_decode<T>::type_t).name());
     }
     static_cast<T*>(v_buff.ptr)[index] = value;
 }
@@ -247,16 +264,16 @@ void AgentInstance::setVariableArray(const std::string& variable_name, const std
             variable_name.c_str());
     }
     auto& v_buff = v_it->second;
-    if (v_buff.elements != value.size()) {
+    if (v_buff.elements != value.size() * type_decode<T>::len_t) {
         THROW exception::InvalidVarType("Variable '%s' has '%u' elements, but an array of length %u was passed, "
             "in AgentInstance::setVariableArray().",
-            variable_name.c_str(), v_buff.elements, value.size());
+            variable_name.c_str(), v_buff.elements, value.size() * type_decode<T>::len_t);
     }
-    if (v_buff.type != std::type_index(typeid(T))) {
+    if (v_buff.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
         THROW exception::InvalidVarType("Variable '%s' is of a different type. "
             "'%s' was expected, but '%s' was requested,"
             "in AgentInstance::setVariableArray().",
-            variable_name.c_str(), v_buff.type.name(), typeid(T).name());
+            variable_name.c_str(), v_buff.type.name(), typeid(typename type_decode<T>::type_t).name());
     }
     memcpy(static_cast<T*>(v_buff.ptr), value.data(), sizeof(T) * v_buff.elements);
 }

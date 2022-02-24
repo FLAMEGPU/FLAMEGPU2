@@ -439,6 +439,7 @@ void JitifyCache::getKnownHeaders(std::vector<std::string>& headers) {
     headers.push_back("flamegpu/runtime/utility/DeviceEnvironment.cuh");
     headers.push_back("flamegpu/runtime/utility/DeviceMacroProperty.cuh");
     headers.push_back("flamegpu/util/detail/StaticAssert.h");
+    headers.push_back("flamegpu/util/type_decode.h");
     // headers.push_back("jitify_preinclude.h");  // I think Jitify adds this itself
     headers.push_back("limits");
     headers.push_back("limits.h");

@@ -10,6 +10,7 @@
 
 #include "flamegpu/sim/RunPlan.h"
 #include "flamegpu/util/detail/StaticAssert.h"
+#include "flamegpu/util/type_decode.h"
 
 
 namespace flamegpu {
@@ -81,7 +82,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @tparam T The type of the environment property, this must match the ModelDescription
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
-     * @throws std::out_of_range If index is not in range of the length of the property array
+     * @throws exception::OutOfBoundsException If index is not in range of the length of the property array
      * @see setProperty(const std::string &name, const T &value)
      */
     template<typename T>
@@ -111,7 +112,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @tparam T The type of the environment property, this must match the ModelDescription
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length > 1
-     * @throws std::out_of_range If this vector has a length less than 2
+     * @throws exception::OutOfBoundsException If this vector has a length less than 2
      */
     template<typename T>
     void setPropertyUniformDistribution(const std::string &name, const T &min, const T &max);
@@ -127,8 +128,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @tparam T The type of the environment property, this must match the ModelDescription
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
-     * @throws std::out_of_range If index is greater than or equal to the length of the environment property array
-     * @throws std::out_of_range If this vector has a length less than 2
+     * @throws exception::OutOfBoundsException If index is greater than or equal to the length of the environment property array
+     * @throws exception::OutOfBoundsException If this vector has a length less than 2
      * @see setPropertyUniformDistribution(const std::string &name, const T &min, const T &max)
      */
     template<typename T>
@@ -155,7 +156,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @tparam T The type of the environment property, this must match the ModelDescription
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length > 1
-     * @throws std::out_of_range If this vector has a length less than 2
+     * @throws exception::OutOfBoundsException If this vector has a length less than 2
      */
     template<typename T>
     void setPropertyUniformRandom(const std::string &name, const T &min, const T &max);
@@ -171,8 +172,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @tparam T The type of the environment property, this must match the ModelDescription
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
-     * @throws std::out_of_range If index is greater than or equal to the length of the environment property array
-     * @throws std::out_of_range If this vector has a length less than 2
+     * @throws exception::OutOfBoundsException If index is greater than or equal to the length of the environment property array
+     * @throws exception::OutOfBoundsException If this vector has a length less than 2
      * @see setPropertyUniformRandom(const std::string &name, const T &min, const T &max)
      */
     template<typename T>
@@ -186,7 +187,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @tparam T The type of the environment property, this must match the ModelDescription
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length > 1
-     * @throws std::out_of_range If this vector has a length less than 2
+     * @throws exception::OutOfBoundsException If this vector has a length less than 2
      */
     template<typename T>
     void setPropertyNormalRandom(const std::string &name, const T &mean, const T &stddev);
@@ -201,8 +202,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @tparam T The type of the environment property, this must match the ModelDescription
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
-     * @throws std::out_of_range If index is greater than or equal to the length of the environment property array
-     * @throws std::out_of_range If this vector has a length less than 2
+     * @throws exception::OutOfBoundsException If index is greater than or equal to the length of the environment property array
+     * @throws exception::OutOfBoundsException If this vector has a length less than 2
      * @see setPropertyNormalRandom(const std::string &name, const T &mean, const T &stddev)
      */
     template<typename T>
@@ -216,7 +217,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @tparam T The type of the environment property, this must match the ModelDescription
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length > 1
-     * @throws std::out_of_range If this vector has a length less than 2
+     * @throws exception::OutOfBoundsException If this vector has a length less than 2
      */
     template<typename T>
     void setPropertyLogNormalRandom(const std::string &name, const T &mean, const T &stddev);
@@ -231,8 +232,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @tparam T The type of the environment property, this must match the ModelDescription
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
-     * @throws std::out_of_range If index is greater than or equal to the length of the environment property array
-     * @throws std::out_of_range If this vector has a length less than 2
+     * @throws exception::OutOfBoundsException If index is greater than or equal to the length of the environment property array
+     * @throws exception::OutOfBoundsException If this vector has a length less than 2
      * @see setPropertyNormalRandom(const std::string &name, const T &mean, const T &stddev)
      */
     template<typename T>
@@ -245,7 +246,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @tparam rand_dist An object satisfying the requirements of RandomNumberDistribution e.g. std::uniform_real_distribution
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length to N
-     * @throws std::out_of_range If this vector has a length less than 2
+     * @throws exception::OutOfBoundsException If this vector has a length less than 2
      */
     template<typename T, typename rand_dist>
     void setPropertyRandom(const std::string &name, rand_dist &distribution);
@@ -259,8 +260,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @tparam rand_dist An object satisfying the requirements of RandomNumberDistribution e.g. std::uniform_real_distribution
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length to N
-     * @throws std::out_of_range If index is greater than or equal to the length of the environment property array
-     * @throws std::out_of_range If this vector has a length less than 2
+     * @throws exception::OutOfBoundsException If index is greater than or equal to the length of the environment property array
+     * @throws exception::OutOfBoundsException If this vector has a length less than 2
      */
     template<typename T, typename rand_dist>
     void setPropertyRandom(const std::string &name, const EnvironmentManager::size_type &index, rand_dist &distribution);
@@ -314,12 +315,12 @@ void RunPlanVector::setProperty(const std::string &name, const T &value) {
             "in RunPlanVector::setProperty()\n",
             name.c_str());
     }
-    if (it->second.data.type != std::type_index(typeid(T))) {
+    if (it->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
         THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlanVector::setProperty()\n",
-            name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
+            name.c_str(), it->second.data.type.name(), std::type_index(typeid(typename type_decode<T>::type_t)).name());
     }
-    if (it->second.data.elements != 1) {
+    if (it->second.data.elements != type_decode<T>::len_t) {
         THROW exception::InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
             "in RunPlanVector::setProperty()\n",
             name.c_str(), it->second.data.elements);
@@ -337,15 +338,15 @@ void RunPlanVector::setProperty(const std::string &name, const std::array<T, N> 
             "in RunPlanVector::setProperty()\n",
             name.c_str());
     }
-    if (it->second.data.type != std::type_index(typeid(T))) {
+    if (it->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
         THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlanVector::setProperty()\n",
-            name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
+            name.c_str(), it->second.data.type.name(), std::type_index(typeid(typename type_decode<T>::type_t)).name());
     }
-    if (it->second.data.elements != N) {
+    if (it->second.data.elements != N * type_decode<T>::len_t) {
         THROW exception::InvalidEnvPropertyType("Environment property array '%s' length mismatch %u != %u "
             "in RunPlanVector::setProperty()\n",
-            name.c_str(), it->second.data.elements, N);
+            name.c_str(), it->second.data.elements, N * type_decode<T>::len_t);
     }
     for (auto &i : *this) {
         i.setProperty<T, N>(name, value);
@@ -360,13 +361,14 @@ void RunPlanVector::setProperty(const std::string &name, const EnvironmentManage
             "in RunPlanVector::setProperty()\n",
             name.c_str());
     }
-    if (it->second.data.type != std::type_index(typeid(T))) {
+    if (it->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
         THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlanVector::setProperty()\n",
-            name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
+            name.c_str(), it->second.data.type.name(), std::type_index(typeid(typename type_decode<T>::type_t)).name());
     }
-    if (index > it->second.data.elements) {
-        throw std::out_of_range("Environment property array index out of bounds "
+    const unsigned int t_index = type_decode<T>::len_t * index + type_decode<T>::len_t;
+    if (t_index > it->second.data.elements || t_index < index) {
+        throw exception::OutOfBoundsException("Environment property array index out of bounds "
             "in RunPlanVector::setProperty()\n");
     }
     for (auto &i : *this) {
@@ -383,15 +385,15 @@ void RunPlanVector::setPropertyArray(const std::string &name, const EnvironmentM
             "in RunPlanVector::setPropertyArray()\n",
             name.c_str());
     }
-    if (it->second.data.type != std::type_index(typeid(T))) {
+    if (it->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
         THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlanVector::setPropertyArray()\n",
-            name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
+            name.c_str(), it->second.data.type.name(), std::type_index(typeid(typename type_decode<T>::type_t)).name());
     }
-    if (it->second.data.elements != N) {
+    if (it->second.data.elements != N * type_decode<T>::len_t) {
         THROW exception::InvalidEnvPropertyType("Environment property array '%s' length mismatch %u != %u "
             "in RunPlanVector::setPropertyArray()\n",
-            name.c_str(), it->second.data.elements, N);
+            name.c_str(), it->second.data.elements, N * type_decode<T>::len_t);
     }
     if (value.size() != N) {
         THROW exception::InvalidEnvProperty("Environment property array length does not match the value provided, %u != %llu,"
@@ -408,7 +410,7 @@ template<typename T>
 void RunPlanVector::setPropertyUniformDistribution(const std::string &name, const T &min, const T &max) {
     // Validation
     if (this->size() < 2) {
-        THROW std::out_of_range("Unable to apply a property distribution a vector with less than 2 elements, "
+        THROW exception::OutOfBoundsException("Unable to apply a property distribution a vector with less than 2 elements, "
             "in RunPlanVector::setPropertyUniformDistribution()\n");
     }
     const auto it = environment->find(name);
@@ -441,7 +443,7 @@ template<typename T>
 void RunPlanVector::setPropertyUniformDistribution(const std::string &name, const EnvironmentManager::size_type &index, const T &min, const T &max) {
     // Validation
     if (this->size() < 2) {
-        THROW std::out_of_range("Unable to apply a property distribution a vector with less than 2 elements, "
+        THROW exception::OutOfBoundsException("Unable to apply a property distribution a vector with less than 2 elements, "
             "in RunPlanVector::setPropertyUniformDistribution()\n");
     }
     const auto it = environment->find(name);
@@ -455,8 +457,9 @@ void RunPlanVector::setPropertyUniformDistribution(const std::string &name, cons
             "in RunPlanVector::setPropertyUniformDistribution()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
-    if (index > it->second.data.elements) {
-        throw std::out_of_range("Environment property array index out of bounds "
+    const unsigned int t_index = type_decode<T>::len_t * index + type_decode<T>::len_t;
+    if (t_index > it->second.data.elements || t_index < index) {
+        throw exception::OutOfBoundsException("Environment property array index out of bounds "
             "in RunPlanVector::setPropertyUniformDistribution()\n");
     }
     unsigned int ct = 0;
@@ -474,7 +477,7 @@ template<typename T, typename rand_dist>
 void RunPlanVector::setPropertyRandom(const std::string &name, rand_dist &distribution) {
     // Validation
     if (this->size() < 2) {
-        THROW std::out_of_range("Unable to apply a property distribution a vector with less than 2 elements, "
+        THROW exception::OutOfBoundsException("Unable to apply a property distribution a vector with less than 2 elements, "
             "in RunPlanVector::setPropertyRandom()\n");
     }
     const auto it = environment->find(name);
@@ -501,7 +504,7 @@ template<typename T, typename rand_dist>
 void RunPlanVector::setPropertyRandom(const std::string &name, const EnvironmentManager::size_type &index, rand_dist &distribution) {
     // Validation
     if (this->size() < 2) {
-        THROW std::out_of_range("Unable to apply a property distribution a vector with less than 2 elements, "
+        THROW exception::OutOfBoundsException("Unable to apply a property distribution a vector with less than 2 elements, "
             "in RunPlanVector::setPropertyRandom()\n");
     }
     const auto it = environment->find(name);
@@ -515,8 +518,9 @@ void RunPlanVector::setPropertyRandom(const std::string &name, const Environment
             "in RunPlanVector::setPropertyRandom()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
-    if (index > it->second.data.elements) {
-        throw std::out_of_range("Environment property array index out of bounds "
+    const unsigned int t_index = type_decode<T>::len_t * index + type_decode<T>::len_t;
+    if (t_index > it->second.data.elements || t_index < index) {
+        throw exception::OutOfBoundsException("Environment property array index out of bounds "
             "in RunPlanVector::setPropertyRandom()\n");
     }
     for (auto &i : *this) {

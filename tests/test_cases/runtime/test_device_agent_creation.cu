@@ -1480,6 +1480,42 @@ TEST(DeviceAgentCreationTest, Output_Array) {
     EXPECT_EQ(is_12, AGENT_COUNT);
 }
 #ifdef USE_GLM
+FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth_DefaultWorks_glm, MessageNone, MessageNone) {
+    unsigned int i = FLAMEGPU->getVariable<unsigned int>("id") * 3;
+    FLAMEGPU->agent_out.setVariable<unsigned int>("id", i);
+    return DEAD;
+}
+TEST(DeviceAgentCreationTest, DeviceAgentBirth_DefaultWorks_glm) {
+    const glm::ivec4 TEST_REFERENCE = { 3, 5, 9, 17 };
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<unsigned int>("id", UINT_MAX);
+    agent.newVariable<glm::ivec4>("array_var", TEST_REFERENCE);
+    agent.newVariable<float>("y", 14.0f);
+    auto& fn = agent.newFunction("out", ArrayVarDeviceBirth_DefaultWorks_glm);
+    fn.setAllowAgentDeath(true);
+    fn.setAgentOutput(agent);
+    model.newLayer().addAgentFunction(fn);
+    // Run the init function
+    AgentVector population(agent, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; i++) {
+        population[i].setVariable<unsigned int>("id", i);
+    }
+    CUDASimulation sim(model);
+    sim.setPopulationData(population);
+    sim.step();
+    sim.getPopulationData(population);
+    // Check data is correct
+    EXPECT_EQ(population.size(), AGENT_COUNT);
+    for (AgentVector::Agent instance : population) {
+        const unsigned int j = instance.getVariable<unsigned int>("id");
+        // Check array sets are correct
+        auto array1 = instance.getVariable<glm::ivec4>("array_var");
+        EXPECT_EQ(j % 3, 0u);
+        EXPECT_EQ(array1, TEST_REFERENCE);
+        EXPECT_EQ(instance.getVariable<float>("y"), 14.0f);
+    }
+}
 FLAMEGPU_AGENT_FUNCTION(MandatoryOutputArray_glm, MessageNone, MessageNone) {
     unsigned int id = FLAMEGPU->getVariable<unsigned int>("id") + 1;
     FLAMEGPU->agent_out.setVariable<glm::vec2>("x", glm::vec2(id + 12.0f, id + 13.0f));
@@ -1490,7 +1526,7 @@ TEST(DeviceAgentCreationTest, Output_Array_glm) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription& agent = model.newAgent("agent");
-    agent.newVariable<float, 2>("x");
+    agent.newVariable<glm::vec2>("x");
     agent.newVariable<unsigned int>("id");
     AgentFunctionDescription& function = agent.newFunction("output", MandatoryOutputArray_glm);
     function.setAgentOutput(agent);
@@ -1502,7 +1538,7 @@ TEST(DeviceAgentCreationTest, Output_Array_glm) {
     // Initialise agents
     for (unsigned int i = 0; i < AGENT_COUNT; i++) {
         AgentVector::Agent instance = population[i];
-        instance.setVariable<float, 2>("x", { i + 1.0f, i + 2.0f });
+        instance.setVariable<glm::vec2>("x", { i + 1.0f, i + 2.0f });
         instance.setVariable<unsigned int>("id", i);
     }
     cudaSimulation.setPopulationData(population);
@@ -1516,7 +1552,7 @@ TEST(DeviceAgentCreationTest, Output_Array_glm) {
     unsigned int is_12 = 0;
     for (AgentVector::Agent ai : population) {
         const unsigned int id = ai.getVariable<unsigned int>("id");
-        const std::array<float, 2> val = ai.getVariable<float, 2>("x");
+        const glm::vec2 val = ai.getVariable<glm::vec2>("x");
         if (val[0] - id == 1.0f && val[1] - id == 2.0f)
             is_1++;
         else if (val[0] - id == 12.0f && val[1] - id == 13.0f)
@@ -1537,7 +1573,7 @@ TEST(DeviceRTCAgentCreationTest, Output_Array_glm) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription& agent = model.newAgent("agent");
-    agent.newVariable<float, 2>("x");
+    agent.newVariable<glm::vec2>("x");
     agent.newVariable<unsigned int>("id");
     AgentFunctionDescription& function = agent.newRTCFunction("output", rtc_MandatoryOutputArray_glm);
     function.setAgentOutput(agent);
@@ -1549,7 +1585,7 @@ TEST(DeviceRTCAgentCreationTest, Output_Array_glm) {
     // Initialise agents
     for (unsigned int i = 0; i < AGENT_COUNT; i++) {
         AgentVector::Agent instance = population[i];
-        instance.setVariable<float, 2>("x", { i + 1.0f, i + 2.0f });
+        instance.setVariable<glm::vec2>("x", { i + 1.0f, i + 2.0f });
         instance.setVariable<unsigned int>("id", i);
     }
     cudaSimulation.setPopulationData(population);
@@ -1563,7 +1599,7 @@ TEST(DeviceRTCAgentCreationTest, Output_Array_glm) {
     unsigned int is_12 = 0;
     for (AgentVector::Agent ai : population) {
         const unsigned int id = ai.getVariable<unsigned int>("id");
-        const std::array<float, 2> val = ai.getVariable<float, 2>("x");
+        const glm::vec2 val = ai.getVariable<glm::vec2>("x");
         if (val[0] - id == 1.0f && val[1] - id == 2.0f)
             is_1++;
         else if (val[0] - id == 12.0f && val[1] - id == 13.0f)

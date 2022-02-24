@@ -48,7 +48,7 @@ FLAMEGPU_STEP_FUNCTION(BadVarName) {
     FLAMEGPU->agent("agent").newAgent().setVariable<float>("nope", 1.0f);
 }
 FLAMEGPU_STEP_FUNCTION(BadVarType) {
-    FLAMEGPU->agent("agent").newAgent().setVariable<int64_t>("x", static_cast<int64_t>(1.0f));
+    FLAMEGPU->agent("agent").newAgent().setVariable<int32_t>("x", static_cast<int32_t>(1.0f));
 }
 FLAMEGPU_STEP_FUNCTION(Getter) {
     for (unsigned int i = 0; i < NEW_AGENT_COUNT; ++i) {
@@ -482,7 +482,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArraySet) {
     sim.getPopulationData(population);
     // Check data is correct
     EXPECT_EQ(population.size(), AGENT_COUNT);
-    for (AgentVector::Agent instance : population) {
+    for (const AgentVector::Agent &instance : population) {
         const unsigned int j = instance.getVariable<unsigned int>("id");
         // Check array sets are correct
         auto array1 = instance.getVariable<int, 4>("array_var");
@@ -513,7 +513,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArraySetGet) {
     sim.getPopulationData(population);
     // Check data is correct
     EXPECT_EQ(population.size(), AGENT_COUNT);
-    for (AgentVector::Agent instance : population) {
+    for (const AgentVector::Agent &instance : population) {
         const unsigned int j = instance.getVariable<unsigned int>("id");
         // Check array sets are correct
         auto array1 = instance.getVariable<int, 4>("array_var");
@@ -544,7 +544,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayDefaultWorks) {
     sim.getPopulationData(population);
     // Check data is correct
     EXPECT_EQ(population.size(), AGENT_COUNT);
-    for (AgentVector::Agent instance : population) {
+    for (const AgentVector::Agent &instance : population) {
         const unsigned int j = instance.getVariable<unsigned int>("id");
         // Check array sets are correct
         auto array1 = instance.getVariable<int, 4>("array_var");
@@ -788,5 +788,171 @@ TEST(HostAgentCreationTest, AgentID_MultipleAgents) {
     }
     ASSERT_EQ(ids_b.size(), 2 * POP_SIZE);  // No collisions
 }
+#ifdef USE_GLM
+FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirthSetGet_glm) {
+    auto t = FLAMEGPU->agent("agent_name");
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); ++i) {
+        auto a = t.newAgent();
+        a.setVariable<unsigned int>("id", i);
+        // Set
+        a.setVariable<glm::ivec4>("array_var", { 2 + i, 4 + i, 8 + i, 16 + i });
+        a.setVariable<int>("array_var2", 0, 3 + i);
+        a.setVariable<int>("array_var2", 1, 5 + i);
+        a.setVariable<int>("array_var2", 2, 9 + i);
+        a.setVariable<int>("array_var2", 3, 17 + i);
+        a.setVariable<float>("y", 14.0f + i);
+        // GetSet
+        a.setVariable<glm::ivec4>("array_var", a.getVariable<glm::ivec4>("array_var"));
+        a.setVariable<int>("array_var2", 0, a.getVariable<int>("array_var2", 0));
+        a.setVariable<int>("array_var2", 1, a.getVariable<int>("array_var2", 1));
+        a.setVariable<int>("array_var2", 2, a.getVariable<int>("array_var2", 2));
+        a.setVariable<int>("array_var2", 3, a.getVariable<int>("array_var2", 3));
+        a.setVariable<float>("y", a.getVariable<float>("y"));
+    }
+}
+FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirthSetGet_glm2) {
+    auto t = FLAMEGPU->agent("agent_name");
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); ++i) {
+        auto a = t.newAgent();
+        a.setVariable<unsigned int>("id", i);
+        // Set
+        a.setVariable<glm::ivec4, 4>("array_var", { glm::ivec4{2 + i, 3 + i, 4 + i, 5 + i}, glm::ivec4{4 + i, 5 + i, 6 + i, 7 + i},
+            glm::ivec4{8 + i, 9 + i, 10 + i, 11 + i}, glm::ivec4{16 + i, 17 + i, 18 + i, 19 + i}});
+        a.setVariable<glm::ivec4>("array_var2", 0, glm::ivec4{ 3, 4, 5, 6 } + glm::ivec4{ i });
+        a.setVariable<glm::ivec4>("array_var2", 1, glm::ivec4{ 5, 6, 7, 8 } + glm::ivec4{ i });
+        a.setVariable<glm::ivec4>("array_var2", 2, glm::ivec4{ 9, 10, 11, 12 } + glm::ivec4{ i });
+        a.setVariable<glm::ivec4>("array_var2", 3, glm::ivec4{ 17, 18, 19, 20 } + glm::ivec4{ i });
+        a.setVariable<float>("y", 14.0f + i);
+        // GetSet
+        a.setVariable<glm::ivec4, 4>("array_var", a.getVariable<glm::ivec4, 4>("array_var"));
+        a.setVariable<glm::ivec4>("array_var2", 0, a.getVariable<glm::ivec4>("array_var2", 0));
+        a.setVariable<glm::ivec4>("array_var2", 1, a.getVariable<glm::ivec4>("array_var2", 1));
+        a.setVariable<glm::ivec4>("array_var2", 2, a.getVariable<glm::ivec4>("array_var2", 2));
+        a.setVariable<glm::ivec4>("array_var2", 3, a.getVariable<glm::ivec4>("array_var2", 3));
+        a.setVariable<float>("y", a.getVariable<float>("y"));
+    }
+}
+TEST(HostAgentCreationTest, HostAgentBirth_ArraySetGet_glm) {
+    const glm::ivec4 TEST_REFERENCE = { 2, 4, 8, 16 };
+    const glm::ivec4 TEST_REFERENCE2 = { 3, 5, 9, 17 };
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<unsigned int>("id", UINT_MAX);
+    agent.newVariable<glm::ivec4>("array_var");
+    agent.newVariable<glm::ivec4>("array_var2");
+    agent.newVariable<float>("y", 13.0f);
+    // Run the init function
+    model.addStepFunction(ArrayVarHostBirthSetGet_glm);
+    CUDASimulation sim(model);
+    sim.step();
+    AgentVector population(agent);
+    sim.getPopulationData(population);
+    // Check data is correct
+    EXPECT_EQ(population.size(), AGENT_COUNT);
+    for (AgentVector::Agent instance : population) {
+        const unsigned int j = instance.getVariable<unsigned int>("id");
+        // Check array sets are correct
+        auto array1 = instance.getVariable<glm::ivec4>("array_var");
+        auto array2 = instance.getVariable<glm::ivec4>("array_var2");
+        for (unsigned int k = 0; k < 4; ++k) {
+            array1[k] -= j;
+            array2[k] -= j;
+        }
+        EXPECT_EQ(array1, TEST_REFERENCE);
+        EXPECT_EQ(array2, TEST_REFERENCE2);
+        EXPECT_EQ(instance.getVariable<float>("y"), 14 + j);
+    }
+}
+TEST(HostAgentCreationTest, HostAgentBirth_ArraySetGet_glm2) {
+    const std::array<glm::ivec4, 4> TEST_REFERENCE = { glm::ivec4{2, 3, 4, 5}, glm::ivec4{4, 5, 6, 7}, glm::ivec4{8, 9, 10, 11}, glm::ivec4{16, 17, 18, 19} };
+    const std::array<glm::ivec4, 4> TEST_REFERENCE2 = { glm::ivec4{3, 4, 5, 6}, glm::ivec4{5, 6, 7, 8}, glm::ivec4{9, 10, 11, 12}, glm::ivec4{17, 18, 19, 20} };
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<unsigned int>("id", UINT_MAX);
+    agent.newVariable<glm::ivec4, 4>("array_var");
+    agent.newVariable<glm::ivec4, 4>("array_var2");
+    agent.newVariable<float>("y", 13.0f);
+    // Run the init function
+    model.addStepFunction(ArrayVarHostBirthSetGet_glm2);
+    CUDASimulation sim(model);
+    sim.step();
+    AgentVector population(agent);
+    sim.getPopulationData(population);
+    // Check data is correct
+    EXPECT_EQ(population.size(), AGENT_COUNT);
+    for (AgentVector::Agent instance : population) {
+        const unsigned int j = instance.getVariable<unsigned int>("id");
+        // Check array sets are correct
+        auto array1 = instance.getVariable<glm::ivec4, 4>("array_var");
+        auto array2 = instance.getVariable<glm::ivec4, 4>("array_var2");
+        for (unsigned int k = 0; k < 4; ++k) {
+            array1[k] -= glm::ivec4(j);
+            array2[k] -= glm::ivec4(j);
+        }
+        EXPECT_EQ(array1, TEST_REFERENCE);
+        EXPECT_EQ(array2, TEST_REFERENCE2);
+        EXPECT_EQ(instance.getVariable<float>("y"), 14 + j);
+    }
+}
+TEST(HostAgentCreationTest, HostAgentBirth_ArrayDefaultWorks_glm) {
+    const glm::ivec4 TEST_REFERENCE = { 2, 4, 8, 16 };
+    const glm::ivec4 TEST_REFERENCE2 = { 3, 5, 9, 17 };
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<unsigned int>("id", UINT_MAX);
+    agent.newVariable<glm::ivec4>("array_var", TEST_REFERENCE);
+    agent.newVariable<glm::ivec4>("array_var2", TEST_REFERENCE2);
+    agent.newVariable<float>("y", 13.0f);
+    // Run the init function
+    model.addStepFunction(ArrayVarHostBirth_DefaultWorks);
+    CUDASimulation sim(model);
+    sim.step();
+    AgentVector population(agent);
+    sim.getPopulationData(population);
+    // Check data is correct
+    EXPECT_EQ(population.size(), AGENT_COUNT);
+    for (const AgentVector::Agent &instance : population) {
+        const unsigned int j = instance.getVariable<unsigned int>("id");
+        // Check array sets are correct
+        auto array1 = instance.getVariable<glm::ivec4>("array_var");
+        auto array2 = instance.getVariable<glm::ivec4>("array_var2");
+        EXPECT_EQ(instance.getVariable<unsigned int>("id"), UINT_MAX);
+        EXPECT_EQ(array1, TEST_REFERENCE);
+        EXPECT_EQ(array2, TEST_REFERENCE2);
+        EXPECT_EQ(instance.getVariable<float>("y"), 13.0f);
+    }
+}
+
+FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirth_ArrayLenWrong_glm) {
+    FLAMEGPU->agent("agent_name").newAgent().setVariable<glm::ivec4, 5>("array_var", {});
+}
+TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong_glm) {
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<glm::ivec4, 4>("array_var");
+    // Run the init function
+    model.addStepFunction(ArrayVarHostBirth_LenWrong);
+    CUDASimulation sim(model);
+    EXPECT_THROW(sim.step(), exception::InvalidVarArrayLen);
+}
+FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirth_ArrayOutOfBounds_glm) {
+    FLAMEGPU->agent("agent_name").newAgent().setVariable<glm::ivec4>("array_var", 4, {});
+}
+TEST(HostAgentCreationTest, HostAgentBirth_ArrayOutOfBounds_glm) {
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<glm::ivec4, 4>("array_var");
+    // Run the init function
+    model.addStepFunction(ArrayVarHostBirth_ArrayOutOfBounds_glm);
+    CUDASimulation sim(model);
+    EXPECT_THROW(sim.step(), exception::OutOfRangeVarArray);
+}
+#else
+TEST(HostAgentCreationTest, DISABLED_HostAgentBirth_ArraySetGet_glm) {}
+TEST(HostAgentCreationTest, DISABLED_HostAgentBirth_ArrayDefaultWorks_glm) {}
+TEST(HostAgentCreationTest, DISABLED_HostAgentBirth_ArrayDefaultWorks2_glm) {}
+TEST(HostAgentCreationTest, DISABLED_HostAgentBirth_ArrayLenWrong_glm) {}
+TEST(HostAgentCreationTest, DISABLED_HostAgentBirth_ArrayOutOfBounds_glm) {}
+#endif
 }  // namespace test_host_agent_creation
 }  // namespace flamegpu

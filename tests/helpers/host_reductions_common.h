@@ -35,6 +35,9 @@ extern uint32_t uint32_t_out;
 extern int32_t int32_t_out;
 extern uint64_t uint64_t_out;
 extern int64_t int64_t_out;
+#ifdef USE_GLM
+extern glm::vec3 vec3_t_out;
+#endif
 extern std::pair<double, double> mean_sd_out;
 extern std::vector<unsigned int> uint_vec;
 extern std::vector<int> int_vec;
@@ -55,6 +58,9 @@ class MiniSim {
         agent.newVariable<int32_t>("int32_t");
         agent.newVariable<uint64_t>("uint64_t");
         agent.newVariable<int64_t>("int64_t");
+#ifdef USE_GLM
+        agent.newVariable<glm::vec3>("vec3");
+#endif
         population = new AgentVector(agent, TEST_LEN);
     }
     ~MiniSim() { delete population; }

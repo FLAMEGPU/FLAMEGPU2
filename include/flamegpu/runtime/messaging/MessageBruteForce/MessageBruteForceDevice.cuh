@@ -242,7 +242,11 @@ __device__ T MessageBruteForce::In::Message::getVariable(const char(&variable_na
     }
 #endif
     // get the value from curve using the stored hashes and message index.
+#ifdef USE_GLM
+    T value = detail::curve::Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, index);
+#else
     T value = detail::curve::Curve::getMessageVariable_ldg<T>(variable_name, this->_parent.combined_hash, index);
+#endif
     return value;
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
@@ -257,7 +261,11 @@ T MessageBruteForce::In::Message::getVariable(const char(&variable_name)[M], con
     }
 #endif
     // get the value from curve using the stored hashes and message index.
+#ifdef USE_GLM
+    T value = detail::curve::Curve::getMessageArrayVariable<T, N>(variable_name, this->_parent.combined_hash, index, array_index);
+#else
     T value = detail::curve::Curve::getMessageArrayVariable_ldg<T, N>(variable_name, this->_parent.combined_hash, index, array_index);
+#endif
     return value;
 }
 
