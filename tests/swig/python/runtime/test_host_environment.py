@@ -1250,7 +1250,7 @@ class exception_property_read_only(pyflamegpu.HostFunctionCallback):
         except pyflamegpu.FLAMEGPURuntimeException as e:
             self.e2 = e.type()
         # no throw
-        FLAMEGPU.environment.getPropertyInt("read_only_a")
+        FLAMEGPU.environment.getPropertyFloat("read_only")
         FLAMEGPU.environment.getPropertyInt("read_only_a", 1)     
         
     def apply_assertions(self):

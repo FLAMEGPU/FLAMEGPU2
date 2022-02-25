@@ -16,13 +16,13 @@ class LoggingExceptionTest(TestCase):
         sim = pyflamegpu.CUDASimulation(m);
         # Unsupported file types
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::UnsupportedFileType exception
-            sim.exportLog("test.csv", True, True);
+            sim.exportLog("test.csv", True, True, True, True);
         assert e.value.type() == "UnsupportedFileType"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::UnsupportedFileType exception
-            sim.exportLog("test.html", True, True);
+            sim.exportLog("test.html", True, True, True, True);
         assert e.value.type() == "UnsupportedFileType"
         # Does not throw
-        sim.exportLog("test.json", True, True);
+        sim.exportLog("test.json", True, True, True, True);
         # Cleanup
         os.remove("test.json")
         

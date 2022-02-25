@@ -135,6 +135,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAMacroEnvironment.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentInterface.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentLoggingConfig.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentLoggingConfig_SumReturn.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/AgentLoggingConfig_Reductions.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/LoggingConfig.h
     ${FLAMEGPU_ROOT}/include/flamegpu/sim/LogFrame.h

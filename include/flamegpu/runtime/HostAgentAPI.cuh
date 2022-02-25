@@ -28,6 +28,7 @@
 #include "flamegpu/pop/DeviceAgentVector.h"
 #include "flamegpu/pop/DeviceAgentVector_impl.h"
 #include "flamegpu/sim/AgentLoggingConfig_Reductions.cuh"
+#include "flamegpu/sim/AgentLoggingConfig_SumReturn.h"
 
 namespace flamegpu {
 

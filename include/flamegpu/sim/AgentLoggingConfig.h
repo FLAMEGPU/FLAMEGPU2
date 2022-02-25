@@ -9,6 +9,7 @@
 
 #include "flamegpu/sim/LoggingConfig.h"
 #include "flamegpu/sim/AgentLoggingConfig_Reductions.cuh"
+#include "flamegpu/sim/AgentLoggingConfig_SumReturn.h"
 #include "flamegpu/runtime/HostAgentAPI.cuh"
 
 namespace flamegpu {

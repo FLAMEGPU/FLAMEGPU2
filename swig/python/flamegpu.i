@@ -547,6 +547,7 @@ class ModelVis;
 // Include logging implementations
 %include "flamegpu/sim/LoggingConfig.h"
 %include "flamegpu/sim/AgentLoggingConfig.h"
+%include "flamegpu/sim/AgentLoggingConfig_SumReturn.h"
 %include "flamegpu/sim/LogFrame.h"  // Includes RunLog. 
 
 // Include ensemble implementations
@@ -640,7 +641,7 @@ class ModelVis;
 // DependencyNode template instantiations
 %template(dependsOn) flamegpu::DependencyNode::dependsOn<flamegpu::DependencyNode>;
 
-%template(LogFrameList) std::list<flamegpu::LogFrame>;
+%template(StepLogFrameList) std::list<flamegpu::StepLogFrame>;
 %template(RunLogVec) std::vector<flamegpu::RunLog>;
  
 // Instantiate template versions of agent functions from the API
