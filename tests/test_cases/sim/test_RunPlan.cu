@@ -98,13 +98,41 @@ TEST(TestRunPlan, setProperty) {
     plan.setProperty<uint32_t>("u_a", 1, 4u);
     plan.setProperty<uint32_t>("u_a", 2, 5u);
 
-    EXPECT_NE(plan.getProperty<float>("f"), environment.getProperty<float>("f"));
-    EXPECT_NE(plan.getProperty<int32_t>("i"), environment.getProperty<int32_t>("i"));
-    EXPECT_NE(plan.getProperty<uint32_t>("u"), environment.getProperty<uint32_t>("u"));
+    EXPECT_EQ(plan.getProperty<float>("f"), 2.0f);
+    EXPECT_EQ(plan.getProperty<int32_t>("i"), 2);
+    EXPECT_EQ(plan.getProperty<uint32_t>("u"), 2u);
     // extra brackets allow commas in macros.
-    EXPECT_NE((plan.getProperty<float, 3>("f_a")), (environment.getProperty<float, 3>("f_a")));
-    EXPECT_NE((plan.getProperty<int32_t, 3>("i_a")), (environment.getProperty<int32_t, 3>("i_a")));
-    EXPECT_NE((plan.getProperty<uint32_t, 3>("u_a")), (environment.getProperty<uint32_t, 3>("u_a")));
+    EXPECT_EQ((plan.getProperty<float, 3>("f_a")), (std::array<float, 3>{ -2.0f, 0.0f, 2.0f }));
+    EXPECT_EQ((plan.getProperty<int32_t, 3>("i_a")), (std::array<int32_t, 3>{ -2, 0, 2 }));
+    EXPECT_EQ(plan.getProperty<uint32_t>("u_a", 0), 3u);
+    EXPECT_EQ(plan.getProperty<uint32_t>("u_a", 1), 4u);
+    EXPECT_EQ(plan.getProperty<uint32_t>("u_a", 2), 5u);
+
+    // Update properties again (previous bug)
+    // RunPlan::setProperty(const std::string &name, const T&value)
+    plan.setProperty<float>("f", 3.0f);
+    plan.setProperty<int32_t>("i", 3);
+    plan.setProperty<uint32_t>("u", 3u);
+    // Set arrays at once
+    // RunPlan::setProperty(const std::string &name, const std::array<T, N> &value)
+    plan.setProperty<float, 3>("f_a", { 3.0f, 0.0f, -3.0f });
+    plan.setProperty<int32_t, 3>("i_a", { 3, 0, 5 });
+    // Set individual elements at a time
+    // RunPlan::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value)
+    plan.setProperty<uint32_t>("u_a", 0, 13u);
+    plan.setProperty<uint32_t>("u_a", 1, 14u);
+    plan.setProperty<uint32_t>("u_a", 2, 15u);
+
+    EXPECT_EQ(plan.getProperty<float>("f"), 3.0f);
+    EXPECT_EQ(plan.getProperty<int32_t>("i"), 3);
+    EXPECT_EQ(plan.getProperty<uint32_t>("u"), 3u);
+    // extra brackets allow commas in macros.
+    EXPECT_EQ((plan.getProperty<float, 3>("f_a")), (std::array<float, 3>{ 3.0f, 0.0f, -3.0f }));
+    EXPECT_EQ((plan.getProperty<int32_t, 3>("i_a")), (std::array<int32_t, 3>{ 3, 0, 5 }));
+    EXPECT_EQ(plan.getProperty<uint32_t>("u_a", 0), 13u);
+    EXPECT_EQ(plan.getProperty<uint32_t>("u_a", 1), 14u);
+    EXPECT_EQ(plan.getProperty<uint32_t>("u_a", 2), 15u);
+
 
     // Tests for exceptions
     // --------------------
