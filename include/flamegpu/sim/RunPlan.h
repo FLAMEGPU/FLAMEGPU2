@@ -210,6 +210,7 @@ void RunPlan::setProperty(const std::string &name, const T&value) {
             name.c_str(), it->second.data.elements);
     }
     // Store property
+    property_overrides.erase(name);
     property_overrides.emplace(name, util::Any(&value, sizeof(T), typeid(T), 1));
 }
 template<typename T, EnvironmentManager::size_type N>
@@ -232,6 +233,7 @@ void RunPlan::setProperty(const std::string &name, const std::array<T, N> &value
             name.c_str(), it->second.data.elements, N);
     }
     // Store property
+    property_overrides.erase(name);
     property_overrides.emplace(name, util::Any(value.data(), sizeof(T) * N, typeid(T), N));
 }
 template<typename T>
@@ -287,6 +289,7 @@ void RunPlan::setPropertyArray(const std::string &name, const EnvironmentManager
             name.c_str(), value.size(), N);
     }
     // Store property
+    property_overrides.erase(name);
     property_overrides.emplace(name, util::Any(value.data(), sizeof(T) * N, typeid(T), N));
 }
 #endif
