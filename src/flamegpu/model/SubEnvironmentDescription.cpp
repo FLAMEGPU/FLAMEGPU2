@@ -11,6 +11,15 @@ SubEnvironmentDescription::SubEnvironmentDescription(const std::shared_ptr<const
     , data(_data) { }
 
 void SubEnvironmentDescription::mapProperty(const std::string &sub_property_name, const std::string &master_property_name) {
+    // Neither are reserved properties
+    if (!sub_property_name.empty() && sub_property_name[0] == '_') {
+        THROW exception::ReservedName("Sub-model environment property '%s is internal and cannot be mapped, "
+            "in SubEnvironmentDescription::mapProperty()\n", sub_property_name.c_str());
+    }
+    if (!master_property_name.empty() && master_property_name[0] == '_') {
+        THROW exception::ReservedName("Master-model environment property '%s is internal and cannot be mapped, "
+            "in SubEnvironmentDescription::mapProperty()\n", master_property_name.c_str());
+    }
     // Sub property exists
     auto subEnv = data->subEnvironment.lock();
     if (!subEnv) {
@@ -64,6 +73,15 @@ void SubEnvironmentDescription::mapProperty(const std::string &sub_property_name
     data->properties.emplace(sub_property_name, master_property_name);
 }
 void SubEnvironmentDescription::mapMacroProperty(const std::string& sub_property_name, const std::string& master_property_name) {
+    // Neither are reserved properties
+    if (!sub_property_name.empty() && sub_property_name[0] == '_') {
+        THROW exception::ReservedName("Sub-model environment macro property '%s is internal and cannot be mapped, "
+            "in SubEnvironmentDescription::mapMacroProperty()\n", sub_property_name.c_str());
+    }
+    if (!master_property_name.empty() && master_property_name[0] == '_') {
+        THROW exception::ReservedName("Master-model environment macro property '%s is internal and cannot be mapped, "
+            "in SubEnvironmentDescription::mapMacroProperty()\n", master_property_name.c_str());
+    }
     // Sub macro property exists
     auto subEnv = data->subEnvironment.lock();
     if (!subEnv) {
@@ -149,6 +167,10 @@ void SubEnvironmentDescription::autoMapProperties() {
             "in SubEnvironmentDescription::autoMapProperties()\n");
     }
     for (auto &subProp : subEnv->properties) {
+        // If it's a reserved environment property, don't map it
+        // (Previously, there was a bug where _stepCount was being mixed between parent and child models)
+        if (subProp.first[0] == '_')
+            continue;
         auto masterProp = masterEnv->properties.find(subProp.first);
         // If there exists variable with same name in both environments
         if (masterProp != masterEnv->properties.end()) {
@@ -175,6 +197,9 @@ void SubEnvironmentDescription::autoMapMacroProperties() {
             "in SubEnvironmentDescription::autoMapMacroProperties()\n");
     }
     for (auto& subProp : subEnv->macro_properties) {
+        // If it's a reserved environment property, don't map it
+        if (subProp.first[0] == '_')
+            continue;
         auto masterProp = masterEnv->macro_properties.find(subProp.first);
         // If there exists variable with same name in both environments
         if (masterProp != masterEnv->macro_properties.end()) {

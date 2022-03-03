@@ -491,5 +491,73 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPISetConstSub) {
     // Stepping the model performs the test (the assert is in the step fn)
     cm.step();
 }
+
+FLAMEGPU_EXIT_CONDITION(ExitAt10) {
+    if (FLAMEGPU->getStepCounter() >= 10)
+        return EXIT;
+    return CONTINUE;
+}
+FLAMEGPU_AGENT_FUNCTION(getStepCounter, flamegpu::MessageNone, flamegpu::MessageNone) {
+    const unsigned int sc = FLAMEGPU->getStepCounter();
+    FLAMEGPU->setVariable<unsigned int>("step_read", sc);
+    return ALIVE;
+}
+TEST(SubEnvironmentManagerTest, StepCounterNotMapped) {
+    // Previously there was a bug, whereby a submodels step count would leak into the parent model for the remainder of the step
+    ModelDescription m2("sub");
+    {
+        // Define SubModel which simply steps multiple times
+        m2.addExitCondition(ExitAt10);
+        auto& a = m2.newAgent("agent");
+    }
+    ModelDescription m("host");
+    auto& a = m.newAgent("agent");
+    {
+        // Define Model
+        a.newVariable<unsigned int>("step_read", 0);
+        a.newFunction("getStepCounter", getStepCounter);
+    }
+    // Setup submodel bindings
+    auto& sm = m.newSubModel("sub", m2);
+    sm.SubEnvironment(true);
+    // Construct model layers
+    m.newLayer().addSubModel(sm);  // HostAPISetIsConstFn
+    m.newLayer().addAgentFunction(getStepCounter);
+    // Init agent population (we only need 1 agent, default value is fine)
+    AgentVector pop(a, 1);
+    // Init and step model
+    CUDASimulation cm(m);
+    cm.setPopulationData(pop);
+    for (unsigned int i = 0; i < 15; ++i) {
+        // Stepping the model performs the test (the assert is in the step fn)
+        cm.step();
+        cm.getPopulationData(pop);
+        ASSERT_EQ(pop[0].getVariable<unsigned int>("step_read"), i);
+    }
+}
+TEST(SubEnvironmentManagerTest, CantMapReserved) {
+    // Previously there was a bug, whereby a submodels step count would leak into the parent model for the remainder of the step
+    ModelDescription m2("sub");
+    {
+        // Define SubModel which simply steps multiple times
+        m2.addExitCondition(ExitAt10);
+        auto& a = m2.newAgent("agent");
+    }
+    ModelDescription m("host");
+    auto& a = m.newAgent("agent");
+    {
+        // Define Model
+        a.newVariable<unsigned int>("step_read", 0);
+        a.newFunction("getStepCounter", getStepCounter);
+    }
+    // Setup submodel bindings
+    auto& sm = m.newSubModel("sub", m2);
+    auto &se = sm.SubEnvironment(false);
+    EXPECT_THROW(se.mapProperty("_stepCount", "stepCount"), flamegpu::exception::ReservedName);
+    EXPECT_THROW(se.mapProperty("stepCount", "_stepCount"), flamegpu::exception::ReservedName);
+    // This doesn't actually exist, but should be caught regardless
+    EXPECT_THROW(se.mapMacroProperty("_stepCount", "stepCount"), flamegpu::exception::ReservedName);
+    EXPECT_THROW(se.mapMacroProperty("stepCount", "_stepCount"), flamegpu::exception::ReservedName);
+}
 }  // namespace test_sub_environment_manager
 }  // namespace flamegpu
