@@ -1,6 +1,5 @@
 # FLAME GPU 2
 
-[![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/LICENSE.MD)
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/FLAMEGPU/FLAMEGPU2?include_prereleases)](https://github.com/FLAMEGPU/FLAMEGPU2/releases/latest)
 [![GitHub issues](https://img.shields.io/github/issues/FLAMEGPU/FLAMEGPU2)](https://github.com/FLAMEGPU/FLAMEGPU2/issues)
 [![DOI](https://zenodo.org/badge/34064755.svg)](https://zenodo.org/badge/latestdoi/34064755)
@@ -295,7 +294,9 @@ Alternatively, [CITATION.cff](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/
 
 ## License
 
-FLAME GPU is distributed under the [MIT Licence](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/LICENSE.md).
+FLAME GPU is distributed under dual licence model. The software is shared souce via [MIT Licence](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/LICENSE.md) with a [Commons Clause](https://commonsclause.com/). The commons clause does not prevent commercial use but restricts the commercial sale of the software by third parties.
+
+The software is avaiable under commerical licience by negotiation. Please contact p.richmond@sheffield.ac.uk.
 
 ## Known issues
 
