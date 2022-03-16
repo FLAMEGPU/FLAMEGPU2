@@ -12,7 +12,7 @@ Licensor: University of Sheffield
 
 ---------------------------------------------------------------------
 
-MIT License with for FLAME GPU 2
+MIT License with Commons Clause for FLAME GPU 2
 
 Copyright (c) 2019 University of Sheffield
 
