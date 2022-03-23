@@ -260,7 +260,7 @@ class ModelDescription {
     /**
      * @return A reference to the this model's DependencyGraph
      */
-    DependencyGraph& getDependencyGraph() const;
+    const DependencyGraph& getDependencyGraph() const;
     /**
      * Sets root as an execution root of the model. Multiple roots can be used which represent independent chains of dependencies.
      * @param root The DependencyNode which will be used as an execution root
@@ -270,6 +270,16 @@ class ModelDescription {
      * Generates layers from the dependency graph
      */
     void generateLayers();
+    /**
+     * Generates a .gv file containing the DOT representation of the dependencies specified
+     * @param outputFileName The name of the output file
+     */
+    void generateDependencyGraphDOTDiagram(std::string outputFileName) const;
+    /**
+     * Returns a string representation of the constructed layers
+     * @returns A string representation of the constructed layers
+     */
+    std::string getConstructedLayersString() const;
     /**
      * Returns an immutable reference to the specified agent, which can be used to view the agent's configuration
      * @param agent_name Name which can be used to the refer to the desired agent within the model description hierarchy
