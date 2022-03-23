@@ -75,7 +75,7 @@ TEST(DependencyGraphTest, ValidateEmptyGraph) {
     AgentDescription &a = _m.newAgent(AGENT_NAME);
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     ModelDescription model(MODEL_NAME);
-    DependencyGraph &graph = _m.getDependencyGraph();
+    const DependencyGraph& graph = model.getDependencyGraph();
     EXPECT_THROW(graph.validateDependencyGraph(), exception::InvalidDependencyGraph);
 }
 
@@ -83,8 +83,8 @@ TEST(DependencyGraphTest, ValidateSingleNode) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription &a = _m.newAgent(AGENT_NAME);
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(f);
+    const DependencyGraph& graph = _m.getDependencyGraph();
+    _m.addExecutionRoot(f);
     EXPECT_TRUE(graph.validateDependencyGraph());
 }
 
@@ -96,8 +96,8 @@ TEST(DependencyGraphTest, ValidateSingleChain) {
     AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
     f2.dependsOn(f);
     f3.dependsOn(f2);
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(f);
+    const DependencyGraph& graph = _m.getDependencyGraph();
+    _m.addExecutionRoot(f);
     EXPECT_TRUE(graph.validateDependencyGraph());
 }
 
@@ -109,8 +109,8 @@ TEST(DependencyGraphTest, ValidateBranch) {
     AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
     f2.dependsOn(f);
     f3.dependsOn(f);
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(f);
+    const DependencyGraph& graph = _m.getDependencyGraph();
+    _m.addExecutionRoot(f);
     EXPECT_TRUE(graph.validateDependencyGraph());
 }
 
@@ -123,8 +123,8 @@ TEST(DependencyGraphTest, ValidateCycle) {
     f2.dependsOn(f);
     f2.dependsOn(f3);
     f3.dependsOn(f2);
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(f);
+    const DependencyGraph& graph = _m.getDependencyGraph();
+    _m.addExecutionRoot(f);
     EXPECT_THROW(graph.validateDependencyGraph(), exception::InvalidDependencyGraph);
 }
 
@@ -136,8 +136,8 @@ TEST(DependencyGraphTest, ValidateRootWithDependencies) {
     AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
     f2.dependsOn(f);
     f3.dependsOn(f2);
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(f2);
+    const DependencyGraph& graph = _m.getDependencyGraph();
+    _m.addExecutionRoot(f2);
     EXPECT_THROW(graph.validateDependencyGraph(), exception::InvalidDependencyGraph);
 }
 
@@ -149,8 +149,8 @@ TEST(DependencyGraphTest, ConstructLayersSingleChain) {
     AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
     f2.dependsOn(f);
     f3.dependsOn(f2);
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(f);
+    const DependencyGraph& graph = _m.getDependencyGraph();
+    _m.addExecutionRoot(f);
     _m.generateLayers();
 }
 
@@ -162,8 +162,8 @@ TEST(DependencyGraphTest, ConstructLayersRootTwoChildrenConflict) {
     AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
     f2.dependsOn(f);
     f3.dependsOn(f);
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(f);
+    const DependencyGraph& graph = _m.getDependencyGraph();
+    _m.addExecutionRoot(f);
     _m.generateLayers();
 }
 
@@ -173,8 +173,8 @@ TEST(DependencyGraphTest, AddHostFunctionAsDependent) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     HostFunctionDescription hf(HOST_FN_NAME1, host_fn1);
     hf.dependsOn(f);
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(f);
+    const DependencyGraph& graph = _m.getDependencyGraph();
+    _m.addExecutionRoot(f);
     _m.generateLayers();
 }
 
@@ -184,8 +184,8 @@ TEST(DependencyGraphTest, AddHostFunctionAsDependency) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     HostFunctionDescription hf(HOST_FN_NAME1, host_fn1);
     f.dependsOn(hf);
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(hf);
+    const DependencyGraph& graph = _m.getDependencyGraph();
+    _m.addExecutionRoot(hf);
     _m.generateLayers();
 }
 
@@ -200,8 +200,8 @@ TEST(DependencyGraphTest, AddSubmodelAsDependent) {
     SubModelDescription& _smd = _m.newSubModel("sub", _sm);
 
     _smd.dependsOn(f);
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(f);
+    const DependencyGraph& graph = _m.getDependencyGraph();
+    _m.addExecutionRoot(f);
     _m.generateLayers();
 }
 
@@ -216,8 +216,8 @@ TEST(DependencyGraphTest, AddSubmodelAsDependency) {
     SubModelDescription& _smd = _m.newSubModel("sub", _sm);
 
     f.dependsOn(_smd);
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(_smd);
+    const DependencyGraph& graph = _m.getDependencyGraph();
+    _m.addExecutionRoot(_smd);
     _m.generateLayers();
 }
 
@@ -229,10 +229,9 @@ TEST(DependencyGraphTest, DOTDiagramSingleChain) {
     AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
     f2.dependsOn(f);
     f3.dependsOn(f2);
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(f);
+    _m.addExecutionRoot(f);
     _m.generateLayers();
-    graph.generateDOTDiagram("singlechain.gv");
+    _m.generateDependencyGraphDOTDiagram("singlechain.gv");
 
     // Check file contents
     std::ifstream dot("singlechain.gv");
@@ -261,9 +260,8 @@ TEST(DependencyGraphTest, DOTDiagramTwoDependencies) {
     AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
     f2.dependsOn(f);
     f3.dependsOn(f);
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(f);
-    graph.generateDOTDiagram("twodeps.gv");
+    _m.addExecutionRoot(f);
+    _m.generateDependencyGraphDOTDiagram("twodeps.gv");
 
     // Check file contents
     std::ifstream dot("twodeps.gv");
@@ -295,9 +293,8 @@ TEST(DependencyGraphTest, DOTDiagramDiamond) {
     f3.dependsOn(f);
     f4.dependsOn(f2);
     f4.dependsOn(f3);
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(f);
-    graph.generateDOTDiagram("diamond.gv");
+    _m.addExecutionRoot(f);
+    _m.generateDependencyGraphDOTDiagram("diamond.gv");
 
     // Check file contents
     std::ifstream dot("diamond.gv");
@@ -336,10 +333,9 @@ TEST(DependencyGraphTest, DOTDiagramHostFunctions) {
     f4.dependsOn(f2);
     f4.dependsOn(hf);
     hf2.dependsOn(f3);
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(f);
-    graph.addRoot(hf);
-    graph.generateDOTDiagram("host_functions.gv");
+    _m.addExecutionRoot(f);
+    _m.addExecutionRoot(hf);
+    _m.generateDependencyGraphDOTDiagram("host_functions.gv");
 
     // Check file contents
     std::ifstream dot("host_functions.gv");
@@ -386,10 +382,9 @@ TEST(DependencyGraphTest, DOTDiagramAllDependencies) {
     f4.dependsOn(hf);
     hf2.dependsOn(f3);
     _smd.dependsOn(hf2);
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(f);
-    graph.addRoot(hf);
-    graph.generateDOTDiagram("all_dependencies.gv");
+    _m.addExecutionRoot(f);
+    _m.addExecutionRoot(hf);
+    _m.generateDependencyGraphDOTDiagram("all_dependencies.gv");
 
     // Check file contents
     std::ifstream dot("all_dependencies.gv");
@@ -436,9 +431,8 @@ TEST(DependencyGraphTest, CorrectLayersAllDependencies) {
     f4.dependsOn(f2, hf);
     hf2.dependsOn(f3);
     _smd.dependsOn(hf2);
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(f);
-    graph.addRoot(hf);
+    _m.addExecutionRoot(f);
+    _m.addExecutionRoot(hf);
     _m.generateLayers();
     std::string expectedLayers = R"###(--------------------
 Layer 0
@@ -476,7 +470,7 @@ Layer 6
 sub
 
 )###";
-    EXPECT_TRUE(expectedLayers == graph.getConstructedLayersString());
+    EXPECT_TRUE(expectedLayers == _m.getConstructedLayersString());
 }
 TEST(DependencyGraphTest, CorrectLayersConcurrent) {
     ModelDescription _m(MODEL_NAME);
@@ -492,9 +486,8 @@ TEST(DependencyGraphTest, CorrectLayersConcurrent) {
     f2.dependsOn(hf);
     hf2.dependsOn(f, f2, f3);
 
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(f3);
-    graph.addRoot(hf);
+    _m.addExecutionRoot(f3);
+    _m.addExecutionRoot(hf);
     _m.generateLayers();
     std::string expectedLayers = R"###(--------------------
 Layer 0
@@ -518,7 +511,7 @@ Layer 3
 HostFn2
 
 )###";
-    EXPECT_EQ(expectedLayers, graph.getConstructedLayersString());
+    EXPECT_EQ(expectedLayers, _m.getConstructedLayersString());
 }
 TEST(DependencyGraphTest, InterModelDependency) {
     ModelDescription _m(MODEL_NAME);
@@ -537,8 +530,7 @@ TEST(DependencyGraphTest, UnattachedFunctionWarning) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     a.newFunction(FUNCTION_NAME2, agent_fn2);
 
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(f);
+    _m.addExecutionRoot(f);
 
     // Intercept std::cerr
     std::stringstream buffer;
@@ -560,8 +552,7 @@ TEST(DependencyGraphTest, ModelAlreadyHasLayers) {
     l.addAgentFunction(f2);
 
     // Create DG
-    DependencyGraph& graph = _m.getDependencyGraph();
-    graph.addRoot(f);
+    _m.addExecutionRoot(f);
 
     EXPECT_THROW(_m.generateLayers(), exception::InvalidDependencyGraph);
 }

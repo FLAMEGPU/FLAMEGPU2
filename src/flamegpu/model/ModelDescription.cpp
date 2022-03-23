@@ -176,7 +176,7 @@ void ModelDescription::generateLayers() {
 /**
  * Accessors
  */
-DependencyGraph& ModelDescription::getDependencyGraph() const {
+const DependencyGraph& ModelDescription::getDependencyGraph() const {
     return *(model->dependencyGraph);
 }
 
@@ -252,6 +252,13 @@ bool ModelDescription::hasLayer(const std::string &name) const {
 }
 bool ModelDescription::hasLayer(const ModelData::size_type &layer_index) const {
     return layer_index < model->layers.size();
+}
+
+void ModelDescription::generateDependencyGraphDOTDiagram(std::string outputFileName) const {
+    model->dependencyGraph->generateDOTDiagram(outputFileName);
+}
+std::string ModelDescription::getConstructedLayersString() const {
+    return model->dependencyGraph->getConstructedLayersString();
 }
 
 ModelData::size_type ModelDescription::getAgentsCount() const {

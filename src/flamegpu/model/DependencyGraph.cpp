@@ -56,17 +56,17 @@ void DependencyGraph::addRoot(DependencyNode& root) {
     roots.push_back(&root);
 }
 
-bool DependencyGraph::validateDependencyGraph() {
-    functionStack.clear();
+bool DependencyGraph::validateDependencyGraph() const {
+    std::vector<DependencyNode*> functionStack;
 
     if (roots.size() == 0) {
             THROW exception::InvalidDependencyGraph("Warning! Agent function dependency graph is empty!");
     }
-    for (auto& root : roots) {
+    for (const auto& root : roots) {
         if (root->getDependencies().size() != 0) {
             THROW exception::InvalidDependencyGraph("Warning! Root agent function has dependencies!");
         }
-        if (!validateSubTree(root)) {
+        if (!validateSubTree(root, functionStack)) {
             THROW exception::InvalidDependencyGraph("Warning! Dependency graph validation failed! Does the graph have a cycle?");
         }
     }
@@ -221,16 +221,16 @@ void DependencyGraph::generateLayers() {
     }
 }
 
-bool DependencyGraph::validateSubTree(DependencyNode* node) {
+bool DependencyGraph::validateSubTree(DependencyNode* node, std::vector<DependencyNode*>& functionStack) const {
     // Check if the function we are looking at already exists on the stack - if so we have a cycle
-    if (doesFunctionExistInStack(node)) {
+    if (doesFunctionExistInStack(node, functionStack)) {
         return false;
     }
 
     // No cycle detected, check if all child nodes form valid subtrees
     functionStack.push_back(node);
     for (auto child : node->getDependents()) {
-        if (!validateSubTree(child))
+        if (!validateSubTree(child, functionStack))
             return false;
     }
 
@@ -240,9 +240,9 @@ bool DependencyGraph::validateSubTree(DependencyNode* node) {
     return true;
 }
 
-bool DependencyGraph::doesFunctionExistInStack(DependencyNode* function) {
+bool DependencyGraph::doesFunctionExistInStack(DependencyNode* function, std::vector<DependencyNode*>& functionStack) const {
     // Iterating vector probably faster than using constant lookup structure for likely number of elements
-    for (auto fn : functionStack) {
+    for (const auto fn : functionStack) {
         if (fn == function) {
             return true;
         }
@@ -293,7 +293,7 @@ std::string DependencyGraph::getNodeName(DependencyNode* node) {
     }
 }
 
-void DependencyGraph::generateDOTDiagram(std::string outputFileName) {
+void DependencyGraph::generateDOTDiagram(std::string outputFileName) const {
     validateDependencyGraph();
     std::ofstream DOTFile(outputFileName);
     if (DOTFile.is_open()) {
@@ -345,14 +345,14 @@ void DependencyGraph::generateDOTDiagram(std::string outputFileName) {
     }
 }
 
-std::string DependencyGraph::getConstructedLayersString() {
+std::string DependencyGraph::getConstructedLayersString() const {
     std::stringstream ss;
     unsigned int layerCount = 0;
-    for (auto layer : constructedLayers) {
+    for (const auto& layer : constructedLayers) {
         ss << "--------------------" << std::endl;
         ss << "Layer " << layerCount << std::endl;
         ss << "--------------------" << std::endl;
-        for (auto item : layer) {
+        for (const auto& item : layer) {
             ss << item << std::endl;
         }
         ss << std::endl;

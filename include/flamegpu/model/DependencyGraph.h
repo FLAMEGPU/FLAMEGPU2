@@ -44,11 +44,6 @@ class DependencyGraph {
      */
     void addRoot(DependencyNode& root);
     /**
-     * Checks the dependency graph for cycles and validates that all agent functions belong to the same model
-     * @returns True when the graph is valid, i.e. it contains no cycles
-     */
-    bool validateDependencyGraph();
-    /**
      * Generates optimal layers based on the dependencies specified and adds them to the model
      * @param model The model the layers should be added to
      * @throws exception::InvalidDependencyGraph if the model already has layers attached
@@ -58,12 +53,17 @@ class DependencyGraph {
      * Generates a .gv file containing the DOT representation of the dependencies specified
      * @param outputFileName The name of the output file
      */
-    void generateDOTDiagram(std::string outputFileName);
+    void generateDOTDiagram(std::string outputFileName) const;
+    /**
+     * Checks the dependency graph for cycles and validates that all agent functions belong to the same model
+     * @returns True when the graph is valid, i.e. it contains no cycles
+     */
+    bool validateDependencyGraph() const;
     /**
      * Returns a string representation of the constructed layers
      * @returns A string representation of the constructed layers
      */
-    std::string getConstructedLayersString();
+    std::string getConstructedLayersString() const;
 
  private:
     /**
@@ -73,17 +73,13 @@ class DependencyGraph {
     /**
      * Used internally for cycle checking
      */
-    std::vector<DependencyNode*> functionStack;
-    /**
-     * Used internally for cycle checking
-     */
-    bool doesFunctionExistInStack(DependencyNode* function);
+    bool doesFunctionExistInStack(DependencyNode* function, std::vector<DependencyNode*>& functionStack) const;
     /**
      * Check the subtree from a node is valid
      * @param node the root of the subtree
      * @returns True if the subtree is valid
      */
-    bool validateSubTree(DependencyNode* node);
+    bool validateSubTree(DependencyNode* node, std::vector<DependencyNode*>& functionStack) const;
     /**
      * Issues a warning if the graph is missing agent functions which are present in the model this dependency graph is attached to
      */
