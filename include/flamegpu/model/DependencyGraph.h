@@ -77,6 +77,7 @@ class DependencyGraph {
     /**
      * Check the subtree from a node is valid
      * @param node the root of the subtree
+     * @param functionStack functions are already present in the tree
      * @returns True if the subtree is valid
      */
     bool validateSubTree(DependencyNode* node, std::vector<DependencyNode*>& functionStack) const;
