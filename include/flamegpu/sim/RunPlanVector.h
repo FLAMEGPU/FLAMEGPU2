@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <string>
 #include <memory>
+#include <limits>
 
 #include "flamegpu/sim/RunPlan.h"
 #include "flamegpu/util/detail/StaticAssert.h"
@@ -103,6 +104,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
     /**
      * Sweep named environment property over an inclusive uniform distribution
      * value = min * (1.0 - a) + max * a, where a = index/(size()-1)
+     * Integer types will be rounded to the nearest integer
      * @param name The name of the environment property to set
      * @param min The value to set the first environment property
      * @param max The value to set the last environment property
@@ -117,6 +119,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * Array property element equivalent of setPropertyUniformDistribution()
      * Sweep element of named environment property array over an inclusive uniform distribution
      * value = min * (1.0 - a) + max * a, where a = index/(size()-1)
+     * Integer types will be rounded to the nearest integer
      * @param name The name of the environment property to set
      * @param index The index of the element within the environment property array to set
      * @param min The value to set the first environment property array element
@@ -427,8 +430,11 @@ void RunPlanVector::setPropertyUniformDistribution(const std::string &name, cons
     unsigned int ct = 0;
     for (auto &i : *this) {
         const double a = static_cast<double>(ct++) / (this->size() - 1);
-        const T lerp = static_cast<T>(round(min * (1.0 - a) + max * a));
-        i.setProperty<T>(name, lerp);
+        double lerp = min * (1.0 - a) + max * a;
+        if (std::numeric_limits<T>::is_integer)
+            lerp = round(lerp);
+        const T lerp_t = static_cast<T>(lerp);
+        i.setProperty<T>(name, lerp_t);
     }
 }
 template<typename T>
@@ -456,8 +462,11 @@ void RunPlanVector::setPropertyUniformDistribution(const std::string &name, cons
     unsigned int ct = 0;
     for (auto &i : *this) {
         const double a = static_cast<double>(ct++) / (this->size() - 1);
-        const T lerp = static_cast<T>(round(min * (1.0 - a) + max * a));
-        i.setProperty<T>(name, index, lerp);
+        double lerp = min * (1.0 - a) + max * a;
+        if (std::numeric_limits<T>::is_integer)
+            lerp = round(lerp);
+        const T lerp_t = static_cast<T>(lerp);
+        i.setProperty<T>(name, index, lerp_t);
     }
 }
 
