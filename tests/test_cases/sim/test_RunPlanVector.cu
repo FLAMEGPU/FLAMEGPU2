@@ -149,6 +149,13 @@ TEST(TestRunPlanVector, setProperty) {
     EXPECT_THROW((plans.setProperty<double>("d3", static_cast<EnvironmentManager::size_type>(-1), 3)), std::out_of_range);
     EXPECT_THROW((plans.setProperty<double>("d3", 4u, 3)), std::out_of_range);
 }
+template<typename T>
+double t_lerp(const T &_min, const T &_max, const double &a) {
+    double min = static_cast<double>(_min);
+    double max = static_cast<double>(_max);
+    return min * (1.0 - a) + max * a;
+}
+
 // Check that all values set lie within the min and max inclusive
 // @todo - should fp be [min, max) like when using RNG?
 TEST(TestRunPlanVector, setPropertyUniformDistribution) {
@@ -159,9 +166,12 @@ TEST(TestRunPlanVector, setPropertyUniformDistribution) {
     const float fOriginal = 0.0f;
     const int32_t iOriginal = 0;
     const std::array<uint32_t, 3> u3Original = {{0, 0, 0}};
+    const std::array<float, 2> f2Original = { {12.0f, 13.0f} };
     environment.newProperty<float>("f", fOriginal);
+    environment.newProperty<float>("fb", fOriginal);
     environment.newProperty<int32_t>("i", iOriginal);
     environment.newProperty<uint32_t, 3>("u3", u3Original);
+    environment.newProperty<float, 2>("f2", f2Original);
     // Create a vector of plans
     constexpr uint32_t totalPlans = 10u;
     flamegpu::RunPlanVector plans(model, totalPlans);
@@ -170,37 +180,47 @@ TEST(TestRunPlanVector, setPropertyUniformDistribution) {
     // Uniformly set each property to a new value, then check it has been applied correctly.
     const float fMin = 1.f;
     const float fMax = 100.f;
+    const float fbMin = 0.0f;  // Previous bug, where floating point types were being rounded to nearest int
+    const float fbMax = 1.0f;
     const int32_t iMin = 1;
     const int32_t iMax = 100;
     const std::array<uint32_t, 3> u3Min = {{1u, 101u, 201u}};
     const std::array<uint32_t, 3> u3Max = {{100u, 200u, 300u}};
+    const std::array<float, 2> f2Min = { {1.0f, 100.f} };
+    const std::array<float, 2> f2Max = { {0.0f, -100.0f} };
     // void setPropertyUniformDistribution(const std::string &name, const T &min, const T &max);
     plans.setPropertyUniformDistribution("f", fMin, fMax);
+    plans.setPropertyUniformDistribution("fb", fbMin, fbMax);
     plans.setPropertyUniformDistribution("i", iMin, iMax);
     // Check setting individual array elements
     // void setPropertyUniformDistribution(const std::string &name, const EnvironmentManager::size_type &index, const T &min, const T &max);
     plans.setPropertyUniformDistribution("u3", 0, u3Min[0], u3Max[0]);
     plans.setPropertyUniformDistribution("u3", 1, u3Min[1], u3Max[1]);
     plans.setPropertyUniformDistribution("u3", 2, u3Min[2], u3Max[2]);
+    plans.setPropertyUniformDistribution("f2", 0, f2Min[0], f2Max[0]);
+    plans.setPropertyUniformDistribution("f2", 1, f2Min[1], f2Max[1]);
     // Check values are as expected by accessing the properties from each plan
+    int i = 0;
+    const double divisor = totalPlans - 1;
     for (const auto &plan : plans) {
-        EXPECT_GE(plan.getProperty<float>("f"), fMin);
-        EXPECT_LE(plan.getProperty<float>("f"), fMax);
-        EXPECT_GE(plan.getProperty<int32_t>("i"), iMin);
-        EXPECT_LE(plan.getProperty<int32_t>("i"), iMax);
+        const double a = i++ / divisor;
+        EXPECT_EQ(plan.getProperty<float>("f"), static_cast<float>(t_lerp(fMin, fMax, a)));
+        EXPECT_EQ(plan.getProperty<float>("fb"), static_cast<float>(t_lerp(fbMin, fbMax, a)));
+        const std::array<float, 2> f2FromPlan = plan.getProperty<float, 2>("f2");
+        EXPECT_EQ(f2FromPlan[0], static_cast<float>(t_lerp(f2Min[0], f2Max[0], a)));
+        EXPECT_EQ(f2FromPlan[1], static_cast<float>(t_lerp(f2Min[1], f2Max[1], a)));
+        // Note integer values are rounded
+        EXPECT_EQ(plan.getProperty<int32_t>("i"), static_cast<int32_t>(round(t_lerp(iMin, iMax, a))));
         const std::array<uint32_t, 3> u3FromPlan = plan.getProperty<uint32_t, 3>("u3");
-        EXPECT_GE(u3FromPlan[0], u3Min[0]);
-        EXPECT_LE(u3FromPlan[0], u3Max[0]);
-        EXPECT_GE(u3FromPlan[1], u3Min[1]);
-        EXPECT_LE(u3FromPlan[1], u3Max[1]);
-        EXPECT_GE(u3FromPlan[2], u3Min[2]);
-        EXPECT_LE(u3FromPlan[2], u3Max[2]);
+        EXPECT_EQ(u3FromPlan[0], static_cast<uint32_t>(round(t_lerp(u3Min[0], u3Max[0], a))));
+        EXPECT_EQ(u3FromPlan[1], static_cast<uint32_t>(round(t_lerp(u3Min[1], u3Max[1], a))));
+        EXPECT_EQ(u3FromPlan[2], static_cast<uint32_t>(round(t_lerp(u3Min[2], u3Max[2], a))));
     }
 
     // Tests for exceptions
     // --------------------
     flamegpu::RunPlanVector singlePlanVector(model, 1);
-    // Note litereals used must match the templated type not the incorrect types used, to appease MSVC warnings.
+    // Note literals used must match the templated type not the incorrect types used, to appease MSVC warnings.
     // void RunPlanVector::setPropertyUniformDistribution(const std::string &name, const T &min, const T &max)
     EXPECT_THROW((singlePlanVector.setPropertyUniformDistribution<float>("f", 1.f, 100.f)), std::out_of_range);
     EXPECT_THROW((plans.setPropertyUniformDistribution<float>("does_not_exist", 1.f, 100.f)), flamegpu::exception::InvalidEnvProperty);
