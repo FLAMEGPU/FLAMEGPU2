@@ -38,6 +38,7 @@ FLAMEGPU_AGENT_FUNCTION(InFunction, MessageBruteForce, MessageNone) {
         sum += x;
         product *= x;
         product = product > 1000000 ? 1 : product;
+        product = product < -1000000 ? -1 : product;
     }
     FLAMEGPU->setVariable<int>("sum", sum);
     FLAMEGPU->setVariable<int>("product", product);
@@ -51,6 +52,7 @@ FLAMEGPU_AGENT_FUNCTION(InFunction2, MessageBruteForce, MessageNone) {
         sum += x;
         product *= x;
         product = product > 1000000 ? 1 : product;
+        product = product < -1000000 ? -1 : product;
     }
     FLAMEGPU->setVariable<int>("sum", sum);
     FLAMEGPU->setVariable<int>("product", product);
@@ -91,6 +93,7 @@ TEST(TestMessage_BruteForce, Mandatory1) {
         sum += x;
         product *= x;
         product = product > 1000000 ? 1 : product;
+        product = product < -1000000 ? -1 : product;
         ai.setVariable<int>("x", x);
         ai.setVariable<int>("sum", 0);
         ai.setVariable<int>("product", 1);
@@ -133,15 +136,20 @@ TEST(TestMessage_BruteForce, Mandatory2) {
     int product = 1;
     for (AgentVector::Agent ai : pop) {
         const int x = dist(rng);
-        sum += x;
-        product *= x;
-        product = product > 1000000 ? 1 : product;
-        sum += (x + 1);
-        product *= (x + 1);
-        product = product > 1000000 ? 1 : product;
         ai.setVariable<int>("x", x);
         ai.setVariable<int>("sum", 0);
         ai.setVariable<int>("product", 1);
+        sum += x;
+        product *= x;
+        product = product > 1000000 ? 1 : product;
+        product = product < -1000000 ? -1 : product;
+    }
+    for (AgentVector::Agent ai : pop) {
+        const int x = ai.getVariable<int>("x");
+        sum += (x + 1);
+        product *= (x + 1);
+        product = product > 1000000 ? 1 : product;
+        product = product < -1000000 ? -1 : product;
     }
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -188,6 +196,7 @@ TEST(TestMessage_BruteForce, Optional1) {
             sum += x;
             product *= x;
             product = product > 1000000 ? 1 : product;
+            product = product < -1000000 ? -1 : product;
         }
         ai.setVariable<int>("x", x);
         ai.setVariable<int>("sum", 0);
@@ -233,6 +242,7 @@ TEST(TestMessage_BruteForce, Optional2) {
             sum += x;
             product *= x;
             product = product > 1000000 ? 1 : product;
+            product = product < -1000000 ? -1 : product;
         }
         ai.setVariable<int>("x", x);
         ai.setVariable<int>("sum", 0);
@@ -245,6 +255,7 @@ TEST(TestMessage_BruteForce, Optional2) {
             sum += (x + 1);
             product *= (x + 1);
             product = product > 1000000 ? 1 : product;
+            product = product < -1000000 ? -1 : product;
         }
     }
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
