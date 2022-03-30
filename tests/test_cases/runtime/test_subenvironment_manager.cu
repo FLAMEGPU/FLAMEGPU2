@@ -508,7 +508,7 @@ TEST(SubEnvironmentManagerTest, StepCounterNotMapped) {
     {
         // Define SubModel which simply steps multiple times
         m2.addExitCondition(ExitAt10);
-        auto& a = m2.newAgent("agent");
+        m2.newAgent("agent");
     }
     ModelDescription m("host");
     auto& a = m.newAgent("agent");
@@ -541,7 +541,7 @@ TEST(SubEnvironmentManagerTest, CantMapReserved) {
     {
         // Define SubModel which simply steps multiple times
         m2.addExitCondition(ExitAt10);
-        auto& a = m2.newAgent("agent");
+        m2.newAgent("agent");
     }
     ModelDescription m("host");
     auto& a = m.newAgent("agent");

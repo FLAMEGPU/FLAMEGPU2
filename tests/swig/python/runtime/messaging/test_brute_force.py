@@ -24,7 +24,7 @@ FLAMEGPU_AGENT_FUNCTION(OutFunction, flamegpu::MessageNone, flamegpu::MessageBru
 OutFunction_Optional = """
 FLAMEGPU_AGENT_FUNCTION(OutFunction_Optional, flamegpu::MessageNone, flamegpu::MessageBruteForce) {
     const int x = FLAMEGPU->getVariable<int>("x");
-    if (x) FLAMEGPU->message_out.setVariable("x", x);
+    if (x) FLAMEGPU->message_out.setVariable<int>("x", x);
     return flamegpu::ALIVE;
 }
 """
@@ -38,6 +38,7 @@ FLAMEGPU_AGENT_FUNCTION(InFunction, flamegpu::MessageBruteForce, flamegpu::Messa
         sum += x;
         product *= x;
         product = product > 1000000 ? 1 : product;
+        product = product < -1000000 ? -1 : product;
     }
     FLAMEGPU->setVariable<int>("sum", sum);
     FLAMEGPU->setVariable<int>("product", product);
@@ -54,6 +55,7 @@ FLAMEGPU_AGENT_FUNCTION(InFunction2, flamegpu::MessageBruteForce, flamegpu::Mess
         sum += x;
         product *= x;
         product = product > 1000000 ? 1 : product;
+        product = product < -1000000 ? -1 : product;
     }
     FLAMEGPU->setVariable<int>("sum", sum);
     FLAMEGPU->setVariable<int>("product", product);
@@ -142,17 +144,24 @@ class TestMessage_BruteForce(TestCase):
         product = 1
         for ai in pop:
             x = rand.randint(-3, 3)
+            ai.setVariableInt("x", x)
+            ai.setVariableInt("sum", 0)
+            ai.setVariableInt("product", 1)
             sum += x
             product *= x
             if product > 1000000:
                 product = 1
+            if product < -1000000:
+                product = -1
+        for ai in pop:
+            x = ai.getVariableInt("x")
+            # Calc second iteration sum/product
             sum += (x + 1)
             product *= (x + 1)
             if product > 1000000:
                 product = 1
-            ai.setVariableInt("x", x)
-            ai.setVariableInt("sum", 0)
-            ai.setVariableInt("product", 1)
+                if product < -1000000:
+                    product = -1
         
         lo = m.newLayer(OUT_LAYER_NAME)
         lo.addAgentFunction(fo)
@@ -196,6 +205,8 @@ class TestMessage_BruteForce(TestCase):
                 product *= x
                 if product > 1000000:
                     product = 1
+                if product < -1000000:
+                    product = -1
             
             ai.setVariableInt("x", x)
             ai.setVariableInt("sum", 0)
@@ -234,24 +245,29 @@ class TestMessage_BruteForce(TestCase):
         sum = 0
         product = 1
         for ai in pop:
-            x = rand.randint(-3,3)
+            x = rand.randint(-3,3)            
+            ai.setVariableInt("x", x)
+            ai.setVariableInt("sum", 0)
+            ai.setVariableInt("product", 1)
+            # Calc first iteration sum/product
             if (x): 
                 sum += x
                 product *= x
                 if product > 1000000:
                     product = 1
-            
-            ai.setVariableInt("x", x)
-            ai.setVariableInt("sum", 0)
-            ai.setVariableInt("product", 1)
+                if product < -1000000:
+                    product = -1
         
         for ai in pop:
             x = ai.getVariableInt("x")
+            # Calc second iteration sum/product
             if (x + 1): # dont proceed if x == -1
                 sum += (x + 1)
                 product *= (x + 1)
                 if product > 1000000:
                     product = 1
+                if product < -1000000:
+                    product = -1
             
         lo = m.newLayer(OUT_LAYER_NAME)
         lo.addAgentFunction(fo)
