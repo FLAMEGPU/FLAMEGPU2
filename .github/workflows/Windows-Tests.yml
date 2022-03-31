@@ -67,6 +67,9 @@ jobs:
         visual_studio: ${{ env.HOSTCXX }}
       run: .github\scripts\install_cuda_windows.ps1
 
+    - name: Add custom problem matchers for annotations
+      run: echo "::add-matcher::.github/problem-matchers.json"
+
     # Must pass -G -A for windows, and -DPython3_ROOT_DIR/-DPYTHON3_EXECUTABLE as a github action workaround
     - name: Configure cmake
       run: >

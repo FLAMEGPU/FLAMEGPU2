@@ -54,6 +54,9 @@ jobs:
         python3 -m pip install cpplint
         echo "$HOME/.local/bin" >> $GITHUB_PATH
 
+    - name: Add custom problem matchers for annotations
+      run: echo "::add-matcher::.github/problem-matchers.json"
+
     - name: Configure cmake
       run: >
         cmake . -B "${{ env.BUILD_DIR }}"
