@@ -1,6 +1,6 @@
 # FLAME GPU 2
 
-[![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/LICENSE.MD)
+[![GPL V3 License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/LICENSE.MD)
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/FLAMEGPU/FLAMEGPU2?include_prereleases)](https://github.com/FLAMEGPU/FLAMEGPU2/releases/latest)
 [![GitHub issues](https://img.shields.io/github/issues/FLAMEGPU/FLAMEGPU2)](https://github.com/FLAMEGPU/FLAMEGPU2/issues)
 [![DOI](https://zenodo.org/badge/34064755.svg)](https://zenodo.org/badge/latestdoi/34064755)
@@ -283,7 +283,7 @@ To run the python test suite:
 
 Feel free to submit [Pull Requests](https://github.com/FLAMEGPU/FLAMEGPU2/pulls), create [Issues](https://github.com/FLAMEGPU/FLAMEGPU2/issues) or open [Discussions](https://github.com/FLAMEGPU/FLAMEGPU2/discussions).
 
-See [CONTRIBUTING.md](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/CONTRIBUTING.md) for more detailed information on how to contribute to FLAME GPU.
+See [CONTRIBUTING.md](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/CONTRIBUTING.md) for more detailed information on how to contribute to FLAME GPU. 
 
 ## Authors and Acknowledgment
 
@@ -295,7 +295,7 @@ Alternatively, [CITATION.cff](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/
 
 ## License
 
-FLAME GPU is distributed under the [MIT Licence](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/LICENSE.md).
+FLAME GPU is distributed under dual licence of [GPL v3.0](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/LICENSE.md) and a [commerical licence](https://flamegpu.com/support/).
 
 ## Known issues
 
