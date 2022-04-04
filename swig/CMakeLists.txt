@@ -74,8 +74,8 @@ if(NOT SWIG_FOUND)
             set(SWIG_EXECUTABLE "${swig_SOURCE_DIR}/swig.exe")
             set(SWIG_EXECUTABLE "${swig_SOURCE_DIR}/swig.exe" CACHE FILEPATH "Path to SWIG executable")
         endif()
-    else()
-        # Under linux, download the .tar.gz, extract, build and install.
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        # Under linux, with gcc as the host compiler download the .tar.gz, extract, build and install.
         # This must be done at configure time, as FindSwig requires the swig executable.
         # FetchContent allows download at configure time, but must use execute_process to run commands at configure time.
 
@@ -95,6 +95,21 @@ if(NOT SWIG_FOUND)
             set(swig_configure_ERROR_FILE "${swig_BINARY_DIR}/swig-error-configue.log")
             set(swig_make_ERROR_FILE "${swig_BINARY_DIR}/swig-error-make.log")
             set(swig_makeinstall_ERROR_FILE "${swig_BINARY_DIR}/swig-error-make-install.log")
+
+            message(STATUS "[swig] ./autogen.sh")
+            execute_process(
+                COMMAND "./autogen.sh"
+                WORKING_DIRECTORY ${swig_SOURCE_DIR}
+                RESULT_VARIABLE swig_configure_RESULT
+                OUTPUT_VARIABLE swig_configure_OUTPUT
+                ERROR_FILE ${swig_configure_ERROR_FILE}
+            )
+            if(NOT swig_configure_RESULT EQUAL "0")
+                message(FATAL_ERROR 
+                " [swig] Error during SWIG ${SWIG_DOWNLOAD_VERSION} ./autogen.sh\n"
+                " Error log: ${swig_configure_ERROR_FILE}\n"
+                " Consider installing SWIG ${SWIG_MINIMUM_SUPPORTED_VERSION} yourself and passing -DSWIG_EXECUTABLE=/path/to/swig.")
+            endif()
 
             # run ./configure with an appropraite prefix to install into the _deps/swig-bin directory
             message(STATUS "[swig] ./configure --prefix ${swig_BINARY_DIR}")
@@ -147,6 +162,14 @@ if(NOT SWIG_FOUND)
             set(SWIG_EXECUTABLE "${swig_BINARY_DIR}/bin/swig")
             set(SWIG_EXECUTABLE "${swig_BINARY_DIR}/bin/swig" CACHE FILEPATH "Path to SWIG executable")
         endif()
+    else()
+        # Swig's autogen.sh / ./configure do not result in a successful makefile when using nvhpc/clang as the c/c++ compiler
+        # E.g. -ansi is not a valid flag for nvhpc. 
+        # So suggest the user builds installs it manually instead.
+        message(FATAL_ERROR 
+            " Unsupported C/C++ compiler ${CMAKE_CXX_COMPILER_ID} for swig compilation.\n"
+            " Please use gcc/g++ as your host compiler, or manually install Swig >= ${SWIG_MINIMUM_SUPPORTED_VERSION} using gcc/g++ or install swig via your package manager\n"
+        )
     endif()
     # Attempt to find swig again, but as REQUIRED.
     find_package(SWIG ${SWIG_MINIMUM_SUPPORTED_VERSION} REQUIRED)
