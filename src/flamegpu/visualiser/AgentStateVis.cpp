@@ -44,7 +44,8 @@ void AgentStateVis::setModelScale(float maxLen) {
 void AgentStateVis::setColor(const ColorFunction& cf) {
     // Remove old, we only ever want 1 color value
     config.tex_buffers.erase(TexBufferConfig::Color);
-    config.tex_buffers.emplace(TexBufferConfig::Color, CustomTexBufferConfig{ cf.getAgentVariableName(), cf.getSamplerName() });
+    if (!cf.getAgentVariableName().empty() && !cf.getSamplerName().empty())
+        config.tex_buffers.emplace(TexBufferConfig::Color, CustomTexBufferConfig{ cf.getAgentVariableName(), cf.getSamplerName() });
     config.color_shader_src = cf.getSrc();
 }
 void AgentStateVis::clearColor() {
