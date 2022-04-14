@@ -37,21 +37,22 @@ class MessageSpatial3D::CUDAModelHandler : public MessageSpecialisationHandler {
      * Sets data asthough message list is empty
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of stream specific structures used
+     * @param stream The CUDAStream to use for CUDA operations
      */
-    void init(CUDAScatter &scatter, const unsigned int &streamId) override;
+    void init(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) override;
     /**
      * Reconstructs the partition boundary matrix
      * This should be called before reading newly output messages
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
-     * @param stream CUDA stream to be used for async CUDA operations
+     * @param stream The CUDAStream to use for CUDA operations
      */
-    void buildIndex(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) override;
+    void buildIndex(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) override;
     /**
      * Allocates memory for the constructed index.
      * The memory allocation is checked by build index.
      */
-    void allocateMetaDataDevicePtr() override;
+    void allocateMetaDataDevicePtr(cudaStream_t stream) override;
     /**
      * Releases memory for the constructed index.
      */
@@ -68,7 +69,7 @@ class MessageSpatial3D::CUDAModelHandler : public MessageSpecialisationHandler {
      * So this is only called from the constructor.
      * If it were called elsewhere, it would need to be changed to resize d_histogram too
      */
-    void resizeCubTemp();
+    void resizeCubTemp(cudaStream_t stream);
     /**
      * Resizes the key value store, this scales with agent count
      * @param newSize The new number of agents to represent

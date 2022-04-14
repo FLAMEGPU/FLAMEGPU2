@@ -41,12 +41,12 @@ std::mutex Curve::instance_mutex;
 __host__ Curve::Curve() :
     deviceInitialised(false) {
 }
-__host__ void Curve::purge() {
+__host__ void Curve::purge(cudaStream_t stream) {
     auto lock = std::unique_lock<std::shared_timed_mutex>(mutex);
     deviceInitialised = false;
-    initialiseDevice();
+    initialiseDevice(stream);
 }
-__host__ void Curve::initialiseDevice() {
+__host__ void Curve::initialiseDevice(cudaStream_t stream) {
     // Don't lock mutex here, do it in the calling method
     if (!deviceInitialised) {
         unsigned int *_d_hashes;
@@ -66,10 +66,10 @@ __host__ void Curve::initialiseDevice() {
         memset(h_sizes, 0, sizeof(size_t)*MAX_VARIABLES);
 
         // initialise data to 0 on device
-        gpuErrchk(cudaMemset(_d_hashes, 0, sizeof(unsigned int)*MAX_VARIABLES));
-        gpuErrchk(cudaMemset(_d_variables, 0, sizeof(void*)*MAX_VARIABLES));
-        gpuErrchk(cudaMemset(_d_lengths, 0, sizeof(unsigned int)*MAX_VARIABLES));
-        gpuErrchk(cudaMemset(_d_sizes, 0, sizeof(size_t)*MAX_VARIABLES));
+        gpuErrchk(cudaMemsetAsync(_d_hashes, 0, sizeof(unsigned int)*MAX_VARIABLES, stream));
+        gpuErrchk(cudaMemsetAsync(_d_variables, 0, sizeof(void*)*MAX_VARIABLES, stream));
+        gpuErrchk(cudaMemsetAsync(_d_lengths, 0, sizeof(unsigned int)*MAX_VARIABLES, stream));
+        gpuErrchk(cudaMemsetAsync(_d_sizes, 0, sizeof(size_t)*MAX_VARIABLES, stream));
     }
     deviceInitialised = true;
 }

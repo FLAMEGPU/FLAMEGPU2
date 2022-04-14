@@ -207,7 +207,7 @@ void CUDAFatAgentStateList::setDisabledAgents(const unsigned int &numberOfDisabl
         v->data_condition = data_p + (numberOfDisabled * v->type_size * v->elements);
     }
 }
-void CUDAFatAgentStateList::scatterSort(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
+void CUDAFatAgentStateList::scatterSort_async(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
     // This is not designed to run when there are disabled agents
     assert(disabledAgents == 0);
     // Build scatter data
@@ -221,7 +221,7 @@ void CUDAFatAgentStateList::scatterSort(CUDAScatter &scatter, const unsigned int
         // Pre update data_condition
         v->data_condition = out_p;
     }
-    scatter.scatterPosition(streamId, stream, CUDAScatter::Type::MESSAGE_OUTPUT, sd, aliveAgents);
+    scatter.scatterPosition_async(streamId, stream, CUDAScatter::Type::MESSAGE_OUTPUT, sd, aliveAgents);
 }
 void CUDAFatAgentStateList::initVariables(std::set<std::shared_ptr<VariableBuffer>> &exclusionSet, const unsigned int initCount, const unsigned initOffset, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     if (initCount && exclusionSet.size()) {

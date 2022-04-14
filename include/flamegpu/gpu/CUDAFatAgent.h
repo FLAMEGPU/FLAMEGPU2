@@ -161,8 +161,9 @@ class CUDAFatAgent {
     /**
      * Assigns IDs to any agents who's ID has the value ID_NOT_SET
      * @param hostapi HostAPI object, this is used to provide cub temp storage
+     * @param stream The CUDAStream to use for CUDA operations
      */
-    void assignIDs(HostAPI& hostapi);
+    void assignIDs(HostAPI& hostapi, cudaStream_t stream);
     /**
      * Resets the flag agent_ids_have_init
      */

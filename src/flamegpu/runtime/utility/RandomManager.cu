@@ -85,7 +85,7 @@ void RandomManager::free() {
     freeDevice();
 }
 
-curandState *RandomManager::resize(const size_type &_length) {
+curandState *RandomManager::resize(size_type _length, cudaStream_t stream) {
     assert(growthModifier > 1.0);
     assert(shrinkModifier > 0.0);
     assert(shrinkModifier <= 1.0);
@@ -105,7 +105,7 @@ curandState *RandomManager::resize(const size_type &_length) {
     // Don't allow array to go below RandomManager::min_length elements
     t_length = std::max<size_type>(t_length, RandomManager::min_length);
     if (t_length != length)
-        resizeDeviceArray(t_length);
+        resizeDeviceArray(t_length, stream);
     return d_random_state;
 }
 __global__ void init_curand(curandState *d_random_state, unsigned int threadCount, uint64_t seed, RandomManager::size_type offset) {
@@ -113,7 +113,7 @@ __global__ void init_curand(curandState *d_random_state, unsigned int threadCoun
     if (id < threadCount)
         curand_init(seed, offset + id, 0, &d_random_state[offset + id]);
 }
-void RandomManager::resizeDeviceArray(const size_type &_length) {
+void RandomManager::resizeDeviceArray(const size_type &_length, cudaStream_t stream) {
     // Mark that the device hsa now been initialised.
     deviceInitialised = true;
     if (_length > h_max_random_size) {
@@ -123,7 +123,7 @@ void RandomManager::resizeDeviceArray(const size_type &_length) {
         gpuErrchk(cudaMalloc(&t_hd_random_state, _length * sizeof(curandState)));
         // Copy hd->t_hd[****    ]
         if (d_random_state) {
-            gpuErrchk(cudaMemcpy(t_hd_random_state, d_random_state, length * sizeof(curandState), cudaMemcpyDeviceToDevice));
+            gpuErrchk(cudaMemcpyAsync(t_hd_random_state, d_random_state, length * sizeof(curandState), cudaMemcpyDeviceToDevice, stream));
         }
         // Update pointers hd=t_hd
         if (d_random_state) {
@@ -135,14 +135,14 @@ void RandomManager::resizeDeviceArray(const size_type &_length) {
             // We have part/all host backup, copy to device array
             // Reinit backup[    **  ]
             const size_type copy_len = std::min(h_max_random_size, _length);
-            gpuErrchk(cudaMemcpy(d_random_state + length, h_max_random_state + length, copy_len * sizeof(curandState), cudaMemcpyHostToDevice));
+            gpuErrchk(cudaMemcpyAsync(d_random_state + length, h_max_random_state + length, copy_len * sizeof(curandState), cudaMemcpyHostToDevice, stream));  // Host not pinned
             length += copy_len;
         }
         if (_length > length) {
             // Init remainder[     **]
             unsigned int initThreads = 512;
             unsigned int initBlocks = ((_length - length) / initThreads) + 1;
-            init_curand<<<initBlocks, initThreads>>>(d_random_state, _length - length, mSeed, length);  // This could be async with above memcpy?
+            init_curand<<<initBlocks, initThreads, 0,  stream>>>(d_random_state, _length - length, mSeed, length);  // This could be async with above memcpy in diff stream
             gpuErrchkLaunch();
         }
     } else {
@@ -158,9 +158,9 @@ void RandomManager::resizeDeviceArray(const size_type &_length) {
             t_h_max_random_state = h_max_random_state;
         // Copy old->new
         assert(d_random_state);
-        gpuErrchk(cudaMemcpy(t_hd_random_state, d_random_state, _length * sizeof(curandState), cudaMemcpyDeviceToDevice));
+        gpuErrchk(cudaMemcpyAsync(t_hd_random_state, d_random_state, _length * sizeof(curandState), cudaMemcpyDeviceToDevice, stream));
         // Copy part being shrunk away to host storage (This could be async with above memcpy?)
-        gpuErrchk(cudaMemcpy(t_h_max_random_state + _length, d_random_state + _length, (length - _length) * sizeof(curandState), cudaMemcpyDeviceToHost));
+        gpuErrchk(cudaMemcpyAsync(t_h_max_random_state + _length, d_random_state + _length, (length - _length) * sizeof(curandState), cudaMemcpyDeviceToHost, stream));
         // Release and replace old host ptr
         if (length > h_max_random_size) {
             if (h_max_random_state)
@@ -177,6 +177,7 @@ void RandomManager::resizeDeviceArray(const size_type &_length) {
     }
     // Update length
     length = _length;
+    gpuErrchk(cudaStreamSynchronize(stream));
 }
 void RandomManager::setGrowthModifier(float _growthModifier) {
     assert(growthModifier > 1.0);

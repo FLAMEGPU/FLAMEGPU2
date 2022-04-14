@@ -101,7 +101,7 @@ class CUDAAgentStateList {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void scatterSort(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
+    void scatterSort_async(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Scatters agents from the currently assigned device agent birth buffer (see member variable newBuffs)
      * The device buffer must be packed in the same format as CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData&, const unsigned int &, const unsigned int &)

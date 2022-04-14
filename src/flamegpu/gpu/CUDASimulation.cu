@@ -203,10 +203,6 @@ CUDASimulation::~CUDASimulation() {
         singletons = nullptr;
     }
 
-    // Destroy streams, potentially unsafe in a destructor as it will invoke cuda commands.
-    // Do this once to re-use existing streams rather than per-step.
-    this->destroyStreams();
-
     // We must explicitly delete all cuda members before we cuda device reset
     agent_map.clear();
     message_map.clear();
@@ -216,6 +212,11 @@ CUDASimulation::~CUDASimulation() {
 #ifdef VISUALISATION
     visualisation.reset();
 #endif
+
+    // Destroy streams, potentially unsafe in a destructor as it will invoke cuda commands.
+    // Do this once to re-use existing streams rather than per-step.
+    this->destroyStreams();
+
     // If we are the last instance to destruct
     // This doesn't really play nicely if we are passing multi-device CUDASimulations between threads!
     // I think this exists to prevent curve getting left with dead items when exceptions are thrown during the test suite.
@@ -227,9 +228,10 @@ CUDASimulation::~CUDASimulation() {
             // Could mutex it with init simulation cuda stuff, but really seems unlikely
             gpuErrchk(cudaDeviceReset());
             EnvironmentManager::getInstance().purge();
-            detail::curve::Curve::getInstance().purge();
+            detail::curve::Curve::getInstance().purge(nullptr);  // Default stream, device should be free at this point
         }
     }
+
     if (t_device_id != deviceInitialised) {
         gpuErrchk(cudaSetDevice(t_device_id));
     }
@@ -287,13 +289,6 @@ void CUDASimulation::exitFunctions() {
     this->elapsedSecondsExitFunctions = exitFunctionsTimer->getElapsedSeconds();
     if (getSimulationConfig().timing) {
         fprintf(stdout, "Exit Function Processing time: %.6f s\n", this->elapsedSecondsExitFunctions);
-    }
-}
-
-__global__ void spatialSortInitToThreadIndex(unsigned int *output, unsigned int threadCount) {
-    const unsigned int TID = blockIdx.x * blockDim.x + threadIdx.x;
-    if (TID < threadCount) {
-        output[TID] = TID;
     }
 }
 
@@ -433,7 +428,7 @@ void CUDASimulation::determineAgentsToSort() {
 }
 
 
-void CUDASimulation::spatialSortAgent(const std::string& funcName, const std::string& agentName, const std::string& state, const int mode) {
+void CUDASimulation::spatialSortAgent_async(const std::string& funcName, const std::string& agentName, const std::string& state, const int mode, cudaStream_t stream, unsigned int streamId) {
     // Fetch the appropriate message name
     CUDAAgent& cuda_agent = getCUDAAgent(agentName);
 
@@ -448,7 +443,7 @@ void CUDASimulation::spatialSortAgent(const std::string& funcName, const std::st
     if (auto ptr = funcData->message_input.lock()) {
         messageName = ptr->name;
     } else {
-        throw("Function " + funcName + " registered for auto-spatial sorting but input message type not found!\n");
+        THROW exception::InvalidAgentFunc("Function %s registered for auto-spatial sorting but input message type not found!\n", funcName.c_str());
     }
     MessageBruteForce::Data* msgData = model->messages.at(messageName).get();
 
@@ -474,7 +469,11 @@ void CUDASimulation::spatialSortAgent(const std::string& funcName, const std::st
     }
     if (radius > 0.0f) {
         envWidth = {(envMax.x-envMin.x), (envMax.y-envMin.y), (envMax.z-envMin.z)};
-        gridDim = {static_cast<unsigned int>(ceilf(envWidth.x / radius)), static_cast<unsigned int>(ceilf(envWidth.y / radius)), static_cast<unsigned int>(ceilf(envWidth.z / radius))};
+        gridDim = {
+            envWidth.x ? static_cast<unsigned int>(ceilf(envWidth.x / radius)) : 1,
+            envWidth.y ? static_cast<unsigned int>(ceilf(envWidth.y / radius)) : 1,
+            envWidth.z ? static_cast<unsigned int>(ceilf(envWidth.z / radius)) : 1
+        };
     }
 
 
@@ -504,29 +503,28 @@ void CUDASimulation::spatialSortAgent(const std::string& funcName, const std::st
     gridSize = (state_list_size + blockSize - 1) / blockSize;
 
     unsigned int sm_size = 0;
-    unsigned int streamIdx = 0;
 #if !defined(SEATBELTS) || SEATBELTS
-    auto *error_buffer = this->singletons->exception.getDevicePtr(streamIdx, this->getStream(streamIdx));
+    auto *error_buffer = this->singletons->exception.getDevicePtr(streamId, stream);
     sm_size = sizeof(error_buffer);
 #endif
 
     // Launch kernel
     if (xyzPtr) {
-        calculateSpatialHashFloat3<<<gridSize, blockSize, sm_size, this->getStream(streamIdx)>>>(reinterpret_cast<float*>(xyzPtr),
+        calculateSpatialHashFloat3<<<gridSize, blockSize, sm_size, stream>>>(reinterpret_cast<float*>(xyzPtr),
             reinterpret_cast<unsigned int*>(binIndexPtr),
             envMin,
             envWidth,
             gridDim,
             state_list_size);
     } else if (xyPtr) {
-        calculateSpatialHashFloat2<<<gridSize, blockSize, sm_size, this->getStream(streamIdx)>>>(reinterpret_cast<float*>(xyPtr),
+        calculateSpatialHashFloat2<<<gridSize, blockSize, sm_size, stream>>>(reinterpret_cast<float*>(xyPtr),
             reinterpret_cast<unsigned int*>(binIndexPtr),
             envMin,
             envWidth,
             gridDim,
             state_list_size);
     } else {
-        calculateSpatialHash<<<gridSize, blockSize, sm_size, this->getStream(streamIdx)>>>(reinterpret_cast<float*>(xPtr),
+        calculateSpatialHash<<<gridSize, blockSize, sm_size, stream>>>(reinterpret_cast<float*>(xPtr),
             reinterpret_cast<float*>(yPtr),
             reinterpret_cast<float*>(zPtr),
             reinterpret_cast<unsigned int*>(binIndexPtr),
@@ -538,7 +536,9 @@ void CUDASimulation::spatialSortAgent(const std::string& funcName, const std::st
     gpuErrchkLaunch();
 
     assert(host_api);
-    host_api->agent(agentName).sort<unsigned int>("_auto_sort_bin_index", HostAgentAPI::Asc);
+    // Calculate max bit
+    const int max_bit = static_cast<int>(ceil(log2(gridDim.x * gridDim.y * gridDim.z)));
+    host_api->agent(agentName).sort_async<unsigned int>("_auto_sort_bin_index", HostAgentAPI::Asc, 0, max_bit, stream, streamId);
 }
 
 bool CUDASimulation::step() {
@@ -628,13 +628,15 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
         auto func_agent = func_des->parent.lock();
         if ((func_agent->sortPeriod != 0) && (step_count % func_agent->sortPeriod == 0)) {
             if (sortTriggers3D.find(func_des->name) != sortTriggers3D.end()) {
-                this->spatialSortAgent(func_des->name, func_agent->name, func_des->initial_state, Agent3D);
-            }
-            if (sortTriggers2D.find(func_des->name) != sortTriggers2D.end()) {
-                this->spatialSortAgent(func_des->name, func_agent->name, func_des->initial_state, Agent2D);
+                this->spatialSortAgent_async(func_des->name, func_agent->name, func_des->initial_state, Agent3D, getStream(streamIdx), streamIdx);
+            } else if (sortTriggers2D.find(func_des->name) != sortTriggers2D.end()) {
+                this->spatialSortAgent_async(func_des->name, func_agent->name, func_des->initial_state, Agent2D, getStream(streamIdx), streamIdx);
             }
         }
+        ++streamIdx;
     }
+    // No explicit sync, sorts should be in same stream as eventual kernel launch (digging deep, the underlying scatter method does have a sync though)
+    streamIdx = 0;
 
     // Map agent memory
     bool has_rtc_func_cond = false;
@@ -655,7 +657,8 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
             cuda_agent.mapRuntimeVariables(*func_des, instance_id);
 
             // Zero the scan flag that will be written to
-            singletons->scatter.Scan().zero(CUDAScanCompaction::AGENT_DEATH, streamIdx);  // @todo - stream
+            singletons->scatter.Scan().zero_async(CUDAScanCompaction::AGENT_DEATH, getStream(streamIdx), streamIdx);
+            // No sync, this occurs in same stream as dependent kernel launch
 
             // Push function's RTC cache to device if using RTC
             if (!func_des->rtc_func_condition_name.empty()) {
@@ -665,12 +668,13 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 // Sync EnvManager's RTC cache with RTC header's cache
                 rtc_header.updateEnvCache(singletons->environment.getRTCCache(instance_id));
                 // Push RTC header's cache to device
-                rtc_header.updateDevice(cuda_agent.getRTCInstantiation(func_name));
+                rtc_header.updateDevice_async(cuda_agent.getRTCInstantiation(func_name), getStream(streamIdx));
+                // No sync, kernel launch should be in same stream
             }
 
             totalThreads += state_list_size;
-            ++streamIdx;
         }
+        ++streamIdx;
     }
 
     // If any condition kernel needs to be executed, do so, by checking the number of threads from before.
@@ -687,7 +691,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
         }
 
         // Ensure RandomManager is the correct size to accommodate all threads to be launched
-        curandState *d_rng = singletons->rng.resize(totalThreads);  // @todo - stream + sync.
+        curandState *d_rng = singletons->rng.resize(totalThreads, getStream(0));
         // Track which stream to use for concurrency
         streamIdx = 0;
         // Sum the total number of threads being launched in the layer, for rng offsetting.
@@ -853,12 +857,13 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
             CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
             // Resize message list if required
             const unsigned int existingMessages = cuda_message.getTruncateMessageListFlag() ? 0 : cuda_message.getMessageCount();
-            cuda_message.resize(existingMessages + state_list_size, this->singletons->scatter, streamIdx, existingMessages);
-            cuda_message.mapWriteRuntimeVariables(*func_des, cuda_agent, state_list_size, instance_id);
+            cuda_message.resize(existingMessages + state_list_size, this->singletons->scatter, getStream(streamIdx), streamIdx, existingMessages);  // This could have it's internal syncs delayed
+            cuda_message.mapWriteRuntimeVariables(*func_des, cuda_agent, state_list_size, instance_id, getStream(streamIdx));
             singletons->scatter.Scan().resize(state_list_size, CUDAScanCompaction::MESSAGE_OUTPUT, streamIdx);
             // Zero the scan flag that will be written to
             if (func_des->message_output_optional)
-                singletons->scatter.Scan().zero(CUDAScanCompaction::MESSAGE_OUTPUT, streamIdx);  // @todo - do this in a stream?
+                singletons->scatter.Scan().zero_async(CUDAScanCompaction::MESSAGE_OUTPUT, getStream(streamIdx), streamIdx);
+                // No Sync, any subsequent use should be in same stream
         }
 
         // check if a function has an output agent
@@ -868,7 +873,8 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
             CUDAAgent& output_agent = getCUDAAgent(oa->name);
 
             // Map vars with curve (this allocates/requests enough new buffer space if an existing version is not available/suitable)
-            output_agent.mapNewRuntimeVariables(cuda_agent, *func_des, state_list_size, this->singletons->scatter, instance_id, streamIdx);  // @todo - stream?
+            output_agent.mapNewRuntimeVariables_async(cuda_agent, *func_des, state_list_size, this->singletons->scatter, instance_id, getStream(streamIdx), streamIdx);
+            // No Sync, any subsequent use should be in same stream
         }
 
         // Configure runtime access of the functions variables within the FLAME_API object
@@ -876,7 +882,8 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
 
         // Zero the scan flag that will be written to
         if (func_des->has_agent_death) {
-            singletons->scatter.Scan().CUDAScanCompaction::zero(CUDAScanCompaction::AGENT_DEATH, streamIdx);  // @todo stream?
+            singletons->scatter.Scan().zero_async(CUDAScanCompaction::AGENT_DEATH, getStream(streamIdx), streamIdx);
+            // No Sync, any subsequent use should be in same stream
         }
 
         // Push function's RTC cache to device if using RTC
@@ -886,7 +893,8 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
             // Sync EnvManager's RTC cache with RTC header's cache
             rtc_header.updateEnvCache(singletons->environment.getRTCCache(instance_id));
             // Push RTC header's cache to device
-            rtc_header.updateDevice(cuda_agent.getRTCInstantiation(func_des->name));
+            rtc_header.updateDevice_async(cuda_agent.getRTCInstantiation(func_des->name), getStream(streamIdx));
+            // No sync, kernel launch should be in the same stream
         }
 
         // Count total threads being launched
@@ -894,7 +902,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
         ++streamIdx;
     }
 
-    // If any condition kernel needs to be executed, do so, by checking the number of threads from before.
+    // If any kernel needs to be executed, do so, by checking the number of threads from before.
     if (totalThreads > 0) {
         std::shared_lock<std::shared_timed_mutex> env_shared_lock;
         std::shared_lock<std::shared_timed_mutex> env_device_lock;
@@ -907,7 +915,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
         }
 
         // Ensure RandomManager is the correct size to accommodate all threads to be launched
-        curandState *d_rng = singletons->rng.resize(totalThreads);
+        curandState *d_rng = singletons->rng.resize(totalThreads, getStream(0));
         // Total threads is now used to provide kernel launches an offset to thread-safe thread-index
         totalThreads = 0;
         streamIdx = 0;
@@ -1076,7 +1084,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 std::string outpMessage_name = om->name;
                 CUDAMessage& cuda_message = getCUDAMessage(outpMessage_name);
                 cuda_message.unmapRuntimeVariables(*func_des, instance_id);
-                cuda_message.swap(func_des->message_output_optional, state_list_size, this->singletons->scatter, streamIdx);
+                cuda_message.swap(func_des->message_output_optional, state_list_size, this->singletons->scatter, getStream(streamIdx), streamIdx);
                 cuda_message.clearTruncateMessageListFlag();
                 cuda_message.setPBMConstructionRequiredFlag();
             }
@@ -1410,7 +1418,7 @@ void CUDASimulation::setPopulationData(AgentVector& population, const std::strin
             population.getAgentName().c_str());
     }
     // This call hierarchy validates agent desc matches and state is valid
-    it->second->setPopulationData(population, state_name, this->singletons->scatter, 0, 0);  // Streamid shouldn't matter here, also using default stream.
+    it->second->setPopulationData(population, state_name, this->singletons->scatter, 0, getStream(0));  // Streamid shouldn't matter here
 #ifdef VISUALISATION
     if (visualisation) {
         visualisation->updateBuffers();
@@ -1612,11 +1620,13 @@ void CUDASimulation::initialiseSingletons() {
         std::shared_lock<std::shared_timed_mutex> lock(adm);
         ++(adi);
         // Check if device has been reset
+        cudaStream_t stream_0 = getStream(0);
         unsigned int DEVICE_HAS_RESET_CHECK = 0;
-        gpuErrchk(cudaMemcpyFromSymbol(&DEVICE_HAS_RESET_CHECK, DEVICE_HAS_RESET, sizeof(unsigned int)));
+        gpuErrchk(cudaMemcpyFromSymbolAsync(&DEVICE_HAS_RESET_CHECK, DEVICE_HAS_RESET, sizeof(unsigned int), 0, cudaMemcpyDeviceToHost, stream_0));
+        gpuErrchk(cudaStreamSynchronize(stream_0));
         if (DEVICE_HAS_RESET_CHECK == DEVICE_HAS_RESET_FLAG) {
             // Device has been reset, purge host mirrors of static objects/singletons
-            detail::curve::Curve::getInstance().purge();
+            detail::curve::Curve::getInstance().purge(stream_0);
             if (singletons) {
                 singletons->rng.purge();
                 singletons->scatter.purge();
@@ -1625,6 +1635,7 @@ void CUDASimulation::initialiseSingletons() {
             macro_env.purge();
             // Reset flag
             DEVICE_HAS_RESET_CHECK = 0;  // Any value that doesnt match DEVICE_HAS_RESET_FLAG
+            // This SHOULD be a synchronisation point for the device (e.g. default stream)
             gpuErrchk(cudaMemcpyToSymbol(DEVICE_HAS_RESET, &DEVICE_HAS_RESET_CHECK, sizeof(unsigned int)));
         }
         lock.unlock();
@@ -1638,19 +1649,19 @@ void CUDASimulation::initialiseSingletons() {
         singletons->rng.reseed(getSimulationConfig().random_seed);
 
         // Pass created RandomManager to host api
-        host_api = std::make_unique<HostAPI>(*this, singletons->rng, singletons->scatter, agentOffsets, agentData, macro_env, 0, getStream(0));  // Host fns are currently all serial
+        host_api = std::make_unique<HostAPI>(*this, singletons->rng, singletons->scatter, agentOffsets, agentData, macro_env, 0, stream_0);  // Host fns are currently all serial
 
         for (auto &cm : message_map) {
-            cm.second->init(singletons->scatter, 0);
+            cm.second->init(singletons->scatter, 0, getStream(0));
         }
 
         // Populate the environment properties
         if (!submodel) {
             singletons->environment.init(instance_id, *model->environment, isPureRTC);
-            macro_env.init();
+            macro_env.init(stream_0);
         } else {
             singletons->environment.init(instance_id, *model->environment, isPureRTC, mastermodel->getInstanceID(), *submodel->subenvironment);
-            macro_env.init(*submodel->subenvironment, mastermodel->macro_env);
+            macro_env.init(*submodel->subenvironment, mastermodel->macro_env, stream_0);
         }
 
         // Propagate singleton init to submodels
@@ -2069,7 +2080,7 @@ void CUDASimulation::assignAgentIDs() {
         initialiseSingletons();
 
         for (auto &a : agent_map) {
-            a.second->assignIDs(*host_api);  // This is cheap if the CUDAAgent thinks it's IDs are already assigned
+            a.second->assignIDs(*host_api, getStream(0));  // This could be made concurrent, 1 stream per agent
         }
         agent_ids_have_init = true;
     }

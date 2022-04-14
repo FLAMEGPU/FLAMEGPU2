@@ -34,21 +34,22 @@ class MessageArray2D::CUDAModelHandler : public MessageSpecialisationHandler {
      * Allocates message buffers, and memsets data to 0
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream The CUDAStream to use for CUDA operations
      */
-    void init(CUDAScatter &scatter, const unsigned int &streamId) override;
+    void init(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) override;
     /**
      * Sort messages according to index
      * Detect and report any duplicate indicies/gaps
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
-     * @param stream CUDA stream to be used for async CUDA operations
+     * @param stream The CUDAStream to use for CUDA operations
      */
-    void buildIndex(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) override;
+    void buildIndex(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) override;
     /**
      * Allocates memory for the constructed index.
      * The memory allocation is checked by build index.
      */
-    void allocateMetaDataDevicePtr() override;
+    void allocateMetaDataDevicePtr(cudaStream_t stream) override;
     /**
      * Releases memory for the constructed index.
      */

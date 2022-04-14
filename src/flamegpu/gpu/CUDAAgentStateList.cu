@@ -167,8 +167,8 @@ void CUDAAgentStateList::scatterHostCreation(const unsigned int& newSize, char* 
     // Update number of alive agents
     parent_list->setAgentCount(parent_list->getSize() + newSize);
 }
-void CUDAAgentStateList::scatterSort(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
-    parent_list->scatterSort(scatter, streamId, stream);
+void CUDAAgentStateList::scatterSort_async(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
+    parent_list->scatterSort_async(scatter, streamId, stream);
 }
 unsigned int CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int &newSize, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
     if (newSize) {

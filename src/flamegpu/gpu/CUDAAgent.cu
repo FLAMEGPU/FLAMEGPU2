@@ -185,7 +185,7 @@ void CUDAAgent::setPopulationData(const AgentVector& population, const std::stri
     our_state->second->setAgentData(population, scatter, streamId, stream);
     fat_agent->markIDsUnset();
     // Validate that there are no ID collisions
-    validateIDCollisions();
+    validateIDCollisions(stream);
 }
 void CUDAAgent::getPopulationData(AgentVector& population, const std::string& state_name) const {
     // Validate agent state
@@ -215,7 +215,7 @@ __global__ void generateCollisionFlags(const id_t* d_sortedKeys, id_t* d_flagsOu
         }
     }
 }
-void CUDAAgent::validateIDCollisions() const {
+void CUDAAgent::validateIDCollisions(cudaStream_t stream) const {
     NVTX_RANGE("CUDAAgent::validateIDCollisions");
     // All data is on device, so use a device technique to check for collisions
     // Sort agent IDs, have a simple kernel check for neighbouring ID collisions to set a flag
@@ -237,33 +237,33 @@ void CUDAAgent::validateIDCollisions() const {
     ptrdiff_t buffOffset = 0;
     for (const auto& s : state_map) {
         const unsigned int t_size = s.second->getSize();
-        gpuErrchk(cudaMemcpy(d_keysIn + buffOffset, s.second->getVariablePointer(ID_VARIABLE_NAME), t_size * sizeof(id_t), cudaMemcpyDeviceToDevice));
+        gpuErrchk(cudaMemcpyAsync(d_keysIn + buffOffset, s.second->getVariablePointer(ID_VARIABLE_NAME), t_size * sizeof(id_t), cudaMemcpyDeviceToDevice, stream));
         buffOffset += t_size;
     }
     // Sort agent ids into d_keysOut
     void* d_temp_storage = nullptr;
     size_t temp_storage_bytes = 0;
-    gpuErrchk(cub::DeviceRadixSort::SortKeys(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount));
+    gpuErrchk(cub::DeviceRadixSort::SortKeys(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount, 0, sizeof(id_t) * 8, stream));
     gpuErrchk(cudaMalloc(&d_temp_storage, temp_storage_bytes));
-    gpuErrchk(cub::DeviceRadixSort::SortKeys(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount));
+    gpuErrchk(cub::DeviceRadixSort::SortKeys(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount, 0, sizeof(id_t) * 8, stream));
     // Reset d_keysIn
-    gpuErrchk(cudaMemset(d_keysIn, 0, sizeof(id_t) * agentCount));
+    gpuErrchk(cudaMemsetAsync(d_keysIn, 0, sizeof(id_t) * agentCount, stream));
     // Launch a kernel to set flags if keys overlap their neighbour
     const unsigned int blockSize = 1024;
     const unsigned int blocks = ((agentCount-1) / blockSize) + 1;
-    generateCollisionFlags<<<blocks, blockSize>>>(d_keysOut, d_keysIn, agentCount-1, ID_NOT_SET);
+    generateCollisionFlags<<<blocks, blockSize, 0, stream>>>(d_keysOut, d_keysIn, agentCount-1, ID_NOT_SET);
     gpuErrchkLaunch();
     // Check whether any flags were set
     size_t temp_storage_bytes2 = 0;
-    gpuErrchk(cub::DeviceReduce::Sum(nullptr, temp_storage_bytes2, d_keysIn, d_keysOut, agentCount - 1));
+    gpuErrchk(cub::DeviceReduce::Sum(nullptr, temp_storage_bytes2, d_keysIn, d_keysOut, agentCount - 1, stream));
     if (temp_storage_bytes2 > temp_storage_bytes) {
         gpuErrchk(cudaFree(d_temp_storage));
         temp_storage_bytes = temp_storage_bytes2;
         gpuErrchk(cudaMalloc(&d_temp_storage, temp_storage_bytes));
     }
-    gpuErrchk(cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount - 1));
+    gpuErrchk(cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount - 1, stream));
     id_t flagsSet = 0;
-    gpuErrchk(cudaMemcpy(&flagsSet, d_keysOut, sizeof(id_t), cudaMemcpyDeviceToHost));
+    gpuErrchk(cudaMemcpyAsync(&flagsSet, d_keysOut, sizeof(id_t), cudaMemcpyDeviceToHost, stream));
     // Cleanup
     gpuErrchk(cudaFree(d_temp_storage));
     gpuErrchk(cudaFree(d_keysIn));
@@ -274,6 +274,7 @@ void CUDAAgent::validateIDCollisions() const {
             "in CUDAAgent::validateIDCollisions()\n",
             static_cast<unsigned int>(flagsSet), agent_description.name.c_str());
     }
+    gpuErrchk(cudaStreamSynchronize(stream));
 }
 /**
  * Returns the number of alive and active agents in the named state
@@ -367,16 +368,16 @@ void CUDAAgent::scatterHostCreation(const std::string &state_name, const unsigne
     }
     sm->second->scatterHostCreation(newSize, d_inBuff, offsets, scatter, streamId, stream);
 }
-void CUDAAgent::scatterSort(const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
+void CUDAAgent::scatterSort_async(const std::string &state_name, CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
     auto sm = state_map.find(state_name);
     if (sm == state_map.end()) {
         THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
             "in CUDAAgent::scatterHostCreation()",
             agent_description.name.c_str(), state_name.c_str());
     }
-    sm->second->scatterSort(scatter, streamId, stream);
+    sm->second->scatterSort_async(scatter, streamId, stream);
 }
-void CUDAAgent::mapNewRuntimeVariables(const CUDAAgent& func_agent, const AgentFunctionData& func, const unsigned int &maxLen, CUDAScatter &scatter, const unsigned int &instance_id, const unsigned int &streamId) {
+void CUDAAgent::mapNewRuntimeVariables_async(const CUDAAgent& func_agent, const AgentFunctionData& func, unsigned int maxLen, CUDAScatter &scatter, unsigned int instance_id, cudaStream_t stream, unsigned int streamId) {
     // Confirm agent output is set
     if (auto oa = func.agent_output.lock()) {
         // check the cuda agent state map to find the correct state list for functions starting state
@@ -391,7 +392,7 @@ void CUDAAgent::mapNewRuntimeVariables(const CUDAAgent& func_agent, const AgentF
         // We need a 3rd array, because a function might combine agent birth, agent death and message output
         scatter.Scan().resize(maxLen, CUDAScanCompaction::AGENT_OUTPUT, streamId);
         // Ensure the scan flag is zeroed
-        scatter.Scan().zero(CUDAScanCompaction::AGENT_OUTPUT, streamId);
+        scatter.Scan().zero_async(CUDAScanCompaction::AGENT_OUTPUT, stream, streamId);
 
         // Request a buffer for new
         char *d_new_buffer = static_cast<char*>(fat_agent->allocNewBuffer(TOTAL_AGENT_VARIABLE_SIZE, maxLen, agent_description.variables.size()));
@@ -406,12 +407,13 @@ void CUDAAgent::mapNewRuntimeVariables(const CUDAAgent& func_agent, const AgentF
         }
 
         // Init the buffer to default values for variables
-        scatter.broadcastInit(
+        scatter.broadcastInit_async(
             streamId,
-            0,
+            stream,
             agent_description.variables,
             d_new_buffer,
             maxLen, 0);
+        // No sync, use of the buffer should be in the same stream
 
         // Map variables to curve
         const detail::curve::Curve::VariableHash _agent_birth_hash = detail::curve::Curve::variableRuntimeHash("_agent_birth");
@@ -715,8 +717,8 @@ id_t CUDAAgent::nextID(unsigned int count) {
 id_t* CUDAAgent::getDeviceNextID() {
     return fat_agent->getDeviceNextID();
 }
-void CUDAAgent::assignIDs(HostAPI& hostapi) {
-    fat_agent->assignIDs(hostapi);
+void CUDAAgent::assignIDs(HostAPI& hostapi, cudaStream_t stream) {
+    fat_agent->assignIDs(hostapi, stream);
 }
 
 void CUDAAgent::setPopulationVec(const std::string& state_name, const std::shared_ptr<DeviceAgentVector_impl>& d_vec) {

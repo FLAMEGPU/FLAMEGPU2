@@ -23,21 +23,22 @@ class MessageSpecialisationHandler {
      * Allocate and fill metadata, as though message list was empty
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of stream specific structures used
+     * @param stream The CUDAStream to use for CUDA operations
      */
-    virtual void init(CUDAScatter &scatter, const unsigned int &streamId) = 0;
+    virtual void init(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) = 0;
     /**
      * Constructs an index for the message data structure (e.g. Partition boundary matrix for spatial message types)
      * This is called the first time messages are read, after new messages have been output
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
-     * @param stream CUDA stream to be used for async CUDA operations
+     * @param stream The CUDAStream to use for CUDA operations
      */
-    virtual void buildIndex(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) { }
+    virtual void buildIndex(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) { }
     /**
      * Allocates memory for the constructed index.
      * The memory allocation is checked by build index.
      */
-    virtual void allocateMetaDataDevicePtr() { }
+    virtual void allocateMetaDataDevicePtr(cudaStream_t stream) { }
     /**
      * Releases memory for the constructed index.
      */

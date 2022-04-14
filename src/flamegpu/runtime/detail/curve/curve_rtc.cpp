@@ -212,7 +212,7 @@ CurveRTCHost::CurveRTCHost() : header(CurveRTCHost::curve_rtc_dynamic_h_template
 }
 
 CurveRTCHost::~CurveRTCHost() {
-    free(h_data_buffer);
+    gpuErrchk(cudaFreeHost(h_data_buffer));
 }
 
 void CurveRTCHost::registerAgentVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
@@ -944,7 +944,7 @@ void CurveRTCHost::initDataBuffer() {
         THROW exception::InvalidOperation("CurveRTCHost::initDataBuffer() should only be called once, during the init chain.\n");
     }
     // Alloc buffer
-    h_data_buffer = static_cast<char*>(malloc(data_buffer_size));
+    gpuErrchk(cudaMallocHost(&h_data_buffer, data_buffer_size));
     // Notify all variables of their ptr to store data in cache
     size_t ct = 0;
     for (auto &element : agent_variables) {
@@ -1044,11 +1044,11 @@ void CurveRTCHost::updateEnvCache(const char *env_ptr) {
         memcpy(h_data_buffer, env_ptr, EnvironmentManager::MAX_BUFFER_SIZE);
     }
 }
-void CurveRTCHost::updateDevice(const jitify::experimental::KernelInstantiation& instance) {
+void CurveRTCHost::updateDevice_async(const jitify::experimental::KernelInstantiation& instance, cudaStream_t stream) {
     // The namespace is required here, but not in other uses of getVariableSymbolName.
     std::string cache_var_name = std::string("flamegpu::detail::curve::") + getVariableSymbolName();
     CUdeviceptr d_var_ptr = instance.get_global_ptr(cache_var_name.c_str());
-    gpuErrchkDriverAPI(cuMemcpyHtoD(d_var_ptr, h_data_buffer, data_buffer_size));
+    gpuErrchkDriverAPI(cuMemcpyHtoDAsync(d_var_ptr, h_data_buffer, data_buffer_size, stream));
 }
 
 }  // namespace curve

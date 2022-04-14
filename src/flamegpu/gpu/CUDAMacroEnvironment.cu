@@ -19,7 +19,7 @@ CUDAMacroEnvironment::CUDAMacroEnvironment(const EnvironmentDescription& descrip
     }
 }
 
-void CUDAMacroEnvironment::init() {
+void CUDAMacroEnvironment::init(cudaStream_t stream) {
     for (auto &prop : properties) {
         if (!prop.second.d_ptr) {
             size_t buffer_size = prop.second.type_size
@@ -31,13 +31,14 @@ void CUDAMacroEnvironment::init() {
             buffer_size += sizeof(unsigned int);  // Extra uint is used as read-write flag by seatbelts
 #endif
             gpuErrchk(cudaMalloc(&prop.second.d_ptr, buffer_size));
-            gpuErrchk(cudaMemset(prop.second.d_ptr, 0, buffer_size));
+            gpuErrchk(cudaMemsetAsync(prop.second.d_ptr, 0, buffer_size, stream));
         }
     }
     mapRuntimeVariables();
+    gpuErrchk(cudaStreamSynchronize(stream));
 }
 
-void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, const CUDAMacroEnvironment &master_macro_env) {
+void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, const CUDAMacroEnvironment &master_macro_env, cudaStream_t stream) {
     // Map local properties
     for (auto& prop : properties) {
         if (!prop.second.d_ptr) {
@@ -53,7 +54,7 @@ void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, const CUDAMac
                     buffer_size += sizeof(unsigned int);  // Extra uint is used as read-write flag by seatbelts
 #endif
                     gpuErrchk(cudaMalloc(&prop.second.d_ptr, buffer_size));
-                    gpuErrchk(cudaMemset(prop.second.d_ptr, 0, buffer_size));
+                    gpuErrchk(cudaMemsetAsync(prop.second.d_ptr, 0, buffer_size, stream));
             } else {
                 // If it's a mapped sub macro property
                 auto mmp = master_macro_env.properties.find(sub->second);
@@ -73,6 +74,7 @@ void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, const CUDAMac
     }
     // Pass them all to CURVE
     mapRuntimeVariables();
+    gpuErrchk(cudaStreamSynchronize(stream));
 }
 void CUDAMacroEnvironment::free() {
     unmapRuntimeVariables();

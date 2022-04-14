@@ -58,19 +58,21 @@ __global__ void atomicHistogram2D(
     bin_sub_index[index] = bin_idx;
 }
 
-void MessageSpatial2D::CUDAModelHandler::init(CUDAScatter &, const unsigned int &) {
-    allocateMetaDataDevicePtr();
+void MessageSpatial2D::CUDAModelHandler::init(CUDAScatter &, unsigned int, cudaStream_t stream) {
+    allocateMetaDataDevicePtr(stream);
     // Set PBM to 0
-    gpuErrchk(cudaMemset(hd_data.PBM, 0x00000000, (binCount + 1) * sizeof(unsigned int)));
+    gpuErrchk(cudaMemsetAsync(hd_data.PBM, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
+    gpuErrchk(cudaStreamSynchronize(stream));  // This could probably be skipped/delayed safely
 }
 
-void MessageSpatial2D::CUDAModelHandler::allocateMetaDataDevicePtr() {
+void MessageSpatial2D::CUDAModelHandler::allocateMetaDataDevicePtr(cudaStream_t stream) {
     if (d_data == nullptr) {
         gpuErrchk(cudaMalloc(&d_histogram, (binCount + 1) * sizeof(unsigned int)));
         gpuErrchk(cudaMalloc(&hd_data.PBM, (binCount + 1) * sizeof(unsigned int)));
         gpuErrchk(cudaMalloc(&d_data, sizeof(MetaData)));
-        gpuErrchk(cudaMemcpy(d_data, &hd_data, sizeof(MetaData), cudaMemcpyHostToDevice));
-        resizeCubTemp();
+        gpuErrchk(cudaMemcpyAsync(d_data, &hd_data, sizeof(MetaData), cudaMemcpyHostToDevice, stream));
+        gpuErrchk(cudaStreamSynchronize(stream));
+        resizeCubTemp(stream);
     }
 }
 
@@ -95,7 +97,7 @@ void MessageSpatial2D::CUDAModelHandler::freeMetaDataDevicePtr() {
     }
 }
 
-void MessageSpatial2D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
+void MessageSpatial2D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
     NVTX_RANGE("MessageSpatial2D::CUDAModelHandler::buildIndex");
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count
@@ -124,9 +126,9 @@ void MessageSpatial2D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, const 
     }
 }
 
-void MessageSpatial2D::CUDAModelHandler::resizeCubTemp() {
+void MessageSpatial2D::CUDAModelHandler::resizeCubTemp(cudaStream_t stream) {
     size_t bytesCheck = 0;
-    gpuErrchk(cub::DeviceScan::ExclusiveSum(nullptr, bytesCheck, hd_data.PBM, d_histogram, binCount + 1));
+    gpuErrchk(cub::DeviceScan::ExclusiveSum(nullptr, bytesCheck, hd_data.PBM, d_histogram, binCount + 1, stream));
     if (bytesCheck > d_CUB_temp_storage_bytes) {
         if (d_CUB_temp_storage) {
             gpuErrchk(cudaFree(d_CUB_temp_storage));

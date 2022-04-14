@@ -14,13 +14,14 @@ namespace flamegpu {
 * CUDAMessageList class
 * @brief populates CUDA message map
 */
-CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message, CUDAScatter &scatter, const unsigned int &streamId)
+CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message, CUDAScatter &scatter, cudaStream_t stream, unsigned int streamId)
     : message(cuda_message) {
     // allocate message lists
     allocateDeviceMessageList(d_list);
     allocateDeviceMessageList(d_swap_list);
-    zeroDeviceMessageList(d_list);
-    zeroDeviceMessageList(d_swap_list);
+    zeroDeviceMessageList_async(d_list, stream);
+    zeroDeviceMessageList_async(d_swap_list, stream);
+    gpuErrchk(cudaStreamSynchronize(stream));
 }
 
 /**
@@ -64,7 +65,7 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMessageMap &memory_map) {
         memory_map.insert(CUDAMessageMap::value_type(var_name, d_ptr));
     }
 }
-void CUDAMessageList::resize(CUDAScatter& scatter, const unsigned int& streamId, const unsigned int& keep_len) {
+void CUDAMessageList::resize(CUDAScatter& scatter, cudaStream_t stream, unsigned int streamId, unsigned int keep_len) {
     // Release d_swap_list, we don't retain this data
     releaseDeviceMessageList(d_swap_list);
     // Allocate the new d_list
@@ -75,7 +76,7 @@ void CUDAMessageList::resize(CUDAScatter& scatter, const unsigned int& streamId,
         // Copy data from d_list_old to d_list
         // Note, if keep_len exceeds length of d_swap_list_old, this will crash
         scatter.scatterAll(streamId,
-            0,
+            stream,
             message.getMessageDescription().variables,
             d_list_old, d_list,
             keep_len,
@@ -86,8 +87,9 @@ void CUDAMessageList::resize(CUDAScatter& scatter, const unsigned int& streamId,
     // Allocate the new d_swap_list
     allocateDeviceMessageList(d_swap_list);
     // Zero any new buffers with undefined data
-    zeroDeviceMessageList(d_list, keep_len);
-    zeroDeviceMessageList(d_swap_list);
+    zeroDeviceMessageList_async(d_list, stream, keep_len);
+    zeroDeviceMessageList_async(d_swap_list, stream);
+    gpuErrchk(cudaStreamSynchronize(stream));
 }
 
 void CUDAMessageList::releaseDeviceMessageList(CUDAMessageMap& memory_map) {
@@ -99,7 +101,7 @@ void CUDAMessageList::releaseDeviceMessageList(CUDAMessageMap& memory_map) {
     memory_map.clear();
 }
 
-void CUDAMessageList::zeroDeviceMessageList(CUDAMessageMap& memory_map, const unsigned int &skip_offset) {
+void CUDAMessageList::zeroDeviceMessageList_async(CUDAMessageMap& memory_map, cudaStream_t stream, unsigned int skip_offset) {
     if (skip_offset >= message.getMaximumListSize())
         return;
     // for each device pointer in the cuda memory map set the values to 0
@@ -109,7 +111,7 @@ void CUDAMessageList::zeroDeviceMessageList(CUDAMessageMap& memory_map, const un
         const size_t var_size = var.type_size * var.elements;
 
         // set the memory to zero
-        gpuErrchk(cudaMemset(static_cast<char*>(mm.second) + (var_size * skip_offset), 0, var_size * (message.getMaximumListSize() - skip_offset)));
+        gpuErrchk(cudaMemsetAsync(static_cast<char*>(mm.second) + (var_size * skip_offset), 0, var_size * (message.getMaximumListSize() - skip_offset), stream));
     }
 }
 
@@ -134,9 +136,10 @@ void* CUDAMessageList::getWriteMessageListVariablePointer(std::string variable_n
     return mm->second;
 }
 
-void CUDAMessageList::zeroMessageData() {
-    zeroDeviceMessageList(d_list);
-    zeroDeviceMessageList(d_swap_list);
+void CUDAMessageList::zeroMessageData(cudaStream_t stream) {
+    zeroDeviceMessageList_async(d_list, stream);
+    zeroDeviceMessageList_async(d_swap_list, stream);
+    gpuErrchk(cudaStreamSynchronize(stream));
 }
 
 
@@ -144,11 +147,11 @@ void CUDAMessageList::swap() {
     std::swap(d_list, d_swap_list);
 }
 
-unsigned int CUDAMessageList::scatter(const unsigned int &newCount, CUDAScatter &scatter, const unsigned int &streamId, const bool &append) {
+unsigned int CUDAMessageList::scatter(unsigned int newCount, CUDAScatter &scatter, cudaStream_t stream, unsigned int streamId, bool append) {
     if (append) {
         unsigned int oldCount = message.getMessageCount();
         return oldCount + scatter.scatter(streamId,
-            0,
+            stream,
             CUDAScatter::Type::MESSAGE_OUTPUT,
             message.getMessageDescription().variables,
             d_swap_list, d_list,
@@ -156,7 +159,7 @@ unsigned int CUDAMessageList::scatter(const unsigned int &newCount, CUDAScatter 
             oldCount);
     } else {
         return scatter.scatter(streamId,
-            0,
+            stream,
             CUDAScatter::Type::MESSAGE_OUTPUT,
             message.getMessageDescription().variables,
             d_swap_list, d_list,
@@ -164,10 +167,10 @@ unsigned int CUDAMessageList::scatter(const unsigned int &newCount, CUDAScatter 
             0);
     }
 }
-unsigned int CUDAMessageList::scatterAll(const unsigned int &newCount, CUDAScatter &scatter, const unsigned int &streamId) {
+unsigned int CUDAMessageList::scatterAll(unsigned int newCount, CUDAScatter &scatter, cudaStream_t stream, unsigned int streamId) {
     unsigned int oldCount = message.getMessageCount();
     return oldCount + scatter.scatterAll(streamId,
-        0,
+        stream,
         message.getMessageDescription().variables,
         d_swap_list, d_list,
         newCount,
