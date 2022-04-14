@@ -616,11 +616,12 @@ class Curve {
 #endif
     /**
      * Initialises cuRVE on the currently active device.
+     * @param stream CUDA stream to be uses for cudaMemset
      * 
      * @note Not yet aware if the device has been reset.
      * @todo Need to add a device-side check for initialisation.
      */
-    void initialiseDevice();
+    void initialiseDevice(cudaStream_t stream);
     /**
      * Has access to call purge
      */
@@ -628,8 +629,9 @@ class Curve {
     /**
      * Wipes out host mirrors of device memory
      * Only really to be used after calls to cudaDeviceReset()
+     * @param stream CUDA stream to be passed to initialiseDevice()
      */
-    __host__ void purge();
+    __host__ void purge(cudaStream_t stream);
 
  protected:
     /**

@@ -1,6 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_RTC_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_RTC_CUH_
 
+#include <driver_types.h>
 #include <array>
 #include <cstring>
 #include <string>
@@ -199,8 +200,10 @@ class CurveRTCHost {
     /**
      * Copy h_data_buffer to device
      * @param instance The compiled RTC agent function instance to copy the environment cache to
+     * @param stream The CUDA stream used for the cuda memcpy
+     * @note This is async, the stream is non synchronised
      */
-    void updateDevice(const jitify::experimental::KernelInstantiation& instance);
+    void updateDevice_async(const jitify::experimental::KernelInstantiation& instance, cudaStream_t stream);
 
  protected:
    /**

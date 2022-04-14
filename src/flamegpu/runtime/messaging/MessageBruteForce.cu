@@ -5,14 +5,15 @@
 
 namespace flamegpu {
 
-void MessageBruteForce::CUDAModelHandler::init(CUDAScatter &, const unsigned int &) {
-    allocateMetaDataDevicePtr();
+void MessageBruteForce::CUDAModelHandler::init(CUDAScatter &, unsigned int, cudaStream_t stream) {
+    allocateMetaDataDevicePtr(stream);
     // Allocate messages
     hd_metadata.length = 0;  // This value should already be 0
-    gpuErrchk(cudaMemcpy(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice));
+    gpuErrchk(cudaMemcpyAsync(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice, stream));
+    gpuErrchk(cudaStreamSynchronize(stream));  // This could probably be skipped/delayed safely
 }
 
-void MessageBruteForce::CUDAModelHandler::allocateMetaDataDevicePtr() {
+void MessageBruteForce::CUDAModelHandler::allocateMetaDataDevicePtr(cudaStream_t stream) {
     if (d_metadata == nullptr) {
         gpuErrchk(cudaMalloc(&d_metadata, sizeof(MetaData)));
     }
@@ -25,11 +26,12 @@ void MessageBruteForce::CUDAModelHandler::freeMetaDataDevicePtr() {
     d_metadata = nullptr;
 }
 
-void MessageBruteForce::CUDAModelHandler::buildIndex(CUDAScatter &, const unsigned int &, const cudaStream_t &) {
+void MessageBruteForce::CUDAModelHandler::buildIndex(CUDAScatter &, unsigned int, cudaStream_t stream) {
     unsigned int newLength = this->sim_message.getMessageCount();
     if (newLength != hd_metadata.length) {
         hd_metadata.length = newLength;
-        gpuErrchk(cudaMemcpy(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice));
+        gpuErrchk(cudaMemcpyAsync(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice, stream));  // Not Pinned
+        gpuErrchk(cudaStreamSynchronize(stream));  // This could probably be skipped/delayed safely if in the right stream
     }
 }
 

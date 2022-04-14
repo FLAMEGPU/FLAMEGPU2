@@ -62,16 +62,18 @@ class CUDAMessage {
      * This allocates and initialises any CUDA data structures for reading the messagelist, and sets them asthough the messagelist were empty.
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId Index of stream specific structures used
+     * @param stream The CUDAStream to use for CUDA operations
      */
-    void init(CUDAScatter &scatter, const unsigned int &streamId);
+    void init(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Updates message_count to equal newSize, internally reallocates buffer space if more space is required
      * @param newSize The number of messages that the buffer should be capable of storing
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
+     * @param stream The CUDAStream to use for CUDA operations
      * @param streamId Index of stream specific structures used
      * @param keepLen Number of existing messages worth of data to retain through the resize
      */
-    void resize(unsigned int newSize, CUDAScatter &scatter, const unsigned int &streamId, const unsigned int &keepLen = 0);
+    void resize(unsigned int newSize, CUDAScatter &scatter, cudaStream_t stream, unsigned int streamId, unsigned int keepLen = 0);
     /**
      * Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
      * The read runtime variables are to be used when reading messages
@@ -87,9 +89,10 @@ class CUDAMessage {
      * @param cuda_agent Agent which owns the agent function (condition) being mapped, if RTC function this holds the RTC header
      * @param writeLen The number of messages to be output, as the length isn't updated till after output
      * @param instance_id The CUDASimulation instance_id of the parent instance. This is added to the hash, to differentiate instances
+     * @param stream The CUDAStream to use for CUDA operations
      * @note swap() or scatter() should be called after the agent function has written messages
      */
-    void mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &writeLen, const unsigned int &instance_id) const;
+    void mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &writeLen, const unsigned int &instance_id, cudaStream_t stream) const;
     /**
      * Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
      * library so that they are unavailable to be accessed by name within an agent function.
@@ -105,10 +108,11 @@ class CUDAMessage {
      * @param isOptional If optional newMessageCount will be reduced based on scan_flag[streamId]
      * @param newMessageCount The number of output messages (including optional messages which were not output)
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
+     * @param stream The CUDAStream to use for CUDA operations
      * @param streamId Index of stream specific structures used
      * @throw exception::InvalidCudaMessage If this is called before the internal buffers have been allocated
      */
-    void swap(bool isOptional, const unsigned int &newMessageCount, CUDAScatter &scatter, const unsigned int &streamId);
+    void swap(bool isOptional, unsigned int newMessageCount, CUDAScatter &scatter, cudaStream_t stream, unsigned int streamId);
     /**
      * Basic list swap with no additional actions
      */
@@ -132,7 +136,7 @@ class CUDAMessage {
     /** 
      * Zero all message variable data.
      */
-    void zeroAllMessageData();
+    void zeroAllMessageData(cudaStream_t stream);
 
  private:
      /**

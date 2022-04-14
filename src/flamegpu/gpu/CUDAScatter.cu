@@ -172,11 +172,20 @@ unsigned int CUDAScatter::scatter(
     return rtn + scatter_all_count;
 }
 void CUDAScatter::scatterPosition(
-    const unsigned int &streamResourceId,
-    const cudaStream_t &stream,
-    const Type &messageOrAgent,
+    unsigned int streamResourceId,
+    cudaStream_t stream,
+    Type messageOrAgent,
+    const std::vector<ScatterData>& sd,
+    unsigned int itemCount) {
+    scatterPosition_async(streamResourceId, stream, messageOrAgent, sd, itemCount);
+    gpuErrchk(cudaStreamSynchronize(stream));
+}
+void CUDAScatter::scatterPosition_async(
+    unsigned int streamResourceId,
+    cudaStream_t stream,
+    Type messageOrAgent,
     const std::vector<ScatterData> &sd,
-    const unsigned int &itemCount) {
+    unsigned int itemCount) {
     int blockSize = 0;  // The launch configurator returned block size
     int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
     int gridSize = 0;  // The actual grid size needed, based on input size
@@ -193,7 +202,6 @@ void CUDAScatter::scatterPosition(
         scan.Config(messageOrAgent, streamResourceId).d_ptrs.position,
         streamResources[streamResourceId].d_data, static_cast<unsigned int>(sd.size()));
     gpuErrchkLaunch();
-    gpuErrchk(cudaStreamSynchronize(stream));  // @todo - async + sync variants.
 }
 unsigned int CUDAScatter::scatterCount(
     const unsigned int &streamResourceId,
@@ -399,11 +407,20 @@ __global__ void broadcastInitKernel(
     memcpy(out_ptr, in_ptr, type_len);
 }
 void CUDAScatter::broadcastInit(
-    const unsigned int &streamResourceId,
-    const cudaStream_t &stream,
+    unsigned int streamResourceId,
+    cudaStream_t stream,
     const std::list<std::shared_ptr<VariableBuffer>> &vars,
-    const unsigned int &inCount,
-    const unsigned int outIndexOffset) {
+    unsigned int inCount,
+    unsigned int outIndexOffset) {
+    broadcastInit_async(streamResourceId, stream, vars, inCount, outIndexOffset);
+    gpuErrchk(cudaStreamSynchronize(stream));
+}
+void CUDAScatter::broadcastInit_async(
+    unsigned int streamResourceId,
+    cudaStream_t stream,
+    const std::list<std::shared_ptr<VariableBuffer>>& vars,
+    unsigned int inCount,
+    unsigned int outIndexOffset) {
     // No variables means no work to do
     if (vars.size() == 0) return;
     // 1 thread per agent variable
@@ -445,15 +462,24 @@ void CUDAScatter::broadcastInit(
         streamResources[streamResourceId].d_data + offset, static_cast<unsigned int>(sd.size()),
         outIndexOffset);
     gpuErrchkLaunch();
-    gpuErrchk(cudaStreamSynchronize(stream));  // @todo - async + sync variants.
 }
 void CUDAScatter::broadcastInit(
-    const unsigned int &streamResourceId,
-    const cudaStream_t &stream,
+    unsigned int streamResourceId,
+    cudaStream_t stream,
+    const VariableMap& vars,
+    void* const d_newBuff,
+    unsigned int inCount,
+    unsigned int outIndexOffset) {
+    broadcastInit_async(streamResourceId, stream, vars, d_newBuff, inCount, outIndexOffset);
+    gpuErrchk(cudaStreamSynchronize(stream));
+}
+void CUDAScatter::broadcastInit_async(
+    unsigned int streamResourceId,
+    cudaStream_t stream,
     const VariableMap &vars,
     void * const d_newBuff,
-    const unsigned int &inCount,
-    const unsigned int outIndexOffset) {
+    unsigned int inCount,
+    unsigned int outIndexOffset) {
     // 1 thread per agent variable
     const unsigned int threadCount = static_cast<unsigned int>(vars.size()) * inCount;
     int blockSize = 0;  // The launch configurator returned block size
@@ -496,7 +522,6 @@ void CUDAScatter::broadcastInit(
         streamResources[streamResourceId].d_data + offset, static_cast<unsigned int>(sd.size()),
         outIndexOffset);
     gpuErrchkLaunch();
-    gpuErrchk(cudaStreamSynchronize(stream));  // @todo - async + sync variants.
 }
 __global__ void reorder_array_messages(
     const unsigned int threadCount,

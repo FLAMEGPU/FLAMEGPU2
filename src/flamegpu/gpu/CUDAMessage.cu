@@ -44,7 +44,7 @@ const MessageBruteForce::Data& CUDAMessage::getMessageDescription() const {
     return message_description;
 }
 
-void CUDAMessage::resize(unsigned int newSize, CUDAScatter &scatter, const unsigned int &streamId, const unsigned int& keepLen) {
+void CUDAMessage::resize(unsigned int newSize, CUDAScatter &scatter, cudaStream_t stream, unsigned int streamId, unsigned int keepLen) {
     // Only grow currently
     if (newSize > max_list_size) {
         const unsigned int _keep_len = std::min(max_list_size, keepLen);
@@ -53,10 +53,10 @@ void CUDAMessage::resize(unsigned int newSize, CUDAScatter &scatter, const unsig
             max_list_size = static_cast<unsigned int>(max_list_size * 1.5);
         }
         if (message_list) {
-            message_list->resize(scatter, streamId, _keep_len);
+            message_list->resize(scatter, stream, streamId, _keep_len);
         } else {
             // If the list has not already been allocated, create a new
-            message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this, scatter, streamId));
+            message_list = std::unique_ptr<CUDAMessageList>(new CUDAMessageList(*this, scatter, stream, streamId));
         }
         scatter.Scan().resize(max_list_size, CUDAScanCompaction::MESSAGE_OUTPUT, streamId);
     }
@@ -75,14 +75,14 @@ void CUDAMessage::setMessageCount(const unsigned int &_message_count) {
     }
     message_count = _message_count;
 }
-void CUDAMessage::init(CUDAScatter &scatter, const unsigned int &streamId) {
-    specialisation_handler->init(scatter, streamId);
+void CUDAMessage::init(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
+    specialisation_handler->init(scatter, streamId, stream);
 }
-void CUDAMessage::zeroAllMessageData() {
+void CUDAMessage::zeroAllMessageData(cudaStream_t stream) {
     if (!message_list) {
         THROW exception::InvalidMessageData("MessageList '%s' is not yet allocated, in CUDAMessage::swap()\n", message_description.name.c_str());
     }
-    message_list->zeroMessageData();
+    message_list->zeroMessageData(stream);
 }
 
 void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &instance_id) const {
@@ -139,7 +139,7 @@ void *CUDAMessage::getReadPtr(const std::string &var_name) {
     }
     return message_list->getReadMessageListVariablePointer(var_name);
 }
-void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &writeLen, const unsigned int &instance_id) const {
+void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &writeLen, const unsigned int &instance_id, cudaStream_t stream) const {
     // check that the message list has been allocated
     if (!message_list) {
         THROW exception::InvalidMessageData("Error: Initial message list for message '%s' has not been allocated, "
@@ -184,7 +184,7 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
     }
 
     // Allocate the metadata if required. (This call should now be redundant)
-    specialisation_handler->allocateMetaDataDevicePtr();
+    specialisation_handler->allocateMetaDataDevicePtr(stream);
 }
 
 void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func, const unsigned int &instance_id) const {
@@ -209,7 +209,7 @@ void CUDAMessage::unmapRuntimeVariables(const AgentFunctionData& func, const uns
         curve.unregisterVariableByHash(var_hash + agent_hash + func_hash + message_hash + instance_id);
     }
 }
-void CUDAMessage::swap(bool isOptional, const unsigned int &newMessageCount, CUDAScatter &scatter, const unsigned int &streamId) {
+void CUDAMessage::swap(bool isOptional, unsigned int newMessageCount, CUDAScatter &scatter, cudaStream_t stream, unsigned int streamId) {
     if (!message_list) {
         THROW exception::InvalidMessageData("MessageList '%s' is not yet allocated, in CUDAMessage::swap()\n", message_description.name.c_str());
     }
@@ -225,7 +225,8 @@ void CUDAMessage::swap(bool isOptional, const unsigned int &newMessageCount, CUD
                 scanCfg.cub_temp_size,
                 scanCfg.d_ptrs.scan_flag,
                 scanCfg.d_ptrs.position,
-                max_list_size + 1));
+                max_list_size + 1,
+                stream));
             gpuErrchk(cudaMalloc(&scanCfg.hd_cub_temp,
                 scanCfg.cub_temp_size));
             scanCfg.cub_temp_size_max_list_size = max_list_size;
@@ -235,10 +236,11 @@ void CUDAMessage::swap(bool isOptional, const unsigned int &newMessageCount, CUD
             scanCfg.cub_temp_size,
             scanCfg.d_ptrs.scan_flag,
             scanCfg.d_ptrs.position,
-            newMessageCount + 1));
+            newMessageCount + 1,
+            stream));
         // Scatter
         // Update count
-        message_count = message_list->scatter(newMessageCount, scatter, streamId, !this->truncate_messagelist_flag);
+        message_count = message_list->scatter(newMessageCount, scatter, stream, streamId, !this->truncate_messagelist_flag);
     } else {
         if (this->truncate_messagelist_flag) {
             message_count = newMessageCount;
@@ -246,7 +248,7 @@ void CUDAMessage::swap(bool isOptional, const unsigned int &newMessageCount, CUD
         } else {
             assert(message_count + newMessageCount <= max_list_size);
             // We're appending so use our scatter kernel
-            message_count = message_list->scatterAll(newMessageCount, scatter, streamId);
+            message_count = message_list->scatterAll(newMessageCount, scatter, stream, streamId);
         }
     }
 }

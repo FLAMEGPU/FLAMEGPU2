@@ -122,7 +122,7 @@ void CUDAFatAgent::processDeath(const unsigned int &agent_fat_id, const std::str
         scanCfg.d_ptrs.position,
         agent_count + 1,
         stream));
-    gpuErrchk(cudaStreamSynchronize(stream));
+    gpuErrchk(cudaStreamSynchronize(stream));  // Redundant? scatter occurs in same stream
 
     // Scatter
     sm->second->scatterDeath(scatter, streamId, stream);
@@ -339,7 +339,7 @@ void CUDAFatAgent::notifyDeviceBirths(unsigned int newCount) {
     assert(t == _nextID);  // At the end of device birth they should be equal, as no host birth can occur between pre and post processing agent fn
 #endif
 }
-void CUDAFatAgent::assignIDs(HostAPI& hostapi) {
+void CUDAFatAgent::assignIDs(HostAPI& hostapi, cudaStream_t stream) {
     NVTX_RANGE("CUDAFatAgent::assignIDs");
     if (agent_ids_have_init) return;
     id_t h_max = ID_NOT_SET;
@@ -356,13 +356,14 @@ void CUDAFatAgent::assignIDs(HostAPI& hostapi) {
             if (hostapi.tempStorageRequiresResize(cc, s->getSize())) {
                 // Resize cub storage
                 size_t tempByte = 0;
-                gpuErrchk(cub::DeviceReduce::Max(nullptr, tempByte, static_cast<id_t*>(vb->data), reinterpret_cast<id_t*>(hostapi.d_output_space), s->getSize()));
+                gpuErrchk(cub::DeviceReduce::Max(nullptr, tempByte, static_cast<id_t*>(vb->data), reinterpret_cast<id_t*>(hostapi.d_output_space), s->getSize(), stream));
                 gpuErrchkLaunch();
                 hostapi.resizeTempStorage(cc, s->getSize(), tempByte);
             }
             hostapi.resizeOutputSpace<id_t>();
-            gpuErrchk(cub::DeviceReduce::Max(hostapi.d_cub_temp, hostapi.d_cub_temp_size, static_cast<id_t*>(vb->data), reinterpret_cast<id_t*>(hostapi.d_output_space), s->getSize()));
-            gpuErrchk(cudaMemcpy(&h_max, hostapi.d_output_space, sizeof(id_t), cudaMemcpyDeviceToHost));
+            gpuErrchk(cub::DeviceReduce::Max(hostapi.d_cub_temp, hostapi.d_cub_temp_size, static_cast<id_t*>(vb->data), reinterpret_cast<id_t*>(hostapi.d_output_space), s->getSize(), stream));
+            gpuErrchk(cudaMemcpyAsync(&h_max, hostapi.d_output_space, sizeof(id_t), cudaMemcpyDeviceToHost, stream));
+            gpuErrchk(cudaStreamSynchronize(stream));
             _nextID = std::max(_nextID, h_max + 1);
         }
     }
@@ -377,13 +378,14 @@ void CUDAFatAgent::assignIDs(HostAPI& hostapi) {
         if (vb && vb->data && s->getSize()) {
             const unsigned int blockSize = 1024;
             const unsigned int blocks = ((s->getSize() - 1) / blockSize) + 1;
-            allocateIDs<< <blocks, blockSize >> > (static_cast<id_t*>(vb->data), s->getSize(), ID_NOT_SET, _nextID);
+            allocateIDs<< <blocks, blockSize, 0, stream>> > (static_cast<id_t*>(vb->data), s->getSize(), ID_NOT_SET, _nextID);
             gpuErrchkLaunch();
         }
         _nextID += s->getSizeWithDisabled();
     }
 
     agent_ids_have_init = true;
+    gpuErrchk(cudaStreamSynchronize(stream));
 }
 void CUDAFatAgent::resetIDCounter() {
     // Resetting ID whilst agents exist is a bad idea, so fail silently

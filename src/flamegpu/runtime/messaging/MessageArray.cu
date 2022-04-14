@@ -23,10 +23,10 @@ MessageArray::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
     hd_metadata.length = d.length;
 }
 
-void MessageArray::CUDAModelHandler::init(CUDAScatter &scatter, const unsigned int &streamId) {
-    allocateMetaDataDevicePtr();
+void MessageArray::CUDAModelHandler::init(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
+    allocateMetaDataDevicePtr(stream);
     // Allocate messages
-    this->sim_message.resize(hd_metadata.length, scatter, streamId);
+    this->sim_message.resize(hd_metadata.length, scatter, stream, streamId);
     this->sim_message.setMessageCount(hd_metadata.length);
     // Zero the output arrays
     auto &read_list = this->sim_message.getReadList();
@@ -34,14 +34,16 @@ void MessageArray::CUDAModelHandler::init(CUDAScatter &scatter, const unsigned i
     for (auto &var : this->sim_message.getMessageDescription().variables) {
         // Elements is harmless, futureproof for arrays support
         // hd_metadata.length is used, as message array can be longer than message count
-        gpuErrchk(cudaMemset(write_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length));
-        gpuErrchk(cudaMemset(read_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length));
+        gpuErrchk(cudaMemsetAsync(write_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length, stream));
+        gpuErrchk(cudaMemsetAsync(read_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length, stream));
     }
+    gpuErrchk(cudaStreamSynchronize(stream));
 }
-void MessageArray::CUDAModelHandler::allocateMetaDataDevicePtr() {
+void MessageArray::CUDAModelHandler::allocateMetaDataDevicePtr(cudaStream_t stream) {
     if (d_metadata == nullptr) {
         gpuErrchk(cudaMalloc(&d_metadata, sizeof(MetaData)));
-        gpuErrchk(cudaMemcpy(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice));
+        gpuErrchk(cudaMemcpyAsync(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice, stream));
+        gpuErrchk(cudaStreamSynchronize(stream));
     }
 }
 
@@ -57,7 +59,7 @@ void MessageArray::CUDAModelHandler::freeMetaDataDevicePtr() {
     d_write_flag = nullptr;
     d_write_flag_len = 0;
 }
-void MessageArray::CUDAModelHandler::buildIndex(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
+void MessageArray::CUDAModelHandler::buildIndex(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     // Zero the output arrays
     auto &read_list = this->sim_message.getReadList();
@@ -65,7 +67,7 @@ void MessageArray::CUDAModelHandler::buildIndex(CUDAScatter &scatter, const unsi
     for (auto &var : this->sim_message.getMessageDescription().variables) {
         // Elements is harmless, futureproof for arrays support
         // hd_metadata.length is used, as message array can be longer than message count
-        gpuErrchk(cudaMemset(write_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length));
+        gpuErrchk(cudaMemsetAsync(write_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length, stream));
     }
 
     // Reorder messages
@@ -90,6 +92,7 @@ void MessageArray::CUDAModelHandler::buildIndex(CUDAScatter &scatter, const unsi
         this->sim_message.setMessageCount(hd_metadata.length);
     // Detect errors
     // TODO
+    gpuErrchk(cudaStreamSynchronize(stream));  // Redundant: Array msg reorder has a sync
 }
 
 

@@ -229,7 +229,7 @@ class CUDAFatAgentStateList {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void scatterSort(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
+    void scatterSort_async(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Set the number of disabled agents within the state list
      * Updates member var disabledAgents and data_condition for every item inside variables_unique

@@ -19,10 +19,10 @@ void CUDAScanCompaction::resize(const unsigned int& newCount, const Type& type, 
     configs[type][streamId].resize_scan_flag(newCount);
 }
 
-void CUDAScanCompaction::zero(const Type& type, const unsigned int& streamId) {
+void CUDAScanCompaction::zero_async(const Type& type, cudaStream_t stream, unsigned int streamId) {
     assert(streamId < MAX_STREAMS);
     assert(type < MAX_TYPES);
-    configs[type][streamId].zero_scan_flag();
+    configs[type][streamId].zero_scan_flag_async(stream);
 }
 
 const CUDAScanCompactionConfig &CUDAScanCompaction::getConfig(const Type& type, const unsigned int& streamId) {
@@ -48,12 +48,12 @@ void CUDAScanCompactionConfig::free_scan_flag() {
     }
 }
 
-void CUDAScanCompactionConfig::zero_scan_flag() {
+void CUDAScanCompactionConfig::zero_scan_flag_async(cudaStream_t stream) {
     if (d_ptrs.position) {
-        gpuErrchk(cudaMemset(d_ptrs.position, 0, scan_flag_len * sizeof(unsigned int)));  // @todo - make this async + streamSync for less ensbemble blocking.
+        gpuErrchk(cudaMemsetAsync(d_ptrs.position, 0, scan_flag_len * sizeof(unsigned int), stream));
     }
     if (d_ptrs.scan_flag) {
-        gpuErrchk(cudaMemset(d_ptrs.scan_flag, 0, scan_flag_len * sizeof(unsigned int)));  // @todo - make this async + streamSync for less ensbemble blocking.
+        gpuErrchk(cudaMemsetAsync(d_ptrs.scan_flag, 0, scan_flag_len * sizeof(unsigned int), stream));
     }
 }
 
