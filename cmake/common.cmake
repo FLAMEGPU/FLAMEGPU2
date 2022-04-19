@@ -31,6 +31,9 @@ endif()
 # Don't create installation scripts (and hide CMAKE_INSTALL_PREFIX from cmake-gui)
 set(CMAKE_SKIP_INSTALL_RULES TRUE)
 set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL "" FORCE)
+# Option to enable verbose PTXAS output
+option(VERBOSE_PTXAS "Enable verbose PTXAS output" OFF)
+mark_as_advanced(VERBOSE_PTXAS)
 # Option to promote compilation warnings to error, useful for strict CI
 option(WARNINGS_AS_ERRORS "Promote compilation warnings to errors" OFF)
 # Option to group CMake generated projects into folders in supported IDEs
@@ -257,6 +260,11 @@ function(CommonCompilerSettings)
     # Note this will be multiplicative against the number of threads launched for parallel cmake build, which may lead to processes being killed, or excessive memory being consumed.
     if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.2" AND USE_NVCC_THREADS AND DEFINED NVCC_THREADS AND NVCC_THREADS GREATER_EQUAL 0)
         target_compile_options(${CCS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--threads ${NVCC_THREADS}>")
+    endif()
+
+    # Enable verbose ptxas output if required 
+    if(VERBOSE_PTXAS)
+        target_compile_options(${CCS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xptxas -v>")
     endif()
 
 endfunction()
