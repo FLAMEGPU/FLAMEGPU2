@@ -302,7 +302,7 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     # Apply common compiler settings
     CommonCompilerSettings(TARGET "${NAME}")
     # Set the cuda gencodes, potentially using the user-provided CUDA_ARCH
-    SetCUDAGencodes(TARGET "${PROJECT_NAME}")
+    SetCUDAGencodes(TARGET "${NAME}")
             
     # Enable RDC for the target
     set_property(TARGET ${NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
@@ -328,10 +328,10 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
                 # mark_as_advanced(FORCE SDL2_DIR)
                 # find_package(SDL2 REQUIRED)
             # endif()
-            add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD        # Adds a post-build event to MyTest
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different             # which executes "cmake - E copy_if_different..."
-                    "${SDL2_RUNTIME_LIBRARIES}"                           # <--this is in-file
-                    $<TARGET_FILE_DIR:${NAME}>)                           # <--this is out-file path
+            add_custom_command(TARGET "${NAME}" POST_BUILD     # Adds a post-build event to MyTest
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different  # which executes "cmake - E copy_if_different..."
+                    "${SDL2_RUNTIME_LIBRARIES}"                # <--this is in-file
+                    $<TARGET_FILE_DIR:${NAME}>)                # <--this is out-file path
             # glew
             # if(NOT glew_FOUND)
                 # Force finding this is disabled, as the cmake vars should already be set.
@@ -339,10 +339,10 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
                 # mark_as_advanced(FORCE GLEW_DIR)
                 # find_package(GLEW REQUIRED)
             # endif()
-            add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD        # Adds a post-build event to MyTest
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different             # which executes "cmake - E copy_if_different..."
-                    "${GLEW_RUNTIME_LIBRARIES}"                           # <--this is in-file
-                    $<TARGET_FILE_DIR:${NAME}>)                           # <--this is out-file path
+            add_custom_command(TARGET "${NAME}" POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${GLEW_RUNTIME_LIBRARIES}"
+                    $<TARGET_FILE_DIR:${NAME}>)
             # DevIL
             # if(NOT devil_FOUND)
                 # Force finding this is disabled, as the cmake vars should already be set.
@@ -350,9 +350,9 @@ function(add_flamegpu_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
                 # mark_as_advanced(FORCE DEVIL_DIR)
                 # find_package(DEVIL REQUIRED NO_MODULE)
             # endif()
-            add_custom_command(TARGET "${PROJECT_NAME}" POST_BUILD        # Adds a post-build event to MyTest
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different             # which executes "cmake - E copy_if_different..."
-                    ${IL_RUNTIME_LIBRARIES}                               # <--this is in-file
+            add_custom_command(TARGET "${NAME}" POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    ${IL_RUNTIME_LIBRARIES}
                     $<TARGET_FILE_DIR:${NAME}>)
         endif()
         # @todo - this could be inherrited instead? 
