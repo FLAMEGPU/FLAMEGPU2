@@ -411,6 +411,10 @@ DERIVED_FLAMEGPUException(InvalidDependencyGraph, "Agent function dependency gra
  * This should not occur if the shared ID matches ID_NOT_SET
  */
 DERIVED_FLAMEGPUException(AgentIDCollision, "Multiple agents of same type share an ID");
+/**
+ * Defines an error when runs fail during an ensemble's execution
+ */
+DERIVED_FLAMEGPUException(EnsembleError, "One of more runs failed during the ensemble's execution");
 
 }  // namespace exception
 }  // namespace flamegpu

@@ -38,7 +38,7 @@ class LoggingConfig {
     /**
      * Requires access to log_timing
      */
-    friend void CUDAEnsemble::simulate(const RunPlanVector& plans);
+    friend unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans);
 
  public:
     /**

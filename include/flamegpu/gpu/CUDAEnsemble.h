@@ -25,34 +25,47 @@ class CUDAEnsemble {
      * Execution config for running a CUDAEnsemble
      */
     struct EnsembleConfig {
-        // std::string in = "";
         /**
          * Directory to store output data (primarily logs)
+         * Defaults to "" (the working directory, no subdirectory)
          */
         std::string out_directory = "";
         /**
          * Output format
          * This must be a supported format e.g.: "json" or "xml"
+         * Defaults to "json"
          */
         std::string out_format = "json";
         /**
          * The maximum number of concurrent runs
+         * Defaults to 4
          */
         unsigned int concurrent_runs = 4;
         /**
          * The CUDA device ids of devices to be used
          * If this is left empty, all available devices will be used
+         * Defaults to empty set (all available devices)
          */
         std::set<int> devices;
         /**
          * If true progress logging to stdout will be suppressed
+         * Defaults to false
          */
         bool quiet = false;
         /**
          * If true, the total runtime for the ensemble will be printed to stdout at completion
          * This is independent of the EnsembleConfig::quiet
+         * Defaults to false
          */
         bool timing = false;
+        enum ErrorLevel { Off = 0, Slow = 1, Fast = 2 };
+        /**
+         * Off: Runs which fail do not cause an exception to be raised. Failed runs must be probed manually via checking the return value of calls to CUDAEnsemble::simulate()
+         * Slow: If any runs fail, an EnsembleException will be raised after all runs have been attempted, before CUDAEnsemble::simulate() returns.
+         * Fast: An EnsembleException will be raised as soon as a failed run is detected, cancelling remaining runs.
+         * Defaults to Slow
+         */
+        ErrorLevel error_level = Slow;
     };
     /**
      * Initialise CUDA Ensemble
@@ -70,10 +83,12 @@ class CUDAEnsemble {
 
     /**
      * Execute the ensemble of simulations.
-     * This call will block until all simulations have completed or MAX_ERRORS simulations exit with an error
+     * This call will normally block until all simulations have completed, however may exit early if an error occurs with the error_level configuration set to Fast 
      * @param plan The plan of individual runs to execute during the ensemble
+     * @return 0 on success, otherwise the number of runs which reported errors and failed
+     * @see CUDAEnsemble::EnsembleConfig::error_level
      */
-    void simulate(const RunPlanVector &plan);
+    unsigned int simulate(const RunPlanVector &plan);
 
     /**
      * @return A mutable reference to the ensemble configuration struct
