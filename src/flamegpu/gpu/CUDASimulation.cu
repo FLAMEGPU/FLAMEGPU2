@@ -175,6 +175,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
     // Submodels all run quiet/not verbose by default
     SimulationConfig().verbose = false;
     SimulationConfig().steps = submodel_desc->max_steps;
+    CUDAConfig().is_ensemble = true;
 
     // Determine which agents will be spatially sorted
     this->determineAgentsToSort();
@@ -615,6 +616,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
 
     // If the layer contains a sub model, it can only execute the sub model.
     if (layer->sub_model) {
+        this->synchronizeAllStreams();
         auto &sm = submodel_map.at(layer->sub_model->name);
         sm->resetStepCounter();
         sm->simulate();
@@ -1740,7 +1742,9 @@ void CUDASimulation::initialiseRTC() {
 }
 
 void CUDASimulation::resetDerivedConfig() {
+    bool is_ensemble = getCUDAConfig().is_ensemble;
     this->config = CUDASimulation::Config();
+    CUDAConfig().is_ensemble = is_ensemble;
     resetStepCounter();
 }
 
@@ -2074,7 +2078,7 @@ void CUDASimulation::destroyStreams() {
 }
 
 void CUDASimulation::synchronizeAllStreams() {
-    // Destroy streams.
+    // Sync streams.
     for (auto stream : streams) {
         gpuErrchk(cudaStreamSynchronize(stream));
     }
