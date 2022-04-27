@@ -37,8 +37,8 @@ namespace {
     // file-scope only variable used to cache the driver mode
     bool deviceUsingWDDM = false;
     // Inlined method in the anonymous namespace to create a new timer, subject to the driver model.
-    std::unique_ptr<util::detail::Timer> getDriverAppropriateTimer() {
-        if (!deviceUsingWDDM) {
+    std::unique_ptr<util::detail::Timer> getDriverAppropriateTimer(bool is_ensemble) {
+        if (!deviceUsingWDDM && !is_ensemble) {
             return std::unique_ptr<util::detail::Timer>(new util::detail::CUDAEventTimer());
         } else {
             return std::unique_ptr<util::detail::Timer>(new util::detail::SteadyClockTimer());
@@ -223,12 +223,8 @@ CUDASimulation::~CUDASimulation() {
     if (deviceInitialised >= 0 && AUTO_CUDA_DEVICE_RESET) {
         std::shared_lock<std::shared_timed_mutex> maps_lock(active_device_maps_mutex);
         std::unique_lock<std::shared_timed_mutex> lock(active_device_mutex.at(deviceInitialised));
-        if (!--active_device_instances.at(deviceInitialised)) {
-            // Small chance that time between the atomic and body of this fn will cause a problem
-            // Could mutex it with init simulation cuda stuff, but really seems unlikely
-            gpuErrchk(cudaDeviceReset());
-            EnvironmentManager::getInstance().purge();
-            detail::curve::Curve::getInstance().purge(nullptr);  // Default stream, device should be free at this point
+        if (!--active_device_instances.at(deviceInitialised) && !getCUDAConfig().is_ensemble) {
+            purgeSingletons();
         }
     }
 
@@ -236,6 +232,17 @@ CUDASimulation::~CUDASimulation() {
         gpuErrchk(cudaSetDevice(t_device_id));
     }
     --active_instances;
+}
+void CUDASimulation::purgeSingletons() {
+    int device = -1;
+    gpuErrchk(cudaGetDevice(&device));
+    if (!active_device_instances.at(device)) {
+        // Small chance that time between the atomic and body of this fn will cause a problem
+        // Could mutex it with init simulation cuda stuff, but really seems unlikely
+        gpuErrchk(cudaDeviceReset());
+        EnvironmentManager::getInstance().purge();
+        detail::curve::Curve::getInstance().purge(nullptr);  // Default stream, device should be free at this point
+    }
 }
 
 
@@ -547,7 +554,7 @@ bool CUDASimulation::step() {
     initialiseSingletons();
 
     // Time the individual step, using a CUDAEventTimer if possible, else a steadyClockTimer.
-    std::unique_ptr<util::detail::Timer> stepTimer = getDriverAppropriateTimer();
+    std::unique_ptr<util::detail::Timer> stepTimer = getDriverAppropriateTimer(getCUDAConfig().is_ensemble);
     stepTimer->start();
 
     // Init any unset agent IDs
@@ -1250,7 +1257,7 @@ void CUDASimulation::simulate() {
     initialiseSingletons();
 
     // Create the event timing object, using an appropriate timer implementation.
-    std::unique_ptr<util::detail::Timer> simulationTimer = getDriverAppropriateTimer();
+    std::unique_ptr<util::detail::Timer> simulationTimer = getDriverAppropriateTimer(getCUDAConfig().is_ensemble);
     simulationTimer->start();
 
     // Create as many streams as required

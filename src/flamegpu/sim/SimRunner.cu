@@ -81,6 +81,7 @@ void SimRunner::start() {
             simulation->SimulationConfig().verbose = false;
             simulation->SimulationConfig().timing = false;
             simulation->CUDAConfig().device_id = this->device_id;
+            simulation->CUDAConfig().is_ensemble = true;
             simulation->applyConfig();
             // Set the step config directly, to bypass validation
             simulation->step_log_config = step_log_config;
