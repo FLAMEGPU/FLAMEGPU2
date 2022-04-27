@@ -8,6 +8,7 @@
 #include <condition_variable>
 #include <thread>
 #include <vector>
+#include <string>
 #include "flamegpu/sim/LogFrame.h"
 
 namespace flamegpu {
@@ -25,6 +26,12 @@ class RunPlanVector;
  */
 class SimRunner {
     friend class CUDAEnsemble;
+    struct ErrorDetail {
+        unsigned int run_id;
+        unsigned int device_id;
+        unsigned int runner_id;
+        std::string exception_string;
+    };
     /**
      * Constructor, creates and initialise a new SimRunner
      * @param _model A copy of the ModelDescription hierarchy for the RunPlanVector, this is used to create the CUDASimulation instances.
@@ -36,10 +43,12 @@ class SimRunner {
      * @param _device_id The GPU that all runs should execute on
      * @param _runner_id A unique index assigned to the runner
      * @param _verbose If true more information will be written to stdout
+     * @param _fail_fast If true, the SimRunner will kill other runners and throw an exception on error
      * @param run_logs Reference to the vector to store generate run logs
      * @param log_export_queue The queue of logs to exported to disk
      * @param log_export_queue_mutex This mutex must be locked to access log_export_queue
      * @param log_export_queue_cdn The condition is notified every time a log has been added to the queue
+     * @param fast_err_detail Structure to store error details on fast failure for main thread rethrow
      */
     SimRunner(const std::shared_ptr<const ModelData> _model,
         std::atomic<unsigned int> &_err_ct,
@@ -50,10 +59,12 @@ class SimRunner {
         int _device_id,
         unsigned int _runner_id,
         bool _verbose,
+        bool _fail_fast,
         std::vector<RunLog> &run_logs,
         std::queue<unsigned int> &log_export_queue,
         std::mutex &log_export_queue_mutex,
-        std::condition_variable &log_export_queue_cdn);
+        std::condition_variable &log_export_queue_cdn,
+        ErrorDetail &fast_err_detail);
     /**
      * Each sim runner takes it's own clone of model description hierarchy, so it can manipulate environment without conflict
      */
@@ -74,6 +85,10 @@ class SimRunner {
      * Flag for whether to print progress
      */
     const bool verbose;
+    /**
+     * Flag for whether the ensemble should throw an exception if it errors out
+     */
+    const bool fail_fast;
     /**
      * The thread which the SimRunner executes on
      */
@@ -119,6 +134,10 @@ class SimRunner {
      * The condition is notified every time a log has been added to the queue
      */
     std::condition_variable &log_export_queue_cdn;
+    /**
+     * If fail_fast is true, on error details will be stored here so an exception can be thrown from the main thread
+     */
+    ErrorDetail& fast_err_detail;
 };
 
 }  // namespace flamegpu

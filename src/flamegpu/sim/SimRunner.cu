@@ -23,15 +23,18 @@ SimRunner::SimRunner(const std::shared_ptr<const ModelData> _model,
     int _device_id,
     unsigned int _runner_id,
     bool _verbose,
+    bool _fail_fast,
     std::vector<RunLog> &_run_logs,
     std::queue<unsigned int> &_log_export_queue,
     std::mutex &_log_export_queue_mutex,
-    std::condition_variable &_log_export_queue_cdn)
+    std::condition_variable &_log_export_queue_cdn,
+    ErrorDetail &_fast_err_detail)
       : model(_model->clone())
       , run_id(0)
       , device_id(_device_id)
       , runner_id(_runner_id)
       , verbose(_verbose)
+      , fail_fast(_fail_fast)
       , err_ct(_err_ct)
       , next_run(_next_run)
       , plans(_plans)
@@ -40,7 +43,8 @@ SimRunner::SimRunner(const std::shared_ptr<const ModelData> _model,
       , run_logs(_run_logs)
       , log_export_queue(_log_export_queue)
       , log_export_queue_mutex(_log_export_queue_mutex)
-      ,  log_export_queue_cdn(_log_export_queue_cdn) {
+      , log_export_queue_cdn(_log_export_queue_cdn)
+      , fast_err_detail(_fast_err_detail) {
     this->thread = std::thread(&SimRunner::start, this);
     // Attempt to name the thread
 #ifdef _MSC_VER
@@ -103,7 +107,27 @@ void SimRunner::start() {
                 fflush(stdout);
             }
         } catch(std::exception &e) {
-            fprintf(stderr, "\nRun %u failed on device %d, thread %u with exception: \n%s\n", run_id, device_id, runner_id, e.what());
+            ++err_ct;
+            if (this->fail_fast) {
+                // Kill the other workers early
+                next_run += static_cast<unsigned int>(plans.size());
+                {
+                    std::lock_guard<std::mutex> lck(log_export_queue_mutex);
+                    log_export_queue.push(UINT_MAX);
+                    // log_export_mutex is treated as our protection for race conditions on fast_err_detail
+                    fast_err_detail.run_id = run_id;
+                    fast_err_detail.device_id = device_id;
+                    fast_err_detail.runner_id = runner_id;
+                    fast_err_detail.exception_string = e.what();
+                }
+                return;
+            } else {
+                if (verbose) {
+                    fprintf(stdout, "\n");
+                    fflush(stdout);
+                }
+                fprintf(stderr, "Run %u failed on device %d, thread %u with exception: \n%s\n", run_id, device_id, runner_id, e.what());
+            }
         }
     }
 }

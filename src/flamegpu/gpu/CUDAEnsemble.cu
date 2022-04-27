@@ -35,7 +35,7 @@ CUDAEnsemble::~CUDAEnsemble() {
 
 
 
-void CUDAEnsemble::simulate(const RunPlanVector &plans) {
+unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
     // Validate that RunPlan model matches CUDAEnsemble model
     if (*plans.environment != this->model->environment->properties) {
         THROW exception::InvalidArgument("RunPlan is for a different ModelDescription, in CUDAEnsemble::simulate()");
@@ -111,6 +111,7 @@ void CUDAEnsemble::simulate(const RunPlanVector &plans) {
     std::queue<unsigned int> log_export_queue;
     std::mutex log_export_queue_mutex;
     std::condition_variable log_export_queue_cdn;
+    SimRunner::ErrorDetail fast_err_detail = {};
 
     // Init with placement new
     {
@@ -121,7 +122,11 @@ void CUDAEnsemble::simulate(const RunPlanVector &plans) {
         unsigned int i = 0;
         for (auto &d : devices) {
             for (unsigned int j = 0; j < config.concurrent_runs; ++j) {
-                new (&runners[i++]) SimRunner(model, err_ct, next_run, plans, step_log_config, exit_log_config, d, j, !config.quiet, run_logs, log_export_queue, log_export_queue_mutex, log_export_queue_cdn);
+                new (&runners[i++]) SimRunner(model, err_ct, next_run, plans,
+                    step_log_config, exit_log_config,
+                    d, j,
+                    !config.quiet, config.error_level == EnsembleConfig::Fast,
+                    run_logs, log_export_queue, log_export_queue_mutex, log_export_queue_cdn, fast_err_detail);
             }
         }
     }
@@ -174,6 +179,15 @@ void CUDAEnsemble::simulate(const RunPlanVector &plans) {
 
     // Free memory
     free(runners);
+
+    if (config.error_level == EnsembleConfig::Fast && err_ct.load()) {
+        THROW exception::EnsembleError("Run %u failed on device %d, thread %u with exception: \n%s\n",
+            fast_err_detail.run_id, fast_err_detail.device_id, fast_err_detail.runner_id, fast_err_detail.exception_string.c_str());
+    } else if (config.error_level == EnsembleConfig::Slow && err_ct.load()) {
+        THROW exception::EnsembleError("%u/%u runs failed!\n.", err_ct.load(), static_cast<unsigned int>(plans.size()));
+    }
+
+    return err_ct.load();
 }
 
 void CUDAEnsemble::initialise(int argc, const char** argv) {
@@ -273,6 +287,27 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
             config.timing = true;
             continue;
         }
+        // -e/--error, Specify the error level
+        if (arg.compare("--error") == 0 || arg.compare("-e") == 0) {
+            if (i + 1 >= argc) {
+                fprintf(stderr, "%s requires a trailing argument\n", arg.c_str());
+                return false;
+            }
+            std::string error_level_string = argv[++i];
+            // Shift the trailing arg to lower
+            std::transform(error_level_string.begin(), error_level_string.end(), error_level_string.begin(), [](unsigned char c) { return std::use_facet< std::ctype<char>>(std::locale()).tolower(c); });
+            if (error_level_string.compare("off") == 0 || error_level_string.compare(std::to_string(EnsembleConfig::Off)) == 0) {
+                config.error_level = EnsembleConfig::Off;
+            } else if (error_level_string.compare("slow") == 0 || error_level_string.compare(std::to_string(EnsembleConfig::Slow)) == 0) {
+                config.error_level = EnsembleConfig::Slow;
+            } else if (error_level_string.compare("fast") == 0 || error_level_string.compare(std::to_string(EnsembleConfig::Fast)) == 0) {
+                config.error_level = EnsembleConfig::Fast;
+            } else {
+                fprintf(stderr, "%s is not an appropriate argument for %s\n", error_level_string.c_str(), arg.c_str());
+                return false;
+            }
+            continue;
+        }
         fprintf(stderr, "Unexpected argument: %s\n", arg.c_str());
         printHelp(argv[0]);
         return false;
@@ -292,6 +327,8 @@ void CUDAEnsemble::printHelp(const char *executable) {
     printf(line_fmt, "-o, --out <directory> <filetype>", "Directory and filetype for ensemble outputs");
     printf(line_fmt, "-q, --quiet", "Don't print progress information to console");
     printf(line_fmt, "-t, --timing", "Output timing information to stdout");
+    printf(line_fmt, "-e, --error <error level>", "The error level 0, 1, 2, off, slow or fast");
+    printf(line_fmt, "", "By default, \"slow\" will be used.");
 }
 void CUDAEnsemble::setStepLog(const StepLoggingConfig &stepConfig) {
     // Validate ModelDescription matches

@@ -132,6 +132,44 @@ TEST(TestCUDAEnsemble, initialise_timing) {
     ensemble.initialise(sizeof(argv) / sizeof(char*), argv);
     EXPECT_EQ(ensemble.getConfig().timing, true);
 }
+TEST(TestCUDAEnsemble, initialise_error_level) {
+    // Create a model
+    flamegpu::ModelDescription model("test");
+    // Create an ensemble
+    flamegpu::CUDAEnsemble ensemble(model);
+    // Call initialise with different cli arguments, which will mutate values. Check they have the new value.
+    EXPECT_EQ(ensemble.getConfig().error_level, CUDAEnsemble::EnsembleConfig::Slow);
+    {
+        const char* argv[3] = { "prog.exe", "-e", "0" };
+        ensemble.initialise(sizeof(argv) / sizeof(char*), argv);
+        EXPECT_EQ(ensemble.getConfig().error_level, CUDAEnsemble::EnsembleConfig::Off);
+    }
+    {
+        const char* argv[3] = { "prog.exe", "--error", "1" };
+        ensemble.initialise(sizeof(argv) / sizeof(char*), argv);
+        EXPECT_EQ(ensemble.getConfig().error_level, CUDAEnsemble::EnsembleConfig::Slow);
+    }
+    {
+        const char* argv[3] = { "prog.exe", "-e", "2" };
+        ensemble.initialise(sizeof(argv) / sizeof(char*), argv);
+        EXPECT_EQ(ensemble.getConfig().error_level, CUDAEnsemble::EnsembleConfig::Fast);
+    }
+    {
+        const char* argv[3] = { "prog.exe", "--error", "Off" };
+        ensemble.initialise(sizeof(argv) / sizeof(char*), argv);
+        EXPECT_EQ(ensemble.getConfig().error_level, CUDAEnsemble::EnsembleConfig::Off);
+    }
+    {
+        const char* argv[3] = { "prog.exe", "-e", "SLOW" };
+        ensemble.initialise(sizeof(argv) / sizeof(char*), argv);
+        EXPECT_EQ(ensemble.getConfig().error_level, CUDAEnsemble::EnsembleConfig::Slow);
+    }
+    {
+        const char* argv[3] = { "prog.exe", "--error", "fast" };
+        ensemble.initialise(sizeof(argv) / sizeof(char*), argv);
+        EXPECT_EQ(ensemble.getConfig().error_level, CUDAEnsemble::EnsembleConfig::Fast);
+    }
+}
 // Agent function used to check the ensemble runs.
 FLAMEGPU_AGENT_FUNCTION(simulateAgentFn, flamegpu::MessageNone, flamegpu::MessageNone) {
     // Increment agent's counter by 1.
@@ -348,6 +386,112 @@ TEST(TestCUDAEnsemble, getEnsembleElapsedTime) {
     // Ensure the elapsed time is larger than a threshold.
     double threshold = sleepDurationSeconds * 0.8;
     EXPECT_GE(elapsedSeconds, threshold);
+}
+unsigned int tracked_err_ct;
+unsigned int tracked_runs_ct;
+FLAMEGPU_STEP_FUNCTION(throwException) {
+    ++tracked_runs_ct;
+    static int i = 0;
+    if (++i % 2 == 0) {
+        ++tracked_err_ct;
+        THROW exception::UnknownInternalError("Dummy Exception");
+    }
+}
+TEST(TestCUDAEnsemble, ErrorOff) {
+    tracked_err_ct = 0;
+    tracked_runs_ct = 0;
+    // Create a model containing atleast one agent type and function.
+    flamegpu::ModelDescription model("test");
+    // Environmental constant for initial population
+    model.Environment().newProperty<uint32_t>("POPULATION_TO_GENERATE", 1, true);
+    // Agent(s)
+    flamegpu::AgentDescription& agent = model.newAgent("Agent");
+    agent.newVariable<uint32_t>("counter", 0);
+    // Control flow
+    model.addInitFunction(elapsedInit);
+    model.addStepFunction(throwException);
+    // Create a set of 10 Run plans
+    const unsigned int ENSEMBLE_COUNT = 10;
+    auto plans = flamegpu::RunPlanVector(model, ENSEMBLE_COUNT);
+    plans.setSteps(1);
+    // Create an ensemble
+    flamegpu::CUDAEnsemble ensemble(model);
+    // Make it quiet to avoid outputting during the test suite
+    ensemble.Config().quiet = true;
+    ensemble.Config().out_format = "";  // Suppress warning
+    ensemble.Config().error_level = CUDAEnsemble::EnsembleConfig::Off;
+    ensemble.Config().concurrent_runs = 1;  // Single device/no concurrency to ensure we get consistent data
+    ensemble.Config().devices = {0};
+    unsigned int reported_err_ct = 0;
+    // Simulate the ensemble,
+    EXPECT_NO_THROW(reported_err_ct = ensemble.simulate(plans));
+    // Check correct number of fails is reported
+    EXPECT_EQ(reported_err_ct, ENSEMBLE_COUNT / 2);
+    EXPECT_EQ(tracked_err_ct, ENSEMBLE_COUNT / 2);
+    EXPECT_EQ(tracked_runs_ct, ENSEMBLE_COUNT);
+}
+TEST(TestCUDAEnsemble, ErrorSlow) {
+    tracked_err_ct = 0;
+    tracked_runs_ct = 0;
+    // Create a model containing atleast one agent type and function.
+    flamegpu::ModelDescription model("test");
+    // Environmental constant for initial population
+    model.Environment().newProperty<uint32_t>("POPULATION_TO_GENERATE", 1, true);
+    // Agent(s)
+    flamegpu::AgentDescription& agent = model.newAgent("Agent");
+    agent.newVariable<uint32_t>("counter", 0);
+    // Control flow
+    model.addInitFunction(elapsedInit);
+    model.addStepFunction(throwException);
+    // Create a set of 10 Run plans
+    const unsigned int ENSEMBLE_COUNT = 10;
+    auto plans = flamegpu::RunPlanVector(model, ENSEMBLE_COUNT);
+    plans.setSteps(1);
+    // Create an ensemble
+    flamegpu::CUDAEnsemble ensemble(model);
+    // Make it quiet to avoid outputting during the test suite
+    ensemble.Config().quiet = true;
+    ensemble.Config().out_format = "";  // Suppress warning
+    ensemble.Config().error_level = CUDAEnsemble::EnsembleConfig::Slow;
+    ensemble.Config().concurrent_runs = 1;  // Single device/no concurrency to ensure we get consistent data
+    ensemble.Config().devices = { 0 };
+    // Simulate the ensemble,
+    EXPECT_THROW(ensemble.simulate(plans), exception::EnsembleError);
+    // Check correct number of fails occurred (Unable to retrieve actual error count except from stderr with SLOW)
+    EXPECT_EQ(tracked_err_ct, ENSEMBLE_COUNT / 2);
+    EXPECT_EQ(tracked_runs_ct, ENSEMBLE_COUNT);
+}
+TEST(TestCUDAEnsemble, ErrorFast) {
+    tracked_err_ct = 0;
+    tracked_runs_ct = 0;
+    // Create a model containing atleast one agent type and function.
+    flamegpu::ModelDescription model("test");
+    // Environmental constant for initial population
+    model.Environment().newProperty<uint32_t>("POPULATION_TO_GENERATE", 1, true);
+    // Agent(s)
+    flamegpu::AgentDescription& agent = model.newAgent("Agent");
+    agent.newVariable<uint32_t>("counter", 0);
+    // Control flow
+    model.addInitFunction(elapsedInit);
+    model.addStepFunction(throwException);
+    // Create a set of 10 Run plans
+    const unsigned int ENSEMBLE_COUNT = 10;
+    auto plans = flamegpu::RunPlanVector(model, ENSEMBLE_COUNT);
+    plans.setSteps(1);
+    // Create an ensemble
+    flamegpu::CUDAEnsemble ensemble(model);
+    // Make it quiet to avoid outputting during the test suite
+    ensemble.Config().quiet = true;
+    ensemble.Config().out_format = "";  // Suppress warning
+    ensemble.Config().error_level = CUDAEnsemble::EnsembleConfig::Fast;
+    ensemble.Config().concurrent_runs = 1;  // Single device/no concurrency to ensure we get consistent data
+    ensemble.Config().devices = { 0 };
+    // Simulate the ensemble,
+    EXPECT_THROW(ensemble.simulate(plans), exception::EnsembleError);
+    // Check correct number of fails occurred (Fast kills ensemble as soon as first error occurs)
+    EXPECT_EQ(tracked_err_ct, 1u);
+    // The first run does not throw
+    EXPECT_EQ(tracked_runs_ct, 2u);
 }
 
 }  // namespace test_cuda_ensemble
