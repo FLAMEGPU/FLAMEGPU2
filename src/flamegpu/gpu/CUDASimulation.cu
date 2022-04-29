@@ -784,8 +784,8 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 }
 
                 totalThreads += state_list_size;
-                ++streamIdx;
             }
+            ++streamIdx;
         }
 
         // Ensure that each condition function has finished before unlocking the environment
@@ -824,9 +824,9 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
 #endif
             // Process agent function condition
             cuda_agent.processFunctionCondition(*func_des, this->singletons->scatter, streamIdx, this->getStream(streamIdx));
-            // Increment the stream tracker.
-            ++streamIdx;
         }
+        // Increment the stream tracker.
+        ++streamIdx;
     }
 
     bool has_rtc_func = false;
