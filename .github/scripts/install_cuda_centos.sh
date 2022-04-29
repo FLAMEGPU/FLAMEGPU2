@@ -104,7 +104,8 @@ echo "CUDA_PACKAGES ${CUDA_PACKAGES}"
 ## Prepare to install
 ## -----------------
 
-YUM_REPO_URI="https://developer.download.nvidia.com/compute/cuda/repos/rhel${CENTOS_MAJOR}/x86_64/cuda-rhel${CENTOS_MAJOR}.repo"
+CPU_ARCH="x86_64"
+YUM_REPO_URI="https://developer.download.nvidia.com/compute/cuda/repos/rhel${CENTOS_MAJOR}/${CPU_ARCH}/cuda-rhel${CENTOS_MAJOR}.repo"
 
 echo "YUM_REPO_URI ${YUM_REPO_URI}"
 

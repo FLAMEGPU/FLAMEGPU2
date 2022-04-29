@@ -116,14 +116,17 @@ echo "CUDA_PACKAGES ${CUDA_PACKAGES}"
 ## -----------------
 ## Prepare to install
 ## -----------------
-
+CPU_ARCH="x86_64"
 PIN_FILENAME="cuda-ubuntu${UBUNTU_VERSION}.pin"
-PIN_URL="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu${UBUNTU_VERSION}/x86_64/${PIN_FILENAME}"
-APT_KEY_URL="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu${UBUNTU_VERSION}/x86_64/7fa2af80.pub"
-REPO_URL="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu${UBUNTU_VERSION}/x86_64/"
+PIN_URL="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu${UBUNTU_VERSION}/${CPU_ARCH}/${PIN_FILENAME}"
+# apt keyring package now available https://developer.nvidia.com/blog/updating-the-cuda-linux-gpg-repository-key/
+KERYRING_PACKAGE_FILENAME="cuda-keyring_1.0-1_all.deb"
+KEYRING_PACKAGE_URL="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu${UBUNTU_VERSION}/${CPU_ARCH}/${KERYRING_PACKAGE_FILENAME}"
+REPO_URL="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu${UBUNTU_VERSION}/${CPU_ARCH}/"
 
 echo "PIN_FILENAME ${PIN_FILENAME}"
 echo "PIN_URL ${PIN_URL}"
+echo "KEYRING_PACKAGE_URL ${KEYRING_PACKAGE_URL}"
 echo "APT_KEY_URL ${APT_KEY_URL}"
 
 ## -----------------
@@ -156,7 +159,7 @@ fi
 echo "Adding CUDA Repository"
 wget ${PIN_URL}
 $USE_SUDO mv ${PIN_FILENAME} /etc/apt/preferences.d/cuda-repository-pin-600
-$USE_SUDO apt-key adv --fetch-keys ${APT_KEY_URL}
+wget ${KEYRING_PACKAGE_URL} && ${USE_SUDO} dpkg -i ${KERYRING_PACKAGE_FILENAME} && rm ${KERYRING_PACKAGE_FILENAME}
 $USE_SUDO add-apt-repository "deb ${REPO_URL} /"
 $USE_SUDO apt-get update
 
