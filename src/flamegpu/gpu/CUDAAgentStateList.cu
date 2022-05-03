@@ -53,8 +53,8 @@ CUDAAgentStateList::CUDAAgentStateList(
         }
     }
 }
-void CUDAAgentStateList::resize(const unsigned int &minimumSize, const bool &retainData) {
-    parent_list->resize(minimumSize, retainData);
+void CUDAAgentStateList::resize(const unsigned int minimumSize, const bool retainData, const cudaStream_t stream) {
+    parent_list->resize(minimumSize, retainData, stream);
 }
 unsigned int CUDAAgentStateList::getSize() const {
     return parent_list->getSize();
@@ -77,7 +77,7 @@ void *CUDAAgentStateList::getVariablePointer(const std::string &variable_name) {
 
     return var->second->data_condition;
 }
-void CUDAAgentStateList::setAgentData(const AgentVector& population, CUDAScatter& scatter, const unsigned int& streamId, const cudaStream_t& stream) {
+void CUDAAgentStateList::setAgentData(const AgentVector& population, CUDAScatter& scatter, const unsigned int streamId, const cudaStream_t stream) {
     // Validate AgentData matches
     if (!population.matchesAgentType(agent.getAgentDescription())) {
         THROW exception::InvalidCudaAgentDesc("Agent description for agent '%s' does not match that of AgentVector, "
@@ -88,7 +88,7 @@ void CUDAAgentStateList::setAgentData(const AgentVector& population, CUDAScatter
     // This will return if list already correct size
     const unsigned int data_count = population.size();
     if (data_count) {
-        parent_list->resize(data_count, false);  // FALSE=Do not retain existing data
+        parent_list->resize(data_count, false, stream);  // FALSE=Do not retain existing data
         // Initialise any buffers in the fat_agent which aren't part of the agent description
         std::set<std::shared_ptr<VariableBuffer>> exclusionSet;
         for (auto& a : variables)
@@ -139,9 +139,9 @@ void CUDAAgentStateList::getAgentData(AgentVector& population) const {
     }
     population._size = data_count;  // Private AgentVector::resize() does not update size
 }
-void CUDAAgentStateList::scatterHostCreation(const unsigned int& newSize, char* const d_inBuff, const VarOffsetStruct & offsets, CUDAScatter & scatter, const unsigned int& streamId, const cudaStream_t & stream) {
+void CUDAAgentStateList::scatterHostCreation(unsigned int newSize, char* const d_inBuff, const VarOffsetStruct & offsets, CUDAScatter & scatter, const unsigned int streamId, const cudaStream_t stream) {
     // Resize agent list if required
-    parent_list->resize(parent_list->getSizeWithDisabled() + newSize, true);
+    parent_list->resize(parent_list->getSizeWithDisabled() + newSize, true, stream);
     // Build scatter data
     std::vector<CUDAScatter::ScatterData> sd;
     for (const auto &v : variables) {
@@ -170,7 +170,7 @@ void CUDAAgentStateList::scatterHostCreation(const unsigned int& newSize, char* 
 void CUDAAgentStateList::scatterSort_async(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
     parent_list->scatterSort_async(scatter, streamId, stream);
 }
-unsigned int CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int &newSize, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
+unsigned int CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int newSize, CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t stream) {
     if (newSize) {
         CUDAScanCompactionConfig &scanCfg = scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_OUTPUT, streamId);
         // Perform scan
@@ -200,7 +200,7 @@ unsigned int CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int
         gpuErrchk(cudaStreamSynchronize(stream));
         // Resize if necessary
         // @todo? this could be improved by checking scan result for the actual size, rather than max size)
-        resize(parent_list->getSizeWithDisabled() + newSize, true);
+        resize(parent_list->getSizeWithDisabled() + newSize, true, stream);
         // Build scatter data
         char * d_var = static_cast<char*>(d_newBuff);
 

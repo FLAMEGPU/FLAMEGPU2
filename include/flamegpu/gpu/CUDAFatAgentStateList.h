@@ -173,8 +173,9 @@ class CUDAFatAgentStateList {
      * Resize all variable buffers
      * @param minSize The minimum number of agents that must be representable
      * @param retainData If true existing buffer data is retained
+     * @param stream The stream to be used if data requires copying
      */
-    void resize(const unsigned int &minSize, const bool &retainData);
+    void resize(unsigned int minSize, bool retainData, cudaStream_t stream);
     /**
      * Returns the number of alive and active agents in the state list
      */
