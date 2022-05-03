@@ -512,6 +512,9 @@ void HostAgentAPI::sum_async(const std::string &variable, OutT &result, cudaStre
     static_assert(sizeof(InT) <= sizeof(OutT), "Template arg OutT should not be of a smaller size than InT");
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
+        if (this->api.stream != stream) {
+            THROW exception::InvalidOperation("Attempting to sync DeviceAgentVector with wrong stream!\nThis should not be possible.\n");
+        }
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
     }
@@ -553,6 +556,9 @@ template<typename InT>
 void HostAgentAPI::meanStandardDeviation_async(const std::string& variable, std::pair<double, double> &result, cudaStream_t stream) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
+        if (this->api.stream != stream) {
+            THROW exception::InvalidOperation("Attempting to sync DeviceAgentVector with wrong stream!\nThis should not be possible.\n");
+        }
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
     }
@@ -596,6 +602,9 @@ template<typename InT>
 void HostAgentAPI::min_async(const std::string &variable, InT& result, cudaStream_t stream) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
+        if (this->api.stream != stream) {
+            THROW exception::InvalidOperation("Attempting to sync DeviceAgentVector with wrong stream!\nThis should not be possible.\n");
+        }
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
     }
@@ -637,6 +646,9 @@ template<typename InT>
 void HostAgentAPI::max_async(const std::string &variable, InT &result, cudaStream_t stream) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
+        if (this->api.stream != stream) {
+            THROW exception::InvalidOperation("Attempting to sync DeviceAgentVector with wrong stream!\nThis should not be possible.\n");
+        }
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
     }
@@ -675,6 +687,9 @@ template<typename InT>
 unsigned int HostAgentAPI::count_async(const std::string& variable, InT value, cudaStream_t stream) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
+        if (this->api.stream != stream) {
+            THROW exception::InvalidOperation("Attempting to sync DeviceAgentVector with wrong stream!\nThis should not be possible.\n");
+        }
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
     }
@@ -713,6 +728,9 @@ template<typename InT, typename OutT>
 void HostAgentAPI::histogramEven_async(const std::string &variable, unsigned int histogramBins, InT lowerBound, InT upperBound, std::vector<OutT>& result, cudaStream_t stream) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
+        if (this->api.stream != stream) {
+            THROW exception::InvalidOperation("Attempting to sync DeviceAgentVector with wrong stream!\nThis should not be possible.\n");
+        }
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
     }
@@ -761,6 +779,9 @@ template<typename InT, typename reductionOperatorT>
 void HostAgentAPI::reduce_async(const std::string & variable, reductionOperatorT /*reductionOperator*/, InT init, InT &result, cudaStream_t stream) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
+        if (this->api.stream != stream) {
+            THROW exception::InvalidOperation("Attempting to sync DeviceAgentVector with wrong stream!\nThis should not be possible.\n");
+        }
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
     }
@@ -801,6 +822,9 @@ template<typename InT, typename OutT, typename transformOperatorT, typename redu
 OutT HostAgentAPI::transformReduce_async(const std::string &variable, transformOperatorT /*transformOperator*/, reductionOperatorT /*reductionOperator*/, OutT init, cudaStream_t stream) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
+        if (this->api.stream != stream) {
+            THROW exception::InvalidOperation("Attempting to sync DeviceAgentVector with wrong stream!\nThis should not be possible.\n");
+        }
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
     }
@@ -832,6 +856,9 @@ template<typename VarT>
 void HostAgentAPI::sort_async(const std::string & variable, Order order, int beginBit, int endBit, cudaStream_t stream, unsigned int streamId) {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
+        if (this->api.stream != stream || this->api.streamId != streamId) {
+            THROW exception::InvalidOperation("Attempting to sync DeviceAgentVector with wrong stream!\nThis should not be possible.\n");
+        }
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
     }
@@ -899,6 +926,9 @@ template<typename Var1T, typename Var2T>
 void HostAgentAPI::sort_async(const std::string & variable1, Order order1, const std::string & variable2, Order order2, cudaStream_t stream, unsigned int streamId) {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
+        if (this->api.stream != stream || this->api.streamId != streamId) {
+            THROW exception::InvalidOperation("Attempting to sync DeviceAgentVector with wrong stream!\nThis should not be possible.\n");
+        }
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
     }
