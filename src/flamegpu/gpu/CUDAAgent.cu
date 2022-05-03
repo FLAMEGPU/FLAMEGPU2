@@ -304,7 +304,7 @@ unsigned int CUDAAgent::getStateAllocatedSize(const std::string &state) const {
     }
     return sm->second->getAllocatedSize();
 }
-void CUDAAgent::resizeState(const std::string& state, const unsigned int& minimumSize, const bool& retainData) {
+void CUDAAgent::resizeState(const std::string& state, const unsigned int minimumSize, const bool retainData, const cudaStream_t stream) {
     // check the cuda agent state map to find the correct state list
     const auto& sm = state_map.find(state);
 
@@ -313,7 +313,7 @@ void CUDAAgent::resizeState(const std::string& state, const unsigned int& minimu
             "in CUDAAgent::getStateAllocatedSize()",
             agent_description.name.c_str(), state.c_str());
     }
-    sm->second->resize(minimumSize, retainData);
+    sm->second->resize(minimumSize, retainData, stream);
 }
 
 void CUDAAgent::setStateAgentCount(const std::string& state, const unsigned int& newSize) {

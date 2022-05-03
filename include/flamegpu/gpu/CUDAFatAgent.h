@@ -105,7 +105,7 @@ class CUDAFatAgent {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void transitionState(const unsigned int &agent_fat_id, const std::string &_src, const std::string &_dest, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
+    void transitionState(unsigned int agent_fat_id, const std::string &_src, const std::string &_dest, CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Reads the flags set by an agent function condition in order to sort agents according to whether they passed or failed
      * Failed agents are sorted to the front and marked as disabled, passing agents are then sorted to the back

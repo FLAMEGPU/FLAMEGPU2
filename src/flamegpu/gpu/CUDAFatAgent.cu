@@ -128,7 +128,7 @@ void CUDAFatAgent::processDeath(const unsigned int &agent_fat_id, const std::str
     sm->second->scatterDeath(scatter, streamId, stream);
 }
 
-void CUDAFatAgent::transitionState(const unsigned int &agent_fat_id, const std::string &_src, const std::string &_dest, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
+void CUDAFatAgent::transitionState(unsigned int agent_fat_id, const std::string &_src, const std::string &_dest, CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
     // Optionally process state transition
     if (_src != _dest) {
         auto src = states.find({agent_fat_id, _src});
@@ -153,7 +153,7 @@ void CUDAFatAgent::transitionState(const unsigned int &agent_fat_id, const std::
         } else {
             // Otherwise we must perform a scatter all operation
             // Resize destination list
-            dest->second->resize(src->second->getSize() + dest->second->getSizeWithDisabled(), true);
+            dest->second->resize(src->second->getSize() + dest->second->getSizeWithDisabled(), true, stream);
             // Build scatter data
             // It's assumed that each CUDAFatAgentStatelist has it's unique variables list in the same order, so we can map across from 1 to other
             auto &src_v = src->second->getUniqueVariables();

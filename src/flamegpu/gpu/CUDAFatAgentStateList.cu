@@ -66,7 +66,7 @@ std::shared_ptr<VariableBuffer> CUDAFatAgentStateList::getVariableBuffer(const u
     const AgentVariable variable = {fat_index, name};
     return variables.at(variable);
 }
-void CUDAFatAgentStateList::resize(const unsigned int &minSize, const bool &retainData) {
+void CUDAFatAgentStateList::resize(const unsigned int minSize, const bool retainData, const cudaStream_t stream) {
     // If already big enough return
     if (minSize <= bufferLen)
         return;
@@ -88,13 +88,21 @@ void CUDAFatAgentStateList::resize(const unsigned int &minSize, const bool &reta
             const size_t active_len = aliveAgents * var_size;
             // const size_t inactive_len = (newSize - aliveAgents) * var_size;
             // Copy across old data (TODO: We could improve this by doing a scatter for all variables at once)
-            gpuErrchk(cudaMemcpy(buff->data_swap, buff->data, active_len, cudaMemcpyDeviceToDevice));
+            gpuErrchk(cudaMemcpyAsync(buff->data_swap, buff->data, active_len, cudaMemcpyDeviceToDevice, stream));
             // Zero remaining new data (This will be overwritten before use, so redundant)
-            // gpuErrchk(cudaMemset(reinterpret_cast<char*>(buff->data_swap) + active_len, 0, inactive_len));
+            // gpuErrchk(cudaMemsetAsync(reinterpret_cast<char*>(buff->data_swap) + active_len, 0, inactive_len, stream));
         } else {
             // Zero remaining new data (This will be overwritten before use, so redundant)
-            // gpuErrchk(cudaMemset(buff->data_swap, 0, buff_size));
+            // gpuErrchk(cudaMemsetAsync(buff->data_swap, 0, buff_size, stream));
         }
+    }
+    if (retainData) {
+        // Ensure copies have finished, before we free the buffers!
+        gpuErrchk(cudaStreamSynchronize(stream));
+    }
+    for (auto& buff : variables_unique) {
+        const size_t var_size = buff->type_size * buff->elements;
+        const size_t buff_size = var_size * newSize;
         // Swap buffers
         std::swap(buff->data_swap, buff->data);
         // Free old swap buffer

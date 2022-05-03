@@ -39,7 +39,7 @@ void DeviceAgentVector_impl::syncChanges() {
     if (_size > old_allocated_size) {
         const unsigned int old_size = cuda_agent.getStateSize(cuda_agent_state);
         // Resize the underlying variable buffers for this agent state and retain variable data
-        cuda_agent.resizeState(cuda_agent_state, _size, true);  // @todo Don't retain data for mapped buffers?
+        cuda_agent.resizeState(cuda_agent_state, _size, true, stream);  // @todo Don't retain data for mapped buffers?
         // Init agent data for any variables of newly created agents which are only present in a parent model
         const unsigned int new_allocated_size = cuda_agent.getStateAllocatedSize(cuda_agent_state);
         // This call does not use streams properly internally

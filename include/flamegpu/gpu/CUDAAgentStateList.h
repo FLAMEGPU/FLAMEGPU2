@@ -55,9 +55,10 @@ class CUDAAgentStateList {
      * Only initialises unmapped agent data
      * @param minimumSize The minimum number of agents that must be representable
      * @param retainData If true existing buffer data is retained
+     * @param stream The stream used to perform memcpys if data is retained
      * @see CUDAFatAgentStateList::resize(const unsigned int &, const bool &)
      */
-    void resize(const unsigned int &minimumSize, const bool &retainData);
+    void resize(unsigned int minimumSize, bool retainData, cudaStream_t stream);
     /**
      * Returns the number of alive and active agents in the state list
      */
@@ -77,7 +78,7 @@ class CUDAAgentStateList {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void setAgentData(const AgentVector &data, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t& stream);
+    void setAgentData(const AgentVector &data, CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Retrieve agent data from the agent state list into agent state memory
      * @param data data Destination for agent data
@@ -94,7 +95,7 @@ class CUDAAgentStateList {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void scatterHostCreation(const unsigned int &newSize, char *const d_inBuff, const VarOffsetStruct &offsets, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
+    void scatterHostCreation(unsigned int newSize, char *const d_inBuff, const VarOffsetStruct &offsets, CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Sorts all agent variables according to the positions stored inside Message Output scan buffer
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
@@ -112,7 +113,7 @@ class CUDAAgentStateList {
      * @param stream CUDA stream to be used for async CUDA operations
      * @return The number of newly birthed agents
      */
-    unsigned int scatterNew(void * d_newBuff, const unsigned int &newSize, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
+    unsigned int scatterNew(void * d_newBuff, unsigned int newSize, CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Returns true if the state list is not the primary statelist (and is mapped to a master agent state)
      */

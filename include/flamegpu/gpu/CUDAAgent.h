@@ -259,8 +259,9 @@ class CUDAAgent : public AgentInterface {
      * @param state The minimum number of agents that must be representable
      * @param minSize The minimum number of agents that must be representable
      * @param retainData If true existing buffer data is retained
+     * @param stream The stream to be used for memcpys if data is retained
      */
-    void resizeState(const std::string &state, const unsigned int& minSize, const bool& retainData);
+    void resizeState(const std::string &state, unsigned int minSize, bool retainData, cudaStream_t stream);
     /**
      * Updates the number of alive agents, does not affect disabled agents or change agent data
      * @param state The state to affect
