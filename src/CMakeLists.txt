@@ -123,6 +123,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/pop/DeviceAgentVector_impl.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAScanCompaction.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/detail/CUDAErrorChecking.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/gpu/detail/CubTemporaryMemory.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAMessageList.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDASimulation.h
     ${FLAMEGPU_ROOT}/include/flamegpu/gpu/CUDAEnsemble.h
@@ -233,6 +234,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentVector_Agent.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentInstance.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/DeviceAgentVector_impl.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/gpu/detail/CubTemporaryMemory.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAScanCompaction.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAMessageList.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/gpu/CUDAAgent.cu

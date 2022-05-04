@@ -30,9 +30,6 @@ struct CUDAScanCompactionConfig {
     */
     CUDAScanCompactionConfig()
         : scan_flag_len(0)
-        , hd_cub_temp(nullptr)
-        , cub_temp_size(0)
-        , cub_temp_size_max_list_size(0)
     { }
     /**
      * Releases all allocated memory
@@ -51,19 +48,6 @@ struct CUDAScanCompactionConfig {
      * Structure of scan flag buffers
      */
     CUDAScanCompactionPtrs d_ptrs;
-    /**
-     * Host copy of device pointer to cub temp memory
-     */
-    void* hd_cub_temp = nullptr;
-    /**
-     * Size of the device memory pointed to by hd_cub_temp;
-     */
-    size_t cub_temp_size = 0;
-    /**
-     * The size of the list that hd_cub_temp was allocated for
-     * This is a proxy for ensuring cub_temp_size is suitable.
-     */
-    unsigned int cub_temp_size_max_list_size = 0;
     /**
      * Release the two scan buffers inside d_ptrs
      */

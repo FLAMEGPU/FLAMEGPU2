@@ -18,8 +18,6 @@ HostAPI::HostAPI(CUDASimulation &_agentModel,
     : random(rng)
     , environment(_agentModel.getInstanceID(), macro_env)
     , agentModel(_agentModel)
-    , d_cub_temp(nullptr)
-    , d_cub_temp_size(0)
     , d_output_space(nullptr)
     , d_output_space_size(0)
     , agentOffsets(_agentOffsets)
@@ -30,10 +28,6 @@ HostAPI::HostAPI(CUDASimulation &_agentModel,
 
 HostAPI::~HostAPI() {
     // @todo - cuda is not allowed in destructor
-    if (d_cub_temp) {
-        gpuErrchk(cudaFree(d_cub_temp));
-        d_cub_temp_size = 0;
-    }
     if (d_output_space_size) {
         gpuErrchk(cudaFree(d_output_space));
         d_output_space_size = 0;
@@ -51,28 +45,6 @@ HostAgentAPI HostAPI::agent(const std::string &agent_name, const std::string &st
     }
     return HostAgentAPI(*this, agentModel.getAgent(agent_name), state_name, agentOffsets.at(agent_name), state->second);
 }
-
-bool HostAPI::tempStorageRequiresResize(const CUB_Config &cc, const unsigned int &items) {
-    auto lao = cub_largestAllocatedOp.find(cc);
-    if (lao != cub_largestAllocatedOp.end()) {
-        if (lao->second >= items)
-            return false;
-    }
-    return true;
-}
-void HostAPI::resizeTempStorage(const CUB_Config &cc, const unsigned int &items, const size_t &newSize) {
-    NVTX_RANGE("HostAPI::resizeTempStorage");
-    if (newSize > d_cub_temp_size) {
-        if (d_cub_temp) {
-            gpuErrchk(cudaFree(d_cub_temp));
-        }
-        gpuErrchk(cudaMalloc(&d_cub_temp, newSize));
-        d_cub_temp_size = newSize;
-    }
-    assert(tempStorageRequiresResize(cc, items));
-    cub_largestAllocatedOp[cc] = items;
-}
-
 
 /**
  * Access the current stepCount
