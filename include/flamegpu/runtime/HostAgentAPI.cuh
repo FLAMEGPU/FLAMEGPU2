@@ -321,6 +321,7 @@ class HostAgentAPI {
      * @param variable The agent variable to perform the sum reduction across
      * @param result Variable which will store the result (note method is async, result may not arrive until stream is synchronised)
      * @param stream The CUDAStream to use for CUDA operations
+     * @param streamId Index of stream specific structures used
      * @tparam OutT The template arg, 'OutT' can be used if the sum is expected to exceed the representation of the type being summed
      * @tparam InT The type of the variable as specified in the model description hierarchy
      * @throws exception::UnsupportedVarType Array variables are not supported
@@ -329,13 +330,14 @@ class HostAgentAPI {
      * @note Method is async, result may not arrive until stream is synchronised
      */
     template<typename InT, typename OutT>
-    void sum_async(const std::string& variable, OutT& result, cudaStream_t stream) const;
+    void sum_async(const std::string& variable, OutT& result, cudaStream_t stream, unsigned int streamId) const;
     /**
      * Returns the mean and standard deviation of the specified variable in the agent population
      * The return value is a pair, where the first item holds the mean and the second item the standard deviation.
      * @param variable The agent variable to perform the sum reduction across
      * @param result Variable which will store the result
      * @param stream The CUDAStream to use for CUDA operations
+     * @param streamId Index of stream specific structures used
      * @tparam InT The type of the variable as specified in the model description hierarchy
      * @throws exception::InvalidAgentVar If the agent does not contain a variable of the same name
      * @throws exception::InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
@@ -343,12 +345,13 @@ class HostAgentAPI {
      * @note Not actually async, would need a big rewrite (and to stop using the shared device symbol?)
      */
     template<typename InT>
-    void meanStandardDeviation_async(const std::string& variable, std::pair<double, double>& result, cudaStream_t stream) const;
+    void meanStandardDeviation_async(const std::string& variable, std::pair<double, double>& result, cudaStream_t stream, unsigned int streamId) const;
     /**
      * Wraps cub::DeviceReduce::Min()
      * @param variable The agent variable to perform the lowerBound reduction across
      * @param result Variable which will store the result (note method is async, result may not arrive until stream is synchronised)
      * @param stream The CUDAStream to use for CUDA operations
+     * @param streamId Index of stream specific structures used
      * @tparam InT The type of the variable as specified in the model description hierarchy
      * @throws exception::UnsupportedVarType Array variables are not supported
      * @throws exception::InvalidAgentVar If the agent does not contain a variable of the same name
@@ -356,12 +359,13 @@ class HostAgentAPI {
      * @note Method is async, result may not arrive until stream is synchronised
      */
     template<typename InT>
-    void min_async(const std::string& variable, InT& result, cudaStream_t stream) const;
+    void min_async(const std::string& variable, InT& result, cudaStream_t stream, unsigned int streamId) const;
     /**
      * Wraps cub::DeviceReduce::Max()
      * @param variable The agent variable to perform the upperBound reduction across
      * @param result Variable which will store the result (note method is async, result may not arrive until stream is synchronised)
      * @param stream The CUDAStream to use for CUDA operations
+     * @param streamId Index of stream specific structures used
      * @tparam InT The type of the variable as specified in the model description hierarchy
      * @throws exception::UnsupportedVarType Array variables are not supported
      * @throws exception::InvalidAgentVar If the agent does not contain a variable of the same name
@@ -369,7 +373,7 @@ class HostAgentAPI {
      * @note Method is async, result may not arrive until stream is synchronised
      */
     template<typename InT>
-    void max_async(const std::string& variable, InT& result, cudaStream_t stream) const;
+    void max_async(const std::string& variable, InT& result, cudaStream_t stream, unsigned int streamId) const;
     /**
      * Wraps thrust::count(), to count the number of occurences of the provided value
      * @param variable The agent variable to perform the count reduction across
@@ -391,6 +395,7 @@ class HostAgentAPI {
      * @param upperBound The (exclusive) upper sample value boundary of upper bin
      * @param result Variable which will store the result (note method is async, result may not arrive until stream is synchronised)
      * @param stream The CUDAStream to use for CUDA operations
+     * @param streamId Index of stream specific structures used
      * @tparam InT The type of the variable as specified in the model description hierarchy
      * @tparam OutT The type of the histogram bin variables
      * @throws exception::UnsupportedVarType Array variables are not supported
@@ -399,7 +404,7 @@ class HostAgentAPI {
      * @note Method is async, result may not arrive until stream is synchronised
      */
     template<typename InT, typename OutT>
-    void histogramEven_async(const std::string& variable, unsigned int histogramBins, InT lowerBound, InT upperBound, std::vector<OutT> &result, cudaStream_t stream) const;
+    void histogramEven_async(const std::string& variable, unsigned int histogramBins, InT lowerBound, InT upperBound, std::vector<OutT> &result, cudaStream_t stream, unsigned int streamId) const;
     /**
      * Wraps cub::DeviceReduce::Reduce(), to perform a reduction with a custom operator
      * @param variable The agent variable to perform the reduction across
@@ -407,6 +412,7 @@ class HostAgentAPI {
      * @param init Initial value of the reduction
      * @param result Variable which will store the result (note method is async, result may not arrive until stream is synchronised)
      * @param stream The CUDAStream to use for CUDA operations
+     * @param streamId Index of stream specific structures used
      * @tparam InT The type of the variable as specified in the model description hierarchy
      * @throws exception::UnsupportedVarType Array variables are not supported
      * @throws exception::InvalidAgentVar If the agent does not contain a variable of the same name
@@ -414,7 +420,7 @@ class HostAgentAPI {
      * @note Method is async, result may not arrive until stream is synchronised
      */
     template<typename InT, typename reductionOperatorT>
-    void reduce_async(const std::string& variable, reductionOperatorT reductionOperator, InT init, InT &result, cudaStream_t stream) const;
+    void reduce_async(const std::string& variable, reductionOperatorT reductionOperator, InT init, InT &result, cudaStream_t stream, unsigned int streamId) const;
     /**
      * Wraps thrust::transformReduce(), to perform a custom transform on values before performing a custom reduction
      * @param variable The agent variable to perform the reduction across
@@ -496,19 +502,19 @@ class HostAgentAPI {
 template<typename InT>
 InT HostAgentAPI::sum(const std::string &variable) const {
     InT rtn;
-    sum_async<InT, InT>(variable, rtn, this->api.stream);
+    sum_async<InT, InT>(variable, rtn, this->api.stream, this->api.streamId);
     gpuErrchk(cudaStreamSynchronize(this->api.stream));
     return rtn;
 }
 template<typename InT, typename OutT>
 OutT HostAgentAPI::sum(const std::string& variable) const {
     OutT rtn;
-    sum_async<InT, OutT>(variable, rtn, this->api.stream);
+    sum_async<InT, OutT>(variable, rtn, this->api.stream, this->api.streamId);
     gpuErrchk(cudaStreamSynchronize(this->api.stream));
     return rtn;
 }
 template<typename InT, typename OutT>
-void HostAgentAPI::sum_async(const std::string &variable, OutT &result, cudaStream_t stream) const {
+void HostAgentAPI::sum_async(const std::string &variable, OutT &result, const cudaStream_t stream, const unsigned int streamId) const {
     static_assert(sizeof(InT) <= sizeof(OutT), "Template arg OutT should not be of a smaller size than InT");
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
@@ -532,28 +538,25 @@ void HostAgentAPI::sum_async(const std::string &variable, OutT &result, cudaStre
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
     // Check if we need to resize cub storage
-    HostAPI::CUB_Config cc = { HostAPI::SUM, typeid(OutT).hash_code() };
-    if (api.tempStorageRequiresResize(cc, agentCount)) {
-        // Resize cub storage
-        size_t tempByte = 0;
-        gpuErrchk(cub::DeviceReduce::Sum(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<OutT*>(api.d_output_space), static_cast<int>(agentCount), stream));
-        api.resizeTempStorage(cc, agentCount, tempByte);
-    }
+    auto &cub_temp = api.scatter.CubTemp(streamId);
+    size_t tempByte = 0;
+    gpuErrchk(cub::DeviceReduce::Sum(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<OutT*>(api.d_output_space), static_cast<int>(agentCount), stream));
+    cub_temp.resize(tempByte);
     // Resize output storage
     api.resizeOutputSpace<OutT>();
-    gpuErrchk(cub::DeviceReduce::Sum(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<OutT*>(api.d_output_space), static_cast<int>(agentCount), stream));
+    gpuErrchk(cub::DeviceReduce::Sum(cub_temp.getPtr(), cub_temp.getSize(), reinterpret_cast<InT*>(var_ptr), reinterpret_cast<OutT*>(api.d_output_space), static_cast<int>(agentCount), stream));
     gpuErrchkLaunch();
     gpuErrchk(cudaMemcpyAsync(&result, api.d_output_space, sizeof(OutT), cudaMemcpyDeviceToHost, stream));
 }
 template<typename InT>
 std::pair<double, double> HostAgentAPI::meanStandardDeviation(const std::string& variable) const {
     std::pair<double, double> rtn;
-    meanStandardDeviation_async<InT>(variable, rtn, this->api.stream);
+    meanStandardDeviation_async<InT>(variable, rtn, this->api.stream, this->api.streamId);
     gpuErrchk(cudaStreamSynchronize(this->api.stream));  // Redundant, meanStandardDeviation_async() is not truly async
     return rtn;
 }
 template<typename InT>
-void HostAgentAPI::meanStandardDeviation_async(const std::string& variable, std::pair<double, double> &result, cudaStream_t stream) const {
+void HostAgentAPI::meanStandardDeviation_async(const std::string& variable, std::pair<double, double> &result, const cudaStream_t stream, const unsigned int streamId) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -579,7 +582,7 @@ void HostAgentAPI::meanStandardDeviation_async(const std::string& variable, std:
     }
     // Calculate mean (We could make this more efficient by leaving sum in device mem?)
     typename sum_input_t<InT>::result_t sum_result;
-    sum_async<InT, typename sum_input_t<InT>::result_t>(variable, sum_result, stream);
+    sum_async<InT, typename sum_input_t<InT>::result_t>(variable, sum_result, stream, streamId);
     gpuErrchk(cudaStreamSynchronize(stream));
     const double mean = sum_result / static_cast<double>(agentCount);
     // Then for each number: subtract the Mean and square the result
@@ -594,12 +597,12 @@ void HostAgentAPI::meanStandardDeviation_async(const std::string& variable, std:
 template<typename InT>
 InT HostAgentAPI::min(const std::string& variable) const {
     InT rtn;
-    min_async<InT>(variable, rtn, this->api.stream);
+    min_async<InT>(variable, rtn, this->api.stream, this->api.streamId);
     gpuErrchk(cudaStreamSynchronize(this->api.stream));
     return rtn;
 }
 template<typename InT>
-void HostAgentAPI::min_async(const std::string &variable, InT& result, cudaStream_t stream) const {
+void HostAgentAPI::min_async(const std::string &variable, InT& result, const cudaStream_t stream, const unsigned int streamId) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -621,29 +624,27 @@ void HostAgentAPI::min_async(const std::string &variable, InT& result, cudaStrea
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
     // Check if we need to resize cub storage
-    HostAPI::CUB_Config cc = { HostAPI::MIN, typeid(InT).hash_code() };
-    if (api.tempStorageRequiresResize(cc, agentCount)) {
-        // Resize cub storage
-        size_t tempByte = 0;
-        gpuErrchk(cub::DeviceReduce::Min(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount), stream));
-        gpuErrchkLaunch();
-        api.resizeTempStorage(cc, agentCount, tempByte);
-    }
+    auto& cub_temp = api.scatter.CubTemp(streamId);
+    // Resize cub storage
+    size_t tempByte = 0;
+    gpuErrchk(cub::DeviceReduce::Min(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount), stream));
+    gpuErrchkLaunch();
+    cub_temp.resize(tempByte);
     // Resize output storage
     api.resizeOutputSpace<InT>();
-    gpuErrchk(cub::DeviceReduce::Min(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount), stream));
+    gpuErrchk(cub::DeviceReduce::Min(cub_temp.getPtr(), cub_temp.getSize(), reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount), stream));
     gpuErrchkLaunch();
     gpuErrchk(cudaMemcpyAsync(&result, api.d_output_space, sizeof(InT), cudaMemcpyDeviceToHost, stream));
 }
 template<typename InT>
 InT HostAgentAPI::max(const std::string& variable) const {
     InT rtn;
-    max_async<InT>(variable, rtn, this->api.stream);
+    max_async<InT>(variable, rtn, this->api.stream, this->api.streamId);
     gpuErrchk(cudaStreamSynchronize(this->api.stream));
     return rtn;
 }
 template<typename InT>
-void HostAgentAPI::max_async(const std::string &variable, InT &result, cudaStream_t stream) const {
+void HostAgentAPI::max_async(const std::string &variable, InT &result, const cudaStream_t stream, const unsigned int streamId) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -665,17 +666,14 @@ void HostAgentAPI::max_async(const std::string &variable, InT &result, cudaStrea
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
     // Check if we need to resize cub storage
-    HostAPI::CUB_Config cc = { HostAPI::MAX, typeid(InT).hash_code() };
-    if (api.tempStorageRequiresResize(cc, agentCount)) {
-        // Resize cub storage
-        size_t tempByte = 0;
-        gpuErrchk(cub::DeviceReduce::Max(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount), stream));
-        gpuErrchkLaunch();
-        api.resizeTempStorage(cc, agentCount, tempByte);
-    }
+    auto& cub_temp = api.scatter.CubTemp(streamId);
+    // Resize cub storage
+    size_t tempByte = 0;
+    gpuErrchk(cub::DeviceReduce::Max(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount), stream));
+    cub_temp.resize(tempByte);
     // Resize output storage
     api.resizeOutputSpace<InT>();
-    gpuErrchk(cub::DeviceReduce::Max(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount), stream));
+    gpuErrchk(cub::DeviceReduce::Max(cub_temp.getPtr(), cub_temp.getSize(), reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount), stream));
     gpuErrchkLaunch();
     gpuErrchk(cudaMemcpyAsync(&result, api.d_output_space, sizeof(InT), cudaMemcpyDeviceToHost, stream));
 }
@@ -684,7 +682,7 @@ unsigned int HostAgentAPI::count(const std::string &variable, InT value) const {
     return count_async<InT>(variable, value, this->api.stream);
 }
 template<typename InT>
-unsigned int HostAgentAPI::count_async(const std::string& variable, InT value, cudaStream_t stream) const {
+unsigned int HostAgentAPI::count_async(const std::string& variable, InT value, const cudaStream_t stream) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -713,19 +711,19 @@ unsigned int HostAgentAPI::count_async(const std::string& variable, InT value, c
 template<typename InT>
 std::vector<unsigned int> HostAgentAPI::histogramEven(const std::string &variable, unsigned int histogramBins, InT lowerBound, InT upperBound) const {
     std::vector<unsigned int> rtn;
-    histogramEven_async<InT, unsigned int>(variable, histogramBins, lowerBound, upperBound, rtn, this->api.stream);
+    histogramEven_async<InT, unsigned int>(variable, histogramBins, lowerBound, upperBound, rtn, this->api.stream, this->api.streamId);
     gpuErrchk(cudaStreamSynchronize(this->api.stream));
     return rtn;
 }
 template<typename InT, typename OutT>
 std::vector<OutT> HostAgentAPI::histogramEven(const std::string &variable, unsigned int histogramBins, InT lowerBound, InT upperBound) const {
     std::vector<OutT> rtn;
-    histogramEven_async<InT, OutT>(variable, histogramBins, lowerBound, upperBound, rtn, this->api.stream);
+    histogramEven_async<InT, OutT>(variable, histogramBins, lowerBound, upperBound, rtn, this->api.stream, this->api.streamId);
     gpuErrchk(cudaStreamSynchronize(this->api.stream));
     return rtn;
 }
 template<typename InT, typename OutT>
-void HostAgentAPI::histogramEven_async(const std::string &variable, unsigned int histogramBins, InT lowerBound, InT upperBound, std::vector<OutT>& result, cudaStream_t stream) const {
+void HostAgentAPI::histogramEven_async(const std::string &variable, unsigned int histogramBins, InT lowerBound, InT upperBound, std::vector<OutT>& result, const cudaStream_t stream, const unsigned int streamId) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -751,18 +749,16 @@ void HostAgentAPI::histogramEven_async(const std::string &variable, unsigned int
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
     // Check if we need to resize cub storage
-    HostAPI::CUB_Config cc = { HostAPI::HISTOGRAM_EVEN, histogramBins * sizeof(OutT) };
-    if (api.tempStorageRequiresResize(cc, agentCount)) {
-        // Resize cub storage
-        size_t tempByte = 0;
-        gpuErrchk(cub::DeviceHistogram::HistogramEven(nullptr, tempByte,
-            reinterpret_cast<InT*>(var_ptr), reinterpret_cast<int*>(api.d_output_space), histogramBins + 1, lowerBound, upperBound, static_cast<int>(agentCount), stream));
-        gpuErrchkLaunch();
-        api.resizeTempStorage(cc, agentCount, tempByte);
-    }
+    auto& cub_temp = api.scatter.CubTemp(streamId);
+    // Resize cub storage
+    size_t tempByte = 0;
+    gpuErrchk(cub::DeviceHistogram::HistogramEven(nullptr, tempByte,
+        reinterpret_cast<InT*>(var_ptr), reinterpret_cast<int*>(api.d_output_space), histogramBins + 1, lowerBound, upperBound, static_cast<int>(agentCount), stream));
+    gpuErrchkLaunch();
+    cub_temp.resize(tempByte);
     // Resize output storage
     api.resizeOutputSpace<OutT>(histogramBins);
-    gpuErrchk(cub::DeviceHistogram::HistogramEven(api.d_cub_temp, api.d_cub_temp_size,
+    gpuErrchk(cub::DeviceHistogram::HistogramEven(cub_temp.getPtr(), cub_temp.getSize(),
         reinterpret_cast<InT*>(var_ptr), reinterpret_cast<OutT*>(api.d_output_space), histogramBins + 1, lowerBound, upperBound, static_cast<int>(agentCount), stream));
     gpuErrchkLaunch();
     result.resize(histogramBins);
@@ -771,12 +767,12 @@ void HostAgentAPI::histogramEven_async(const std::string &variable, unsigned int
 template<typename InT, typename reductionOperatorT>
 InT HostAgentAPI::reduce(const std::string &variable, reductionOperatorT reductionOperator, InT init) const {
     InT rtn;
-    reduce_async<InT, reductionOperatorT>(variable, reductionOperator, init, rtn, this->api.stream);
+    reduce_async<InT, reductionOperatorT>(variable, reductionOperator, init, rtn, this->api.stream, this->api.streamId);
     gpuErrchk(cudaStreamSynchronize(this->api.stream));
     return rtn;
 }
 template<typename InT, typename reductionOperatorT>
-void HostAgentAPI::reduce_async(const std::string & variable, reductionOperatorT /*reductionOperator*/, InT init, InT &result, cudaStream_t stream) const {
+void HostAgentAPI::reduce_async(const std::string & variable, reductionOperatorT /*reductionOperator*/, InT init, InT &result, const cudaStream_t stream, const unsigned int streamId) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -798,18 +794,16 @@ void HostAgentAPI::reduce_async(const std::string & variable, reductionOperatorT
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
     // Check if we need to resize cub storage
-    HostAPI::CUB_Config cc = { HostAPI::CUSTOM_REDUCE, typeid(InT).hash_code() };
-    if (api.tempStorageRequiresResize(cc, agentCount)) {
-        // Resize cub storage
-        size_t tempByte = 0;
-        gpuErrchk(cub::DeviceReduce::Reduce(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space),
-            static_cast<int>(agentCount), typename reductionOperatorT::template binary_function<InT>(), init, stream));
-        gpuErrchkLaunch();
-        api.resizeTempStorage(cc, agentCount, tempByte);
-    }
+    auto& cub_temp = api.scatter.CubTemp(streamId);
+    // Resize cub storage
+    size_t tempByte = 0;
+    gpuErrchk(cub::DeviceReduce::Reduce(nullptr, tempByte, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space),
+        static_cast<int>(agentCount), typename reductionOperatorT::template binary_function<InT>(), init, stream));
+    gpuErrchkLaunch();
+    cub_temp.resize(tempByte);
     // Resize output storage
     api.resizeOutputSpace<InT>();
-    gpuErrchk(cub::DeviceReduce::Reduce(api.d_cub_temp, api.d_cub_temp_size, reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space),
+    gpuErrchk(cub::DeviceReduce::Reduce(cub_temp.getPtr(), cub_temp.getSize(), reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space),
         static_cast<int>(agentCount), typename reductionOperatorT::template binary_function<InT>(), init, stream));
     gpuErrchkLaunch();
     gpuErrchk(cudaMemcpyAsync(&result, api.d_output_space, sizeof(InT), cudaMemcpyDeviceToHost, stream));
@@ -853,7 +847,7 @@ void HostAgentAPI::sort(const std::string &variable, Order order, int beginBit, 
     gpuErrchk(cudaStreamSynchronize(this->api.stream));
 }
 template<typename VarT>
-void HostAgentAPI::sort_async(const std::string & variable, Order order, int beginBit, int endBit, cudaStream_t stream, unsigned int streamId) {
+void HostAgentAPI::sort_async(const std::string & variable, Order order, int beginBit, int endBit, const cudaStream_t stream, const unsigned int streamId) {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream || this->api.streamId != streamId) {
@@ -891,22 +885,20 @@ void HostAgentAPI::sort_async(const std::string & variable, Order order, int beg
     // Create array of agent values (use scanflag_death.scan_flag)
     gpuErrchk(cudaMemcpyAsync(keys_in, var_ptr, total_variable_buffer_size, cudaMemcpyDeviceToDevice, stream));
     // Check if we need to resize cub storage
-    const HostAPI::CUB_Config cc = { HostAPI::SORT, typeid(VarT).hash_code() };
-    if (api.tempStorageRequiresResize(cc, agentCount)) {
-        // Resize cub storage
-        size_t tempByte = 0;
-        if (order == Asc) {
-            gpuErrchk(cub::DeviceRadixSort::SortPairs(nullptr, tempByte, keys_in, keys_out, vals_in, vals_out, agentCount, beginBit, endBit, stream));
-        } else {
-            gpuErrchk(cub::DeviceRadixSort::SortPairsDescending(nullptr, tempByte, keys_in, keys_out, vals_in, vals_out, agentCount, beginBit, endBit, stream));
-        }
-        api.resizeTempStorage(cc, agentCount, tempByte);
+    auto& cub_temp = api.scatter.CubTemp(streamId);
+    // Resize cub storage
+    size_t tempByte = 0;
+    if (order == Asc) {
+        gpuErrchk(cub::DeviceRadixSort::SortPairs(nullptr, tempByte, keys_in, keys_out, vals_in, vals_out, agentCount, beginBit, endBit, stream));
+    } else {
+        gpuErrchk(cub::DeviceRadixSort::SortPairsDescending(nullptr, tempByte, keys_in, keys_out, vals_in, vals_out, agentCount, beginBit, endBit, stream));
     }
+    cub_temp.resize(tempByte);
     // pair sort
     if (order == Asc) {
-        gpuErrchk(cub::DeviceRadixSort::SortPairs(api.d_cub_temp, api.d_cub_temp_size, keys_in, keys_out, vals_in, vals_out, agentCount, beginBit, endBit, stream));
+        gpuErrchk(cub::DeviceRadixSort::SortPairs(cub_temp.getPtr(), cub_temp.getSize(), keys_in, keys_out, vals_in, vals_out, agentCount, beginBit, endBit, stream));
     } else {
-        gpuErrchk(cub::DeviceRadixSort::SortPairsDescending(api.d_cub_temp, api.d_cub_temp_size, keys_in, keys_out, vals_in, vals_out, agentCount, beginBit, endBit, stream));
+        gpuErrchk(cub::DeviceRadixSort::SortPairsDescending(cub_temp.getPtr(), cub_temp.getSize(), keys_in, keys_out, vals_in, vals_out, agentCount, beginBit, endBit, stream));
     }
     // Scatter all agent variables
     api.agentModel.agent_map.at(agentDesc.name)->scatterSort_async(stateName, scatter, streamId, stream);
@@ -923,7 +915,7 @@ void HostAgentAPI::sort(const std::string &variable1, Order order1, const std::s
     gpuErrchk(cudaStreamSynchronize(this->api.stream));
 }
 template<typename Var1T, typename Var2T>
-void HostAgentAPI::sort_async(const std::string & variable1, Order order1, const std::string & variable2, Order order2, cudaStream_t stream, unsigned int streamId) {
+void HostAgentAPI::sort_async(const std::string & variable1, Order order1, const std::string & variable2, Order order2, const cudaStream_t stream, const unsigned int streamId) {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream || this->api.streamId != streamId) {

@@ -2091,7 +2091,7 @@ void CUDASimulation::assignAgentIDs() {
         initialiseSingletons();
 
         for (auto &a : agent_map) {
-            a.second->assignIDs(*host_api, getStream(0));  // This could be made concurrent, 1 stream per agent
+            a.second->assignIDs(*host_api, singletons->scatter, getStream(0), 0);  // This could be made concurrent, 1 stream per agent
         }
         agent_ids_have_init = true;
     }

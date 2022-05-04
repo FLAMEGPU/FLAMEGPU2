@@ -214,26 +214,21 @@ void CUDAMessage::swap(bool isOptional, unsigned int newMessageCount, CUDAScatte
         THROW exception::InvalidMessageData("MessageList '%s' is not yet allocated, in CUDAMessage::swap()\n", message_description.name.c_str());
     }
     if (isOptional && message_description.optional_outputs > 0) {
-        CUDAScanCompactionConfig &scanCfg = scatter.Scan().Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId);
-        if (newMessageCount > scanCfg.cub_temp_size_max_list_size) {
-            if (scanCfg.hd_cub_temp) {
-                gpuErrchk(cudaFree(scanCfg.hd_cub_temp));
-            }
-            scanCfg.cub_temp_size = 0;
-            gpuErrchk(cub::DeviceScan::ExclusiveSum(
-                nullptr,
-                scanCfg.cub_temp_size,
-                scanCfg.d_ptrs.scan_flag,
-                scanCfg.d_ptrs.position,
-                max_list_size + 1,
-                stream));
-            gpuErrchk(cudaMalloc(&scanCfg.hd_cub_temp,
-                scanCfg.cub_temp_size));
-            scanCfg.cub_temp_size_max_list_size = max_list_size;
-        }
+        auto &scanCfg = scatter.Scan().getConfig(CUDAScanCompaction::MESSAGE_OUTPUT, streamId);
+        // Check if we need to resize cub storage
+        auto& cub_temp = scatter.CubTemp(streamId);
+        size_t tempByte = 0;
         gpuErrchk(cub::DeviceScan::ExclusiveSum(
-            scanCfg.hd_cub_temp,
-            scanCfg.cub_temp_size,
+            nullptr,
+            tempByte,
+            scanCfg.d_ptrs.scan_flag,
+            scanCfg.d_ptrs.position,
+            max_list_size + 1,
+            stream));
+        cub_temp.resize(tempByte);
+        gpuErrchk(cub::DeviceScan::ExclusiveSum(
+            cub_temp.getPtr(),
+            cub_temp.getSize(),
             scanCfg.d_ptrs.scan_flag,
             scanCfg.d_ptrs.position,
             newMessageCount + 1,

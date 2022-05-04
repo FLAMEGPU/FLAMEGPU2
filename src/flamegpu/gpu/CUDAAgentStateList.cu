@@ -173,26 +173,21 @@ void CUDAAgentStateList::scatterSort_async(CUDAScatter &scatter, unsigned int st
 unsigned int CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int newSize, CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t stream) {
     if (newSize) {
         CUDAScanCompactionConfig &scanCfg = scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_OUTPUT, streamId);
-        // Perform scan
-        if (newSize > scanCfg.cub_temp_size_max_list_size) {
-            if (scanCfg.hd_cub_temp) {
-                gpuErrchk(cudaFree(scanCfg.hd_cub_temp));
-            }
-            scanCfg.cub_temp_size = 0;
-            gpuErrchk(cub::DeviceScan::ExclusiveSum(
-                nullptr,
-                scanCfg.cub_temp_size,
-                scanCfg.d_ptrs.scan_flag,
-                scanCfg.d_ptrs.position,
-                newSize + 1,
-                stream));
-            gpuErrchk(cudaStreamSynchronize(stream));
-            gpuErrchk(cudaMalloc(&scanCfg.hd_cub_temp, scanCfg.cub_temp_size));
-            scanCfg.cub_temp_size_max_list_size = newSize;
-        }
+        // Check if we need to resize cub storage
+        auto& cub_temp = scatter.CubTemp(streamId);
+        size_t tempByte = 0;
         gpuErrchk(cub::DeviceScan::ExclusiveSum(
-            scanCfg.hd_cub_temp,
-            scanCfg.cub_temp_size,
+            nullptr,
+            tempByte,
+            scanCfg.d_ptrs.scan_flag,
+            scanCfg.d_ptrs.position,
+            newSize + 1,
+            stream));
+        cub_temp.resize(tempByte);
+        // Perform scan
+        gpuErrchk(cub::DeviceScan::ExclusiveSum(
+            cub_temp.getPtr(),
+            cub_temp.getSize(),
             scanCfg.d_ptrs.scan_flag,
             scanCfg.d_ptrs.position,
             newSize + 1,

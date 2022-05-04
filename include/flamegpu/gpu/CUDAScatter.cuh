@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "flamegpu/model/Variable.h"
+#include "flamegpu/gpu/detail/CubTemporaryMemory.cuh"
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 
 namespace flamegpu {
@@ -74,9 +75,11 @@ class CUDAScatter {
         void resize(const unsigned int &newLen);
     };
     std::array<StreamData, CUDAScanCompaction::MAX_STREAMS> streamResources;
+    std::array<detail::CubTemporaryMemory, CUDAScanCompaction::MAX_STREAMS> cubTemps;
 
  public:
     CUDAScanCompaction &Scan() { return scan; }
+    detail::CubTemporaryMemory &CubTemp(const unsigned int streamId) { return cubTemps[streamId]; }
     /**
      * Convenience wrapper for scatter()
      * Scatters agents from SoA to SoA according to d_position flag
