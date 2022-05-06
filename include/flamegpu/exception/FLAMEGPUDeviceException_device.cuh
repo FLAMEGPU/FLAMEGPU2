@@ -85,16 +85,16 @@ class DeviceException {
         // Only the thread which first reported error gets to output
         if (hasError) {
             // Only output once
-            if (buff[0]->format_string[0])
+            if (buff[1]->format_string[0])
                 return;
             // Copy the format string
             unsigned int eos = 0;
             for (eos = 0; eos < DeviceExceptionBuffer::FORMAT_BUFF_LEN; ++eos)
                 if (format[eos] == '\0')
                     break;
-            memcpy(buff[0]->format_string, format, eos * sizeof(char));
+            memcpy(buff[1]->format_string, format, eos * sizeof(char));
             // Process args
-            subformat_recurse(buff[0], args...);
+            subformat_recurse(buff[1], args...);
         }
     }
 
@@ -139,14 +139,14 @@ class DeviceException {
         if (hasError) {
             // Copy file location
             const size_t file_len = strlen(file);
-            memcpy(buff[0]->file_path, file, file_len);
+            memcpy(buff[1]->file_path, file, file_len);
             // Copy line no
-            buff[0]->line_no = line;
+            buff[1]->line_no = line;
             // Copy block/thread indices
             const uint3 bid3 = blockIdx;
-            memcpy(buff[0]->block_id, &bid3, sizeof(unsigned int) * 3);
+            memcpy(buff[1]->block_id, &bid3, sizeof(unsigned int) * 3);
             const uint3 tid3 = threadIdx;
-            memcpy(buff[0]->thread_id, &tid3, sizeof(unsigned int) * 3);
+            memcpy(buff[1]->thread_id, &tid3, sizeof(unsigned int) * 3);
         }
     }
     /**
@@ -190,7 +190,7 @@ __device__ inline void DeviceException::subformat(DeviceExceptionBuffer *buff, c
 __device__ unsigned int DeviceException::getErrorCount() {
     extern __shared__ DeviceExceptionBuffer* buff[];
     // Are we the first exception
-    return atomicInc(&buff[0]->error_count, UINT_MAX);
+    return atomicInc(&buff[1]->error_count, UINT_MAX);
 }
 #endif
 #else
