@@ -1,5 +1,7 @@
 #include "flamegpu/util/detail/JitifyCache.h"
 
+#include <nvrtc.h>
+
 #include <cassert>
 #include <regex>
 #include <array>
@@ -315,12 +317,22 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
     }
 #endif
 
-    // Set the compilation architecture target if it was successfully detected.
-    int currentDeviceIdx = 0;
-    cudaError_t status = cudaGetDevice(&currentDeviceIdx);
-    if (status == cudaSuccess) {
-        int arch = compute_capability::getComputeCapability(currentDeviceIdx);
-        options.push_back(std::string("--gpu-architecture=compute_" + std::to_string(arch)));
+    // Set the cuda compuate capability architecture to optimize / generate for, based on the values supported by the current dynamiclaly linked nvrtc and the device in question.
+    std::vector<int> nvrtcArchitectures = util::detail::compute_capability::getNVRTCSupportedComputeCapabilties();
+    if (nvrtcArchitectures.size()) {
+        int currentDeviceIdx = 0;
+        if (cudaSuccess == cudaGetDevice(&currentDeviceIdx)) {
+            int arch = compute_capability::getComputeCapability(currentDeviceIdx);
+            int maxSupportedArch = compute_capability::selectAppropraiteComputeCapability(arch, nvrtcArchitectures);
+            // only set a nvrtc compilation flag if a usable value was found
+            if (maxSupportedArch != 0) {
+                options.push_back(std::string("--gpu-architecture=compute_" + std::to_string(maxSupportedArch)));
+            } else {
+                // This branch should never be taken
+                // Rather than throwing an exception which users cannot catch and reover from, assert instead. This will just result in not targetting a specific arch.
+                assert(false);
+            }
+        }
     }
 
     // If CUDA is compiled with -G (--device-debug) forward it to the compiler, otherwise forward lineinfo for profiling.
