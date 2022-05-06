@@ -137,39 +137,41 @@ class DeviceEnvironment : public ReadOnlyDeviceEnvironment {
  */
 template<typename T, unsigned int N>
 __device__ __forceinline__ T ReadOnlyDeviceEnvironment::getProperty(const char(&name)[N]) const {
+    extern __shared__ const detail::curve::Curve::CurveTable* buff[];
     detail::curve::Curve::VariableHash cvh = CURVE_NAMESPACE_HASH() + modelname_hash + detail::curve::Curve::variableHash(name);
     const auto cv = detail::curve::Curve::getVariable(cvh);
 #if !defined(SEATBELTS) || SEATBELTS
     if (cv ==  detail::curve::Curve::UNKNOWN_VARIABLE) {
         DTHROW("Environment property with name: %s was not found.\n", name);
-    } else if (detail::curve::detail::d_sizes[cv] * detail::curve::detail::d_lengths[cv] != type_decode<T>::len_t * sizeof(typename type_decode<T>::type_t)) {
-        DTHROW("Environment property with name: %s type size mismatch %llu != %llu.\n", name, detail::curve::detail::d_sizes[cv], sizeof(T));
+    } else if (buff[0]->sizes[cv] * buff[0]->lengths[cv] != type_decode<T>::len_t * sizeof(typename type_decode<T>::type_t)) {
+        DTHROW("Environment property with name: %s type size mismatch %llu != %llu.\n", name, buff[0]->sizes[cv], sizeof(T));
     } else {
-        return *reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(detail::curve::detail::d_variables[cv]));
+        return *reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(buff[0]->variables[cv]));
     }
     return {};
 #else
-    return *reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(detail::curve::detail::d_variables[cv]));
+    return *reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(buff[0]->variables[cv]));
 #endif
 }
 template<typename T, unsigned int N>
 __device__ __forceinline__ T ReadOnlyDeviceEnvironment::getProperty(const char(&name)[N], const unsigned int &index) const {
+    extern __shared__ const detail::curve::Curve::CurveTable* buff[];
     detail::curve::Curve::VariableHash cvh = CURVE_NAMESPACE_HASH() + modelname_hash + detail::curve::Curve::variableHash(name);
     const auto cv = detail::curve::Curve::getVariable(cvh);
 #if !defined(SEATBELTS) || SEATBELTS
     const unsigned int t_index = type_decode<T>::len_t * index + type_decode<T>::len_t;
     if (cv ==  detail::curve::Curve::UNKNOWN_VARIABLE) {
         DTHROW("Environment property array with name: %s was not found.\n", name);
-    } else if (detail::curve::detail::d_sizes[cv] != sizeof(typename type_decode<T>::type_t)) {
-        DTHROW("Environment property array with name: %s type size mismatch %llu != %llu.\n", name, detail::curve::detail::d_sizes[cv], sizeof(T));
-    } else if (detail::curve::detail::d_lengths[cv] < t_index || t_index < index) {
-        DTHROW("Environment property array with name: %s index %u is out of bounds (length %u).\n", name, index, detail::curve::detail::d_lengths[cv]);
+    } else if (buff[0]->sizes[cv] != sizeof(typename type_decode<T>::type_t)) {
+        DTHROW("Environment property array with name: %s type size mismatch %llu != %llu.\n", name, buff[0]->sizes[cv], sizeof(T));
+    } else if (buff[0]->lengths[cv] < t_index || t_index < index) {
+        DTHROW("Environment property array with name: %s index %u is out of bounds (length %u).\n", name, index, buff[0]->lengths[cv]);
     } else {
-        return *(reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(detail::curve::detail::d_variables[cv])) + index);
+        return *(reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(buff[0]->variables[cv])) + index);
     }
     return {};
 #else
-    return *(reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(detail::curve::detail::d_variables[cv])) + index);
+    return *(reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(buff[0]->variables[cv])) + index);
 #endif
 }
 
@@ -184,42 +186,44 @@ __device__ __forceinline__ bool ReadOnlyDeviceEnvironment::containsProperty(cons
 
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W, unsigned int N>
 __device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, I, J, K, W> ReadOnlyDeviceEnvironment::getMacroProperty(const char(&name)[N]) const {
+    extern __shared__ const detail::curve::Curve::CurveTable* buff[];
     detail::curve::Curve::VariableHash cvh = MACRO_NAMESPACE_HASH() + modelname_hash + detail::curve::Curve::variableHash(name);
     const auto cv = detail::curve::Curve::getVariable(cvh);
 #if !defined(SEATBELTS) || SEATBELTS
     if (cv == detail::curve::Curve::UNKNOWN_VARIABLE) {
         DTHROW("Environment macro property name: %s was not found.\n", name);
-    } else if (detail::curve::detail::d_sizes[cv] != sizeof(T)) {
-        DTHROW("Environment macro property with name: %s type size mismatch %llu != %llu.\n", name, detail::curve::detail::d_sizes[cv], sizeof(T));
-    } else if (detail::curve::detail::d_lengths[cv] != I * J * K * W) {
-        DTHROW("Environment macro property with name: %s total length mismatch (%u != %u).\n", name, detail::curve::detail::d_lengths[cv], I * J * K * W);
+    } else if (buff[0]->sizes[cv] != sizeof(T)) {
+        DTHROW("Environment macro property with name: %s type size mismatch %llu != %llu.\n", name, buff[0]->sizes[cv], sizeof(T));
+    } else if (buff[0]->lengths[cv] != I * J * K * W) {
+        DTHROW("Environment macro property with name: %s total length mismatch (%u != %u).\n", name, buff[0]->lengths[cv], I * J * K * W);
     } else {
-        return DeviceMacroProperty<T, I, J, K, W>(reinterpret_cast<T*>(detail::curve::detail::d_variables[cv]),
-        reinterpret_cast<unsigned int*>(detail::curve::detail::d_variables[cv] + (I * J * K * W * sizeof(T))));  // Read-write flag resides in 8 bits at the end of the buffer
+        return DeviceMacroProperty<T, I, J, K, W>(reinterpret_cast<T*>(buff[0]->variables[cv]),
+        reinterpret_cast<unsigned int*>(buff[0]->variables[cv] + (I * J * K * W * sizeof(T))));  // Read-write flag resides in 8 bits at the end of the buffer
     }
     return ReadOnlyDeviceMacroProperty<T, I, J, K, W>(nullptr, nullptr);
 #else
-    return ReadOnlyDeviceMacroProperty<T, I, J, K, W>(reinterpret_cast<T*>(detail::curve::detail::d_variables[cv]));
+    return ReadOnlyDeviceMacroProperty<T, I, J, K, W>(reinterpret_cast<T*>(buff[0]->variables[cv]));
 #endif
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W, unsigned int N>
 __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W> DeviceEnvironment::getMacroProperty(const char(&name)[N]) const {
+    extern __shared__ const detail::curve::Curve::CurveTable* buff[];
     detail::curve::Curve::VariableHash cvh = MACRO_NAMESPACE_HASH() + modelname_hash + detail::curve::Curve::variableHash(name);
     const auto cv = detail::curve::Curve::getVariable(cvh);
 #if !defined(SEATBELTS) || SEATBELTS
     if (cv == detail::curve::Curve::UNKNOWN_VARIABLE) {
         DTHROW("Environment macro property name: %s was not found.\n", name);
-    } else if (detail::curve::detail::d_sizes[cv] != sizeof(T)) {
-        DTHROW("Environment macro property with name: %s type size mismatch %llu != %llu.\n", name, detail::curve::detail::d_sizes[cv], sizeof(T));
-    } else if (detail::curve::detail::d_lengths[cv] != I * J * K * W) {
-        DTHROW("Environment macro property with name: %s total length mismatch (%u != %u).\n", name, detail::curve::detail::d_lengths[cv], I * J * K * W);
+    } else if (buff[0]->sizes[cv] != sizeof(T)) {
+        DTHROW("Environment macro property with name: %s type size mismatch %llu != %llu.\n", name, buff[0]->sizes[cv], sizeof(T));
+    } else if (buff[0]->lengths[cv] != I * J * K * W) {
+        DTHROW("Environment macro property with name: %s total length mismatch (%u != %u).\n", name, buff[0]->lengths[cv], I * J * K * W);
     } else {
-        return DeviceMacroProperty<T, I, J, K, W>(reinterpret_cast<T*>(detail::curve::detail::d_variables[cv]),
-            reinterpret_cast<unsigned int*>(detail::curve::detail::d_variables[cv] + (I * J * K * W * sizeof(T))));  // Read-write flag resides in 8 bits at the end of the buffer
+        return DeviceMacroProperty<T, I, J, K, W>(reinterpret_cast<T*>(buff[0]->variables[cv]),
+            reinterpret_cast<unsigned int*>(buff[0]->variables[cv] + (I * J * K * W * sizeof(T))));  // Read-write flag resides in 8 bits at the end of the buffer
     }
     return DeviceMacroProperty<T, I, J, K, W>(nullptr, nullptr);
 #else
-    return DeviceMacroProperty<T, I, J, K, W>(reinterpret_cast<T*>(detail::curve::detail::d_variables[cv]));
+    return DeviceMacroProperty<T, I, J, K, W>(reinterpret_cast<T*>(buff[0]->variables[cv]));
 #endif
 }
 #endif  // __CUDACC_RTC__

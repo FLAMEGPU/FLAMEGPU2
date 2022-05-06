@@ -120,8 +120,10 @@ class Curve {
      *
      * This function copies the host hash table to the device, it must be used prior to launching agent functions (and agent function conditions) if Curve has been updated.
      * 4 memcpys to device are always performed, CURVE does not track whether it has been changed internally.
+     * @param stream cuda stream for the copy
+     * @note This includes a stream sync, as this version of curve is shared between streams
      */
-    __host__ void updateDevice();
+    __host__ void updateDevice(cudaStream_t stream);
     /**
      * Function for un-registering a variable by a VariableHash
      *
@@ -585,10 +587,6 @@ class Curve {
      */
     template <typename T, unsigned int N, unsigned int M>
     __device__ __forceinline__ static void setArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
-    VariableHash h_hashes[MAX_VARIABLES];         // Host array of the hash values of registered variables
-    void* h_d_variables[MAX_VARIABLES];           // Host array of pointer to device memory addresses for variable storage
-    size_t h_sizes[MAX_VARIABLES];                // Host array of the sizes of registered variable types (Note: RTTI not supported in CUDA so this is the best we can do for now)
-    unsigned int h_lengths[MAX_VARIABLES];        // Host array of the length of registered variables (i.e: vector length)
     bool deviceInitialised;                       // Flag indicating that curve has/hasn't been initialised yet on a device.
 
 #ifndef __CUDACC_RTC__
@@ -628,7 +626,7 @@ class Curve {
     friend class flamegpu::CUDASimulation;
     /**
      * Wipes out host mirrors of device memory
-     * Only really to be used after calls to cudaDeviceReset()
+     * Only really to be used after calls to cudaDeviceReset(), as this does not free device allocations
      * @param stream CUDA stream to be passed to initialiseDevice()
      */
     __host__ void purge(cudaStream_t stream);
@@ -644,7 +642,18 @@ class Curve {
     Curve();
 
  public:
+     ~Curve();
+     struct CurveTable {
+         Curve::VariableHash hashes[Curve::MAX_VARIABLES];   // Device array of the hash values of registered variables
+         char* variables[Curve::MAX_VARIABLES];                // Device array of pointer to device memory addresses for variable storage
+         size_t sizes[Curve::MAX_VARIABLES];                // Device array of the types of registered variables
+         unsigned int lengths[Curve::MAX_VARIABLES];
+     } h_curve_table, * d_curve_table;
 #ifndef __CUDACC_RTC__
+    /**
+     * Returns the pointer to curve in device memory
+     */
+    const CurveTable *getDevicePtr() const;
     /**
      * @brief    Gets the instance.
      *
@@ -652,17 +661,9 @@ class Curve {
      */
     static Curve& getInstance();
     static std::mutex instance_mutex;
+
 #endif
 };
-
-
-namespace detail {
-    extern __constant__ Curve::VariableHash d_hashes[Curve::MAX_VARIABLES];   // Device array of the hash values of registered variables
-    extern __device__ char* d_variables[Curve::MAX_VARIABLES];                // Device array of pointer to device memory addresses for variable storage
-    extern __constant__ size_t d_sizes[Curve::MAX_VARIABLES];                // Device array of the types of registered variables
-    extern __constant__ unsigned int d_lengths[Curve::MAX_VARIABLES];
-}  // namespace detail
-
 
 /* TEMPLATE HASHING FUNCTIONS */
 
@@ -710,9 +711,10 @@ __host__ void Curve::unregisterVariable(const char(&variableName)[N]) {
 */
 /* loop unrolling of hash collision detection */
 __device__ __forceinline__ Curve::Variable Curve::getVariable(const VariableHash variable_hash) {
+    extern __shared__ const CurveTable* buff[];
     for (unsigned int x = 0; x< MAX_VARIABLES; x++) {
         const Variable i = ((variable_hash + x) & (MAX_VARIABLES - 1));
-        const VariableHash h = curve::detail::d_hashes[i];
+        const VariableHash h = buff[0]->hashes[i];
         if (h == variable_hash)
             return i;
     }
@@ -725,20 +727,23 @@ __device__ __host__ __forceinline__ Curve::VariableHash Curve::variableHash(cons
     return CurveStringHash<N, N>::Hash(str);
 }
 __device__ __forceinline__ size_t Curve::getVariableSize(const VariableHash variable_hash) {
+    extern __shared__ const CurveTable* buff[];
     Variable cv;
 
     cv = getVariable(variable_hash);
 
-    return curve::detail::d_sizes[cv];
+    return buff[0]->sizes[cv];
 }
 __device__ __forceinline__ unsigned int Curve::getVariableLength(const VariableHash variable_hash) {
+    extern __shared__ const CurveTable* buff[];
     Variable cv;
 
     cv = getVariable(variable_hash);
 
-    return curve::detail::d_lengths[cv];
+    return buff[0]->lengths[cv];
 }
 __device__ __forceinline__ void* Curve::getVariablePtrByHash(const VariableHash variable_hash, size_t offset) {
+    extern __shared__ const CurveTable* buff[];
     Variable cv;
 
     cv = getVariable(variable_hash);
@@ -749,12 +754,12 @@ __device__ __forceinline__ void* Curve::getVariablePtrByHash(const VariableHash 
     }
 
     // check vector length
-    if (offset > curve::detail::d_sizes[cv] * curve::detail::d_lengths[cv]) {  // Note : offset is basicly index * sizeof(T)
+    if (offset > buff[0]->sizes[cv] * buff[0]->lengths[cv]) {  // Note : offset is basicly index * sizeof(T)
         return nullptr;
     }
 #endif
     // return a generic pointer to variable address for given offset (no bounds checking here!)
-    return curve::detail::d_variables[cv] + offset;
+    return buff[0]->variables[cv] + offset;
 }
 template <typename T>
 __device__ __forceinline__ T Curve::getVariableByHash(const VariableHash variable_hash, unsigned int index) {
@@ -852,6 +857,7 @@ __device__ __forceinline__ T Curve::getMessageVariable(const char (&variableName
 }
 template <typename T, unsigned int N>
 __device__ __forceinline__ T Curve::getVariable(const char (&variableName)[N], VariableHash namespace_hash, unsigned int index) {
+    extern __shared__ const CurveTable* buff[];
     VariableHash variable_hash = variableHash(variableName);
 #if !defined(SEATBELTS) || SEATBELTS
     {
@@ -859,8 +865,8 @@ __device__ __forceinline__ T Curve::getVariable(const char (&variableName)[N], V
         if (cv ==  UNKNOWN_VARIABLE) {
             DTHROW("Curve variable with name '%s' was not found.\n", variableName);
             return {};
-        } else if (curve::detail::d_sizes[cv] != sizeof(T)) {
-            DTHROW("Curve variable with name '%s' type size mismatch %llu != %llu.\n", variableName, curve::detail::d_sizes[cv], sizeof(T));
+        } else if (buff[0]->sizes[cv] != sizeof(T)) {
+            DTHROW("Curve variable with name '%s' type size mismatch %llu != %llu.\n", variableName, buff[0]->sizes[cv], sizeof(T));
             return {};
         }
     }
@@ -877,6 +883,7 @@ __device__ __forceinline__ T Curve::getMessageVariable_ldg(const char (&variable
 }
 template <typename T, unsigned int N>
 __device__ __forceinline__ T Curve::getVariable_ldg(const char (&variableName)[N], VariableHash namespace_hash, unsigned int index) {
+    extern __shared__ const CurveTable* buff[];
     VariableHash variable_hash = variableHash(variableName);
 #if !defined(SEATBELTS) || SEATBELTS
     {
@@ -884,8 +891,8 @@ __device__ __forceinline__ T Curve::getVariable_ldg(const char (&variableName)[N
         if (cv ==  UNKNOWN_VARIABLE) {
             DTHROW("Curve variable with name '%s' was not found.\n", variableName);
             return {};
-        } else if (curve::detail::d_sizes[cv] != sizeof(T)) {
-            DTHROW("Curve variable with name '%s' type size mismatch %llu != %llu.\n", variableName, curve::detail::d_sizes[cv], sizeof(T));
+        } else if (buff[0]->sizes[cv] != sizeof(T)) {
+            DTHROW("Curve variable with name '%s' type size mismatch %llu != %llu.\n", variableName, buff[0]->sizes[cv], sizeof(T));
             return {};
         }
     }
@@ -907,6 +914,7 @@ __device__ __forceinline__ T Curve::getMessageArrayVariable(const char(&variable
 }
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ T Curve::getArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index) {
+    extern __shared__ const CurveTable* buff[];
     VariableHash variable_hash = variableHash(variableName);
 #if !defined(SEATBELTS) || SEATBELTS
     {
@@ -914,8 +922,8 @@ __device__ __forceinline__ T Curve::getArrayVariable(const char(&variableName)[M
         if (cv ==  UNKNOWN_VARIABLE) {
             DTHROW("Curve variable array with name '%s' was not found.\n", variableName);
             return {};
-        } else if (curve::detail::d_sizes[cv] != sizeof(T) * N) {
-            DTHROW("Curve variable array with name '%s', type size mismatch %llu != %llu.\n", variableName, curve::detail::d_sizes[cv], sizeof(T) * N);
+        } else if (buff[0]->sizes[cv] != sizeof(T) * N) {
+            DTHROW("Curve variable array with name '%s', type size mismatch %llu != %llu.\n", variableName, buff[0]->sizes[cv], sizeof(T) * N);
             return {};
         }
     }
@@ -938,6 +946,7 @@ __device__ __forceinline__ T Curve::getMessageArrayVariable_ldg(const char(&vari
 }
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ T Curve::getArrayVariable_ldg(const char(&variableName)[M], VariableHash namespace_hash, unsigned int agent_index, unsigned int array_index) {
+    extern __shared__ const CurveTable* buff[];
     VariableHash variable_hash = variableHash(variableName);
 #if !defined(SEATBELTS) || SEATBELTS
     {
@@ -945,8 +954,8 @@ __device__ __forceinline__ T Curve::getArrayVariable_ldg(const char(&variableNam
         if (cv ==  UNKNOWN_VARIABLE) {
             DTHROW("Curve variable array with name '%s' was not found.\n", variableName);
             return {};
-        } else if (curve::detail::d_sizes[cv] != sizeof(T) * N) {
-            DTHROW("Curve variable array with name '%s', type size mismatch %llu != %llu.\n", variableName, curve::detail::d_sizes[cv], sizeof(T) * N);
+        } else if (buff[0]->sizes[cv] != sizeof(T) * N) {
+            DTHROW("Curve variable array with name '%s', type size mismatch %llu != %llu.\n", variableName, buff[0]->sizes[cv], sizeof(T) * N);
             return {};
         }
     }
@@ -1005,6 +1014,7 @@ __device__ __forceinline__ void Curve::setNewAgentVariable(const char(&variableN
 }
 template <typename T, unsigned int N>
 __device__ __forceinline__ void Curve::setVariable(const char(&variableName)[N], VariableHash namespace_hash, T variable, unsigned int index) {
+    extern __shared__ const CurveTable* buff[];
     VariableHash variable_hash = variableHash(variableName);
 #if !defined(SEATBELTS) || SEATBELTS
     {
@@ -1012,8 +1022,8 @@ __device__ __forceinline__ void Curve::setVariable(const char(&variableName)[N],
         if (cv ==  UNKNOWN_VARIABLE) {
             DTHROW("Curve variable with name '%s' was not found.\n", variableName);
             return;
-        } else if (curve::detail::d_sizes[cv] != sizeof(T)) {
-            DTHROW("Curve variable with name '%s', type size mismatch %llu != %llu.\n", variableName, curve::detail::d_sizes[cv], sizeof(T));
+        } else if (buff[0]->sizes[cv] != sizeof(T)) {
+            DTHROW("Curve variable with name '%s', type size mismatch %llu != %llu.\n", variableName, buff[0]->sizes[cv], sizeof(T));
             return;
         }
     }
@@ -1034,6 +1044,7 @@ __device__ __forceinline__ void Curve::setNewAgentArrayVariable(const char(&vari
 }
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ void Curve::setArrayVariable(const char(&variableName)[M], VariableHash namespace_hash, T variable, unsigned int agent_index, unsigned int array_index) {
+    extern __shared__ const CurveTable* buff[];
     VariableHash variable_hash = variableHash(variableName);
 #if !defined(SEATBELTS) || SEATBELTS
     {
@@ -1041,8 +1052,8 @@ __device__ __forceinline__ void Curve::setArrayVariable(const char(&variableName
         if (cv ==  UNKNOWN_VARIABLE) {
             DTHROW("Curve variable array with name '%s' was not found.\n", variableName);
             return;
-        } else if (curve::detail::d_sizes[cv] != sizeof(T) * N) {
-            DTHROW("Curve variable array with name '%s', size mismatch %llu != %llu.\n", variableName, curve::detail::d_sizes[cv], sizeof(T) * N);
+        } else if (buff[0]->sizes[cv] != sizeof(T) * N) {
+            DTHROW("Curve variable array with name '%s', size mismatch %llu != %llu.\n", variableName, buff[0]->sizes[cv], sizeof(T) * N);
             return;
         }
     }
