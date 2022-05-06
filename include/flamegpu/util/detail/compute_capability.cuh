@@ -1,6 +1,8 @@
 #ifndef INCLUDE_FLAMEGPU_UTIL_DETAIL_COMPUTE_CAPABILITY_CUH_
 #define INCLUDE_FLAMEGPU_UTIL_DETAIL_COMPUTE_CAPABILITY_CUH_
 
+#include <vector>
+
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 
 namespace flamegpu {
@@ -30,6 +32,25 @@ int minimumCompiledComputeCapability();
  */
 bool checkComputeCapability(int deviceIndex);
 
+/**
+ * Get the comptue capabilities supported by the linked NVRTC, irrespective of whether FLAMEGPU was configured for that architecture.
+ * CUDA 11.2 or greater provides methods to make this dynamic. Older versions of CUDA are hardcoded (11.1, 11.0 and 10.x only).
+ * @return vector of compute capability integers ((major * 10) + minor) in ascending order 
+ */
+std::vector<int> getNVRTCSupportedComputeCapabilties();
+
+
+/**
+ * Get the best matching compute capability from a vector of compute capabililties in ascending order
+ * I.e. get the maximum CC value which is less than or equal to the target CC
+ *
+ * This method has been separated from JitifyCache::compileKernel so that it can be tested generically, without having to write tests which are relative to the linked nvrtc and/or the current device.
+ * 
+ * @param target compute capability to find the best match for
+ * @param archictectures a vector of architectures in ascending order
+ * @return the best compute capability to use (the largest value LE target), or 0 if none are appropriate.
+ */
+int selectAppropraiteComputeCapability(const int target, const std::vector<int>& architectures);
 }  // namespace compute_capability
 }  // namespace detail
 }  // namespace util
