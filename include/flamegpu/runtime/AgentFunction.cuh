@@ -18,6 +18,9 @@ typedef void(AgentFunctionWrapper)(
     exception::DeviceExceptionBuffer *error_buffer,
 #endif
     detail::curve::Curve::NamespaceHash instance_id_hash,
+#ifndef __CUDACC_RTC__
+    const detail::curve::Curve::CurveTable *d_curve_table,
+#endif
     detail::curve::Curve::NamespaceHash agent_func_name_hash,
     detail::curve::Curve::NamespaceHash messagename_inp_hash,
     detail::curve::Curve::NamespaceHash messagename_outp_hash,
@@ -36,6 +39,7 @@ typedef void(AgentFunctionWrapper)(
  * Initialises FLAMEGPU_API instance
  * @param error_buffer Buffer used for detecting and reporting exception::DeviceErrors (flamegpu must be built with SEATBELTS enabled for this to be used)
  * @param instance_id_hash CURVE hash of the CUDASimulation's instance id
+ * @param d_curve_table Pointer to curve hash table in device memory
  * @param agent_func_name_hash CURVE hash of the agent + function's names
  * @param messagename_inp_hash CURVE hash of the input message's name
  * @param messagename_outp_hash CURVE hash of the output message's name
@@ -58,6 +62,9 @@ __global__ void agent_function_wrapper(
     exception::DeviceExceptionBuffer *error_buffer,
 #endif
     detail::curve::Curve::NamespaceHash instance_id_hash,
+#ifndef __CUDACC_RTC__
+    const detail::curve::Curve::CurveTable* d_curve_table,
+#endif
     detail::curve::Curve::NamespaceHash agent_func_name_hash,
     detail::curve::Curve::NamespaceHash messagename_inp_hash,
     detail::curve::Curve::NamespaceHash messagename_outp_hash,
@@ -70,18 +77,21 @@ __global__ void agent_function_wrapper(
     unsigned int *scanFlag_agentDeath,
     unsigned int *scanFlag_messageOutput,
     unsigned int *scanFlag_agentOutput) {
-#if !defined(SEATBELTS) || SEATBELTS
-    // We place this at the start of shared memory, so we can locate it anywhere in device code without a reference
-    extern __shared__ exception::DeviceExceptionBuffer *buff[];
+    // We place these at the start of shared memory, so we can locate it anywhere in device code without a reference
     if (threadIdx.x == 0) {
-        buff[0] = error_buffer;
+        extern __shared__ const void* sm[];
+#ifndef __CUDACC_RTC__
+        sm[0] = d_curve_table;
+#endif
+#if !defined(SEATBELTS) || SEATBELTS
+        sm[1] = error_buffer;
+#endif
     }
 
     #if defined(__CUDACC__)  // @todo - This should not be required. This template should only ever be processed by a CUDA compiler.
     // Sync the block after Thread 0 has written to shared.
     __syncthreads();
     #endif  // __CUDACC__
-#endif
     // Must be terminated here, else AgentRandom has bounds issues inside DeviceAPI constructor
     if (DeviceAPI<MessageIn, MessageOut>::getThreadIndex() >= popNo)
         return;

@@ -14,62 +14,42 @@
 namespace flamegpu {
 namespace detail {
 namespace curve {
-namespace detail {
-    /**
-     * Curve hashtable, registered variable hash array
-     */
-    __constant__ Curve::VariableHash d_hashes[Curve::MAX_VARIABLES];
-    /**
-     * Curve hashtable, registered variable buffer array
-     */
-    __device__ char* d_variables[Curve::MAX_VARIABLES];
-    /**
-     * Curve hashtable, registered variable size array
-     * For array variables this holds: elements * type_size
-     */
-    __constant__ size_t d_sizes[Curve::MAX_VARIABLES];
-    /**
-     * Curve hashtable, registered variable buffer length array
-     * Holds the length of the buffer (in terms of agents/items, rather than bytes)
-     */
-    __constant__ unsigned int d_lengths[Curve::MAX_VARIABLES];
-}  // namespace detail
 
 std::mutex Curve::instance_mutex;
 
 /* header implementations */
-__host__ Curve::Curve() :
-    deviceInitialised(false) {
+__host__ Curve::Curve()
+    : deviceInitialised(false)
+    , d_curve_table(nullptr) {
+}
+__host__ Curve::~Curve() {
+    if (d_curve_table) {
+        gpuErrchk(cudaFree(d_curve_table));
+        d_curve_table = nullptr;
+    }
 }
 __host__ void Curve::purge(cudaStream_t stream) {
     auto lock = std::unique_lock<std::shared_timed_mutex>(mutex);
+    if (d_curve_table) {
+        // gpuErrchk(cudaFree(d_curve_table));  // This fails if called after device reset
+        d_curve_table = nullptr;
+    }
     deviceInitialised = false;
     initialiseDevice(stream);
 }
 __host__ void Curve::initialiseDevice(cudaStream_t stream) {
     // Don't lock mutex here, do it in the calling method
     if (!deviceInitialised) {
-        unsigned int *_d_hashes;
-        char** _d_variables;
-        unsigned int* _d_lengths;
-        size_t* _d_sizes;
-
         // get a host pointer to d_hashes and d_variables
-        gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_hashes), curve::detail::d_hashes));
-        gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_variables), curve::detail::d_variables));
-        gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_lengths), curve::detail::d_lengths));
-        gpuErrchk(cudaGetSymbolAddress(reinterpret_cast<void **>(&_d_sizes), curve::detail::d_sizes));
+        gpuErrchk(cudaMalloc(&d_curve_table, sizeof(CurveTable)));
 
         // set values of hash table to 0 on host and device
-        memset(h_hashes, 0, sizeof(unsigned int)*MAX_VARIABLES);
-        memset(h_lengths, 0, sizeof(unsigned int)*MAX_VARIABLES);
-        memset(h_sizes, 0, sizeof(size_t)*MAX_VARIABLES);
+        memset(h_curve_table.hashes, 0, sizeof(unsigned int)*MAX_VARIABLES);
+        memset(h_curve_table.lengths, 0, sizeof(unsigned int)*MAX_VARIABLES);
+        memset(h_curve_table.sizes, 0, sizeof(size_t)*MAX_VARIABLES);
 
         // initialise data to 0 on device
-        gpuErrchk(cudaMemsetAsync(_d_hashes, 0, sizeof(unsigned int)*MAX_VARIABLES, stream));
-        gpuErrchk(cudaMemsetAsync(_d_variables, 0, sizeof(void*)*MAX_VARIABLES, stream));
-        gpuErrchk(cudaMemsetAsync(_d_lengths, 0, sizeof(unsigned int)*MAX_VARIABLES, stream));
-        gpuErrchk(cudaMemsetAsync(_d_sizes, 0, sizeof(size_t)*MAX_VARIABLES, stream));
+        gpuErrchk(cudaMemsetAsync(d_curve_table, 0, sizeof(CurveTable), stream));
     }
     deviceInitialised = true;
 }
@@ -95,8 +75,8 @@ __host__ Curve::Variable Curve::getVariableHandle(VariableHash variable_hash) {
     unsigned int n = 0;
     unsigned int i = (variable_hash) % MAX_VARIABLES;
 
-    while (h_hashes[i] != EMPTY_FLAG) {
-        if (h_hashes[i] == variable_hash) {
+    while (h_curve_table.hashes[i] != EMPTY_FLAG) {
+        if (h_curve_table.hashes[i] == variable_hash) {
             return i;
         }
         n += 1;
@@ -121,7 +101,7 @@ __host__ Curve::Variable Curve::_registerVariableByHash(VariableHash variable_ha
     assert(variable_hash != EMPTY_FLAG);
     assert(variable_hash != DELETED_FLAG);
     unsigned int i = (variable_hash) % MAX_VARIABLES;
-    while (h_hashes[i] != EMPTY_FLAG && h_hashes[i] != DELETED_FLAG) {
+    while (h_curve_table.hashes[i] != EMPTY_FLAG && h_curve_table.hashes[i] != DELETED_FLAG) {
         n += 1;
         if (n >= MAX_VARIABLES) {
             return UNKNOWN_VARIABLE;
@@ -132,16 +112,16 @@ __host__ Curve::Variable Curve::_registerVariableByHash(VariableHash variable_ha
         }
     }
 
-    h_hashes[i] = variable_hash;
+    h_curve_table.hashes[i] = variable_hash;
 
     // make a host copy of the pointer
-    h_d_variables[i] = d_ptr;
+    h_curve_table.variables[i] = reinterpret_cast<char*>(d_ptr);
 
     // set the size of the data type
-    h_sizes[i] = size;
+    h_curve_table.sizes[i] = size;
 
     // set the length of variable
-    h_lengths[i] = length;
+    h_curve_table.lengths[i] = length;
 
     return i;
 }
@@ -151,7 +131,7 @@ __host__ int Curve::size() const {
 }
 __host__ int Curve::_size() const {
     int rtn = 0;
-    for (unsigned int hash : h_hashes) {
+    for (unsigned int hash : h_curve_table.hashes) {
         if (hash != EMPTY_FLAG && hash != DELETED_FLAG)
             rtn++;
     }
@@ -175,27 +155,28 @@ __host__ void Curve::_unregisterVariableByHash(VariableHash variable_hash) {
     }
 
     // clear hash location on host and copy hash to device
-    h_hashes[cv] = DELETED_FLAG;
+    h_curve_table.hashes[cv] = DELETED_FLAG;
 
     // set a host pointer to nullptr and copy to the device
-    h_d_variables[cv] = 0;
+    h_curve_table.variables[cv] = 0;
 
     // set the empty size to 0
-    h_sizes[cv] = 0;
+    h_curve_table.sizes[cv] = 0;
 
     // set the length of variable to 0
-    h_lengths[cv] = 0;
+    h_curve_table.lengths[cv] = 0;
 }
-__host__ void Curve::updateDevice() {
+__host__ void Curve::updateDevice(const cudaStream_t stream) {
     auto lock = std::shared_lock<std::shared_timed_mutex>(mutex);
     NVTX_RANGE("Curve::updateDevice()");
     // Initialise the device (if required)
     assert(deviceInitialised);  // No reason for this to ever fail. Purge calls init device
     // Copy
-    gpuErrchk(cudaMemcpyToSymbol(curve::detail::d_hashes, h_hashes, sizeof(unsigned int) * MAX_VARIABLES));
-    gpuErrchk(cudaMemcpyToSymbol(curve::detail::d_variables, h_d_variables, sizeof(void*) * MAX_VARIABLES));
-    gpuErrchk(cudaMemcpyToSymbol(curve::detail::d_sizes, h_sizes, sizeof(size_t) * MAX_VARIABLES));
-    gpuErrchk(cudaMemcpyToSymbol(curve::detail::d_lengths, h_lengths, sizeof(unsigned int) * MAX_VARIABLES));
+    gpuErrchk(cudaMemcpyAsync(d_curve_table, &h_curve_table, sizeof(CurveTable), cudaMemcpyHostToDevice, stream));
+    gpuErrchk(cudaStreamSynchronize(stream));
+}
+__host__ const Curve::CurveTable *Curve::getDevicePtr() const {
+    return d_curve_table;
 }
 
 Curve& Curve::getInstance() {

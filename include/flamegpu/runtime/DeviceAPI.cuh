@@ -41,9 +41,12 @@ class ReadOnlyDeviceAPI {
     template<typename AgentFunctionCondition>
     friend __global__ void agent_function_condition_wrapper(
 #if !defined(SEATBELTS) || SEATBELTS
-        exception::DeviceExceptionBuffer *error_buffer,
+        exception::DeviceExceptionBuffer *,
 #endif
         detail::curve::Curve::NamespaceHash,
+#ifndef __CUDACC_RTC__
+        const detail::curve::Curve::CurveTable *,
+#endif
         detail::curve::Curve::NamespaceHash,
         const unsigned int,
         curandState *,
@@ -153,9 +156,12 @@ class DeviceAPI {
     template<typename AgentFunction, typename _MessageIn, typename _MessageOut>
     friend __global__ void agent_function_wrapper(
 #if !defined(SEATBELTS) || SEATBELTS
-        exception::DeviceExceptionBuffer *error_buffer,
+        exception::DeviceExceptionBuffer *,
 #endif
         detail::curve::Curve::NamespaceHash,
+#ifndef __CUDACC_RTC__
+        const detail::curve::Curve::CurveTable *,
+#endif
         detail::curve::Curve::NamespaceHash,
         detail::curve::Curve::NamespaceHash,
         detail::curve::Curve::NamespaceHash,
