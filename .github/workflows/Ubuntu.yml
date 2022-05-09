@@ -37,10 +37,6 @@ jobs:
             cuda_arch: "35"
             hostcxx: gcc-8
             os: ubuntu-20.04
-          - cuda: "10.0"
-            cuda_arch: "35"
-            hostcxx: gcc-7
-            os: ubuntu-18.04
         python: 
           - "3.8"
         config:
@@ -55,9 +51,6 @@ jobs:
           # Exclude VIS=ON for old cuda's.
           - cudacxx:
               cuda: "11.0"
-            VISUALISATION: "ON"
-          - cudacxx:
-              cuda: "10.0"
             VISUALISATION: "ON"
 
     # Name the job based on matrix/env options

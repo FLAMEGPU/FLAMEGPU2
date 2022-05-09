@@ -80,8 +80,6 @@ jobs:
     # Downgrade the devtoolset in the image based on the build matrix, using:
     # gcc-10 for CUDA >= 11.2. Unclear if devtoolset-10 will upgrade to unpatched 11.3 which breaks CUDA builds that use <chrono>. 
     # gcc-9 for CUDA >= 11.0
-    # gcc-8 for CUDA >= 10.1
-    # gcc-7 for CUDA >= 10.0 (and probably 9.x).
     # these are not the officially supported toolset on centos by cuda, but it's what works.
     - name: Install RHEL devtoolset (CentOS)
       if: ${{ startsWith(env.HOSTCXX, 'devtoolset-') }}

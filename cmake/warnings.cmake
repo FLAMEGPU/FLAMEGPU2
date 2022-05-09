@@ -177,10 +177,8 @@ if(NOT COMMAND EnableWarningsAsErrors)
             # Platform/host-compiler indifferent options:
             # Generic WError settings for nvcc
             target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xptxas=\"-Werror\" -Xnvlink=\"-Werror\">")
-            # If CUDA 10.2+, add all_warnings to the Werror option
-            if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "10.2")
-                target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror all-warnings>")
-            endif()
+            # Add all_warnings to the Werror option (supported by all CUDA 11.x+)
+            target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror all-warnings>")
         endif()
     endfunction()
 endif()

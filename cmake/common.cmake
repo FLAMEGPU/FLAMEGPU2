@@ -88,6 +88,7 @@ endif()
 if(USE_NVTX)
     # Find the nvtx library using custom cmake module, providing imported targets
     # Do not use CUDA::nvToolsExt as this always uses NVTX1 not 3.
+    # See https://gitlab.kitware.com/cmake/cmake/-/issues/21377
     find_package(NVTX)
     # If the targets were not found, emit a warning 
     if(NOT TARGET NVTX::nvtx)
@@ -100,9 +101,9 @@ if(USE_NVTX)
 endif(USE_NVTX)
 
 # Set the minimum supported cuda version, if not already set. Currently duplicated due to docs only build logic.
-# CUDA 10.0 is the current minimum working but deprecated verison, which will be removed.
+# CUDA 11.0 is current minimum cuda version, and the minimum supported
 if(NOT DEFINED MINIMUM_CUDA_VERSION)
-    set(MINIMUM_CUDA_VERSION 10.0)
+    set(MINIMUM_CUDA_VERSION 11.0)
     # Require a minimum cuda version
     if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_CUDA_VERSION})
         message(FATAL_ERROR "CUDA version must be at least ${MINIMUM_CUDA_VERSION}")
