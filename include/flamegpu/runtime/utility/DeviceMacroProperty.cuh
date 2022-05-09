@@ -5,6 +5,30 @@
 #include <limits>
 #include <algorithm>
 
+/**
+ * CUDA does not implement atomicAdd(double*, double) for pre-pascal GPUs, which do not have the underlying hardware instruction.
+ * A CAS based software implementation is required instead, which will be much slower.
+ * This implementation is based on the reference implementation prodived by the CUDA toolkit documentation.
+ */
+#ifdef __CUDACC__
+#include <cuda_runtime.h>
+// Needs to be mutually exclusive with definitions in CUDA's sm_60_atomic_functions.h
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ < 600
+__device__ __forceinline__ double atomicAdd(double* address, double val) {
+    // cpplint enforces uint64_t, but atomicCAS is implemented for unsigned long long int
+    unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(address);  // NOLINT(runtime/int)
+    unsigned long long int old = *address_as_ull;  // NOLINT(runtime/int)
+    unsigned long long int assumed = old;  // NOLINT(runtime/int)
+    do {
+        assumed = old;
+        old = atomicCAS(address_as_ull, assumed, __double_as_longlong(val + __longlong_as_double(assumed)));
+    // Note: uses integer comparison to avoid hang in case of NaN (since NaN != NaN)
+    } while (assumed != old);
+    return __longlong_as_double(old);
+}
+#endif  // __CUDA_ARCH__ < 600
+#endif  // __CUDAACC__
+
 namespace flamegpu {
 
 /**
