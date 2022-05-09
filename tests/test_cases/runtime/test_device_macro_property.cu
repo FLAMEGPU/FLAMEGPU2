@@ -87,24 +87,29 @@ TEST(DeviceMacroPropertyTest, DISABLED_ReadWrite) {
 
 FLAMEGPU_AGENT_FUNCTION(Init_add, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->environment.getMacroProperty<unsigned int>("int").exchange(1);
+    FLAMEGPU->environment.getMacroProperty<double>("double").exchange(1);
     return flamegpu::ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(Write_add, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->environment.getMacroProperty<unsigned int>("int") += FLAMEGPU->getVariable<unsigned int>("a");
+    FLAMEGPU->environment.getMacroProperty<double>("double") += static_cast<double>(FLAMEGPU->getVariable<unsigned int>("a"));
     return flamegpu::ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(Read_add, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->setVariable<unsigned int>("b", FLAMEGPU->environment.getMacroProperty<unsigned int>("int"));
+    FLAMEGPU->setVariable<double>("c", FLAMEGPU->environment.getMacroProperty<double>("double"));
     return flamegpu::ALIVE;
 }
 TEST(DeviceMacroPropertyTest, add) {
     ModelDescription model("device_env_test");
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
+    model.Environment().newMacroProperty<double>("double");
     // Setup agent fn
     AgentDescription& agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
+    agent.newVariable<double>("c");
     AgentFunctionDescription& initFn = agent.newFunction("init", Init_add);
     AgentFunctionDescription& writeFn = agent.newFunction("write", Write_add);
     AgentFunctionDescription& readFn = agent.newFunction("read", Read_add);
@@ -119,8 +124,14 @@ TEST(DeviceMacroPropertyTest, add) {
     cudaSimulation.setPopulationData(population);
     ASSERT_NO_THROW(cudaSimulation.simulate());
     ASSERT_NO_THROW(cudaSimulation.getPopulationData(population));
-    const unsigned int t_out = population.at(0).getVariable<unsigned int>("b");
-    ASSERT_EQ(13u, t_out);
+    const unsigned int b_out = population.at(0).getVariable<unsigned int>("b");
+    EXPECT_EQ(13u, b_out);
+    const double c_out = population.at(0).getVariable<double>("c");
+    EXPECT_DOUBLE_EQ(13.0, c_out);
+}
+FLAMEGPU_AGENT_FUNCTION(Init_add2, flamegpu::MessageNone, flamegpu::MessageNone) {
+    FLAMEGPU->environment.getMacroProperty<unsigned int>("int").exchange(1);
+    return flamegpu::ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(Write_add2, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->setVariable<unsigned int>("b", FLAMEGPU->environment.getMacroProperty<unsigned int>("int") + FLAMEGPU->getVariable<unsigned int>("a"));
@@ -139,7 +150,7 @@ TEST(DeviceMacroPropertyTest, add2) {
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<unsigned int>("c");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_add);
+    AgentFunctionDescription& initFn = agent.newFunction("init", Init_add2);
     AgentFunctionDescription& writeFn = agent.newFunction("write", Write_add2);
     AgentFunctionDescription& checkFn = agent.newFunction("check", Write_2check);
     model.newLayer().addAgentFunction(initFn);
@@ -227,7 +238,10 @@ TEST(DeviceMacroPropertyTest, sub2) {
     const unsigned int t_out2 = population.at(0).getVariable<unsigned int>("c");
     ASSERT_EQ(25u, t_out2);
 }
-
+FLAMEGPU_AGENT_FUNCTION(Init_postincrement, flamegpu::MessageNone, flamegpu::MessageNone) {
+    FLAMEGPU->environment.getMacroProperty<unsigned int>("int").exchange(1);
+    return flamegpu::ALIVE;
+}
 FLAMEGPU_AGENT_FUNCTION(Write_postincrement, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<unsigned int>("b", FLAMEGPU->environment.getMacroProperty<unsigned int>("int")++);
     return ALIVE;
@@ -244,7 +258,7 @@ TEST(DeviceMacroPropertyTest, postincrement) {
     AgentDescription& agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<unsigned int>("c");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_add);
+    AgentFunctionDescription& initFn = agent.newFunction("init", Init_postincrement);
     AgentFunctionDescription& writeFn = agent.newFunction("write", Write_postincrement);
     AgentFunctionDescription& readFn = agent.newFunction("read", Read_increment);
     model.newLayer().addAgentFunction(initFn);
@@ -262,6 +276,10 @@ TEST(DeviceMacroPropertyTest, postincrement) {
     const unsigned int t_out2 = population.at(0).getVariable<unsigned int>("c");
     ASSERT_EQ(2u, t_out2);
 }
+FLAMEGPU_AGENT_FUNCTION(Init_preincrement, flamegpu::MessageNone, flamegpu::MessageNone) {
+    FLAMEGPU->environment.getMacroProperty<unsigned int>("int").exchange(1);
+    return flamegpu::ALIVE;
+}
 FLAMEGPU_AGENT_FUNCTION(Write_preincrement, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<unsigned int>("b", ++FLAMEGPU->environment.getMacroProperty<unsigned int>("int"));
     return ALIVE;
@@ -274,7 +292,7 @@ TEST(DeviceMacroPropertyTest, preincrement) {
     AgentDescription& agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<unsigned int>("c");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_add);
+    AgentFunctionDescription& initFn = agent.newFunction("init", Init_preincrement);
     AgentFunctionDescription& writeFn = agent.newFunction("write", Write_preincrement);
     AgentFunctionDescription& readFn = agent.newFunction("read", Read_increment);
     model.newLayer().addAgentFunction(initFn);
