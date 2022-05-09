@@ -43,13 +43,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/cxxstd.cmake)
 
 # Set a default build type if not passed
 get_property(GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-if(${GENERATOR_IS_MULTI_CONFIG})
-    # CMAKE_CONFIGURATION_TYPES defaults to something platform specific
-    # Therefore can't detect if user has changed value and not reset it
-    # So force "Debug;Release"
-    # set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE INTERNAL
-        # "Choose the types of build, options are: Debug Release." FORCE)#
-else()
+if(NOT ${GENERATOR_IS_MULTI_CONFIG})
     if(NOT CMAKE_BUILD_TYPE)
         set(default_build_type "Release")
         message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
@@ -224,7 +218,8 @@ function(CommonCompilerSettings)
     target_compile_definitions(${CCS_TARGET} PRIVATE $<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CONFIG:Debug>>:DEBUG>)
     target_compile_definitions(${CCS_TARGET} PRIVATE $<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CONFIG:Debug>>:_DEBUG>)
     # Enable -lineinfo for Release builds, for improved profiling output.
-    target_compile_options(${CCS_TARGET} PRIVATE "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CONFIG:Release>>:-lineinfo>")
+    # CMAKE >=3.19 required for multivalue CONFIG:
+    target_compile_options(${CCS_TARGET} PRIVATE "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>,$<CONFIG:RelWithDebInfo>>>:-lineinfo>")
 
     # Set an NVCC flag which allows host constexpr to be used on the device.
     target_compile_options(${CCS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>")
@@ -239,7 +234,7 @@ function(CommonCompilerSettings)
         # If on, all build configs have  seatbelts
         target_compile_definitions(${CCS_TARGET} PRIVATE SEATBELTS=1)
     else()
-        # Id off, debug builds have seatbelts, non debug builds do not.
+        # If off, debug builds have seatbelts, non debug builds do not.
         target_compile_definitions(${CCS_TARGET} PRIVATE $<IF:$<CONFIG:Debug>,SEATBELTS=1,SEATBELTS=0>)
     endif()
 
