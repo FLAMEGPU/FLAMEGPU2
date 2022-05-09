@@ -6,13 +6,13 @@
 #include <unordered_map>
 #include <utility>
 #include <algorithm>
+#include <filesystem>
 
 #include "flamegpu/io/StateReader.h"
 #include "flamegpu/io/XMLStateReader.h"
 #include "flamegpu/io/JSONStateReader.h"
 #include "flamegpu/util/StringPair.h"
 #include "flamegpu/util/StringUint32Pair.h"
-#include "flamegpu/util/detail/filesystem.h"
 
 namespace flamegpu {
 class AgentVector;
@@ -43,11 +43,11 @@ class StateReaderFactory {
         util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>& model_state,
         const std::string& input,
         Simulation* sim_instance) {
-        const std::string extension = util::detail::filesystem::getFileExt(input);
+        const std::string extension = std::filesystem::path(input).extension().string();
 
-        if (extension == "xml") {
+        if (extension == ".xml") {
             return new XMLStateReader(model_name, env_desc, env_init, model_state, input, sim_instance);
-        } else if (extension == "json") {
+        } else if (extension == ".json") {
             return new JSONStateReader(model_name, env_desc, env_init, model_state, input, sim_instance);
         }
         THROW exception::UnsupportedFileType("File '%s' is not a type which can be read "

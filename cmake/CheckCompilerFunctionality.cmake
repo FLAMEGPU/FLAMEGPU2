@@ -39,8 +39,8 @@ function(CheckCompilerFunctionality)
                 GCC_CUDA_STDCHRONO
                 "${CMAKE_CURRENT_BINARY_DIR}/try_compile"
                 "${CMAKE_CURRENT_LIST_DIR}/CheckCompilerFunctionality/CheckStdChrono.cu"
-                CXX_STANDARD 14
-                CUDA_STANDARD 14
+                CXX_STANDARD 17
+                CUDA_STANDARD 17
                 CXX_STANDARD_REQUIRED "ON"
             )
         endif()
@@ -64,15 +64,6 @@ function(CheckCompilerFunctionality)
             set(CheckCompilerFunctionality_RESULT "NO" PARENT_SCOPE)
             return()
         endif()
-    endif()
-
-    # GCC > 6 is required for building the test suite with c++14. 
-    # When C++14 is dropped, this change can be replaced, as C++14 requires GCC 7 (or maybe 8 for __cpp_deduction_guides >= 201611)
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6)
-        set(DOCUMENTATION_ONLY_BUILD ON)      
-        message(WARNING "GCC/G++ >= 6 is required for compilation.")
-        set(CheckCompilerFunctionality_RESULT "NO" PARENT_SCOPE)
-        return()
     endif()
 
     # If we made it this far, set the result variable to be truthy

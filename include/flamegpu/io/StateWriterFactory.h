@@ -13,7 +13,6 @@
 #include "flamegpu/io/JSONLogger.h"
 #include "flamegpu/io/XMLLogger.h"
 #include "flamegpu/util/StringPair.h"
-#include "flamegpu/util/detail/filesystem.h"
 
 namespace flamegpu {
 
@@ -45,11 +44,11 @@ class StateWriterFactory {
         const unsigned int& iterations,
         const std::string& output_file,
         const Simulation* sim_instance) {
-        const std::string extension = util::detail::filesystem::getFileExt(output_file);
+        const std::string extension = std::filesystem::path(output_file).extension().string();
 
-        if (extension == "xml") {
+        if (extension == ".xml") {
             return new XMLStateWriter(model_name, sim_instance_id, model_state, iterations, output_file, sim_instance);
-        } else if (extension == "json") {
+        } else if (extension == ".json") {
             return new JSONStateWriter(model_name, sim_instance_id, model_state, iterations, output_file, sim_instance);
         }
         THROW exception::UnsupportedFileType("File '%s' is not a type which can be written "

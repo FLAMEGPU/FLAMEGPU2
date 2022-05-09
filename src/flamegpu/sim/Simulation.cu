@@ -14,7 +14,6 @@
 #include "flamegpu/pop/AgentVector.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/util/nvtx.h"
-#include "flamegpu/util/detail/filesystem.h"
 
 
 namespace flamegpu {
@@ -71,33 +70,33 @@ void Simulation::applyConfig() {
     }
     // Create directory for log files
     if (!config.step_log_file.empty()) {
-        path t_path = config.step_log_file;
+        std::filesystem::path t_path = config.step_log_file;
         try {
             t_path = t_path.parent_path();
             if (!t_path.empty()) {
-                util::detail::filesystem::recursive_create_dir(t_path);
+                std::filesystem::create_directories(t_path);
             }
         } catch(std::exception &e) {
             THROW exception::InvalidArgument("Failed to create step log file directory '%s': %s\n", t_path.c_str(), e.what());
         }
     }
     if (!config.exit_log_file.empty()) {
-        path t_path = config.exit_log_file;
+        std::filesystem::path t_path = config.exit_log_file;
         try {
             t_path = t_path.parent_path();
             if (!t_path.empty()) {
-                util::detail::filesystem::recursive_create_dir(t_path);
+                std::filesystem::create_directories(t_path);
             }
         } catch(std::exception &e) {
             THROW exception::InvalidArgument("Failed to create exit log file directory: '%s': %s\n", t_path.c_str(), e.what());
         }
     }
     if (!config.common_log_file.empty()) {
-        path t_path = config.common_log_file;
+        std::filesystem::path t_path = config.common_log_file;
         try {
             t_path = t_path.parent_path();
             if (!t_path.empty()) {
-                util::detail::filesystem::recursive_create_dir(t_path);
+                std::filesystem::create_directories(t_path);
             }
         } catch (std::exception& e) {
             THROW exception::InvalidArgument("Failed to create common log file directory: '%s': %s\n", t_path.c_str(), e.what());

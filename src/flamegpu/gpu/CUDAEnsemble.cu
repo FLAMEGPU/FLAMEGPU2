@@ -8,6 +8,7 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable>
+#include <filesystem>
 
 #include "flamegpu/version.h"
 #include "flamegpu/model/ModelDescription.h"
@@ -16,7 +17,6 @@
 #include "flamegpu/util/detail/SteadyClockTimer.h"
 #include "flamegpu/gpu/CUDASimulation.h"
 #include "flamegpu/io/StateWriterFactory.h"
-#include "flamegpu/util/detail/filesystem.h"
 #include "flamegpu/sim/LoggingConfig.h"
 #include "flamegpu/sim/SimRunner.h"
 #include "flamegpu/sim/LogFrame.h"
@@ -49,17 +49,17 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
         }
         // Create any missing directories
         try {
-            util::detail::filesystem::recursive_create_dir(config.out_directory);
+            std::filesystem::create_directories(config.out_directory);
         } catch (const std::exception &e) {
             THROW exception::InvalidArgument("Unable to use output directory '%s', in CUDAEnsemble::simulate(): %s", config.out_directory.c_str(), e.what());
         }
         for (const auto &p : plans) {
             const auto subdir = p.getOutputSubdirectory();
             if (!subdir.empty()) {
-                path sub_path = config.out_directory;
+                std::filesystem::path sub_path = config.out_directory;
                 try {
                     sub_path.append(subdir);
-                    util::detail::filesystem::recursive_create_dir(sub_path);
+                    std::filesystem::create_directories(sub_path);
                 } catch (const std::exception &e) {
                     THROW exception::InvalidArgument("Unable to use output subdirectory '%s', in CUDAEnsemble::simulate(): %s", sub_path.generic_string().c_str(), e.what());
                 }
@@ -261,8 +261,8 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
             }
             // Validate output directory is valid (and recursively create it if necessary)
             try {
-                path out_directory = argv[++i];
-                util::detail::filesystem::recursive_create_dir(out_directory);
+                std::filesystem::path out_directory = argv[++i];
+                std::filesystem::create_directories(out_directory);
                 config.out_directory = out_directory.generic_string();
             } catch (const std::exception &e) {
                 // Catch any exceptions, probably std::filesystem::filesystem_error, but other implementation defined errors also possible

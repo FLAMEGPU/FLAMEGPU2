@@ -100,11 +100,6 @@ if(NOT COMMAND SuppressSomeCompilerWarnings)
             # C4127: conditional expression is constant. Longer term true static assertions would be better.
             target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler /wd4127>")
             target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:/wd4127>")
-            # Suppress some VS2015 specific warnings.
-            if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.10)
-                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler /wd4091>")
-                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:/wd4091>")
-            endif()
             # Suppress Fatbinc warnings on msvc at link time (CMake >= 3.18)
             target_link_options(${SSCW_TARGET} PRIVATE "$<DEVICE_LINK:SHELL:-Xcompiler /wd4100>")
             # CUDA 11.6 deprecates __device__ cudaDeviceSynchronize, but does not provide an alternative.

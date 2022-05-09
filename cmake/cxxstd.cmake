@@ -9,14 +9,17 @@ if(NOT FLAMEGPU_CXX_STD)
     endif()
 
     # Check MSVC version, VS 2017 version 15.3 added /std:c++17 - 1911
+    # Inside source code, __STDC_VERSION__ can be used on msvc, which will have a value such as 201710L for c++17
     if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.11)
             message(FATAL_ERROR "MSVC ${CMAKE_CXX_COMPILER_VERSION} does not support -std=c++17 (>= 19.11 required)")
         endif()
     endif()
 
-    # gcc supported C++17 since 5, so any version supported by cuda 10+ (no need to check, a configure time error will already occur.)
-    # Inside source code, __STDC_VERSION__ can be used on msvc, which will have a value such as 201710L for c++17
+    # GCC 8 required for <filesystem>
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.1)
+        message(FATAL_ERROR "GCC >= 8.1 required for -std=c++17 <filesystem>")
+    endif()
 
     # Set a cmake variable so this is only calcualted once, and can be applied afterwards.
     set(FLAMEGPU_CXX_STD 17)

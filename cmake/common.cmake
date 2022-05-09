@@ -242,8 +242,8 @@ function(CommonCompilerSettings)
         target_compile_definitions(${CCS_TARGET} PRIVATE $<IF:$<CONFIG:Debug>,SEATBELTS=1,SEATBELTS=0>)
     endif()
 
-    # MSVC handling of SYSTEM for external includes.
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.10)
+    # MSVC handling of SYSTEM for external includes, present in 19.10+
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         # These flags don't currently have any effect on how CMake passes system-private includes to msvc (VS 2017+)
         set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I")
         set(CMAKE_INCLUDE_SYSTEM_FLAG_CUDA "/external:I")

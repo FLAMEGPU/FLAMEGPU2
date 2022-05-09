@@ -202,7 +202,6 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/wddm.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/CUDAEventTimer.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/cxxname.hpp
-    ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/filesystem.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/SignalHandlers.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/StaticAssert.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/SteadyClockTimer.h
@@ -417,12 +416,6 @@ if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 else()
     # MSVC just includes cub via the CUB::CUB target as no isystem to worry about.
     target_link_libraries(${PROJECT_NAME} PUBLIC CUB::CUB)
-    # Same for Thrust.
-    # Visual studio 2015 needs to suppress deprecation messages from CUB/Thrust.
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.10)
-        target_compile_definitions(${PROJECT_NAME} PUBLIC "CUB_IGNORE_DEPRECATED_CPP_DIALECT")
-        target_compile_definitions(${PROJECT_NAME} PUBLIC "THRUST_IGNORE_DEPRECATED_CPP_DIALECT")
-    endif()
 endif()
 
 # Thrust uses isystem if available
@@ -455,8 +448,8 @@ endif()
 target_link_libraries(${PROJECT_NAME} PUBLIC Jitify::jitify)
 target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<COMPILE_LANGUAGE:C,CXX,CUDA>:JITIFY_PRINT_LOG>")
 
-# If gcc, need to add linker flag for std::experimental::filesystem pre c++17
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+# If gcc < 9, needs to link against stdc++fs
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
     target_link_libraries(${PROJECT_NAME} PUBLIC stdc++fs)
 endif()
 

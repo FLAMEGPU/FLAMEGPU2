@@ -1,21 +1,7 @@
 #include <chrono>
 #include <thread>
-// If earlier than VS 2019
-#if defined(_MSC_VER) && _MSC_VER < 1920
 #include <filesystem>
-using std::tr2::sys::exists;
-using std::tr2::sys::path;
-using std::tr2::sys::remove;
-using std::tr2::sys::remove_all;
-#else
-// VS2019 requires this macro, as building pre c++17 cant use std::filesystem
-#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
-#include <experimental/filesystem>
-using std::experimental::filesystem::v1::exists;
-using std::experimental::filesystem::v1::path;
-using std::experimental::filesystem::v1::remove;
-using std::experimental::filesystem::v1::remove_all;
-#endif
+
 #include "gtest/gtest.h"
 
 #include "flamegpu/flamegpu.h"
@@ -556,12 +542,12 @@ TEST(LoggingTest, CUDAEnsembleSimulate) {
 TEST(TestLogging, Simulation_ToFile_Step) {
     // Test that if we request a step log file to disk, we only get a step log file to disk
     // Note, it does not test the contents of the output file
-    const path step_file = "step.json";
-    const path exit_file = "exit.json";
-    const path common_file = "common.json";
-    ASSERT_FALSE(::exists(step_file));
-    ASSERT_FALSE(::exists(exit_file));
-    ASSERT_FALSE(::exists(common_file));
+    const std::filesystem::path step_file = "step.json";
+    const std::filesystem::path exit_file = "exit.json";
+    const std::filesystem::path common_file = "common.json";
+    ASSERT_FALSE(std::filesystem::exists(step_file));
+    ASSERT_FALSE(std::filesystem::exists(exit_file));
+    ASSERT_FALSE(std::filesystem::exists(common_file));
 
     // Define model
     ModelDescription m(MODEL_NAME);
@@ -606,23 +592,23 @@ TEST(TestLogging, Simulation_ToFile_Step) {
     // Call simulate(), and check step and exit logs match expectations
     sim.simulate();
     // Check
-    ASSERT_TRUE(::exists(step_file));
-    EXPECT_FALSE(::exists(exit_file));
-    EXPECT_FALSE(::exists(common_file));
+    ASSERT_TRUE(std::filesystem::exists(step_file));
+    EXPECT_FALSE(std::filesystem::exists(exit_file));
+    EXPECT_FALSE(std::filesystem::exists(common_file));
     // Cleanup
-    ASSERT_TRUE(::remove(step_file));
-    ::remove(exit_file);
-    ::remove(common_file);
+    ASSERT_TRUE(std::filesystem::remove(step_file));
+    std::filesystem::remove(exit_file);
+    std::filesystem::remove(common_file);
 }
 TEST(TestLogging, Simulation_ToFile_Exit) {
     // Test that if we request a exit log file to disk, we only get a exit log file to disk
     // Note, it does not test the contents of the output file
-    const path step_file = "step.json";
-    const path exit_file = "exit.json";
-    const path common_file = "common.json";
-    ASSERT_FALSE(::exists(step_file));
-    ASSERT_FALSE(::exists(exit_file));
-    ASSERT_FALSE(::exists(common_file));
+    const std::filesystem::path step_file = "step.json";
+    const std::filesystem::path exit_file = "exit.json";
+    const std::filesystem::path common_file = "common.json";
+    ASSERT_FALSE(std::filesystem::exists(step_file));
+    ASSERT_FALSE(std::filesystem::exists(exit_file));
+    ASSERT_FALSE(std::filesystem::exists(common_file));
 
     // Define model
     ModelDescription m(MODEL_NAME);
@@ -667,23 +653,23 @@ TEST(TestLogging, Simulation_ToFile_Exit) {
     // Call simulate(), and check step and exit logs match expectations
     sim.simulate();
     // Check
-    ASSERT_TRUE(::exists(exit_file));
-    EXPECT_FALSE(::exists(step_file));
-    EXPECT_FALSE(::exists(common_file));
+    ASSERT_TRUE(std::filesystem::exists(exit_file));
+    EXPECT_FALSE(std::filesystem::exists(step_file));
+    EXPECT_FALSE(std::filesystem::exists(common_file));
     // Cleanup
-    ASSERT_TRUE(::remove(exit_file));
-    ::remove(step_file);
-    ::remove(common_file);
+    ASSERT_TRUE(std::filesystem::remove(exit_file));
+    std::filesystem::remove(step_file);
+    std::filesystem::remove(common_file);
 }
 TEST(TestLogging, Simulation_ToFile_Common) {
     // Test that if we request a common log file to disk, we only get a common log file to disk
     // Note, it does not test the contents of the output file
-    const path step_file = "step.json";
-    const path exit_file = "exit.json";
-    const path common_file = "common.json";
-    ASSERT_FALSE(::exists(step_file));
-    ASSERT_FALSE(::exists(exit_file));
-    ASSERT_FALSE(::exists(common_file));
+    const std::filesystem::path step_file = "step.json";
+    const std::filesystem::path exit_file = "exit.json";
+    const std::filesystem::path common_file = "common.json";
+    ASSERT_FALSE(std::filesystem::exists(step_file));
+    ASSERT_FALSE(std::filesystem::exists(exit_file));
+    ASSERT_FALSE(std::filesystem::exists(common_file));
 
     // Define model
     ModelDescription m(MODEL_NAME);
@@ -727,23 +713,23 @@ TEST(TestLogging, Simulation_ToFile_Common) {
     // Call simulate(), and check step and exit logs match expectations
     sim.simulate();
     // Check
-    ASSERT_TRUE(::exists(common_file));
-    EXPECT_FALSE(::exists(step_file));
-    EXPECT_FALSE(::exists(exit_file));
+    ASSERT_TRUE(std::filesystem::exists(common_file));
+    EXPECT_FALSE(std::filesystem::exists(step_file));
+    EXPECT_FALSE(std::filesystem::exists(exit_file));
     // Cleanup
-    ASSERT_TRUE(::remove(common_file));
-    ::remove(step_file);
-    ::remove(exit_file);
+    ASSERT_TRUE(std::filesystem::remove(common_file));
+    std::filesystem::remove(step_file);
+    std::filesystem::remove(exit_file);
 }
 TEST(TestLogging, Simulation_ToFile_All) {
     // Test that if we request a all log files to disk, we only get a all log file to disk
     // Note, it does not test the contents of the output file
-    const path step_file = "step.json";
-    const path exit_file = "exit.json";
-    const path common_file = "common.json";
-    ASSERT_FALSE(::exists(step_file));
-    ASSERT_FALSE(::exists(exit_file));
-    ASSERT_FALSE(::exists(common_file));
+    const std::filesystem::path step_file = "step.json";
+    const std::filesystem::path exit_file = "exit.json";
+    const std::filesystem::path common_file = "common.json";
+    ASSERT_FALSE(std::filesystem::exists(step_file));
+    ASSERT_FALSE(std::filesystem::exists(exit_file));
+    ASSERT_FALSE(std::filesystem::exists(common_file));
 
     // Define model
     ModelDescription m(MODEL_NAME);
@@ -789,23 +775,23 @@ TEST(TestLogging, Simulation_ToFile_All) {
     // Call simulate(), and check step and exit logs match expectations
     sim.simulate();
     // Check
-    ASSERT_TRUE(::exists(common_file));
-    ASSERT_TRUE(::exists(step_file));
-    ASSERT_TRUE(::exists(exit_file));
+    ASSERT_TRUE(std::filesystem::exists(common_file));
+    ASSERT_TRUE(std::filesystem::exists(step_file));
+    ASSERT_TRUE(std::filesystem::exists(exit_file));
     // Cleanup
-    ASSERT_TRUE(::remove(common_file));
-    ASSERT_TRUE(::remove(step_file));
-    ASSERT_TRUE(::remove(exit_file));
+    ASSERT_TRUE(std::filesystem::remove(common_file));
+    ASSERT_TRUE(std::filesystem::remove(step_file));
+    ASSERT_TRUE(std::filesystem::remove(exit_file));
 }
 TEST(TestLogging, Ensemble_ToFile_Step) {
     // Test that if we request a common log file to disk, we only get a common log file to disk
     // Note, it does not test the contents of the output file
-    const path step_file1 = "out/0.json";
-    const path step_file2 = "out/1.json";
-    const path exit_file = "out/exit.json";
-    ASSERT_FALSE(::exists(step_file1));
-    ASSERT_FALSE(::exists(step_file2));
-    ASSERT_FALSE(::exists(exit_file));
+    const std::filesystem::path step_file1 = "out/0.json";
+    const std::filesystem::path step_file2 = "out/1.json";
+    const std::filesystem::path exit_file = "out/exit.json";
+    ASSERT_FALSE(std::filesystem::exists(step_file1));
+    ASSERT_FALSE(std::filesystem::exists(step_file2));
+    ASSERT_FALSE(std::filesystem::exists(exit_file));
 
     // Define model
     ModelDescription m(MODEL_NAME);
@@ -852,21 +838,21 @@ TEST(TestLogging, Ensemble_ToFile_Step) {
     sim.simulate(plan);
 
     // Check
-    ASSERT_TRUE(::exists(step_file1));
-    ASSERT_TRUE(::exists(step_file2));
-    EXPECT_FALSE(::exists(exit_file));
+    ASSERT_TRUE(std::filesystem::exists(step_file1));
+    ASSERT_TRUE(std::filesystem::exists(step_file2));
+    EXPECT_FALSE(std::filesystem::exists(exit_file));
     // Cleanup
-    ::remove_all("out");
+    std::filesystem::remove_all("out");
 }
 TEST(TestLogging, Ensemble_ToFile_Exit) {
     // Test that if we request a common log file to disk, we only get a common log file to disk
     // Note, it does not test the contents of the output file
-    const path step_file1 = "out/0.json";
-    const path step_file2 = "out/1.json";
-    const path exit_file = "out/exit.json";
-    ASSERT_FALSE(::exists(step_file1));
-    ASSERT_FALSE(::exists(step_file2));
-    ASSERT_FALSE(::exists(exit_file));
+    const std::filesystem::path step_file1 = "out/0.json";
+    const std::filesystem::path step_file2 = "out/1.json";
+    const std::filesystem::path exit_file = "out/exit.json";
+    ASSERT_FALSE(std::filesystem::exists(step_file1));
+    ASSERT_FALSE(std::filesystem::exists(step_file2));
+    ASSERT_FALSE(std::filesystem::exists(exit_file));
 
     // Define model
     ModelDescription m(MODEL_NAME);
@@ -913,26 +899,26 @@ TEST(TestLogging, Ensemble_ToFile_Exit) {
     sim.simulate(plan);
 
     // Check
-    ASSERT_TRUE(::exists(exit_file));
-    ASSERT_FALSE(::exists(step_file1));
-    ASSERT_FALSE(::exists(step_file2));
-    ASSERT_TRUE(::remove(exit_file));
+    ASSERT_TRUE(std::filesystem::exists(exit_file));
+    ASSERT_FALSE(std::filesystem::exists(step_file1));
+    ASSERT_FALSE(std::filesystem::exists(step_file2));
+    ASSERT_TRUE(std::filesystem::remove(exit_file));
     // Cleanup
-    ::remove_all("out");
+    std::filesystem::remove_all("out");
 }
 TEST(TestLogging, Ensemble_ToFile_All) {
     // Test that if we request a common log file to disk, we only get a common log file to disk
     // Note, it does not test the contents of the output file
     // This test also checks the subdirectory splitting feature
-    const path step_file1 = "out/b/0.json";
-    const path step_file2 = "out/a/1.json";
-    const path exit_file1 = "out/a/exit.json";
-    const path exit_file2 = "out/b/exit.json";
-    ASSERT_FALSE(::exists(step_file1));
-    ASSERT_FALSE(::exists(step_file2));
-    ASSERT_FALSE(::exists(exit_file1));
-    ASSERT_FALSE(::exists(exit_file2));
-    ASSERT_FALSE(::exists("out"));
+    const std::filesystem::path step_file1 = "out/b/0.json";
+    const std::filesystem::path step_file2 = "out/a/1.json";
+    const std::filesystem::path exit_file1 = "out/a/exit.json";
+    const std::filesystem::path exit_file2 = "out/b/exit.json";
+    ASSERT_FALSE(std::filesystem::exists(step_file1));
+    ASSERT_FALSE(std::filesystem::exists(step_file2));
+    ASSERT_FALSE(std::filesystem::exists(exit_file1));
+    ASSERT_FALSE(std::filesystem::exists(exit_file2));
+    ASSERT_FALSE(std::filesystem::exists("out"));
 
     // Define model
     ModelDescription m(MODEL_NAME);
@@ -980,12 +966,12 @@ TEST(TestLogging, Ensemble_ToFile_All) {
     sim.simulate(plan);
 
     // Check
-    ASSERT_TRUE(::exists(exit_file1));
-    ASSERT_TRUE(::exists(exit_file2));
-    ASSERT_TRUE(::exists(step_file1));
-    ASSERT_TRUE(::exists(step_file2));
+    ASSERT_TRUE(std::filesystem::exists(exit_file1));
+    ASSERT_TRUE(std::filesystem::exists(exit_file2));
+    ASSERT_TRUE(std::filesystem::exists(step_file1));
+    ASSERT_TRUE(std::filesystem::exists(step_file2));
     // Cleanup
-    ::remove_all("out");
+    std::filesystem::remove_all("out");
 }
 
 
