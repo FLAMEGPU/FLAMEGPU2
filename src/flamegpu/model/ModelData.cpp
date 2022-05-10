@@ -68,7 +68,8 @@ std::shared_ptr<ModelData> ModelData::clone() const {
 }
 
 ModelData::ModelData(const ModelData &other)
-    : initFunctions(other.initFunctions)
+    : std::enable_shared_from_this<ModelData>(other)
+    , initFunctions(other.initFunctions)
     , initFunctionCallbacks(other.initFunctionCallbacks)
     , stepFunctions(other.stepFunctions)
     , stepFunctionCallbacks(other.stepFunctionCallbacks)
