@@ -67,7 +67,7 @@ namespace io {
 XMLStateReader::XMLStateReader(
     const std::string &model_name,
     const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
-    util::StringUint32PairUnorderedMap<util::Any> &env_init,
+    std::unordered_map<std::string, util::Any>&env_init,
     util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
     const std::string &input,
     Simulation *sim_instance)
@@ -212,40 +212,36 @@ int XMLStateReader::parse() {
             const auto elements = it->second.data.elements;
             unsigned int el = 0;
             while (getline(ss, token, ',')) {
-                if (env_init.find(make_pair(std::string(key), el)) != env_init.end()) {
-                    THROW exception::TinyXMLError("Input file contains environment property '%s' multiple times, "
-                        "in XMLStateReader::parse()\n", key);
+                if (el == 0) {
+                    if (!env_init.emplace(std::string(key), util::Any(it->second.data)).second) {
+                        THROW exception::TinyXMLError("Input file contains environment property '%s' multiple times, "
+                            "in XMLStateReader::parse()\n", key);
+                    }
+                } else if (el >= it->second.data.elements) {
+                    THROW exception::RapidJSONError("Input file contains environment property '%s' with %u elements expected %u,"
+                        "in XMLStateReader::parse()\n", key, el, it->second.data.elements);
                 }
+                const auto ei_it = env_init.find(key);
                 if (val_type == std::type_index(typeid(float))) {
-                    const float t = stof(token);
-                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(float), val_type, 1));
+                    static_cast<float*>(const_cast<void*>(ei_it->second.ptr))[el++] = stof(token);
                 } else if (val_type == std::type_index(typeid(double))) {
-                    const double t = stod(token);
-                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(double), val_type, 1));
+                    static_cast<double*>(const_cast<void*>(ei_it->second.ptr))[el++] = stod(token);
                 } else if (val_type == std::type_index(typeid(int64_t))) {
-                    const int64_t t = stoll(token);
-                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(int64_t), val_type, 1));
+                    static_cast<int64_t*>(const_cast<void*>(ei_it->second.ptr))[el++] = stoll(token);
                 } else if (val_type == std::type_index(typeid(uint64_t))) {
-                    const uint64_t t = stoull(token);
-                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(uint64_t), val_type, 1));
+                    static_cast<uint64_t*>(const_cast<void*>(ei_it->second.ptr))[el++] = stoull(token);
                 } else if (val_type == std::type_index(typeid(int32_t))) {
-                    const int32_t t = static_cast<int32_t>(stoll(token));
-                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(int32_t), val_type, 1));
+                    static_cast<int32_t*>(const_cast<void*>(ei_it->second.ptr))[el++] = static_cast<int32_t>(stoll(token));
                 } else if (val_type == std::type_index(typeid(uint32_t))) {
-                    const uint32_t t = static_cast<uint32_t>(stoull(token));
-                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(uint32_t), val_type, 1));
+                    static_cast<uint32_t*>(const_cast<void*>(ei_it->second.ptr))[el++] = static_cast<uint32_t>(stoull(token));
                 } else if (val_type == std::type_index(typeid(int16_t))) {
-                    const int16_t t = static_cast<int16_t>(stoll(token));
-                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(int16_t), val_type, 1));
+                    static_cast<int16_t*>(const_cast<void*>(ei_it->second.ptr))[el++] = static_cast<int16_t>(stoll(token));
                 } else if (val_type == std::type_index(typeid(uint16_t))) {
-                    const uint16_t t = static_cast<uint16_t>(stoull(token));
-                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(uint16_t), val_type, 1));
+                    static_cast<uint16_t*>(const_cast<void*>(ei_it->second.ptr))[el++] = static_cast<uint16_t>(stoull(token));
                 } else if (val_type == std::type_index(typeid(int8_t))) {
-                    const int8_t t = static_cast<int8_t>(stoll(token));
-                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(int8_t), val_type, 1));
+                    static_cast<int8_t*>(const_cast<void*>(ei_it->second.ptr))[el++] = static_cast<int8_t>(stoll(token));
                 } else if (val_type == std::type_index(typeid(uint8_t))) {
-                    const uint8_t t = static_cast<uint8_t>(stoull(token));
-                    env_init.emplace(make_pair(std::string(key), el++), util::Any(&t, sizeof(uint8_t), val_type, 1));
+                    static_cast<uint8_t*>(const_cast<void*>(ei_it->second.ptr))[el++] = static_cast<uint8_t>(stoull(token));
                 } else {
                     THROW exception::TinyXMLError("Model contains environment property '%s' of unsupported type '%s', "
                         "in XMLStateReader::parse()\n", key, val_type.name());

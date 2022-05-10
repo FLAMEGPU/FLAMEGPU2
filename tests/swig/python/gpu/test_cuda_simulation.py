@@ -444,7 +444,7 @@ class TestSimulation(TestCase):
         assert e.value.type() == "InvalidEnvProperty"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvPropertyType exception
             s.setEnvironmentPropertyInt("int3", 3);  # Bad length
-        assert e.value.type() == "InvalidEnvPropertyType"
+        assert e.value.type() == "OutOfBoundsException"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvPropertyType exception
             s.setEnvironmentPropertyFloat("int", 3.0);  # Bad type
         assert e.value.type() == "InvalidEnvPropertyType"
@@ -453,7 +453,7 @@ class TestSimulation(TestCase):
         assert e.value.type() == "InvalidEnvProperty"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvPropertyType exception
             s.getEnvironmentPropertyInt("int3");  # Bad length
-        assert e.value.type() == "InvalidEnvPropertyType"
+        assert e.value.type() == "OutOfBoundsException"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvPropertyType exception
             s.getEnvironmentPropertyFloat("int");  # Bad type
         assert e.value.type() == "InvalidEnvPropertyType"
@@ -461,6 +461,9 @@ class TestSimulation(TestCase):
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
             s.setEnvironmentPropertyArrayInt("float", [56, 57, 58]);  # Bad name
         assert e.value.type() == "InvalidEnvProperty"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvPropertyType exception
+            s.setEnvironmentPropertyArrayInt("int3", [56, 57, 58, 59]);  # Bad length
+        assert e.value.type() == "OutOfBoundsException"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvPropertyType exception
             s.setEnvironmentPropertyArrayFloat("int3", [56.0, 57.0, 58.0]);  # Bad type
         assert e.value.type() == "InvalidEnvPropertyType"

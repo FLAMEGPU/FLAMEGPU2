@@ -7,6 +7,7 @@
 #include <functional>
 #include <unordered_map>
 #include <vector>
+#include <memory>
 
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/runtime/utility/HostRandom.cuh"
@@ -52,6 +53,7 @@ class HostAPI {
           CUDAScatter &scatter,
           const AgentOffsetMap &agentOffsets,
           AgentDataMap &agentData,
+          const std::shared_ptr<EnvironmentManager> &env,
           CUDAMacroEnvironment &macro_env,
           const unsigned int &streamId,
          cudaStream_t stream);

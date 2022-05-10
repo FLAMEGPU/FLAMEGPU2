@@ -12,7 +12,7 @@
 #include <memory>
 
 #include "detail/CUDAErrorChecking.cuh"
-#include "flamegpu/runtime/detail/curve/curve.cuh"
+#include "flamegpu/runtime/detail/curve/HostCurve.cuh"
 #include "flamegpu/runtime/utility/HostMacroProperty.cuh"
 
 // forward declare classes from other modules
@@ -33,15 +33,6 @@ class CUDASimulation;
  * This class is CUDASimulation's internal handler for macro environment functionality
  */
 class CUDAMacroEnvironment {
-    /**
-     * This is the string used to generate MACRO_NAMESPACE_HASH
-     */
-    static const char MACRO_NAMESPACE_STRING[18];
-    /**
-     * Hash never changes, so we store a copy at creation
-     * Also ensure the device constexpr version matches
-     */
-    const detail::curve::Curve::NamespaceHash MACRO_NAMESPACE_HASH;
     /**
      * Used to group items required by properties
      */
@@ -114,14 +105,6 @@ class CUDAMacroEnvironment {
      */
     void purge();
     /**
-     * Register the properties to CURVE for use within the passed agent function
-     */
-    void mapRuntimeVariables() const;
-    /**
-     * Release the properties from CURVE as registered for use within the passed agent function
-     */
-    void unmapRuntimeVariables() const;
-    /**
      * Register the properties to the provided RTC header
      * @param curve_header The RTC header to act upon
      */
@@ -131,6 +114,11 @@ class CUDAMacroEnvironment {
      * @param curve_header The RTC header to act upon
      */
     void unmapRTCVariables(detail::curve::CurveRTCHost& curve_header) const;
+    /**
+     * Register (and set) all owned macro properties within the specified curve instance
+     * @param curve The curve instance to act upon
+     */
+    void registerCurveVariables(detail::curve::HostCurve &curve) const;
 
 #if !defined(SEATBELTS) || SEATBELTS
     /**

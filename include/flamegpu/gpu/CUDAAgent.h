@@ -71,13 +71,6 @@ class CUDAAgent : public AgentInterface {
      */
     void mapRuntimeVariables(const AgentFunctionData& func, const unsigned int &instance_id) const;
     /**
-     * Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
-     * library so that they are unavailable to be accessed by name within an agent function.
-     * @param func The function.
-     * @param instance_id The CUDASimulation instance_id of the parent instance. This is added to the hash, to differentiate instances
-     */
-    void unmapRuntimeVariables(const AgentFunctionData& func, const unsigned int &instance_id) const;
-    /**
      * Copies population data from the provided host object
      * To the device buffers held by this object (overwriting any existing agent data)
      * Also updates population size, clears disabled agents
@@ -184,12 +177,10 @@ class CUDAAgent : public AgentInterface {
      */
     void mapNewRuntimeVariables_async(const CUDAAgent& func_agent, const AgentFunctionData& func, unsigned int maxLen, CUDAScatter &scatter, unsigned int instance_id, cudaStream_t stream, unsigned int streamId);
     /**
-     * Uses the cuRVE runtime to unmap the variables used by agent birth and
-     * releases the buffer that was storing the data
+     * Releases the buffer that was storing new age data
      * @param func The function.
-     * @param instance_id The CUDASimulation instance_id of the parent instance. This is added to the hash, to differentiate instances
      */
-    void unmapNewRuntimeVariables(const AgentFunctionData& func, const unsigned int &instance_id);
+    void releaseNewBuffer(const AgentFunctionData& func);
     /**
      * Scatters agents from the currently assigned device agent birth buffer (see member variable newBuffs)
      * The device buffer must be packed in the same format as mapNewRuntimeVariables(const AgentFunctionData&, const unsigned int &, const unsigned int &)
@@ -209,12 +200,23 @@ class CUDAAgent : public AgentInterface {
      * Instantiates a RTC Agent function (or agent function condition) from agent function data description containing the source.
      * 
      * Uses Jitify to create an instantiation of the program. Any compilation errors in the user provided agent function will be reported here.
-     * @param func The Agent function data structu containing the src for the function
+     * @param func The Agent function data structure containing the src for the function
+     * @param env Object containing environment properties for the simulation instance
      * @param macro_env Object containing environment macro properties for the simulation instance
      * @param function_condition If true then this function will instantiate a function condition rather than an agent function
      * @throw exception::InvalidAgentFunc thrown if the user supplied agent function has compilation errors
      */
-    void addInstantitateRTCFunction(const AgentFunctionData& func, const CUDAMacroEnvironment& macro_env, bool function_condition = false);
+    void addInstantitateRTCFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager>& env, const CUDAMacroEnvironment& macro_env, bool function_condition = false);
+    /**
+     * Instantiates the curve instance for an (non-RTC) Agent function (or agent function condition) from agent function data description containing the source.
+     *
+     * This performs CUDA allocations, so must be performed after CUDA device selection/context creation
+     * @param func The Agent function data structure containing the details of the function
+     * @param env Object containing environment properties for the simulation instance
+     * @param macro_env Object containing environment macro properties for the simulation instance
+     * @param function_condition If true then this function will instantiate a function condition rather than an agent function
+     */
+    void addInstantitateFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager>& env, const CUDAMacroEnvironment& macro_env, bool function_condition = false);
     /**
      * Returns the jitify kernel instantiation of the agent function.
      * Will throw an exception::InvalidAgentFunc excpetion if the function name does not have a valid instantiation
@@ -222,6 +224,15 @@ class CUDAAgent : public AgentInterface {
      */
     const jitify::experimental::KernelInstantiation& getRTCInstantiation(const std::string &function_name) const;
     detail::curve::CurveRTCHost &getRTCHeader(const std::string &function_name) const;
+    /**
+     * Returns the host interface for managing the curve instance for the named agent function
+     * @param function_name The name of the agent's agent function, to return the curve instance for
+     */
+    detail::curve::HostCurve &getCurve(const std::string& function_name) const;
+    /**
+     * Resets contained instances, only to be called after device reset
+     */
+    void purgeCurve();
     /**
      * Returns the CUDARTCFuncMap
      */
@@ -365,6 +376,11 @@ class CUDAAgent : public AgentInterface {
      * This allows access to the header data cache, for updating curve
      */
     CUDARTCHeaderMap rtc_header_map;
+    /**
+     * map between function name (or function_name_condition) and the curve interface
+     * This allows access for updating curve
+     */
+    std::unordered_map<std::string, std::unique_ptr<detail::curve::HostCurve>> curve_map;
     /**
      * Used when allocated new buffers
      */

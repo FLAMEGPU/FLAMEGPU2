@@ -4,6 +4,9 @@
 #include "flamegpu/defines.h"
 #include "flamegpu/runtime/messaging/MessageNone.h"
 #include "flamegpu/runtime/messaging/MessageBruteForce.h"
+#ifndef __CUDACC_RTC__
+#include "flamegpu/runtime/detail/curve/DeviceCurve.cuh"
+#endif  // __CUDACC_RTC__
 
 struct ModelData;
 
@@ -24,15 +27,12 @@ class MessageBruteForce::In {
     class iterator;     // Forward declare inner classes
 
     /**
-     * Constructer
+     * Constructor
      * Initialises member variables
-     * @param agentfn_hash Added to message_hash to produce combined_hash
-     * @param message_hash Added to agentfn_hash to produce combined_hash
      * @param metadata Reinterpreted as type MessageBruteForce::MetaData to extract length
      */
-    __device__ In(detail::curve::Curve::NamespaceHash agentfn_hash, detail::curve::Curve::NamespaceHash message_hash, const void *metadata)
-        : combined_hash(agentfn_hash + message_hash)
-        , len(reinterpret_cast<const MetaData*>(metadata)->length)
+    __device__ In(const void *metadata)
+        : len(reinterpret_cast<const MetaData*>(metadata)->length)
     { }
     /**
      * Returns the number of elements in the message list.
@@ -165,11 +165,6 @@ class MessageBruteForce::In {
     };
 
  private:
-     /**
-      * CURVE hash for accessing message data
-      * agent function hash + message hash
-      */
-    detail::curve::Curve::NamespaceHash combined_hash;
     /**
      * Total number of messages in the message list
      */
@@ -187,13 +182,10 @@ class MessageBruteForce::Out {
     /**
      * Constructer
      * Initialises member variables
-     * @param agentfn_hash Added to message_hash to produce combined_hash
-     * @param message_hash Added to agentfn_hash to produce combined_hash
      * @param scan_flag_messageOutput Scan flag array for optional message output
      */
-    __device__ Out(detail::curve::Curve::NamespaceHash agentfn_hash, detail::curve::Curve::NamespaceHash message_hash, const void *, unsigned int *scan_flag_messageOutput)
-        : combined_hash(agentfn_hash + message_hash)
-        , scan_flag(scan_flag_messageOutput)
+    __device__ Out(const void *, unsigned int *scan_flag_messageOutput)
+        : scan_flag(scan_flag_messageOutput)
     { }
     /**
      * Sets the specified variable for this agents message
@@ -222,11 +214,6 @@ class MessageBruteForce::Out {
 
  protected:
     /**
-     * CURVE hash for accessing message data
-     * agentfn_hash + message_hash
-     */
-    detail::curve::Curve::NamespaceHash combined_hash;
-    /**
      * Scan flag array for optional message output
      */
     unsigned int *scan_flag;
@@ -241,11 +228,11 @@ __device__ T MessageBruteForce::In::Message::getVariable(const char(&variable_na
         return static_cast<T>(0);
     }
 #endif
-    // get the value from curve using the stored hashes and message index.
+    // get the value from curve using the message index.
 #ifdef USE_GLM
-    T value = detail::curve::Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, index);
+    T value = detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, index);
 #else
-    T value = detail::curve::Curve::getMessageVariable_ldg<T>(variable_name, this->_parent.combined_hash, index);
+    T value = detail::curve::DeviceCurve::getMessageVariable_ldg<T>(variable_name, index);
 #endif
     return value;
 }
@@ -260,11 +247,11 @@ T MessageBruteForce::In::Message::getVariable(const char(&variable_name)[M], con
         return static_cast<T>(0);
     }
 #endif
-    // get the value from curve using the stored hashes and message index.
+    // get the value from curve using the message index.
 #ifdef USE_GLM
-    T value = detail::curve::Curve::getMessageArrayVariable<T, N>(variable_name, this->_parent.combined_hash, index, array_index);
+    T value = detail::curve::DeviceCurve::getMessageArrayVariable<T, N>(variable_name, index, array_index);
 #else
-    T value = detail::curve::Curve::getMessageArrayVariable_ldg<T, N>(variable_name, this->_parent.combined_hash, index, array_index);
+    T value = detail::curve::DeviceCurve::getMessageArrayVariable_ldg<T, N>(variable_name, index, array_index);
 #endif
     return value;
 }
@@ -282,7 +269,7 @@ __device__ void MessageBruteForce::Out::setVariable(const char(&variable_name)[N
     // Todo: checking if the output message type is single or optional?  (d_message_type)
 
     // set the variable using curve
-    detail::curve::Curve::setMessageVariable<T>(variable_name, combined_hash, value, index);
+    detail::curve::DeviceCurve::setMessageVariable<T>(variable_name, value, index);
 
     // Set scan flag incase the message is optional
     this->scan_flag[index] = 1;
@@ -300,7 +287,7 @@ __device__ void MessageBruteForce::Out::setVariable(const char(&variable_name)[M
     // Todo: checking if the output message type is single or optional?  (d_message_type)
 
     // set the variable using curve
-    detail::curve::Curve::setMessageArrayVariable<T, N>(variable_name, combined_hash, value, index, array_index);
+    detail::curve::DeviceCurve::setMessageArrayVariable<T, N>(variable_name, value, index, array_index);
 
     // Set scan flag incase the message is optional
     this->scan_flag[index] = 1;

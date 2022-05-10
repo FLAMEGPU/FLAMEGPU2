@@ -24,7 +24,7 @@
 
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
-#include "flamegpu/runtime/detail/curve/curve.cuh"
+#include "flamegpu/runtime/detail/curve/HostCurve.cuh"
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 #include "flamegpu/gpu/CUDAScatter.cuh"
 #include "flamegpu/util/detail/compute_capability.cuh"
@@ -85,75 +85,32 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const unsigne
             agent_description.name.c_str(), func.initial_state.c_str());
     }
 
-    const detail::curve::Curve::VariableHash agent_hash = detail::curve::Curve::variableRuntimeHash(agent_description.name.c_str());
-    const detail::curve::Curve::VariableHash func_hash = detail::curve::Curve::variableRuntimeHash(func.name.c_str());
-    auto &curve = detail::curve::Curve::getInstance();
     const unsigned int agent_count = this->getStateSize(func.initial_state);
     // loop through the agents variables to map each variable name using cuRVE
     for (const auto &mmp : agent_description.variables) {
         // get a device pointer for the agent variable name
         void* d_ptr = sm->second->getVariablePointer(mmp.first);
 
-        // map using curve
-        const detail::curve::Curve::VariableHash var_hash = detail::curve::Curve::variableRuntimeHash(mmp.first.c_str());
+        // @todo These two blocks are grim, we keep using getRTCHeader() or getCurve(), which does a map lookup
 
-        // get the agent variable size
-        const size_t type_size = mmp.second.type_size * mmp.second.elements;
-
-        // maximum population num
-        if (func.func || func.condition) {
-#ifdef _DEBUG
-            const detail::curve::Curve::Variable cv = curve.registerVariableByHash(var_hash + agent_hash + func_hash + instance_id, d_ptr, type_size, agent_count);
-            if (cv != static_cast<int>((var_hash + agent_hash + func_hash + instance_id)%detail::curve::Curve::MAX_VARIABLES)) {
-                fprintf(stderr, "detail::curve::Curve Warning: Agent Function '%s' Variable '%s' has a collision and may work improperly.\n", func.name.c_str(), mmp.first.c_str());
-            }
-#else
-            curve.registerVariableByHash(var_hash + agent_hash + func_hash + instance_id, d_ptr, type_size, agent_count);
-#endif
-        }
-        // Map RTC variables to agent function (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
+        // Map variables to agent function (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
         if (!func.rtc_func_name.empty()) {
-            // Copy data to rtc header cache
             auto& rtc_header = getRTCHeader(func.name);
             memcpy(rtc_header.getAgentVariableCachePtr(mmp.first.c_str()), &d_ptr, sizeof(void*));
+        } else {
+            auto& curve = getCurve(func.name);
+            curve.setAgentVariable(mmp.first, d_ptr, agent_count);
         }
 
-        // Map RTC variables to agent function conditions (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
+        // Map variables to agent function conditions (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
         if (!func.rtc_func_condition_name.empty()) {
-            // Copy data to rtc header cache
-            std::string func_name = func.name + "_condition";
-            auto& rtc_header = getRTCHeader(func_name);
+            auto& rtc_header = getRTCHeader(func.name + "_condition");
             memcpy(rtc_header.getAgentVariableCachePtr(mmp.first.c_str()), &d_ptr, sizeof(void*));
+        } else if (func.condition) {
+            auto& curve = getCurve(func.name + "_condition");
+            curve.setAgentVariable(mmp.first, d_ptr, agent_count);
         }
     }
-}
-
-void CUDAAgent::unmapRuntimeVariables(const AgentFunctionData& func, const unsigned int &instance_id) const {
-    // Skip if RTC
-    if (!(func.func || func.condition))
-        return;
-    // check the cuda agent state map to find the correct state list for functions starting state
-    const auto &sm = state_map.find(func.initial_state);
-
-    if (sm == state_map.end()) {
-        THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
-            "in CUDAAgent::unmapRuntimeVariables()",
-            agent_description.name.c_str(), func.initial_state.c_str());
-    }
-
-    const detail::curve::Curve::VariableHash agent_hash = detail::curve::Curve::variableRuntimeHash(agent_description.name.c_str());
-    const detail::curve::Curve::VariableHash func_hash = detail::curve::Curve::variableRuntimeHash(func.name.c_str());
-    // loop through the agents variables to map each variable name using cuRVE
-    for (const auto &mmp : agent_description.variables) {
-        // get a device pointer for the agent variable name
-        // void* d_ptr = sm->second->getAgentListVariablePointer(mmp.first);
-
-        // unmap using curve
-        const detail::curve::Curve::VariableHash var_hash = detail::curve::Curve::variableRuntimeHash(mmp.first.c_str());
-        detail::curve::Curve::getInstance().unregisterVariableByHash(var_hash + agent_hash + func_hash + instance_id);
-    }
-
-    // No current need to unmap RTC variables as they are specific to the agent functions and thus do not persist beyond the scope of a single function
 }
 
 void CUDAAgent::setPopulationData(const AgentVector& population, const std::string& state_name, CUDAScatter& scatter, const unsigned int& streamId, const cudaStream_t& stream) {
@@ -405,15 +362,9 @@ void CUDAAgent::mapNewRuntimeVariables_async(const CUDAAgent& func_agent, const 
             maxLen, 0);
         // No sync, use of the buffer should be in the same stream
 
-        // Map variables to curve
-        const detail::curve::Curve::VariableHash _agent_birth_hash = detail::curve::Curve::variableRuntimeHash("_agent_birth");
-        const detail::curve::Curve::VariableHash func_hash = detail::curve::Curve::variableRuntimeHash(func.name.c_str());
-        auto &curve = detail::curve::Curve::getInstance();
         // loop through the agents variables to map each variable name using cuRVE
+        // these must be mapped before each function execution as the runtime pointer may have changed to the swapping
         for (const auto &mmp : agent_description.variables) {
-            // map using curve
-            const detail::curve::Curve::VariableHash var_hash = detail::curve::Curve::variableRuntimeHash(mmp.first.c_str());
-
             // get the agent variable size
             const size_t type_size = mmp.second.type_size * mmp.second.elements;
 
@@ -430,24 +381,16 @@ void CUDAAgent::mapNewRuntimeVariables_async(const CUDAAgent& func_agent, const 
 
             // maximum population num
             if (func.func) {
-#ifdef _DEBUG
-                const detail::curve::Curve::Variable cv = curve.registerVariableByHash(var_hash + (_agent_birth_hash ^ func_hash) + instance_id, d_ptr, type_size, maxLen);
-                if (cv != static_cast<int>((var_hash + (_agent_birth_hash ^ func_hash) + instance_id)%detail::curve::Curve::MAX_VARIABLES)) {
-                    fprintf(stderr, "detail::curve::Curve Warning: Agent Function '%s' New Agent Variable '%s' has a collision and may work improperly.\n", func.name.c_str(), mmp.first.c_str());
-                }
-#else
-                curve.registerVariableByHash(var_hash + (_agent_birth_hash ^ func_hash) + instance_id, d_ptr, type_size, maxLen);
-#endif
+                auto& curve = func_agent.getCurve(func.name);  // @todo stop map hammering
+                curve.setAgentOutputVariable(mmp.first, d_ptr, maxLen);
             } else  {
-                // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
-                // Copy data to rtc header cache
                 auto& rtc_header = func_agent.getRTCHeader(func.name);
                 memcpy(rtc_header.getNewAgentVariableCachePtr(mmp.first.c_str()), &d_ptr, sizeof(void*));
             }
         }
     }
 }
-void CUDAAgent::unmapNewRuntimeVariables(const AgentFunctionData& func, const unsigned int &instance_id) {
+void CUDAAgent::releaseNewBuffer(const AgentFunctionData& func) {
     // Confirm agent output is set
     if (auto oa = func.agent_output.lock()) {
         // Release new buffer
@@ -460,21 +403,6 @@ void CUDAAgent::unmapNewRuntimeVariables(const AgentFunctionData& func, const un
             } else {
                 assert(false);  // We don't have a new buffer reserved???
             }
-        }
-        // Skip if RTC
-        if (!func.func)
-            return;
-        // Unmap curve
-        const detail::curve::Curve::VariableHash _agent_birth_hash = detail::curve::Curve::variableRuntimeHash("_agent_birth");
-        const detail::curve::Curve::VariableHash func_hash = detail::curve::Curve::variableRuntimeHash(func.name.c_str());
-        auto &curve = detail::curve::Curve::getInstance();
-        // loop through the agents variables to map each variable name using cuRVE
-        for (const auto &mmp : agent_description.variables) {
-            // unmap using curve
-            const detail::curve::Curve::VariableHash var_hash = detail::curve::Curve::variableRuntimeHash(mmp.first.c_str());
-            curve.unregisterVariableByHash(var_hash + (_agent_birth_hash ^ func_hash) + instance_id);
-
-            // no need to unmap RTC variables
         }
     }
 }
@@ -510,7 +438,7 @@ void CUDAAgent::clearFunctionCondition(const std::string &state) {
     fat_agent->setConditionState(fat_index, state, 0);
 }
 
-void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const CUDAMacroEnvironment &macro_env, bool function_condition) {
+void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager> &env, const CUDAMacroEnvironment &macro_env, bool function_condition) {
     // Generate the dynamic curve header
     detail::curve::CurveRTCHost &curve_header = *rtc_header_map.emplace(function_condition ? func.name + "_condition" : func.name, std::make_unique<detail::curve::CurveRTCHost>()).first->second;
 
@@ -547,31 +475,16 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const 
         }
     }
 
-    // Set Environment variables in curve
+    // Set environment properties in curve (this includes mapped properties)
     {
-        // Scope the mutex
-        auto lock = EnvironmentManager::getInstance().getSharedLock();
-        const auto &prop_map = EnvironmentManager::getInstance().getPropertiesMap();
+        const auto &prop_map = env->getPropertiesMap();
         for (const auto &p : prop_map) {
-            if (p.first.first == cudaSimulation.getInstanceID()) {
-                const char* variableName = p.first.second.c_str();
-                const char* type = p.second.type.name();
-                unsigned int elements = p.second.elements;
-                ptrdiff_t offset = p.second.rtc_offset;
-                curve_header.registerEnvVariable(variableName, offset, type, p.second.length/elements, elements);
-            }
-        }
-        // Set mapped environment variables in curve
-        for (const auto &mp : EnvironmentManager::getInstance().getMappedProperties()) {
-            if (mp.first.first == cudaSimulation.getInstanceID()) {
-                auto p = prop_map.at(mp.second.masterProp);
-                const char* variableName = mp.second.masterProp.second.c_str();
-                const char* type = p.type.name();
-                unsigned int elements = p.elements;
-                ptrdiff_t offset = p.rtc_offset;
-                curve_header.registerEnvVariable(variableName, offset, type, p.length/elements, elements);
-            }
-        }
+            const char* variableName = p.first.c_str();
+            const char* type = p.second.type.name();
+            const unsigned int elements = p.second.elements;
+            const ptrdiff_t offset = p.second.offset;
+            curve_header.registerEnvVariable(variableName, offset, type, p.second.length/elements, elements);
+         }
     }
 
     // Set Environment macro properties in curve
@@ -584,7 +497,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const 
     curve_header.setFileName(header_filename);
 
     // get the dynamically generated header from curve rtc
-    const std::string curve_dynamic_header = curve_header.getDynamicHeader();
+    const std::string curve_dynamic_header = curve_header.getDynamicHeader(env->getBufferLen());
 
     // output to disk if OUTPUT_RTC_DYNAMIC_FILES macro is set
 #ifdef OUTPUT_RTC_DYNAMIC_FILES
@@ -633,6 +546,55 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const 
     }
 }
 
+void CUDAAgent::addInstantitateFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager>& env, const CUDAMacroEnvironment& macro_env, bool function_condition) {
+    // Generate the host curve instance
+    std::unique_ptr<detail::curve::HostCurve> curve = std::make_unique<detail::curve::HostCurve>();
+
+    // Initialising values here, removes the need to "unregister" curve values
+    // set agent variables in curve
+    for (const auto& mmp : func.parent.lock()->variables) {
+        curve->registerAgentVariable(mmp.first, mmp.second.type, mmp.second.type_size, mmp.second.elements);
+    }
+
+    // for normal agent function (e.g. not an agent function condition) append messages and agent outputs
+    if (!function_condition) {
+        // Set input message variables in curve
+        if (auto im = func.message_input.lock()) {
+            for (auto message_in_var : im->variables) {
+                curve->registerMessageInputVariable(message_in_var.first, message_in_var.second.type, message_in_var.second.type_size, message_in_var.second.elements);
+            }
+        }
+        // Set output message variables in curve
+        if (auto om = func.message_output.lock()) {
+            for (auto message_out_var : om->variables) {
+                curve->registerMessageOutputVariable(message_out_var.first, message_out_var.second.type, message_out_var.second.type_size, message_out_var.second.elements);
+            }
+        }
+        // Set agent output variables in curve
+        if (auto ao = func.agent_output.lock()) {
+            for (auto agent_out_var : ao->variables) {
+                curve->registerAgentOutputVariable(agent_out_var.first, agent_out_var.second.type, agent_out_var.second.type_size, agent_out_var.second.elements);
+            }
+        }
+    }
+
+    // Set environment properties in curve (this includes mapped properties)
+    {
+        const auto& prop_map = env->getPropertiesMap();
+        for (const auto& p : prop_map) {
+            const unsigned int elements = p.second.elements;
+            curve->registerSetEnvironmentProperty(p.first, p.second.type, p.second.length / elements, elements, p.second.offset);
+        }
+    }
+
+    // Set Environment macro properties in curve
+    macro_env.registerCurveVariables(*curve);
+
+    // switch between normal agent function and agent function condition, and add to map
+    const std::string key_name = function_condition ? func.name + "_condition" : func.name;
+    curve_map.insert(std::unordered_map<std::string, std::unique_ptr<detail::curve::HostCurve>>::value_type(key_name, std::move(curve)));
+}
+
 const jitify::experimental::KernelInstantiation& CUDAAgent::getRTCInstantiation(const std::string &function_name) const {
     CUDARTCFuncMap::const_iterator mm = rtc_func_map.find(function_name);
     if (mm == rtc_func_map.end()) {
@@ -643,7 +605,7 @@ const jitify::experimental::KernelInstantiation& CUDAAgent::getRTCInstantiation(
 
     return *mm->second;
 }
-detail::curve::CurveRTCHost& CUDAAgent::getRTCHeader(const std::string& function_name) const {
+detail::curve::CurveRTCHost& CUDAAgent::getRTCHeader(const std::string &function_name) const {
     CUDARTCHeaderMap::const_iterator mm = rtc_header_map.find(function_name);
     if (mm == rtc_header_map.end()) {
         THROW exception::InvalidAgentFunc("Function name '%s' is not a runtime compiled agent function in agent '%s', "
@@ -652,6 +614,21 @@ detail::curve::CurveRTCHost& CUDAAgent::getRTCHeader(const std::string& function
     }
 
     return *mm->second;
+}
+detail::curve::HostCurve& CUDAAgent::getCurve(const std::string &function_name) const {
+    auto mm = curve_map.find(function_name);
+    if (mm == curve_map.end()) {
+        THROW exception::InvalidAgentFunc("Function name '%s' is not a (non-rtc) agent function in agent '%s', "
+            "in CUDAAgent::getCurve()\n",
+            function_name.c_str(), agent_description.name.c_str());
+    }
+
+    return *mm->second;
+}
+void CUDAAgent::purgeCurve() {
+    for (auto &c : curve_map) {
+        c.second->purge();
+    }
 }
 
 const CUDAAgent::CUDARTCFuncMap& CUDAAgent::getRTCFunctions() const {

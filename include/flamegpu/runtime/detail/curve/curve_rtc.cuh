@@ -168,9 +168,10 @@ class CurveRTCHost {
     void setFileName(const std::string& filename);
     /**
      * Generates and returns the dynamic header based on the currently registered variables and properties
+     * @param env_buffer_len Length of the environment managers buffer
      * @return The dynamic Curve header
      */
-    std::string getDynamicHeader();
+    std::string getDynamicHeader(size_t env_buffer_len);
     /**
      * @return The identifier used for the environment property cache within the dynamic header
      */
@@ -192,11 +193,11 @@ class CurveRTCHost {
      */
     static std::string demangle(const std::type_index& type);
     /**
-     * Copies EnvironmentManager::MAX_BUFFER_SIZE bytes from env_ptr to h_data_buffer
-     * This should be used to copy the EnvironmentManager's rtc_cache
-     * @param env_ptr Pointer to the Environment managers rtc_cache
+     * Copies the environment managers cache to the rtc header cache
+     * @param d_env_ptr Device pointer to the Environment managers cache
+     * @param bufferLen Length of the buffer
      */
-    void updateEnvCache(const char* env_ptr);
+    void updateEnvCache(const void* d_env_ptr, const size_t bufferLen);
     /**
      * Copy h_data_buffer to device
      * @param instance The compiled RTC agent function instance to copy the environment cache to
@@ -293,8 +294,9 @@ class CurveRTCHost {
  private:
     /**
      * Sub-method for setting up the Environment within the dynamic header
+     * @param env_buffer_len Length of the environment managers buffer
      */
-    void initHeaderEnvironment();
+    void initHeaderEnvironment(size_t env_buffer_len);
     /**
      * Sub-method for setting up the variable/property set methods
      */

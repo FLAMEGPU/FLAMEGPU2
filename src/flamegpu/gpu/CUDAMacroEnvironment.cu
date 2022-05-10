@@ -8,12 +8,8 @@
 
 namespace flamegpu {
 
-const char CUDAMacroEnvironment::MACRO_NAMESPACE_STRING[18] = "MACRO_ENVIRONMENT";
-
 CUDAMacroEnvironment::CUDAMacroEnvironment(const EnvironmentDescription& description, const CUDASimulation& _cudaSimulation)
-    : MACRO_NAMESPACE_HASH(detail::curve::Curve::variableRuntimeHash(MACRO_NAMESPACE_STRING))
-    , cudaSimulation(_cudaSimulation) {
-    assert(MACRO_NAMESPACE_HASH == DeviceEnvironment::MACRO_NAMESPACE_HASH());  // Host and Device namespace const's do not match
+    : cudaSimulation(_cudaSimulation) {
     for (const auto &p : description.getMacroPropertiesMap()) {
         properties.emplace(p.first, MacroEnvProp(p.second.type, p.second.type_size, p.second.elements));
     }
@@ -34,7 +30,6 @@ void CUDAMacroEnvironment::init(cudaStream_t stream) {
             gpuErrchk(cudaMemsetAsync(prop.second.d_ptr, 0, buffer_size, stream));
         }
     }
-    mapRuntimeVariables();
     gpuErrchk(cudaStreamSynchronize(stream));
 }
 
@@ -72,12 +67,9 @@ void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, const CUDAMac
             }
         }
     }
-    // Pass them all to CURVE
-    mapRuntimeVariables();
     gpuErrchk(cudaStreamSynchronize(stream));
 }
 void CUDAMacroEnvironment::free() {
-    unmapRuntimeVariables();
     for (auto& prop : properties) {
         if (prop.second.d_ptr) {
             if (!prop.second.is_sub) {
@@ -91,33 +83,10 @@ void CUDAMacroEnvironment::purge() {
     for (auto& prop : properties)
         prop.second.d_ptr = nullptr;
 }
-
-void CUDAMacroEnvironment::mapRuntimeVariables() const {
-    auto& curve = detail::curve::Curve::getInstance();
-    // loop through the agents variables to map each variable name using cuRVE
-    for (const auto& mmp : properties) {
-        // map using curve
-        const detail::curve::Curve::VariableHash var_hash = detail::curve::Curve::variableRuntimeHash(mmp.first.c_str());
-
-        // get the agent variable size
-        const unsigned int length = mmp.second.elements[0] * mmp.second.elements[1] * mmp.second.elements[2] * mmp.second.elements[3];
-
-#ifdef _DEBUG
-            const detail::curve::Curve::Variable cv = curve.registerVariableByHash(var_hash + MACRO_NAMESPACE_HASH + cudaSimulation.getInstanceID(), mmp.second.d_ptr, mmp.second.type_size, length);
-            if (cv != static_cast<int>((var_hash + MACRO_NAMESPACE_HASH + cudaSimulation.getInstanceID()) % detail::curve::Curve::MAX_VARIABLES)) {
-                fprintf(stderr, "detail::curve::Curve Warning: Environment macro property '%s' has a collision and may work improperly.\n", mmp.first.c_str());
-            }
-#else
-            curve.registerVariableByHash(var_hash + MACRO_NAMESPACE_HASH + cudaSimulation.getInstanceID(), mmp.second.d_ptr, mmp.second.type_size, length);
-#endif
-    }
-}
-
-void CUDAMacroEnvironment::unmapRuntimeVariables() const {
-    // loop through the agents variables to unmap each property using cuRVE
-    for (const auto& mmp : properties) {
-        const detail::curve::Curve::VariableHash var_hash = detail::curve::Curve::variableRuntimeHash(mmp.first.c_str());
-        detail::curve::Curve::getInstance().unregisterVariableByHash(var_hash + MACRO_NAMESPACE_HASH + cudaSimulation.getInstanceID());
+void CUDAMacroEnvironment::registerCurveVariables(detail::curve::HostCurve& curve) const {
+    for (const auto& p : properties) {
+        const unsigned int total_elements = p.second.elements[0] * p.second.elements[1] * p.second.elements[2] * p.second.elements[3];
+        curve.registerSetMacroEnvironmentProperty(p.first, p.second.type, p.second.type_size, total_elements, p.second.d_ptr);
     }
 }
 void CUDAMacroEnvironment::mapRTCVariables(detail::curve::CurveRTCHost& curve_header) const {

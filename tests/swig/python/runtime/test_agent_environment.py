@@ -23,9 +23,7 @@ class MiniSim:
         return f"""
         FLAMEGPU_AGENT_FUNCTION(get_{c_type}, flamegpu::MessageNone, flamegpu::MessageNone) {{
             {c_type} a_out = FLAMEGPU->environment.getProperty<{c_type}>("a");
-            int contains_a = FLAMEGPU->environment.containsProperty("a");
             FLAMEGPU->setVariable<{c_type}>("a_out", a_out);
-            FLAMEGPU->setVariable<int>("contains_a", contains_a);
             return flamegpu::ALIVE;
         }}
         """
@@ -35,10 +33,8 @@ class MiniSim:
 
         return f"""
         FLAMEGPU_AGENT_FUNCTION(get_{c_type}, flamegpu::MessageNone, flamegpu::MessageNone) {{
-            {c_type} a1_out = FLAMEGPU->environment.getProperty<{c_type}>("a", 1);
-            int contains_b = FLAMEGPU->environment.containsProperty("b");
+            {c_type} a1_out = FLAMEGPU->environment.getProperty<{c_type}, 4>("a", 1);
             FLAMEGPU->setVariable<{c_type}>("a1_out", a1_out);
-            FLAMEGPU->setVariable<int>("contains_b", contains_b);
             return flamegpu::ALIVE;
         }}
         """
@@ -47,7 +43,6 @@ class MiniSim:
         # add agent variables
         new_agent_var_func = getattr(self.agent, f"newVariable{python_type}")
         new_agent_var_func("a_out")
-        self.agent.newVariableInt("contains_a")
         # add the agent function
         func_str = MiniSim.get_agent_function(c_type)
         func = self.agent.newRTCFunction("device_function", func_str)
@@ -62,13 +57,11 @@ class MiniSim:
         instance = self.population.front()
         instance_get_func = getattr(instance, f"getVariable{python_type}")
         assert instance_get_func("a_out") == SCALAR_TEST_VALUE
-        assert instance.getVariableInt("contains_a") == True
         
     def run_agent_function_array_test(self, c_type: str, python_type: str):
         # add agent variables
         new_agent_var_func = getattr(self.agent, f"newVariable{python_type}")
         new_agent_var_func("a1_out")
-        self.agent.newVariableInt("contains_b")
         # add the agent function
         func_str = MiniSim.get_agent_array_function(c_type)
         func = self.agent.newRTCFunction("device_function", func_str)
@@ -84,7 +77,6 @@ class MiniSim:
         instance = self.population.front()
         instance_get_func = getattr(instance, f"getVariable{python_type}")
         assert instance_get_func("a1_out") == ARRAY_TEST_VALUE[1]
-        assert instance.getVariableInt("contains_b") == False # B should not be found
             
     def __run(self):
         self.population = pyflamegpu.AgentVector(self.agent, 1)

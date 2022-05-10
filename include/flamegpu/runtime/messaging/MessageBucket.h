@@ -4,8 +4,6 @@
 #ifndef __CUDACC_RTC__
 #include <memory>
 #include <string>
-
-#include "flamegpu/runtime/detail/curve/curve.cuh"
 #endif  // __CUDACC_RTC__
 
 #include "flamegpu/runtime/messaging/MessageNone.h"

@@ -24,17 +24,16 @@ class StateWriter {
  public:
     /**
      * Returns a writer capable of writing model state to a specific format (this class is abstract)
-     * Environment properties from the Simulation instance pointed to by 'sim_instance_id' will be used 
      * Agent data will be read from 'model_state'
      * @param _model_name Name from the model description hierarchy of the model to be exported
-     * @param _sim_instance_id Instance is from the Simulation instance to export the environment properties fromo
+     * @param _env_manager Environment manager containing env property data for this sim instance
      * @param _model_state Map of AgentVector to read the agent data from per agent, key should be agent name
      * @param _iterations The value from the step counter at the time of export.
      * @param output_file Filename of the input file (This will be used to determine which reader to return)
      * @param _sim_instance Instance of the simulation (for configuration data IO)
      */
     StateWriter(const std::string &_model_name,
-        const unsigned int &_sim_instance_id,
+        const std::shared_ptr<EnvironmentManager>& _env_manager,
         const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &_model_state,
         const unsigned int &_iterations,
         const std::string &output_file,
@@ -43,7 +42,7 @@ class StateWriter {
     , iterations(_iterations)
     , outputFile(output_file)
     , model_name(_model_name)
-    , sim_instance_id(_sim_instance_id)
+    , env_manager(_env_manager)
     , sim_instance(_sim_instance) {}
     /**
      * Virtual destructor for correct inheritance behaviour
@@ -66,7 +65,7 @@ class StateWriter {
     unsigned int iterations;
     std::string outputFile;
     const std::string model_name;
-    const unsigned int sim_instance_id;
+    const std::shared_ptr<EnvironmentManager> env_manager;
     const Simulation *sim_instance;
 };
 }  // namespace io

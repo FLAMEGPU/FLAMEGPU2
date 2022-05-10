@@ -13,12 +13,10 @@ typedef void(AgentFunctionConditionWrapper)(
 #if !defined(SEATBELTS) || SEATBELTS
     exception::DeviceExceptionBuffer *error_buffer,
 #endif
-    detail::curve::Curve::NamespaceHash instance_id_hash,
 #ifndef __CUDACC_RTC__
-    const detail::curve::Curve::CurveTable* d_curve_table,
+    const detail::curve::CurveTable* d_curve_table,
     const char* d_env_buffer,
 #endif
-    detail::curve::Curve::NamespaceHash agent_func_name_hash,
     const unsigned int popNo,
     curandState *d_rng,
     unsigned int *scanFlag_conditionResult);  // Can't put __global__ in a typedef
@@ -27,10 +25,8 @@ typedef void(AgentFunctionConditionWrapper)(
  * Wrapper function for launching agent functions
  * Initialises FLAMEGPU_API instance
  * @param error_buffer Buffer used for detecting and reporting exception::DeviceErrors (flamegpu must be built with SEATBELTS enabled for this to be used)
- * @param instance_id_hash CURVE hash of the CUDASimulation's instance id
  * @param d_curve_table Pointer to curve hash table in device memory
  * @param d_env_buffer Pointer to env buffer in device memory
- * @param agent_func_name_hash CURVE hash of the agent + function's names
  * @param popNo Total number of agents exeucting the function (number of threads launched)
  * @param d_rng Array of curand states for this kernel
  * @param scanFlag_conditionResult Scanflag array for condition result (this uses same buffer as agent death)
@@ -42,24 +38,22 @@ __global__ void agent_function_condition_wrapper(
 #if !defined(SEATBELTS) || SEATBELTS
     exception::DeviceExceptionBuffer *error_buffer,
 #endif
-    detail::curve::Curve::NamespaceHash instance_id_hash,
 #ifndef __CUDACC_RTC__
-    const detail::curve::Curve::CurveTable* d_curve_table,
+    const detail::curve::CurveTable* d_curve_table,
     const char* d_env_buffer,
 #endif
-    detail::curve::Curve::NamespaceHash agent_func_name_hash,
     const unsigned int popNo,
     curandState *d_rng,
     unsigned int *scanFlag_conditionResult) {
     // We place these at the start of shared memory, so we can locate it anywhere in device code without a reference
     if (threadIdx.x == 0) {
-        extern __shared__ const void* sm[];
+        using detail::sm;
 #ifndef __CUDACC_RTC__
-        sm[0] = d_curve_table;
-        sm[1] = d_env_buffer;
+        sm()->curve = d_curve_table;
+        sm()->env_buffer = d_env_buffer;
 #endif
 #if !defined(SEATBELTS) || SEATBELTS
-        sm[2] = error_buffer;
+        sm()->device_exception = error_buffer;
 #endif
     }
 
@@ -71,10 +65,7 @@ __global__ void agent_function_condition_wrapper(
     if (ReadOnlyDeviceAPI::getThreadIndex() >= popNo)
         return;
     // create a new device FLAME_GPU instance
-    ReadOnlyDeviceAPI api = ReadOnlyDeviceAPI(
-        instance_id_hash,
-        agent_func_name_hash,
-        d_rng);
+    ReadOnlyDeviceAPI api = ReadOnlyDeviceAPI(d_rng);
 
     // call the user specified device function
     {

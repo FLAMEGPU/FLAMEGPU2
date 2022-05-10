@@ -434,12 +434,22 @@ TEST_F(DeviceExceptionTest, DeviceEnvironmentGetBadType) {
     ms->run(1);
 }
 FLAMEGPU_AGENT_FUNCTION(DeviceEnvironmentGetOutOfRange, MessageNone, MessageNone) {
-    FLAMEGPU->environment.getProperty<int>("array", 2);
+    FLAMEGPU->environment.getProperty<int, 2>("array", 2);
     return ALIVE;
 }
 TEST_F(DeviceExceptionTest, DeviceEnvironmentGetOutOfRange) {
     // Add required agent function
     ms->addFunc(DeviceEnvironmentGetOutOfRange);
+    // Test Something
+    ms->run(1);
+}
+FLAMEGPU_AGENT_FUNCTION(DeviceEnvironmentWrongLength, MessageNone, MessageNone) {
+    FLAMEGPU->environment.getProperty<int, 3>("array", 0);
+    return ALIVE;
+}
+TEST_F(DeviceExceptionTest, DeviceEnvironmentWrongLength) {
+    // Add required agent function
+    ms->addFunc(DeviceEnvironmentWrongLength);
     // Test Something
     ms->run(1);
 }

@@ -14,10 +14,12 @@
 namespace flamegpu {
 
 class CUDAScatter;
+class CUDASimulation;
 struct AgentFunctionData;
 struct MessageData;
 namespace detail {
 namespace curve {
+class HostCurve;
 class Curve;
 }  // namespace curve
 }  // namespace detail
@@ -79,27 +81,18 @@ class CUDAMessage {
      * The read runtime variables are to be used when reading messages
      * @param func The agent function, this is used for the cuRVE hash mapping
      * @param cuda_agent Agent which owns the agent function (condition) being mapped, if RTC function this holds the RTC header
-     * @param instance_id The CUDASimulation instance_id of the parent instance. This is added to the hash, to differentiate instances
      */
-    void mapReadRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &instance_id) const;
+    void mapReadRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent) const;
     /**
      * Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
      * The write runtime variables are to be used when creating messages, as they are output to swap space
      * @param func The agent function, this is used for the cuRVE hash mapping
      * @param cuda_agent Agent which owns the agent function (condition) being mapped, if RTC function this holds the RTC header
      * @param writeLen The number of messages to be output, as the length isn't updated till after output
-     * @param instance_id The CUDASimulation instance_id of the parent instance. This is added to the hash, to differentiate instances
      * @param stream The CUDAStream to use for CUDA operations
      * @note swap() or scatter() should be called after the agent function has written messages
      */
-    void mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &writeLen, const unsigned int &instance_id, cudaStream_t stream) const;
-    /**
-     * Uses the cuRVE runtime to unmap the variables used by the agent function to the cuRVE
-     * library so that they are unavailable to be accessed by name within an agent function.
-     * @param func The agent function, this is used for the cuRVE hash mapping
-     * @param instance_id The CUDASimulation instance_id of the parent instance. This is added to the hash, to differentiate instances
-     */
-    void unmapRuntimeVariables(const AgentFunctionData& func, const unsigned int &instance_id) const;
+    void mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &writeLen, cudaStream_t stream) const;
     void *getReadPtr(const std::string &var_name);
     const CUDAMessageMap &getReadList() { return message_list->getReadList(); }
     const CUDAMessageMap &getWriteList() { return message_list->getWriteList(); }

@@ -18,10 +18,9 @@ class JSONStateWriter : public StateWriter {
  public:
     /**
      * Returns a writer capable of writing model state to a JSON file
-     * Environment properties from the Simulation instance pointed to by 'sim_instance_id' will be used 
      * Agent data will be read from 'model_state'
      * @param model_name Name from the model description hierarchy of the model to be exported
-     * @param sim_instance_id Instance is from the Simulation instance to export the environment properties from
+     * @param env_manager Environment manager containing env property data for this sim instance
      * @param model_state Map of AgentVector to read the agent data from per agent, key should be agent name
      * @param iterations The value from the step counter at the time of export.
      * @param output_file Filename of the input file (This will be used to determine which reader to return)
@@ -29,7 +28,7 @@ class JSONStateWriter : public StateWriter {
      */
     JSONStateWriter(
         const std::string &model_name,
-        const unsigned int &sim_instance_id,
+        const std::shared_ptr<EnvironmentManager>& env_manager,
         const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
         const unsigned int &iterations,
         const std::string &output_file,
