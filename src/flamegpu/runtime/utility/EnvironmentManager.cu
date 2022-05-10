@@ -12,30 +12,19 @@
 
 namespace flamegpu {
 
-/**
- * Internal namespace to hide __constant__ declarations from modeller
- */
-namespace detail {
-    /**
-     * Managed by HostEnvironment, holds all environment properties
-     */
-    __constant__ char c_envPropBuffer[EnvironmentManager::MAX_BUFFER_SIZE];
-}  // namespace detail
-
 std::mutex EnvironmentManager::instance_mutex;
 const char EnvironmentManager::CURVE_NAMESPACE_STRING[23] = "ENVIRONMENT_PROPERTIES";
 
 EnvironmentManager::EnvironmentManager() :
     CURVE_NAMESPACE_HASH(detail::curve::Curve::variableRuntimeHash(CURVE_NAMESPACE_STRING)),
+    d_buffer(nullptr),
     nextFree(0),
     m_freeSpace(EnvironmentManager::MAX_BUFFER_SIZE),
-    freeFragments(),
-    deviceInitialised(false) { }
+    freeFragments() { }
 
 void EnvironmentManager::purge() {
     std::unique_lock<std::shared_timed_mutex> lock(mutex);
     std::unique_lock<std::shared_timed_mutex> deviceRequiresUpdate_lock(deviceRequiresUpdate_mutex);
-    deviceInitialised = false;
     for (auto &a : deviceRequiresUpdate) {
         a.second.c_update_required = true;
         a.second.rtc_update_required = true;
@@ -43,6 +32,8 @@ void EnvironmentManager::purge() {
     }
     deviceRequiresUpdate_lock.unlock();
     // We are now able to only purge the device stuff after device reset?
+    // gpuErrchk(cudaFree(d_buffer));
+    d_buffer = nullptr;
     // freeFragments.clear();
     // m_freeSpace = EnvironmentManager::MAX_BUFFER_SIZE;
     // nextFree = 0;
@@ -162,13 +153,9 @@ void EnvironmentManager::initRTC(const CUDASimulation& cudaSimulation) {
 
 void EnvironmentManager::initialiseDevice() {
     // Caller must lock mutex
-    if (!deviceInitialised) {
-        void *t_c_buffer = nullptr;
-        gpuErrchk(cudaGetSymbolAddress(&t_c_buffer, detail::c_envPropBuffer));
-        c_buffer = reinterpret_cast<char*>(t_c_buffer);
-        // printf("Env Prop Constant Cache Buffer: %p - %p\n", c_buffer, c_buffer + MAX_BUFFER_SIZE);
-        assert(CURVE_NAMESPACE_HASH == DeviceEnvironment::CURVE_NAMESPACE_HASH());  // Host and Device namespace const's do not match
-        deviceInitialised = true;
+    if (!d_buffer) {
+        // Always allocate device buff, irrespective of pure rtc, as this is a device wide singleton
+        gpuErrchk(cudaMalloc(&d_buffer, MAX_BUFFER_SIZE * sizeof(char)));
     }
 }
 void EnvironmentManager::free(detail::curve::Curve &curve, const unsigned int &instance_id) {
@@ -638,10 +625,10 @@ void EnvironmentManager::setDeviceRequiresUpdateFlag(const unsigned int &instanc
         flags.rtc_update_required = true;
     }
 }
-void EnvironmentManager::updateDevice(const unsigned int &instance_id) {
+void EnvironmentManager::updateDevice(const unsigned int instance_id, const cudaStream_t stream) {
     // Lock shared mutex of mutex in calling method first!!!
     // Device must be init first
-    assert(deviceInitialised);
+    assert(d_buffer);
     std::unique_lock<std::shared_timed_mutex> deviceRequiresUpdate_lock(deviceRequiresUpdate_mutex);
     NVTX_RANGE("EnvironmentManager::updateDevice()");
     auto &flags = deviceRequiresUpdate.at(instance_id);
@@ -650,11 +637,12 @@ void EnvironmentManager::updateDevice(const unsigned int &instance_id) {
     auto &curve_registration_required = flags.curve_registration_required;
     if (c_update_required) {
         // Store data
-        gpuErrchk(cudaMemcpy(reinterpret_cast<void*>(const_cast<char*>(c_buffer)), reinterpret_cast<void*>(const_cast<char*>(hc_buffer)), MAX_BUFFER_SIZE, cudaMemcpyHostToDevice));
+        gpuErrchk(cudaMemcpyAsync(d_buffer, hc_buffer, MAX_BUFFER_SIZE, cudaMemcpyHostToDevice, stream));
         // Update C update flag for all instances
         for (auto &a : deviceRequiresUpdate) {
             a.second.c_update_required = false;
         }
+        gpuErrchk(cudaStreamSynchronize(stream));
     }
     if (rtc_update_required) {
         // RTC is nolonger updated here, it's always updated before the CurveRTCHost is pushed to device.
@@ -705,6 +693,12 @@ void EnvironmentManager::updateDevice(const unsigned int &instance_id) {
         }
         curve_registration_required = false;
     }
+}
+/**
+ * Returns the pointer to environment buffer in device memory
+ */
+const char* EnvironmentManager::getDevicePtr() const {
+    return d_buffer;
 }
 
 

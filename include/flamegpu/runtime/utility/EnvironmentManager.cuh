@@ -667,8 +667,14 @@ class EnvironmentManager {
     /**
      * Updates the copy of the environment property cache on the device
      * @param instance_id Used to update the specified instance's rtc too
+     * @param stream Cuda stream to perform memcpys on
+     * @note Stream sync is performed as this is a shared data structure, so must block mutex until complete
      */
-    void updateDevice(const unsigned int &instance_id);
+    void updateDevice(const unsigned int instance_id, cudaStream_t stream);
+    /**
+     * Returns the pointer to environment buffer in device memory
+     */
+    const char* getDevicePtr() const;
 
  private:
     /**
@@ -717,13 +723,13 @@ class EnvironmentManager {
      */
     void addRTCOffset(const NamePair &name);
     /**
-     * Device pointer to the environment property buffer in __constant__ memory
-     */
-    const char *c_buffer;
-    /**
-     * Host copy of the device memory pointed to by c_buffer
+     * Host copy of the device memory pointed to by d_buffer
      */
     char hc_buffer[MAX_BUFFER_SIZE];
+    /**
+     * Pointer to device copy of the buffer
+     */
+    char *d_buffer;
     /**
      * Offset relative to c_buffer, where no more data has been stored
      */
@@ -753,10 +759,6 @@ class EnvironmentManager {
      * They are shared by submodels
      */
     std::unordered_map<unsigned int, std::shared_ptr<RTCEnvPropCache>> rtc_caches;
-    /**
-     * Flag indicating that curve has/hasn't been initialised yet on a device.
-     */
-    bool deviceInitialised;
     /*
      * Convenience fn for managing deviceRequiresUpdate
      * @param instance_id Sim instance id, UINT_MAX sets all
