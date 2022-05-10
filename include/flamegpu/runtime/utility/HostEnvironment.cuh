@@ -10,6 +10,7 @@
 #include <utility>
 #include <set>
 #include <vector>
+#include <memory>
 
 #include "flamegpu/gpu/CUDAMacroEnvironment.h"
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
@@ -35,11 +36,11 @@ class HostEnvironment {
     /**
      * Constructor, to be called by HostAPI
      */
-    explicit HostEnvironment(const unsigned int &instance_id, CUDAMacroEnvironment &_macro_env);
+    explicit HostEnvironment(const unsigned int &instance_id, const std::shared_ptr<EnvironmentManager> &env, CUDAMacroEnvironment &_macro_env);
     /**
      * Provides access to EnvironmentManager singleton
      */
-    EnvironmentManager &env_mgr;
+    const std::shared_ptr<EnvironmentManager> env_mgr;
     /**
      * Provides access to macro properties for the instance
      */
@@ -163,7 +164,7 @@ T HostEnvironment::setProperty(const std::string &name, const T &value) const {
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in HostEnvironment::set().");
     }
-    return env_mgr.setProperty<T>({ instance_id, name }, value);
+    return env_mgr->setProperty<T>(name, value);
 }
 template<typename T, EnvironmentManager::size_type N>
 std::array<T, N> HostEnvironment::setProperty(const std::string &name, const std::array<T, N> &value) const {
@@ -171,7 +172,7 @@ std::array<T, N> HostEnvironment::setProperty(const std::string &name, const std
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in HostEnvironment::set().");
     }
-    return env_mgr.setProperty<T, N>({ instance_id, name }, value);
+    return env_mgr->setProperty<T, N>(name, value);
 }
 template<typename T>
 T HostEnvironment::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value) const {
@@ -179,7 +180,7 @@ T HostEnvironment::setProperty(const std::string &name, const EnvironmentManager
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in HostEnvironment::set().");
     }
-    return env_mgr.setProperty<T>({ instance_id, name }, index, value);
+    return env_mgr->setProperty<T>(name, index, value);
 }
 #ifdef SWIG
 template<typename T>
@@ -188,7 +189,7 @@ std::vector<T> HostEnvironment::setPropertyArray(const std::string &name, const 
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in HostEnvironment::setArray().");
     }
-    return env_mgr.setPropertyArray<T>({ instance_id, name }, value);
+    return env_mgr->setPropertyArray<T>(name, value);
 }
 #endif  // SWIG
 
@@ -197,20 +198,20 @@ std::vector<T> HostEnvironment::setPropertyArray(const std::string &name, const 
  */
 template<typename T>
 T HostEnvironment::getProperty(const std::string &name) const  {
-    return env_mgr.getProperty<T>({ instance_id, name });
+    return env_mgr->getProperty<T>(name);
 }
 template<typename T, EnvironmentManager::size_type N>
 std::array<T, N> HostEnvironment::getProperty(const std::string &name) const  {
-    return env_mgr.getProperty<T, N>({ instance_id, name });
+    return env_mgr->getProperty<T, N>(name);
 }
 template<typename T>
 T HostEnvironment::getProperty(const std::string &name, const EnvironmentManager::size_type &index) const  {
-    return env_mgr.getProperty<T>({ instance_id, name }, index);
+    return env_mgr->getProperty<T>(name, index);
 }
 #ifdef SWIG
 template<typename T>
 std::vector<T> HostEnvironment::getPropertyArray(const std::string& name) const {
-    return env_mgr.getPropertyArray<T>({instance_id, name});
+    return env_mgr->getPropertyArray<T>(name);
 }
 #endif  // SWIG
 

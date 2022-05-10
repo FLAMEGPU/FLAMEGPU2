@@ -12,7 +12,6 @@
 #include "flamegpu/io/XMLStateReader.h"
 #include "flamegpu/io/JSONStateReader.h"
 #include "flamegpu/util/StringPair.h"
-#include "flamegpu/util/StringUint32Pair.h"
 
 namespace flamegpu {
 class AgentVector;
@@ -39,7 +38,7 @@ class StateReaderFactory {
     static StateReader* createReader(
         const std::string& model_name,
         const std::unordered_map<std::string, EnvironmentDescription::PropData>& env_desc,
-        util::StringUint32PairUnorderedMap<util::Any>& env_init,
+        std::unordered_map<std::string, util::Any>& env_init,
         util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>& model_state,
         const std::string& input,
         Simulation* sim_instance) {

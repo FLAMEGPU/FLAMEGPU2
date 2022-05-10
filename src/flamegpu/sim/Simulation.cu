@@ -129,7 +129,7 @@ void Simulation::exportData(const std::string &path, bool prettyPrint) {
         }
     }
 
-    io::StateWriter *write__ = io::StateWriterFactory::createWriter(model->name, getInstanceID(), pops, getStepCounter(), path, this);
+    io::StateWriter *write__ = io::StateWriterFactory::createWriter(model->name, getEnvironment(), pops, getStepCounter(), path, this);
     write__->writeStates(prettyPrint);
 }
 void Simulation::exportLog(const std::string &path, bool steps, bool exit, bool stepTime, bool exitTime, bool prettyPrint) {

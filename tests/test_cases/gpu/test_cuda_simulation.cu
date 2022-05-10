@@ -750,10 +750,10 @@ TEST(TestCUDASimulation, setEnvironmentProperty) {
 #endif
     // Test the exceptions work
     EXPECT_THROW(s.CUDASimulation::setEnvironmentProperty<int>("float", 2), exception::InvalidEnvProperty);  // Bad name
-    EXPECT_THROW(s.CUDASimulation::setEnvironmentProperty<int>("int3", 3), exception::InvalidEnvPropertyType);  // Bad length
+    EXPECT_THROW(s.CUDASimulation::setEnvironmentProperty<int>("int3", 3), exception::OutOfBoundsException);  // Bad length
     EXPECT_THROW(s.CUDASimulation::setEnvironmentProperty<float>("int", 3), exception::InvalidEnvPropertyType);  // Bad type
     EXPECT_THROW(s.CUDASimulation::getEnvironmentProperty<int>("float"), exception::InvalidEnvProperty);  // Bad name
-    EXPECT_THROW(s.CUDASimulation::getEnvironmentProperty<int>("int3"), exception::InvalidEnvPropertyType);  // Bad length
+    EXPECT_THROW(s.CUDASimulation::getEnvironmentProperty<int>("int3"), exception::OutOfBoundsException);  // Bad length
     EXPECT_THROW(s.CUDASimulation::getEnvironmentProperty<float>("int"), exception::InvalidEnvPropertyType);  // Bad type
     const std::array<float, 3> tf3 = { 56.0f, 57.0f, 58.0f };
     const std::array<int, 5> ti5 = { 56, 57, 58, 59, 60 };

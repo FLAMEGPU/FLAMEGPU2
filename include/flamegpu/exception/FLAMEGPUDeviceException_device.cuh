@@ -6,6 +6,8 @@
 
 #include <cstring>
 
+#include "flamegpu/runtime/detail/SharedBlock.h"
+
 namespace flamegpu {
 namespace exception {
 
@@ -81,20 +83,20 @@ class DeviceException {
      */
     template<typename... Args>
     __device__ void setMessage(const char *format, Args... args) {
-        extern __shared__ DeviceExceptionBuffer* buff[];
+        using detail::sm;
         // Only the thread which first reported error gets to output
         if (hasError) {
             // Only output once
-            if (buff[2]->format_string[0])
+            if (sm()->device_exception->format_string[0])
                 return;
             // Copy the format string
             unsigned int eos = 0;
             for (eos = 0; eos < DeviceExceptionBuffer::FORMAT_BUFF_LEN; ++eos)
                 if (format[eos] == '\0')
                     break;
-            memcpy(buff[2]->format_string, format, eos * sizeof(char));
+            memcpy(sm()->device_exception->format_string, format, eos * sizeof(char));
             // Process args
-            subformat_recurse(buff[2], args...);
+            subformat_recurse(sm()->device_exception, args...);
         }
     }
 
@@ -135,18 +137,18 @@ class DeviceException {
      */
     __device__ DeviceException(const char *file, const unsigned int line)
         : hasError(!getErrorCount()) {
-        extern __shared__ DeviceExceptionBuffer* buff[];
+        using detail::sm;
         if (hasError) {
             // Copy file location
             const size_t file_len = strlen(file);
-            memcpy(buff[2]->file_path, file, file_len);
+            memcpy(sm()->device_exception->file_path, file, file_len);
             // Copy line no
-            buff[2]->line_no = line;
+            sm()->device_exception->line_no = line;
             // Copy block/thread indices
             const uint3 bid3 = blockIdx;
-            memcpy(buff[2]->block_id, &bid3, sizeof(unsigned int) * 3);
+            memcpy(sm()->device_exception->block_id, &bid3, sizeof(unsigned int) * 3);
             const uint3 tid3 = threadIdx;
-            memcpy(buff[2]->thread_id, &tid3, sizeof(unsigned int) * 3);
+            memcpy(sm()->device_exception->thread_id, &tid3, sizeof(unsigned int) * 3);
         }
     }
     /**
@@ -188,9 +190,9 @@ __device__ inline void DeviceException::subformat(DeviceExceptionBuffer *buff, c
     }
 }
 __device__ unsigned int DeviceException::getErrorCount() {
-    extern __shared__ DeviceExceptionBuffer* buff[];
+    using detail::sm;
     // Are we the first exception
-    return atomicInc(&buff[2]->error_count, UINT_MAX);
+    return atomicInc(&sm()->device_exception->error_count, UINT_MAX);
 }
 #endif
 #else

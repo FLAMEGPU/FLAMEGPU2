@@ -18,12 +18,12 @@ namespace io {
 
 JSONStateWriter::JSONStateWriter(
     const std::string &model_name,
-    const unsigned int &sim_instance_id,
+    const std::shared_ptr<EnvironmentManager> &env_manager,
     const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>&model,
     const unsigned int &iterations,
     const std::string &output_file,
     const Simulation *_sim_instance)
-    : StateWriter(model_name, sim_instance_id, model, iterations, output_file, _sim_instance) {}
+    : StateWriter(model_name, env_manager, model, iterations, output_file, _sim_instance) {}
 
 template<typename T>
 void JSONStateWriter::doWrite(T &writer) {
@@ -108,52 +108,47 @@ void JSONStateWriter::doWrite(T &writer) {
     // Environment properties
     writer.Key("environment");
     writer.StartObject();
-    {
+    if (env_manager) {
+        const char *env_buffer = reinterpret_cast<const char *>(env_manager->getHostBuffer());
         // for each environment property
-        EnvironmentManager &env_manager = EnvironmentManager::getInstance();
-        auto lock = env_manager.getSharedLock();
-        const char *env_buffer = reinterpret_cast<const char *>(env_manager.getHostBuffer());
-        for (auto &a : env_manager.getPropertiesMap()) {
-            // If it is from this model
-            if (a.first.first == sim_instance_id) {
-                // Set name
-                writer.Key(a.first.second.c_str());
-                // Output value
-                if (a.second.elements > 1) {
-                    // Value is an array
-                    writer.StartArray();
+        for (auto &a : env_manager->getPropertiesMap()) {
+            // Set name
+            writer.Key(a.first.c_str());
+            // Output value
+            if (a.second.elements > 1) {
+                // Value is an array
+                writer.StartArray();
+            }
+            // Loop through elements, to construct array
+            for (unsigned int el = 0; el < a.second.elements; ++el) {
+                if (a.second.type == std::type_index(typeid(float))) {
+                    writer.Double(*reinterpret_cast<const float*>(env_buffer + a.second.offset + (el * sizeof(float))));
+                } else if (a.second.type == std::type_index(typeid(double))) {
+                    writer.Double(*reinterpret_cast<const double*>(env_buffer + a.second.offset + (el * sizeof(double))));
+                } else if (a.second.type == std::type_index(typeid(int64_t))) {
+                    writer.Int64(*reinterpret_cast<const int64_t*>(env_buffer + a.second.offset + (el * sizeof(int64_t))));
+                } else if (a.second.type == std::type_index(typeid(uint64_t))) {
+                    writer.Uint64(*reinterpret_cast<const uint64_t*>(env_buffer + a.second.offset + (el * sizeof(uint64_t))));
+                } else if (a.second.type == std::type_index(typeid(int32_t))) {
+                    writer.Int(*reinterpret_cast<const int32_t*>(env_buffer + a.second.offset + (el * sizeof(int32_t))));
+                } else if (a.second.type == std::type_index(typeid(uint32_t))) {
+                    writer.Uint(*reinterpret_cast<const uint32_t*>(env_buffer + a.second.offset + (el * sizeof(uint32_t))));
+                } else if (a.second.type == std::type_index(typeid(int16_t))) {
+                    writer.Int(*reinterpret_cast<const int16_t*>(env_buffer + a.second.offset + (el * sizeof(int16_t))));
+                } else if (a.second.type == std::type_index(typeid(uint16_t))) {
+                    writer.Uint(*reinterpret_cast<const uint16_t*>(env_buffer + a.second.offset + (el * sizeof(uint16_t))));
+                } else if (a.second.type == std::type_index(typeid(int8_t))) {
+                    writer.Int(static_cast<int32_t>(*reinterpret_cast<const int8_t*>(env_buffer + a.second.offset + (el * sizeof(int8_t)))));  // Char outputs weird if being used as an integer
+                } else if (a.second.type == std::type_index(typeid(uint8_t))) {
+                    writer.Uint(static_cast<uint32_t>(*reinterpret_cast<const uint8_t*>(env_buffer + a.second.offset + (el * sizeof(uint8_t)))));  // Char outputs weird if being used as an integer
+                } else {
+                    THROW exception::RapidJSONError("Model contains environment property '%s' of unsupported type '%s', "
+                        "in JSONStateWriter::writeStates()\n", a.first.c_str(), a.second.type.name());
                 }
-                // Loop through elements, to construct array
-                for (unsigned int el = 0; el < a.second.elements; ++el) {
-                    if (a.second.type == std::type_index(typeid(float))) {
-                        writer.Double(*reinterpret_cast<const float*>(env_buffer + a.second.offset + (el * sizeof(float))));
-                    } else if (a.second.type == std::type_index(typeid(double))) {
-                        writer.Double(*reinterpret_cast<const double*>(env_buffer + a.second.offset + (el * sizeof(double))));
-                    } else if (a.second.type == std::type_index(typeid(int64_t))) {
-                        writer.Int64(*reinterpret_cast<const int64_t*>(env_buffer + a.second.offset + (el * sizeof(int64_t))));
-                    } else if (a.second.type == std::type_index(typeid(uint64_t))) {
-                        writer.Uint64(*reinterpret_cast<const uint64_t*>(env_buffer + a.second.offset + (el * sizeof(uint64_t))));
-                    } else if (a.second.type == std::type_index(typeid(int32_t))) {
-                        writer.Int(*reinterpret_cast<const int32_t*>(env_buffer + a.second.offset + (el * sizeof(int32_t))));
-                    } else if (a.second.type == std::type_index(typeid(uint32_t))) {
-                        writer.Uint(*reinterpret_cast<const uint32_t*>(env_buffer + a.second.offset + (el * sizeof(uint32_t))));
-                    } else if (a.second.type == std::type_index(typeid(int16_t))) {
-                        writer.Int(*reinterpret_cast<const int16_t*>(env_buffer + a.second.offset + (el * sizeof(int16_t))));
-                    } else if (a.second.type == std::type_index(typeid(uint16_t))) {
-                        writer.Uint(*reinterpret_cast<const uint16_t*>(env_buffer + a.second.offset + (el * sizeof(uint16_t))));
-                    } else if (a.second.type == std::type_index(typeid(int8_t))) {
-                        writer.Int(static_cast<int32_t>(*reinterpret_cast<const int8_t*>(env_buffer + a.second.offset + (el * sizeof(int8_t)))));  // Char outputs weird if being used as an integer
-                    } else if (a.second.type == std::type_index(typeid(uint8_t))) {
-                        writer.Uint(static_cast<uint32_t>(*reinterpret_cast<const uint8_t*>(env_buffer + a.second.offset + (el * sizeof(uint8_t)))));  // Char outputs weird if being used as an integer
-                    } else {
-                        THROW exception::RapidJSONError("Model contains environment property '%s' of unsupported type '%s', "
-                            "in JSONStateWriter::writeStates()\n", a.first.second.c_str(), a.second.type.name());
-                    }
-                }
-                if (a.second.elements > 1) {
-                    // Value is an array
-                    writer.EndArray();
-                }
+            }
+            if (a.second.elements > 1) {
+                // Value is an array
+                writer.EndArray();
             }
         }
     }

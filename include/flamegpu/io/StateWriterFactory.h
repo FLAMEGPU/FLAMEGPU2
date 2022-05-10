@@ -30,7 +30,7 @@ class StateWriterFactory {
      * Environment properties from the Simulation instance pointed to by 'sim_instance_id' will be used
      * Agent data will be read from 'model_state'
      * @param model_name Name from the model description hierarchy of the model to be exported
-     * @param sim_instance_id Instance is from the Simulation instance to export the environment properties from
+     * @param env_manager Environment manager containing env property data for this sim instance
      * @param model_state Map of AgentVector to read the agent data from per agent, key should be agent name
      * @param iterations The value from the step counter at the time of export.
      * @param output_file Filename of the input file (This will be used to determine which reader to return)
@@ -39,7 +39,7 @@ class StateWriterFactory {
      */
     static StateWriter* createWriter(
         const std::string& model_name,
-        const unsigned int& sim_instance_id,
+        const std::shared_ptr<EnvironmentManager>& env_manager,
         const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>& model_state,
         const unsigned int& iterations,
         const std::string& output_file,
@@ -47,9 +47,9 @@ class StateWriterFactory {
         const std::string extension = std::filesystem::path(output_file).extension().string();
 
         if (extension == ".xml") {
-            return new XMLStateWriter(model_name, sim_instance_id, model_state, iterations, output_file, sim_instance);
+            return new XMLStateWriter(model_name, env_manager, model_state, iterations, output_file, sim_instance);
         } else if (extension == ".json") {
-            return new JSONStateWriter(model_name, sim_instance_id, model_state, iterations, output_file, sim_instance);
+            return new JSONStateWriter(model_name, env_manager, model_state, iterations, output_file, sim_instance);
         }
         THROW exception::UnsupportedFileType("File '%s' is not a type which can be written "
             "by StateWriterFactory::createWriter().",

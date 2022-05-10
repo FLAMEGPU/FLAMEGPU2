@@ -148,11 +148,10 @@ class MessageBucket::In {
         * Constructor, takes the search parameters required
         * Begin key and end key specify the [begin, end) contiguous range of bucket. (inclusive begin, exclusive end)
         * @param _metadata Pointer to message list metadata
-        * @param combined_hash agentfn+message hash for accessing message data
         * @param beginKey Inclusive first bucket of range to access
         * @param endKey Exclusive final bucket of range to access, this is the final bucket + 1
         */
-        inline __device__ Filter(const MetaData *_metadata, const detail::curve::Curve::NamespaceHash &combined_hash, const IntT &beginKey, const IntT &endKey);
+        inline __device__ Filter(const MetaData *_metadata, const IntT &beginKey, const IntT &endKey);
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * Creates a null filter which always returns 0 messages
@@ -190,22 +189,14 @@ class MessageBucket::In {
         * Pointer to message list metadata, e.g. environment bounds, search radius, PBM location
         */
         const MetaData *metadata;
-        /**
-        * CURVE hash for accessing message data
-        * agent function hash + message hash
-        */
-        detail::curve::Curve::NamespaceHash combined_hash;
     };
     /**
     * Constructor
     * Initialises member variables
-    * @param agentfn_hash Added to message_hash to produce combined_hash
-    * @param message_hash Added to agentfn_hash to produce combined_hash
     * @param _metadata Reinterpreted as type MessageBucket::MetaData
     */
-    __device__ In(detail::curve::Curve::NamespaceHash agentfn_hash, detail::curve::Curve::NamespaceHash message_hash, const void *_metadata)
-        : combined_hash(agentfn_hash + message_hash)
-        , metadata(reinterpret_cast<const MetaData*>(_metadata))
+    __device__ In(const void *_metadata)
+        : metadata(reinterpret_cast<const MetaData*>(_metadata))
     { }
     /**
     * Returns a Filter object which provides access to message iterator
@@ -225,7 +216,7 @@ class MessageBucket::In {
             }
         }
 #endif
-        return Filter(metadata, combined_hash, key, key + 1);
+        return Filter(metadata, key, key + 1);
     }
     /**
     * Returns a Filter object which provides access to message iterator
@@ -249,15 +240,10 @@ class MessageBucket::In {
             }
         }
 #endif
-        return Filter(metadata, combined_hash, beginKey, endKey);
+        return Filter(metadata, beginKey, endKey);
     }
 
  private:
-    /**
-    * CURVE hash for accessing message data
-    * agentfn_hash + message_hash
-    */
-    detail::curve::Curve::NamespaceHash combined_hash;
     /**
     * Device pointer to metadata required for accessing data structure
     * e.g. PBM, search origin, environment bounds
@@ -274,13 +260,11 @@ class MessageBucket::Out : public MessageBruteForce::Out {
     /**
     * Constructor
     * Initialises member variables
-    * @param agentfn_hash Added to message_hash to produce combined_hash
-    * @param message_hash Added to agentfn_hash to produce combined_hash
     * @param _metadata Message specialisation specific metadata struct (of type MessageBucket::MetaData)
     * @param scan_flag_messageOutput Scan flag array for optional message output
     */
-    __device__ Out(detail::curve::Curve::NamespaceHash agentfn_hash, detail::curve::Curve::NamespaceHash message_hash, const void *_metadata, unsigned int *scan_flag_messageOutput)
-        : MessageBruteForce::Out(agentfn_hash, message_hash, nullptr, scan_flag_messageOutput)
+    __device__ Out(const void *_metadata, unsigned int *scan_flag_messageOutput)
+        : MessageBruteForce::Out(nullptr, scan_flag_messageOutput)
 #if !defined(SEATBELTS) || SEATBELTS
         , metadata(reinterpret_cast<const MetaData*>(_metadata))
 #else
@@ -299,11 +283,10 @@ class MessageBucket::Out : public MessageBruteForce::Out {
     const MetaData * const metadata;
 };
 
-__device__ MessageBucket::In::Filter::Filter(const MetaData* _metadata, const detail::curve::Curve::NamespaceHash &_combined_hash, const IntT& beginKey, const IntT& endKey)
+__device__ MessageBucket::In::Filter::Filter(const MetaData* _metadata, const IntT& beginKey, const IntT& endKey)
     : bucket_begin(0)
     , bucket_end(0)
-    , metadata(_metadata)
-    , combined_hash(_combined_hash) {
+    , metadata(_metadata) {
     // If key is in bounds
     if (beginKey >= metadata->min && endKey < metadata->max && beginKey <= endKey) {
         bucket_begin = metadata->PBM[beginKey - metadata->min];
@@ -314,8 +297,7 @@ __device__ MessageBucket::In::Filter::Filter(const MetaData* _metadata, const de
 __device__ MessageBucket::In::Filter::Filter()
     : bucket_begin(0)
     , bucket_end(0)
-    , metadata(nullptr)
-    , combined_hash(0) { }
+    , metadata(nullptr) { }
 #endif
 
 __device__ void MessageBucket::Out::setKey(const IntT &key) const {
@@ -328,7 +310,7 @@ __device__ void MessageBucket::Out::setKey(const IntT &key) const {
     }
 #endif
     // set the variables using curve
-    detail::curve::Curve::setMessageVariable<IntT>("_key", combined_hash, key, index);
+    detail::curve::DeviceCurve::setMessageVariable<IntT>("_key", key, index);
 
     // Set scan flag incase the message is optional
     this->scan_flag[index] = 1;
@@ -343,8 +325,8 @@ __device__ T MessageBucket::In::Filter::Message::getVariable(const char(&variabl
         return static_cast<T>(0);
     }
 #endif
-    // get the value from curve using the stored hashes and message index.
-    T value = detail::curve::Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, cell_index);
+    // get the value from curve using the message index.
+    T value = detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, cell_index);
     return value;
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
@@ -356,8 +338,8 @@ T MessageBucket::In::Filter::Message::getVariable(const char(&variable_name)[M],
         return {};
     }
 #endif
-    // get the value from curve using the stored hashes and message index.
-    T value = detail::curve::Curve::getMessageArrayVariable<T, N>(variable_name, this->_parent.combined_hash, cell_index, array_index);
+    // get the value from curve using the message index.
+    T value = detail::curve::DeviceCurve::getMessageArrayVariable<T, N>(variable_name, cell_index, array_index);
     return value;
 }
 }  // namespace flamegpu

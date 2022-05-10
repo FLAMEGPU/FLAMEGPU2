@@ -155,7 +155,10 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostAPI_macros.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostAgentAPI.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/HostNewAgentAPI.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/detail/curve/curve.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/detail/SharedBlock.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/detail/curve/Curve.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/detail/curve/DeviceCurve.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/detail/curve/HostCurve.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/detail/curve/curve_rtc.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging.h
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/messaging_device.h
@@ -196,7 +199,6 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/util/Any.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/nvtx.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/StringPair.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/util/StringUint32Pair.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/type_decode.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/compute_capability.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/wddm.cuh
@@ -253,8 +255,9 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/SimRunner.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/SimLogger.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/sim/Simulation.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/detail/curve/curve.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/detail/curve/Curve.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/detail/curve/curve_rtc.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/detail/curve/HostCurve.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/HostAPI.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/HostAgentAPI.cu 
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/MessageBruteForce.cu

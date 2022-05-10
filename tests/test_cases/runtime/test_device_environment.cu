@@ -13,7 +13,6 @@ namespace flamegpu {
 
 namespace {
 
-__device__ bool bool_out;
 __device__ float float_out;
 __device__ double double_out;
 __device__ uint8_t uint8_t_out;
@@ -27,103 +26,83 @@ __device__ int64_t int64_t_out;
 
 FLAMEGPU_AGENT_FUNCTION(get_float, MessageNone, MessageNone) {
     float_out = FLAMEGPU->environment.getProperty<float>("a");
-    bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(get_double, MessageNone, MessageNone) {
     double_out = FLAMEGPU->environment.getProperty<double>("a");
-    bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(get_uint8_t, MessageNone, MessageNone) {
     uint8_t_out = FLAMEGPU->environment.getProperty<uint8_t>("a");
-    bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(get_int8_t, MessageNone, MessageNone) {
     int8_t_out = FLAMEGPU->environment.getProperty<int8_t>("a");
-    bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(get_uint16_t, MessageNone, MessageNone) {
     uint16_t_out = FLAMEGPU->environment.getProperty<uint16_t>("a");
-    bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(get_int16_t, MessageNone, MessageNone) {
     int16_t_out = FLAMEGPU->environment.getProperty<int16_t>("a");
-    bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(get_uint32_t, MessageNone, MessageNone) {
     uint32_t_out = FLAMEGPU->environment.getProperty<uint32_t>("a");
-    bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(get_int32_t, MessageNone, MessageNone) {
     int32_t_out = FLAMEGPU->environment.getProperty<int32_t>("a");
-    bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(get_uint64_t, MessageNone, MessageNone) {
     uint64_t_out = FLAMEGPU->environment.getProperty<uint64_t>("a");
-    bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(get_int64_t, MessageNone, MessageNone) {
     int64_t_out = FLAMEGPU->environment.getProperty<int64_t>("a");
-    bool_out = FLAMEGPU->environment.containsProperty("a");
     return ALIVE;
 }
 
 FLAMEGPU_AGENT_FUNCTION(get_arrayElement_float, MessageNone, MessageNone) {
-    float_out = FLAMEGPU->environment.getProperty<float>("a", 1);
-    bool_out = FLAMEGPU->environment.containsProperty("b");
+    float_out = FLAMEGPU->environment.getProperty<float, 5>("a", 1);
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(get_arrayElement_double, MessageNone, MessageNone) {
-    double_out = FLAMEGPU->environment.getProperty<double>("a", 1);
-    bool_out = FLAMEGPU->environment.containsProperty("b");
+    double_out = FLAMEGPU->environment.getProperty<double, 5>("a", 1);
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(get_arrayElement_uint8_t, MessageNone, MessageNone) {
-    uint8_t_out = FLAMEGPU->environment.getProperty<uint8_t>("a", 1);
-    bool_out = FLAMEGPU->environment.containsProperty("b");
+    uint8_t_out = FLAMEGPU->environment.getProperty<uint8_t, 5>("a", 1);
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(get_arrayElement_int8_t, MessageNone, MessageNone) {
-    int8_t_out = FLAMEGPU->environment.getProperty<int8_t>("a", 1);
-    bool_out = FLAMEGPU->environment.containsProperty("b");
+    int8_t_out = FLAMEGPU->environment.getProperty<int8_t, 5>("a", 1);
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(get_arrayElement_uint16_t, MessageNone, MessageNone) {
-    uint16_t_out = FLAMEGPU->environment.getProperty<uint16_t>("a", 1);
-    bool_out = FLAMEGPU->environment.containsProperty("b");
+    uint16_t_out = FLAMEGPU->environment.getProperty<uint16_t, 5>("a", 1);
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(get_arrayElement_int16_t, MessageNone, MessageNone) {
-    int16_t_out = FLAMEGPU->environment.getProperty<int16_t>("a", 1);
-    bool_out = FLAMEGPU->environment.containsProperty("b");
+    int16_t_out = FLAMEGPU->environment.getProperty<int16_t, 5>("a", 1);
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(get_arrayElement_uint32_t, MessageNone, MessageNone) {
-    uint32_t_out = FLAMEGPU->environment.getProperty<uint32_t>("a", 1);
-    bool_out = FLAMEGPU->environment.containsProperty("b");
+    uint32_t_out = FLAMEGPU->environment.getProperty<uint32_t, 5>("a", 1);
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(get_arrayElement_int32_t, MessageNone, MessageNone) {
-    int32_t_out = FLAMEGPU->environment.getProperty<int32_t>("a", 1);
-    bool_out = FLAMEGPU->environment.containsProperty("b");
+    int32_t_out = FLAMEGPU->environment.getProperty<int32_t, 5>("a", 1);
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(get_arrayElement_uint64_t, MessageNone, MessageNone) {
-    uint64_t_out = FLAMEGPU->environment.getProperty<uint64_t>("a", 1);
-    bool_out = FLAMEGPU->environment.containsProperty("b");
+    uint64_t_out = FLAMEGPU->environment.getProperty<uint64_t, 5>("a", 1);
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(get_arrayElement_int64_t, MessageNone, MessageNone) {
-    int64_t_out = FLAMEGPU->environment.getProperty<int64_t>("a", 1);
-    bool_out = FLAMEGPU->environment.containsProperty("b");
+    int64_t_out = FLAMEGPU->environment.getProperty<int64_t, 5>("a", 1);
     return ALIVE;
 }
 
@@ -189,7 +168,6 @@ class DeviceEnvironmentTest : public testing::Test {
  protected:
     void SetUp() override {
         ms = new MiniSim();
-        bool _bool_out = false;
         float _float_out = 0;
         double _double_out = 0;
         uint8_t _uint8_t_out = 0;
@@ -200,7 +178,6 @@ class DeviceEnvironmentTest : public testing::Test {
         int32_t _int32_t_out = 0;
         uint64_t _uint64_t_out = 0;
         int64_t _int64_t_out = 0;
-        cudaMemcpyToSymbol(bool_out, &_bool_out, sizeof(bool));
         cudaMemcpyToSymbol(float_out, &_float_out, sizeof(float));
         cudaMemcpyToSymbol(double_out, &_double_out, sizeof(uint8_t));
         cudaMemcpyToSymbol(uint8_t_out, &_uint8_t_out, sizeof(uint8_t));
@@ -234,9 +211,6 @@ TEST_F(DeviceEnvironmentTest, Get_float) {
     float _float_out = 0;
     cudaMemcpyFromSymbol(&_float_out, float_out, sizeof(float));
     EXPECT_EQ(float_check, _float_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 TEST_F(DeviceEnvironmentTest, Get_double) {
@@ -249,9 +223,6 @@ TEST_F(DeviceEnvironmentTest, Get_double) {
     double _double_out = 0;
     cudaMemcpyFromSymbol(&_double_out, double_out, sizeof(double));
     EXPECT_EQ(double_check, _double_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 TEST_F(DeviceEnvironmentTest, Get_int8_t) {
@@ -264,9 +235,6 @@ TEST_F(DeviceEnvironmentTest, Get_int8_t) {
     int8_t _int8_t_out = 0;
     cudaMemcpyFromSymbol(&_int8_t_out, int8_t_out, sizeof(int8_t));
     EXPECT_EQ(int8_t_check, _int8_t_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 TEST_F(DeviceEnvironmentTest, Get_uint8_t) {
@@ -279,9 +247,6 @@ TEST_F(DeviceEnvironmentTest, Get_uint8_t) {
     uint8_t _uint8_t_out = 0;
     cudaMemcpyFromSymbol(&_uint8_t_out, uint8_t_out, sizeof(uint8_t));
     EXPECT_EQ(uint8_t_check, _uint8_t_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 TEST_F(DeviceEnvironmentTest, Get_int16_t) {
@@ -294,9 +259,6 @@ TEST_F(DeviceEnvironmentTest, Get_int16_t) {
     int16_t _int16_t_out = 0;
     cudaMemcpyFromSymbol(&_int16_t_out, int16_t_out, sizeof(int16_t));
     EXPECT_EQ(int16_t_check, _int16_t_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 TEST_F(DeviceEnvironmentTest, Get_uint16_t) {
@@ -309,9 +271,6 @@ TEST_F(DeviceEnvironmentTest, Get_uint16_t) {
     uint16_t _uint16_t_out = 0;
     cudaMemcpyFromSymbol(&_uint16_t_out, uint16_t_out, sizeof(uint16_t));
     EXPECT_EQ(uint16_t_check, _uint16_t_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 TEST_F(DeviceEnvironmentTest, Get_int32_t) {
@@ -324,9 +283,6 @@ TEST_F(DeviceEnvironmentTest, Get_int32_t) {
     int32_t _int32_t_out = 0;
     cudaMemcpyFromSymbol(&_int32_t_out, int32_t_out, sizeof(int32_t));
     EXPECT_EQ(int32_t_check, _int32_t_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 TEST_F(DeviceEnvironmentTest, Get_uint32_t) {
@@ -339,9 +295,6 @@ TEST_F(DeviceEnvironmentTest, Get_uint32_t) {
     uint32_t _uint32_t_out = 0;
     cudaMemcpyFromSymbol(&_uint32_t_out, uint32_t_out, sizeof(uint32_t));
     EXPECT_EQ(uint32_t_check, _uint32_t_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 TEST_F(DeviceEnvironmentTest, Get_int64_t) {
@@ -354,9 +307,6 @@ TEST_F(DeviceEnvironmentTest, Get_int64_t) {
     int64_t _int64_t_out = 0;
     cudaMemcpyFromSymbol(&_int64_t_out, int64_t_out, sizeof(int64_t));
     EXPECT_EQ(int64_t_check, _int64_t_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 TEST_F(DeviceEnvironmentTest, Get_uint64_t) {
@@ -369,9 +319,6 @@ TEST_F(DeviceEnvironmentTest, Get_uint64_t) {
     uint64_t _uint64_t_out = 0;
     cudaMemcpyFromSymbol(&_uint64_t_out, uint64_t_out, sizeof(uint64_t));
     EXPECT_EQ(uint64_t_check, _uint64_t_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(true, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 
@@ -385,9 +332,6 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_float) {
     float _float_out = 0;
     cudaMemcpyFromSymbol(&_float_out, float_out, sizeof(float));
     EXPECT_EQ(float_check, _float_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_double) {
@@ -400,9 +344,6 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_double) {
     double _double_out = 0;
     cudaMemcpyFromSymbol(&_double_out, double_out, sizeof(double));
     EXPECT_EQ(double_check, _double_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_int8_t) {
@@ -415,9 +356,6 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_int8_t) {
     int8_t _int8_t_out = 0;
     cudaMemcpyFromSymbol(&_int8_t_out, int8_t_out, sizeof(int8_t));
     EXPECT_EQ(int8_t_check, _int8_t_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint8_t) {
@@ -430,9 +368,6 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint8_t) {
     uint8_t _uint8_t_out = 0;
     cudaMemcpyFromSymbol(&_uint8_t_out, uint8_t_out, sizeof(uint8_t));
     EXPECT_EQ(uint8_t_check, _uint8_t_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_int16_t) {
@@ -445,9 +380,6 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_int16_t) {
     int16_t _int16_t_out = 0;
     cudaMemcpyFromSymbol(&_int16_t_out, int16_t_out, sizeof(int16_t));
     EXPECT_EQ(int16_t_check, _int16_t_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint16_t) {
@@ -460,9 +392,6 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint16_t) {
     uint16_t _uint16_t_out = 0;
     cudaMemcpyFromSymbol(&_uint16_t_out, uint16_t_out, sizeof(uint16_t));
     EXPECT_EQ(uint16_t_check, _uint16_t_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint32_t) {
@@ -475,9 +404,6 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint32_t) {
     uint32_t _uint32_t_out = 0;
     cudaMemcpyFromSymbol(&_uint32_t_out, uint32_t_out, sizeof(uint32_t));
     EXPECT_EQ(uint32_t_check, _uint32_t_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_int32_t) {
@@ -490,9 +416,6 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_int32_t) {
     int32_t _int32_t_out = 0;
     cudaMemcpyFromSymbol(&_int32_t_out, int32_t_out, sizeof(int32_t));
     EXPECT_EQ(int32_t_check, _int32_t_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint64_t) {
@@ -505,9 +428,6 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint64_t) {
     uint64_t _uint64_t_out = 0;
     cudaMemcpyFromSymbol(&_uint64_t_out, uint64_t_out, sizeof(uint64_t));
     EXPECT_EQ(uint64_t_check, _uint64_t_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_int64_t) {
@@ -520,9 +440,6 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_int64_t) {
     int64_t _int64_t_out = 0;
     cudaMemcpyFromSymbol(&_int64_t_out, int64_t_out, sizeof(int64_t));
     EXPECT_EQ(int64_t_check, _int64_t_out);
-    bool _bool_out = false;
-    cudaMemcpyFromSymbol(&_bool_out, bool_out, sizeof(bool));
-    EXPECT_EQ(false, _bool_out);
     EXPECT_EQ(cudaGetLastError(), CUDA_SUCCESS);
 }
 #ifdef USE_GLM

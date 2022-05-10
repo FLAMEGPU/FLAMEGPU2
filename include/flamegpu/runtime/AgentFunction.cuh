@@ -4,6 +4,7 @@
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
 
+#include "flamegpu/runtime/detail/SharedBlock.h"
 #include "flamegpu/defines.h"
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 #include "flamegpu/runtime/AgentFunction_shim.cuh"
@@ -17,15 +18,10 @@ typedef void(AgentFunctionWrapper)(
 #if !defined(SEATBELTS) || SEATBELTS
     exception::DeviceExceptionBuffer *error_buffer,
 #endif
-    detail::curve::Curve::NamespaceHash instance_id_hash,
 #ifndef __CUDACC_RTC__
-    const detail::curve::Curve::CurveTable *d_curve_table,
+    const detail::curve::CurveTable *d_curve_table,
     const char* d_env_buffer,
 #endif
-    detail::curve::Curve::NamespaceHash agent_func_name_hash,
-    detail::curve::Curve::NamespaceHash messagename_inp_hash,
-    detail::curve::Curve::NamespaceHash messagename_outp_hash,
-    detail::curve::Curve::NamespaceHash agent_output_hash,
     id_t *d_agent_output_nextID,
     const unsigned int popNo,
     const void *in_messagelist_metadata,
@@ -39,13 +35,8 @@ typedef void(AgentFunctionWrapper)(
  * Wrapper function for launching agent functions
  * Initialises FLAMEGPU_API instance
  * @param error_buffer Buffer used for detecting and reporting exception::DeviceErrors (flamegpu must be built with SEATBELTS enabled for this to be used)
- * @param instance_id_hash CURVE hash of the CUDASimulation's instance id
  * @param d_curve_table Pointer to curve hash table in device memory
  * @param d_env_buffer Pointer to env buffer in device memory
- * @param agent_func_name_hash CURVE hash of the agent + function's names
- * @param messagename_inp_hash CURVE hash of the input message's name
- * @param messagename_outp_hash CURVE hash of the output message's name
- * @param agent_output_hash CURVE hash of "_agent_birth" or 0 if agent birth not present
  * @param d_agent_output_nextID If agent output is enabled, this points to a global memory src of the next suitable agent id, this will be atomically incremented at birth
  * @param popNo Total number of agents executing the function (number of threads launched)
  * @param in_messagelist_metadata Pointer to the MessageIn metadata struct, it is interpreted by MessageIn
@@ -63,15 +54,10 @@ __global__ void agent_function_wrapper(
 #if !defined(SEATBELTS) || SEATBELTS
     exception::DeviceExceptionBuffer *error_buffer,
 #endif
-    detail::curve::Curve::NamespaceHash instance_id_hash,
 #ifndef __CUDACC_RTC__
-    const detail::curve::Curve::CurveTable* d_curve_table,
+    const detail::curve::CurveTable* d_curve_table,
     const char* d_env_buffer,
 #endif
-    detail::curve::Curve::NamespaceHash agent_func_name_hash,
-    detail::curve::Curve::NamespaceHash messagename_inp_hash,
-    detail::curve::Curve::NamespaceHash messagename_outp_hash,
-    detail::curve::Curve::NamespaceHash agent_output_hash,
     id_t *d_agent_output_nextID,
     const unsigned int popNo,
     const void *in_messagelist_metadata,
@@ -82,13 +68,13 @@ __global__ void agent_function_wrapper(
     unsigned int *scanFlag_agentOutput) {
     // We place these at the start of shared memory, so we can locate it anywhere in device code without a reference
     if (threadIdx.x == 0) {
-        extern __shared__ const void* sm[];
+        using detail::sm;
 #ifndef __CUDACC_RTC__
-        sm[0] = d_curve_table;
-        sm[1] = d_env_buffer;
+        sm()->curve = d_curve_table;
+        sm()->env_buffer = d_env_buffer;
 #endif
 #if !defined(SEATBELTS) || SEATBELTS
-        sm[2] = error_buffer;
+        sm()->device_exception = error_buffer;
 #endif
     }
 
@@ -101,14 +87,11 @@ __global__ void agent_function_wrapper(
         return;
     // create a new device FLAME_GPU instance
     DeviceAPI<MessageIn, MessageOut> api = DeviceAPI<MessageIn, MessageOut>(
-        instance_id_hash,
-        agent_func_name_hash,
-        agent_output_hash,
         d_agent_output_nextID,
         d_rng,
         scanFlag_agentOutput,
-        MessageIn::In(agent_func_name_hash, messagename_inp_hash, in_messagelist_metadata),
-        MessageOut::Out(agent_func_name_hash, messagename_outp_hash, out_messagelist_metadata, scanFlag_messageOutput));
+        MessageIn::In(in_messagelist_metadata),
+        MessageOut::Out(out_messagelist_metadata, scanFlag_messageOutput));
 
     // call the user specified device function
     AGENT_STATUS flag = AgentFunction()(&api);

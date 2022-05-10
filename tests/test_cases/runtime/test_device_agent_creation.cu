@@ -1476,8 +1476,8 @@ TEST(DeviceAgentCreationTest, Output_Array) {
         else if (val[0] - id == 12.0f && val[1] - id == 13.0f)
             is_12++;
     }
-    EXPECT_EQ(is_1, AGENT_COUNT);
-    EXPECT_EQ(is_12, AGENT_COUNT);
+    EXPECT_EQ(is_1, AGENT_COUNT);  // Original agents (unchanged)
+    EXPECT_EQ(is_12, AGENT_COUNT);  // New agents
 }
 #ifdef USE_GLM
 FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth_DefaultWorks_glm, MessageNone, MessageNone) {

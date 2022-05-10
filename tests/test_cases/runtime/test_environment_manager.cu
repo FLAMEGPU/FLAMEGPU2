@@ -106,17 +106,6 @@ TEST_F(EnvironmentManagerTest, Alignment) {
     ms->run();
 }
 
-// Test bounds limit
-TEST_F(EnvironmentManagerTest, OutOfMemory1) {
-    std::array<char, EnvironmentManager::MAX_BUFFER_SIZE / 2> char_5kb_a = {};
-    std::array<char, EnvironmentManager::MAX_BUFFER_SIZE / 2> char_5kb_b;
-    std::array<char, EnvironmentManager::MAX_BUFFER_SIZE / 2> char_5kb_c;
-    ms->env.newProperty<char, EnvironmentManager::MAX_BUFFER_SIZE / 2>("char_5kb_a", char_5kb_a);
-    ms->env.newProperty<char, EnvironmentManager::MAX_BUFFER_SIZE / 2>("char_5kb_b", char_5kb_b);
-    ms->env.newProperty<char, EnvironmentManager::MAX_BUFFER_SIZE / 2>("char_5kb_c", char_5kb_c);
-    EXPECT_THROW(ms->run(), exception::OutOfMemory);
-}
-
 // Multiple models
 TEST(EnvironmentManagerTest2, MultipleModels) {
     MiniSim *ms1 = new MiniSim("ms1");
