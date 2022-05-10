@@ -427,7 +427,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentProp_typesize) {
  */
 const char* rtc_dthrow_agent_func_getEnvironmentArrayProp = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
-    FLAMEGPU->environment.getProperty<int>("nope", 0);
+    FLAMEGPU->environment.getProperty<int, 3>("nope", 0);
     return flamegpu::ALIVE;
 }
 )###";
@@ -463,7 +463,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_name) {
 }
 const char* rtc_dthrow_agent_func_getEnvironmentArrayProp1 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
-    FLAMEGPU->environment.getProperty<double>("test", 0);
+    FLAMEGPU->environment.getProperty<double, 2>("test", 0);
     return flamegpu::ALIVE;
 }
 )###";
@@ -488,35 +488,35 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_typesize) {
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 }
 // Device environment does not currently require user to specify length of array
-// const char* rtc_dthrow_agent_func_getEnvironmentArrayProp2 = R"###(
-// FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
-//     FLAMEGPU->environment.getProperty<int>("test", 0);
-//     return flamegpu::ALIVE;
-// }
-// )###";
-// TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_length) {
-//     ModelDescription model("model");
-//     AgentDescription& agent = model.newAgent("agent_name");
-//     agent.newVariable<int>("id");
-//     model.Environment().newProperty<int, 2>("test", {11, 12});
-//     // add RTC agent function
-//     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getEnvironmentArrayProp2);
-//     model.newLayer().addAgentFunction(func);
-//     // Init pop
-//     AgentVector init_population(agent, AGENT_COUNT);
-//     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
-//         AgentVector::Agent instance = init_population[i];
-//         instance.setVariable<int>("id", i);
-//     }
-//     // Setup Model
-//     CUDASimulation cudaSimulation(model);
-//     cudaSimulation.setPopulationData(init_population);
-//     // Run 1 step to ensure data is pushed to device
-//     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
-// }
+const char* rtc_dthrow_agent_func_getEnvironmentArrayProp2 = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
+    FLAMEGPU->environment.getProperty<int, 3>("test", 0);
+     return flamegpu::ALIVE;
+}
+)###";
+TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_length) {
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent_name");
+    agent.newVariable<int>("id");
+    model.Environment().newProperty<int, 2>("test", {11, 12});
+    // add RTC agent function
+    AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getEnvironmentArrayProp2);
+    model.newLayer().addAgentFunction(func);
+    // Init pop
+    AgentVector init_population(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentVector::Agent instance = init_population[i];
+        instance.setVariable<int>("id", i);
+    }
+    // Setup Model
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population);
+    // Run 1 step to ensure data is pushed to device
+    EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+}
 const char* rtc_dthrow_agent_func_getEnvironmentArrayProp3 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
-    FLAMEGPU->environment.getProperty<int>("test", 2);
+    FLAMEGPU->environment.getProperty<int, 2>("test", 2);
     return flamegpu::ALIVE;
 }
 )###";

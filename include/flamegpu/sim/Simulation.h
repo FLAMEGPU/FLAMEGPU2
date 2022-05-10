@@ -140,9 +140,12 @@ class Simulation {
     virtual void resetDerivedConfig() = 0;
     /**
      * Returns the unique instance id of this CUDASimulation instance
-     * @note This value is used internally for environment property storage
      */
     unsigned int getInstanceID() const { return instance_id; }
+    /**
+     * Returns the environment manager
+     */
+    virtual std::shared_ptr<EnvironmentManager> getEnvironment() const = 0;
 
     /**
      * returns the width of the widest layer in model.
@@ -174,7 +177,7 @@ class Simulation {
     /**
      * Initial environment items if they have been loaded from file, prior to device selection
      */
-    util::StringUint32PairUnorderedMap<util::Any> env_init;
+    std::unordered_map<std::string, util::Any> env_init;
     /**
      * the width of the widest layer in the concrete version of the model (calculated once)
      */

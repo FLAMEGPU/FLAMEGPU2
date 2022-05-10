@@ -2,6 +2,7 @@
 
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 #include "flamegpu/exception/FLAMEGPUException.h"
+#include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/runtime/utility/EnvironmentManager.cuh"
 
 // jitify include for demangle
@@ -25,6 +26,7 @@ const char* CurveRTCHost::curve_rtc_dynamic_h_template = R"###(dynamic/curve_rtc
 
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 #include "flamegpu/util/type_decode.h"
+#include "flamegpu/runtime/detail/curve/Curve.cuh"
 
 namespace flamegpu {
 
@@ -61,7 +63,7 @@ namespace curve {
  */
 $DYNAMIC_VARIABLES
 
-class Curve {
+class DeviceCurve {
     public:
     static const int UNKNOWN_VARIABLE = -1;
 
@@ -70,100 +72,100 @@ class Curve {
     typedef unsigned int             NamespaceHash;
     
     template <typename T, unsigned int N>
-    __device__ __forceinline__ static T getAgentVariable(const char(&name)[N], VariableHash namespace_hash, unsigned int index);
+    __device__ __forceinline__ static T getAgentVariable(const char(&name)[N], unsigned int index);
     template <typename T, unsigned int N>
-    __device__ __forceinline__ static T getMessageVariable(const char(&name)[N], VariableHash namespace_hash, unsigned int index);
+    __device__ __forceinline__ static T getMessageVariable(const char(&name)[N], unsigned int index);
     
     template <typename T, unsigned int N>
-    __device__ __forceinline__ static T getAgentVariable_ldg(const char(&name)[N], VariableHash namespace_hash, unsigned int index);
+    __device__ __forceinline__ static T getAgentVariable_ldg(const char(&name)[N], unsigned int index);
     template <typename T, unsigned int N>
-    __device__ __forceinline__ static T getMessageVariable_ldg(const char(&name)[N], VariableHash namespace_hash, unsigned int index);
+    __device__ __forceinline__ static T getMessageVariable_ldg(const char(&name)[N], unsigned int index);
     
     template <typename T, unsigned int N, unsigned int M>
-    __device__ __forceinline__ static T getAgentArrayVariable(const char(&name)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
+    __device__ __forceinline__ static T getAgentArrayVariable(const char(&name)[M], unsigned int variable_index, unsigned int array_index);
     template <typename T, unsigned int N, unsigned int M>
-    __device__ __forceinline__ static T getMessageArrayVariable(const char(&name)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
+    __device__ __forceinline__ static T getMessageArrayVariable(const char(&name)[M], unsigned int variable_index, unsigned int array_index);
     
     template <typename T, unsigned int N, unsigned int M>
-    __device__ __forceinline__ static T getAgentArrayVariable_ldg(const char(&name)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);    
+    __device__ __forceinline__ static T getAgentArrayVariable_ldg(const char(&name)[M], unsigned int variable_index, unsigned int array_index);    
     template <typename T, unsigned int N, unsigned int M>
-    __device__ __forceinline__ static T getMessageArrayVariable_ldg(const char(&name)[M], VariableHash namespace_hash, unsigned int variable_index, unsigned int array_index);
+    __device__ __forceinline__ static T getMessageArrayVariable_ldg(const char(&name)[M], unsigned int variable_index, unsigned int array_index);
     
     template <typename T, unsigned int N>
-    __device__ __forceinline__ static void setAgentVariable(const char(&name)[N], VariableHash namespace_hash, T variable, unsigned int index);
+    __device__ __forceinline__ static void setAgentVariable(const char(&name)[N], T variable, unsigned int index);
     template <typename T, unsigned int N>
-    __device__ __forceinline__ static void setMessageVariable(const char(&name)[N], VariableHash namespace_hash, T variable, unsigned int index);
+    __device__ __forceinline__ static void setMessageVariable(const char(&name)[N], T variable, unsigned int index);
     template <typename T, unsigned int N>
-    __device__ __forceinline__ static void setNewAgentVariable(const char(&name)[N], VariableHash namespace_hash, T variable, unsigned int index);
+    __device__ __forceinline__ static void setNewAgentVariable(const char(&name)[N], T variable, unsigned int index);
     
     template <typename T, unsigned int N, unsigned int M>
-    __device__ __forceinline__ static void setAgentArrayVariable(const char(&name)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
+    __device__ __forceinline__ static void setAgentArrayVariable(const char(&name)[M], T variable, unsigned int variable_index, unsigned int array_index);
     template <typename T, unsigned int N, unsigned int M>
-    __device__ __forceinline__ static void setMessageArrayVariable(const char(&name)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
+    __device__ __forceinline__ static void setMessageArrayVariable(const char(&name)[M], T variable, unsigned int variable_index, unsigned int array_index);
     template <typename T, unsigned int N, unsigned int M>
-    __device__ __forceinline__ static void setNewAgentArrayVariable(const char(&name)[M], VariableHash namespace_hash, T variable, unsigned int variable_index, unsigned int array_index);
+    __device__ __forceinline__ static void setNewAgentArrayVariable(const char(&name)[M], T variable, unsigned int variable_index, unsigned int array_index);
 
 };
 
 template <typename T, unsigned int N>
-__device__ __forceinline__ T Curve::getAgentVariable(const char (&name)[N], VariableHash namespace_hash, unsigned int index) {
+__device__ __forceinline__ T DeviceCurve::getAgentVariable(const char (&name)[N], unsigned int index) {
 $DYNAMIC_GETAGENTVARIABLE_IMPL
 }
 template <typename T, unsigned int N>
-__device__ __forceinline__ T Curve::getMessageVariable(const char (&name)[N], VariableHash namespace_hash, unsigned int index) {
+__device__ __forceinline__ T DeviceCurve::getMessageVariable(const char (&name)[N], unsigned int index) {
 $DYNAMIC_GETMESSAGEVARIABLE_IMPL
 }
 
 template <typename T, unsigned int N>
-__device__ __forceinline__ T Curve::getAgentVariable_ldg(const char (&name)[N], VariableHash namespace_hash, unsigned int index) {
+__device__ __forceinline__ T DeviceCurve::getAgentVariable_ldg(const char (&name)[N], unsigned int index) {
 $DYNAMIC_GETAGENTVARIABLE_LDG_IMPL
 }
 template <typename T, unsigned int N>
-__device__ __forceinline__ T Curve::getMessageVariable_ldg(const char (&name)[N], VariableHash namespace_hash, unsigned int index) {
+__device__ __forceinline__ T DeviceCurve::getMessageVariable_ldg(const char (&name)[N], unsigned int index) {
 $DYNAMIC_GETMESSAGEVARIABLE_LDG_IMPL
 }
 
 template <typename T, unsigned int N, unsigned int M>
-__device__ __forceinline__ T Curve::getAgentArrayVariable(const char(&name)[M], VariableHash namespace_hash, unsigned int index, unsigned int array_index) {
+__device__ __forceinline__ T DeviceCurve::getAgentArrayVariable(const char(&name)[M], unsigned int index, unsigned int array_index) {
 $DYNAMIC_GETAGENTARRAYVARIABLE_IMPL
 }
 template <typename T, unsigned int N, unsigned int M>
-__device__ __forceinline__ T Curve::getMessageArrayVariable(const char(&name)[M], VariableHash namespace_hash, unsigned int index, unsigned int array_index) {
+__device__ __forceinline__ T DeviceCurve::getMessageArrayVariable(const char(&name)[M], unsigned int index, unsigned int array_index) {
 $DYNAMIC_GETMESSAGEARRAYVARIABLE_IMPL
 }
 
 template <typename T, unsigned int N, unsigned int M>
-__device__ __forceinline__ T Curve::getAgentArrayVariable_ldg(const char(&name)[M], VariableHash namespace_hash, unsigned int index, unsigned int array_index) {
+__device__ __forceinline__ T DeviceCurve::getAgentArrayVariable_ldg(const char(&name)[M], unsigned int index, unsigned int array_index) {
 $DYNAMIC_GETAGENTARRAYVARIABLE_LDG_IMPL
 }
 template <typename T, unsigned int N, unsigned int M>
-__device__ __forceinline__ T Curve::getMessageArrayVariable_ldg(const char(&name)[M], VariableHash namespace_hash, unsigned int index, unsigned int array_index) {
+__device__ __forceinline__ T DeviceCurve::getMessageArrayVariable_ldg(const char(&name)[M], unsigned int index, unsigned int array_index) {
 $DYNAMIC_GETMESSAGEARRAYVARIABLE_LDG_IMPL
 }
 
 template <typename T, unsigned int N>
-__device__ __forceinline__ void Curve::setAgentVariable(const char(&name)[N], VariableHash namespace_hash, T variable, unsigned int index) {
+__device__ __forceinline__ void DeviceCurve::setAgentVariable(const char(&name)[N], T variable, unsigned int index) {
 $DYNAMIC_SETAGENTVARIABLE_IMPL
 }
 template <typename T, unsigned int N>
-__device__ __forceinline__ void Curve::setMessageVariable(const char(&name)[N], VariableHash namespace_hash, T variable, unsigned int index) {
+__device__ __forceinline__ void DeviceCurve::setMessageVariable(const char(&name)[N], T variable, unsigned int index) {
 $DYNAMIC_SETMESSAGEVARIABLE_IMPL
 }
 template <typename T, unsigned int N>
-__device__ __forceinline__ void Curve::setNewAgentVariable(const char(&name)[N], VariableHash namespace_hash, T variable, unsigned int index) {
+__device__ __forceinline__ void DeviceCurve::setNewAgentVariable(const char(&name)[N], T variable, unsigned int index) {
 $DYNAMIC_SETNEWAGENTVARIABLE_IMPL
 }
 
 template <typename T, unsigned int N, unsigned int M>
-__device__ __forceinline__ void Curve::setAgentArrayVariable(const char(&name)[M], VariableHash namespace_hash, T variable, unsigned int index, unsigned int array_index) {
+__device__ __forceinline__ void DeviceCurve::setAgentArrayVariable(const char(&name)[M], T variable, unsigned int index, unsigned int array_index) {
 $DYNAMIC_SETAGENTARRAYVARIABLE_IMPL    
 }
 template <typename T, unsigned int N, unsigned int M>
-__device__ __forceinline__ void Curve::setMessageArrayVariable(const char(&name)[M], VariableHash namespace_hash, T variable, unsigned int index, unsigned int array_index) {
+__device__ __forceinline__ void DeviceCurve::setMessageArrayVariable(const char(&name)[M], T variable, unsigned int index, unsigned int array_index) {
 $DYNAMIC_SETMESSAGEARRAYVARIABLE_IMPL    
 }
 template <typename T, unsigned int N, unsigned int M>
-__device__ __forceinline__ void Curve::setNewAgentArrayVariable(const char(&name)[M], VariableHash namespace_hash, T variable, unsigned int index, unsigned int array_index) {
+__device__ __forceinline__ void DeviceCurve::setNewAgentArrayVariable(const char(&name)[M], T variable, unsigned int index, unsigned int array_index) {
 $DYNAMIC_SETNEWAGENTARRAYVARIABLE_IMPL    
 }
 
@@ -177,19 +179,14 @@ $DYNAMIC_SETNEWAGENTARRAYVARIABLE_IMPL
 
 namespace flamegpu {
 
-template<typename T, unsigned int N>
-__device__ __forceinline__ T ReadOnlyDeviceEnvironment::getProperty(const char(&name)[N]) const {
+template<typename T, unsigned int M>
+__device__ __forceinline__ T ReadOnlyDeviceEnvironment::getProperty(const char(&name)[M]) const {
 $DYNAMIC_ENV_GETVARIABLE_IMPL
 }
 
-template<typename T, unsigned int N>
-__device__ __forceinline__ T ReadOnlyDeviceEnvironment::getProperty(const char(&name)[N], const unsigned int &index) const {
+template<typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ T ReadOnlyDeviceEnvironment::getProperty(const char(&name)[M], const unsigned int &index) const {
 $DYNAMIC_ENV_GETARRAYVARIABLE_IMPL
-}
-
-template<unsigned int N>
-__device__ __forceinline__ bool ReadOnlyDeviceEnvironment::containsProperty(const char(&name)[N]) const {
-$DYNAMIC_ENV_CONTAINTS_IMPL
 }
 
 
@@ -364,13 +361,13 @@ void CurveRTCHost::unregisterEnvMacroProperty(const char* propertyName) {
 }
 
 
-void CurveRTCHost::initHeaderEnvironment() {
+void CurveRTCHost::initHeaderEnvironment(const size_t env_buffer_len) {
     // Calculate size of, and generate dynamic variables buffer
     std::stringstream variables;
-    data_buffer_size = EnvironmentManager::MAX_BUFFER_SIZE;
-    if (data_buffer_size % sizeof(void*) != 0) {
-        THROW exception::UnknownInternalError("EnvironmentManager::MAX_BUFFER_SIZE should be a multiple of %llu!", sizeof(void*));
-    }
+    data_buffer_size = env_buffer_len;
+    // Fix alignment
+    data_buffer_size += (data_buffer_size % sizeof(void*) != 0) ? sizeof(void*) - (data_buffer_size % sizeof(void*)) : 0;
+
     agent_data_offset = data_buffer_size;     data_buffer_size += agent_variables.size() * sizeof(void*);
     messageOut_data_offset = data_buffer_size;    data_buffer_size += messageOut_variables.size() * sizeof(void*);
     messageIn_data_offset = data_buffer_size;     data_buffer_size += messageIn_variables.size() * sizeof(void*);
@@ -416,10 +413,9 @@ void CurveRTCHost::initHeaderEnvironment() {
                 getEnvArrayVariableImpl << "        if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
                 getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s' type mismatch.\\n\", name);\n";
                 getEnvArrayVariableImpl << "            return {};\n";
-                // Env var doesn't currently require user to specify length
-                // getEnvArrayVariableImpl << "        } else if (N != " << element.second.elements << ") {\n";
-                // getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s' length mismatch.\\n\", name);\n";
-                // getEnvArrayVariableImpl << "            return {};\n";
+                getEnvArrayVariableImpl << "        } else if (type_decode<T>::len_t * N != " << element.second.elements << ") {\n";
+                getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s' length mismatch.\\n\", name);\n";
+                getEnvArrayVariableImpl << "            return {};\n";
                 getEnvArrayVariableImpl << "        } else if (t_index > " << element.second.elements << " || t_index < index) {\n";
                 getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s', index %d is out of bounds.\\n\", name, index);\n";
                 getEnvArrayVariableImpl << "            return {};\n";
@@ -434,19 +430,6 @@ void CurveRTCHost::initHeaderEnvironment() {
         getEnvArrayVariableImpl <<         "#endif\n";
         getEnvArrayVariableImpl <<         "    return {};\n";
         setHeaderPlaceholder("$DYNAMIC_ENV_GETARRAYVARIABLE_IMPL", getEnvArrayVariableImpl.str());
-    }
-    // generate Environment::contains func implementation ($DYNAMIC_ENV_CONTAINTS_IMPL)
-    {
-        std::stringstream containsEnvVariableImpl;
-        for (std::pair<std::string, RTCEnvVariableProperties> element : RTCEnvVariables) {
-            RTCEnvVariableProperties props = element.second;
-            if (props.elements == 1) {
-                containsEnvVariableImpl <<   "    if (strings_equal(name, \"" << element.first << "\"))\n";
-                containsEnvVariableImpl <<   "        return true;\n";
-            }
-        }
-        containsEnvVariableImpl <<           "    return false;\n";
-        setHeaderPlaceholder("$DYNAMIC_ENV_CONTAINTS_IMPL", containsEnvVariableImpl.str());
     }
     // generate Environment::getMacroProperty func implementation ($DYNAMIC_ENV_GETREADONLYMACROPROPERTY_IMPL)
     {
@@ -974,8 +957,8 @@ void CurveRTCHost::setFileName(const std::string &filename) {
     setHeaderPlaceholder("$FILENAME", filename);
 }
 
-std::string CurveRTCHost::getDynamicHeader() {
-    initHeaderEnvironment();
+std::string CurveRTCHost::getDynamicHeader(const size_t env_buffer_len) {
+    initHeaderEnvironment(env_buffer_len);
     initHeaderSetters();
     initHeaderGetters();
     initDataBuffer();
@@ -1039,9 +1022,13 @@ std::string CurveRTCHost::demangle(const char* verbose_name) {
 std::string CurveRTCHost::demangle(const std::type_index& type) {
     return demangle(type.name());
 }
-void CurveRTCHost::updateEnvCache(const char *env_ptr) {
-    if (env_ptr) {
-        memcpy(h_data_buffer, env_ptr, EnvironmentManager::MAX_BUFFER_SIZE);
+void CurveRTCHost::updateEnvCache(const void *env_ptr, const size_t bufferLen) {
+    if (bufferLen <= agent_data_offset) {
+        memcpy(h_data_buffer, env_ptr, bufferLen);
+    } else {
+        THROW exception::OutOfBoundsException("Provided bufferlen exceeds initialised env buffer len! %llu > %llu, "
+        "in CurveRTCHost::updateEnvCache().",
+            bufferLen, agent_data_offset);
     }
 }
 void CurveRTCHost::updateDevice_async(const jitify::experimental::KernelInstantiation& instance, cudaStream_t stream) {

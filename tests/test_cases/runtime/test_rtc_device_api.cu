@@ -569,17 +569,15 @@ const char* rtc_env_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_env_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     // get environment variable and set it as an agent variable (environment variable does not change)
     int e1_out = FLAMEGPU->environment.getProperty<int>("e1");
-    int e1_exists = FLAMEGPU->environment.containsProperty("e1");
     FLAMEGPU->setVariable<int>("e1_out", e1_out);
-    FLAMEGPU->setVariable<int>("e1_exists", e1_exists);
     // get stepped environment variable and add it to agent variable (environment variable is increased in step function)
     int e2 = FLAMEGPU->environment.getProperty<int>("e2");
     int e2_out = FLAMEGPU->getVariable<int>("e2_out") + e2;
     FLAMEGPU->setVariable<int>("e2_out", e2_out);
     // get array variables and set in agent variable arrays
     for (int i=0; i<32; i++) {
-        int e_temp1 = FLAMEGPU->environment.getProperty<int>("e_array_1", i);
-        int e_temp2 = FLAMEGPU->environment.getProperty<int>("e_array_2", i);
+        int e_temp1 = FLAMEGPU->environment.getProperty<int, 32>("e_array_1", i);
+        int e_temp2 = FLAMEGPU->environment.getProperty<int, 32>("e_array_2", i);
         // set values in agent arrary
         FLAMEGPU->setVariable<int, 32>("e_array_out_1", i, e_temp1);
         FLAMEGPU->setVariable<int, 32>("e_array_out_2", i, e_temp2);
@@ -611,7 +609,6 @@ TEST(DeviceRTCAPITest, AgentFunction_env) {
     ModelDescription model("model");
     AgentDescription& agent = model.newAgent("agent_name");
     agent.newVariable<int>("e1_out");
-    agent.newVariable<int>("e1_exists");
     agent.newVariable<int>("e2_out");
     agent.newVariable<int, 32>("e_array_out_1");
     agent.newVariable<int, 32>("e_array_out_2");
@@ -631,7 +628,6 @@ TEST(DeviceRTCAPITest, AgentFunction_env) {
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
         AgentVector::Agent instance = init_population[i];
         instance.setVariable<int>("e1_out", 0);
-        instance.setVariable<int>("e1_exists", false);
         instance.setVariable<int>("e2_out", 0);
         // set the agent array variables to 0
 
@@ -652,10 +648,8 @@ TEST(DeviceRTCAPITest, AgentFunction_env) {
     for (AgentVector::Agent instance : population) {
         // Check constant environment values have been updated
         int e1_out = instance.getVariable<int>("e1_out");
-        int e1_exists = instance.getVariable<int>("e1_exists");
-        // Check that the value is correct and that the variable is reported as existing
+        // Check that the value is correct
         EXPECT_EQ(e1_out, 100);
-        EXPECT_TRUE(e1_exists);
         // check that the stepped value has been reported correctly (e.g. should be 200 (from step 1) + 400 (from step 2)
         int e2_out = instance.getVariable<int>("e2_out");
         EXPECT_EQ(e2_out, 600);

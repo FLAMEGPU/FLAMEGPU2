@@ -1,8 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_MESSAGESPECIALISATIONHANDLER_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_MESSAGESPECIALISATIONHANDLER_H_
 
-#include "flamegpu/runtime/detail/curve/curve.cuh"
-
 namespace flamegpu {
 
 class CUDAScatter;

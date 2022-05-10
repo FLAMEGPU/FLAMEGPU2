@@ -2,6 +2,7 @@
 #define INCLUDE_FLAMEGPU_GPU_DETAIL_CUDAERRORCHECKING_CUH_
 
 #include <cuda.h>
+#include <cuda_runtime.h>
 
 #include <string>
 // #include <stdexcept>

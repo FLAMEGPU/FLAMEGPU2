@@ -21,7 +21,7 @@ namespace io {
 JSONStateReader::JSONStateReader(
     const std::string &model_name,
     const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
-    util::StringUint32PairUnorderedMap<util::Any> &env_init,
+    std::unordered_map<std::string, util::Any> &env_init,
     util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
     const std::string &input,
     Simulation *sim_instance)
@@ -36,7 +36,7 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
     std::string lastKey;
     std::string filename;
     const std::unordered_map<std::string, EnvironmentDescription::PropData> env_desc;
-    util::StringUint32PairUnorderedMap<util::Any> &env_init;
+    std::unordered_map<std::string, util::Any> &env_init;
     /**
      * Used for setting agent values
      */
@@ -57,7 +57,7 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
  public:
     JSONStateReader_impl(const std::string &_filename,
         const std::unordered_map<std::string, EnvironmentDescription::PropData> &_env_desc,
-        util::StringUint32PairUnorderedMap<util::Any> &_env_init,
+        std::unordered_map<std::string, util::Any> &_env_init,
         util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &_model_state)
         : filename(_filename)
         , env_desc(_env_desc)
@@ -76,41 +76,39 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
                 THROW exception::RapidJSONError("Input file contains unrecognised environment property '%s',"
                     "in JSONStateReader::parse()\n", lastKey.c_str());
             }
-            if (env_init.find(make_pair(lastKey, current_variable_array_index)) != env_init.end()) {
-                THROW exception::RapidJSONError("Input file contains environment property '%s' multiple times, "
-                    "in JSONStateReader::parse()\n", lastKey.c_str());
+            if (current_variable_array_index == 0) {
+                // New property, create buffer with default value and add to map
+                if (!env_init.emplace(lastKey, util::Any(it->second.data)).second) {
+                    THROW exception::RapidJSONError("Input file contains environment property '%s' multiple times, "
+                        "in JSONStateReader::parse()\n", lastKey.c_str());
+                }
+            } else if (current_variable_array_index >= it->second.data.elements) {
+                THROW exception::RapidJSONError("Input file contains environment property '%s' with %u elements expected %u,"
+                    "in JSONStateReader::parse()\n", lastKey.c_str(), current_variable_array_index, it->second.data.elements);
             }
+            // Retrieve the linked any and replace the value
+            const auto ei_it = env_init.find(lastKey);
             const std::type_index val_type = it->second.data.type;
             if (val_type == std::type_index(typeid(float))) {
-                const float t = static_cast<float>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), util::Any(&t, sizeof(float), val_type, 1));
+                static_cast<float*>(const_cast<void*>(ei_it->second.ptr))[current_variable_array_index++] = static_cast<float>(val);
             } else if (val_type == std::type_index(typeid(double))) {
-                const double t = static_cast<double>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), util::Any(&t, sizeof(double), val_type, 1));
+                static_cast<double*>(const_cast<void*>(ei_it->second.ptr))[current_variable_array_index++] = static_cast<double>(val);
             } else if (val_type == std::type_index(typeid(int64_t))) {
-                const int64_t t = static_cast<int64_t>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), util::Any(&t, sizeof(int64_t), val_type, 1));
+                static_cast<int64_t*>(const_cast<void*>(ei_it->second.ptr))[current_variable_array_index++] = static_cast<int64_t>(val);
             } else if (val_type == std::type_index(typeid(uint64_t))) {
-                const uint64_t t = static_cast<uint64_t>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), util::Any(&t, sizeof(uint64_t), val_type, 1));
+                static_cast<uint64_t*>(const_cast<void*>(ei_it->second.ptr))[current_variable_array_index++] = static_cast<uint64_t>(val);
             } else if (val_type == std::type_index(typeid(int32_t))) {
-                const int32_t t = static_cast<int32_t>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), util::Any(&t, sizeof(int32_t), val_type, 1));
+                static_cast<int32_t*>(const_cast<void*>(ei_it->second.ptr))[current_variable_array_index++] = static_cast<int32_t>(val);
             } else if (val_type == std::type_index(typeid(uint32_t))) {
-                const uint32_t t = static_cast<uint32_t>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), util::Any(&t, sizeof(uint32_t), val_type, 1));
+                static_cast<uint32_t*>(const_cast<void*>(ei_it->second.ptr))[current_variable_array_index++] = static_cast<uint32_t>(val);
             } else if (val_type == std::type_index(typeid(int16_t))) {
-                const int16_t t = static_cast<int16_t>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), util::Any(&t, sizeof(int16_t), val_type, 1));
+                static_cast<int16_t*>(const_cast<void*>(ei_it->second.ptr))[current_variable_array_index++] = static_cast<int16_t>(val);
             } else if (val_type == std::type_index(typeid(uint16_t))) {
-                const uint16_t t = static_cast<uint16_t>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), util::Any(&t, sizeof(uint16_t), val_type, 1));
+                static_cast<uint16_t*>(const_cast<void*>(ei_it->second.ptr))[current_variable_array_index++] = static_cast<uint16_t>(val);
             } else if (val_type == std::type_index(typeid(int8_t))) {
-                const int8_t t = static_cast<int8_t>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), util::Any(&t, sizeof(int8_t), val_type, 1));
+                static_cast<int8_t*>(const_cast<void*>(ei_it->second.ptr))[current_variable_array_index++] = static_cast<int8_t>(val);
             } else if (val_type == std::type_index(typeid(uint8_t))) {
-                const uint8_t t = static_cast<uint8_t>(val);
-                env_init.emplace(make_pair(lastKey, current_variable_array_index++), util::Any(&t, sizeof(uint8_t), val_type, 1));
+                static_cast<uint8_t*>(const_cast<void*>(ei_it->second.ptr))[current_variable_array_index++] = static_cast<uint8_t>(val);
             } else {
                 THROW exception::RapidJSONError("Model contains environment property '%s' of unsupported type '%s', "
                     "in JSONStateReader::parse()\n", lastKey.c_str(), val_type.name());
@@ -248,9 +246,19 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
     }
     bool EndArray(rapidjson::SizeType) {
         if (mode.top() == VariableArray) {
+            mode.pop();
+            if (mode.top() == Environment) {
+                // Confirm env array had correct number of elements
+                const auto prop = env_desc.at(lastKey);
+                if (current_variable_array_index != prop.data.elements) {
+                    THROW exception::RapidJSONError("Input file contains environment property '%s' with %u elements expected %u,"
+                        "in JSONStateReader::parse()\n", lastKey.c_str(), current_variable_array_index, prop.data.elements);
+                }
+            }
             current_variable_array_index = 0;
+        } else {
+            mode.pop();
         }
-        mode.pop();
         return true;
     }
 };

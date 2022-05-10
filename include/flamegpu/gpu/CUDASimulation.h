@@ -10,7 +10,7 @@
 
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 #include "flamegpu/sim/Simulation.h"
-#include "flamegpu/runtime/detail/curve/curve.cuh"
+#include "flamegpu/runtime/detail/curve/HostCurve.cuh"
 #include "flamegpu/gpu/CUDAScatter.cuh"
 #include "flamegpu/gpu/CUDAEnsemble.h"
 #include "flamegpu/runtime/utility/RandomManager.cuh"
@@ -541,30 +541,25 @@ class CUDASimulation : public Simulation {
      * Struct containing references to the various singletons which may include CUDA code, and therefore can only be initialsed after the deferred arg parsing is completed.
      */
     struct Singletons {
-      /**
-       * Curve instance used for variable mapping
-       * @todo Is this necessary? CUDAAgent/CUDAMessage have their own copy
-       */
-      detail::curve::Curve &curve;
-      /**
-       * Resizes device random array during step()
-       */
-      RandomManager rng;
-      /**
-       * Held here for tracking when to release cuda memory
-       */
-      CUDAScatter scatter;
-      /**
-       * Held here for tracking when to release cuda memory
-       */
-      EnvironmentManager &environment;
+        /**
+         * Resizes device random array during step()
+         */
+        RandomManager rng;
+        /**
+         * Held here for tracking when to release cuda memory
+         */
+        CUDAScatter scatter;
+        /**
+         * Held here for tracking when to release cuda memory
+         */
+        std::shared_ptr<EnvironmentManager> environment;
 #if !defined(SEATBELTS) || SEATBELTS
-      /**
-       * Provides buffers for device error checking
-       */
-      exception::DeviceExceptionManager exception;
+        /**
+         * Provides buffers for device error checking
+         */
+        exception::DeviceExceptionManager exception;
 #endif
-      Singletons(detail::curve::Curve &curve, EnvironmentManager &environment) : curve(curve), environment(environment) { }
+        explicit Singletons(const std::shared_ptr<EnvironmentManager> &environment) : environment(environment) { }
     } * singletons;
     /**
      * Common method for adding this Model's data to env manager
@@ -613,6 +608,7 @@ class CUDASimulation : public Simulation {
     typedef std::unordered_map<std::string, AgentDataBufferStateMap> AgentDataMap;
 
  private:
+    std::shared_ptr<EnvironmentManager> getEnvironment() const override;
     void assignAgentIDs();
     /**
      * Set to false whenever an agent population is imported from outside
@@ -680,7 +676,7 @@ void CUDASimulation::setEnvironmentProperty(const std::string& property_name, co
     }
     if (!singletonsInitialised)
         initialiseSingletons();
-    singletons->environment.setProperty<T>({instance_id, property_name}, value);
+    singletons->environment->setProperty<T>(property_name, value);
 }
 template<typename T, unsigned int N>
 void CUDASimulation::setEnvironmentProperty(const std::string& property_name, const std::array<T, N>& value) {
@@ -690,31 +686,31 @@ void CUDASimulation::setEnvironmentProperty(const std::string& property_name, co
     }
     if (!singletonsInitialised)
         initialiseSingletons();
-    singletons->environment.setProperty<T, N>({ instance_id, property_name }, value);
+    singletons->environment->setProperty<T, N>(property_name, value);
 }
 template<typename T>
 void CUDASimulation::setEnvironmentProperty(const std::string& property_name, const EnvironmentManager::size_type& index, const T& value) {
     if (!singletonsInitialised)
         initialiseSingletons();
-    singletons->environment.setProperty<T>({ instance_id, property_name }, index, value);
+    singletons->environment->setProperty<T>(property_name, index, value);
 }
 template<typename T>
 T CUDASimulation::getEnvironmentProperty(const std::string& property_name) {
     if (!singletonsInitialised)
         initialiseSingletons();
-    return singletons->environment.getProperty<T>({ instance_id, property_name });
+    return singletons->environment->getProperty<T>(property_name);
 }
 template<typename T, unsigned int N>
 std::array<T, N> CUDASimulation::getEnvironmentProperty(const std::string& property_name) {
     if (!singletonsInitialised)
         initialiseSingletons();
-    return singletons->environment.getProperty<T, N>({ instance_id, property_name });
+    return singletons->environment->getProperty<T, N>(property_name);
 }
 template<typename T>
 T CUDASimulation::getEnvironmentProperty(const std::string& property_name, const EnvironmentManager::size_type& index) {
     if (!singletonsInitialised)
         initialiseSingletons();
-    return singletons->environment.getProperty<T>({ instance_id, property_name }, index);
+    return singletons->environment->getProperty<T>(property_name, index);
 }
 #ifdef SWIG
 template<typename T>
@@ -725,13 +721,13 @@ void CUDASimulation::setEnvironmentPropertyArray(const std::string& property_nam
     }
     if (!singletonsInitialised)
         initialiseSingletons();
-    singletons->environment.setPropertyArray<T>({ instance_id, property_name }, value);
+    singletons->environment->setPropertyArray<T>(property_name, value);
 }
 template<typename T>
 std::vector<T> CUDASimulation::getEnvironmentPropertyArray(const std::string& property_name) {
     if (!singletonsInitialised)
         initialiseSingletons();
-    return singletons->environment.getPropertyArray<T>({ instance_id, property_name });
+    return singletons->environment->getPropertyArray<T>(property_name);
 }
 #endif
 }  // namespace flamegpu

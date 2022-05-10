@@ -63,12 +63,12 @@ namespace io {
 
 XMLStateWriter::XMLStateWriter(
     const std::string &model_name,
-    const unsigned int &sim_instance_id,
+    const std::shared_ptr<EnvironmentManager>& env_manager,
     const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model,
     const unsigned int &iterations,
     const std::string &output_file,
     const Simulation *_sim_instance)
-    : StateWriter(model_name, sim_instance_id, model, iterations, output_file, _sim_instance) {}
+    : StateWriter(model_name, env_manager, model, iterations, output_file, _sim_instance) {}
 
 int XMLStateWriter::writeStates(bool prettyPrint) {
     tinyxml2::XMLDocument doc;
@@ -166,14 +166,11 @@ int XMLStateWriter::writeStates(bool prettyPrint) {
     pRoot->InsertEndChild(pElement);
 
     pElement = doc.NewElement("environment");
-    // for each environment property
-    EnvironmentManager &env_manager = EnvironmentManager::getInstance();
-    auto lock = env_manager.getSharedLock();
-    const char *env_buffer = reinterpret_cast<const char *>(env_manager.getHostBuffer());
-    for (auto &a : env_manager.getPropertiesMap()) {
-        // If it is from this model
-        if (a.first.first == sim_instance_id) {
-            tinyxml2::XMLElement* pListElement = doc.NewElement(a.first.second.c_str());
+    if (env_manager) {
+        const char* env_buffer = reinterpret_cast<const char*>(env_manager->getHostBuffer());
+        // for each environment property
+        for (auto &a : env_manager->getPropertiesMap()) {
+            tinyxml2::XMLElement* pListElement = doc.NewElement(a.first.c_str());
             pListElement->SetAttribute("type", a.second.type.name());
                 // Output properties
                 std::stringstream ss;
@@ -201,7 +198,7 @@ int XMLStateWriter::writeStates(bool prettyPrint) {
                         ss << static_cast<uint32_t>(*reinterpret_cast<const uint8_t*>(env_buffer + a.second.offset + (el * sizeof(uint8_t))));  // Char outputs weird if being used as an integer
                     } else {
                         THROW exception::TinyXMLError("Model contains environment property '%s' of unsupported type '%s', "
-                            "in XMLStateWriter::writeStates()\n", a.first.second.c_str(), a.second.type.name());
+                            "in XMLStateWriter::writeStates()\n", a.first.c_str(), a.second.type.name());
                     }
                     if (el + 1 != a.second.elements)
                         ss << ",";

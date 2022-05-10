@@ -275,13 +275,12 @@ class MessageArray3D::In {
         /**
          * Constructor, takes the search parameters required
          * @param _metadata Pointer to message list metadata
-         * @param _combined_hash agentfn+message hash for accessing message data
          * @param x Search origin x coord
          * @param y Search origin y coord
          * @param z Search origin z coord
          * @param _radius Search radius
          */
-        inline __device__ WrapFilter(const MetaData *_metadata, const detail::curve::Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &y, const size_type &z, const size_type &_radius);
+        inline __device__ WrapFilter(const MetaData *_metadata, const size_type &x, const size_type &y, const size_type &z, const size_type &_radius);
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * A null filter which always returns 0 messages
@@ -321,11 +320,6 @@ class MessageArray3D::In {
          * Pointer to message list metadata, e.g. environment bounds, search radius, PBM location
          */
         const MetaData *metadata;
-        /**
-         * CURVE hash for accessing message data
-         * agent function hash + message hash
-         */
-        detail::curve::Curve::NamespaceHash combined_hash;
     };
     /**
      * This class is created when a search origin is provided to MessageArray2D::In::operator()(size_type, size_type, size_type = 1)
@@ -511,13 +505,12 @@ class MessageArray3D::In {
         /**
          * Constructor, takes the search parameters required
          * @param _metadata Pointer to message list metadata
-         * @param _combined_hash agentfn+message hash for accessing message data
          * @param x Search origin x coord
          * @param y Search origin y coord
          * @param z Search origin z coord
          * @param _radius Search radius
          */
-        inline __device__ Filter(const MetaData* _metadata, const detail::curve::Curve::NamespaceHash& _combined_hash, const size_type& x, const size_type& y, const size_type& z, const size_type& _radius);
+        inline __device__ Filter(const MetaData* _metadata, const size_type& x, const size_type& y, const size_type& z, const size_type& _radius);
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * A null filter which always returns 0 messages
@@ -557,11 +550,6 @@ class MessageArray3D::In {
          * Pointer to message list metadata, e.g. environment bounds, search radius, PBM location
          */
         const MetaData* metadata;
-        /**
-         * CURVE hash for accessing message data
-         * agent function hash + message hash
-         */
-        detail::curve::Curve::NamespaceHash combined_hash;
     };
     /**
      * This class is created when a search origin is provided to MessageArray2D::In::vn_wrap(size_type, size_type, size_type = 1)
@@ -751,13 +739,12 @@ class MessageArray3D::In {
         /**
          * Constructor, takes the search parameters required
          * @param _metadata Pointer to message list metadata
-         * @param _combined_hash agentfn+message hash for accessing message data
          * @param x Search origin x coord
          * @param y Search origin y coord
          * @param z Search origin z coord
          * @param _radius Search radius
          */
-        inline __device__ VonNeumannWrapFilter(const MetaData *_metadata, const detail::curve::Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &y, const size_type &z, const size_type &_radius);
+        inline __device__ VonNeumannWrapFilter(const MetaData *_metadata, const size_type &x, const size_type &y, const size_type &z, const size_type &_radius);
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * A null filter which always returns 0 messages
@@ -797,11 +784,6 @@ class MessageArray3D::In {
          * Pointer to message list metadata, e.g. environment bounds, search radius, PBM location
          */
         const MetaData *metadata;
-        /**
-         * CURVE hash for accessing message data
-         * agent function hash + message hash
-         */
-        detail::curve::Curve::NamespaceHash combined_hash;
     };
     /**
      * This class is created when a search origin is provided to MessageArray2D::In::vn(size_type, size_type, size_type = 1)
@@ -987,13 +969,12 @@ class MessageArray3D::In {
         /**
          * Constructor, takes the search parameters required
          * @param _metadata Pointer to message list metadata
-         * @param _combined_hash agentfn+message hash for accessing message data
          * @param x Search origin x coord
          * @param y Search origin y coord
          * @param z Search origin z coord
          * @param _radius Search radius
          */
-        inline __device__ VonNeumannFilter(const MetaData* _metadata, const detail::curve::Curve::NamespaceHash& _combined_hash, const size_type& x, const size_type& y, const size_type& z, const size_type& _radius);
+        inline __device__ VonNeumannFilter(const MetaData* _metadata, const size_type& x, const size_type& y, const size_type& z, const size_type& _radius);
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * A null filter which always returns 0 messages
@@ -1037,22 +1018,14 @@ class MessageArray3D::In {
          * Pointer to message list metadata, e.g. environment bounds, search radius, PBM location
          */
         const MetaData* metadata;
-        /**
-         * CURVE hash for accessing message data
-         * agent function hash + message hash
-         */
-        detail::curve::Curve::NamespaceHash combined_hash;
     };
     /**
      * Constructor
      * Initialises member variables
-     * @param agentfn_hash Added to message_hash to produce combined_hash
-     * @param message_hash Added to agentfn_hash to produce combined_hash
      * @param _metadata Reinterpreted as type MessageArray3D::MetaData
      */
-    __device__ In(detail::curve::Curve::NamespaceHash agentfn_hash, detail::curve::Curve::NamespaceHash message_hash, const void *_metadata)
-        : combined_hash(agentfn_hash + message_hash)
-        , metadata(reinterpret_cast<const MetaData*>(_metadata))
+    __device__ In(const void *_metadata)
+        : metadata(reinterpret_cast<const MetaData*>(_metadata))
     { }
     /**
      * Returns a WrapFilter object which provides access to the wrapped Moore neighbourhood message iterator
@@ -1094,7 +1067,7 @@ class MessageArray3D::In {
             return WrapFilter();
         }
 #endif
-        return WrapFilter(metadata, combined_hash, x, y, z, radius);
+        return WrapFilter(metadata, x, y, z, radius);
     }
     /**
      * Returns a Filter object which provides access to the Moore neighbourhood message iterator
@@ -1124,7 +1097,7 @@ class MessageArray3D::In {
             return Filter();
         }
 #endif
-        return Filter(metadata, combined_hash, x, y, z, radius);
+        return Filter(metadata, x, y, z, radius);
     }
     /**
      * Returns a WrapFilter object which provides access to the wrapped Von Neumann neighbourhood message iterator
@@ -1166,7 +1139,7 @@ class MessageArray3D::In {
             return VonNeumannWrapFilter();
         }
 #endif
-        return VonNeumannWrapFilter(metadata, combined_hash, x, y, z, radius);
+        return VonNeumannWrapFilter(metadata, x, y, z, radius);
     }
     /**
      * Returns a Filter object which provides access to the Von Neumann neighbourhood message iterator
@@ -1196,7 +1169,7 @@ class MessageArray3D::In {
             return VonNeumannFilter();
         }
 #endif
-        return VonNeumannFilter(metadata, combined_hash, x, y, z, radius);
+        return VonNeumannFilter(metadata, x, y, z, radius);
     }
     /**
      * Returns the x dimension size of the message list
@@ -1238,11 +1211,6 @@ class MessageArray3D::In {
     }
 
  private:
-     /**
-      * CURVE hash for accessing message data
-      * agent function hash + message hash
-      */
-    detail::curve::Curve::NamespaceHash combined_hash;
     /**
      * Metadata struct for accessing messages
      */
@@ -1258,14 +1226,11 @@ class MessageArray3D::Out {
     /**
      * Constructer
      * Initialises member variables
-     * @param agentfn_hash Added to message_hash to produce combined_hash
-     * @param message_hash Added to agentfn_hash to produce combined_hash
      * @param _metadata Message specialisation specific metadata struct (of type MessageArray3D::MetaData)
      * @param scan_flag_messageOutput Scan flag array for optional message output
      */
-    __device__ Out(detail::curve::Curve::NamespaceHash agentfn_hash, detail::curve::Curve::NamespaceHash message_hash, const void *_metadata, unsigned int *scan_flag_messageOutput)
-        : combined_hash(agentfn_hash + message_hash)
-        , scan_flag(scan_flag_messageOutput)
+    __device__ Out(const void *_metadata, unsigned int *scan_flag_messageOutput)
+        : scan_flag(scan_flag_messageOutput)
         , metadata(reinterpret_cast<const MetaData*>(_metadata))
     { }
     /**
@@ -1299,11 +1264,6 @@ class MessageArray3D::Out {
 
  protected:
     /**
-     * CURVE hash for accessing message data
-     * agentfn_hash + message_hash
-     */
-    detail::curve::Curve::NamespaceHash combined_hash;
-    /**
      * Scan flag array for optional message output
      */
     unsigned int *scan_flag;
@@ -1322,8 +1282,8 @@ __device__ T MessageArray3D::In::Message::getVariable(const char(&variable_name)
         return static_cast<T>(0);
     }
 #endif
-    // get the value from curve using the stored hashes and message index.
-    return detail::curve::Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, index);
+    // get the value from curve using the message index.
+    return detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, index);
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
 T MessageArray3D::In::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
@@ -1335,8 +1295,8 @@ T MessageArray3D::In::Message::getVariable(const char(&variable_name)[M], const 
         return {};
     }
 #endif
-    // get the value from curve using the stored hashes and message index.
-    T value = detail::curve::Curve::getMessageArrayVariable<T, N>(variable_name, this->_parent.combined_hash, index, array_index);
+    // get the value from curve using the message index.
+    T value = detail::curve::DeviceCurve::getMessageArrayVariable<T, N>(variable_name, index, array_index);
     return value;
 }
 template<typename T, unsigned int N>
@@ -1348,8 +1308,8 @@ __device__ T MessageArray3D::In::WrapFilter::Message::getVariable(const char(&va
         return static_cast<T>(0);
     }
 #endif
-    // get the value from curve using the stored hashes and message index.
-    return detail::curve::Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, index_1d);
+    // get the value from curve using the message index.
+    return detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, index_1d);
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
 T MessageArray3D::In::WrapFilter::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
@@ -1361,8 +1321,8 @@ T MessageArray3D::In::WrapFilter::Message::getVariable(const char(&variable_name
         return {};
     }
 #endif
-    // get the value from curve using the stored hashes and message index.
-    T value = detail::curve::Curve::getMessageArrayVariable<T, N>(variable_name, this->_parent.combined_hash, index_1d, array_index);
+    // get the value from curve using the message index.
+    T value = detail::curve::DeviceCurve::getMessageArrayVariable<T, N>(variable_name, index_1d, array_index);
     return value;
 }
 template<typename T, unsigned int N>
@@ -1374,8 +1334,8 @@ __device__ T MessageArray3D::In::Filter::Message::getVariable(const char(&variab
         return static_cast<T>(0);
     }
 #endif
-    // get the value from curve using the stored hashes and message index.
-    return detail::curve::Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, index_1d);
+    // get the value from curve using the message index.
+    return detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, index_1d);
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
 T MessageArray3D::In::Filter::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
@@ -1387,8 +1347,8 @@ T MessageArray3D::In::Filter::Message::getVariable(const char(&variable_name)[M]
         return {};
     }
 #endif
-    // get the value from curve using the stored hashes and message index.
-    T value = detail::curve::Curve::getMessageArrayVariable<T, N>(variable_name, this->_parent.combined_hash, index_1d, array_index);
+    // get the value from curve using the message index.
+    T value = detail::curve::DeviceCurve::getMessageArrayVariable<T, N>(variable_name, index_1d, array_index);
     return value;
 }
 template<typename T, unsigned int N>
@@ -1400,8 +1360,8 @@ __device__ T MessageArray3D::In::VonNeumannWrapFilter::Message::getVariable(cons
         return static_cast<T>(0);
     }
 #endif
-    // get the value from curve using the stored hashes and message index.
-    return detail::curve::Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, index_1d);
+    // get the value from curve using the message index.
+    return detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, index_1d);
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
 T MessageArray3D::In::VonNeumannWrapFilter::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
@@ -1413,8 +1373,8 @@ T MessageArray3D::In::VonNeumannWrapFilter::Message::getVariable(const char(&var
         return {};
     }
 #endif
-    // get the value from curve using the stored hashes and message index.
-    T value = detail::curve::Curve::getMessageArrayVariable<T, N>(variable_name, this->_parent.combined_hash, index_1d, array_index);
+    // get the value from curve using the message index.
+    T value = detail::curve::DeviceCurve::getMessageArrayVariable<T, N>(variable_name, index_1d, array_index);
     return value;
 }
 template<typename T, unsigned int N>
@@ -1426,8 +1386,8 @@ __device__ T MessageArray3D::In::VonNeumannFilter::Message::getVariable(const ch
         return static_cast<T>(0);
     }
 #endif
-    // get the value from curve using the stored hashes and message index.
-    return detail::curve::Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, index_1d);
+    // get the value from curve using the message index.
+    return detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, index_1d);
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
 T MessageArray3D::In::VonNeumannFilter::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
@@ -1439,8 +1399,8 @@ T MessageArray3D::In::VonNeumannFilter::Message::getVariable(const char(&variabl
         return {};
     }
 #endif
-    // get the value from curve using the stored hashes and message index.
-    T value = detail::curve::Curve::getMessageArrayVariable<T, N>(variable_name, this->_parent.combined_hash, index_1d, array_index);
+    // get the value from curve using the message index.
+    T value = detail::curve::DeviceCurve::getMessageArrayVariable<T, N>(variable_name, index_1d, array_index);
     return value;
 }
 
@@ -1455,7 +1415,7 @@ __device__ void MessageArray3D::Out::setVariable(const char(&variable_name)[N], 
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
     // set the variable using curve
-    detail::curve::Curve::setMessageVariable<T>(variable_name, combined_hash, value, index);
+    detail::curve::DeviceCurve::setMessageVariable<T>(variable_name, value, index);
 
     // setIndex() sets the optional message scan flag
 }
@@ -1470,7 +1430,7 @@ __device__ void MessageArray3D::Out::setVariable(const char(&variable_name)[M], 
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
     // set the variable using curve
-    detail::curve::Curve::setMessageArrayVariable<T, N>(variable_name, combined_hash, value, index, array_index);
+    detail::curve::DeviceCurve::setMessageArrayVariable<T, N>(variable_name, value, index, array_index);
 
     // setIndex() sets the optional message scan flag
 }
@@ -1494,16 +1454,15 @@ __device__ inline void MessageArray3D::Out::setIndex(const size_type &x, const s
 #endif
 
     // set the variable using curve
-    detail::curve::Curve::setMessageVariable<size_type>("___INDEX", combined_hash, index_1d, index);
+    detail::curve::DeviceCurve::setMessageVariable<size_type>("___INDEX", index_1d, index);
 
     // Set scan flag incase the message is optional
     this->scan_flag[index] = 1;
 }
 // Moore Wrap
-__device__ inline MessageArray3D::In::WrapFilter::WrapFilter(const MetaData *_metadata, const detail::curve::Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &y, const size_type &z, const size_type &_radius)
+__device__ inline MessageArray3D::In::WrapFilter::WrapFilter(const MetaData *_metadata, const size_type &x, const size_type &y, const size_type &z, const size_type &_radius)
     : radius(_radius)
-    , metadata(_metadata)
-    , combined_hash(_combined_hash) {
+    , metadata(_metadata) {
     loc[0] = x;
     loc[1] = y;
     loc[2] = z;
@@ -1511,8 +1470,7 @@ __device__ inline MessageArray3D::In::WrapFilter::WrapFilter(const MetaData *_me
 #if !defined(SEATBELTS) || SEATBELTS
 __device__ inline MessageArray3D::In::WrapFilter::WrapFilter()
     : radius(0)
-    , metadata(nullptr)
-    , combined_hash(0) {
+    , metadata(nullptr) {
     loc[0] = 0;
     loc[1] = 0;
     loc[2] = 0;
@@ -1549,9 +1507,8 @@ __device__ inline MessageArray3D::In::WrapFilter::Message& MessageArray3D::In::W
     return *this;
 }
 // Moore
-__device__ inline MessageArray3D::In::Filter::Filter(const MetaData* _metadata, const detail::curve::Curve::NamespaceHash& _combined_hash, const size_type& x, const size_type& y, const size_type& z, const size_type& _radius)
-    : metadata(_metadata)
-    , combined_hash(_combined_hash) {
+__device__ inline MessageArray3D::In::Filter::Filter(const MetaData* _metadata, const size_type& x, const size_type& y, const size_type& z, const size_type& _radius)
+    : metadata(_metadata) {
     loc[0] = x;
     loc[1] = y;
     loc[2] = z;
@@ -1564,8 +1521,7 @@ __device__ inline MessageArray3D::In::Filter::Filter(const MetaData* _metadata, 
 }
 #if !defined(SEATBELTS) || SEATBELTS
 __device__ inline MessageArray3D::In::Filter::Filter()
-    : metadata(nullptr)
-    , combined_hash(0) {
+    : metadata(nullptr) {
     loc[0] = 0;
     loc[1] = 0;
     loc[2] = 0;
@@ -1614,10 +1570,9 @@ __device__ inline MessageArray3D::In::Filter::Message& MessageArray3D::In::Filte
     return *this;
 }
 // Von Neumann Wrap
-__device__ inline MessageArray3D::In::VonNeumannWrapFilter::VonNeumannWrapFilter(const MetaData *_metadata, const detail::curve::Curve::NamespaceHash &_combined_hash, const size_type &x, const size_type &y, const size_type &z, const size_type &_radius)
+__device__ inline MessageArray3D::In::VonNeumannWrapFilter::VonNeumannWrapFilter(const MetaData *_metadata, const size_type &x, const size_type &y, const size_type &z, const size_type &_radius)
     : radius(static_cast<int>(_radius))
-    , metadata(_metadata)
-    , combined_hash(_combined_hash) {
+    , metadata(_metadata) {
     loc[0] = x;
     loc[1] = y;
     loc[2] = z;
@@ -1625,8 +1580,7 @@ __device__ inline MessageArray3D::In::VonNeumannWrapFilter::VonNeumannWrapFilter
 #if !defined(SEATBELTS) || SEATBELTS
 __device__ inline MessageArray3D::In::VonNeumannWrapFilter::VonNeumannWrapFilter()
     : radius(0)
-    , metadata(nullptr)
-    , combined_hash(0) {
+    , metadata(nullptr) {
     loc[0] = 0;
     loc[1] = 0;
     loc[2] = 0;
@@ -1670,10 +1624,9 @@ __device__ inline MessageArray3D::In::VonNeumannWrapFilter::Message& MessageArra
     return *this;
 }
 // Von Neumann
-__device__ inline MessageArray3D::In::VonNeumannFilter::VonNeumannFilter(const MetaData* _metadata, const detail::curve::Curve::NamespaceHash& _combined_hash, const size_type& x, const size_type& y, const size_type& z, const size_type& _radius)
+__device__ inline MessageArray3D::In::VonNeumannFilter::VonNeumannFilter(const MetaData* _metadata, const size_type& x, const size_type& y, const size_type& z, const size_type& _radius)
     : radius(static_cast<int>(_radius))
-    , metadata(_metadata)
-    , combined_hash(_combined_hash) {
+    , metadata(_metadata) {
     loc[0] = x;
     loc[1] = y;
     loc[2] = z;
@@ -1687,8 +1640,7 @@ __device__ inline MessageArray3D::In::VonNeumannFilter::VonNeumannFilter(const M
 #if !defined(SEATBELTS) || SEATBELTS
 __device__ inline MessageArray3D::In::VonNeumannFilter::VonNeumannFilter()
     : radius(0)
-    , metadata(nullptr)
-    , combined_hash(0) {
+    , metadata(nullptr) {
     loc[0] = 0;
     loc[1] = 0;
     loc[2] = 0;

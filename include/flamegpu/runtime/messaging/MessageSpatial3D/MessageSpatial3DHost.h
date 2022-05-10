@@ -5,7 +5,6 @@
 #include <string>
 
 #include "flamegpu/gpu/CUDAMessage.h"
-#include "flamegpu/runtime/detail/curve/curve.cuh"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/runtime/messaging/MessageSpatial3D.h"
 #include "flamegpu/runtime/messaging/MessageSpatial2D/MessageSpatial2DHost.h"

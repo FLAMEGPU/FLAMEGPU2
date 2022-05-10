@@ -188,12 +188,11 @@ class MessageSpatial3D::In {
         /**
          * Constructor, takes the search parameters requried
          * @param _metadata Pointer to message list metadata
-         * @param combined_hash agentfn+message hash for accessing message data
          * @param x Search origin x coord
          * @param y Search origin y coord
          * @param z search origin z coord
          */
-        __device__ Filter(const MetaData *_metadata, const detail::curve::Curve::NamespaceHash &combined_hash, const float &x, const float &y, const float &z);
+        __device__ Filter(const MetaData *_metadata, const float &x, const float &y, const float &z);
         /**
          * Returns an iterator to the start of the message list subset about the search origin
          */
@@ -224,23 +223,15 @@ class MessageSpatial3D::In {
          * Pointer to message list metadata, e.g. environment bounds, search radius, PBM location
          */
         const MetaData *metadata;
-        /**
-         * CURVE hash for accessing message data
-         * agent function hash + message hash
-         */
-        detail::curve::Curve::NamespaceHash combined_hash;
     };
 
     /**
      * Constructer
      * Initialises member variables
-     * @param agentfn_hash Added to message_hash to produce combined_hash
-     * @param message_hash Added to agentfn_hash to produce combined_hash
      * @param _metadata Reinterpreted as type MessageSpatial3D::MetaData
      */
-    __device__ In(detail::curve::Curve::NamespaceHash agentfn_hash, detail::curve::Curve::NamespaceHash message_hash, const void *_metadata)
-        : combined_hash(agentfn_hash + message_hash)
-        , metadata(reinterpret_cast<const MetaData*>(_metadata))
+    __device__ In(const void *_metadata)
+        : metadata(reinterpret_cast<const MetaData*>(_metadata))
     { }
     /**
      * Returns a Filter object which provides access to message iterator
@@ -251,7 +242,7 @@ class MessageSpatial3D::In {
      * @param z Search origin z coord
      */
     inline __device__ Filter operator() (const float &x, const float &y, const float &z) const {
-        return Filter(metadata, combined_hash, x, y, z);
+        return Filter(metadata, x, y, z);
     }
 
     /**
@@ -262,11 +253,6 @@ class MessageSpatial3D::In {
     }
 
  private:
-    /**
-     * CURVE hash for accessing message data
-     * agentfn_hash + message_hash
-     */
-    detail::curve::Curve::NamespaceHash combined_hash;
     /**
      * Device pointer to metadata required for accessing data structure
      * e.g. PBM, search origin, environment bounds
@@ -283,12 +269,10 @@ class MessageSpatial3D::Out : public MessageBruteForce::Out {
     /**
      * Constructer
      * Initialises member variables
-     * @param agentfn_hash Added to message_hash to produce combined_hash
-     * @param message_hash Added to agentfn_hash to produce combined_hash
      * @param scan_flag_messageOutput Scan flag array for optional message output
      */
-    __device__ Out(detail::curve::Curve::NamespaceHash agentfn_hash, detail::curve::Curve::NamespaceHash message_hash, const void *, unsigned int *scan_flag_messageOutput)
-        : MessageBruteForce::Out(agentfn_hash, message_hash, nullptr, scan_flag_messageOutput)
+    __device__ Out(const void *, unsigned int *scan_flag_messageOutput)
+        : MessageBruteForce::Out(nullptr, scan_flag_messageOutput)
     { }
     /**
      * Sets the location for this agents message
@@ -309,8 +293,8 @@ __device__ T MessageSpatial3D::In::Filter::Message::getVariable(const char(&vari
         return static_cast<T>(0);
     }
 #endif
-    // get the value from curve using the stored hashes and message index.
-    T value = detail::curve::Curve::getMessageVariable<T>(variable_name, this->_parent.combined_hash, cell_index);
+    // get the value from curve using the message index.
+    T value = detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, cell_index);
     return value;
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
@@ -322,8 +306,8 @@ T MessageSpatial3D::In::Filter::Message::getVariable(const char(&variable_name)[
         return {};
     }
 #endif
-    // get the value from curve using the stored hashes and message index.
-    T value = detail::curve::Curve::getMessageArrayVariable<T, N>(variable_name, this->_parent.combined_hash, cell_index, array_index);
+    // get the value from curve using the message index.
+    T value = detail::curve::DeviceCurve::getMessageArrayVariable<T, N>(variable_name, cell_index, array_index);
     return value;
 }
 
@@ -360,17 +344,16 @@ __device__ inline void MessageSpatial3D::Out::setLocation(const float &x, const 
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
 
     // set the variables using curve
-    detail::curve::Curve::setMessageVariable<float>("x", combined_hash, x, index);
-    detail::curve::Curve::setMessageVariable<float>("y", combined_hash, y, index);
-    detail::curve::Curve::setMessageVariable<float>("z", combined_hash, z, index);
+    detail::curve::DeviceCurve::setMessageVariable<float>("x", x, index);
+    detail::curve::DeviceCurve::setMessageVariable<float>("y", y, index);
+    detail::curve::DeviceCurve::setMessageVariable<float>("z", z, index);
 
     // Set scan flag incase the message is optional
     this->scan_flag[index] = 1;
 }
 
-__device__ inline MessageSpatial3D::In::Filter::Filter(const MetaData* _metadata, const detail::curve::Curve::NamespaceHash &_combined_hash, const float& x, const float& y, const float& z)
-    : metadata(_metadata)
-    , combined_hash(_combined_hash) {
+__device__ inline MessageSpatial3D::In::Filter::Filter(const MetaData* _metadata, const float& x, const float& y, const float& z)
+    : metadata(_metadata) {
     loc[0] = x;
     loc[1] = y;
     loc[2] = z;
