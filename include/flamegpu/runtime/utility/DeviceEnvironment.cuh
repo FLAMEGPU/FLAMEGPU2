@@ -10,17 +10,6 @@
 
 namespace flamegpu {
 
-#ifndef __CUDACC_RTC__
-namespace detail {
-    /**
-     * Defined in EnvironmentManager.cu
-     */
-    extern __constant__ char c_envPropBuffer[EnvironmentManager::MAX_BUFFER_SIZE];
-}  // namespace detail
-#endif
-
-
-
 /**
  * Utility for accessing environmental properties
  * These can only be read within agent functions
@@ -146,11 +135,11 @@ __device__ __forceinline__ T ReadOnlyDeviceEnvironment::getProperty(const char(&
     } else if (buff[0]->sizes[cv] * buff[0]->lengths[cv] != type_decode<T>::len_t * sizeof(typename type_decode<T>::type_t)) {
         DTHROW("Environment property with name: %s type size mismatch %llu != %llu.\n", name, buff[0]->sizes[cv], sizeof(T));
     } else {
-        return *reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(buff[0]->variables[cv]));
+        return *reinterpret_cast<const T*>(reinterpret_cast<const char*>(buff[1]) + reinterpret_cast<ptrdiff_t>(buff[0]->variables[cv]));
     }
     return {};
 #else
-    return *reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(buff[0]->variables[cv]));
+    return *reinterpret_cast<const T*>(reinterpret_cast<const char*>(buff[1]) + reinterpret_cast<ptrdiff_t>(buff[0]->variables[cv]));
 #endif
 }
 template<typename T, unsigned int N>
@@ -167,11 +156,11 @@ __device__ __forceinline__ T ReadOnlyDeviceEnvironment::getProperty(const char(&
     } else if (buff[0]->lengths[cv] < t_index || t_index < index) {
         DTHROW("Environment property array with name: %s index %u is out of bounds (length %u).\n", name, index, buff[0]->lengths[cv]);
     } else {
-        return *(reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(buff[0]->variables[cv])) + index);
+        return *(reinterpret_cast<const T*>(reinterpret_cast<const char*>(buff[1]) + reinterpret_cast<ptrdiff_t>(buff[0]->variables[cv])) + index);
     }
     return {};
 #else
-    return *(reinterpret_cast<T*>(detail::c_envPropBuffer + reinterpret_cast<ptrdiff_t>(buff[0]->variables[cv])) + index);
+    return *(reinterpret_cast<const T*>(reinterpret_cast<const char*>(buff[1]) + reinterpret_cast<ptrdiff_t>(buff[0]->variables[cv])) + index);
 #endif
 }
 

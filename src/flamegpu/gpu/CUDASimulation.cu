@@ -694,7 +694,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
         if (!has_rtc_func_cond) {
             env_shared_lock = this->singletons->environment.getSharedLock();
             env_device_lock = this->singletons->environment.getDeviceSharedLock();
-            this->singletons->environment.updateDevice(instance_id);
+            this->singletons->environment.updateDevice(instance_id, this->getStream(streamIdx));
             this->singletons->curve.updateDevice(this->getStream(streamIdx));
 
             // this->synchronizeAllStreams();  // Not required, the above is snchronizing.
@@ -735,7 +735,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 detail::curve::Curve::NamespaceHash agent_func_name_hash = agentname_hash + funcname_hash + instance_id;
                 curandState *t_rng = d_rng + totalThreads;
                 unsigned int *scanFlag_agentDeath = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_DEATH, streamIdx).d_ptrs.scan_flag;
-                unsigned int sm_size = sizeof(detail::curve::Curve::CurveTable*);
+                unsigned int sm_size = sizeof(detail::curve::Curve::CurveTable*) + sizeof(char*);
 #if !defined(SEATBELTS) || SEATBELTS
                 auto *error_buffer = this->singletons->exception.getDevicePtr(streamIdx, this->getStream(streamIdx));
                 sm_size += sizeof(error_buffer);
@@ -753,6 +753,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
 #endif
                     instance_id,
                     this->singletons->curve.getDevicePtr(),
+                    this->singletons->environment.getDevicePtr(),
                     agent_func_name_hash,
                     state_list_size,
                     t_rng,
@@ -920,7 +921,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
         if (!has_rtc_func) {
             env_shared_lock = this->singletons->environment.getSharedLock();
             env_device_lock = this->singletons->environment.getDeviceSharedLock();
-            this->singletons->environment.updateDevice(instance_id);
+            this->singletons->environment.updateDevice(instance_id, this->getStream(streamIdx));
             this->singletons->curve.updateDevice(this->getStream(streamIdx));
             this->synchronizeAllStreams();  // This is not strictly required as updateDevice is synchronous.
         }
@@ -995,7 +996,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
             unsigned int *scanFlag_agentDeath = func_des->has_agent_death ? this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_DEATH, streamIdx).d_ptrs.scan_flag : nullptr;
             unsigned int *scanFlag_messageOutput = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamIdx).d_ptrs.scan_flag;
             unsigned int *scanFlag_agentOutput = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_OUTPUT, streamIdx).d_ptrs.scan_flag;
-            unsigned int sm_size = sizeof(detail::curve::Curve::CurveTable*);
+            unsigned int sm_size = sizeof(detail::curve::Curve::CurveTable*) + sizeof(char*);
     #if !defined(SEATBELTS) || SEATBELTS
             auto *error_buffer = this->singletons->exception.getDevicePtr(streamIdx, this->getStream(streamIdx));
             sm_size += sizeof(error_buffer);
@@ -1013,6 +1014,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     #endif
                     instance_id,
                     this->singletons->curve.getDevicePtr(),
+                    this->singletons->environment.getDevicePtr(),
                     agent_func_name_hash,
                     message_name_inp_hash,
                     message_name_outp_hash,
