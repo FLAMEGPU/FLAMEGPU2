@@ -21,9 +21,9 @@ find_package(CUDAToolkit REQUIRED)
 # thrust-config.cmake and cub-config.cmake live in different locations with CUDA (on ubuntu) depending on the CUDA version.
 # CUDA 11.3 and 11.4 they can be found in the CUDA Toolkit include directories.
 # CUDA 11.5+ they can be found in lib/cmake or lib64/cmake
-# CUDA 11.6 ships with CUB 1.15.0 which has a bug when windows.h is included prior to CUB, so don't try to find the regular Thrust/CUB in this case. 
+# CUDA 11.6 (and 11.7) ships with CUB 1.15.0 which has a bug when windows.h is included prior to CUB, so don't try to find the regular Thrust/CUB in this case. 
 # Ideally we would detect 1.15.0 and then download the correct version of CUB/Thrust, but getting CMake on windows to behave was proving problematic
-if(NOT (MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.6.0 AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 11.7.0))
+if(NOT (MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.6.0 AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 11.8.0))
     find_package(Thrust QUIET CONFIG HINTS ${CUDAToolkit_INCLUDE_DIRS} ${CUDAToolkit_LIBRARY_DIR}/cmake)
     find_package(CUB QUIET CONFIG HINTS ${CUDAToolkit_INCLUDE_DIRS} ${CUDAToolkit_LIBRARY_DIR}/cmake)
 endif()
