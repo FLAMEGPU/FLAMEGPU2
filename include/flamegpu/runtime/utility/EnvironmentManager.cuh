@@ -186,11 +186,12 @@ class EnvironmentManager : public std::enable_shared_from_this<EnvironmentManage
      * @param index Index of the element within the array
      * @param value value to set the element of the property array
      * @tparam T Type of the environmental property array to be created
+     * @tparam N (Optional) The length of the array variable, available for parity with other APIs, checked if provided
      * @return Returns the previous value
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws std::out_of_range
      */
-    template<typename T>
+    template<typename T, size_type N = 0>
     T setProperty(const std::string& name,  size_type index, T value);
 #ifdef SWIG
     /**
@@ -228,10 +229,11 @@ class EnvironmentManager : public std::enable_shared_from_this<EnvironmentManage
      * @param name name used for accessing the property array
      * @param index Index of the element within the array
      * @tparam T Type of the value to be returned
+     * @tparam N (Optional) The length of the array variable, available for parity with other APIs, checked if provided
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws std::out_of_range
      */
-    template<typename T>
+    template<typename T, size_type N = 0>
     T getProperty(const std::string& name, size_type index);
 #ifdef SWIG
     /**
@@ -423,10 +425,14 @@ std::array<T, N> EnvironmentManager::setProperty(const std::string &name, const 
     propagateMappedPropertyValue(name, dest_ptr);
     return rtn;
 }
-template<typename T>
+template<typename T, EnvironmentManager::size_type N>
 T EnvironmentManager::setProperty(const std::string &name, const size_type index, const T value) {
     const EnvProp& prop = findProperty<T>(name, true, 0);
-    if (index >= prop.elements / type_decode<T>::len_t) {
+    if (N && N != prop.elements / type_decode<T>::len_t) {
+        THROW exception::OutOfBoundsException("Environmental property with name '%s', array length mismatch (%u != %u), "
+            "in EnvironmentManager::setProperty().",
+            name.c_str(), N, prop.elements / type_decode<T>::len_t);
+    } else if (index >= prop.elements / type_decode<T>::len_t) {
         THROW exception::OutOfBoundsException("Environmental property with name '%s', index (%u) exceeds named environmental property array's length (%u), "
             "in EnvironmentManager::setProperty().",
             name.c_str(), index, prop.elements / type_decode<T>::len_t);
@@ -476,12 +482,16 @@ std::array<T, N> EnvironmentManager::getProperty(const std::string &name) {
     memcpy(rtn.data(), h_buffer + prop.offset, sizeof(T) * N);
     return rtn;
 }
-template<typename T>
+template<typename T, EnvironmentManager::size_type N>
 T EnvironmentManager::getProperty(const std::string &name, const size_type index) {
     const EnvProp& prop = findProperty<T>(name, false, 0);
-    if (index >= prop.elements / type_decode<T>::len_t) {
+    if (N && N != prop.elements / type_decode<T>::len_t) {
+        THROW exception::OutOfBoundsException("Environmental property with name '%s', array length mismatch (%u != %u), "
+            "in EnvironmentManager::getProperty().",
+            name.c_str(), N, prop.elements / type_decode<T>::len_t);
+    } else if (index >= prop.elements / type_decode<T>::len_t) {
         THROW exception::OutOfBoundsException("Environmental property with name '%s', index (%u) exceeds named environmental property array's length (%u), "
-            "in EnvironmentManager::setProperty().",
+            "in EnvironmentManager::getProperty().",
             name.c_str(), index, prop.elements / type_decode<T>::len_t);
     }
     // Copy old data to return

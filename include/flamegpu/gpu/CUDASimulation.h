@@ -185,7 +185,7 @@ class CUDASimulation : public Simulation {
      * @throws exception::InvalidEnvPropertyType If the named environment property does not exist with the specified type
      * @throws exception::ReadOnlyEnvProperty If the named environment property is marked as read-only
      */
-    template<typename T, unsigned int N>
+    template<typename T, EnvironmentManager::size_type N>
     void setEnvironmentProperty(const std::string &property_name, const std::array<T, N> &value);
     /**
      * Update the value of the specified element of the named environment property array
@@ -193,10 +193,11 @@ class CUDASimulation : public Simulation {
      * @param index Index of the element within the property array to be updated
      * @param value New value for the named environment property
      * @tparam T Type of the elements of the environment property array
+     * @tparam N (Optional) The length of the array variable, available for parity with other APIs, checked if provided
      * @throws exception::InvalidEnvPropertyType If the named environment property does not exist with the specified type
      * @throws exception::ReadOnlyEnvProperty If the named environment property is marked as read-only
      */
-    template<typename T>
+    template<typename T, EnvironmentManager::size_type N = 0>
     void setEnvironmentProperty(const std::string& property_name, const EnvironmentManager::size_type &index, const T& value);
 #ifdef SWIG
     /**
@@ -225,16 +226,17 @@ class CUDASimulation : public Simulation {
      * @tparam T Type of the elements of the environment property array
      * @throws exception::InvalidEnvPropertyType If the named environment property does not exist with the specified type
      */
-    template<typename T, unsigned int N>
+    template<typename T, EnvironmentManager::size_type N>
     std::array<T, N> getEnvironmentProperty(const std::string &property_name);
     /**
      * Return the current value of the specified element of the named environment property array
      * @param property_name Name of the environment property to be returned
      * @param index Index of the element within the property array to be returned
      * @tparam T Type of the elements of the environment property array
+     * @tparam N (Optional) The length of the array variable, available for parity with other APIs, checked if provided
      * @throws exception::InvalidEnvPropertyType If the named environment property does not exist with the specified type
      */
-    template<typename T>
+    template<typename T, EnvironmentManager::size_type N = 0>
     T getEnvironmentProperty(const std::string& property_name, const EnvironmentManager::size_type& index);
 #ifdef SWIG
     /**
@@ -678,7 +680,7 @@ void CUDASimulation::setEnvironmentProperty(const std::string& property_name, co
         initialiseSingletons();
     singletons->environment->setProperty<T>(property_name, value);
 }
-template<typename T, unsigned int N>
+template<typename T, EnvironmentManager::size_type N>
 void CUDASimulation::setEnvironmentProperty(const std::string& property_name, const std::array<T, N>& value) {
     if (!property_name.empty() && property_name[0] == '_') {
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
@@ -688,11 +690,11 @@ void CUDASimulation::setEnvironmentProperty(const std::string& property_name, co
         initialiseSingletons();
     singletons->environment->setProperty<T, N>(property_name, value);
 }
-template<typename T>
+template<typename T, EnvironmentManager::size_type N>
 void CUDASimulation::setEnvironmentProperty(const std::string& property_name, const EnvironmentManager::size_type& index, const T& value) {
     if (!singletonsInitialised)
         initialiseSingletons();
-    singletons->environment->setProperty<T>(property_name, index, value);
+    singletons->environment->setProperty<T, N>(property_name, index, value);
 }
 template<typename T>
 T CUDASimulation::getEnvironmentProperty(const std::string& property_name) {
@@ -700,17 +702,17 @@ T CUDASimulation::getEnvironmentProperty(const std::string& property_name) {
         initialiseSingletons();
     return singletons->environment->getProperty<T>(property_name);
 }
-template<typename T, unsigned int N>
+template<typename T, EnvironmentManager::size_type N>
 std::array<T, N> CUDASimulation::getEnvironmentProperty(const std::string& property_name) {
     if (!singletonsInitialised)
         initialiseSingletons();
     return singletons->environment->getProperty<T, N>(property_name);
 }
-template<typename T>
+template<typename T, EnvironmentManager::size_type N>
 T CUDASimulation::getEnvironmentProperty(const std::string& property_name, const EnvironmentManager::size_type& index) {
     if (!singletonsInitialised)
         initialiseSingletons();
-    return singletons->environment->getProperty<T>(property_name, index);
+    return singletons->environment->getProperty<T, N>(property_name, index);
 }
 #ifdef SWIG
 template<typename T>

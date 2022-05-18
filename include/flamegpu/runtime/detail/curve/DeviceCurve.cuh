@@ -201,7 +201,7 @@ class DeviceCurve {
      * @param propertyName A constant char array (C string) property name.
      * @tparam T The return type requested of the property.
      * @tparam M The length of the string literal passed to variableName. This parameter should always be implicit, and does not need to be provided.
-     * @return The requested variable
+     * @return The requested property
      * @throws exception::DeviceError (Only when SEATBELTS==ON) If the specified property is not found in the cuRVE hashtable, or it's details are invalid.
      */
     template <typename T, unsigned int M>
@@ -209,9 +209,9 @@ class DeviceCurve {
     /**
      * @copydoc DeviceCurve::getEnvironmentProperty()
      * @param array_index The index of the element in the named variable array.
-     * @tparam N Length of the array variable specified by variableName
+     * @tparam N (Optional) Length of the array variable specified by variableName, available for parity with other APIs, checked if provided  (flamegpu must be built with SEATBELTS enabled for device error checking).
      */
-    template <typename T, unsigned int N, unsigned int M>
+    template <typename T, unsigned int N = 0, unsigned int M>
     __device__ __forceinline__ static T getEnvironmentArrayProperty(const char(&propertyName)[M], unsigned int array_index);
 
     /**
@@ -255,7 +255,7 @@ __device__ __forceinline__ char* DeviceCurve::getVariablePtr(const char(&variabl
     } else if (sm()->curve->type_size[cv] != sizeof(typename type_decode<T>::type_t)) {
         DTHROW("Curve variable with name '%s', type size mismatch %u != %llu.\n", variableName, sm()->curve->type_size[cv], sizeof(typename type_decode<T>::type_t));
         return nullptr;
-    } else if (sm()->curve->elements[cv] != type_decode<T>::len_t * N) {
+    } else if (!(sm()->curve->elements[cv] == type_decode<T>::len_t * N || (namespace_hash == Curve::variableHash("_environment") && N == 0))) {  // Special case, environment can avoid specifying N
         DTHROW("Curve variable with name '%s', variable array length mismatch %u != %u.\n", variableName, sm()->curve->elements[cv], type_decode<T>::len_t);
         return nullptr;
     } else if (offset >= sm()->curve->type_size[cv] * sm()->curve->elements[cv] * sm()->curve->count[cv]) {  // Note : offset is basically index * sizeof(T)
