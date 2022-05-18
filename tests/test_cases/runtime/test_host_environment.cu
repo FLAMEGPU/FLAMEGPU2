@@ -430,15 +430,10 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_float) {
         b[i] = static_cast<float>(i);
         _b[i] = static_cast<uint64_t>(i);
     }
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("float_", _a), exception::InvalidEnvPropertyType);
     EXPECT_THROW(FLAMEGPU->environment.setProperty<int32_t>("float_", _a2), exception::InvalidEnvPropertyType);
     // EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("float_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("float_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint64_t, TEST_ARRAY_LEN>("float_a_", _b)), exception::InvalidEnvPropertyType);
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("float_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_double) {
@@ -449,14 +444,9 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_double) {
         b[i] = static_cast<double>(i);
         _b[i] = static_cast<uint64_t>(i);
     }
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("double_", _a), exception::InvalidEnvPropertyType);
     // EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("double_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("double_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint64_t, TEST_ARRAY_LEN>("double_a_", _b)), exception::InvalidEnvPropertyType);
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("double_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int8_t) {
@@ -467,14 +457,9 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int8_t) {
         b[i] = static_cast<int8_t>(i);
         _b[i] = static_cast<uint64_t>(i);
     }
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int8_t_", _a), exception::InvalidEnvPropertyType);
     // EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int8_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("int8_t_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint64_t, TEST_ARRAY_LEN>("int8_t_a_", _b)), exception::InvalidEnvPropertyType);
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int8_t_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint8_t) {
@@ -486,15 +471,10 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint8_t) {
         b[i] = static_cast<uint8_t>(i);
         _b[i] = static_cast<uint64_t>(i);
     }
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint8_t_", _a), exception::InvalidEnvPropertyType);
     EXPECT_THROW(FLAMEGPU->environment.setProperty<int8_t>("uint8_t_", _a2), exception::InvalidEnvPropertyType);
     // EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint8_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("uint8_t_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint64_t, TEST_ARRAY_LEN>("uint8_t_a_", _b)), exception::InvalidEnvPropertyType);
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint8_t_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int16_t) {
@@ -505,14 +485,9 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int16_t) {
         b[i] = static_cast<int16_t>(i);
         _b[i] = static_cast<uint64_t>(i);
     }
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int16_t_", _a), exception::InvalidEnvPropertyType);
     // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("int16_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("int16_t_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint64_t, TEST_ARRAY_LEN>("int16_t_a_", _b)), exception::InvalidEnvPropertyType);
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int16_t_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint16_t) {
@@ -523,14 +498,9 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint16_t) {
         b[i] = static_cast<uint16_t>(i);
         _b[i] = static_cast<uint64_t>(i);
     }
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint16_t_", _a), exception::InvalidEnvPropertyType);
     // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("uint16_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("uint16_t_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint64_t, TEST_ARRAY_LEN>("uint16_t_a_", _b)), exception::InvalidEnvPropertyType);
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint16_t_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int32_t) {
@@ -542,15 +512,10 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int32_t) {
         b[i] = static_cast<int32_t>(i);
         _b[i] = static_cast<uint64_t>(i);
     }
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int32_t_", _a), exception::InvalidEnvPropertyType);
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint32_t>("int32_t_", _a2), exception::InvalidEnvPropertyType);
     // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("int32_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("int32_t_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint64_t, TEST_ARRAY_LEN>("int32_t_a_", _b)), exception::InvalidEnvPropertyType);
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("int32_t_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint32_t) {
@@ -561,14 +526,9 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint32_t) {
         b[i] = static_cast<uint32_t>(i);
         _b[i] = static_cast<uint64_t>(i);
     }
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint32_t_", _a), exception::InvalidEnvPropertyType);
     // EXPECT_THROW(FLAMEGPU->environment.set<uint64_t>("uint32_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("uint32_t_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint64_t, TEST_ARRAY_LEN>("uint32_t_a_", _b)), exception::InvalidEnvPropertyType);
     EXPECT_THROW(FLAMEGPU->environment.setProperty<uint64_t>("uint32_t_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int64_t) {
@@ -579,14 +539,9 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_int64_t) {
         b[i] = static_cast<int64_t>(i);
         _b[i] = static_cast<float>(i);
     }
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray = &HostEnvironment::setProperty<float, TEST_ARRAY_LEN>;
     EXPECT_THROW(FLAMEGPU->environment.setProperty<float>("int64_t_", _a), exception::InvalidEnvPropertyType);
     // EXPECT_THROW(FLAMEGPU->environment.set<float>("int64_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("int64_t_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<float, TEST_ARRAY_LEN>("int64_t_a_", _b)), exception::InvalidEnvPropertyType);
     EXPECT_THROW(FLAMEGPU->environment.setProperty<float>("int64_t_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint64_t) {
@@ -597,14 +552,9 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint64_t) {
         b[i] = static_cast<uint64_t>(i);
         _b[i] = static_cast<float>(i);
     }
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray = &HostEnvironment::setProperty<float, TEST_ARRAY_LEN>;
     EXPECT_THROW(FLAMEGPU->environment.setProperty<float>("uint64_t_", _a), exception::InvalidEnvPropertyType);
     // EXPECT_THROW(FLAMEGPU->environment.set<float>("uint64_t_a_", _b), exception::InvalidEnvPropertyType);  // Doesn't build on Travis
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("uint64_t_a_", _b), exception::InvalidEnvPropertyType);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<float, TEST_ARRAY_LEN>("uint64_t_a_", _b)), exception::InvalidEnvPropertyType);
     EXPECT_THROW(FLAMEGPU->environment.setProperty<float>("uint64_t_a_", 0, _a), exception::InvalidEnvPropertyType);
 }
 
@@ -613,180 +563,100 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_float) {
     std::array<float, 1> _b1 = {};
     std::array<float, TEST_ARRAY_LEN + 1> _b2;
     std::array<float, TEST_ARRAY_LEN * 2> _b3;
-    /**
-     * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-     * They don't build on Travis with implied template args
-     */
-    auto setArray1 = &HostEnvironment::setProperty<float, TEST_ARRAY_LEN>;
-    auto setArray2 = &HostEnvironment::setProperty<float, 1>;
-    auto setArray3 = &HostEnvironment::setProperty<float, TEST_ARRAY_LEN + 1>;
-    auto setArray4 = &HostEnvironment::setProperty<float, TEST_ARRAY_LEN * 2>;
-    EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("float_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("float_a_", _b1), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("float_a_", _b2), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("float_a_", _b3), exception::OutOfBoundsException);
+    EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<float, TEST_ARRAY_LEN>("float_a_", b)));
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<float, 1>("float_a_", _b1)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<float, TEST_ARRAY_LEN + 1>("float_a_", _b2)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<float, TEST_ARRAY_LEN * 2>("float_a_", _b3)), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_double) {
     std::array<double, TEST_ARRAY_LEN> b;
     std::array<double, 1> _b1 = {};
     std::array<double, TEST_ARRAY_LEN + 1> _b2;
     std::array<double, TEST_ARRAY_LEN * 2> _b3;
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray1 = &HostEnvironment::setProperty<double, TEST_ARRAY_LEN>;
-    auto setArray2 = &HostEnvironment::setProperty<double, 1>;
-    auto setArray3 = &HostEnvironment::setProperty<double, TEST_ARRAY_LEN + 1>;
-    auto setArray4 = &HostEnvironment::setProperty<double, TEST_ARRAY_LEN * 2>;
-    EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("double_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("double_a_", _b1), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("double_a_", _b2), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("double_a_", _b3), exception::OutOfBoundsException);
+    EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<double, TEST_ARRAY_LEN>("double_a_", b)));
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<double, 1>("double_a_", _b1)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<double, TEST_ARRAY_LEN + 1>("double_a_", _b2)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<double, TEST_ARRAY_LEN * 2>("double_a_", _b3)), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int8_t) {
     std::array<int8_t, TEST_ARRAY_LEN> b;
     std::array<int8_t, 1> _b1 = {};
     std::array<int8_t, TEST_ARRAY_LEN + 1> _b2;
     std::array<int8_t, TEST_ARRAY_LEN * 2> _b3;
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray1 = &HostEnvironment::setProperty<int8_t, TEST_ARRAY_LEN>;
-    auto setArray2 = &HostEnvironment::setProperty<int8_t, 1>;
-    auto setArray3 = &HostEnvironment::setProperty<int8_t, TEST_ARRAY_LEN + 1>;
-    auto setArray4 = &HostEnvironment::setProperty<int8_t, TEST_ARRAY_LEN * 2>;
-    EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("int8_t_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("int8_t_a_", _b1), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("int8_t_a_", _b2), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("int8_t_a_", _b3), exception::OutOfBoundsException);
+    EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<int8_t, TEST_ARRAY_LEN>("int8_t_a_", b)));
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<int8_t, 1>("int8_t_a_", _b1)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<int8_t, TEST_ARRAY_LEN + 1>("int8_t_a_", _b2)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<int8_t, TEST_ARRAY_LEN * 2>("int8_t_a_", _b3)), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint8_t) {
     std::array<uint8_t, TEST_ARRAY_LEN> b;
     std::array<uint8_t, 1> _b1 = {};
     std::array<uint8_t, TEST_ARRAY_LEN + 1> _b2;
     std::array<uint8_t, TEST_ARRAY_LEN * 2> _b3;
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray1 = &HostEnvironment::setProperty<uint8_t, TEST_ARRAY_LEN>;
-    auto setArray2 = &HostEnvironment::setProperty<uint8_t, 1>;
-    auto setArray3 = &HostEnvironment::setProperty<uint8_t, TEST_ARRAY_LEN + 1>;
-    auto setArray4 = &HostEnvironment::setProperty<uint8_t, TEST_ARRAY_LEN * 2>;
-    EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("uint8_t_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("uint8_t_a_", _b1), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("uint8_t_a_", _b2), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("uint8_t_a_", _b3), exception::OutOfBoundsException);
+    EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<uint8_t, TEST_ARRAY_LEN>("uint8_t_a_", b)));
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint8_t, 1>("uint8_t_a_", _b1)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint8_t, TEST_ARRAY_LEN + 1>("uint8_t_a_", _b2)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint8_t, TEST_ARRAY_LEN * 2>("uint8_t_a_", _b3)), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int16_t) {
     std::array<int16_t, TEST_ARRAY_LEN> b;
     std::array<int16_t, 1> _b1 = {};
     std::array<int16_t, TEST_ARRAY_LEN + 1> _b2;
     std::array<int16_t, TEST_ARRAY_LEN * 2> _b3;
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray1 = &HostEnvironment::setProperty<int16_t, TEST_ARRAY_LEN>;
-    auto setArray2 = &HostEnvironment::setProperty<int16_t, 1>;
-    auto setArray3 = &HostEnvironment::setProperty<int16_t, TEST_ARRAY_LEN + 1>;
-    auto setArray4 = &HostEnvironment::setProperty<int16_t, TEST_ARRAY_LEN * 2>;
-    EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("int16_t_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("int16_t_a_", _b1), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("int16_t_a_", _b2), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("int16_t_a_", _b3), exception::OutOfBoundsException);
+    EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<int16_t, TEST_ARRAY_LEN>("int16_t_a_", b)));
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<int16_t, 1>("int16_t_a_", _b1)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<int16_t, TEST_ARRAY_LEN + 1>("int16_t_a_", _b2)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<int16_t, TEST_ARRAY_LEN * 2>("int16_t_a_", _b3)), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint16_t) {
     std::array<uint16_t, TEST_ARRAY_LEN> b;
     std::array<uint16_t, 1> _b1 = {};
     std::array<uint16_t, TEST_ARRAY_LEN + 1> _b2;
     std::array<uint16_t, TEST_ARRAY_LEN * 2> _b3;
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray1 = &HostEnvironment::setProperty<uint16_t, TEST_ARRAY_LEN>;
-    auto setArray2 = &HostEnvironment::setProperty<uint16_t, 1>;
-    auto setArray3 = &HostEnvironment::setProperty<uint16_t, TEST_ARRAY_LEN + 1>;
-    auto setArray4 = &HostEnvironment::setProperty<uint16_t, TEST_ARRAY_LEN * 2>;
-    EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("uint16_t_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("uint16_t_a_", _b1), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("uint16_t_a_", _b2), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("uint16_t_a_", _b3), exception::OutOfBoundsException);
+    EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<uint16_t, TEST_ARRAY_LEN>("uint16_t_a_", b)));
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint16_t, 1>("uint16_t_a_", _b1)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint16_t, TEST_ARRAY_LEN + 1>("uint16_t_a_", _b2)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint16_t, TEST_ARRAY_LEN * 2>("uint16_t_a_", _b3)), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int32_t) {
     std::array<int32_t, TEST_ARRAY_LEN> b;
     std::array<int32_t, 1> _b1 = {};
     std::array<int32_t, TEST_ARRAY_LEN + 1> _b2;
     std::array<int32_t, TEST_ARRAY_LEN * 2> _b3;
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray1 = &HostEnvironment::setProperty<int32_t, TEST_ARRAY_LEN>;
-    auto setArray2 = &HostEnvironment::setProperty<int32_t, 1>;
-    auto setArray3 = &HostEnvironment::setProperty<int32_t, TEST_ARRAY_LEN + 1>;
-    auto setArray4 = &HostEnvironment::setProperty<int32_t, TEST_ARRAY_LEN * 2>;
-    EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("int32_t_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("int32_t_a_", _b1), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("int32_t_a_", _b2), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("int32_t_a_", _b3), exception::OutOfBoundsException);
+    EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<int32_t, TEST_ARRAY_LEN>("int32_t_a_", b)));
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<int32_t, 1>("int32_t_a_", _b1)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<int32_t, TEST_ARRAY_LEN + 1>("int32_t_a_", _b2)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<int32_t, TEST_ARRAY_LEN * 2>("int32_t_a_", _b3)), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint32_t) {
     std::array<uint32_t, TEST_ARRAY_LEN> b;
     std::array<uint32_t, 1> _b1 = {};
     std::array<uint32_t, TEST_ARRAY_LEN + 1> _b2;
     std::array<uint32_t, TEST_ARRAY_LEN * 2> _b3;
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray1 = &HostEnvironment::setProperty<uint32_t, TEST_ARRAY_LEN>;
-    auto setArray2 = &HostEnvironment::setProperty<uint32_t, 1>;
-    auto setArray3 = &HostEnvironment::setProperty<uint32_t, TEST_ARRAY_LEN + 1>;
-    auto setArray4 = &HostEnvironment::setProperty<uint32_t, TEST_ARRAY_LEN * 2>;
-    EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("uint32_t_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("uint32_t_a_", _b1), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("uint32_t_a_", _b2), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("uint32_t_a_", _b3), exception::OutOfBoundsException);
+    EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<uint32_t, TEST_ARRAY_LEN>("uint32_t_a_", b)));
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint32_t, 1>("uint32_t_a_", _b1)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint32_t, TEST_ARRAY_LEN + 1>("uint32_t_a_", _b2)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint32_t, TEST_ARRAY_LEN * 2>("uint32_t_a_", _b3)), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int64_t) {
     std::array<int64_t, TEST_ARRAY_LEN> b;
     std::array<int64_t, 1> _b1 = {};
     std::array<int64_t, TEST_ARRAY_LEN + 1> _b2;
     std::array<int64_t, TEST_ARRAY_LEN * 2> _b3;
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray1 = &HostEnvironment::setProperty<int64_t, TEST_ARRAY_LEN>;
-    auto setArray2 = &HostEnvironment::setProperty<int64_t, 1>;
-    auto setArray3 = &HostEnvironment::setProperty<int64_t, TEST_ARRAY_LEN + 1>;
-    auto setArray4 = &HostEnvironment::setProperty<int64_t, TEST_ARRAY_LEN * 2>;
-    EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("int64_t_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("int64_t_a_", _b1), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("int64_t_a_", _b2), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("int64_t_a_", _b3), exception::OutOfBoundsException);
+    EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<int64_t, TEST_ARRAY_LEN>("int64_t_a_", b)));
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<int64_t, 1>("int64_t_a_", _b1)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<int64_t, TEST_ARRAY_LEN + 1>("int64_t_a_", _b2)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<int64_t, TEST_ARRAY_LEN * 2>("int64_t_a_", _b3)), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint64_t) {
     std::array<uint64_t, TEST_ARRAY_LEN> b;
     std::array<uint64_t, 1> _b1 = {};
     std::array<uint64_t, TEST_ARRAY_LEN + 1> _b2;
     std::array<uint64_t, TEST_ARRAY_LEN * 2> _b3;
-    /**
-    * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-    * They don't build on Travis with implied template args
-    */
-    auto setArray1 = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN>;
-    auto setArray2 = &HostEnvironment::setProperty<uint64_t, 1>;
-    auto setArray3 = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN + 1>;
-    auto setArray4 = &HostEnvironment::setProperty<uint64_t, TEST_ARRAY_LEN * 2>;
-    EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("uint64_t_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("uint64_t_a_", _b1), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("uint64_t_a_", _b2), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("uint64_t_a_", _b3), exception::OutOfBoundsException);
+    EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<uint64_t, TEST_ARRAY_LEN>("uint64_t_a_", b)));
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint64_t, 1>("uint64_t_a_", _b1)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint64_t, TEST_ARRAY_LEN + 1>("uint64_t_a_", _b2)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<uint64_t, TEST_ARRAY_LEN * 2>("uint64_t_a_", _b3)), exception::OutOfBoundsException);
 }
 
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyRange_float) {
@@ -872,11 +742,9 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyReadOnly) {
     EXPECT_NO_THROW(FLAMEGPU->environment.getProperty<float>("read_only"));
     // array version
     std::array<int, TEST_ARRAY_LEN> b;
-    auto setArray = &HostEnvironment::setProperty<int, TEST_ARRAY_LEN>;
-    auto getArray = &HostEnvironment::getProperty<int, TEST_ARRAY_LEN>;
     EXPECT_THROW(FLAMEGPU->environment.setProperty<int>("read_only_a", 0, 0), exception::ReadOnlyEnvProperty);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray)("read_only_a", b), exception::ReadOnlyEnvProperty);
-    EXPECT_NO_THROW((FLAMEGPU->environment.*getArray)("read_only_a"));
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<int, TEST_ARRAY_LEN>("read_only_a", b)), exception::ReadOnlyEnvProperty);
+    EXPECT_NO_THROW((FLAMEGPU->environment.getProperty<int, TEST_ARRAY_LEN>("read_only_a")));
     EXPECT_NO_THROW(FLAMEGPU->environment.getProperty<int>("read_only_a", 1));
 }
 
@@ -1305,18 +1173,10 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_vec3) {
     std::array<glm::vec3, 1> _b1 = {};
     std::array<glm::vec3, TEST_ARRAY_LEN + 1> _b2;
     std::array<glm::vec3, TEST_ARRAY_LEN * 2> _b3;
-    /**
-     * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
-     * They don't build on Travis with implied template args
-     */
-    auto setArray1 = &HostEnvironment::setProperty<glm::vec3, TEST_ARRAY_LEN>;
-    auto setArray2 = &HostEnvironment::setProperty<glm::vec3, 1>;
-    auto setArray3 = &HostEnvironment::setProperty<glm::vec3, TEST_ARRAY_LEN + 1>;
-    auto setArray4 = &HostEnvironment::setProperty<glm::vec3, TEST_ARRAY_LEN * 2>;
-    EXPECT_NO_THROW((FLAMEGPU->environment.*setArray1)("vec3_a_", b));
-    EXPECT_THROW((FLAMEGPU->environment.*setArray2)("vec3_a_", _b1), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray3)("vec3_a_", _b2), exception::OutOfBoundsException);
-    EXPECT_THROW((FLAMEGPU->environment.*setArray4)("vec3_a_", _b3), exception::OutOfBoundsException);
+    EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<glm::vec3, TEST_ARRAY_LEN>("vec3_a_", b)));
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<glm::vec3, 1>("vec3_a_", _b1)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<glm::vec3, TEST_ARRAY_LEN + 1>("vec3_a_", _b2)), exception::OutOfBoundsException);
+    EXPECT_THROW((FLAMEGPU->environment.setProperty<glm::vec3, TEST_ARRAY_LEN * 2>("vec3_a_", _b3)), exception::OutOfBoundsException);
 }
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyRange_vec3) {
     glm::vec3 c = static_cast<glm::vec3>(TEST_VALUE);
