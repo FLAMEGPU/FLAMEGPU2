@@ -5,18 +5,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-// If MSVC earlier than VS 2019
-#if defined(_MSC_VER) && _MSC_VER < 1920
 #include <filesystem>
-using std::tr2::sys::exists;
-using std::tr2::sys::path;
-#else
-// VS2019 requires this macro, as building pre c++17 cant use std::filesystem
-#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
-#include <experimental/filesystem>
-using std::experimental::filesystem::v1::exists;
-using std::experimental::filesystem::v1::path;
-#endif
+
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #pragma warning(disable : 4706 4834)

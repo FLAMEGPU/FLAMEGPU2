@@ -25,7 +25,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Configuration(please complete the following information):**
  - OS: [e.g. Ubuntu 16.04, Windows 10]
- - CUDA version: [e.g. 10.1]
+ - CUDA version: [e.g. 11.0]
  - GPU [e.g. Titan X (Pascal)]
  - GPU Driver Version [e.g. 445.75]
 

@@ -1,22 +1,9 @@
 #include "flamegpu/sim/SimLogger.h"
 
+#include <filesystem>
+
 #include "flamegpu/io/LoggerFactory.h"
 #include "flamegpu/sim/RunPlanVector.h"
-
-// If earlier than VS 2019
-#if defined(_MSC_VER) && _MSC_VER < 1920
-#include <filesystem>
-using std::tr2::sys::exists;
-using std::tr2::sys::path;
-using std::tr2::sys::create_directory;
-#else
-// VS2019 requires this macro, as building pre c++17 cant use std::filesystem
-#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
-#include <experimental/filesystem>
-using std::experimental::filesystem::v1::exists;
-using std::experimental::filesystem::v1::path;
-using std::experimental::filesystem::v1::create_directory;
-#endif
 
 #ifdef _MSC_VER
 #include <windows.h>
@@ -69,7 +56,7 @@ SimLogger::SimLogger(const std::vector<RunLog> &_run_logs,
 #endif
 }
 void SimLogger::start() {
-    const path p_out_directory = out_directory;
+    const std::filesystem::path p_out_directory = out_directory;
     unsigned int logs_processed = 0;
     while (logs_processed < run_plans.size()) {
         std::unique_lock<std::mutex> lock(log_export_queue_mutex);
@@ -87,12 +74,12 @@ void SimLogger::start() {
             }
             // Log items
             if (export_exit) {
-                const path exit_path = p_out_directory / path(run_plans[target_log].getOutputSubdirectory()) / path("exit." + out_format);
+                const std::filesystem::path exit_path = p_out_directory / std::filesystem::path(run_plans[target_log].getOutputSubdirectory()) / std::filesystem::path("exit." + out_format);
                 const auto exit_logger = io::LoggerFactory::createLogger(exit_path.generic_string(), false, false);
                 exit_logger->log(run_logs[target_log], run_plans[target_log], false, true, false, export_exit_time);
             }
             if (export_step) {
-                const path step_path = p_out_directory/path(run_plans[target_log].getOutputSubdirectory())/path(std::to_string(target_log)+"."+out_format);
+                const std::filesystem::path step_path = p_out_directory/std::filesystem::path(run_plans[target_log].getOutputSubdirectory())/std::filesystem::path(std::to_string(target_log)+"."+out_format);
                 const auto step_logger = io::LoggerFactory::createLogger(step_path.generic_string(), false, false);
                 step_logger->log(run_logs[target_log], run_plans[target_log], true, false, export_step_time, false);
             }

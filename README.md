@@ -62,12 +62,10 @@ Building FLAME GPU has the following requirements. There are also optional depen
 
 + [CMake](https://cmake.org/download/) `>= 3.18`
 + [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 11.0` and a [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 3.5` NVIDIA GPU.
-  + CUDA `>= 10.0` currently works, but support will be dropped in a future release.
 + C++17 capable C++ compiler (host), compatible with the installed CUDA version
   + [Microsoft Visual Studio 2019](https://visualstudio.microsoft.com/) (Windows)
     + *Note:* Visual Studio must be installed before the CUDA toolkit is installed. See the [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) for more information.
-  + [make](https://www.gnu.org/software/make/) and [GCC](https://gcc.gnu.org/) `>= 7` (Linux)
-  + Older C++ compilers which support C++14 may currently work, but support will be dropped in a future release.
+  + [make](https://www.gnu.org/software/make/) and [GCC](https://gcc.gnu.org/) `>= 8.1` (Linux)
 + [git](https://git-scm.com/)
 
 Optionally:
