@@ -40,13 +40,14 @@ class ReadOnlyDeviceEnvironment {
      * @param name name used for accessing the property, this value should be a string literal e.g. "foobar"
      * @param index Index of the element within the environment property array to return
      * @tparam T Type of the environment property being accessed
-     * @tparam N Length of the environment property array
+     * @tparam N (Optional) Length of the environment property array, available for parity with other APIs, checked if provided
      * @tparam M Length of property name, this should always be implicit if passing a string literal
      * @throws exception::DeviceError If name is not a valid property within the environment (flamegpu must be built with SEATBELTS enabled for device error checking)
      * @throws exception::DeviceError If T is not the type of the environment property specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
      * @throws exception::DeviceError If index is out of bounds for the environment property array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If N does not match the length of the environment property array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
-    template<typename T, unsigned int N, unsigned int M>
+    template<typename T, unsigned int N = 0, unsigned int M>
     __device__ __forceinline__ T getProperty(const char(&name)[M], const unsigned int&index) const;
     /**
      * Returns a read-only accessor to the named macro property

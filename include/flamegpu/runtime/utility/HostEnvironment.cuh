@@ -74,13 +74,17 @@ class HostEnvironment {
      * @param name name used for accessing the property
      * @param index Index of the element within the environment property array to return
      * @tparam T Type of the elements of the environment property array
+     * @tparam N (Optional) The length of the array variable, available for parity with other APIs, checked if provided
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws std::out_of_range
      * @see get(const std::string &)
      */
-    template<typename T>
+#ifndef SWIG
+    template<typename T, EnvironmentManager::size_type N = 0>
     T getProperty(const std::string &name, const EnvironmentManager::size_type &index) const;
-#ifdef SWIG
+#else
+    template<typename T>
+    T getProperty(const std::string& name, const EnvironmentManager::size_type& index) const;
     /**
      * Gets an environment property array
      * @param name name used for accessing the property
@@ -119,14 +123,18 @@ class HostEnvironment {
      * @param index element within the environment property array to set
      * @param value to set the element of the property array
      * @tparam T Type of the environmental property array
+     * @tparam N (Optional) The length of the array variable, available for parity with other APIs, checked if provided
      * @return Returns the previous value
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws std::out_of_range
      * @see get(const std::string &)
      */
-    template<typename T>
+#ifndef SWIG
+    template<typename T, EnvironmentManager::size_type N = 0>
     T setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value) const;
-#ifdef SWIG
+#else
+    template<typename T>
+    T setProperty(const std::string& name, const EnvironmentManager::size_type& index, const T& value) const;
     /**
      * Sets an environment property array
      * @param name name used for accessing the property array
@@ -174,13 +182,19 @@ std::array<T, N> HostEnvironment::setProperty(const std::string &name, const std
     }
     return env_mgr->setProperty<T, N>(name, value);
 }
+#ifdef SWIG
 template<typename T>
+T HostEnvironment::setProperty(const std::string& name, const EnvironmentManager::size_type& index, const T& value) const {
+    const EnvironmentManager::size_type N = 0;
+#else
+template<typename T, EnvironmentManager::size_type N>
 T HostEnvironment::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value) const {
+#endif
     if (!name.empty() && name[0] == '_') {
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in HostEnvironment::set().");
     }
-    return env_mgr->setProperty<T>(name, index, value);
+    return env_mgr->setProperty<T, N>(name, index, value);
 }
 #ifdef SWIG
 template<typename T>
@@ -204,9 +218,15 @@ template<typename T, EnvironmentManager::size_type N>
 std::array<T, N> HostEnvironment::getProperty(const std::string &name) const  {
     return env_mgr->getProperty<T, N>(name);
 }
+#ifdef SWIG
 template<typename T>
+T HostEnvironment::getProperty(const std::string& name, const EnvironmentManager::size_type& index) const {
+    const EnvironmentManager::size_type N = 0;
+#else
+template<typename T, EnvironmentManager::size_type N>
 T HostEnvironment::getProperty(const std::string &name, const EnvironmentManager::size_type &index) const  {
-    return env_mgr->getProperty<T>(name, index);
+#endif
+    return env_mgr->getProperty<T, N>(name, index);
 }
 #ifdef SWIG
 template<typename T>
