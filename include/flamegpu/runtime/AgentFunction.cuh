@@ -8,6 +8,9 @@
 #include "flamegpu/defines.h"
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 #include "flamegpu/runtime/AgentFunction_shim.cuh"
+#ifndef __CUDACC_RTC__
+#include "flamegpu/runtime/detail/curve/DeviceCurve.cuh"
+#endif
 
 namespace flamegpu {
 
@@ -55,7 +58,7 @@ __global__ void agent_function_wrapper(
     exception::DeviceExceptionBuffer *error_buffer,
 #endif
 #ifndef __CUDACC_RTC__
-    const detail::curve::CurveTable* d_curve_table,
+    const detail::curve::CurveTable* __restrict__ d_curve_table,
     const char* d_env_buffer,
 #endif
     id_t *d_agent_output_nextID,
@@ -67,16 +70,18 @@ __global__ void agent_function_wrapper(
     unsigned int *scanFlag_messageOutput,
     unsigned int *scanFlag_agentOutput) {
     // We place these at the start of shared memory, so we can locate it anywhere in device code without a reference
+    using detail::sm;
     if (threadIdx.x == 0) {
-        using detail::sm;
-#ifndef __CUDACC_RTC__
-        sm()->curve = d_curve_table;
-        sm()->env_buffer = d_env_buffer;
-#endif
 #if !defined(SEATBELTS) || SEATBELTS
         sm()->device_exception = error_buffer;
 #endif
+#ifndef __CUDACC_RTC__
+        sm()->env_buffer = d_env_buffer;
+#endif
     }
+#ifndef __CUDACC_RTC__
+    detail::curve::DeviceCurve::init(d_curve_table);
+#endif
 
     #if defined(__CUDACC__)  // @todo - This should not be required. This template should only ever be processed by a CUDA compiler.
     // Sync the block after Thread 0 has written to shared.
