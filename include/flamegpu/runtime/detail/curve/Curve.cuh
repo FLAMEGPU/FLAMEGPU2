@@ -27,7 +27,7 @@ class Curve {
     typedef int                      Variable;           // !< Typedef for cuRVE variable handle
     typedef unsigned int             VariableHash;       // !< Typedef for cuRVE variable name string hash
     typedef unsigned int             NamespaceHash;      // !< Typedef for cuRVE variable namespace string hash
-    static const int MAX_VARIABLES = 1024;               // !< Default maximum number of cuRVE variables (must be a power of 2)
+    static const int MAX_VARIABLES = 512;                // !< Default maximum number of cuRVE variables (must be a power of 2)
     static const VariableHash EMPTY_FLAG = 0;
     /**
      * Main cuRVE variable hashing function
