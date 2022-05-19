@@ -46,16 +46,26 @@ __global__ void agent_function_condition_wrapper(
     curandState *d_rng,
     unsigned int *scanFlag_conditionResult) {
     // We place these at the start of shared memory, so we can locate it anywhere in device code without a reference
+    using detail::sm;
     if (threadIdx.x == 0) {
-        using detail::sm;
-#ifndef __CUDACC_RTC__
-        sm()->curve = d_curve_table;
-        sm()->env_buffer = d_env_buffer;
-#endif
 #if !defined(SEATBELTS) || SEATBELTS
         sm()->device_exception = error_buffer;
 #endif
+#ifndef __CUDACC_RTC__
+        sm()->env_buffer = d_env_buffer;
+#endif
     }
+#ifndef __CUDACC_RTC__
+    for (int idx = threadIdx.x; idx < detail::curve::Curve::MAX_VARIABLES; idx += blockDim.x) {
+        sm()->curve_variables[idx] = d_curve_table->variables[idx];
+        sm()->curve_hashes[idx] = d_curve_table->hashes[idx];
+#if !defined(SEATBELTS) || SEATBELTS
+        sm()->curve_type_size[idx] = d_curve_table->type_size[idx];
+        sm()->curve_elements[idx] = d_curve_table->elements[idx];
+        sm()->curve_count[idx] = d_curve_table->count[idx];
+#endif
+    }
+#endif
 
 #if defined(__CUDACC__)  // @todo - This should not be required. This template should only ever be processed by a CUDA compiler.
     // Sync the block after Thread 0 has written to shared.

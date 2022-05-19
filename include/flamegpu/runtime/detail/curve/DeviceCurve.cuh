@@ -239,7 +239,7 @@ __device__ __forceinline__ DeviceCurve::Variable DeviceCurve::getVariableIndex(c
     // (This may inflate register usage based on the max number of iterations in some cases)
     for (unsigned int x = 0; x< MAX_VARIABLES; x++) {
         const Variable i = (variable_hash + x) & (MAX_VARIABLES - 1);
-        if (sm()->curve->hashes[i] == variable_hash)
+        if (sm()->curve_hashes[i] == variable_hash)
             return i;
     }
     return UNKNOWN_VARIABLE;
@@ -252,19 +252,19 @@ __device__ __forceinline__ char* DeviceCurve::getVariablePtr(const char(&variabl
     if (cv == UNKNOWN_VARIABLE) {
         DTHROW("Curve variable with name '%s' was not found.\n", variableName);
         return nullptr;
-    } else if (sm()->curve->type_size[cv] != sizeof(typename type_decode<T>::type_t)) {
-        DTHROW("Curve variable with name '%s', type size mismatch %u != %llu.\n", variableName, sm()->curve->type_size[cv], sizeof(typename type_decode<T>::type_t));
+    } else if (sm()->curve_type_size[cv] != sizeof(typename type_decode<T>::type_t)) {
+        DTHROW("Curve variable with name '%s', type size mismatch %u != %llu.\n", variableName, sm()->curve_type_size[cv], sizeof(typename type_decode<T>::type_t));
         return nullptr;
-    } else if (!(sm()->curve->elements[cv] == type_decode<T>::len_t * N || (namespace_hash == Curve::variableHash("_environment") && N == 0))) {  // Special case, environment can avoid specifying N
-        DTHROW("Curve variable with name '%s', variable array length mismatch %u != %u.\n", variableName, sm()->curve->elements[cv], type_decode<T>::len_t);
+    } else if (!(sm()->curve_elements[cv] == type_decode<T>::len_t * N || (namespace_hash == Curve::variableHash("_environment") && N == 0))) {  // Special case, environment can avoid specifying N
+        DTHROW("Curve variable with name '%s', variable array length mismatch %u != %u.\n", variableName, sm()->curve_elements[cv], type_decode<T>::len_t);
         return nullptr;
-    } else if (offset >= sm()->curve->type_size[cv] * sm()->curve->elements[cv] * sm()->curve->count[cv]) {  // Note : offset is basically index * sizeof(T)
-        DTHROW("Curve variable with name '%s', offset exceeds buffer length  %u >= %u.\n", offset, sm()->curve->type_size[cv] * sm()->curve->elements[cv] * sm()->curve->count[cv]);
+    } else if (offset >= sm()->curve_type_size[cv] * sm()->curve_elements[cv] * sm()->curve_count[cv]) {  // Note : offset is basically index * sizeof(T)
+        DTHROW("Curve variable with name '%s', offset exceeds buffer length  %u >= %u.\n", offset, sm()->curve_type_size[cv] * sm()->curve_elements[cv] * sm()->curve_count[cv]);
         return nullptr;
     }
 #endif
     // return a generic pointer to variable address for given offset
-    return sm()->curve->variables[cv] + offset;
+    return sm()->curve_variables[cv] + offset;
 }
 ////
 //// Middle Layer CURVE API
