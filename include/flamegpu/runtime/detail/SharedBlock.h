@@ -1,21 +1,26 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_DETAIL_SHAREDBLOCK_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_DETAIL_SHAREDBLOCK_H_
 
+#include "flamegpu/runtime/detail/curve/Curve.cuh"
+
 namespace flamegpu {
 namespace exception {
 struct DeviceExceptionBuffer;
 }  // namespace exception
 namespace detail {
-namespace curve {
-struct CurveTable;
-}  // namespace curve
 /**
  * This struct represents the data we package into shared memory
  * The ifndef __CUDACC_RTC__ will cause the size to be too large for RTC builds, but that's not (currently) an issue
  */
 struct SharedBlock {
 #ifndef __CUDACC_RTC__
-    const curve::CurveTable* curve;
+    curve::Curve::VariableHash curve_hashes[curve::Curve::MAX_VARIABLES];
+    char* curve_variables[curve::Curve::MAX_VARIABLES];
+#if !defined(SEATBELTS) || SEATBELTS
+    unsigned int curve_type_size[curve::Curve::MAX_VARIABLES];
+    unsigned int curve_elements[curve::Curve::MAX_VARIABLES];
+    unsigned int curve_count[curve::Curve::MAX_VARIABLES];
+#endif
     const char* env_buffer;
 #endif
 #if !defined(SEATBELTS) || SEATBELTS
