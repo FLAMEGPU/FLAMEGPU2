@@ -55,7 +55,7 @@ __global__ void agent_function_wrapper(
     exception::DeviceExceptionBuffer *error_buffer,
 #endif
 #ifndef __CUDACC_RTC__
-    const detail::curve::CurveTable* d_curve_table,
+    const detail::curve::CurveTable* __restrict__ d_curve_table,
     const char* d_env_buffer,
 #endif
     id_t *d_agent_output_nextID,
