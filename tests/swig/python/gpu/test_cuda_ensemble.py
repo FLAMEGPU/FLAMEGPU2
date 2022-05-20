@@ -5,8 +5,10 @@ from random import randint
 import time
 
 
-# Global var needed in several classes
+# Global vars needed in several classes
 sleepDurationMilliseconds = 500
+tracked_err_ct = 0;
+tracked_runs_ct = 0;
 
 class simulateInit(pyflamegpu.HostFunctionCallback):
     # Init should always be 0th iteration/step
@@ -18,7 +20,7 @@ class simulateInit(pyflamegpu.HostFunctionCallback):
         POPULATION_TO_GENERATE = FLAMEGPU.environment.getPropertyUInt("POPULATION_TO_GENERATE")
         agent = FLAMEGPU.agent("Agent")
         for i in range(POPULATION_TO_GENERATE):
-            agent.newAgent().setVariableUint("counter", 0)
+            agent.newAgent().setVariableUInt("counter", 0)
 class simulateExit(pyflamegpu.HostFunctionCallback):
     def __init__(self):
         super().__init__()
@@ -33,12 +35,11 @@ class elapsedInit(pyflamegpu.HostFunctionCallback):
         super().__init__()
 
     def run(self, FLAMEGPU):
-        pass
         # Generate a basic pop
         POPULATION_TO_GENERATE = FLAMEGPU.environment.getPropertyUInt("POPULATION_TO_GENERATE")
         agent = FLAMEGPU.agent("Agent")
         for i in range(POPULATION_TO_GENERATE):
-            agent.newAgent().setVariableUint("counter", 0)
+            agent.newAgent().setVariableUInt("counter", 0)
 class elapsedStep(pyflamegpu.HostFunctionCallback):
     def __init__(self):
         super().__init__()
@@ -47,6 +48,19 @@ class elapsedStep(pyflamegpu.HostFunctionCallback):
         # Sleep each thread for a duration of time.
         seconds = sleepDurationMilliseconds / 1000.0
         time.sleep(seconds)
+class throwException(pyflamegpu.HostFunctionCallback):
+    i = 0;
+    def __init__(self):
+        super().__init__()
+        self.i = 0;
+    def run(self, FLAMEGPU):
+        global tracked_runs_ct
+        global tracked_err_ct
+        tracked_runs_ct += 1;
+        self.i+=1;
+        if (self.i % 2 == 0):
+            tracked_err_ct += 1;
+            FLAMEGPU.agent("does not exist");  # Just cause a failure
 
 class TestCUDAEnsemble(TestCase):
 
@@ -173,6 +187,32 @@ class TestCUDAEnsemble(TestCase):
         argv = ["ensemble.exe", "--timing"]
         ensemble.initialise(argv)
         assert ensemble.Config().timing == True
+        
+    def test_initialise_error_level(self):
+        # Create a model
+        model = pyflamegpu.ModelDescription("test")
+        # Create an ensemble
+        ensemble = pyflamegpu.CUDAEnsemble(model)
+        # Call initialise with differnt cli arguments, which will mutate values. Check they have the new value.
+        assert ensemble.Config().error_level == pyflamegpu.CUDAEnsembleConfig.Slow
+        argv = ["ensemble.exe", "-e", "0"]
+        ensemble.initialise(argv)
+        assert ensemble.Config().error_level == pyflamegpu.CUDAEnsembleConfig.Off
+        argv = ["ensemble.exe", "--error", "1"]
+        ensemble.initialise(argv)
+        assert ensemble.Config().error_level == pyflamegpu.CUDAEnsembleConfig.Slow
+        argv = ["ensemble.exe", "-e", "2"]
+        ensemble.initialise(argv)
+        assert ensemble.Config().error_level == pyflamegpu.CUDAEnsembleConfig.Fast
+        argv = ["ensemble.exe", "--error", "Off"]
+        ensemble.initialise(argv)
+        assert ensemble.Config().error_level == pyflamegpu.CUDAEnsembleConfig.Off
+        argv = ["ensemble.exe", "-e", "SLOW"]
+        ensemble.initialise(argv)
+        assert ensemble.Config().error_level == pyflamegpu.CUDAEnsembleConfig.Slow
+        argv = ["ensemble.exe", "--error", "fast"]
+        ensemble.initialise(argv)
+        assert ensemble.Config().error_level == pyflamegpu.CUDAEnsembleConfig.Fast
 
     # Agent function used to check the ensemble runs.
     simulateAgentFn = """
@@ -365,3 +405,115 @@ class TestCUDAEnsemble(TestCase):
         # Ensure the elapsedMillis is larger than a threshold.
         # Sleep accuracy via callback seems very poor.
         assert elapsedSeconds > 0.0
+        
+    def test_ErrorOff(self):
+        global tracked_runs_ct
+        global tracked_err_ct
+        tracked_runs_ct = 0
+        tracked_err_ct = 0
+        # Create a model containing at least one agent type and function.
+        model = pyflamegpu.ModelDescription("test")
+        # Environmental constant for initial population
+        model.Environment().newPropertyUInt("POPULATION_TO_GENERATE", 1, True)
+        # Agent(s)
+        agent = model.newAgent("Agent")
+        agent.newVariableUInt("counter", 0)
+        init = elapsedInit()
+        model.addInitFunctionCallback(init)
+        step = throwException()
+        model.addStepFunctionCallback(step)
+        # Create a set of 10 Run plans
+        ENSEMBLE_COUNT = 10
+        plans = pyflamegpu.RunPlanVector(model, ENSEMBLE_COUNT)
+        plans.setSteps(1)
+        # Create an ensemble
+        ensemble = pyflamegpu.CUDAEnsemble(model)
+        # Make it quiet to avoid outputting during the test suite
+        ensemble.Config().quiet = True
+        ensemble.Config().out_format = ""  # Suppress warning
+        ensemble.Config().error_level = pyflamegpu.CUDAEnsembleConfig.Off
+        ensemble.Config().concurrent_runs = 1  # Single device/no concurrency to ensure we get consistent data
+        ensemble.Config().devices = pyflamegpu.IntSet([0])
+        reported_err_ct = 0;
+        # Simulate the ensemble,
+        reported_err_ct = ensemble.simulate(plans)
+        # Check correct number of fails is reported
+        assert reported_err_ct == ENSEMBLE_COUNT / 2
+        assert tracked_err_ct == ENSEMBLE_COUNT / 2
+        assert tracked_runs_ct == ENSEMBLE_COUNT
+        
+    def test_ErrorSlow(self):
+        global tracked_runs_ct
+        global tracked_err_ct
+        tracked_runs_ct = 0
+        tracked_err_ct = 0
+        # Create a model containing at least one agent type and function.
+        model = pyflamegpu.ModelDescription("test")
+        # Environmental constant for initial population
+        model.Environment().newPropertyUInt("POPULATION_TO_GENERATE", 1, True)
+        # Agent(s)
+        agent = model.newAgent("Agent")
+        agent.newVariableUInt("counter", 0)
+        init = elapsedInit()
+        model.addInitFunctionCallback(init)
+        step = throwException()
+        model.addStepFunctionCallback(step)
+        # Create a set of 10 Run plans
+        ENSEMBLE_COUNT = 10
+        plans = pyflamegpu.RunPlanVector(model, ENSEMBLE_COUNT)
+        plans.setSteps(1)
+        # Create an ensemble
+        ensemble = pyflamegpu.CUDAEnsemble(model)
+        # Make it quiet to avoid outputting during the test suite
+        ensemble.Config().quiet = True
+        ensemble.Config().out_format = ""  # Suppress warning
+        ensemble.Config().error_level = pyflamegpu.CUDAEnsembleConfig.Slow
+        ensemble.Config().concurrent_runs = 1  # Single device/no concurrency to ensure we get consistent data
+        ensemble.Config().devices = pyflamegpu.IntSet([0])
+        reported_err_ct = 0;
+        # Simulate the ensemble,
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
+            ensemble.simulate(plans)
+        assert e.value.type() == "EnsembleError"
+        # Check correct number of fails is reported
+        assert tracked_err_ct == ENSEMBLE_COUNT / 2
+        assert tracked_runs_ct == ENSEMBLE_COUNT
+        
+    def test_ErrorSlow(self):
+        global tracked_runs_ct
+        global tracked_err_ct
+        tracked_runs_ct = 0
+        tracked_err_ct = 0
+        # Create a model containing at least one agent type and function.
+        model = pyflamegpu.ModelDescription("test")
+        # Environmental constant for initial population
+        model.Environment().newPropertyUInt("POPULATION_TO_GENERATE", 1, True)
+        # Agent(s)
+        agent = model.newAgent("Agent")
+        agent.newVariableUInt("counter", 0)
+        init = elapsedInit()
+        model.addInitFunctionCallback(init)
+        step = throwException()
+        model.addStepFunctionCallback(step)
+        # Create a set of 10 Run plans
+        ENSEMBLE_COUNT = 10
+        plans = pyflamegpu.RunPlanVector(model, ENSEMBLE_COUNT)
+        plans.setSteps(1)
+        # Create an ensemble
+        ensemble = pyflamegpu.CUDAEnsemble(model)
+        # Make it quiet to avoid outputting during the test suite
+        ensemble.Config().quiet = True
+        ensemble.Config().out_format = ""  # Suppress warning
+        ensemble.Config().error_level = pyflamegpu.CUDAEnsembleConfig.Fast
+        ensemble.Config().concurrent_runs = 1  # Single device/no concurrency to ensure we get consistent data
+        ensemble.Config().devices = pyflamegpu.IntSet([0])
+        reported_err_ct = 0;
+        # Simulate the ensemble,
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
+            ensemble.simulate(plans)
+        assert e.value.type() == "EnsembleError"
+        # Check correct number of fails is reported
+        assert tracked_err_ct == 1
+        # The first run does not throw
+        assert tracked_runs_ct == 2
+    
