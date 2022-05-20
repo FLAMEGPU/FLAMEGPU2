@@ -17,11 +17,11 @@ class SubEnvironmentDescriptionTest(TestCase):
         exitcdn = ExitAlways()
         m2.addExitConditionCallback(exitcdn);
         m2.Environment().newPropertyFloat("a", 0);
-        m2.Environment().newPropertyArrayFloat("a2", 2, [0] * 2);
+        m2.Environment().newPropertyArrayFloat("a2", [0] * 2);
         m = pyflamegpu.ModelDescription("host");
         # Define Model
         m.Environment().newPropertyFloat("b", 0);
-        m.Environment().newPropertyArrayFloat("b2", 2, [0] * 2);
+        m.Environment().newPropertyArrayFloat("b2", [0] * 2);
         sm = m.newSubModel("sub", m2);
         senv = sm.SubEnvironment();
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
@@ -41,11 +41,11 @@ class SubEnvironmentDescriptionTest(TestCase):
         exitcdn = ExitAlways()
         m2.addExitConditionCallback(exitcdn);
         m2.Environment().newPropertyFloat("a", 0);
-        m2.Environment().newPropertyArrayInt("a2", 2, [0] * 2);
+        m2.Environment().newPropertyArrayInt("a2", [0] * 2);
         m = pyflamegpu.ModelDescription("host");
         # Define Model
         m.Environment().newPropertyUInt("b", 0);
-        m.Environment().newPropertyArrayFloat("b2", 2, [0] * 2);
+        m.Environment().newPropertyArrayFloat("b2", [0] * 2);
         sm = m.newSubModel("sub", m2);
         senv = sm.SubEnvironment();
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
@@ -59,11 +59,11 @@ class SubEnvironmentDescriptionTest(TestCase):
         exitcdn = ExitAlways()
         m2.addExitConditionCallback(exitcdn);
         m2.Environment().newPropertyFloat("a", 0);
-        m2.Environment().newPropertyArrayFloat("a2", 2, [0] * 2);
+        m2.Environment().newPropertyArrayFloat("a2", [0] * 2);
         m = pyflamegpu.ModelDescription("host");
         # Define Model
         m.Environment().newPropertyFloat("b", 0);
-        m.Environment().newPropertyArrayFloat("b2", 2, [0] * 2);
+        m.Environment().newPropertyArrayFloat("b2", [0] * 2);
         sm = m.newSubModel("sub", m2);
         senv = sm.SubEnvironment();
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
@@ -79,11 +79,11 @@ class SubEnvironmentDescriptionTest(TestCase):
         exitcdn = ExitAlways()
         m2.addExitConditionCallback(exitcdn);
         m2.Environment().newPropertyFloat("a", 0);
-        m2.Environment().newPropertyArrayFloat("a2", 2, [0] * 2);
+        m2.Environment().newPropertyArrayFloat("a2", [0] * 2);
         m = pyflamegpu.ModelDescription("host");
         # Define Model
         m.Environment().newPropertyFloat("b", 0, True);
-        m.Environment().newPropertyArrayFloat("b2", 2, [0] * 2, True);
+        m.Environment().newPropertyArrayFloat("b2", [0] * 2, True);
         sm = m.newSubModel("sub", m2);
         senv = sm.SubEnvironment();
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
@@ -97,15 +97,15 @@ class SubEnvironmentDescriptionTest(TestCase):
         exitcdn = ExitAlways()
         m2.addExitConditionCallback(exitcdn);
         m2.Environment().newPropertyFloat("a", 0);
-        m2.Environment().newPropertyArrayFloat("a2", 2, [0.0] * 2);
+        m2.Environment().newPropertyArrayFloat("a2", [0.0] * 2);
         m2.Environment().newPropertyFloat("a_", 0);
-        m2.Environment().newPropertyArrayFloat("a2_", 2, [0] * 2);
+        m2.Environment().newPropertyArrayFloat("a2_", [0] * 2);
         m = pyflamegpu.ModelDescription("host");
         # Define Model
         m.Environment().newPropertyFloat("b", 0);
-        m.Environment().newPropertyArrayFloat("b2", 2, [0] * 2);
+        m.Environment().newPropertyArrayFloat("b2", [0] * 2);
         m.Environment().newPropertyFloat("b_", 0);
-        m.Environment().newPropertyArrayFloat("b2_", 2, [0] * 2);
+        m.Environment().newPropertyArrayFloat("b2_", [0] * 2);
         # Missing exit condition
         sm = m.newSubModel("sub", m2);
         senv = sm.SubEnvironment();

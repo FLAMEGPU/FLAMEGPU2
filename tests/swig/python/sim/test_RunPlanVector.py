@@ -104,8 +104,8 @@ class TestRunPlanVector(TestCase):
         d3Original = (0., 1., 2.)
         environment.newPropertyFloat("f", fOriginal)
         environment.newPropertyInt("i", iOriginal)
-        environment.newPropertyArrayUInt("u3", 3, u3Original)
-        environment.newPropertyArrayDouble("d3", 3, d3Original)
+        environment.newPropertyArrayUInt("u3", u3Original)
+        environment.newPropertyArrayDouble("d3", d3Original)
         # Create a vector of plans
         totalPlans = 2
         plans = pyflamegpu.RunPlanVector(model, totalPlans)
@@ -120,7 +120,7 @@ class TestRunPlanVector(TestCase):
         # Check setting full arrays
         # void RunPlanVector::setProperty(const std::string &name, const std::array<T, N> &value) 
         # Explicit type is required, to coerce the std::array. Might need partial template specialisation for  where the value is a stdarray of T?
-        plans.setPropertyArrayUInt("u3", 3, u3New)
+        plans.setPropertyArrayUInt("u3", u3New)
         # Check setting individual array elements
         # void RunPlanVector::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value) 
         plans.setPropertyDouble("d3", 0, d3New[0])
@@ -150,17 +150,17 @@ class TestRunPlanVector(TestCase):
         # void RunPlanVector::setProperty(const std::string &name, const std::array<T, N> &value)
         # Extra brackets within the macro mean commas can be used due to how preproc tokenizers work
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            plans.setPropertyArrayFloat("does_not_exist", 3, (2., 2., 2.))
+            plans.setPropertyArrayFloat("does_not_exist", (2., 2., 2.))
         assert e.value.type() == "InvalidEnvProperty"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            plans.setPropertyArrayFloat("u3", 3, (2., 2., 2.))
+            plans.setPropertyArrayFloat("u3", (2., 2., 2.))
         assert e.value.type() == "InvalidEnvPropertyType"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            plans.setPropertyArrayDouble("d3", 2, (-2, 0))
-        assert e.value.type() == "InvalidEnvPropertyType"
+            plans.setPropertyArrayDouble("d3", (-2, 0))
+        assert e.value.type() == "InvalidEnvProperty"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            plans.setPropertyArrayDouble("d3", 4, (-2, 0, 2, 2))
-        assert e.value.type() == "InvalidEnvPropertyType"
+            plans.setPropertyArrayDouble("d3", (-2, 0, 2, 2))
+        assert e.value.type() == "InvalidEnvProperty"
         # void RunPlanVector::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             plans.setPropertyFloat("does_not_exist", 0, 3)
@@ -188,7 +188,7 @@ class TestRunPlanVector(TestCase):
         u3Original = (0, 0, 0)
         environment.newPropertyFloat("f", fOriginal)
         environment.newPropertyInt("i", iOriginal)
-        environment.newPropertyArrayUInt("u3", 3, u3Original)
+        environment.newPropertyArrayUInt("u3", u3Original)
         # Create a vector of plans
         totalPlans = 10
         plans = pyflamegpu.RunPlanVector(model, totalPlans)
@@ -272,7 +272,7 @@ class TestRunPlanVector(TestCase):
         u3Original = (0, 1, 2)
         environment.newPropertyFloat("f", fOriginal)
         environment.newPropertyInt("i", iOriginal)
-        environment.newPropertyArrayUInt("u3", 3, u3Original)
+        environment.newPropertyArrayUInt("u3", u3Original)
         # Create a vector of plans
         totalPlans = 4
         plans = pyflamegpu.RunPlanVector(model, totalPlans)
@@ -323,7 +323,7 @@ class TestRunPlanVector(TestCase):
         fOriginal = 1.0
         d3Original = (0., 1., 2.)
         environment.newPropertyFloat("f", fOriginal)
-        environment.newPropertyArrayDouble("d3", 3, d3Original)
+        environment.newPropertyArrayDouble("d3", d3Original)
         # Create a vector of plans
         totalPlans = 4
         plans = pyflamegpu.RunPlanVector(model, totalPlans)
@@ -373,7 +373,7 @@ class TestRunPlanVector(TestCase):
         fOriginal = 1.0
         d3Original = (0., 1., 2.)
         environment.newPropertyFloat("f", fOriginal)
-        environment.newPropertyArrayDouble("d3", 3, d3Original)
+        environment.newPropertyArrayDouble("d3", d3Original)
         # Create a vector of plans
         totalPlans = 4
         plans = pyflamegpu.RunPlanVector(model, totalPlans)

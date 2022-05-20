@@ -76,9 +76,9 @@ class TestRunPlan(TestCase):
         environment.newPropertyFloat("f", 1.0)
         environment.newPropertyInt("i", -1)
         environment.newPropertyUInt("u", 1)
-        environment.newPropertyArrayFloat("f_a", 3, (-1.0, 0.0, 1.0))
-        environment.newPropertyArrayInt("i_a", 3, (-1, 0, 1))
-        environment.newPropertyArrayUInt("u_a", 3, (0, 1, 2))
+        environment.newPropertyArrayFloat("f_a", (-1.0, 0.0, 1.0))
+        environment.newPropertyArrayInt("i_a", (-1, 0, 1))
+        environment.newPropertyArrayUInt("u_a", (0, 1, 2))
         # Create an individual run plan.
         plan = pyflamegpu.RunPlan(model)
         # Set properties to new values
@@ -89,8 +89,8 @@ class TestRunPlan(TestCase):
         plan.setPropertyUInt("u", 2)
         # Set arrays at once
         # RunPlan::setProperty(const std::string &name, const std::array<T, N> &value)
-        plan.setPropertyArrayFloat("f_a", 3, (-2.0, 0.0, 2.0))
-        plan.setPropertyArrayInt("i_a", 3, (-2, 0, 2))
+        plan.setPropertyArrayFloat("f_a", (-2.0, 0.0, 2.0))
+        plan.setPropertyArrayInt("i_a", (-2, 0, 2))
         # Set individual elements at a time
         # RunPlan::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value)
         plan.setPropertyUInt("u_a", 0, 3)
@@ -183,9 +183,9 @@ class TestRunPlan(TestCase):
         environment.newPropertyFloat("f", 1.0)
         environment.newPropertyInt("i", -1)
         environment.newPropertyUInt("u", 1)
-        environment.newPropertyArrayFloat("f_a", 3, (-1.0, 0.0, 1.0))
-        environment.newPropertyArrayInt("i_a", 3, (-1, 0, 1))
-        environment.newPropertyArrayUInt("u_a", 3, (0, 1, 2))
+        environment.newPropertyArrayFloat("f_a", (-1.0, 0.0, 1.0))
+        environment.newPropertyArrayInt("i_a", (-1, 0, 1))
+        environment.newPropertyArrayUInt("u_a", (0, 1, 2))
         # Create an individual run plan.
         plan = pyflamegpu.RunPlan(model)
         # Check that they match the original value when no overrides have been set.
@@ -211,16 +211,16 @@ class TestRunPlan(TestCase):
         assert e.value.type() == "InvalidEnvPropertyType"
         # RunPlan::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            plan.setPropertyArrayFloat("does_not_exist", 3, (2.0, 2.0, 2.0))
+            plan.setPropertyArrayFloat("does_not_exist", (2.0, 2.0, 2.0))
         assert e.value.type() == "InvalidEnvProperty"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            plan.setPropertyArrayFloat("u_a", 3, (2.0, 2.0, 2.0))
+            plan.setPropertyArrayFloat("u_a", (2.0, 2.0, 2.0))
         assert e.value.type() == "InvalidEnvPropertyType"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            plan.setPropertyArrayInt("i_a", 2, (-2, 0))
+            plan.setPropertyArrayInt("i_a", (-2, 0))
         assert e.value.type() == "InvalidEnvPropertyType"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            plan.setPropertyArrayInt("i_a", 4, (-2, 0, 2, 2))
+            plan.setPropertyArrayInt("i_a", (-2, 0, 2, 2))
         assert e.value.type() == "InvalidEnvPropertyType"
         # RunPlan::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
