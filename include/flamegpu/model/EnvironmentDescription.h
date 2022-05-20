@@ -146,14 +146,13 @@ class EnvironmentDescription {
     /**
      * Adds a new environment property array
      * @param name Name used for accessing the property
-     * @param length Length of the environmental property array to be created
      * @param value Stored value of the property
      * @param isConst If set to true, it is not possible to change the value during the simulation
      * @tparam T Type of the environmental property array to be created
      * @throws exception::DuplicateEnvProperty If a property of the same name already exists
      */
     template<typename T>
-    void newPropertyArray(const std::string &name, const EnvironmentManager::size_type length, const std::vector<T> &value, const bool isConst = false);
+    void newPropertyArray(const std::string &name, const std::vector<T> &value, const bool isConst = false);
 #endif
     /**
      * Define a new environment macro property
@@ -343,16 +342,12 @@ void EnvironmentDescription::newProperty(const std::string &name, const std::arr
 }
 #ifdef SWIG
 template<typename T>
-void EnvironmentDescription::newPropertyArray(const std::string &name, EnvironmentManager::size_type N, const std::vector<T> &value, bool isConst) {
+void EnvironmentDescription::newPropertyArray(const std::string &name, const std::vector<T> &value, bool isConst) {
     if (!name.empty() && name[0] == '_') {
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::newPropertyArray().");
     }
-    if (value.size() != N) {
-        THROW exception::InvalidEnvProperty("Environment property array length does not match the value provided, %u != %llu,"
-            "in EnvironmentDescription::newPropertyArray().", N, value.size());
-    }
-    if (N == 0) {
+    if (value.size() == 0) {
         THROW exception::InvalidEnvProperty("Environment property arrays must have a length greater than 0."
             "in EnvironmentDescription::newPropertyArray().");
     }
@@ -365,7 +360,7 @@ void EnvironmentDescription::newPropertyArray(const std::string &name, Environme
             "in EnvironmentDescription::newPropertyArray().",
             name.c_str());
     }
-    newProperty(name, reinterpret_cast<const char*>(value.data()), N * sizeof(T), isConst, type_decode<T>::len_t * N, typeid(typename type_decode<T>::type_t));
+    newProperty(name, reinterpret_cast<const char*>(value.data()), value.size() * sizeof(T), isConst, type_decode<T>::len_t * value.size(), typeid(typename type_decode<T>::type_t));
 }
 #endif
 /**

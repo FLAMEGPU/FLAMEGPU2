@@ -428,7 +428,7 @@ class TestSimulation(TestCase):
         m = pyflamegpu.ModelDescription("test_agentid")
         m.newAgent("agent");
         m.Environment().newPropertyInt("int", 2);
-        m.Environment().newPropertyArrayInt("int3", 3, [ 56, 57, 58 ]);
+        m.Environment().newPropertyArrayInt("int3", [ 56, 57, 58 ]);
         m.newLayer().addHostFunctionCallback(Check_setEnvironmentProperty().__disown__());
         s = pyflamegpu.CUDASimulation(m);
         s.SimulationConfig().steps = 1;

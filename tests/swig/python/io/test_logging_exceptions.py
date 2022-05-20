@@ -113,9 +113,9 @@ class LoggingExceptionTest(TestCase):
         m.Environment().newPropertyFloat("float_prop", 1.0);
         m.Environment().newPropertyInt("int_prop", 1);
         m.Environment().newPropertyUInt("uint_prop", 1);
-        m.Environment().newPropertyArrayFloat("float_prop_array", 2, [1.0, 2.0]);
-        m.Environment().newPropertyArrayInt("int_prop_array", 3, [2, 3, 4]);
-        m.Environment().newPropertyArrayUInt("uint_prop_array", 4, [3, 4, 5, 6]);
+        m.Environment().newPropertyArrayFloat("float_prop_array", [1.0, 2.0]);
+        m.Environment().newPropertyArrayInt("int_prop_array", [2, 3, 4]);
+        m.Environment().newPropertyArrayUInt("uint_prop_array", [3, 4, 5, 6]);
 
         # Define logging configs
         lcfg = pyflamegpu.LoggingConfig(m);

@@ -70,7 +70,7 @@ class MiniSim:
         print(self.env)
         # Setup environment
         add_func = getattr(self.env, f"newPropertyArray{python_type}")
-        add_func("a", 4, ARRAY_TEST_VALUE)
+        add_func("a", ARRAY_TEST_VALUE)
         # run
         self.__run()
         # get instance and test output values
