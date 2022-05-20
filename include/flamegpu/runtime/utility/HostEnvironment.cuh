@@ -79,9 +79,12 @@ class HostEnvironment {
      * @throws std::out_of_range
      * @see get(const std::string &)
      */
+#ifndef SWIG
     template<typename T, EnvironmentManager::size_type N = 0>
     T getProperty(const std::string &name, const EnvironmentManager::size_type &index) const;
-#ifdef SWIG
+#else
+    template<typename T>
+    T getProperty(const std::string& name, const EnvironmentManager::size_type& index) const;
     /**
      * Gets an environment property array
      * @param name name used for accessing the property
@@ -126,9 +129,12 @@ class HostEnvironment {
      * @throws std::out_of_range
      * @see get(const std::string &)
      */
+#ifndef SWIG
     template<typename T, EnvironmentManager::size_type N = 0>
     T setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value) const;
-#ifdef SWIG
+#else
+    template<typename T>
+    T setProperty(const std::string& name, const EnvironmentManager::size_type& index, const T& value) const;
     /**
      * Sets an environment property array
      * @param name name used for accessing the property array
@@ -176,8 +182,14 @@ std::array<T, N> HostEnvironment::setProperty(const std::string &name, const std
     }
     return env_mgr->setProperty<T, N>(name, value);
 }
+#ifdef SWIG
+template<typename T>
+T HostEnvironment::setProperty(const std::string& name, const EnvironmentManager::size_type& index, const T& value) const {
+    const EnvironmentManager::size_type N = 0;
+#else
 template<typename T, EnvironmentManager::size_type N>
 T HostEnvironment::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value) const {
+#endif
     if (!name.empty() && name[0] == '_') {
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in HostEnvironment::set().");
@@ -206,8 +218,14 @@ template<typename T, EnvironmentManager::size_type N>
 std::array<T, N> HostEnvironment::getProperty(const std::string &name) const  {
     return env_mgr->getProperty<T, N>(name);
 }
+#ifdef SWIG
+template<typename T>
+T HostEnvironment::getProperty(const std::string& name, const EnvironmentManager::size_type& index) const {
+    const EnvironmentManager::size_type N = 0;
+#else
 template<typename T, EnvironmentManager::size_type N>
 T HostEnvironment::getProperty(const std::string &name, const EnvironmentManager::size_type &index) const  {
+#endif
     return env_mgr->getProperty<T, N>(name, index);
 }
 #ifdef SWIG
