@@ -35,7 +35,7 @@ def AddGet_SetGet_array_test(type: str):
     for i in range(ARRAY_TEST_LEN):
         b[i] = i
         c[i] = ARRAY_TEST_LEN-i
-    add_func("a", ARRAY_TEST_LEN, b)
+    add_func("a", b)
     a = get_func("a")
     for i in range(ARRAY_TEST_LEN):
         assert a[i] == b[i]
@@ -61,7 +61,7 @@ def AddGet_SetGet_array_element_test(type: str):
     for i in range(ARRAY_TEST_LEN):
         b[i] = i
         c[i] = ARRAY_TEST_LEN-i
-    add_func("a", ARRAY_TEST_LEN, b)
+    add_func("a", b)
     for i in range(ARRAY_TEST_LEN):
         assert get_func("a", i) == b[i]
         assert set_func("a", i, c[i]) == b[i]
@@ -89,7 +89,7 @@ def ExceptionPropertyType_test(type1: str, type2: str):
         b_t1[i] = i
         b_t2[i] = i
     add_func_t1("a", a_t1, True)
-    add_func_array_t1("b", ARRAY_TEST_LEN, b_t1, True)
+    add_func_array_t1("b", b_t1, True)
     
     with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
         set_func_t2("a", a_t2)
@@ -116,7 +116,7 @@ def ExceptionPropertyLength_test(type: str):
     _b2 = [0] * (ARRAY_TEST_LEN + 1)
     _b3 = [0] * ARRAY_TEST_LEN * 2
 
-    add_func("a", ARRAY_TEST_LEN, b)
+    add_func("a", b)
     with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
         set_func("a", _b1)
     with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
@@ -133,7 +133,7 @@ def ExceptionPropertyRange_test(type:str):
     get_func = getattr(ed, f"getProperty{type}")
     b = [0] * ARRAY_TEST_LEN
 
-    add_func("a", ARRAY_TEST_LEN, b)
+    add_func("a", b)
     c = 12
 
     for i in range(ARRAY_TEST_LEN):
@@ -354,7 +354,7 @@ class EnvironmentDescriptionTest(TestCase):
         get_int_array_func = getattr(ed, f"getPropertyArrayInt")
         get_float_array_func = getattr(ed, f"getPropertyArrayFloat")
         b = [0] * ARRAY_TEST_LEN
-        add_int_array_func("b", ARRAY_TEST_LEN, b, False)
+        add_int_array_func("b", b, False)
         get_int_array_func("b")
         ed.getPropertyInt("b", 1)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
@@ -374,7 +374,7 @@ class EnvironmentDescriptionTest(TestCase):
         assert e.value.type() == "ReservedName"
         # Array version
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            ed.newPropertyArrayInt("_", 2, [ 1, 2 ], False)
+            ed.newPropertyArrayInt("_", [ 1, 2 ], False)
         assert e.value.type() == "ReservedName"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ed.setPropertyArrayInt("_", [ 1, 2 ])

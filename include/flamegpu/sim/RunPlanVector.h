@@ -92,7 +92,6 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * Set named environment property array to a specific value
      * This version should be used for array properties
      * @param name Environment property name
-     * @param length Length of the environmental property array to be created
      * @param value Environment property value (override)
      * @tparam T Type of the environment property
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
@@ -100,7 +99,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length to N
      */
     template<typename T>
-    void setPropertyArray(const std::string &name, const EnvironmentManager::size_type &length, const std::vector<T> &value);
+    void setPropertyArray(const std::string &name, const std::vector<T> &value);
 #endif
     /**
      * Sweep named environment property over an inclusive uniform distribution
@@ -377,7 +376,7 @@ void RunPlanVector::setProperty(const std::string &name, const EnvironmentManage
 }
 #ifdef SWIG
 template<typename T>
-void RunPlanVector::setPropertyArray(const std::string &name, const EnvironmentManager::size_type &N, const std::vector<T> &value) {
+void RunPlanVector::setPropertyArray(const std::string &name, const std::vector<T> &value) {
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
@@ -390,18 +389,13 @@ void RunPlanVector::setPropertyArray(const std::string &name, const EnvironmentM
             "in RunPlanVector::setPropertyArray()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(typename type_decode<T>::type_t)).name());
     }
-    if (it->second.data.elements != N * type_decode<T>::len_t) {
-        THROW exception::InvalidEnvPropertyType("Environment property array '%s' length mismatch %u != %u "
-            "in RunPlanVector::setPropertyArray()\n",
-            name.c_str(), it->second.data.elements, N * type_decode<T>::len_t);
-    }
-    if (value.size() != N) {
+    if (value.size() * type_decode<T>::len_t != it->second.data.elements) {
         THROW exception::InvalidEnvProperty("Environment property array length does not match the value provided, %u != %llu,"
             "in RunPlanVector::setPropertyArray()\n",
-            name.c_str(), value.size(), N);
+            name.c_str(), value.size() * type_decode<T>::len_t, it->second.data.elements);
     }
     for (auto &i : *this) {
-        i.setPropertyArray<T>(name, N, value);
+        i.setPropertyArray<T>(name, value);
     }
 }
 #endif
