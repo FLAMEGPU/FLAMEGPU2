@@ -28,7 +28,7 @@ FLAMEGPU_AGENT_FUNCTION(determine_status, flamegpu::MessageArray2D, flamegpu::Me
 
     unsigned int same_type_neighbours = 0;
     unsigned int diff_type_neighbours = 0;
-    
+
     // Iterate 3x3 Moore neighbourhood (this does not include the central cell)
     unsigned int my_type = FLAMEGPU->getVariable<unsigned int>("type");
     for (auto &message : FLAMEGPU->message_in.wrap(my_x, my_y)) {
@@ -37,7 +37,7 @@ FLAMEGPU_AGENT_FUNCTION(determine_status, flamegpu::MessageArray2D, flamegpu::Me
         diff_type_neighbours += (my_type != message_type) && (message_type != UNOCCUPIED);
     }
 
-    int isHappy = ((float)same_type_neighbours / (same_type_neighbours + diff_type_neighbours)) > THRESHOLD;
+    int isHappy = (static_cast<float>(same_type_neighbours) / (same_type_neighbours + diff_type_neighbours)) > THRESHOLD;
     FLAMEGPU->setVariable<unsigned int>("happy", isHappy);
     unsigned int my_next_type = ((my_type != UNOCCUPIED) && isHappy) ? my_type : UNOCCUPIED;
     FLAMEGPU->setVariable<unsigned int>("next_type", my_next_type);
@@ -68,11 +68,11 @@ FLAMEGPU_AGENT_FUNCTION_CONDITION(is_moving) {
 FLAMEGPU_AGENT_FUNCTION(bid_for_location, flamegpu::MessageArray, flamegpu::MessageBucket) {
     // Select a location
     unsigned int selected_index = FLAMEGPU->random.uniform<unsigned int>(0, FLAMEGPU->environment.getProperty<unsigned int>("spaces_available") - 1);
-    
+
     // Get the location at that index
     const auto& message = FLAMEGPU->message_in.at(selected_index);
     const flamegpu::id_t selected_location = message.getVariable<flamegpu::id_t>("id");
-    
+
     // Bid for that location
     FLAMEGPU->message_out.setKey(selected_location - 1);
     FLAMEGPU->message_out.setVariable<flamegpu::id_t>("id", FLAMEGPU->getID());
@@ -115,7 +115,7 @@ int main(int argc, const char ** argv) {
     NVTX_PUSH("ModelDescription");
 
     flamegpu::ModelDescription model("Schelling_segregation");
-    
+
     /**
      * Messages
      */
@@ -147,7 +147,6 @@ int main(int argc, const char ** argv) {
         agent.newFunction("output_type", output_type).setMessageOutput("type_message");
         agent.newFunction("determine_status", determine_status).setMessageInput("type_message");
         agent.newFunction("update_locations", update_locations);
-
     }
 
     /**
@@ -182,7 +181,7 @@ int main(int argc, const char ** argv) {
                 message.setLength(GRID_WIDTH*GRID_WIDTH);
             }
         }
-        
+
         // Agent types
         {
             flamegpu::AgentDescription  &agent = submodel.newAgent("agent");
@@ -197,17 +196,17 @@ int main(int argc, const char ** argv) {
             auto& outputLocationsFunction = agent.newFunction("output_available_locations", output_available_locations);
             outputLocationsFunction.setMessageOutput("available_location_message");
             outputLocationsFunction.setFunctionCondition(is_available);
-            
+
             auto& bidFunction = agent.newFunction("bid_for_location", bid_for_location);
             bidFunction.setFunctionCondition(is_moving);
             bidFunction.setMessageInput("available_location_message");
             bidFunction.setMessageOutput("intent_to_move_message");
-            
+
             auto& selectWinnersFunction = agent.newFunction("select_winners", select_winners);
             selectWinnersFunction.setMessageInput("intent_to_move_message");
             selectWinnersFunction.setMessageOutput("movement_won_message");
             selectWinnersFunction.setMessageOutputOptional(true);
-            
+
             agent.newFunction("has_moved", has_moved).setMessageInput("movement_won_message");
         }
         // Control flow
@@ -265,11 +264,11 @@ int main(int argc, const char ** argv) {
         flamegpu::LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(update_locations);
     }
-    {   // Trying calling this again to fix vis 
+    {   // Trying calling this again to fix vis
         flamegpu::LayerDescription  &layer = model.newLayer();
         layer.addAgentFunction(determine_status);
     }
-    
+
 
     NVTX_POP();
 
@@ -322,7 +321,7 @@ int main(int argc, const char ** argv) {
             for (unsigned int y = 0; y < GRID_WIDTH; ++y) {
                 flamegpu::AgentVector::Agent instance = init_pop[i++];
                 instance.setVariable<unsigned int, 2>("pos", { x, y });
-                // Will this cell be occupied 
+                // Will this cell be occupied
                 if (normal(rng) < 0.8) {
                     unsigned int type = normal(rng) < 0.5 ? A : B;
                     instance.setVariable<unsigned int>("type", type);
