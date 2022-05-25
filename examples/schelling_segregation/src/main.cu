@@ -8,7 +8,7 @@
 
 // Configurable properties
 constexpr unsigned int GRID_WIDTH = 100;
-constexpr float THRESHOLD = 0.70;
+constexpr float THRESHOLD = 0.70f;
 
 constexpr unsigned int A = 0;
 constexpr unsigned int B = 1;
