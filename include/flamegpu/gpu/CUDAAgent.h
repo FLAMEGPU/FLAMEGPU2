@@ -230,10 +230,6 @@ class CUDAAgent : public AgentInterface {
      */
     detail::curve::HostCurve &getCurve(const std::string& function_name) const;
     /**
-     * Resets contained instances, only to be called after device reset
-     */
-    void purgeCurve();
-    /**
      * Returns the CUDARTCFuncMap
      */
     const CUDARTCFuncMap& getRTCFunctions() const;

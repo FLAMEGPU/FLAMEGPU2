@@ -161,10 +161,10 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
     ensemble_timer.stop();
     ensemble_elapsed_time = ensemble_timer.getElapsedSeconds();
 
-    // Purge singletons on every used CUDA device
+    // Reset every used device
     for (auto d = devices.begin(); d != devices.end(); ++d) {
         gpuErrchk(cudaSetDevice(*d));
-        CUDASimulation::purgeSingletons();
+        gpuErrchk(cudaDeviceReset());
     }
 
     // Ensemble has finished, print summary

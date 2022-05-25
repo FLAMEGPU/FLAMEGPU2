@@ -99,12 +99,6 @@ class CUDAScanCompaction {
      */
     void operator=(CUDAScanCompaction const&) = delete;
     /**
-     * Wipes out host mirrors of device memory
-     * Only really to be used after calls to cudaDeviceReset()
-     * @note Only currently used after some tests
-     */
-    void purge();
-    /**
      * Resize the scan flag buffer for the specified stream and type for the provided number of items
      * @param newCount The number of scan flags that the resized buffer must be able to hold
      * @param type The type of the scan flag buffer to be resized

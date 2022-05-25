@@ -79,10 +79,6 @@ void CUDAMacroEnvironment::free() {
         }
     }
 }
-void CUDAMacroEnvironment::purge() {
-    for (auto& prop : properties)
-        prop.second.d_ptr = nullptr;
-}
 void CUDAMacroEnvironment::registerCurveVariables(detail::curve::HostCurve& curve) const {
     for (const auto& p : properties) {
         const unsigned int total_elements = p.second.elements[0] * p.second.elements[1] * p.second.elements[2] * p.second.elements[3];

@@ -158,12 +158,6 @@ class RandomManager {
      * @note includes cuda commands so not safe from c++ destructor
      */
     void freeDevice();
-    /**
-     * Wipes out host mirrors of device memory
-     * Only really to be used after calls to cudaDeviceReset()
-     * @note Only currently used after some tests
-     */
-    void purge();
 
     /**
      * Reinitialises host RNG from the current seed.

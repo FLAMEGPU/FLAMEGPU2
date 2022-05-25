@@ -46,9 +46,6 @@ namespace {
     }
 }  // anonymous namespace
 
-std::map<int, std::atomic<int>> CUDASimulation::active_device_instances;
-std::map<int, std::shared_timed_mutex> CUDASimulation::active_device_mutex;
-std::shared_timed_mutex CUDASimulation::active_device_maps_mutex;
 std::atomic<int> CUDASimulation::active_instances = {0};
 bool CUDASimulation::AUTO_CUDA_DEVICE_RESET = true;
 
@@ -193,13 +190,6 @@ CUDASimulation::~CUDASimulation() {
     // De-initialise, freeing singletons?
     // @todo - this is unsafe in a destructor as it may invoke cuda commands.
     if (singletonsInitialised) {
-        // unique pointers cleanup by automatically
-        // Drop all constants from the constant cache linked to this model
-        singletons->environment.reset();
-        // if (active_instances == 1) {
-        //   assert(singletons->curve.size() == 0);
-        // }
-
         delete singletons;
         singletons = nullptr;
     }
@@ -218,35 +208,18 @@ CUDASimulation::~CUDASimulation() {
     // Do this once to re-use existing streams rather than per-step.
     this->destroyStreams();
 
-    // If we are the last instance to destruct
-    // This doesn't really play nicely if we are passing multi-device CUDASimulations between threads!
-    // I think this exists to prevent curve getting left with dead items when exceptions are thrown during the test suite.
+    // If we are the last instance to destruct, and not part of an ensemble, cudaDeviceReset() for the profiler
+    --active_instances;
     if (deviceInitialised >= 0 && AUTO_CUDA_DEVICE_RESET) {
-        std::shared_lock<std::shared_timed_mutex> maps_lock(active_device_maps_mutex);
-        std::unique_lock<std::shared_timed_mutex> lock(active_device_mutex.at(deviceInitialised));
-        if (!--active_device_instances.at(deviceInitialised) && !getCUDAConfig().is_ensemble) {
-            purgeSingletons();
+        if (!active_instances && !getCUDAConfig().is_ensemble) {
+            gpuErrchk(cudaDeviceReset());
         }
     }
 
     if (t_device_id != deviceInitialised) {
         gpuErrchk(cudaSetDevice(t_device_id));
     }
-    --active_instances;
 }
-void CUDASimulation::purgeSingletons() {
-    int device = -1;
-    gpuErrchk(cudaGetDevice(&device));
-    if (!active_device_instances.at(device)) {
-        // Small chance that time between the atomic and body of this fn will cause a problem
-        // Could mutex it with init simulation cuda stuff, but really seems unlikely
-        gpuErrchk(cudaDeviceReset());
-        // Can nolonger purge curve or environment, as they are not static
-        // @todo Is this now redundant?
-    }
-}
-
-
 
 void CUDASimulation::initFunctions() {
     NVTX_RANGE("CUDASimulation::initFunctions");
@@ -1527,14 +1500,6 @@ void CUDASimulation::reseed(const uint64_t &seed) {
         i *= 13;
     }
 }
-/**
- * These values are ony used by CUDASimulation::initialiseSingletons()
- * Can't put a __device__ symbol method static
- */
-namespace {
-    __device__ unsigned int DEVICE_HAS_RESET = 0xDEADBEEF;
-    const unsigned int DEVICE_HAS_RESET_FLAG = 0xDEADBEEF;
-}  // namespace
 
 void CUDASimulation::initialiseSingletons() {
     // Only do this once.
@@ -1547,37 +1512,6 @@ void CUDASimulation::initialiseSingletons() {
             THROW exception::InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capability %d and above. Device %u is compute capability %d. Rebuild for SM_%d.", min_cc, config.device_id, cc, cc);
         }
         gpuErrchk(cudaGetDevice(&deviceInitialised));
-        std::unique_lock<std::shared_timed_mutex> maps_lock(active_device_maps_mutex);
-        auto &adm = active_device_mutex[deviceInitialised];
-        if (active_device_instances.find(deviceInitialised) == active_device_instances.end()) {
-            active_device_instances[deviceInitialised] = 0;
-        }
-        auto &adi = active_device_instances[deviceInitialised];
-        std::shared_lock<std::shared_timed_mutex> lock(adm);
-        ++(adi);
-        // Check if device has been reset
-        cudaStream_t stream_0 = getStream(0);
-        unsigned int DEVICE_HAS_RESET_CHECK = 0;
-        gpuErrchk(cudaMemcpyFromSymbolAsync(&DEVICE_HAS_RESET_CHECK, DEVICE_HAS_RESET, sizeof(unsigned int), 0, cudaMemcpyDeviceToHost, stream_0));
-        gpuErrchk(cudaStreamSynchronize(stream_0));
-        if (DEVICE_HAS_RESET_CHECK == DEVICE_HAS_RESET_FLAG) {
-            // Device has been reset, purge host mirrors of static objects/singletons
-            for (auto& ca : agent_map) {
-                ca.second->purgeCurve();
-            }
-            if (singletons) {
-                singletons->rng.purge();
-                singletons->scatter.purge();
-                // @todo environment purge? Is this whole block still required?
-            }
-            macro_env.purge();
-            // Reset flag
-            DEVICE_HAS_RESET_CHECK = 0;  // Any value that doesnt match DEVICE_HAS_RESET_FLAG
-            // This SHOULD be a synchronisation point for the device (e.g. default stream)
-            gpuErrchk(cudaMemcpyToSymbol(DEVICE_HAS_RESET, &DEVICE_HAS_RESET_CHECK, sizeof(unsigned int)));
-        }
-        lock.unlock();
-        maps_lock.unlock();
         // Get references to all required singleton and store in the instance.
         singletons = new Singletons((!submodel)?
             EnvironmentManager::create(*model->environment) :
@@ -1586,11 +1520,13 @@ void CUDASimulation::initialiseSingletons() {
         // Reinitialise random for this simulation instance
         singletons->rng.reseed(getSimulationConfig().random_seed);
 
+        cudaStream_t stream_0 = getStream(0);
+
         // Pass created RandomManager to host api
         host_api = std::make_unique<HostAPI>(*this, singletons->rng, singletons->scatter, agentOffsets, agentData, singletons->environment, macro_env, 0, stream_0);  // Host fns are currently all serial
 
         for (auto &cm : message_map) {
-            cm.second->init(singletons->scatter, 0, getStream(0));
+            cm.second->init(singletons->scatter, 0, stream_0);
         }
 
         // Populate the environment properties

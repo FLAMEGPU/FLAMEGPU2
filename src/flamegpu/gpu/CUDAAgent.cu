@@ -625,11 +625,6 @@ detail::curve::HostCurve& CUDAAgent::getCurve(const std::string &function_name) 
 
     return *mm->second;
 }
-void CUDAAgent::purgeCurve() {
-    for (auto &c : curve_map) {
-        c.second->purge();
-    }
-}
 
 const CUDAAgent::CUDARTCFuncMap& CUDAAgent::getRTCFunctions() const {
     return rtc_func_map;

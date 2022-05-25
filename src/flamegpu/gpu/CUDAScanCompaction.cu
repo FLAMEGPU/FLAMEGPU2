@@ -9,10 +9,6 @@ namespace flamegpu {
 /**
  * CUDAScanCompaction methods
  */
-void CUDAScanCompaction::purge() {
-    memset(configs, 0, sizeof(configs));
-}
-
 void CUDAScanCompaction::resize(const unsigned int& newCount, const Type& type, const unsigned int& streamId) {
     assert(streamId < MAX_STREAMS);
     assert(type < MAX_TYPES);
