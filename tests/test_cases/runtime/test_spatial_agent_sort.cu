@@ -108,6 +108,53 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep) {
     EXPECT_EQ(expectedResult, finalOrder);
 }
 
+// Initialises a reverse-sorted population without the state "default" and checks that it is correctly sorted after one step
+// This relates to bug #861
+TEST(AutomaticSpatialAgentSort, SortEveryStep_no_default) {
+    // Define model
+    ModelDescription model("model");
+    AgentDescription& agent = model.newAgent("agent");
+    agent.newVariable<int>("initial_order");
+    agent.newState("foobar");
+    agent.newVariable<float>("x");
+    agent.newVariable<float>("y");
+    agent.newVariable<float>("z");
+    MessageSpatial3D::Description& locationMessage = model.newMessage<MessageSpatial3D>("location");
+    locationMessage.setMin(-5, -5, -5);
+    locationMessage.setMax(5, 5, 5);
+    locationMessage.setRadius(0.2f);
+    AgentFunctionDescription& dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
+    dummyFunc.setMessageInput("location");
+    LayerDescription& layer = model.newLayer();
+    layer.addAgentFunction(dummyFunc);
+
+    // Init pop
+    AgentVector pop(agent, AGENT_COUNT);
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT); i++) {
+        AgentVector::Agent instance = pop[i];
+        instance.setVariable<int>("initial_order", i);
+        instance.setVariable<float>("x", static_cast<float>(-i));
+        instance.setVariable<float>("y", static_cast<float>(-i));
+        instance.setVariable<float>("z", static_cast<float>(-i));
+    }
+
+    // Setup Model
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(pop, "foobar");
+
+    // Execute step fn
+    EXPECT_NO_THROW(cudaSimulation.step());
+
+    // Check results
+    cudaSimulation.getPopulationData(pop, "foobar");
+    std::vector<int> finalOrder;
+    for (AgentVector::Agent instance : pop) {
+        finalOrder.push_back(instance.getVariable<int>("initial_order"));
+    }
+    std::vector<int> expectedResult{ 3, 2, 1, 0 };
+    EXPECT_EQ(expectedResult, finalOrder);
+}
+
 // Initialises a reverse-sorted population and checks that it is correctly sorted after one step
 TEST(AutomaticSpatialAgentSort, SortEveryStep_vec2) {
     // Define model

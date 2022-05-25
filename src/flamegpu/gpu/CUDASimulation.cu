@@ -547,7 +547,7 @@ void CUDASimulation::spatialSortAgent_async(const std::string& funcName, const s
     // Calculate max bit (cub::DeviceRadixSort end bit is exclusive and 0-indexed)
     // https://math.stackexchange.com/a/160299/126129
     const int max_bit = static_cast<int>(floor(log2(gridDim.x * gridDim.y * gridDim.z))) + 1;
-    host_api->agent(agentName).sort_async<unsigned int>("_auto_sort_bin_index", HostAgentAPI::Asc, 0, max_bit, stream, streamId);
+    host_api->agent(agentName, state).sort_async<unsigned int>("_auto_sort_bin_index", HostAgentAPI::Asc, 0, max_bit, stream, streamId);
 }
 
 bool CUDASimulation::step() {
