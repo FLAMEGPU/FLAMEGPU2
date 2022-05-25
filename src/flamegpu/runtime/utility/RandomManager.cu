@@ -22,10 +22,6 @@ RandomManager::RandomManager() :
 RandomManager::~RandomManager() {
     free();  // @todo call free/freeDevice not in the constructor! instead just log that?
 }
-void RandomManager::purge() {
-    length = 0;
-    d_random_state = nullptr;
-}
 /**
  * Member fns
  */

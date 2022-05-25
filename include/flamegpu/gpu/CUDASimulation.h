@@ -116,11 +116,6 @@ class CUDASimulation : public Simulation {
      * @todo Move common components (init list and initOffsetsAndMap()) into a common/shared constructor
      */
     CUDASimulation(const std::shared_ptr<SubModelData>& submodel_desc, CUDASimulation *master_model);
-    /**
-     * Called by the destructor (and CUDAEnsembles to purge singletons on exit)
-     * @note It only purges singletons on the active CUDA device
-     */
-    static void purgeSingletons();
 
  public:
     /**
@@ -636,18 +631,6 @@ class CUDASimulation : public Simulation {
      * When the last is destructed, cudaDeviceReset is triggered();
      */
     static std::atomic<int> active_instances;
-    /**
-     * Active instances, but linked to the device each instance has been initialised on
-     */
-    static std::map<int, std::atomic<int>> active_device_instances;
-    /**
-     * These exist to prevent us doing device reset in the short period between checking last sim of device, and reset
-     */
-    static std::map<int, std::shared_timed_mutex> active_device_mutex;
-    /**
-     * This controls access to active_device_instances, active_device_mutex
-     */
-    static std::shared_timed_mutex active_device_maps_mutex;
     /**
      * Returns false if any agent functions or agent function conditions are not RTC
      * Used by constructor to set isPureRTC constant value

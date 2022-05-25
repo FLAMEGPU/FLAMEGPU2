@@ -36,10 +36,6 @@ CUDAScatter::StreamData::~StreamData() {
     d_data = nullptr;
     data_len = 0;
 }
-void CUDAScatter::StreamData::purge() {
-    d_data = nullptr;
-    data_len = 0;
-}
 void CUDAScatter::StreamData::resize(const unsigned int &newLen) {
     if (newLen > data_len) {
         if (d_data) {
@@ -49,14 +45,6 @@ void CUDAScatter::StreamData::resize(const unsigned int &newLen) {
         data_len = newLen;
     }
 }
-
-void CUDAScatter::purge() {
-    for (auto &s : streamResources) {
-        s.purge();
-    }
-    scan.purge();
-}
-
 
 template <typename T>
 __global__ void scatter_generic(

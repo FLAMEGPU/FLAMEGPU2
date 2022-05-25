@@ -101,10 +101,6 @@ class CUDAMacroEnvironment {
      */
     void free();
     /**
-     * Clears all CUDA pointers without deallocating, (e.g. if device has been reset)
-     */
-    void purge();
-    /**
      * Register the properties to the provided RTC header
      * @param curve_header The RTC header to act upon
      */

@@ -39,18 +39,6 @@ HostCurve::~HostCurve() {
         d_curve_table = nullptr;
     }
 }
-void HostCurve::purge() {
-    if (d_curve_table) {
-        // gpuErrchk(cudaFree(d_curve_table));  // This fails if called after device reset
-        d_curve_table = nullptr;
-    }
-    // set values of hash table to 0 on host and device
-    memset(h_curve_table.hashes, 0, sizeof(VariableHash)* MAX_VARIABLES);
-    memset(h_curve_table.type_size, 0, sizeof(unsigned int)* MAX_VARIABLES);
-    memset(h_curve_table.elements, 0, sizeof(unsigned int)* MAX_VARIABLES);
-    memset(h_curve_table.count, 0, sizeof(unsigned int)* MAX_VARIABLES);
-    initialiseDevice();
-}
 void HostCurve::initialiseDevice() {
     // Don't lock mutex here, do it in the calling method
     if (!d_curve_table) {
@@ -155,7 +143,7 @@ int HostCurve::size() const {
 void HostCurve::updateDevice_async(const cudaStream_t stream) {
     NVTX_RANGE("HostCurve::updateDevice_async()");
     // Initialise the device (if required)
-    assert(d_curve_table);  // No reason for this to ever fail. Purge calls init device
+    assert(d_curve_table);  // No reason for this to ever fail.
     // Copy
     gpuErrchk(cudaMemcpyAsync(d_curve_table, &h_curve_table, sizeof(CurveTable), cudaMemcpyHostToDevice, stream));
 }

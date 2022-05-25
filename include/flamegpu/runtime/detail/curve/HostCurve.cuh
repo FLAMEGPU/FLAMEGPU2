@@ -88,11 +88,6 @@ class HostCurve {
      */
     void initialiseDevice();
     /**
-     * Wipes out host mirrors of device memory and reallocates the device buffer
-     * Only really to be used after calls to cudaDeviceReset(), as this does not free device allocations
-     */
-    void purge();
-    /**
      * Has access to call purge
      */
     friend class flamegpu::CUDAAgent;

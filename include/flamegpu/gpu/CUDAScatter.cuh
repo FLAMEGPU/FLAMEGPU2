@@ -71,7 +71,6 @@ class CUDAScatter {
         unsigned int data_len;
         StreamData();
         ~StreamData();
-        void purge();
         void resize(const unsigned int &newLen);
     };
     std::array<StreamData, CUDAScanCompaction::MAX_STREAMS> streamResources;
@@ -306,12 +305,6 @@ class CUDAScatter {
 
  public:
     CUDAScatter() { }
-    /**
-     * Wipes out host mirrors of device memory
-     * Only really to be used after calls to cudaDeviceReset()
-     * @note Only currently used after some tests
-     */
-    void purge();
     // Public deleted creates better compiler errors
     CUDAScatter(CUDAScatter const&) = delete;
     void operator=(CUDAScatter const&) = delete;
