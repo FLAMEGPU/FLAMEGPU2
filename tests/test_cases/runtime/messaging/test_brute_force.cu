@@ -83,7 +83,7 @@ TEST(TestMessage_BruteForce, Mandatory1) {
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(message);
 
-    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
@@ -129,7 +129,7 @@ TEST(TestMessage_BruteForce, Mandatory2) {
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction2);
     fi.setMessageInput(message);
 
-    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
@@ -185,7 +185,7 @@ TEST(TestMessage_BruteForce, Optional1) {
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(message);
 
-    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
@@ -231,7 +231,7 @@ TEST(TestMessage_BruteForce, Optional2) {
     AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction2);
     fi.setMessageInput(message);
 
-    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;

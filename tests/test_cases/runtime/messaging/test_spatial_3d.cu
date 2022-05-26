@@ -108,7 +108,7 @@ TEST(Spatial3DMessageTest, Mandatory) {
     // Initialise agents (TODO)
     {
         // Currently population has not been init, so generate an agent population on the fly
-        std::default_random_engine rng;
+        std::mt19937_64 rng;
         std::uniform_real_distribution<float> dist(0.0f, 5.0f);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             AgentVector::Agent instance = population[i];
@@ -253,7 +253,7 @@ TEST(Spatial3DMessageTest, Optional) {
     // Initialise agents (TODO)
     {
         // Currently population has not been init, so generate an agent population on the fly
-        std::default_random_engine rng;
+        std::mt19937_64 rng;
         std::uniform_real_distribution<float> dist(0.0f, 5.0f);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             AgentVector::Agent instance = population[i];
@@ -404,7 +404,7 @@ TEST(Spatial3DMessageTest, OptionalNone) {
     // Initialise agents (TODO)
     {
         // Currently population has not been init, so generate an agent population on the fly
-        std::default_random_engine rng;
+        std::mt19937_64 rng;
         std::uniform_real_distribution<float> dist(0.0f, 5.0f);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             AgentVector::Agent instance = population[i];

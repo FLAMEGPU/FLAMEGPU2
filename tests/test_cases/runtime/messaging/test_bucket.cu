@@ -196,7 +196,7 @@ TEST(BucketMessageTest, Optional) {
     // Initialise agents (TODO)
     {
         // Currently population has not been init, so generate an agent population on the fly
-        std::default_random_engine rng;
+        std::mt19937_64 rng;
         std::uniform_real_distribution<float> dist(0.0f, 1.0f);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             int do_out =  dist(rng) > 0.3 ? 1 : 0;
@@ -269,7 +269,7 @@ TEST(BucketMessageTest, OptionalNone) {
     // Initialise agents (TODO)
     {
         // Currently population has not been init, so generate an agent population on the fly
-        std::default_random_engine rng;
+        std::mt19937_64 rng;
         std::uniform_real_distribution<float> dist(0.0f, 1.0f);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             AgentVector::Agent instance = population[i];

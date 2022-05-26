@@ -157,7 +157,7 @@ namespace test_message_AppendTruncate {
         fo.setMessageOutput(message);
         AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate);
         fi.setMessageInput(message);
-        std::default_random_engine rng;
+        std::mt19937_64 rng;
         std::uniform_real_distribution<double> dist(0.0, 1.0);
         unsigned int result_count = 0;
         AgentVector pop(a, (unsigned int)AGENT_COUNT);
@@ -205,7 +205,7 @@ namespace test_message_AppendTruncate {
         fo2.setMessageOutput(message);
         AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate2);
         fi.setMessageInput(message);
-        std::default_random_engine rng;
+        std::mt19937_64 rng;
         std::uniform_real_distribution<double> dist(0.0, 1.0);
         unsigned int result_count = 0;
         AgentVector pop(a, (unsigned int)AGENT_COUNT);

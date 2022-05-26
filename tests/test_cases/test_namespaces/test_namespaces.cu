@@ -39,7 +39,7 @@ TEST(CXXNamespaceTest, AgentFunctionsExplicit) {
     fo.setMessageOutput(message);
     flamegpu::AgentFunctionDescription& fi = a.newFunction("message_in_func_explicit", message_in_func_explicit);
     fi.setMessageInput(message);
-    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     flamegpu::AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
@@ -107,7 +107,7 @@ TEST(CXXNamespaceTest, AgentFunctionsDeclaration) {
     fo.setMessageOutput(message);
     AgentFunctionDescription& fi = a.newFunction("message_in_func_declaration", message_in_func_declaration);
     fi.setMessageInput(message);
-    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
@@ -166,7 +166,7 @@ TEST(CXXNamespaceTest, AgentFunctionsDirective) {
     fo.setMessageOutput(message);
     AgentFunctionDescription& fi = a.newFunction("message_in_func_directive", message_in_func_directive);
     fi.setMessageInput(message);
-    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
@@ -222,7 +222,7 @@ TEST(CXXNamespaceTest, AgentFunctionsNamed) {
     fo.setMessageOutput(message);
     AgentFunctionDescription& fi = a.newFunction("message_in_func_named", message_in_func_named);
     fi.setMessageInput(message);
-    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
@@ -279,7 +279,7 @@ TEST(CXXNamespaceTest, AgentFunctionsAlias) {
     fo.setMessageOutput(message);
     fgpu::AgentFunctionDescription& fi = a.newFunction("message_in_func_alias", message_in_func_alias);
     fi.setMessageInput(message);
-    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     fgpu::AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
@@ -334,7 +334,7 @@ TEST(CXXNamespaceTest, AgentFunctionsAliasMixed) {
     fo.setMessageOutput(message);
     fgpu::AgentFunctionDescription& fi = a.newFunction("message_in_func_alias_mixed", message_in_func_alias_mixed);
     fi.setMessageInput(message);
-    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     flamegpu::AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;

@@ -749,7 +749,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
 
         // Generate an iniital population.
         AgentVector* a_pop = new AgentVector(a, POPULATION_SIZES);
-        std::default_random_engine rng;
+        std::mt19937_64 rng;
         std::uniform_real_distribution<float> dist(0.0f, 11.0f);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
             auto agent = a_pop->at(j);
@@ -821,7 +821,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
 
         // Generate an iniital population.
         AgentVector* a_pop = new AgentVector(a, POPULATION_SIZES);
-        std::default_random_engine rng;
+        std::mt19937_64 rng;
         std::uniform_real_distribution<float> dist(0.0f, 11.0f);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
             auto agent = a_pop->at(j);

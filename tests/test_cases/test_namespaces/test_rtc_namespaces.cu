@@ -45,7 +45,7 @@ TEST(RTCNamespaceTest, AgentFunctionsExplicit) {
     fo.setMessageOutput(message);
     AgentFunctionDescription& fi = a.newRTCFunction("message_in_func_explicit", message_in_func_explicit);
     fi.setMessageInput(message);
-    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
@@ -108,7 +108,7 @@ TEST(RTCNamespaceTest, AgentFunctionsDeclaration) {
     fo.setMessageOutput(message);
     AgentFunctionDescription& fi = a.newRTCFunction("message_in_func_declaration", message_in_func_declaration);
     fi.setMessageInput(message);
-    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
@@ -167,7 +167,7 @@ TEST(RTCNamespaceTest, AgentFunctionsDirective) {
     fo.setMessageOutput(message);
     AgentFunctionDescription& fi = a.newRTCFunction("message_in_func_directive", message_in_func_directive);
     fi.setMessageInput(message);
-    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
@@ -235,7 +235,7 @@ TEST(RTCNamespaceTest, AgentFunctionsNamed) {
     fo.setMessageOutput(message);
     AgentFunctionDescription& fi = a.newRTCFunction("message_in_func_named", message_in_func_named);
     fi.setMessageInput(message);
-    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
@@ -295,7 +295,7 @@ TEST(RTCNamespaceTest, AgentFunctionsAlias) {
     fo.setMessageOutput(message);
     AgentFunctionDescription& fi = a.newRTCFunction("message_in_func_alias", message_in_func_alias);
     fi.setMessageInput(message);
-    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
@@ -354,7 +354,7 @@ TEST(RTCNamespaceTest, AgentFunctionsAliasMixed) {
     fo.setMessageOutput(message);
     AgentFunctionDescription& fi = a.newRTCFunction("message_in_func_alias_mixed", message_in_func_alias_mixed);
     fi.setMessageInput(message);
-    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;
