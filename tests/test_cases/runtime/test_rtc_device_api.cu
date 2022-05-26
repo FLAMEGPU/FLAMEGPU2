@@ -481,7 +481,7 @@ TEST(DeviceRTCAPITest, AgentFunction_message_bruteforce) {
     fo.setMessageOutput(message);
     AgentFunctionDescription& fi = a.newRTCFunction("rtc_message_in_func", rtc_message_in_func);
     fi.setMessageInput(message);
-    std::default_random_engine rng(static_cast<unsigned int>(time(nullptr)));
+    std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
     AgentVector pop(a, (unsigned int)AGENT_COUNT);
     int sum = 0;

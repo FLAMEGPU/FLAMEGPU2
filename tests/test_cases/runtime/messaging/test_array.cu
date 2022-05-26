@@ -70,7 +70,7 @@ TEST(TestMessage_Array, Mandatory) {
     }
     // Shuffle the list of numbers
     const unsigned seed = static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
-    std::shuffle(numbers.begin(), numbers.end(), std::default_random_engine(seed));
+    std::shuffle(numbers.begin(), numbers.end(), std::mt19937_64(seed));
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
@@ -116,7 +116,7 @@ TEST(TestMessage_Array, Optional) {
     }
     // Shuffle the list of numbers
     const unsigned seed = static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
-    std::shuffle(numbers.begin(), numbers.end(), std::default_random_engine(seed));
+    std::shuffle(numbers.begin(), numbers.end(), std::mt19937_64(seed));
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
@@ -317,7 +317,7 @@ TEST(TestMessage_Array, DISABLED_DuplicateOutputException) {
     }
     // Shuffle the list of numbers
     const unsigned seed = static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
-    std::shuffle(numbers.begin(), numbers.end(), std::default_random_engine(seed));
+    std::shuffle(numbers.begin(), numbers.end(), std::mt19937_64(seed));
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {

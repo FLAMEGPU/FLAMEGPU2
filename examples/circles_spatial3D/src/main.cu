@@ -166,7 +166,7 @@ int main(int argc, const char ** argv) {
      */
     if (cudaSimulation.getSimulationConfig().input_file.empty()) {
         // Currently population has not been init, so generate an agent population on the fly
-        std::default_random_engine rng;
+        std::mt19937_64 rng;
         std::uniform_real_distribution<float> dist(0.0f, ENV_MAX);
         flamegpu::AgentVector population(model.Agent("Circle"), AGENT_COUNT);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {

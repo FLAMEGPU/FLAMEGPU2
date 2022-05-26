@@ -395,7 +395,7 @@ int main(int argc, const char ** argv) {
     NVTX_PUSH("CUDAAgentModel initialisation");
     cudaSimulation.initialise(argc, argv);
     if (cudaSimulation.getSimulationConfig().input_file.empty()) {
-        std::default_random_engine rng;
+        std::mt19937_64 rng;
         // Pre init, decide the sugar hotspots
         std::vector<std::array<unsigned int, 4>> sugar_hotspots;
         {

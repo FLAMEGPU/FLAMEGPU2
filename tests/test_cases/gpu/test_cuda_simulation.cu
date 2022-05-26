@@ -359,7 +359,7 @@ TEST(TestSimulation, Simulate) {
 // Show that blank init resets the vals?
 
 TEST(TestCUDASimulation, AgentDeath) {
-    std::default_random_engine generator;
+    std::mt19937_64 generator;
     std::uniform_int_distribution<unsigned int> distribution(0, 12);
     // Test that step does a single step
     ModelDescription m(MODEL_NAME);
