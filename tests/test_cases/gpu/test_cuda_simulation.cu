@@ -95,9 +95,9 @@ TEST(TestSimulation, ArgParse_inputfile_long) {
     EXPECT_EQ(c.getSimulationConfig().input_file, "");
     EXPECT_THROW(c.initialise(sizeof(argv)/sizeof(char*), argv), exception::UnsupportedFileType);  // cant detect filetype
     EXPECT_EQ(c.getSimulationConfig().input_file, argv[2]);
-    // Blank init resets value to default
-    c.initialise(0, nullptr);
-    EXPECT_EQ(c.getSimulationConfig().input_file, "");
+    // Blank init does not reset value to default
+    EXPECT_THROW(c.initialise(0, nullptr), exception::UnsupportedFileType);  // cant detect filetype
+    EXPECT_EQ(c.getSimulationConfig().input_file, argv[2]);
 }
 TEST(TestSimulationDeathTest, ArgParse_inputfile_short) {
     ModelDescription m(MODEL_NAME);
@@ -113,9 +113,9 @@ TEST(TestSimulation, ArgParse_steps_long) {
     EXPECT_EQ(c.getSimulationConfig().steps, 1u);
     c.initialise(sizeof(argv) / sizeof(char*), argv);
     EXPECT_EQ(c.getSimulationConfig().steps, 12u);
-    // Blank init resets value to default
+    // Blank does not reset value to default
     c.initialise(0, nullptr);
-    EXPECT_EQ(c.getSimulationConfig().steps, 1u);
+    EXPECT_EQ(c.getSimulationConfig().steps, 12u);
 }
 TEST(TestSimulation, ArgParse_steps_short) {
     ModelDescription m(MODEL_NAME);
@@ -124,9 +124,9 @@ TEST(TestSimulation, ArgParse_steps_short) {
     EXPECT_EQ(c.getSimulationConfig().steps, 1u);
     c.initialise(sizeof(argv) / sizeof(char*), argv);
     EXPECT_EQ(c.getSimulationConfig().steps, 12u);
-    // Blank init resets value to default
+    // Blank does not reset value to default
     c.initialise(0, nullptr);
-    EXPECT_EQ(c.getSimulationConfig().steps, 1u);
+    EXPECT_EQ(c.getSimulationConfig().steps, 12u);
 }
 TEST(TestSimulation, ArgParse_randomseed_long) {
     ModelDescription m(MODEL_NAME);
@@ -135,9 +135,9 @@ TEST(TestSimulation, ArgParse_randomseed_long) {
     EXPECT_NE(c.getSimulationConfig().random_seed, 12u);
     c.initialise(sizeof(argv) / sizeof(char*), argv);
     EXPECT_EQ(c.getSimulationConfig().random_seed, 12u);
-    // Blank init resets value to default
+    // Blank does not reset value to default
     c.initialise(0, nullptr);
-    EXPECT_NE(c.getSimulationConfig().random_seed, 12u);
+    EXPECT_EQ(c.getSimulationConfig().random_seed, 12u);
 }
 TEST(TestSimulation, ArgParse_randomseed_short) {
     ModelDescription m(MODEL_NAME);
@@ -146,9 +146,9 @@ TEST(TestSimulation, ArgParse_randomseed_short) {
     EXPECT_NE(c.getSimulationConfig().random_seed, 12u);
     c.initialise(sizeof(argv) / sizeof(char*), argv);
     EXPECT_EQ(c.getSimulationConfig().random_seed, 12u);
-    // Blank init resets value to default
+    // Blank does not reset value to default
     c.initialise(0, nullptr);
-    EXPECT_NE(c.getSimulationConfig().random_seed, 12u);
+    EXPECT_EQ(c.getSimulationConfig().random_seed, 12u);
 }
 TEST(TestCUDASimulation, ArgParse_device_long) {
     ASSERT_EQ(cudaGetLastError(), cudaSuccess);
@@ -160,10 +160,10 @@ TEST(TestCUDASimulation, ArgParse_device_long) {
     // As can set to a valid device, we haven't build code for
     EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), exception::InvalidCUDAdevice);
     EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
-    // Blank init resets value to default
+    // Blank init does not reset value to default
     ASSERT_EQ(cudaGetLastError(), cudaSuccess);
-    c.initialise(0, nullptr);
-    EXPECT_EQ(c.getCUDAConfig().device_id, 0);
+    EXPECT_THROW(c.initialise(0, nullptr), exception::InvalidCUDAdevice);
+    EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
     ASSERT_EQ(cudaGetLastError(), cudaSuccess);
 }
 TEST(TestCUDASimulation, ArgParse_device_short) {
@@ -176,10 +176,10 @@ TEST(TestCUDASimulation, ArgParse_device_short) {
     // As can set to a valid device, we haven't build code for
     EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), exception::InvalidCUDAdevice);
     EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
-    // Blank init resets value to default
+    // Blank init does not reset value to default
     ASSERT_EQ(cudaGetLastError(), cudaSuccess);
-    c.initialise(0, nullptr);
-    EXPECT_EQ(c.getCUDAConfig().device_id, 0);
+    EXPECT_THROW(c.initialise(0, nullptr), exception::InvalidCUDAdevice);
+    EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
     ASSERT_EQ(cudaGetLastError(), cudaSuccess);
 }
 FLAMEGPU_AGENT_FUNCTION(SetGetFn, MessageNone, MessageNone) {
