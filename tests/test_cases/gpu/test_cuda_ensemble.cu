@@ -110,6 +110,16 @@ TEST(TestCUDAEnsemble, initialise_devices) {
     ensemble.initialise(sizeof(argv) / sizeof(char*), argv);
     EXPECT_EQ(ensemble.getConfig().devices, std::set<int>({0}));
 }
+TEST(TestCUDAEnsemble, initialise_devices_wrong) {
+    flamegpu::ModelDescription model("test");
+    flamegpu::CUDAEnsemble ensemble(model);
+    int device_ct = -1;
+    EXPECT_EQ(cudaGetDeviceCount(&device_ct), cudaSuccess);
+    ensemble.Config().devices = { device_ct };
+    RunPlanVector plan(model, 1);
+    // Sim with out of bounds device ID, get exception
+    EXPECT_THROW(ensemble.simulate(plan), exception::InvalidCUDAdevice);
+}
 TEST(TestCUDAEnsemble, initialise_quiet) {
     // Create a model
     flamegpu::ModelDescription model("test");
