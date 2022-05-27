@@ -22,6 +22,7 @@ Simulation::Simulation(const std::shared_ptr<const ModelData> &_model)
     : model(_model->clone())
     , submodel(nullptr)
     , mastermodel(nullptr)
+    , config({})
     , instance_id(get_instance_id())
     , maxLayerWidth((*model).getMaxLayerWidth()) { }
 
@@ -29,13 +30,12 @@ Simulation::Simulation(const std::shared_ptr<SubModelData> &submodel_desc, CUDAS
     : model(submodel_desc->submodel)
     , submodel(submodel_desc)
     , mastermodel(master_model)
+    , config({})
     , instance_id(get_instance_id())
     , maxLayerWidth(submodel_desc->submodel->getMaxLayerWidth()) { }
 
 void Simulation::initialise(int argc, const char** argv) {
     NVTX_RANGE("Simulation::initialise");
-    config = Config();  // Reset to defaults
-    resetDerivedConfig();
     // check input args
     if (argc)
         if (!checkArgs(argc, argv))

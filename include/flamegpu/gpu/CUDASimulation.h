@@ -386,11 +386,6 @@ class CUDASimulation : public Simulation {
      * @see Simulation::printHelp()
      */
     void printHelp_derived() override;
-    /**
-     * Called at the start of Simulation::initialise(int, const char**) to reset runner specific config struct
-     * @see Simulation::initialise(int, const char**)
-     */
-    void resetDerivedConfig() override;
 
  private:
     /**

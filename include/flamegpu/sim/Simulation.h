@@ -136,7 +136,6 @@ class Simulation {
     virtual void applyConfig_derived() = 0;
     virtual bool checkArgs_derived(int argc, const char** argv, int &i) = 0;
     virtual void printHelp_derived() = 0;
-    virtual void resetDerivedConfig() = 0;
     /**
      * Returns the unique instance id of this CUDASimulation instance
      */
