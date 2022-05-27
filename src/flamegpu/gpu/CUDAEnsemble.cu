@@ -71,14 +71,26 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
     run_logs.clear();
     run_logs.resize(plans.size());
     // Workout how many devices and runner we will be executing
-    int ct = -1;
-    gpuErrchk(cudaGetDeviceCount(&ct));
+    int device_count = -1;
+    cudaError_t cudaStatus = cudaGetDeviceCount(&device_count);
+    if (cudaStatus != cudaSuccess) {
+        THROW exception::InvalidCUDAdevice("Error finding CUDA devices!  Do you have a CUDA-capable GPU installed?, in CUDAEnsemble::simulate()");
+    }
+    if (device_count == 0) {
+        THROW exception::InvalidCUDAdevice("Error no CUDA devices found!, in CUDAEnsemble::simulate()");
+    }
+    for (const int &id : config.devices) {
+        if (id >= device_count) {
+            THROW exception::InvalidCUDAdevice("Requested CUDA device %d is not valid, only %d CUDA devices available!, in CUDAEnsemble::simulate()", id, device_count);
+        }
+    }
+
     std::set<int> devices;
     if (config.devices.size()) {
         devices = config.devices;
     } else {
-        for (int i = 0; i < ct; ++i) {
-        devices.emplace(i);
+        for (int i = 0; i < device_count; ++i) {
+            devices.emplace(i);
         }
     }
     // Check that each device is capable, and init cuda context
