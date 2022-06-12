@@ -64,9 +64,18 @@ FLAMEGPU_STEP_FUNCTION(Validation) {
     prevTotalDrift = totalDrift;
     // printf("Avg Drift: %g\n", totalDrift / FLAMEGPU->agent("Circle").count());
     printf("%.2f%% Drift correct\n", 100 * driftDropped / static_cast<float>(driftDropped + driftIncreased));
+
+    // Change radius
+    static float radius_swap = 4.0f;
+    if (!((FLAMEGPU->getStepCounter()+1) % 200)) {
+        auto msg = FLAMEGPU->message<flamegpu::MessageSpatial3D>("location");
+        const float t = msg.getRadius();
+        msg.setRadius(radius_swap);
+        radius_swap = t;
+    }
 }
 int main(int argc, const char ** argv) {
-    flamegpu::ModelDescription model("Circles_BruteForce_example");
+    flamegpu::ModelDescription model("Circles_Spatial3D_example");
 
     const unsigned int AGENT_COUNT = 16384;
     const float ENV_MAX = static_cast<float>(floor(cbrt(AGENT_COUNT)));
