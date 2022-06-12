@@ -219,7 +219,8 @@ class MessageSpatial3D::Description : public MessageBruteForce::Description {
 class MessageSpatial3D::HostAPI {
     CUDAMessage &cudaMessage;
     CUDAModelHandler &messageHandler;
-public:
+
+ public:
     HostAPI(CUDAMessage &_cudaMessage, CUDAModelHandler &_messageHandler)
         : cudaMessage(_cudaMessage)
         , messageHandler(_messageHandler) { }
