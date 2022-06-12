@@ -1524,7 +1524,7 @@ void CUDASimulation::initialiseSingletons() {
         cudaStream_t stream_0 = getStream(0);
 
         // Pass created RandomManager to host api
-        host_api = std::make_unique<HostAPI>(*this, singletons->rng, singletons->scatter, agentOffsets, agentData, singletons->environment, macro_env, 0, stream_0);  // Host fns are currently all serial
+        host_api = std::make_unique<HostAPI>(*this, singletons->rng, singletons->scatter, agentOffsets, agentData, message_map, singletons->environment, macro_env, 0, stream_0);  // Host fns are currently all serial
 
         for (auto &cm : message_map) {
             cm.second->init(singletons->scatter, 0, stream_0);

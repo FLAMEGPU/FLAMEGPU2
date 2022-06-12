@@ -38,7 +38,7 @@ void CUDAMessageList::cleanupAllocatedData() {
     releaseDeviceMessageList(d_swap_list);
 }
 
-void CUDAMessageList::allocateDeviceMessageList(CUDAMessageMap &memory_map) {
+void CUDAMessageList::allocateDeviceMessageList(MessageMap &memory_map) {
     // we use the  messages memory map to iterate the  message variables and do allocation within our GPU hash map
     const auto &mem = message.getMessageDescription().variables;
 
@@ -62,14 +62,14 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMessageMap &memory_map) {
 #endif
 
         // store the pointer in the map
-        memory_map.insert(CUDAMessageMap::value_type(var_name, d_ptr));
+        memory_map.insert(MessageMap::value_type(var_name, d_ptr));
     }
 }
 void CUDAMessageList::resize(CUDAScatter& scatter, cudaStream_t stream, unsigned int streamId, unsigned int keep_len) {
     // Release d_swap_list, we don't retain this data
     releaseDeviceMessageList(d_swap_list);
     // Allocate the new d_list
-    CUDAMessageMap d_list_old;
+    MessageMap d_list_old;
     std::swap(d_list, d_list_old);
     allocateDeviceMessageList(d_list);
     if (keep_len && keep_len <= message.getMessageCount()) {
@@ -92,7 +92,7 @@ void CUDAMessageList::resize(CUDAScatter& scatter, cudaStream_t stream, unsigned
     gpuErrchk(cudaStreamSynchronize(stream));
 }
 
-void CUDAMessageList::releaseDeviceMessageList(CUDAMessageMap& memory_map) {
+void CUDAMessageList::releaseDeviceMessageList(MessageMap& memory_map) {
     // for each device pointer in the cuda memory map we need to free these
     for (const auto &mm : memory_map) {
         // free the memory on the device
@@ -101,7 +101,7 @@ void CUDAMessageList::releaseDeviceMessageList(CUDAMessageMap& memory_map) {
     memory_map.clear();
 }
 
-void CUDAMessageList::zeroDeviceMessageList_async(CUDAMessageMap& memory_map, cudaStream_t stream, unsigned int skip_offset) {
+void CUDAMessageList::zeroDeviceMessageList_async(MessageMap& memory_map, cudaStream_t stream, unsigned int skip_offset) {
     if (skip_offset >= message.getMaximumListSize())
         return;
     // for each device pointer in the cuda memory map set the values to 0
@@ -116,7 +116,7 @@ void CUDAMessageList::zeroDeviceMessageList_async(CUDAMessageMap& memory_map, cu
 }
 
 void* CUDAMessageList::getReadMessageListVariablePointer(std::string variable_name) {
-    CUDAMessageMap::iterator mm = d_list.find(variable_name);
+    MessageMap::iterator mm = d_list.find(variable_name);
     if (mm == d_list.end()) {
         THROW exception::InvalidMessageVar("Variable '%s' was not found in message '%s', "
           "in CUDAMessageList::getReadMessageListVariablePointer()",
@@ -126,7 +126,7 @@ void* CUDAMessageList::getReadMessageListVariablePointer(std::string variable_na
     return mm->second;
 }
 void* CUDAMessageList::getWriteMessageListVariablePointer(std::string variable_name) {
-    CUDAMessageMap::iterator mm = d_swap_list.find(variable_name);
+    MessageMap::iterator mm = d_swap_list.find(variable_name);
     if (mm == d_swap_list.end()) {
         THROW exception::InvalidMessageVar("Variable '%s' was not found in message '%s', "
             "in CUDAMessageList::getWriteMessageListVariablePointer()",

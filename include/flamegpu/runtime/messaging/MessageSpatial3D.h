@@ -25,6 +25,7 @@ class MessageSpatial3D {
     struct Data;        // Forward declare inner classes
     class Description;  // Forward declare inner classes
     class CUDAModelHandler;
+    class HostAPI;
     // Device
     class In;
     class Out;

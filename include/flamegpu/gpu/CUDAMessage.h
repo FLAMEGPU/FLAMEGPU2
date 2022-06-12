@@ -8,6 +8,7 @@
 // include sub classes
 #include "flamegpu/gpu/CUDAMessageList.h"
 #include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h"
+#include "flamegpu/runtime/messaging/MessageSpatial3D/MessageSpatial3DHost.h"
 
 // forward declare classes from other modules
 
@@ -45,6 +46,13 @@ class CUDAMessage {
      * Return an immutable reference to the message description represented by the CUDAMessage instance
      */
     const MessageBruteForce::Data& getMessageDescription() const;
+    /**
+     * Return a HostAPI object for the message
+     *
+     * This can be used to update the bounds or similar.
+     */
+    template<typename Msg>
+    typename Msg::HostAPI getHostAPI();
     /**
      * @return The currently allocated length of the message array (in the number of messages)
      */
@@ -94,8 +102,8 @@ class CUDAMessage {
      */
     void mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &writeLen, cudaStream_t stream) const;
     void *getReadPtr(const std::string &var_name);
-    const CUDAMessageMap &getReadList() { return message_list->getReadList(); }
-    const CUDAMessageMap &getWriteList() { return message_list->getWriteList(); }
+    const CUDAMessageList::MessageMap &getReadList() { return message_list->getReadList(); }
+    const CUDAMessageList::MessageMap&getWriteList() { return message_list->getWriteList(); }
     /**
      * Swaps the two internal maps within message_list
      * @param isOptional If optional newMessageCount will be reduced based on scan_flag[streamId]
@@ -176,6 +184,14 @@ class CUDAMessage {
      */
     const CUDASimulation& cudaSimulation;
 };
+template<typename Msg>
+typename Msg::HostAPI CUDAMessage::getHostAPI() {
+    auto t = dynamic_cast<typename Msg::CUDAModelHandler*>(specialisation_handler.get());
+    if (t) {
+        return Msg::HostAPI(*this, *t);
+    }
+    THROW exception::InvalidMessageType("Message %s is not of type %s, in HostAPI::message()\n", message_description.name.c_str(), std::type_index(typeid(typename Msg)).name());
+}
 
 }  // namespace flamegpu
 
