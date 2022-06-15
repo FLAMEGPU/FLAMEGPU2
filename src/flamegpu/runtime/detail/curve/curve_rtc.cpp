@@ -413,7 +413,7 @@ void CurveRTCHost::initHeaderEnvironment(const size_t env_buffer_len) {
                 getEnvArrayVariableImpl << "        if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
                 getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s' type mismatch.\\n\", name);\n";
                 getEnvArrayVariableImpl << "            return {};\n";
-                getEnvArrayVariableImpl << "        } else if (type_decode<T>::len_t * N != " << element.second.elements << ") {\n";
+                getEnvArrayVariableImpl << "        } else if (type_decode<T>::len_t * N != " << element.second.elements << " && N != 0) {\n";  // Special case, env array specifying length is optional as it's not actually required
                 getEnvArrayVariableImpl << "            DTHROW(\"Environment array property '%s' length mismatch.\\n\", name);\n";
                 getEnvArrayVariableImpl << "            return {};\n";
                 getEnvArrayVariableImpl << "        } else if (t_index > " << element.second.elements << " || t_index < index) {\n";
