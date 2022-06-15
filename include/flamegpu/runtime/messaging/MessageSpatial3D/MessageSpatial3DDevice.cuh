@@ -531,6 +531,7 @@ class MessageSpatial3D::In {
      *
      * @param x Search origin x coord
      * @param y Search origin y coord
+     * @param z Search origin z coord
      *
      * @note Unlike the regular iterator, this iterator will not return messages outside of the search radius. The wrapped distance can be returned via WrapFilter::Message::distance()
      */
