@@ -269,6 +269,17 @@ class MessageSpatial2D::In {
 
                 return sqrt(dx * dx + dy * dy);
             }
+            /**
+             * Utility function for deciding next strip to access
+             */
+            __device__ void nextCell() {
+                if (relative_cell[1] >= 1) {
+                    relative_cell[1] = -1;
+                    relative_cell[0]++;
+                } else {
+                    relative_cell[1]++;
+                }
+            }
 
          public:
             /**
@@ -315,17 +326,6 @@ class MessageSpatial2D::In {
              */
             __device__ Message& operator++();
             /**
-             * Utility function for deciding next strip to access
-             */
-            __device__ void nextCell() {
-                if (relative_cell[1] >= 1) {
-                    relative_cell[1] = -1;
-                    relative_cell[0]++;
-                } else {
-                    relative_cell[1]++;
-                }
-            }
-            /**
              * Returns the value for the current message attached to the named variable
              * @param variable_name Name of the variable
              * @tparam T type of the variable
@@ -352,6 +352,26 @@ class MessageSpatial2D::In {
              */
             __device__ float getDistance() const {
                 return distance;
+            }
+            /**
+             * Returns the virtual x variable of the message
+             * This is the closest x coordinate the message would have, relative to the observers x coordinate in a wrapped environment
+             * @param x1 The x coordinate of the observer
+             */
+            __device__ float getVirtualX(float x1) const {
+                const float x2 = getVariable<float>("x");
+                const float x21 = x2 - x1;
+                return abs(x21) > _parent.metadata->environmentWidth[0] / 2.0f ? x2 - (x21 / abs(x21) * _parent.metadata->environmentWidth[0]) : x2;
+            }
+            /**
+             * Returns the virtual y variable of the message
+             * This is the closest y coordinate the message would have, relative to the observers x coordinate in a wrapped environment
+             * @param y1 The y coordinate of the observer
+             */
+            __device__ float getVirtualY(float y1) const {
+                const float y2 = getVariable<float>("y");
+                const float y21 = y2 - y1;
+                return abs(y21) > _parent.metadata->environmentWidth[1] / 2.0f ? y2 - (y21 / abs(y21) * _parent.metadata->environmentWidth[1]) : y2;
             }
         };
         /**
