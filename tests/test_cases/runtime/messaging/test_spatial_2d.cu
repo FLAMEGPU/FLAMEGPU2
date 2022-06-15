@@ -785,7 +785,6 @@ TEST(Spatial2DMessageTest, DISABLED_ArrayVariable_glm) { }
 TEST(RTCSpatial2DMessageTest, DISABLED_ArrayVariable_glm) { }
 #endif
 
-
 FLAMEGPU_AGENT_FUNCTION(inWrapped2D, MessageSpatial2D, MessageNone) {
     const float x1 = FLAMEGPU->getVariable<float>("x");
     const float y1 = FLAMEGPU->getVariable<float>("y");

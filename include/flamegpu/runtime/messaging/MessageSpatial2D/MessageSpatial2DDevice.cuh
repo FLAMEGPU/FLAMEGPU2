@@ -45,13 +45,19 @@ class MessageSpatial2D::In {
              * This is the index of the currently accessed message, relative to the full message list
              */
             int cell_index = 0;
+            /**
+             * Utility function for deciding next strip to access
+             */
+            __device__ void nextStrip() {
+                relative_cell++;
+            }
 
          public:
             /**
              * Constructs a message and directly initialises all of it's member variables
              * @note See member variable documentation for their purposes
              */
-            __device__ Message(const Filter &parent, const int &relative_cell_y, const int &_cell_index_max, const int &_cell_index)
+            __device__ Message(const Filter &parent, const int relative_cell_y, const int _cell_index_max, const int _cell_index)
                 : _parent(parent)
                 , cell_index_max(_cell_index_max)
                 , cell_index(_cell_index) {
@@ -90,12 +96,6 @@ class MessageSpatial2D::In {
              */
             __device__ Message& operator++();
             /**
-             * Utility function for deciding next strip to access
-             */
-            __device__ void nextStrip() {
-                relative_cell++;
-            }
-            /**
              * Returns the value for the current message attached to the named variable
              * @param variable_name Name of the variable
              * @tparam T type of the variable
@@ -116,7 +116,7 @@ class MessageSpatial2D::In {
              * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
              */
             template<typename T, MessageNone::size_type N, unsigned int M> __device__
-            T getVariable(const char(&variable_name)[M], const unsigned int& index) const;
+            T getVariable(const char(&variable_name)[M], unsigned int index) const;
         };
         /**
          * Stock iterator for iterating MessageSpatial3D::In::Filter::Message objects
@@ -133,7 +133,7 @@ class MessageSpatial2D::In {
              * This iterator is constructed by MessageSpatial2D::In::Filter::begin()(float, float)
              * @see MessageSpatial2D::In::Operator()(float, float)
              */
-            __device__ iterator(const Filter &parent, const int &relative_cell_y, const int &_cell_index_max, const int &_cell_index)
+            __device__ iterator(const Filter &parent, const int relative_cell_y, const int _cell_index_max, const int _cell_index)
                 : _message(parent, relative_cell_y, _cell_index_max, _cell_index) {
                 // Increment to find first message
                 ++_message;
@@ -183,7 +183,7 @@ class MessageSpatial2D::In {
          * @param x Search origin x coord
          * @param y Search origin y coord
          */
-        __device__ Filter(const MetaData *_metadata, const float &x, const float &y);
+        __device__ Filter(const MetaData *_metadata, float x, float y);
         /**
          * Returns an iterator to the start of the message list subset about the search origin
          */
@@ -226,7 +226,7 @@ class MessageSpatial2D::In {
         /**
          * Provides access to a specific message
          * Returned by the iterator
-         * @see In::Filter::iterator
+         * @see In::WrapFilter::iterator
          */
         class Message {
             /**
@@ -251,7 +251,7 @@ class MessageSpatial2D::In {
              * The pre-calculated boundary wrapping distance to the message
              */
             float distance;
-            __device__ float wrapped_distance(const float &x, const float &y) const {
+            __device__ float wrapped_distance(const float x, const float y) const {
                 // distance from x, y
                 // To _parent.loc
                 // Wrapping over boundaries
@@ -275,9 +275,9 @@ class MessageSpatial2D::In {
             __device__ void nextCell() {
                 if (relative_cell[1] >= 1) {
                     relative_cell[1] = -1;
-                    relative_cell[0]++;
+                    ++relative_cell[0];
                 } else {
-                    relative_cell[1]++;
+                    ++relative_cell[1];
                 }
             }
 
@@ -286,7 +286,7 @@ class MessageSpatial2D::In {
              * Constructs a message and directly initialises all of it's member variables
              * @note See member variable documentation for their purposes
              */
-            __device__ Message(const WrapFilter& parent, const int relative_cell_x, const int relative_cell_y, const int& _cell_index_max, const int& _cell_index)
+            __device__ Message(const WrapFilter& parent, const int relative_cell_x, const int relative_cell_y, const int _cell_index_max, const int _cell_index)
                 : _parent(parent)
                 , cell_index_max(_cell_index_max)
                 , cell_index(_cell_index) {
@@ -317,7 +317,7 @@ class MessageSpatial2D::In {
             __device__ bool operator!=(const Message& rhs) const {
                 // The incoming Message& is end(), so we don't care about that
                 // We only care that the host object has reached end
-                // When the x offset equals 2, it has exceeded the [-1, 1] range
+                // When the x offset equals 2, it has exceeded the [1, 1] range
                 return !(this->relative_cell[0] >= 2);
             }
             /**
@@ -346,7 +346,7 @@ class MessageSpatial2D::In {
              * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
              */
             template<typename T, MessageNone::size_type N, unsigned int M>
-            __device__ T getVariable(const char(&variable_name)[M], const unsigned int& index) const;
+            __device__ T getVariable(const char(&variable_name)[M], unsigned int index) const;
             /**
              * Returns the wrapped distance from the search origin to the current message
              */
@@ -365,7 +365,7 @@ class MessageSpatial2D::In {
             }
             /**
              * Returns the virtual y variable of the message
-             * This is the closest y coordinate the message would have, relative to the observers x coordinate in a wrapped environment
+             * This is the closest y coordinate the message would have, relative to the observers y coordinate in a wrapped environment
              * @param y1 The y coordinate of the observer
              */
             __device__ float getVirtualY(float y1) const {
@@ -389,7 +389,7 @@ class MessageSpatial2D::In {
              * This iterator is constructed by MessageSpatial2D::In::WrapFilter::begin()(float, float)
              * @see MessageSpatial2D::In::wrap()(float, float)
              */
-            __device__ iterator(const WrapFilter& parent, const int& relative_cell_x, const int& relative_cell_y, const int& _cell_index_max, const int& _cell_index)
+            __device__ iterator(const WrapFilter& parent, const int relative_cell_x, const int relative_cell_y, const int _cell_index_max, const int _cell_index)
                 : _message(parent, relative_cell_x, relative_cell_y, _cell_index_max, _cell_index) {
                 // Increment to find first message
                 ++_message;
@@ -439,7 +439,7 @@ class MessageSpatial2D::In {
          * @param x Search origin x coord
          * @param y Search origin y coord
          */
-        __device__ WrapFilter(const MetaData* _metadata, const float& x, const float& y);
+        __device__ WrapFilter(const MetaData* _metadata, float x, float y);
         /**
          * Returns an iterator to the start of the message list subset about the search origin
          */
@@ -488,7 +488,7 @@ class MessageSpatial2D::In {
      *
      * @note This iterator may return messages outside of the search radius, so distance checking should be performed by the user
      */
-     inline __device__ Filter operator() (const float &x, const float &y) const {
+     inline __device__ Filter operator() (const float x, const float y) const {
          return Filter(metadata, x, y);
      }
      /**
@@ -500,7 +500,7 @@ class MessageSpatial2D::In {
       *
       * @note Unlike the regular iterator, this iterator will not return messages outside of the search radius. The wrapped distance can be returned via WrapFilter::Message::distance()
       */
-     inline __device__ WrapFilter wrap(const float& x, const float& y) const {
+     inline __device__ WrapFilter wrap(const float x, const float y) const {
          return WrapFilter(metadata, x, y);
      }
 
@@ -539,7 +539,7 @@ class MessageSpatial2D::Out : public MessageBruteForce::Out {
      * @param y Message y coord
      * @note Convenience wrapper for setVariable()
      */
-    __device__ void setLocation(const float &x, const float &y) const;
+    __device__ void setLocation(const float x, const float y) const;
 };
 
 template<typename T, unsigned int N>
@@ -556,7 +556,7 @@ __device__ T MessageSpatial2D::In::Filter::Message::getVariable(const char(&vari
     return value;
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
-T MessageSpatial2D::In::Filter::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
+T MessageSpatial2D::In::Filter::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
 #if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
     if (relative_cell >= 2) {
@@ -582,7 +582,7 @@ __device__ T MessageSpatial2D::In::WrapFilter::Message::getVariable(const char(&
     return value;
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
-T MessageSpatial2D::In::WrapFilter::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
+T MessageSpatial2D::In::WrapFilter::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
 #if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
     if (relative_cell[0] >= 2) {
@@ -620,7 +620,7 @@ __device__ __forceinline__ unsigned int getHash2D(const MessageSpatial2D::MetaDa
         gridPos[0]);                                      // x
 }
 
-__device__ inline void MessageSpatial2D::Out::setLocation(const float &x, const float &y) const {
+__device__ inline void MessageSpatial2D::Out::setLocation(const float x, const float y) const {
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
 
     // set the variables using curve
@@ -631,7 +631,7 @@ __device__ inline void MessageSpatial2D::Out::setLocation(const float &x, const 
     this->scan_flag[index] = 1;
 }
 
-__device__ inline MessageSpatial2D::In::Filter::Filter(const MetaData* _metadata, const float& x, const float& y)
+__device__ inline MessageSpatial2D::In::Filter::Filter(const MetaData* _metadata, const float x, const float y)
     : metadata(_metadata) {
     loc[0] = x;
     loc[1] = y;
@@ -664,7 +664,7 @@ __device__ inline MessageSpatial2D::In::Filter::Message& MessageSpatial2D::In::F
     }
     return *this;
 }
-__device__ inline MessageSpatial2D::In::WrapFilter::WrapFilter(const MetaData* _metadata, const float& x, const float& y)
+__device__ inline MessageSpatial2D::In::WrapFilter::WrapFilter(const MetaData* _metadata, const float x, const float y)
     : metadata(_metadata) {
     loc[0] = x;
     loc[1] = y;
