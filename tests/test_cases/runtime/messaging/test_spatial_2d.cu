@@ -815,14 +815,14 @@ FLAMEGPU_AGENT_FUNCTION(inWrapped2D, MessageSpatial2D, MessageNone) {
     FLAMEGPU->setVariable<float>("result_y", ySum);
     return ALIVE;
 }
-TEST(Spatial2DMessageTest, Wrapped) {
+void wrapped_2d_test(const float x_offset, const float y_offset, const float out_of_bounds = 0) {
     std::unordered_map<int, unsigned int> bin_counts;
     // Construct model
     ModelDescription model("Spatial2DMessageTestModel");
     {   // Location message
         MessageSpatial2D::Description& message = model.newMessage<MessageSpatial2D>("location");
-        message.setMin(0, 0);
-        message.setMax(30, 30);
+        message.setMin(0 + x_offset, 0 + y_offset);
+        message.setMax(30 + x_offset, 30 + y_offset);
         message.setRadius(3);  // With a grid of agents spaced 2 units apart, this configuration should give each agent 8 neighbours (assuming my basic maths guessing works out)
         message.newVariable<flamegpu::id_t>("id");  // unused by current test
     }
@@ -855,8 +855,8 @@ TEST(Spatial2DMessageTest, Wrapped) {
             for (unsigned int j = 0; j < 15u; j++) {
                 unsigned int k = i * 15u + j;
                 AgentVector::Agent instance = population[k];
-                instance.setVariable<float>("x", i * 2.0f);
-                instance.setVariable<float>("y", j * 2.0f);
+                instance.setVariable<float>("x", i * 2.0f + x_offset + out_of_bounds);
+                instance.setVariable<float>("y", j * 2.0f + y_offset);
             }
         }
         cudaSimulation.setPopulationData(population);
@@ -875,6 +875,36 @@ TEST(Spatial2DMessageTest, Wrapped) {
         EXPECT_EQ(9u, ai.getVariable<unsigned int>("count"));
     }
 }
+TEST(Spatial2DMessageTest, Wrapped) {
+    wrapped_2d_test(0.0f, 0.0f);
+}
+// Test that it doesn't fall over if the environment min is not 0, with a few configurations
+TEST(Spatial2DMessageTest, Wrapped2) {
+    wrapped_2d_test(141.0f, 0.0f);
+}
+TEST(Spatial2DMessageTest, Wrapped3) {
+    wrapped_2d_test(0.0f, 3440.0f);
+}
+TEST(Spatial2DMessageTest, Wrapped4) {
+    wrapped_2d_test(-2342.0f, 0.0f);
+}
+TEST(Spatial2DMessageTest, Wrapped5) {
+    wrapped_2d_test(0.0f, -7540.0f);
+}
+TEST(Spatial2DMessageTest, Wrapped6) {
+    wrapped_2d_test(-141.0f, 0.0f);
+}
+TEST(Spatial2DMessageTest, Wrapped7) {
+    wrapped_2d_test(141.4f, -540.7f);
+}
+#if !defined(SEATBELTS) || SEATBELTS
+// Test that SEATBELTS catches out of bounds messages
+TEST(Spatial2DMessageTest, Wrapped_OutOfBounds) {
+    EXPECT_THROW(wrapped_2d_test(141.0f, -540.0f, 200.0f), exception::DeviceError);
+}
+#else
+TEST(Spatial2DMessageTest, DISABLED_Wrapped_OutOfBounds) { }
+#endif
 
 }  // namespace test_message_spatial2d
 }  // namespace flamegpu

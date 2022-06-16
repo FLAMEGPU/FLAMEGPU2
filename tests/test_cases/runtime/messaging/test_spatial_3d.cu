@@ -887,14 +887,14 @@ FLAMEGPU_AGENT_FUNCTION(inWrapped3D, MessageSpatial3D, MessageNone) {
     FLAMEGPU->setVariable<float>("result_z", zSum);
     return ALIVE;
 }
-TEST(Spatial3DMessageTest, Wrapped) {
+void wrapped_3d_test(const float x_offset, const float y_offset, const float z_offset, const float out_of_bounds = 0) {
     std::unordered_map<int, unsigned int> bin_counts;
     // Construct model
     ModelDescription model("Spatial2DMessageTestModel");
     {   // Location message
         MessageSpatial3D::Description& message = model.newMessage<MessageSpatial3D>("location");
-        message.setMin(0, 0, 0);
-        message.setMax(70, 70, 70);
+        message.setMin(0 + x_offset, 0 + y_offset, 0 + z_offset);
+        message.setMax(70 + x_offset, 70 + y_offset, 70 + z_offset);
         message.setRadius(3.5);  // With a grid of agents spaced 2 units apart, this configuration should give each agent 8 neighbours (assuming my basic maths guessing works out)
         message.newVariable<flamegpu::id_t>("id");  // unused by current test
     }
@@ -930,9 +930,9 @@ TEST(Spatial3DMessageTest, Wrapped) {
                 for (unsigned int k = 0; k < 35u; k++) {
                     unsigned int w =  (i * 35u+ j) * 35u + k;
                     AgentVector::Agent instance = population[w];
-                    instance.setVariable<float>("x", i * 2.0f);
-                    instance.setVariable<float>("y", j * 2.0f);
-                    instance.setVariable<float>("z", k * 2.0f);
+                    instance.setVariable<float>("x", i * 2.0f + x_offset + out_of_bounds);
+                    instance.setVariable<float>("y", j * 2.0f + y_offset);
+                    instance.setVariable<float>("z", k * 2.0f + z_offset);
                 }
             }
         }
@@ -953,5 +953,23 @@ TEST(Spatial3DMessageTest, Wrapped) {
         EXPECT_EQ(27u, ai.getVariable<unsigned int>("count"));
     }
 }
+TEST(Spatial3DMessageTest, Wrapped) {
+    wrapped_3d_test(0.0f, 0.0f, 0.0f);
+}
+// Test that it doesn't fall over if the environment min is not 0, with a few configurations
+TEST(Spatial3DMessageTest, Wrapped2) {
+    wrapped_3d_test(141.0f, -540.0f, 200.0f);
+}
+TEST(Spatial3DMessageTest, Wrapped3) {
+    wrapped_3d_test(-1401.5f, 5640.3f, -2008.8f);
+}
+#if !defined(SEATBELTS) || SEATBELTS
+// Test that SEATBELTS catches out of bounds messages
+TEST(Spatial3DMessageTest, Wrapped_OutOfBounds) {
+    EXPECT_THROW(wrapped_3d_test(141.0f, -540.0f, 0.0f, 200.0f), exception::DeviceError);
+}
+#else
+TEST(Spatial3DMessageTest, DISABLED_Wrapped_OutOfBounds) { }
+#endif
 }  // namespace test_message_spatial3d
 }  // namespace flamegpu

@@ -268,7 +268,21 @@ class MessageSpatial3D::In {
                 // Wrapping over boundaries
                 // https://blog.demofox.org/2017/10/01/calculating-the-distance-between-points-in-wrap-around-toroidal-space/
                 // Note, this falls over if either location is outside of [0, environmentWidth]
-                // That could be fixed moving out of bounds locations in bounds (+width until positive, then remainder op)
+#if !defined(SEATBELTS) || SEATBELTS
+                if (x > _parent.metadata->max[0] ||
+                    y > _parent.metadata->max[1] ||
+                    z > _parent.metadata->max[2] ||
+                    x < _parent.metadata->min[0] ||
+                    y < _parent.metadata->min[1] ||
+                    z < _parent.metadata->min[2]) {
+                    DTHROW("MessageSpatial3D message location (%f, %f, %f) exceeds environment bounds (%g, %g, %g):(%g, %g, %g),"
+                        " this is unsupported for the wrapped iterator.\n", x, y, z,
+                        _parent.metadata->min[0], _parent.metadata->min[1], _parent.metadata->min[2],
+                        _parent.metadata->max[0], _parent.metadata->max[1], _parent.metadata->max[2]);
+                    // Return something which exceeds the radius
+                    return _parent.metadata->radius * 3;
+                }
+#endif
                 float dx = abs(_parent.loc[0] - x);
                 float dy = abs(_parent.loc[1] - y);
                 float dz = abs(_parent.loc[2] - z);
@@ -282,7 +296,7 @@ class MessageSpatial3D::In {
                 if (dz > _parent.metadata->environmentWidth[2] / 2.0f)
                     dz = _parent.metadata->environmentWidth[2] - dz;
 
-                return sqrt(dx * dx + dy * dy + dz * dz);
+                return sqrtf(dx * dx + dy * dy + dz * dz);
             }
             /**
              * Utility function for deciding next strip to access
@@ -536,6 +550,21 @@ class MessageSpatial3D::In {
      * @note Unlike the regular iterator, this iterator will not return messages outside of the search radius. The wrapped distance can be returned via WrapFilter::Message::distance()
      */
     inline __device__ WrapFilter wrap(const float x, const float y, const float z) const {
+#if !defined(SEATBELTS) || SEATBELTS
+        if (x > metadata->max[0] ||
+            y > metadata->max[1] ||
+            z > metadata->max[2] ||
+            x < metadata->min[0] ||
+            y < metadata->min[1] ||
+            z < metadata->min[2]) {
+            DTHROW("Location (%f, %f, %f) exceeds environment bounds (%g, %g, %g):(%g, %g, %g),"
+                " this is unsupported for the wrapped iterator, MessageSpatial3D::In::wrap().\n", x, y, z,
+                metadata->min[0], metadata->min[1], metadata->min[2],
+                metadata->max[0], metadata->max[1], metadata->max[2]);
+            // Return iterator at min corner of env, this should be safe
+            return WrapFilter(metadata, metadata->min[0], metadata->min[1], metadata->min[2]);
+        }
+#endif
         return WrapFilter(metadata, x, y, z);
     }
 
