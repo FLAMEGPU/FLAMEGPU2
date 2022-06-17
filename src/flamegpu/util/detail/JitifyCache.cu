@@ -299,6 +299,15 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
     }
 #endif
 
+    // Forward the curand Engine request
+#if defined(CURAND_MRG32k3a)
+    options.push_back(std::string("-DCURAND_MRG32k3a"));
+#elif defined(CURAND_Philox4_32_10)
+    options.push_back(std::string("-DCURAND_Philox4_32_10"));
+#elif defined(CURAND_XORWOW)
+    options.push_back(std::string("-DCURAND_XORWOW"));
+#endif
+
     // Set the cuda compuate capability architecture to optimize / generate for, based on the values supported by the current dynamiclaly linked nvrtc and the device in question.
     std::vector<int> nvrtcArchitectures = util::detail::compute_capability::getNVRTCSupportedComputeCapabilties();
     if (nvrtcArchitectures.size()) {
@@ -466,6 +475,16 @@ std::unique_ptr<KernelInstantiation> JitifyCache::loadKernel(const std::string &
         arch + "_" +
         seatbelts + "_" +
         std::string(flamegpu::VERSION_FULL) + "_" +
+#ifdef USE_GLM
+        "glm_" +
+#endif
+#if defined(CURAND_MRG32k3a)
+        "MRG_" +
+#elif defined(CURAND_Philox4_32_10)
+        "PHILOX_" +
+#elif defined(CURAND_XORWOW)
+        "XORWOW_" +
+#endif
         // Use jitify hash methods for consistent hashing between OSs
         std::to_string(hash_combine(hash_larson64(kernel_src.c_str()), hash_larson64(dynamic_header.c_str())));
     // Does a copy with the right reference exist in memory?

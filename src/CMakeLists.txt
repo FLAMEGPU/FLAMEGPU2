@@ -201,6 +201,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/util/StringPair.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/type_decode.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/compute_capability.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/curand.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/wddm.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/CUDAEventTimer.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/cxxname.hpp
