@@ -62,7 +62,7 @@ class RandomManager {
      *     while(length*shrinkModifier>_length)
      *       length*=shrinkModifier
      */
-    curandStateFLAMEGPU *resize(size_type _length, cudaStream_t stream);
+    util::detail::curandState*resize(size_type _length, cudaStream_t stream);
     /**
      * Accessors
      */
@@ -84,14 +84,14 @@ class RandomManager {
      */
     size_type size();
     uint64_t seed();
-    curandStateFLAMEGPU *cudaRandomState();
+    util::detail::curandState*cudaRandomState();
 
  private:
     /**
      * Device array holding curand states
      * They should always be initialised
      */
-    curandStateFLAMEGPU *d_random_state = nullptr;
+     util::detail::curandState*d_random_state = nullptr;
     /**
      * Random seed used to initialise all currently allocated curand states
      */
@@ -127,7 +127,7 @@ class RandomManager {
      * @note h_max_random_state will be allocated to length h_max_random_size
      * However, it will only be initialised from hd_random_size(aka length) onwards
      */
-    curandStateFLAMEGPU *h_max_random_state = nullptr;
+    util::detail::curandState *h_max_random_state = nullptr;
     /**
      * Allocated length of h_max_random_state
      */

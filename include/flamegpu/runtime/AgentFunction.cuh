@@ -27,7 +27,7 @@ typedef void(AgentFunctionWrapper)(
     const unsigned int popNo,
     const void *in_messagelist_metadata,
     const void *out_messagelist_metadata,
-    curandStateFLAMEGPU *d_rng,
+    util::detail::curandState *d_rng,
     unsigned int *scanFlag_agentDeath,
     unsigned int *scanFlag_messageOutput,
     unsigned int *scanFlag_agentOutput);  // Can't put __global__ in a typedef
@@ -63,7 +63,7 @@ __global__ void agent_function_wrapper(
     const unsigned int popNo,
     const void *in_messagelist_metadata,
     const void *out_messagelist_metadata,
-    curandStateFLAMEGPU *d_rng,
+    util::detail::curandState *d_rng,
     unsigned int *scanFlag_agentDeath,
     unsigned int *scanFlag_messageOutput,
     unsigned int *scanFlag_agentOutput) {

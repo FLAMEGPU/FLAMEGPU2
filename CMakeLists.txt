@@ -118,6 +118,10 @@ get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
   unset(isMultiConfig)
 endif()
 
+# Option to change curand engine used for CUDA random generation
+set(CURAND_ENGINE "XORWOW" CACHE STRING "The curand engine to use. Suitable options: \"XORWOW\", \"PHILOX\", \"MRG\"")
+mark_as_advanced(CURAND_ENGINE)
+
 # If CUDA >= 11.2, add an option to enable using NVCC_THREASD
 if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.2)
     option(USE_NVCC_THREADS "Enable parallel compilation of multiple NVCC targets. See NVCC_THREADS for more control." ON)
