@@ -1,9 +1,9 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_UTILITY_AGENTRANDOM_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_UTILITY_AGENTRANDOM_CUH_
 
-#include <curand_kernel.h>
 #include <cassert>
 
+#include "flamegpu/util/detail/curand.cuh"
 #include "flamegpu/util/detail/StaticAssert.h"
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 
@@ -21,7 +21,7 @@ class AgentRandom {
      * @param d_rng ThreadSafe device curand state instance
      *   this is a unique instance for the thread among all concurrently executing kernels
      */
-    __forceinline__ __device__ AgentRandom(curandState *d_rng);
+    __forceinline__ __device__ AgentRandom(curandStateFLAMEGPU *d_rng);
     /**
      * Returns a float uniformly distributed between 0.0 and 1.0. 
      * @note It may return from 0.0 to 1.0, where 1.0 is included and 0.0 is excluded.
@@ -56,10 +56,10 @@ class AgentRandom {
     /**
      * Thread-safe index for accessing curand
      */
-    curandState *d_random_state;
+     curandStateFLAMEGPU *d_random_state;
 };
 
-__forceinline__ __device__ AgentRandom::AgentRandom(curandState *d_rng) : d_random_state(d_rng) { }
+__forceinline__ __device__ AgentRandom::AgentRandom(curandStateFLAMEGPU *d_rng) : d_random_state(d_rng) { }
 /**
  * All templates are specialised
  */

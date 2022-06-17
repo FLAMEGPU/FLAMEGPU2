@@ -1,11 +1,11 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_UTILITY_RANDOMMANAGER_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_UTILITY_RANDOMMANAGER_CUH_
 
-#include <curand_kernel.h>
 #include <cstdint>
 #include <random>
 #include <string>
 
+#include "flamegpu/util/detail/curand.cuh"
 #include "flamegpu/sim/Simulation.h"
 
 namespace flamegpu {
@@ -62,7 +62,7 @@ class RandomManager {
      *     while(length*shrinkModifier>_length)
      *       length*=shrinkModifier
      */
-    curandState *resize(size_type _length, cudaStream_t stream);
+    curandStateFLAMEGPU *resize(size_type _length, cudaStream_t stream);
     /**
      * Accessors
      */
@@ -84,14 +84,14 @@ class RandomManager {
      */
     size_type size();
     uint64_t seed();
-    curandState *cudaRandomState();
+    curandStateFLAMEGPU *cudaRandomState();
 
  private:
     /**
      * Device array holding curand states
      * They should always be initialised
      */
-    curandState *d_random_state = nullptr;
+    curandStateFLAMEGPU *d_random_state = nullptr;
     /**
      * Random seed used to initialise all currently allocated curand states
      */
@@ -127,7 +127,7 @@ class RandomManager {
      * @note h_max_random_state will be allocated to length h_max_random_size
      * However, it will only be initialised from hd_random_size(aka length) onwards
      */
-    curandState *h_max_random_state = nullptr;
+    curandStateFLAMEGPU *h_max_random_state = nullptr;
     /**
      * Allocated length of h_max_random_state
      */
