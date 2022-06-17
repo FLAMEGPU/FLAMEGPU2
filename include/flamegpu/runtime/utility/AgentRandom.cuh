@@ -21,7 +21,7 @@ class AgentRandom {
      * @param d_rng ThreadSafe device curand state instance
      *   this is a unique instance for the thread among all concurrently executing kernels
      */
-    __forceinline__ __device__ AgentRandom(curandStateFLAMEGPU *d_rng);
+    __forceinline__ __device__ AgentRandom(util::detail::curandState *d_rng);
     /**
      * Returns a float uniformly distributed between 0.0 and 1.0. 
      * @note It may return from 0.0 to 1.0, where 1.0 is included and 0.0 is excluded.
@@ -56,10 +56,10 @@ class AgentRandom {
     /**
      * Thread-safe index for accessing curand
      */
-     curandStateFLAMEGPU *d_random_state;
+    util::detail::curandState *d_random_state;
 };
 
-__forceinline__ __device__ AgentRandom::AgentRandom(curandStateFLAMEGPU *d_rng) : d_random_state(d_rng) { }
+__forceinline__ __device__ AgentRandom::AgentRandom(util::detail::curandState *d_rng) : d_random_state(d_rng) { }
 /**
  * All templates are specialised
  */

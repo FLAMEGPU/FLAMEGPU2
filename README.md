@@ -170,6 +170,7 @@ cmake --build . --target all
 | `EXPORT_RTC_SOURCES`     | `ON`/`OFF`        | At runtime, export dynamic RTC files to disk. Useful for debugging RTC models. Default `OFF`               |
 | `RTC_DISK_CACHE`         | `ON`/`OFF`        | Enable/Disable caching of RTC functions to disk. Default `ON`.                                             |
 | `VERBOSE_PTXAS`          | `ON`/`OFF`        | Enable verbose PTXAS output during compilation. Default `OFF`.                                             |
+| `CURAND_ENGINE`          | `XORWOW`/`PHILOX`/`MRG` | Select the CUDA random engine. Default `XORWOW`                                                      |
 | `USE_GLM`                | `ON`/`OFF`        | Experimental feature for GLM type support in RTC models. Default `OFF`.                                    |
 
 <!-- Additional options which users can find if they need them.

@@ -270,6 +270,18 @@ function(CommonCompilerSettings)
     if(VERBOSE_PTXAS)
         target_compile_options(${CCS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xptxas -v>")
     endif()
+    
+    # Request a specific curand engine
+    string(TOUPPER CURAND_ENGINE CURAND_ENGINE_UPPER)
+    if(${CURAND_ENGINE_UPPER} STREQUAL "MRG")
+        target_compile_definitions(${CCS_TARGET} PRIVATE CURAND_MRG32k3a)
+    elseif(${CURAND_ENGINE_UPPER} STREQUAL "PHILOX")
+        target_compile_definitions(${CCS_TARGET} PRIVATE CURAND_Philox4_32_10)
+    elseif(${CURAND_ENGINE_UPPER} STREQUAL "XORWOW")
+        target_compile_definitions(${CCS_TARGET} PRIVATE CURAND_XORWOW)
+    elseif(DEFINED CURAND_ENGINE)
+        message(FATAL_ERROR "${CURAND_ENGINE} is not a suitable value of CURAND_ENGINE\nOptions: \"MRG\", \"PHILOX\", \"XORWOW\"")
+    endif()
 
 endfunction()
 
