@@ -60,7 +60,7 @@ HSVInterpolation& HSVInterpolation::setWrapHue(const bool& _wrapHue) {
     wrap_hue = _wrapHue;
     return *this;
 }
-std::string HSVInterpolation::getSrc() const {
+std::string HSVInterpolation::getSrc(const unsigned int array_len) const {
 static const char* HEADER = R"###(
 uniform samplerBuffer color_arg;
 //hsv(0-360,0-1,0-1)
@@ -94,7 +94,7 @@ vec3 hsv2rgb(vec3 hsv) {
     ss << HEADER;
     ss << "vec4 calculateColor() {" << "\n";
     // Fetch the modifier from texture cache
-    ss << "    float modifier = texelFetch(color_arg, gl_InstanceID).x;" << "\n";
+    ss << "    float modifier = texelFetch(color_arg, gl_InstanceID * " << array_len << " + " << element << ").x;" << "\n";
     // Clamp the modifier to bounds
     ss << "    modifier = clamp(modifier, float(" << min_bound << "), float(" << max_bound << "));" << "\n";
     // Scale modifier to range [0.0, 1.0]

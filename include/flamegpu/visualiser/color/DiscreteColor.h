@@ -64,8 +64,9 @@ class DiscreteColor : public ColorFunction, public std::map<T, Color> {
      *       default: return vec4(0, 1, 0, 1);
      *     }
      * }
+     * @param array_len Length of the variable array
      */
-    std::string getSrc() const override;
+    std::string getSrc(unsigned int array_len) const override;
     /**
      * Always returns "color_arg"
      */
@@ -105,7 +106,7 @@ typedef DiscreteColor<uint32_t> uDiscreteColor;
 typedef DiscreteColor<int32_t> iDiscreteColor;
 // Define this here, so the static assert can give a better compile error for unwanted template instantiations
 template<typename T>
-std::string DiscreteColor<T>::getSrc() const {
+std::string DiscreteColor<T>::getSrc(const unsigned int array_len) const {
     static_assert(std::is_same<T, int32_t>::value || std::is_same<T, uint32_t>::value, "T must be of type int32_t or uint32_t");
     // Validate colors
     if (!validate()) {
@@ -116,9 +117,9 @@ std::string DiscreteColor<T>::getSrc() const {
     ss << "vec4 calculateColor() {" << "\n";
     // Fetch discrete value
     if (std::is_same<T, int32_t>::value) {
-        ss << "    const int category = floatBitsToInt(texelFetch(color_arg, gl_InstanceID).x);" << "\n";
+        ss << "    const int category = floatBitsToInt(texelFetch(color_arg, gl_InstanceID * " << array_len << " + " << element << ").x);" << "\n";
     } else if (std::is_same<T, uint32_t>::value) {
-        ss << "    const unsigned int category = floatBitsToUint(texelFetch(color_arg, gl_InstanceID).x);" << "\n";
+        ss << "    const unsigned int category = floatBitsToUint(texelFetch(color_arg, gl_InstanceID * " << array_len << " + " << element << ").x);" << "\n";
     }
     // Select the desired color
     ss << "    switch (category) {" << "\n";

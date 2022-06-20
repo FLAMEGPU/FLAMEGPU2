@@ -15,7 +15,7 @@ StaticColor::StaticColor(const Color& _rgba)
             "in StaticColor::StaticColor\n");
     }
 }
-std::string StaticColor::getSrc() const {
+std::string StaticColor::getSrc(unsigned int) const {
     std::stringstream ss;
     ss << "vec4 calculateColor() {" << "\n";
     ss << "    return vec4(" << rgba[0] << ", " << rgba[1] << ", " << rgba[2] << ", " << 1.0f << ");" << "\n";

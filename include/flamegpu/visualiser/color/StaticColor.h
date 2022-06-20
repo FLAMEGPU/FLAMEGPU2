@@ -28,9 +28,13 @@ class StaticColor : public ColorFunction {
      *   return vec4(1.0, 0.0, 0.0, 1.0);
      * }
      */
-    std::string getSrc() const override;
+    std::string getSrc(unsigned int) const override;
 
  private:
+    /**
+     * Not possible where variable isn't used, so hide
+     */
+    using ColorFunction::setAgentArrayVariableElement;
     /**
      * Shader controls RGBA values, but currently we only expose RGB (A support is somewhat untested)
      */

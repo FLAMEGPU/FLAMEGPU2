@@ -54,8 +54,9 @@ class HSVInterpolation : public ColorFunction {
     HSVInterpolation& setWrapHue(const bool& _wrapHue);
     /**
      * Returns GLSL for a function that returns a color based on the configured HSV interpolation
+     * @param array_len Length of the variable array
      */
-    std::string getSrc() const override;
+    std::string getSrc(unsigned int array_len) const override;
     /**
      * Always returns "color_arg"
      */
