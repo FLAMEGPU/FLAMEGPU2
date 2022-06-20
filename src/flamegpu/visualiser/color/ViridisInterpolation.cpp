@@ -26,7 +26,7 @@ ViridisInterpolation& ViridisInterpolation::setBounds(const float& _min_bound, c
     return *this;
 }
 
-std::string ViridisInterpolation::getSrc() const {
+std::string ViridisInterpolation::getSrc(const unsigned int array_len) const {
     static const std::array<const Color, 256> &raw_colors = rawColors();
     std::stringstream ss;
     ss << "uniform samplerBuffer color_arg;" << "\n";
@@ -44,7 +44,7 @@ std::string ViridisInterpolation::getSrc() const {
     ss << "}" << "\n";
     ss << "vec4 calculateColor() {" << "\n";
     // Fetch the modifier from texture cache
-    ss << "    float modifier = texelFetch(color_arg, gl_InstanceID).x;" << "\n";
+    ss << "    float modifier = texelFetch(color_arg, gl_InstanceID * " << array_len << " + " << element << ").x;" << "\n";
     // Clamp the modifier to bounds
     ss << "    modifier = clamp(modifier, float(" << min_bound << "), float(" << max_bound << "));" << "\n";
     // Scale modifier to range [0.0, 255.0]

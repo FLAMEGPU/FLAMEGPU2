@@ -770,24 +770,26 @@ void AgentVis::setAutoPalette(const Palette& ap) {
 }
 void AgentVis::setColor(const ColorFunction& cf) {
     // Validate agent variable exists
+    unsigned int elements = 0;
     if (!cf.getAgentVariableName().empty()) {
-        auto it = agentData.variables.find(cf.getAgentVariableName());
+        const auto it = agentData.variables.find(cf.getAgentVariableName());
         if (it == agentData.variables.end()) {
             THROW exception::InvalidAgentVar("Variable '%s' bound to color function was not found within agent '%s', "
                 "in AgentVis::setColor()\n",
                 cf.getAgentVariableName().c_str(), agentData.name.c_str());
         }
-        if (it->second.type != cf.getAgentVariableRequiredType() || it->second.elements != 1) {
-            THROW exception::InvalidAgentVar("Visualisation color function variable must be type %s[1], agent '%s' variable '%s' is type %s[%u], "
+        if (it->second.type != cf.getAgentVariableRequiredType() || it->second.elements <= cf.getAgentArrayVariableElement()) {
+            THROW exception::InvalidAgentVar("Visualisation color function variable must be type %s[>%u], agent '%s' variable '%s' is type %s[%u], "
                 "in AgentVis::setColor()\n",
-                cf.getAgentVariableRequiredType().name(), agentData.name.c_str(), cf.getAgentVariableName().c_str(), it->second.type.name(), it->second.elements);
+                cf.getAgentVariableRequiredType().name(), cf.getAgentArrayVariableElement(), agentData.name.c_str(), cf.getAgentVariableName().c_str(), it->second.type.name(), it->second.elements);
         }
+        elements = it->second.elements;
     }
     // Remove old, we only ever want 1 color value
     defaultConfig.tex_buffers.erase(TexBufferConfig::Color);
     if (!cf.getAgentVariableName().empty() && !cf.getSamplerName().empty())
-        defaultConfig.tex_buffers.emplace(TexBufferConfig::Color, CustomTexBufferConfig{ cf.getAgentVariableName(), cf.getSamplerName() });
-    defaultConfig.color_shader_src = cf.getSrc();
+        defaultConfig.tex_buffers.emplace(TexBufferConfig::Color, CustomTexBufferConfig{ cf.getAgentVariableName(), cf.getSamplerName(), cf.getAgentArrayVariableElement(), elements });
+    defaultConfig.color_shader_src = cf.getSrc(elements);
     auto_palette.reset();
     owned_auto_palette = nullptr;
     // Clear texture, can't have both colour and texture

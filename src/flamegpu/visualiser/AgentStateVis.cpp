@@ -44,24 +44,26 @@ void AgentStateVis::setModelScale(float maxLen) {
 }
 void AgentStateVis::setColor(const ColorFunction& cf) {
     // Validate agent variable exists
+    unsigned int elements = 0;
     if (!cf.getAgentVariableName().empty()) {
-        auto it = parent.agentData.variables.find(cf.getAgentVariableName());
+        const auto it = parent.agentData.variables.find(cf.getAgentVariableName());
         if (it == parent.agentData.variables.end()) {
             THROW exception::InvalidAgentVar("Variable '%s' bound to color function was not found within agent '%s', "
                 "in AgentStateVis::setColor()\n",
                 cf.getAgentVariableName().c_str(), parent.agentData.name.c_str());
         }
-        if (it->second.type != cf.getAgentVariableRequiredType() || it->second.elements != 1) {
-            THROW exception::InvalidAgentVar("Visualisation color function variable must be type %s[1], agent '%s' variable '%s' is type %s[%u], "
+        if (it->second.type != cf.getAgentVariableRequiredType() || it->second.elements <= cf.getAgentArrayVariableElement()) {
+            THROW exception::InvalidAgentVar("Visualisation color function variable must be type %s[>%u], agent '%s' variable '%s' is type %s[%u], "
                 "in AgentStateVis::setColor()\n",
-                cf.getAgentVariableRequiredType().name(), parent.agentData.name.c_str(), cf.getAgentVariableName().c_str(), it->second.type.name(), it->second.elements);
+                cf.getAgentVariableRequiredType().name(), cf.getAgentArrayVariableElement(), parent.agentData.name.c_str(), cf.getAgentVariableName().c_str(), it->second.type.name(), it->second.elements);
         }
+        elements = it->second.elements;
     }
     // Remove old, we only ever want 1 color value
     config.tex_buffers.erase(TexBufferConfig::Color);
     if (!cf.getAgentVariableName().empty() && !cf.getSamplerName().empty())
-        config.tex_buffers.emplace(TexBufferConfig::Color, CustomTexBufferConfig{ cf.getAgentVariableName(), cf.getSamplerName() });
-    config.color_shader_src = cf.getSrc();
+        config.tex_buffers.emplace(TexBufferConfig::Color, CustomTexBufferConfig{ cf.getAgentVariableName(), cf.getSamplerName(), cf.getAgentArrayVariableElement(), elements });
+    config.color_shader_src = cf.getSrc(elements);
 }
 void AgentStateVis::clearColor() {
     config.tex_buffers.erase(TexBufferConfig::Color);
