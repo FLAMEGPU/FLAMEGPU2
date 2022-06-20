@@ -293,29 +293,6 @@ class CUDASimulation : public Simulation {
      */
     visualiser::ModelVis &getVisualisation();
 #endif
-
-    /**
-     * Performs a cudaMemCopyToSymbol in the runtime library and also updates the symbols of any RTC functions (which exist separately within their own cuda module)
-     * Will thrown an error if any of the calls fail.
-     * @param symbol A device symbol
-     * @param rtc_symbol_name The name of the symbol
-     * @param src Source memory address
-     * @param count Size in bytes to copy
-     * @param offset Offset from start of symbol in bytes
-     */
-    void RTCSafeCudaMemcpyToSymbol(const void* symbol, const char* rtc_symbol_name, const void* src, size_t count, size_t offset = 0) const;
-
-    /**
-     * Performs a cudaMemCopy to a pointer in the runtime library and also updates the symbols of any RTC functions (which exist separately within their own cuda module)
-     * Will thrown an error if any of the calls fail.
-     * @param ptr a pointer to a symbol in device memory
-     * @param rtc_symbol_name The name of the symbol
-     * @param src Source memory address
-     * @param count Size in bytes to copy
-     * @param offset Offset from start of symbol in bytes
-     */
-    void RTCSafeCudaMemcpyToSymbolAddress(void* ptr, const char* rtc_symbol_name, const void* src, size_t count, size_t offset = 0) const;
-
    /**
      * Get the duration of the last time RTC was iniitliased 
      * @return elapsed time of last simulation call in seconds.
