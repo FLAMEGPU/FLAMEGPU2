@@ -545,7 +545,6 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayDefaultWorks) {
     // Check data is correct
     EXPECT_EQ(population.size(), AGENT_COUNT);
     for (const AgentVector::Agent &instance : population) {
-        const unsigned int j = instance.getVariable<unsigned int>("id");
         // Check array sets are correct
         auto array1 = instance.getVariable<int, 4>("array_var");
         auto array2 = instance.getVariable<int, 4>("array_var2");
