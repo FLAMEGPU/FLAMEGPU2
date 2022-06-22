@@ -214,7 +214,10 @@ void CUDAFatAgent::processFunctionCondition(const unsigned int &agent_fat_id, co
     gpuErrchk(cudaStreamSynchronize(stream));
     // Use inverted scan results to sort true agents into end of list (and swap buffers)
     const unsigned int conditionpassCount = sm->second->scatterAgentFunctionConditionTrue(conditionFailCount, scatter, streamId, stream);
-    assert(agent_count == conditionpassCount + conditionFailCount);
+    if (agent_count != conditionpassCount + conditionFailCount) {
+        THROW exception::UnknownInternalError("Agent function condition pass + fail counts != agent count, %u + %u != %u this should not happen"
+            ", in CUDAFatAgent::processFunctionCondition()\n", conditionpassCount, conditionFailCount, agent_count);
+    }
 }
 
 void CUDAFatAgent::setConditionState(const unsigned int &agent_fat_id, const std::string &state_name, const unsigned int numberOfDisabled) {
