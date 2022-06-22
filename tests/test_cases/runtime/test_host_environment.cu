@@ -561,8 +561,8 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyType_uint64_t) {
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_float) {
     std::array<float, TEST_ARRAY_LEN> b;
     std::array<float, 1> _b1 = {};
-    std::array<float, TEST_ARRAY_LEN + 1> _b2;
-    std::array<float, TEST_ARRAY_LEN * 2> _b3;
+    std::array<float, TEST_ARRAY_LEN + 1> _b2 = {};
+    std::array<float, TEST_ARRAY_LEN * 2> _b3 = {};
     EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<float, TEST_ARRAY_LEN>("float_a_", b)));
     EXPECT_THROW((FLAMEGPU->environment.setProperty<float, 1>("float_a_", _b1)), exception::OutOfBoundsException);
     EXPECT_THROW((FLAMEGPU->environment.setProperty<float, TEST_ARRAY_LEN + 1>("float_a_", _b2)), exception::OutOfBoundsException);
@@ -571,8 +571,8 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_float) {
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_double) {
     std::array<double, TEST_ARRAY_LEN> b;
     std::array<double, 1> _b1 = {};
-    std::array<double, TEST_ARRAY_LEN + 1> _b2;
-    std::array<double, TEST_ARRAY_LEN * 2> _b3;
+    std::array<double, TEST_ARRAY_LEN + 1> _b2 = {};
+    std::array<double, TEST_ARRAY_LEN * 2> _b3 = {};
     EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<double, TEST_ARRAY_LEN>("double_a_", b)));
     EXPECT_THROW((FLAMEGPU->environment.setProperty<double, 1>("double_a_", _b1)), exception::OutOfBoundsException);
     EXPECT_THROW((FLAMEGPU->environment.setProperty<double, TEST_ARRAY_LEN + 1>("double_a_", _b2)), exception::OutOfBoundsException);
@@ -581,8 +581,8 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_double) {
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int8_t) {
     std::array<int8_t, TEST_ARRAY_LEN> b;
     std::array<int8_t, 1> _b1 = {};
-    std::array<int8_t, TEST_ARRAY_LEN + 1> _b2;
-    std::array<int8_t, TEST_ARRAY_LEN * 2> _b3;
+    std::array<int8_t, TEST_ARRAY_LEN + 1> _b2 = {};
+    std::array<int8_t, TEST_ARRAY_LEN * 2> _b3 = {};
     EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<int8_t, TEST_ARRAY_LEN>("int8_t_a_", b)));
     EXPECT_THROW((FLAMEGPU->environment.setProperty<int8_t, 1>("int8_t_a_", _b1)), exception::OutOfBoundsException);
     EXPECT_THROW((FLAMEGPU->environment.setProperty<int8_t, TEST_ARRAY_LEN + 1>("int8_t_a_", _b2)), exception::OutOfBoundsException);
@@ -591,8 +591,8 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int8_t) {
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint8_t) {
     std::array<uint8_t, TEST_ARRAY_LEN> b;
     std::array<uint8_t, 1> _b1 = {};
-    std::array<uint8_t, TEST_ARRAY_LEN + 1> _b2;
-    std::array<uint8_t, TEST_ARRAY_LEN * 2> _b3;
+    std::array<uint8_t, TEST_ARRAY_LEN + 1> _b2 = {};
+    std::array<uint8_t, TEST_ARRAY_LEN * 2> _b3 = {};
     EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<uint8_t, TEST_ARRAY_LEN>("uint8_t_a_", b)));
     EXPECT_THROW((FLAMEGPU->environment.setProperty<uint8_t, 1>("uint8_t_a_", _b1)), exception::OutOfBoundsException);
     EXPECT_THROW((FLAMEGPU->environment.setProperty<uint8_t, TEST_ARRAY_LEN + 1>("uint8_t_a_", _b2)), exception::OutOfBoundsException);
@@ -601,8 +601,8 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint8_t) {
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int16_t) {
     std::array<int16_t, TEST_ARRAY_LEN> b;
     std::array<int16_t, 1> _b1 = {};
-    std::array<int16_t, TEST_ARRAY_LEN + 1> _b2;
-    std::array<int16_t, TEST_ARRAY_LEN * 2> _b3;
+    std::array<int16_t, TEST_ARRAY_LEN + 1> _b2 = {};
+    std::array<int16_t, TEST_ARRAY_LEN * 2> _b3 = {};
     EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<int16_t, TEST_ARRAY_LEN>("int16_t_a_", b)));
     EXPECT_THROW((FLAMEGPU->environment.setProperty<int16_t, 1>("int16_t_a_", _b1)), exception::OutOfBoundsException);
     EXPECT_THROW((FLAMEGPU->environment.setProperty<int16_t, TEST_ARRAY_LEN + 1>("int16_t_a_", _b2)), exception::OutOfBoundsException);
@@ -611,8 +611,8 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int16_t) {
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint16_t) {
     std::array<uint16_t, TEST_ARRAY_LEN> b;
     std::array<uint16_t, 1> _b1 = {};
-    std::array<uint16_t, TEST_ARRAY_LEN + 1> _b2;
-    std::array<uint16_t, TEST_ARRAY_LEN * 2> _b3;
+    std::array<uint16_t, TEST_ARRAY_LEN + 1> _b2 = {};
+    std::array<uint16_t, TEST_ARRAY_LEN * 2> _b3 = {};
     EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<uint16_t, TEST_ARRAY_LEN>("uint16_t_a_", b)));
     EXPECT_THROW((FLAMEGPU->environment.setProperty<uint16_t, 1>("uint16_t_a_", _b1)), exception::OutOfBoundsException);
     EXPECT_THROW((FLAMEGPU->environment.setProperty<uint16_t, TEST_ARRAY_LEN + 1>("uint16_t_a_", _b2)), exception::OutOfBoundsException);
@@ -621,8 +621,8 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint16_t) {
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int32_t) {
     std::array<int32_t, TEST_ARRAY_LEN> b;
     std::array<int32_t, 1> _b1 = {};
-    std::array<int32_t, TEST_ARRAY_LEN + 1> _b2;
-    std::array<int32_t, TEST_ARRAY_LEN * 2> _b3;
+    std::array<int32_t, TEST_ARRAY_LEN + 1> _b2 = {};
+    std::array<int32_t, TEST_ARRAY_LEN * 2> _b3 = {};
     EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<int32_t, TEST_ARRAY_LEN>("int32_t_a_", b)));
     EXPECT_THROW((FLAMEGPU->environment.setProperty<int32_t, 1>("int32_t_a_", _b1)), exception::OutOfBoundsException);
     EXPECT_THROW((FLAMEGPU->environment.setProperty<int32_t, TEST_ARRAY_LEN + 1>("int32_t_a_", _b2)), exception::OutOfBoundsException);
@@ -631,8 +631,8 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int32_t) {
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint32_t) {
     std::array<uint32_t, TEST_ARRAY_LEN> b;
     std::array<uint32_t, 1> _b1 = {};
-    std::array<uint32_t, TEST_ARRAY_LEN + 1> _b2;
-    std::array<uint32_t, TEST_ARRAY_LEN * 2> _b3;
+    std::array<uint32_t, TEST_ARRAY_LEN + 1> _b2 = {};
+    std::array<uint32_t, TEST_ARRAY_LEN * 2> _b3 = {};
     EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<uint32_t, TEST_ARRAY_LEN>("uint32_t_a_", b)));
     EXPECT_THROW((FLAMEGPU->environment.setProperty<uint32_t, 1>("uint32_t_a_", _b1)), exception::OutOfBoundsException);
     EXPECT_THROW((FLAMEGPU->environment.setProperty<uint32_t, TEST_ARRAY_LEN + 1>("uint32_t_a_", _b2)), exception::OutOfBoundsException);
@@ -641,8 +641,8 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint32_t) {
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int64_t) {
     std::array<int64_t, TEST_ARRAY_LEN> b;
     std::array<int64_t, 1> _b1 = {};
-    std::array<int64_t, TEST_ARRAY_LEN + 1> _b2;
-    std::array<int64_t, TEST_ARRAY_LEN * 2> _b3;
+    std::array<int64_t, TEST_ARRAY_LEN + 1> _b2 = {};
+    std::array<int64_t, TEST_ARRAY_LEN * 2> _b3 = {};
     EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<int64_t, TEST_ARRAY_LEN>("int64_t_a_", b)));
     EXPECT_THROW((FLAMEGPU->environment.setProperty<int64_t, 1>("int64_t_a_", _b1)), exception::OutOfBoundsException);
     EXPECT_THROW((FLAMEGPU->environment.setProperty<int64_t, TEST_ARRAY_LEN + 1>("int64_t_a_", _b2)), exception::OutOfBoundsException);
@@ -651,8 +651,8 @@ FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_int64_t) {
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_uint64_t) {
     std::array<uint64_t, TEST_ARRAY_LEN> b;
     std::array<uint64_t, 1> _b1 = {};
-    std::array<uint64_t, TEST_ARRAY_LEN + 1> _b2;
-    std::array<uint64_t, TEST_ARRAY_LEN * 2> _b3;
+    std::array<uint64_t, TEST_ARRAY_LEN + 1> _b2 = {};
+    std::array<uint64_t, TEST_ARRAY_LEN * 2> _b3 = {};
     EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<uint64_t, TEST_ARRAY_LEN>("uint64_t_a_", b)));
     EXPECT_THROW((FLAMEGPU->environment.setProperty<uint64_t, 1>("uint64_t_a_", _b1)), exception::OutOfBoundsException);
     EXPECT_THROW((FLAMEGPU->environment.setProperty<uint64_t, TEST_ARRAY_LEN + 1>("uint64_t_a_", _b2)), exception::OutOfBoundsException);
@@ -1171,8 +1171,8 @@ TEST_F(HostEnvironmentTest, Get_SetGetarray_element_glm) {
 FLAMEGPU_STEP_FUNCTION(ExceptionPropertyLength_vec3) {
     std::array<glm::vec3, TEST_ARRAY_LEN> b;
     std::array<glm::vec3, 1> _b1 = {};
-    std::array<glm::vec3, TEST_ARRAY_LEN + 1> _b2;
-    std::array<glm::vec3, TEST_ARRAY_LEN * 2> _b3;
+    std::array<glm::vec3, TEST_ARRAY_LEN + 1> _b2 = {};
+    std::array<glm::vec3, TEST_ARRAY_LEN * 2> _b3 = {};
     EXPECT_NO_THROW((FLAMEGPU->environment.setProperty<glm::vec3, TEST_ARRAY_LEN>("vec3_a_", b)));
     EXPECT_THROW((FLAMEGPU->environment.setProperty<glm::vec3, 1>("vec3_a_", _b1)), exception::OutOfBoundsException);
     EXPECT_THROW((FLAMEGPU->environment.setProperty<glm::vec3, TEST_ARRAY_LEN + 1>("vec3_a_", _b2)), exception::OutOfBoundsException);
