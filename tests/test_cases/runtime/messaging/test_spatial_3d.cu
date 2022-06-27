@@ -866,18 +866,26 @@ FLAMEGPU_AGENT_FUNCTION(inWrapped3D, MessageSpatial3D, MessageNone) {
     // This is all those which fall within the 3x3x3 Moore neighbourhood
     // Not our search radius
     for (const auto& message : FLAMEGPU->message_in.wrap(x1, y1, z1)) {
-        count++;
-        if (message.getVariable<flamegpu::id_t>("id") != ID) {
-            xSum += (message.getVirtualX(x1) - x1);
-            ySum += (message.getVirtualY(y1) - y1);
-            zSum += (message.getVirtualZ(z1) - z1);
-        }
-        if (message.getDistance() > FLAMEGPU->message_in.radius() ||
-            (abs((message.getVirtualX(x1) - x1)) != 2.0f && message.getVirtualX(x1) != x1) ||
-            (abs((message.getVirtualY(y1) - y1)) != 2.0f && message.getVirtualY(y1) != y1) ||
-            (abs((message.getVirtualZ(z1) - z1)) != 2.0f && message.getVirtualZ(z1) != z1)
+        const float x2 = message.getVirtualX(x1);
+        const float y2 = message.getVirtualY(y1);
+        const float z2 = message.getVirtualZ(z1);
+        float x21 = x2 - x1;
+        float y21 = y2 - y1;
+        float z21 = z2 - z1;
+        const float distance = sqrt(x21 * x21 + y21 * y21 + z21 * z21);
+        if (distance > FLAMEGPU->message_in.radius() ||
+            (abs(x21) != 2.0f && x2 != x1) ||
+            (abs(y21) != 2.0f && y2 != y1) ||
+            (abs(z21) != 2.0f && z2 != z1)
         ) {
             badCount++;
+        } else {
+            count++;
+            if (message.getVariable<flamegpu::id_t>("id") != ID) {
+                xSum += (x21);
+                ySum += (y21);
+                zSum += (z21);
+            }
         }
     }
     FLAMEGPU->setVariable<unsigned int>("count", count);
@@ -921,7 +929,7 @@ void wrapped_3d_test(const float x_offset, const float y_offset, const float z_o
     }
     CUDASimulation cudaSimulation(model);
 
-    AgentVector population(model.Agent("agent"), 35u * 35u * 35U);  // This must fit the env dims/radius set out above
+    AgentVector population(model.Agent("agent"), 35u * 35u * 35u);  // This must fit the env dims/radius set out above
     // Initialise agents (TODO)
     {
         // Currently population has not been init, so generate an agent population on the fly
@@ -945,11 +953,12 @@ void wrapped_3d_test(const float x_offset, const float y_offset, const float z_o
     // Recover the results and check they match what was expected
     cudaSimulation.getPopulationData(population);
     // Validate each agent has same result
+    const unsigned int badCount = population[0].getVariable<unsigned int>("badCount");
     for (AgentVector::Agent ai : population) {
         EXPECT_EQ(0.0f, ai.getVariable<float>("result_x"));
         EXPECT_EQ(0.0f, ai.getVariable<float>("result_y"));
         EXPECT_EQ(0.0f, ai.getVariable<float>("result_z"));
-        EXPECT_EQ(0u, ai.getVariable<unsigned int>("badCount"));
+        EXPECT_LE(ai.getVariable<unsigned int>("badCount"), 189u);
         EXPECT_EQ(27u, ai.getVariable<unsigned int>("count"));
     }
 }

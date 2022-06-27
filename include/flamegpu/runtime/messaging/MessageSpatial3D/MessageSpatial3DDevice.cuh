@@ -259,46 +259,6 @@ class MessageSpatial3D::In {
              */
             int cell_index = 0;
             /**
-             * The pre-calculated boundary wrapping distance to the message
-             */
-            float distance;
-            __device__ float wrapped_distance(const float x, const float y, const float z) const {
-                // distance from x, y, z
-                // To _parent.loc
-                // Wrapping over boundaries
-                // https://blog.demofox.org/2017/10/01/calculating-the-distance-between-points-in-wrap-around-toroidal-space/
-                // Note, this falls over if either location is outside of [0, environmentWidth]
-#if !defined(SEATBELTS) || SEATBELTS
-                if (x > _parent.metadata->max[0] ||
-                    y > _parent.metadata->max[1] ||
-                    z > _parent.metadata->max[2] ||
-                    x < _parent.metadata->min[0] ||
-                    y < _parent.metadata->min[1] ||
-                    z < _parent.metadata->min[2]) {
-                    DTHROW("MessageSpatial3D message location (%f, %f, %f) exceeds environment bounds (%g, %g, %g):(%g, %g, %g),"
-                        " this is unsupported for the wrapped iterator.\n", x, y, z,
-                        _parent.metadata->min[0], _parent.metadata->min[1], _parent.metadata->min[2],
-                        _parent.metadata->max[0], _parent.metadata->max[1], _parent.metadata->max[2]);
-                    // Return something which exceeds the radius
-                    return _parent.metadata->radius * 3;
-                }
-#endif
-                float dx = abs(_parent.loc[0] - x);
-                float dy = abs(_parent.loc[1] - y);
-                float dz = abs(_parent.loc[2] - z);
-
-                if (dx > _parent.metadata->environmentWidth[0] / 2.0f)
-                    dx = _parent.metadata->environmentWidth[0] - dx;
-
-                if (dy > _parent.metadata->environmentWidth[1] / 2.0f)
-                    dy = _parent.metadata->environmentWidth[1] - dy;
-
-                if (dz > _parent.metadata->environmentWidth[2] / 2.0f)
-                    dz = _parent.metadata->environmentWidth[2] - dz;
-
-                return sqrtf(dx * dx + dy * dy + dz * dz);
-            }
-            /**
              * Utility function for deciding next strip to access
              */
             __device__ void nextCell() {
@@ -385,37 +345,52 @@ class MessageSpatial3D::In {
             template<typename T, MessageNone::size_type N, unsigned int M> __device__
             T getVariable(const char(&variable_name)[M], unsigned int index) const;
             /**
-             * Returns the wrapped distance from the search origin to the current message
+             * Returns the virtual x variable of the message, relative to the search origin
+             * This is the closest x coordinate the message would have, relative to the observer's x coordinate in a wrapped environment
              */
-            __device__ float getDistance() const {
-                return distance;
+            __device__ float getVirtualX() const {
+                return getVirtualX(_parent.loc[0]);
+            }
+            /**
+             * Returns the virtual y variable of the message, relative to the search origin
+             * This is the closest y coordinate the message would have, relative to the observer's y coordinate in a wrapped environment
+             */
+            __device__ float getVirtualY() const {
+                return getVirtualY(_parent.loc[1]);
+            }
+            /**
+             * Returns the virtual z variable of the message, relative to the search origin
+             * This is the closest z coordinate the message would have, relative to the observer's z coordinate in a wrapped environment
+             */
+            __device__ float getVirtualZ() const {
+                return getVirtualZ(_parent.loc[2]);
             }
             /**
              * Returns the virtual x variable of the message
-             * This is the closest x coordinate the message would have, relative to the observers x coordinate in a wrapped environment
+             * This is the closest x coordinate the message would have, relative to the observer's x coordinate in a wrapped environment
              * @param x1 The x coordinate of the observer
              */
-            __device__ float getVirtualX(float x1) const {
+            __device__ float getVirtualX(const float x1) const {
                 const float x2 = getVariable<float>("x");
                 const float x21 = x2 - x1;
                 return abs(x21) > _parent.metadata->environmentWidth[0] / 2.0f ? x2 - (x21 / abs(x21) * _parent.metadata->environmentWidth[0]) : x2;
             }
             /**
              * Returns the virtual y variable of the message
-             * This is the closest y coordinate the message would have, relative to the observers y coordinate in a wrapped environment
+             * This is the closest y coordinate the message would have, relative to the observer's y coordinate in a wrapped environment
              * @param y1 The y coordinate of the observer
              */
-            __device__ float getVirtualY(float y1) const {
+            __device__ float getVirtualY(const float y1) const {
                 const float y2 = getVariable<float>("y");
                 const float y21 = y2 - y1;
                 return abs(y21) > _parent.metadata->environmentWidth[1] / 2.0f ? y2 - (y21 / abs(y21) * _parent.metadata->environmentWidth[1]) : y2;
             }
             /**
              * Returns the virtual z variable of the message
-             * This is the closest z coordinate the message would have, relative to the observers z coordinate in a wrapped environment
+             * This is the closest z coordinate the message would have, relative to the observer's z coordinate in a wrapped environment
              * @param z1 The z coordinate of the observer
              */
-            __device__ float getVirtualZ(float z1) const {
+            __device__ float getVirtualZ(const float z1) const {
                 const float z2 = getVariable<float>("z");
                 const float z21 = z2 - z1;
                 return abs(z21) > _parent.metadata->environmentWidth[2] / 2.0f ? z2 - (z21 / abs(z21) * _parent.metadata->environmentWidth[2]) : z2;
@@ -743,38 +718,26 @@ __device__ inline MessageSpatial3D::In::WrapFilter::WrapFilter(const MetaData* _
     cell = getGridPosition3D(_metadata, x, y, z);
 }
 __device__ inline MessageSpatial3D::In::WrapFilter::Message& MessageSpatial3D::In::WrapFilter::Message::operator++() {
-    do {
-        cell_index++;
-        bool move_strip = cell_index >= cell_index_max;
-        while (move_strip) {
-            nextCell();
-            cell_index = 0;
-            cell_index_max = 1;
-            if (relative_cell[0] < 2) {
-                // Calculate the strips start and end hash
-                int absolute_cell_x = (_parent.cell.x + relative_cell[0] + static_cast<int>(_parent.metadata->gridDim[0])) % _parent.metadata->gridDim[0];
-                int absolute_cell_y = (_parent.cell.y + relative_cell[1] + static_cast<int>(_parent.metadata->gridDim[1])) % _parent.metadata->gridDim[1];
-                int absolute_cell_z = (_parent.cell.z + relative_cell[2] + static_cast<int>(_parent.metadata->gridDim[2])) % _parent.metadata->gridDim[2];
-                // Skip the strip if it is completely out of bounds
-                unsigned int start_hash = getHash3D(_parent.metadata, { absolute_cell_x, absolute_cell_y, absolute_cell_z });
-                unsigned int end_hash = getHash3D(_parent.metadata, { absolute_cell_x, absolute_cell_y, absolute_cell_z });
-                // Lookup start and end indicies from PBM
-                cell_index = _parent.metadata->PBM[start_hash];
-                cell_index_max = _parent.metadata->PBM[end_hash + 1];
-            }
-            move_strip = cell_index >= cell_index_max;
+    cell_index++;
+    bool move_strip = cell_index >= cell_index_max;
+    while (move_strip) {
+        nextCell();
+        cell_index = 0;
+        cell_index_max = 1;
+        if (relative_cell[0] < 2) {
+            // Calculate the strips start and end hash
+            int absolute_cell_x = (_parent.cell.x + relative_cell[0] + static_cast<int>(_parent.metadata->gridDim[0])) % _parent.metadata->gridDim[0];
+            int absolute_cell_y = (_parent.cell.y + relative_cell[1] + static_cast<int>(_parent.metadata->gridDim[1])) % _parent.metadata->gridDim[1];
+            int absolute_cell_z = (_parent.cell.z + relative_cell[2] + static_cast<int>(_parent.metadata->gridDim[2])) % _parent.metadata->gridDim[2];
+            // Skip the strip if it is completely out of bounds
+            unsigned int start_hash = getHash3D(_parent.metadata, { absolute_cell_x, absolute_cell_y, absolute_cell_z });
+            unsigned int end_hash = getHash3D(_parent.metadata, { absolute_cell_x, absolute_cell_y, absolute_cell_z });
+            // Lookup start and end indicies from PBM
+            cell_index = _parent.metadata->PBM[start_hash];
+            cell_index_max = _parent.metadata->PBM[end_hash + 1];
         }
-        // If message is out of bounds, break
-        if (relative_cell[0] >= 2) {
-            distance = 0;
-            break;
-        }
-        // Else, fetch it's location and update distance
-        const float msg_x = getVariable<float>("x");
-        const float msg_y = getVariable<float>("y");
-        const float msg_z = getVariable<float>("z");
-        distance = wrapped_distance(msg_x, msg_y, msg_z);
-    } while (distance > _parent.metadata->radius);
+        move_strip = cell_index >= cell_index_max;
+    }
     return *this;
 }
 
