@@ -35,7 +35,6 @@ class DeviceCurve {
     static const VariableHash EMPTY_FLAG = Curve::EMPTY_FLAG;
     static const int UNKNOWN_VARIABLE = -1;                       // !< value returned as a Variable if an API function encounters an error
 
- private:
     ////
     //// These are the two most central CURVE methods
     ////
@@ -44,8 +43,11 @@ class DeviceCurve {
      *
      * @param variable_hash A cuRVE variable string hash from variableHash.
      * @return The index of the specified variable within the hash table or UNKNOWN_VARIABLE on failure.
+     * @note Public for better SEATBELTS errors
      */
     __device__ __forceinline__ static Variable getVariableIndex(VariableHash variable_hash);
+
+ private:
     /**
      * Retrieve a pointer to the variable of given name and offset
      *
@@ -230,6 +232,69 @@ class DeviceCurve {
     template <typename T, unsigned int N = 0, unsigned int M>
     __device__ __forceinline__ static T getEnvironmentArrayProperty(const char(&propertyName)[M], unsigned int array_index);
 
+
+    /**
+     * Retrieve the address of the specified environment directed graph's pbm (CSR) for edges outgoing from each vertex
+     *
+     * @param graphHash The hash of the affected graph
+     * @return The requested address
+     * @throws exception::DeviceError (Only when SEATBELTS==ON) If the specified graph is not found in the cuRVE hashtable, or it's details are invalid.
+     */
+    __device__ __forceinline__ static unsigned int *getEnvironmentDirectedGraphPBM(VariableHash graphHash);
+    /**
+     * Retrieve the address of the specified environment directed graph's ipbm (CSC) for edges incoming to each vertex
+     *
+     * @param graphHash The hash of the affected graph
+     * @return The requested address
+     * @throws exception::DeviceError (Only when SEATBELTS==ON) If the specified graph is not found in the cuRVE hashtable, or it's details are invalid.
+     */
+    __device__ __forceinline__ static unsigned int* getEnvironmentDirectedGraphIPBM(VariableHash graphHash);
+    /**
+     * Retrieve the address of the specified environment directed graph's ipbm's (CSCs) edge list
+     *
+     * @param graphHash The hash of the affected graph
+     * @return The requested address
+     * @throws exception::DeviceError (Only when SEATBELTS==ON) If the specified graph is not found in the cuRVE hashtable, or it's details are invalid.
+     */
+    __device__ __forceinline__ static unsigned int* getEnvironmentDirectedGraphIPBMEdges(VariableHash graphHash);
+    /**
+     * Retrieve the specified environment directed graph's vertex (array) property from the cuRVE hashtable.
+     *
+     * @param propertyName A constant char array (C string) property name.
+     * @tparam T The return type requested of the property.
+     * @tparam M The length of the string literal passed to variableName. This parameter should always be implicit, and does not need to be provided.
+     * @return The requested property
+     * @throws exception::DeviceError (Only when SEATBELTS==ON) If the specified property is not found in the cuRVE hashtable, or it's details are invalid.
+     */
+    template <typename T, unsigned int M>
+    __device__ __forceinline__ static T getEnvironmentDirectedGraphVertexProperty(VariableHash graphHash, const char(&propertyName)[M], unsigned int vertex_index);
+    /**
+     * @copydoc DeviceCurve::getEnvironmentDirectedGraphVertexProperty()
+     * @param array_index The index of the element in the named variable array.
+     * @tparam N (Optional) Length of the array variable specified by variableName, available for parity with other APIs, checked if provided  (flamegpu must be built with SEATBELTS enabled for device error checking).
+     */
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static T getEnvironmentDirectedGraphVertexArrayProperty(VariableHash graphHash, const char(&propertyName)[M], unsigned int vertex_index, unsigned int array_index);
+
+    /**
+     * Retrieve the specified environment directed graph's edge (array) property from the cuRVE hashtable.
+     *
+     * @param propertyName A constant char array (C string) property name.
+     * @tparam T The return type requested of the property.
+     * @tparam M The length of the string literal passed to variableName. This parameter should always be implicit, and does not need to be provided.
+     * @return The requested property
+     * @throws exception::DeviceError (Only when SEATBELTS==ON) If the specified property is not found in the cuRVE hashtable, or it's details are invalid.
+     */
+    template <typename T, unsigned int M>
+    __device__ __forceinline__ static T getEnvironmentDirectedGraphEdgeProperty(VariableHash graphHash, const char(&propertyName)[M], unsigned int edge_index);
+    /**
+     * @copydoc DeviceCurve::getEnvironmentDirectedGraphEdgeProperty()
+     * @param array_index The index of the element in the named variable array.
+     * @tparam N (Optional) Length of the array variable specified by variableName, available for parity with other APIs, checked if provided  (flamegpu must be built with SEATBELTS enabled for device error checking).
+     */
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static T getEnvironmentDirectedGraphEdgeArrayProperty(VariableHash graphHash, const char(&propertyName)[M], unsigned int edge_index, unsigned int array_index);
+
     /**
      * Retrieve the specified environment macro property buffer's pointer from the cuRVE hashtable.
      *
@@ -244,6 +309,12 @@ class DeviceCurve {
      */
     template<typename T, unsigned int I = 1, unsigned int J = 1, unsigned int K = 1, unsigned int W = 1, unsigned int M>
     __device__ __forceinline__ static char *getEnvironmentMacroProperty(const char(&name)[M]);
+    /**
+     * Return the number of count of vars in the specified buffer as registered to Curve
+     * (Currently only used by EnvironmentDirectedGraph SEATBELTS checks, if used by others RTCCurve will need updating too)
+     */
+    template <unsigned int M>
+    __device__ __forceinline__ static unsigned int getVariableCount(const char(&variableName)[M], VariableHash namespace_hash);
 };
 
 ////
@@ -275,7 +346,7 @@ __device__ __forceinline__ char* DeviceCurve::getVariablePtr(const char(&variabl
         DTHROW("Curve variable with name '%s', variable array length mismatch %u != %u.\n", variableName, sm()->curve_elements[cv], detail::type_decode<T>::len_t);
         return nullptr;
     } else if (offset >= sm()->curve_type_size[cv] * sm()->curve_elements[cv] * sm()->curve_count[cv]) {  // Note : offset is basically index * sizeof(T)
-        DTHROW("Curve variable with name '%s', offset exceeds buffer length  %u >= %u.\n", offset, sm()->curve_type_size[cv] * sm()->curve_elements[cv] * sm()->curve_count[cv]);
+        DTHROW("Curve variable with name '%s', offset exceeds buffer length  %u >= %u.\n", variableName, offset, sm()->curve_type_size[cv] * sm()->curve_elements[cv] * sm()->curve_count[cv]);
         return nullptr;
     }
 #endif
@@ -393,10 +464,54 @@ __device__ __forceinline__ T DeviceCurve::getEnvironmentArrayProperty(const char
     using detail::sm;
     return *reinterpret_cast<const T*>(sm()->env_buffer + reinterpret_cast<ptrdiff_t>(getVariablePtr<T, N>(propertyName, Curve::variableHash("_environment"), array_index * sizeof(T))));
 }
+__device__ __forceinline__ unsigned int *DeviceCurve::getEnvironmentDirectedGraphPBM(VariableHash graphHash) {
+    using detail::sm;
+    return reinterpret_cast<unsigned int *>(getVariablePtr<unsigned int, 1>("_pbm", graphHash ^ Curve::variableHash("_environment_directed_graph_vertex"), 0));
+}
+__device__ __forceinline__ unsigned int* DeviceCurve::getEnvironmentDirectedGraphIPBM(VariableHash graphHash) {
+    using detail::sm;
+    return reinterpret_cast<unsigned int*>(getVariablePtr<unsigned int, 1>("_ipbm", graphHash ^ Curve::variableHash("_environment_directed_graph_vertex"), 0));
+}
+__device__ __forceinline__ unsigned int* DeviceCurve::getEnvironmentDirectedGraphIPBMEdges(VariableHash graphHash) {
+    using detail::sm;
+    return reinterpret_cast<unsigned int*>(getVariablePtr<unsigned int, 1>("_ipbm_edges", graphHash ^ Curve::variableHash("_environment_directed_graph_vertex"), 0));
+}
+template <typename T, unsigned int M>
+__device__ __forceinline__ T DeviceCurve::getEnvironmentDirectedGraphVertexProperty(VariableHash graphHash, const char(&propertyName)[M], unsigned int vertex_index) {
+    using detail::sm;
+    return getVariable<T>(propertyName, graphHash ^ Curve::variableHash("_environment_directed_graph_vertex"), vertex_index);
+}
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ T DeviceCurve::getEnvironmentDirectedGraphVertexArrayProperty(VariableHash graphHash, const char(&propertyName)[M], unsigned int vertex_index, unsigned int array_index) {
+    using detail::sm;
+    return getVariable<T, N>(propertyName, graphHash ^ Curve::variableHash("_environment_directed_graph_vertex"), vertex_index, array_index);
+}
+template <typename T, unsigned int M>
+__device__ __forceinline__ T DeviceCurve::getEnvironmentDirectedGraphEdgeProperty(VariableHash graphHash, const char(&propertyName)[M], unsigned int edge_index) {
+    using detail::sm;
+    return getVariable<T>(propertyName, graphHash ^ Curve::variableHash("_environment_directed_graph_edge"), edge_index);
+}
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ T DeviceCurve::getEnvironmentDirectedGraphEdgeArrayProperty(VariableHash graphHash, const char(&propertyName)[M], unsigned int edge_index, unsigned int array_index) {
+    using detail::sm;
+    return getVariable<T, N>(propertyName, graphHash ^ Curve::variableHash("_environment_directed_graph_edge"), edge_index, array_index);
+}
 
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W, unsigned int M>
 __device__ __forceinline__ char* DeviceCurve::getEnvironmentMacroProperty(const char(&name)[M]) {
     return getVariablePtr<T, I*J*K*W>(name, Curve::variableHash("_macro_environment"), 0);
+}
+template <unsigned int M>
+__device__ __forceinline__ unsigned int DeviceCurve::getVariableCount(const char(&variableName)[M], const VariableHash namespace_hash) {
+    using detail::sm;
+    const Variable cv = getVariableIndex(Curve::variableHash(variableName) + namespace_hash);
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
+    if (cv == UNKNOWN_VARIABLE) {
+        DTHROW("Curve variable with name '%s' was not found.\n", variableName);
+        return 0;
+    }
+#endif
+    return sm()->curve_count[cv];
 }
 }  // namespace curve
 }  // namespace detail

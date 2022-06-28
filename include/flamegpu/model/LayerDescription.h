@@ -31,14 +31,14 @@ class CLayerDescription {
      * Copy constructor
      * Creates a new interface to the same LayerData/ModelData
      */
-    CLayerDescription(const CLayerDescription& other_agent) = default;
-    CLayerDescription(CLayerDescription&& other_agent) = default;
+    CLayerDescription(const CLayerDescription& other_layer) = default;
+    CLayerDescription(CLayerDescription&& other_layer) = default;
     /**
      * Assignment operator
      * Assigns this interface to the same LayerData/ModelData
      */
-    CLayerDescription& operator=(const CLayerDescription& other_agent) = default;
-    CLayerDescription& operator=(CLayerDescription&& other_agent) = default;
+    CLayerDescription& operator=(const CLayerDescription& other_layer) = default;
+    CLayerDescription& operator=(CLayerDescription&& other_layer) = default;
     /**
      * Equality operator, checks whether LayerDescription hierarchies are functionally the same
      * @param rhs right hand side
@@ -120,7 +120,7 @@ class LayerDescription : public CLayerDescription {
  public:
     /**
      * Constructor, creates an interface to the LayerData
-     * @param data Data store of this environment's data
+     * @param data Data store of this layer's data
      */
     explicit LayerDescription(std::shared_ptr<LayerData> data);
     /**

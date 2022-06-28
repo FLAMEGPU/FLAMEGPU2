@@ -26,6 +26,7 @@
 #include "flamegpu/model/SubModelDescription.h"
 #include "flamegpu/model/SubAgentDescription.h"
 #include "flamegpu/model/SubEnvironmentDescription.h"
+#include "flamegpu/model/EnvironmentDirectedGraphDescription.cuh"
 #include "flamegpu/simulation/AgentVector.h"
 #include "flamegpu/runtime/agent/AgentInstance.h"
 #include "flamegpu/simulation/CUDASimulation.h"

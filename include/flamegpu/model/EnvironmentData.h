@@ -10,6 +10,7 @@
 
 #include "flamegpu/detail/Any.h"
 #include "flamegpu/model/ModelData.h"
+#include "flamegpu/model/EnvironmentDirectedGraphData.cuh"
 
 namespace flamegpu {
 
@@ -108,6 +109,10 @@ struct EnvironmentData {
      * Main storage of all macroproperties
      */
     std::unordered_map<std::string, MacroPropData> macro_properties{};
+    /**
+     * Main storage of all directed graphs
+     */
+    std::unordered_map<std::string, std::shared_ptr<EnvironmentDirectedGraphData>> directed_graphs{};
     /**
      * Equality operator, checks whether EnvironmentData hierarchies are functionally the same
      * @returns True when environments are the same

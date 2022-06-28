@@ -6,6 +6,7 @@
 #include <cassert>
 
 #include "flamegpu/runtime/environment/DeviceMacroProperty.cuh"
+#include "flamegpu/runtime/environment/DeviceEnvironmentDirectedGraph.cuh"
 #include "flamegpu/detail/type_decode.h"
 #ifndef __CUDACC_RTC__
 #include "flamegpu/runtime/detail/curve/DeviceCurve.cuh"
@@ -60,6 +61,13 @@ class ReadOnlyDeviceEnvironment {
      */
     template<typename T, unsigned int I = 1, unsigned int J = 1, unsigned int K = 1, unsigned int W = 1, unsigned int M>
     __device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, I, J, K, W> getMacroProperty(const char(&name)[M]) const;
+    /**
+     * Returns a read-only accessor to the named directed graph
+     * @param name name used for accessing the property, this value should be a string literal e.g. "foobar"
+     * @tparam M Length of variable name, this should always be implicit if passing a string literal
+     */
+    template<unsigned int M>
+    __device__ __forceinline__ DeviceEnvironmentDirectedGraph getDirectedGraph(const char(&name)[M]) const;
 };
 /**
  * Utility for accessing environmental properties
@@ -70,7 +78,7 @@ class ReadOnlyDeviceEnvironment {
 class DeviceEnvironment : public ReadOnlyDeviceEnvironment {
  public:
     /**
-     * Returns a read-only accessor to the named macro property
+     * Returns an accessor to the named macro property
      * @param name name used for accessing the property, this value should be a string literal e.g. "foobar"
      * @tparam I Length of macro property in the 1st dimension, default 1
      * @tparam J Length of macro property in the 2nd dimension, default 1
@@ -113,7 +121,7 @@ __device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, I, J, K, W> ReadOnlyDe
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W, unsigned int N>
 __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W> DeviceEnvironment::getMacroProperty(const char(&name)[N]) const {
     char* d_ptr = detail::curve::DeviceCurve::getEnvironmentMacroProperty<T, I, J, K, W>(name);
-#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
+#if !defined(SEATBELTS) || SEATBELTS
     if (!d_ptr) {
         return DeviceMacroProperty<T, I, J, K, W>(nullptr, nullptr);
     }
@@ -122,6 +130,32 @@ __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W> DeviceEnvironment:
 #else
     return DeviceMacroProperty<T, I, J, K, W>(reinterpret_cast<T*>(d_ptr));
 #endif
+}
+template<unsigned int M>
+__device__ __forceinline__ DeviceEnvironmentDirectedGraph ReadOnlyDeviceEnvironment::getDirectedGraph(const char(&name)[M]) const {
+    const detail::curve::Curve::VariableHash graph_hash = detail::curve::Curve::variableHash(name);
+#if !defined(SEATBELTS) || SEATBELTS
+    // Seatbelts check that the graph exists, by looking for mandatory vertex _id property
+    // Rather than it failing at property lookup time
+    if (detail::curve::DeviceCurve::getVariableIndex((graph_hash ^ detail::curve::Curve::variableHash("_environment_directed_graph_vertex")) + detail::curve::Curve::variableHash("_id"))
+        == detail::curve::DeviceCurve::UNKNOWN_VARIABLE) {
+        DTHROW("Environment directed graph with name '%s' was not found\n", name);
+    }
+#endif
+    return DeviceEnvironmentDirectedGraph(graph_hash);
+}
+#else
+
+template<unsigned int M>
+__device__ __forceinline__ DeviceEnvironmentDirectedGraph ReadOnlyDeviceEnvironment::getDirectedGraph(const char(&name)[M]) const {
+    const detail::curve::Curve::VariableHash graph_hash = detail::curve::Curve::variableHash(name);
+#if !defined(SEATBELTS) || SEATBELTS
+    // Seatbelts check that the graph exists, by requesting it's hash
+    if (detail::curve::DeviceCurve::getGraphHash(name) == detail::curve::DeviceCurve::UNKNOWN_GRAPH) {
+        DTHROW("Environment directed graph with name '%s' was not found\n", name);
+    }
+#endif
+    return DeviceEnvironmentDirectedGraph(graph_hash);
 }
 #endif  // __CUDACC_RTC__
 

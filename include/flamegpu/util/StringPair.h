@@ -14,7 +14,17 @@ namespace util {
 typedef std::pair<std::string, std::string> StringPair;
 
 /**
- * Hash function so that StringPair can be used as a key in a map
+ * Compare function so that StringPair can be used in a map
+ */
+struct StringPairCompare {
+    bool operator() (const std::pair<std::string, std::string>& lhs, const std::pair<std::string, std::string>& rhs) const {
+        if (lhs.first == rhs.first)
+            return lhs.second < rhs.second;
+        return lhs.first < rhs.first;
+    }
+};
+/**
+ * Hash function so that StringPair can be used as a key in an unordered map
  */
 struct StringPairHash {
     size_t operator()(const std::pair<std::string, std::string>& k) const {
@@ -27,7 +37,7 @@ struct StringPairHash {
  * Ordered map with StringPair as the key type
  */
 template<typename T>
-using StringPairMap = std::map<StringPair, T, StringPairHash>;
+using StringPairMap = std::map<StringPair, T, StringPairCompare>;
 
 /**
  * Unordered map with StringPair as the key type

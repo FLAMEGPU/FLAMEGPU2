@@ -148,6 +148,8 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/io/LoggerFactory.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/XMLLogger.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/JSONLogger.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/JSONGraphReader.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/JSONGraphWriter.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/Telemetry.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUException.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUDeviceException.cuh
@@ -172,6 +174,8 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/model/SubEnvironmentDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/HostFunctionDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/Variable.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/EnvironmentDirectedGraphData.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/EnvironmentDirectedGraphDescription.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/MemoryVector.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/GenericMemoryVector.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/CUDAScanCompaction.h
@@ -188,6 +192,9 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/SimRunner.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/SimLogger.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/AgentInterface.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/EnvironmentManager.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/RandomManager.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/AgentVector.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/AgentVector_Agent.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/CUDASimulation.h
@@ -200,8 +207,6 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/RunPlan.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/RunPlanVector.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/Simulation.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/EnvironmentManager.cuh
-    ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/RandomManager.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunction.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunction_shim.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunctionCondition.cuh
@@ -254,6 +259,8 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/environment/DeviceMacroProperty.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/environment/HostEnvironment.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/environment/HostMacroProperty.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/environment/DeviceEnvironmentDirectedGraph.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/runtime/environment/HostEnvironmentDirectedGraph.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/util/cleanup.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/nvtx.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/StringPair.h
@@ -294,6 +301,8 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubEnvironmentData.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/SubEnvironmentDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/HostFunctionDescription.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/EnvironmentDirectedGraphData.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/EnvironmentDirectedGraphDescription.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CubTemporaryMemory.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CUDAScanCompaction.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CUDAMessageList.cu
@@ -304,6 +313,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CUDAMessage.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CUDAScatter.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CUDAMacroEnvironment.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/SimRunner.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/SimLogger.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/EnvironmentManager.cu
@@ -333,6 +343,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/MessageArray3D.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/messaging/MessageBucket.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/environment/HostEnvironment.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/runtime/environment/HostEnvironmentDirectedGraph.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/random/HostRandom.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateReader.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateWriter.cpp
@@ -340,6 +351,8 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLStateWriter.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLLogger.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONLogger.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONGraphReader.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONGraphWriter.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/Telemetry.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/util/cleanup.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/detail/compute_capability.cu

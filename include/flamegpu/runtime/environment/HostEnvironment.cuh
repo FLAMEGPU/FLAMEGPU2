@@ -16,6 +16,8 @@
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
 #include "flamegpu/runtime/environment/HostMacroProperty.cuh"
+#include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
+#include "flamegpu/runtime/environment/HostEnvironmentDirectedGraph.cuh"
 
 namespace flamegpu {
 
@@ -31,12 +33,14 @@ class HostEnvironment {
      * This class can only be constructed by HostAPI
      */
     friend class HostAPI;
+    typedef std::unordered_map<std::string, std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>> CUDADirectedGraphMap;
 
  protected:
     /**
      * Constructor, to be called by HostAPI
      */
-    explicit HostEnvironment(unsigned int instance_id, const std::shared_ptr<detail::EnvironmentManager> &env, detail::CUDAMacroEnvironment &_macro_env);
+    explicit HostEnvironment(const unsigned int instance_id, const std::shared_ptr<detail::EnvironmentManager> &env, detail::CUDAMacroEnvironment &_macro_env,
+        CUDADirectedGraphMap& _directed_graph_map, detail::CUDAScatter& _scatter, unsigned int _streamID, cudaStream_t _stream);
     /**
      * Provides access to EnvironmentManager singleton
      */
@@ -46,10 +50,26 @@ class HostEnvironment {
      */
     detail::CUDAMacroEnvironment& macro_env;
     /**
+     * Provides access to directed graphs for the instance
+     */
+    CUDADirectedGraphMap& directed_graph_map;
+    /**
      * Access to instance id of the CUDASimulation
      * This is used to augment all variable names
      */
     const unsigned int instance_id;
+    /**
+     * CUDA scatter singleton
+     */
+    detail::CUDAScatter& scatter;
+    /**
+     * CUDA stream index used for cuda stream resources.
+     */
+    const unsigned int streamID;
+    /**
+     * CUDA stream used for cuda operations.
+     */
+    const cudaStream_t stream;
 
  public:
     /**
@@ -155,6 +175,11 @@ class HostEnvironment {
     template<typename T>
     HostMacroProperty_swig<T> getMacroProperty_swig(const std::string& name) const;
 #endif
+    /**
+     * Returns an interface for accessing the named directed graph
+     * @param name The name of the environment directed graph to return
+     */
+    HostEnvironmentDirectedGraph getDirectedGraph(const std::string& name) const;
 };
 
 /**

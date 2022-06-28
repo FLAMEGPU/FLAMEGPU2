@@ -22,6 +22,7 @@ namespace flamegpu {
 class HostAPI;
 struct VarOffsetStruct;
 namespace detail {
+class CUDAEnvironmentDirectedGraphBuffers;
 class CUDAMacroEnvironment;
 class CUDAScatter;
 class CUDAFatAgent;
@@ -34,13 +35,15 @@ class CUDAAgent : public AgentInterface {
 #ifdef FLAMEGPU_VISUALISATION
     friend struct visualiser::AgentVisData;
 #endif  // FLAMEGPU_VISUALISATION
+    // Requires access to internal maps holding curve
+    friend class CUDAEnvironmentDirectedGraphBuffers;
 
  public:
     /**
      *  map of agent function name to RTC function instance
      */
      typedef std::map<const std::string, std::unique_ptr<jitify::experimental::KernelInstantiation>> CUDARTCFuncMap;
-     typedef std::map<const std::string, std::unique_ptr<detail::curve::CurveRTCHost>> CUDARTCHeaderMap;
+     typedef std::map<const std::string, std::shared_ptr<detail::curve::CurveRTCHost>> CUDARTCHeaderMap;
     /**
      * Element type of CUDARTCFuncMap
      */
@@ -205,10 +208,12 @@ class CUDAAgent : public AgentInterface {
      * @param func The Agent function data structure containing the src for the function
      * @param env Object containing environment properties for the simulation instance
      * @param macro_env Object containing environment macro properties for the simulation instance
+     * @param directed_graphs Map of directed graphs for the simulation instance
      * @param function_condition If true then this function will instantiate a function condition rather than an agent function
      * @throw exception::InvalidAgentFunc thrown if the user supplied agent function has compilation errors
      */
-    void addInstantitateRTCFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager>& env, const CUDAMacroEnvironment& macro_env, bool function_condition = false);
+    void addInstantitateRTCFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager>& env, const CUDAMacroEnvironment& macro_env,
+        const std::unordered_map<std::string, std::shared_ptr<CUDAEnvironmentDirectedGraphBuffers>>& directed_graphs, bool function_condition = false);
     /**
      * Instantiates the curve instance for an (non-RTC) Agent function (or agent function condition) from agent function data description containing the source.
      *
@@ -216,9 +221,11 @@ class CUDAAgent : public AgentInterface {
      * @param func The Agent function data structure containing the details of the function
      * @param env Object containing environment properties for the simulation instance
      * @param macro_env Object containing environment macro properties for the simulation instance
+     * @param directed_graphs Map of directed graphs for the simulation instance
      * @param function_condition If true then this function will instantiate a function condition rather than an agent function
      */
-    void addInstantitateFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager>& env, const CUDAMacroEnvironment& macro_env, bool function_condition = false);
+    void addInstantitateFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager>& env, const CUDAMacroEnvironment& macro_env,
+        const std::unordered_map<std::string, std::shared_ptr<CUDAEnvironmentDirectedGraphBuffers>>& directed_graphs, bool function_condition = false);
     /**
      * Returns the jitify kernel instantiation of the agent function.
      * Will throw an exception::InvalidAgentFunc excpetion if the function name does not have a valid instantiation
@@ -378,7 +385,7 @@ class CUDAAgent : public AgentInterface {
      * map between function name (or function_name_condition) and the curve interface
      * This allows access for updating curve
      */
-    std::unordered_map<std::string, std::unique_ptr<detail::curve::HostCurve>> curve_map;
+    std::unordered_map<std::string, std::shared_ptr<detail::curve::HostCurve>> curve_map;
     /**
      * Used when allocated new buffers
      */
