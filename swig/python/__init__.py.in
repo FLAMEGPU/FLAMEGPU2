@@ -1,10 +1,35 @@
 # Notify @PYTHON_MODULE_NAME@ of where to find RTC headers (This must occur before module load)
-import os, sys, pathlib
+import os, sys, pathlib, subprocess
 if not "FLAMEGPU_INC_DIR" in os.environ or not "FLAMEGPU2_INC_DIR" in os.environ:
     os.environ["FLAMEGPU_INC_DIR"] = str(pathlib.Path(__file__).resolve().parent / "include")
 else:
   print("@PYTHON_MODULE_NAME@ warning: env var 'FLAMEGPU_INC_DIR' is present, RTC headers may be incorrect.", file=sys.stderr)
-del os, sys, pathlib
+
+# Some Windows users have dll load failed, because Python can't find nvrtc
+# It appears due to a combination of Python and Anaconda versions
+# Python 3.8+ requires DLL loads to be manually specified with os.add_dll_directory()
+# Anaconda however appears to do things differently, so it may work without all this
+if os.name == 'nt' and hasattr(os, 'add_dll_directory') and callable(getattr(os, 'add_dll_directory')):
+  CUDA_VERSION_MAJOR = @CUDAToolkit_VERSION_MAJOR@
+  CUDA_VERSION_MINOR = @CUDAToolkit_VERSION_MINOR@
+  NVRTC_DLL_NAME = ''
+  if CUDA_VERSION_MAJOR > 11:
+    NVRTC_DLL_NAME = 'nvrtc64_%d0_0.dll'%(CUDA_VERSION_MAJOR)
+  elif CUDA_VERSION_MAJOR == 11 and CUDA_VERSION_MINOR >= 2:
+    NVRTC_DLL_NAME = 'nvrtc64_112_0.dll'
+  else: # Prior to cuda 10 _0 (patch?) wasn't included, but we don't support those anyway
+    NVRTC_DLL_NAME = 'nvrtc64_%d%d_0.dll'%(CUDA_VERSION_MAJOR, CUDA_VERSION_MINOR)
+  try:
+    # Find the default location of this on windows path
+    where_result = subprocess.check_output(['where', NVRTC_DLL_NAME]).split(b'\r\n')[0].decode("utf-8") 
+    where_directory = pathlib.Path(where_result).resolve().parent
+    # Add it to the dll load path
+    os.add_dll_directory(where_directory)
+  except subprocess.CalledProcessError:
+    print("@PYTHON_MODULE_NAME@ warning: %s was not found, if 'dll load failed' occurs it may be necessary to manually call os.add_dll_directory() prior to importing pyflamegpu."%(NVRTC_DLL_NAME), file=sys.stderr)
+  
+
+del os, sys, pathlib, subprocess
 # Normal module stuff
 __all__ = ["@PYTHON_MODULE_NAME@"]
 from .@PYTHON_MODULE_NAME@ import *
