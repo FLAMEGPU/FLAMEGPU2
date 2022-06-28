@@ -67,6 +67,7 @@ $DYNAMIC_VARIABLES
 class DeviceCurve {
     public:
     static const int UNKNOWN_VARIABLE = -1;
+    static const unsigned int UNKNOWN_GRAPH = 0xFFFFFFFF;  // UINT_MAX
 
     typedef int                      Variable;
     typedef unsigned int             VariableHash;
@@ -106,6 +107,26 @@ class DeviceCurve {
     template <typename T, unsigned int N, unsigned int M>
     __device__ __forceinline__ static void setNewAgentArrayVariable(const char(&name)[M], T variable, unsigned int variable_index, unsigned int array_index);
 
+    __device__ __forceinline__ static unsigned int *getEnvironmentDirectedGraphPBM(VariableHash graphHash);
+    __device__ __forceinline__ static unsigned int *getEnvironmentDirectedGraphIPBM(VariableHash graphHash);
+    __device__ __forceinline__ static unsigned int *getEnvironmentDirectedGraphIPBMEdges(VariableHash graphHash);
+    
+    template <typename T, unsigned int M>
+    __device__ __forceinline__ static T getEnvironmentDirectedGraphVertexProperty(VariableHash graphHash, const char(&propertyName)[M], unsigned int vertex_index);
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static T getEnvironmentDirectedGraphVertexArrayProperty(VariableHash graphHash, const char(&propertyName)[M], unsigned int vertex_index, unsigned int array_index);
+
+    template <typename T, unsigned int M>
+    __device__ __forceinline__ static T getEnvironmentDirectedGraphEdgeProperty(VariableHash graphHash, const char(&propertyName)[M], unsigned int edge_index);
+    template <typename T, unsigned int N, unsigned int M>
+    __device__ __forceinline__ static T getEnvironmentDirectedGraphEdgeArrayProperty(VariableHash graphHash, const char(&propertyName)[M], unsigned int edge_index, unsigned int array_index);
+    
+    template <unsigned int M>
+    __device__ __forceinline__ static VariableHash getGraphHash(const char(&graphName)[M]);
+
+
+    template <unsigned int M>
+    __device__ __forceinline__ static unsigned int getVariableCount(const char(&variableName)[M], const VariableHash namespace_hash);
 };
 
 template <typename T, unsigned int N>
@@ -115,6 +136,15 @@ $DYNAMIC_GETAGENTVARIABLE_IMPL
 template <typename T, unsigned int N>
 __device__ __forceinline__ T DeviceCurve::getMessageVariable(const char (&name)[N], unsigned int index) {
 $DYNAMIC_GETMESSAGEVARIABLE_IMPL
+}
+
+template <typename T, unsigned int N>
+__device__ __forceinline__ T DeviceCurve::getEnvironmentDirectedGraphVertexProperty(VariableHash graphHash, const char(&name)[N], unsigned int index) {
+$DYNAMIC_GETDIRECTEDGRAPHVERTEXPROPERTY_IMPL
+}
+template <typename T, unsigned int N>
+__device__ __forceinline__ T DeviceCurve::getEnvironmentDirectedGraphEdgeProperty(VariableHash graphHash, const char(&name)[N], unsigned int index) {
+$DYNAMIC_GETDIRECTEDGRAPHEDGEPROPERTY_IMPL
 }
 
 template <typename T, unsigned int N>
@@ -133,6 +163,25 @@ $DYNAMIC_GETAGENTARRAYVARIABLE_IMPL
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ T DeviceCurve::getMessageArrayVariable(const char(&name)[M], unsigned int index, unsigned int array_index) {
 $DYNAMIC_GETMESSAGEARRAYVARIABLE_IMPL
+}
+    
+
+__device__ __forceinline__ unsigned int *DeviceCurve::getEnvironmentDirectedGraphPBM(VariableHash graphHash) {
+$DYNAMIC_GETDIRECTEDGRAPHPBM_IMPL
+}
+__device__ __forceinline__ unsigned int *DeviceCurve::getEnvironmentDirectedGraphIPBM(VariableHash graphHash) {
+$DYNAMIC_GETDIRECTEDGRAPHIPBM_IMPL
+}
+__device__ __forceinline__ unsigned int *DeviceCurve::getEnvironmentDirectedGraphIPBMEdges(VariableHash graphHash) {
+$DYNAMIC_GETDIRECTEDGRAPHIPBMEDGES_IMPL
+}
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ T DeviceCurve::getEnvironmentDirectedGraphVertexArrayProperty(VariableHash graphHash, const char(&name)[M], unsigned int index, unsigned int array_index) {
+$DYNAMIC_GETDIRECTEDGRAPHVERTEXARRAYPROPERTY_IMPL
+}
+template <typename T, unsigned int N, unsigned int M>
+__device__ __forceinline__ T DeviceCurve::getEnvironmentDirectedGraphEdgeArrayProperty(VariableHash graphHash, const char(&name)[M], unsigned int index, unsigned int array_index) {
+$DYNAMIC_GETDIRECTEDGRAPHEDGEARRAYPROPERTY_IMPL
 }
 
 template <typename T, unsigned int N, unsigned int M>
@@ -168,6 +217,16 @@ $DYNAMIC_SETMESSAGEARRAYVARIABLE_IMPL
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ void DeviceCurve::setNewAgentArrayVariable(const char(&name)[M], T variable, unsigned int index, unsigned int array_index) {
 $DYNAMIC_SETNEWAGENTARRAYVARIABLE_IMPL    
+}
+
+template <unsigned int M>
+__device__ __forceinline__ DeviceCurve::VariableHash DeviceCurve::getGraphHash(const char(&graphName)[M]) {
+$DYNAMIC_GETGRAPHHASH_IMPL
+}
+
+template <unsigned int M>
+__device__ __forceinline__ unsigned int DeviceCurve::getVariableCount(const char(&variableName)[M], const VariableHash namespace_hash) {
+$DYNAMIC_GETVARIABLECOUNT_IMPL
 }
 
 }  // namespace curve 
@@ -220,6 +279,7 @@ void CurveRTCHost::registerAgentVariable(const char* variableName, const char* t
     props.write = write;
     props.elements = elements;
     props.type_size = type_size;
+    props.count_index = static_cast<unsigned int>(count_buffer.size()); count_buffer.push_back(0);
     if (!agent_variables.emplace(variableName, props).second) {
         THROW exception::UnknownInternalError("Variable '%s' is already registered, in CurveRTCHost::registerAgentVariable()", variableName);
     }
@@ -231,6 +291,7 @@ void CurveRTCHost::registerMessageInVariable(const char* variableName, const cha
     props.write = write;
     props.elements = elements;
     props.type_size = type_size;
+    props.count_index = static_cast<unsigned int>(count_buffer.size()); count_buffer.push_back(0);
     if (!messageIn_variables.emplace(variableName, props).second) {
         THROW exception::UnknownInternalError("Variable '%s' is already registered, in CurveRTCHost::registerMessageInVariable()", variableName);
     }
@@ -242,6 +303,7 @@ void CurveRTCHost::registerMessageOutVariable(const char* variableName, const ch
     props.write = write;
     props.elements = elements;
     props.type_size = type_size;
+    props.count_index = static_cast<unsigned int>(count_buffer.size()); count_buffer.push_back(0);
     if (!messageOut_variables.emplace(variableName, props).second) {
         THROW exception::UnknownInternalError("Variable '%s' is already registered, in CurveRTCHost::registerMessageOutVariable()", variableName);
     }
@@ -253,8 +315,33 @@ void CurveRTCHost::registerNewAgentVariable(const char* variableName, const char
     props.write = write;
     props.elements = elements;
     props.type_size = type_size;
+    props.count_index = static_cast<unsigned int>(count_buffer.size()); count_buffer.push_back(0);
     if (!newAgent_variables.emplace(variableName, props).second) {
         THROW exception::UnknownInternalError("Variable '%s' is already registered, in CurveRTCHost::registerNewAgentVariable()", variableName);
+    }
+}
+void CurveRTCHost::registerEnvironmentDirectedGraphVertexProperty(const std::string& graphName, const std::string& propertyName, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
+    RTCVariableProperties props;
+    props.type = CurveRTCHost::demangle(type);
+    props.read = read;
+    props.write = write;
+    props.elements = elements;
+    props.type_size = type_size;
+    props.count_index = static_cast<unsigned int>(count_buffer.size()); count_buffer.push_back(0);
+    if (!directedGraph_vertexProperties.emplace(std::pair{ graphName, propertyName}, props).second) {
+        THROW exception::UnknownInternalError("Property '%s' is already registered, in CurveRTCHost::registerEnvironmentDirectedGraphVertexProperty()", propertyName.c_str());
+    }
+}
+void CurveRTCHost::registerEnvironmentDirectedGraphEdgeProperty(const std::string& graphName, const std::string& propertyName, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
+    RTCVariableProperties props;
+    props.type = CurveRTCHost::demangle(type);
+    props.read = read;
+    props.write = write;
+    props.elements = elements;
+    props.type_size = type_size;
+    props.count_index = static_cast<unsigned int>(count_buffer.size()); count_buffer.push_back(0);
+    if (!directedGraph_edgeProperties.emplace(std::pair{ graphName, propertyName }, props).second) {
+        THROW exception::UnknownInternalError("Property '%s' is already registered, in CurveRTCHost::registerEnvironmentDirectedGraphEdgeProperty()", propertyName.c_str());
     }
 }
 
@@ -290,35 +377,135 @@ void CurveRTCHost::unregisterNewAgentVariable(const char* variableName) {
         THROW exception::UnknownInternalError("Variable '%s' not found when removing variable, in CurveRTCHost::unregisterNewAgentVariable()", variableName);
     }
 }
+void CurveRTCHost::unregisterEnvironmentDirectedGraphVertexProperty(const std::string& graphName, const std::string& propertyName) {
+    auto i = directedGraph_vertexProperties.find({graphName, propertyName});
+    if (i != directedGraph_vertexProperties.end()) {
+        directedGraph_vertexProperties.erase({graphName, propertyName});
+    } else {
+        THROW exception::UnknownInternalError("Vertex property '%s' from graph '%s' not found when removing property, "
+          "in CurveRTCHost::unregisterEnvironmentDirectedGraphVertexProperty()", propertyName.c_str(), graphName.c_str());
+    }
+}
+void CurveRTCHost::unregisterEnvironmentDirectedGraphEdgeProperty(const std::string& graphName, const std::string& propertyName) {
+    auto i = directedGraph_edgeProperties.find({graphName, propertyName});
+    if (i != directedGraph_edgeProperties.end()) {
+        directedGraph_edgeProperties.erase({graphName, propertyName});
+    } else {
+        THROW exception::UnknownInternalError("Edge property '%s' from graph '%s' not found when removing property, "
+            "in CurveRTCHost::unregisterEnvironmentDirectedGraphEdgeProperty()", propertyName.c_str(), graphName.c_str());
+    }
+}
 
 
 void* CurveRTCHost::getAgentVariableCachePtr(const char* variableName) {
     const auto i = agent_variables.find(variableName);
     if (i != agent_variables.end()) {
-        return i->second.h_data_ptr;
+        if (i->second.h_data_ptr)
+            return i->second.h_data_ptr;
+        THROW exception::UnknownInternalError("Variable '%s' has not yet been allocated within the cache, in CurveRTCHost::getAgentVariableCachePtr()", variableName);
     }
     THROW exception::UnknownInternalError("Variable '%s' not found when accessing variable, in CurveRTCHost::getAgentVariableCachePtr()", variableName);
 }
 void* CurveRTCHost::getMessageOutVariableCachePtr(const char* variableName) {
     const auto i = messageOut_variables.find(variableName);
     if (i != messageOut_variables.end()) {
-        return i->second.h_data_ptr;
+        if (i->second.h_data_ptr)
+            return i->second.h_data_ptr;
+        THROW exception::UnknownInternalError("Variable '%s' has not yet been allocated within the cache, in CurveRTCHost::getMessageOutVariableCachePtr()", variableName);
     }
     THROW exception::UnknownInternalError("Variable '%s' not found when accessing variable, in CurveRTCHost::getMessageOutVariableCachePtr()", variableName);
 }
 void* CurveRTCHost::getMessageInVariableCachePtr(const char* variableName) {
     const auto i = messageIn_variables.find(variableName);
     if (i != messageIn_variables.end()) {
-        return i->second.h_data_ptr;
+        if (i->second.h_data_ptr)
+            return i->second.h_data_ptr;
+        THROW exception::UnknownInternalError("Variable '%s' has not yet been allocated within the cache, in CurveRTCHost::getMessageInVariableCachePtr()", variableName);
     }
     THROW exception::UnknownInternalError("Variable '%s' not found when accessing variable, in CurveRTCHost::getMessageInVariableCachePtr()", variableName);
 }
 void* CurveRTCHost::getNewAgentVariableCachePtr(const char* variableName) {
     const auto i = newAgent_variables.find(variableName);
     if (i != newAgent_variables.end()) {
-        return i->second.h_data_ptr;
+        if (i->second.h_data_ptr)
+            return i->second.h_data_ptr;
+        THROW exception::UnknownInternalError("Variable '%s' has not yet been allocated within the cache, in CurveRTCHost::getNewAgentVariableCachePtr()", variableName);
     }
     THROW exception::UnknownInternalError("Variable '%s' not found when accessing variable, in CurveRTCHost::getNewAgentVariableCachePtr()", variableName);
+}
+void* CurveRTCHost::getEnvironmentDirectedGraphVertexPropertyCachePtr(const std::string& graphName, const std::string& propertyName) {
+    const auto i = directedGraph_vertexProperties.find(std::pair{graphName, propertyName});
+    if (i != directedGraph_vertexProperties.end()) {
+        if (i->second.h_data_ptr)
+            return i->second.h_data_ptr;
+        THROW exception::UnknownInternalError("Vertex property '%s' from graph '%s' has not yet been allocated within the cache, in CurveRTCHost::getEnvironmentDirectedGraphVertexPropertyCachePtr()", propertyName.c_str(), graphName.c_str());
+    }
+    THROW exception::UnknownInternalError("Vertex property '%s' from graph '%s' not found when retrieving property, "
+        "in CurveRTCHost::getEnvironmentDirectedGraphVertexPropertyCachePtr()", propertyName.c_str(), graphName.c_str());
+}
+void* CurveRTCHost::getEnvironmentDirectedGraphEdgePropertyCachePtr(const std::string& graphName, const std::string& propertyName) {
+    const auto i = directedGraph_edgeProperties.find(std::pair{graphName, propertyName});
+    if (i != directedGraph_edgeProperties.end()) {
+        if (i->second.h_data_ptr)
+            return i->second.h_data_ptr;
+        THROW exception::UnknownInternalError("Edge property '%s' from graph '%s' has not yet been allocated within the cache, in CurveRTCHost::getEnvironmentDirectedGraphEdgePropertyCachePtr()", propertyName.c_str(), graphName.c_str());
+    }
+    THROW exception::UnknownInternalError("Edge property '%s' from graph '%s' not found when retrieving property, "
+        "in CurveRTCHost::getEnvironmentDirectedGraphEdgePropertyCachePtr()", propertyName.c_str(), graphName.c_str());
+}
+void CurveRTCHost::setAgentVariableCount(const std::string& variableName, const unsigned int count) {
+    const auto i = agent_variables.find(variableName);
+    if (i != agent_variables.end()) {
+        count_buffer[i->second.count_index] = count;
+        return;
+    }
+    THROW exception::UnknownInternalError("Agent variable '%s' not found when retrieving property, "
+        "in CurveRTCHost::setAgentVariablePropertyCount()", variableName.c_str());
+}
+void CurveRTCHost::setMessageOutVariableCount(const std::string& variableName, const unsigned int count) {
+    const auto i = messageOut_variables.find(variableName);
+    if (i != messageOut_variables.end()) {
+        count_buffer[i->second.count_index] = count;
+        return;
+    }
+    THROW exception::UnknownInternalError("Message variable '%s' not found when retrieving property, "
+        "in CurveRTCHost::setMessageOutVariablePropertyCount()", variableName.c_str());
+}
+void CurveRTCHost::setMessageInVariableCount(const std::string& variableName, const unsigned int count) {
+    const auto i = messageIn_variables.find(variableName);
+    if (i != messageIn_variables.end()) {
+        count_buffer[i->second.count_index] = count;
+        return;
+    }
+    THROW exception::UnknownInternalError("Message variable '%s' not found when retrieving property, "
+        "in CurveRTCHost::setMessageInVariableCount()", variableName.c_str());
+}
+void CurveRTCHost::setNewAgentVariableCount(const std::string& variableName, const unsigned int count) {
+    const auto i = newAgent_variables.find(variableName);
+    if (i != newAgent_variables.end()) {
+        count_buffer[i->second.count_index] = count;
+        return;
+    }
+    THROW exception::UnknownInternalError("Agent variable '%s' not found when retrieving property, "
+        "in CurveRTCHost::setNewAgentVariableCount()", variableName.c_str());
+}
+void CurveRTCHost::setEnvironmentDirectedGraphVertexPropertyCount(const std::string& graphName, const std::string& propertyName, const unsigned int count) {
+    const auto i = directedGraph_vertexProperties.find(std::pair{ graphName, propertyName });
+    if (i != directedGraph_vertexProperties.end()) {
+        count_buffer[i->second.count_index] = count;
+        return;
+    }
+    THROW exception::UnknownInternalError("Vertex property '%s' from graph '%s' not found when retrieving property, "
+        "in CurveRTCHost::setEnvironmentDirectedGraphVertexPropertyCount()", propertyName.c_str(), graphName.c_str());
+}
+void CurveRTCHost::setEnvironmentDirectedGraphEdgePropertyCount(const std::string& graphName, const std::string& propertyName, const unsigned int count) {
+    const auto i = directedGraph_edgeProperties.find(std::pair{ graphName, propertyName });
+    if (i != directedGraph_edgeProperties.end()) {
+        count_buffer[i->second.count_index] = count;
+        return;
+    }
+    THROW exception::UnknownInternalError("Edge property '%s' from graph '%s' not found when retrieving property, "
+        "in CurveRTCHost::setEnvironmentDirectedGraphEdgePropertyCount()", propertyName.c_str(), graphName.c_str());
 }
 
 void CurveRTCHost::registerEnvVariable(const char* propertyName, ptrdiff_t offset, const char* type, size_t type_size, unsigned int elements) {
@@ -373,7 +560,10 @@ void CurveRTCHost::initHeaderEnvironment(const size_t env_buffer_len) {
     messageOut_data_offset = data_buffer_size;    data_buffer_size += messageOut_variables.size() * sizeof(void*);
     messageIn_data_offset = data_buffer_size;     data_buffer_size += messageIn_variables.size() * sizeof(void*);
     newAgent_data_offset = data_buffer_size;  data_buffer_size += newAgent_variables.size() * sizeof(void*);
+    directedGraphVertex_data_offset = data_buffer_size;  data_buffer_size += directedGraph_vertexProperties.size() * sizeof(void*);
+    directedGraphEdge_data_offset = data_buffer_size;  data_buffer_size += directedGraph_edgeProperties.size() * sizeof(void*);
     envMacro_data_offset = data_buffer_size;  data_buffer_size += RTCEnvMacroProperties.size() * sizeof(void*);
+    count_data_offset = data_buffer_size;  data_buffer_size += count_buffer.size() * sizeof(unsigned int);
     variables << "__constant__  char " << getVariableSymbolName() << "[" << data_buffer_size << "];\n";
     setHeaderPlaceholder("$DYNAMIC_VARIABLES", variables.str());
     // generate Environment::get func implementation ($DYNAMIC_ENV_GETVARIABLE_IMPL)
@@ -740,6 +930,114 @@ void CurveRTCHost::initHeaderGetters() {
         getMessageVariableImpl <<         "            return {};\n";
         setHeaderPlaceholder("$DYNAMIC_GETMESSAGEVARIABLE_IMPL", getMessageVariableImpl.str());
     }
+    // getEnvironmentDirectedGraphPBM
+    {
+        size_t ct = 0;
+        std::stringstream getDirectedGraphPBMImpl;
+        for (const auto& element : directedGraph_vertexProperties) {
+            RTCVariableProperties props = element.second;
+            if (props.read  && element.first.second == GRAPH_VERTEX_PBM_VARIABLE_NAME) {
+                getDirectedGraphPBMImpl << "            if (graphHash == " << Curve::variableRuntimeHash(element.first.first) << ") {\n";
+                getDirectedGraphPBMImpl << "                return (*static_cast<unsigned int**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << directedGraphVertex_data_offset + (ct++ * sizeof(void*)) << ")));\n";
+                getDirectedGraphPBMImpl << "            }\n";
+            } else { ++ct; }
+        }
+        getDirectedGraphPBMImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getDirectedGraphPBMImpl << "            DTHROW(\"Directed graph PBM was not found during getEnvironmentDirectedGraphPBM().\\n\");\n";
+        getDirectedGraphPBMImpl << "#endif\n";
+        getDirectedGraphPBMImpl << "            return {};\n";
+        setHeaderPlaceholder("$DYNAMIC_GETDIRECTEDGRAPHPBM_IMPL", getDirectedGraphPBMImpl.str());
+    }
+    // getEnvironmentDirectedGraphIPBM
+    {
+        size_t ct = 0;
+        std::stringstream getDirectedGraphIPBMImpl;
+        for (const auto& element : directedGraph_vertexProperties) {
+            RTCVariableProperties props = element.second;
+            if (props.read && element.first.second == GRAPH_VERTEX_IPBM_VARIABLE_NAME) {
+                getDirectedGraphIPBMImpl << "            if (graphHash == " << Curve::variableRuntimeHash(element.first.first) << ") {\n";
+                getDirectedGraphIPBMImpl << "                return (*static_cast<unsigned int**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << directedGraphVertex_data_offset + (ct++ * sizeof(void*)) << ")));\n";
+                getDirectedGraphIPBMImpl << "            }\n";
+            } else { ++ct; }
+        }
+        getDirectedGraphIPBMImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getDirectedGraphIPBMImpl << "            DTHROW(\"Directed graph IPBM was not found during getEnvironmentDirectedGraphIPBM().\\n\");\n";
+        getDirectedGraphIPBMImpl << "#endif\n";
+        getDirectedGraphIPBMImpl << "            return {};\n";
+        setHeaderPlaceholder("$DYNAMIC_GETDIRECTEDGRAPHIPBM_IMPL", getDirectedGraphIPBMImpl.str());
+    }
+    // getEnvironmentDirectedGraphIPBMEdges
+    {
+        size_t ct = 0;
+        std::stringstream getDirectedGraphIPBMEdgesImpl;
+        for (const auto& element : directedGraph_vertexProperties) {
+            RTCVariableProperties props = element.second;
+            if (props.read && element.first.second == GRAPH_VERTEX_IPBM_EDGES_VARIABLE_NAME) {
+                getDirectedGraphIPBMEdgesImpl << "            if (graphHash == " << Curve::variableRuntimeHash(element.first.first) << ") {\n";
+                getDirectedGraphIPBMEdgesImpl << "                return (*static_cast<unsigned int**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << directedGraphVertex_data_offset + (ct++ * sizeof(void*)) << ")));\n";
+                getDirectedGraphIPBMEdgesImpl << "            }\n";
+            } else { ++ct; }
+        }
+        getDirectedGraphIPBMEdgesImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getDirectedGraphIPBMEdgesImpl << "            DTHROW(\"Directed graph IPBM edge list was not found during getEnvironmentDirectedGraphIPBMEdges().\\n\");\n";
+        getDirectedGraphIPBMEdgesImpl << "#endif\n";
+        getDirectedGraphIPBMEdgesImpl << "            return {};\n";
+        setHeaderPlaceholder("$DYNAMIC_GETDIRECTEDGRAPHIPBMEDGES_IMPL", getDirectedGraphIPBMEdgesImpl.str());
+    }
+    // generate getEnvironmentDirectedGraphVertexProperty func implementation ($DYNAMIC_GETDIRECTEDGRAPHVERTEXPROPERTY_IMPL)
+    {
+        size_t ct = 0;
+        std::stringstream getGraphVertexPropertyImpl;
+        for (const auto& element : directedGraph_vertexProperties) {
+            RTCVariableProperties props = element.second;
+            if (props.read) {
+                getGraphVertexPropertyImpl << "            if (strings_equal(name, \"" << element.first.second << "\") && graphHash == " << Curve::variableRuntimeHash(element.first.first) << ") {\n";
+                getGraphVertexPropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                getGraphVertexPropertyImpl << "                if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
+                getGraphVertexPropertyImpl << "                    DTHROW(\"Directed graph vertex property '%s' type mismatch during getProperty().\\n\", name);\n";
+                getGraphVertexPropertyImpl << "                    return {};\n";
+                getGraphVertexPropertyImpl << "                } else if(type_decode<T>::len_t != " << element.second.elements << ") {\n";
+                getGraphVertexPropertyImpl << "                    DTHROW(\"MDirected graph vertex property '%s' length mismatch during getProperty().\\n\", name);\n";
+                getGraphVertexPropertyImpl << "                    return {};\n";
+                getGraphVertexPropertyImpl << "                }\n";
+                getGraphVertexPropertyImpl << "#endif\n";
+                getGraphVertexPropertyImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << directedGraphVertex_data_offset + (ct++ * sizeof(void*)) << ")))[index];\n";
+                getGraphVertexPropertyImpl << "            }\n";
+            } else { ++ct; }
+        }
+        getGraphVertexPropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getGraphVertexPropertyImpl << "            DTHROW(\"Directed graph vertex property '%s' was not found during getProperty().\\n\", name);\n";
+        getGraphVertexPropertyImpl << "#endif\n";
+        getGraphVertexPropertyImpl << "            return {};\n";
+        setHeaderPlaceholder("$DYNAMIC_GETDIRECTEDGRAPHVERTEXPROPERTY_IMPL", getGraphVertexPropertyImpl.str());
+    }
+    // generate getEnvironmentDirectedGraphEdgeProperty func implementation ($DYNAMIC_GETDIRECTEDGRAPHEDGEPROPERTY_IMPL)
+    {
+        size_t ct = 0;
+        std::stringstream getGraphEdgePropertyImpl;
+        for (const auto& element : directedGraph_edgeProperties) {
+            RTCVariableProperties props = element.second;
+            if (props.read) {
+                getGraphEdgePropertyImpl << "            if (strings_equal(name, \"" << element.first.second << "\") && graphHash == " << Curve::variableRuntimeHash(element.first.first) << ") {\n";
+                getGraphEdgePropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                getGraphEdgePropertyImpl << "                if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
+                getGraphEdgePropertyImpl << "                    DTHROW(\"Directed graph edge property '%s' type mismatch during getProperty().\\n\", name);\n";
+                getGraphEdgePropertyImpl << "                    return {};\n";
+                getGraphEdgePropertyImpl << "                } else if(type_decode<T>::len_t != " << element.second.elements << ") {\n";
+                getGraphEdgePropertyImpl << "                    DTHROW(\"MDirected graph edge property '%s' length mismatch during getProperty().\\n\", name);\n";
+                getGraphEdgePropertyImpl << "                    return {};\n";
+                getGraphEdgePropertyImpl << "                }\n";
+                getGraphEdgePropertyImpl << "#endif\n";
+                getGraphEdgePropertyImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << directedGraphEdge_data_offset + (ct++ * sizeof(void*)) << ")))[index];\n";
+                getGraphEdgePropertyImpl << "            }\n";
+            } else { ++ct; }
+        }
+        getGraphEdgePropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getGraphEdgePropertyImpl << "            DTHROW(\"Directed graph edge property '%s' was not found during getProperty().\\n\", name);\n";
+        getGraphEdgePropertyImpl << "#endif\n";
+        getGraphEdgePropertyImpl << "            return {};\n";
+        setHeaderPlaceholder("$DYNAMIC_GETDIRECTEDGRAPHEDGEPROPERTY_IMPL", getGraphEdgePropertyImpl.str());
+    }
     // generate getAgentVariable_ldg func implementation ($DYNAMIC_GETAGENTVARIABLE_LDG_IMPL)
     {
         size_t ct = 0;
@@ -856,6 +1154,72 @@ void CurveRTCHost::initHeaderGetters() {
         getMessageArrayVariableImpl << "           return {};\n";
         setHeaderPlaceholder("$DYNAMIC_GETMESSAGEARRAYVARIABLE_IMPL", getMessageArrayVariableImpl.str());
     }
+    // generate getEnvironmentDirectedGraphVertexArrayProperty func implementation ($DYNAMIC_GETDIRECTEDGRAPHVERTEXARRAYPROPERTY_IMPL)
+    {
+        size_t ct = 0;
+        std::stringstream getGraphVertexArrayPropertyImpl;
+        if (!directedGraph_vertexProperties.empty())
+            getGraphVertexArrayPropertyImpl << "    const size_t i = (index * type_decode<T>::len_t * N) + type_decode<T>::len_t * array_index;\n";
+        for (const auto& element : directedGraph_vertexProperties) {
+            RTCVariableProperties props = element.second;
+            if (props.read && props.elements > 1) {
+                getGraphVertexArrayPropertyImpl << "          if (strings_equal(name, \"" << element.first.second << "\") && graphHash == " << Curve::variableRuntimeHash(element.first.first) << ") {\n";
+                getGraphVertexArrayPropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                getGraphVertexArrayPropertyImpl << "              const unsigned int t_index = type_decode<T>::len_t * array_index + type_decode<T>::len_t;\n";
+                getGraphVertexArrayPropertyImpl << "              if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
+                getGraphVertexArrayPropertyImpl << "                  DTHROW(\"Directed graph vertex array property '%s' type mismatch during getProperty().\\n\", name);\n";
+                getGraphVertexArrayPropertyImpl << "                  return {};\n";
+                getGraphVertexArrayPropertyImpl << "              } else if (type_decode<T>::len_t * N != " << element.second.elements << ") {\n";
+                getGraphVertexArrayPropertyImpl << "                  DTHROW(\"Directed graph vertex array property '%s' length mismatch during getProperty().\\n\", name);\n";
+                getGraphVertexArrayPropertyImpl << "                  return {};\n";
+                getGraphVertexArrayPropertyImpl << "              } else if (t_index > " << element.second.elements << " || t_index < array_index) {\n";
+                getGraphVertexArrayPropertyImpl << "                  DTHROW(\"Directed graph vertex array property '%s', index %d is out of bounds during getProperty().\\n\", name, array_index);\n";
+                getGraphVertexArrayPropertyImpl << "                  return {};\n";
+                getGraphVertexArrayPropertyImpl << "              }\n";
+                getGraphVertexArrayPropertyImpl << "#endif\n";
+                getGraphVertexArrayPropertyImpl << "              return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << directedGraphVertex_data_offset + (ct++ * sizeof(void*)) << ")))[i];\n";
+                getGraphVertexArrayPropertyImpl << "           };\n";
+            } else { ++ct; }
+        }
+        getGraphVertexArrayPropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getGraphVertexArrayPropertyImpl << "           DTHROW(\"Directed graph vertex array property '%s' was not found during getProperty().\\n\", name);\n";
+        getGraphVertexArrayPropertyImpl << "#endif\n";
+        getGraphVertexArrayPropertyImpl << "           return {};\n";
+        setHeaderPlaceholder("$DYNAMIC_GETDIRECTEDGRAPHVERTEXARRAYPROPERTY_IMPL", getGraphVertexArrayPropertyImpl.str());
+    }
+    // generate getEnvironmentDirectedGraphEdgeArrayProperty func implementation ($DYNAMIC_GETDIRECTEDGRAPHEDGEARRAYPROPERTY_IMPL)
+    {
+        size_t ct = 0;
+        std::stringstream getGraphEdgeArrayPropertyImpl;
+        if (!directedGraph_edgeProperties.empty())
+            getGraphEdgeArrayPropertyImpl << "    const size_t i = (index * type_decode<T>::len_t * N) + type_decode<T>::len_t * array_index;\n";
+        for (const auto& element : directedGraph_edgeProperties) {
+            RTCVariableProperties props = element.second;
+            if (props.read && props.elements > 1) {
+                getGraphEdgeArrayPropertyImpl << "          if (strings_equal(name, \"" << element.first.second << "\") && graphHash == " << Curve::variableRuntimeHash(element.first.first) << ") {\n";
+                getGraphEdgeArrayPropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                getGraphEdgeArrayPropertyImpl << "              const unsigned int t_index = type_decode<T>::len_t * array_index + type_decode<T>::len_t;\n";
+                getGraphEdgeArrayPropertyImpl << "              if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
+                getGraphEdgeArrayPropertyImpl << "                  DTHROW(\"Directed graph edge array property '%s' type mismatch during getProperty().\\n\", name);\n";
+                getGraphEdgeArrayPropertyImpl << "                  return {};\n";
+                getGraphEdgeArrayPropertyImpl << "              } else if (type_decode<T>::len_t * N != " << element.second.elements << ") {\n";
+                getGraphEdgeArrayPropertyImpl << "                  DTHROW(\"Directed graph edge array property '%s' length mismatch during getProperty().\\n\", name);\n";
+                getGraphEdgeArrayPropertyImpl << "                  return {};\n";
+                getGraphEdgeArrayPropertyImpl << "              } else if (t_index > " << element.second.elements << " || t_index < array_index) {\n";
+                getGraphEdgeArrayPropertyImpl << "                  DTHROW(\"Directed graph edge array property '%s', index %d is out of bounds during getProperty().\\n\", name, array_index);\n";
+                getGraphEdgeArrayPropertyImpl << "                  return {};\n";
+                getGraphEdgeArrayPropertyImpl << "              }\n";
+                getGraphEdgeArrayPropertyImpl << "#endif\n";
+                getGraphEdgeArrayPropertyImpl << "              return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << directedGraphEdge_data_offset + (ct++ * sizeof(void*)) << ")))[i];\n";
+                getGraphEdgeArrayPropertyImpl << "           };\n";
+            } else { ++ct; }
+        }
+        getGraphEdgeArrayPropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getGraphEdgeArrayPropertyImpl << "           DTHROW(\"Directed graph edge array property '%s' was not found during getProperty().\\n\", name);\n";
+        getGraphEdgeArrayPropertyImpl << "#endif\n";
+        getGraphEdgeArrayPropertyImpl << "           return {};\n";
+        setHeaderPlaceholder("$DYNAMIC_GETDIRECTEDGRAPHEDGEARRAYPROPERTY_IMPL", getGraphEdgeArrayPropertyImpl.str());
+    }
     // generate getAgentArrayVariable_ldg func implementation ($DYNAMIC_GETAGENTARRAYVARIABLE_LDG_IMPL)
     {
         size_t ct = 0;
@@ -922,6 +1286,58 @@ void CurveRTCHost::initHeaderGetters() {
         getMessageArrayVariableLDGImpl << "           return {};\n";
         setHeaderPlaceholder("$DYNAMIC_GETMESSAGEARRAYVARIABLE_LDG_IMPL", getMessageArrayVariableLDGImpl.str());
     }
+
+    // generate getGraphHash func implementation ($DYNAMIC_GETGRAPHHASH_IMPL)
+    // This is bespoke to RTC Curve, as in place of getVariableIndex()
+    {
+        std::set<std::string> graphs_added;
+        std::stringstream getGraphHashImpl;
+        for (const auto& element : directedGraph_vertexProperties) {
+            if (graphs_added.find(element.first.first) == graphs_added.end()) {
+                getGraphHashImpl << "          if (strings_equal(graphName, \"" << element.first.first << "\")) {\n";
+                getGraphHashImpl << "                return " << Curve::variableRuntimeHash(element.first.first) << ";\n";
+                getGraphHashImpl << "          }\n";
+                graphs_added.insert(element.first.first);
+            }
+        }
+        getGraphHashImpl << "          return UNKNOWN_GRAPH;\n";
+        setHeaderPlaceholder("$DYNAMIC_GETGRAPHHASH_IMPL", getGraphHashImpl.str());
+    }
+
+    // generate getVariableCount func implementation ($DYNAMIC_GETVARIABLECOUNT_IMPL)
+    {
+        std::stringstream getVariableCountImpl;
+        for (const auto& element : directedGraph_vertexProperties) {
+            getVariableCountImpl << "    if (namespace_hash == " << (Curve::variableRuntimeHash(element.first.first) ^ Curve::variableRuntimeHash("_environment_directed_graph_vertex")) << " && strings_equal(variableName, \"" << element.first.second << "\"))\n";
+            getVariableCountImpl << "        return reinterpret_cast<unsigned int*>(reinterpret_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << count_data_offset << "))["<< element.second.count_index <<"];";
+        }
+        for (const auto& element : directedGraph_edgeProperties) {
+            getVariableCountImpl << "    if (namespace_hash == " << (Curve::variableRuntimeHash(element.first.first) ^ Curve::variableRuntimeHash("_environment_directed_graph_edge")) << " && strings_equal(variableName, \"" << element.first.second << "\"))\n";
+            getVariableCountImpl << "        return reinterpret_cast<unsigned int*>(reinterpret_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << count_data_offset << "))[" << element.second.count_index << "];";
+        }
+        // Note, the below are currently unused so untested (but support should be functional)
+        for (const auto& element : agent_variables) {
+            getVariableCountImpl << "    if (namespace_hash == 0 && strings_equal(variableName, \"" << element.first << "\"))\n";
+            getVariableCountImpl << "        return reinterpret_cast<unsigned int*>(reinterpret_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << count_data_offset << "))[" << element.second.count_index << "];\n";
+        }
+        for (const auto& element : messageOut_variables) {
+            getVariableCountImpl << "    if (namespace_hash == " << Curve::variableRuntimeHash("_message_out") << " && strings_equal(variableName, \"" << element.first << "\"))\n";
+            getVariableCountImpl << "        return reinterpret_cast<unsigned int*>(reinterpret_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << count_data_offset << "))[" << element.second.count_index << "];\n";
+        }
+        for (const auto& element : messageIn_variables) {
+            getVariableCountImpl << "    if (namespace_hash == " << Curve::variableRuntimeHash("_message_in") << " && strings_equal(variableName, \"" << element.first << "\"))\n";
+            getVariableCountImpl << "        return reinterpret_cast<unsigned int*>(reinterpret_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << count_data_offset << "))[" << element.second.count_index << "];\n";
+        }
+        for (const auto& element : newAgent_variables) {
+            getVariableCountImpl << "    if (namespace_hash == " << Curve::variableRuntimeHash("_agent_birth") << " && strings_equal(variableName, \"" << element.first << "\"))\n";
+            getVariableCountImpl << "        return reinterpret_cast<unsigned int*>(reinterpret_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << count_data_offset << "))[" << element.second.count_index << "];\n";
+        }
+        getVariableCountImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
+        getVariableCountImpl << "    DTHROW(\"Curve variable with name '%s' was not found.\\n\", variableName);\n";
+        getVariableCountImpl << "#endif\n";
+        getVariableCountImpl << "          return 0;\n";
+        setHeaderPlaceholder("$DYNAMIC_GETVARIABLECOUNT_IMPL", getVariableCountImpl.str());
+    }
 }
 void CurveRTCHost::initDataBuffer() {
     if (data_buffer_size == 0 || h_data_buffer) {
@@ -945,6 +1361,14 @@ void CurveRTCHost::initDataBuffer() {
     ct = 0;
     for (auto &element : newAgent_variables) {
         element.second.h_data_ptr = h_data_buffer + newAgent_data_offset + (ct++ * sizeof(void*));
+    }
+    ct = 0;
+    for (auto& element : directedGraph_vertexProperties) {
+        element.second.h_data_ptr = h_data_buffer + directedGraphVertex_data_offset + (ct++ * sizeof(void*));
+    }
+    ct = 0;
+    for (auto& element : directedGraph_edgeProperties) {
+        element.second.h_data_ptr = h_data_buffer + directedGraphEdge_data_offset + (ct++ * sizeof(void*));
     }
     ct = 0;
     for (auto& element : RTCEnvMacroProperties) {
@@ -1033,6 +1457,8 @@ void CurveRTCHost::updateEnvCache(const void *env_ptr, const size_t bufferLen) {
     }
 }
 void CurveRTCHost::updateDevice_async(const jitify::experimental::KernelInstantiation& instance, cudaStream_t stream) {
+    // Move count buffer into h_data_buffer first
+    memcpy(h_data_buffer + count_data_offset, count_buffer.data(), count_buffer.size() * sizeof(unsigned int));
     // The namespace is required here, but not in other uses of getVariableSymbolName.
     std::string cache_var_name = std::string("flamegpu::detail::curve::") + getVariableSymbolName();
     CUdeviceptr d_var_ptr = instance.get_global_ptr(cache_var_name.c_str());

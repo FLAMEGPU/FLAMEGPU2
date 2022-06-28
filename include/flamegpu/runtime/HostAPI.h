@@ -46,6 +46,7 @@ class HostAPI {
     typedef std::unordered_map<std::string, AgentDataBuffer> AgentDataBufferStateMap;
     typedef std::unordered_map<std::string, VarOffsetStruct> AgentOffsetMap;
     typedef std::unordered_map<std::string, AgentDataBufferStateMap> AgentDataMap;
+    typedef std::unordered_map<std::string, std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>> CUDADirectedGraphMap;
 
     /**
      * Initailises pointers to 0
@@ -58,6 +59,7 @@ class HostAPI {
         AgentDataMap &agentData,
         const std::shared_ptr<detail::EnvironmentManager> &env,
         detail::CUDAMacroEnvironment &macro_env,
+        CUDADirectedGraphMap &directed_graph_map,
         unsigned int streamId,
         cudaStream_t stream);
     /**

@@ -35,7 +35,6 @@
 // Overloaded method X effectively ignored
 #pragma SWIG nowarn=509
 
-
 // name the module, and enabled directors for callback functions.
 %module(directors="1") pyflamegpu
 
@@ -92,6 +91,8 @@ using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, 
 
 // Instance the pair type, as returned by HostAgentAPI::meanStandardDeviation
 %template(DoublePair) std::pair<double, double>;
+// Instance the pair type, as returned by HostEnvironmentDirectedGraph::getEdgeSourceDestination
+%template(UIntPair) std::pair<unsigned int, unsigned int>;
 
 /**
  * TEMPLATE_VARIABLE_INSTANTIATE_FLOATS macro
@@ -598,6 +599,14 @@ class ModelVis;
 %include "flamegpu/model/DependencyNode.h"
 %include "flamegpu/model/DependencyGraph.h"
 
+%feature("valuewrapper") flamegpu::HostEnvironmentDirectedGraph;
+%ignore flamegpu::DeviceEnvironmentDirectedGraph;
+%ignore flamegpu::EnvironmentDirectedGraphData;
+%ignore flamegpu::CUDAEnvironmentDirectedGraphBuffers;
+%include "flamegpu/model/EnvironmentDirectedGraphDescription.cuh"
+%include "flamegpu/runtime/environment/HostEnvironmentDirectedGraph.cuh"
+
+
 %include "flamegpu/model/EnvironmentDescription.h"
 %include "flamegpu/model/ModelDescription.h"
 %include "flamegpu/model/HostFunctionDescription.h"
@@ -633,9 +642,11 @@ class ModelVis;
 // Must wrap these prior to HostAPI where they are used to avoid issues with no default constructors etc.
 %include "flamegpu/runtime/random/HostRandom.cuh"
 
+%feature("flatnested");
 %nodefaultctor flamegpu::HostMacroProperty_swig;
 %include "flamegpu/runtime/environment/HostMacroProperty.cuh"
 %include "flamegpu/runtime/environment/HostEnvironment.cuh"
+%feature("flatnested", ""); // flat nested off
 
 %include "flamegpu/runtime/agent/HostNewAgentAPI.h"
 %include "flamegpu/runtime/agent/HostAgentAPI.cuh"
@@ -889,9 +900,26 @@ TEMPLATE_VARIABLE_INSTANTIATE_ID(newPropertyArray, flamegpu::EnvironmentDescript
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newMacroProperty, flamegpu::EnvironmentDescription::newMacroProperty_swig)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getProperty, flamegpu::EnvironmentDescription::getProperty)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyArray, flamegpu::EnvironmentDescription::getPropertyArray)
-//TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyAt, flamegpu::EnvironmentDescription::getPropertyArrayAtIndex)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, flamegpu::EnvironmentDescription::setProperty)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, flamegpu::EnvironmentDescription::setPropertyArray)
+
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVertexProperty, flamegpu::EnvironmentDirectedGraphDescription::newVertexProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newEdgeProperty, flamegpu::EnvironmentDirectedGraphDescription::newEdgeProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVertexPropertyArray, flamegpu::EnvironmentDirectedGraphDescription::newVertexPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newEdgePropertyArray, flamegpu::EnvironmentDirectedGraphDescription::newEdgePropertyArray)
+
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setVertexProperty, flamegpu::HostEnvironmentDirectedGraph::setVertexProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setEdgeProperty, flamegpu::HostEnvironmentDirectedGraph::setEdgeProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getVertexProperty, flamegpu::HostEnvironmentDirectedGraph::getVertexProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getEdgeProperty, flamegpu::HostEnvironmentDirectedGraph::getEdgeProperty)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(setVertexProperty, flamegpu::HostEnvironmentDirectedGraph::setVertexProperty)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(setEdgeProperty, flamegpu::HostEnvironmentDirectedGraph::setEdgeProperty)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(getVertexProperty, flamegpu::HostEnvironmentDirectedGraph::getVertexProperty)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(getEdgeProperty, flamegpu::HostEnvironmentDirectedGraph::getEdgeProperty)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setVertexPropertyArray, flamegpu::HostEnvironmentDirectedGraph::setVertexPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(setEdgePropertyArray, flamegpu::HostEnvironmentDirectedGraph::setEdgePropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getVertexPropertyArray, flamegpu::HostEnvironmentDirectedGraph::getVertexPropertyArray)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(getEdgePropertyArray, flamegpu::HostEnvironmentDirectedGraph::getEdgePropertyArray)
 
 // Instantiate template versions of RunPlan functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, flamegpu::RunPlan::setProperty)

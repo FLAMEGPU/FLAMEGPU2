@@ -20,6 +20,7 @@
 #include "flamegpu/runtime/agent/HostNewAgentAPI.h"
 #include "flamegpu/simulation/detail/CUDAMacroEnvironment.h"
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
+#include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
 
 #ifdef FLAMEGPU_VISUALISATION
 #include "flamegpu/visualiser/ModelVis.h"
@@ -85,6 +86,11 @@ class CUDASimulation : public Simulation {
      * Ordered is used, so that random seed mutation always occurs same order.
      */
     typedef std::map<std::string, std::unique_ptr<CUDASimulation>> CUDASubModelMap;
+    /**
+     * Map of a number of CUDA directed graph buffers by name
+     * The CUDABuffers objects are responsible for allocating and managing all the device memory of a given directed graph
+     */
+    typedef std::unordered_map<std::string, std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>> CUDADirectedGraphMap;
 
  public:
     /**
@@ -422,6 +428,10 @@ class CUDASimulation : public Simulation {
      * Macro env property storage
      */
     detail::CUDAMacroEnvironment macro_env;
+    /**
+     * Macro env property storage
+     */
+    CUDADirectedGraphMap directed_graph_map;
     /**
      * Internal model config
      */

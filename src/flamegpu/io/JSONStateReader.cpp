@@ -267,7 +267,7 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
  * This allows the agent statelists to be preallocated
  * It also reads the config blocks, so that device can be init before we do environment
  */
-class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, JSONStateReader_impl>  {
+class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, JSONStateReader_agentsize_counter>  {
     enum Mode{ Nop, Root, Config, Stats, SimCfg, CUDACfg, Environment, Agents, Agent, State, AgentInstance, VariableArray };
     std::stack<Mode> mode;
     std::string lastKey;

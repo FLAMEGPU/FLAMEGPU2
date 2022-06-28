@@ -315,6 +315,11 @@ DERIVED_FLAMEGPUException(DuplicateEnvProperty, "Environment property of same na
  * It reports errors that are due invalid environment property names
  */
 DERIVED_FLAMEGPUException(InvalidEnvProperty, "Environment property of name does not exist");
+/**
+ * Defines a type of object to be thrown as exception.
+ * It reports errors that are due invalid environment graphs
+ */
+DERIVED_FLAMEGPUException(InvalidEnvGraph, "Environment graph of name does not exist");
 
 /**
  * Defines a type of object to be thrown as exception.
@@ -419,6 +424,14 @@ DERIVED_FLAMEGPUException(AgentIDCollision, "Multiple agents of same type share 
  * Defines an error when runs fail during an ensemble's execution
  */
 DERIVED_FLAMEGPUException(EnsembleError, "One of more runs failed during the ensemble's execution");
+/**
+ * Defines an error when an invalid property for a graph is specified
+ */
+DERIVED_FLAMEGPUException(InvalidGraphProperty, "Invalid graph property specified");
+/**
+ * Defines an error when an invalid name for a graph is specified
+ */
+DERIVED_FLAMEGPUException(InvalidGraphName, "Invalid graph name specified");
 
 }  // namespace exception
 }  // namespace flamegpu

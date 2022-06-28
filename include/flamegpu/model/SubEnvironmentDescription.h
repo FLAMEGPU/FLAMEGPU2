@@ -63,6 +63,13 @@ class CSubEnvironmentDescription {
      * @throws exception::InvalidEnvProperty If the sub environment property does not exist or has not been mapped yet
      */
     std::string getMacroPropertyMapping(const std::string& sub_property_name) const;
+    /**
+     * Returns the name of the master directed graph which has been mapped to the named subenvironment directed graph
+     * @param sub_graph_name Name of the directed graph in the sub environment to check
+     * @return The name of the directed graph within the master environment which is mapped
+     * @throws exception::InvalidEnvGraph If the sub environment directed graph does not exist or has not been mapped yet
+     */
+    std::string getDirectedGraphMapping(const std::string& sub_graph_name) const;
 
  protected:
     /**
@@ -94,7 +101,7 @@ class SubEnvironmentDescription : public CSubEnvironmentDescription {
     SubEnvironmentDescription& operator=(SubEnvironmentDescription&& other_agent) = default;
 
     /**
-     * Automatically map all compatible properties and macro properties
+     * Automatically map all compatible properties, macro properties and directed graphs
      * In order to be compatible, properties must share the same name, type, dimensions/length (number of elements)
      * Const master properties cannot be mapped to non-const sub properties, however the inverse is permitted
      */
@@ -111,26 +118,44 @@ class SubEnvironmentDescription : public CSubEnvironmentDescription {
      */
     void autoMapMacroProperties();
     /**
+     * Automatically map all compatible directed graphs
+     * In order to be compatible, directed graphs must share the same name, vertices and edges
+     */
+    void autoMapDirectedGraphs();
+    /**
      * Links the named properties between the master and sub environment
      * In order to be compatible, properties must share the same name, type, length (number of elements)
      * Const master properties cannot be mapped to non-const sub properties, however the inverse is permitted
-     * @param sub_property_name Name of the property in the sub models agent
-     * @param master_property_name Name of the property in the master models agent
+     * @param sub_property_name Name of the property in the sub model's environment
+     * @param master_property_name Name of the property in the master model's environment
      * @throws exception::InvalidParent If the sub agent or master agent weak_ptrs have expired (this should never happen)
      * @throws exception::InvalidEnvProperty If the named property does not exist within the bound sub or master environment
      * @throws exception::InvalidEnvProperty If the named properties do not share the same type and length
+     * @throws exception::ReservedName If either sub_property_name or master_property_name refers to an internal property
      */
     void mapProperty(const std::string &sub_property_name, const std::string &master_property_name);
     /**
      * Links the named macro properties between the master and sub environment
      * In order to be compatible, macro properties must share the same name, type, dimensions
-     * @param sub_property_name Name of the macro property in the sub models agent
-     * @param master_property_name Name of the macro property in the master models agent
+     * @param sub_property_name Name of the macro property in the sub model's environment
+     * @param master_property_name Name of the macro property in the master model's environment
      * @throws exception::InvalidParent If the sub agent or master agent weak_ptrs have expired (this should never happen)
      * @throws exception::InvalidEnvProperty If the named macro property does not exist within the bound sub or master environment
      * @throws exception::InvalidEnvProperty If the named macro properties do not share the same type and length
+     * @throws exception::ReservedName If either sub_property_name or master_property_name refers to an internal macro property
      */
     void mapMacroProperty(const std::string& sub_property_name, const std::string& master_property_name);
+    /**
+     * Links the named directed graphs between the master and sub environment
+     * In order to be compatible, directed graphs must share the same name, vertices and edges
+     * @param sub_graph_name Name of the directed graph in the sub model's environment
+     * @param master_graph_name Name of the macro property in the master model's environment
+     * @throws exception::InvalidParent If the sub agent or master agent weak_ptrs have expired (this should never happen)
+     * @throws exception::InvalidEnvGraph If the named directed graph does not exist within the bound sub or master environment
+     * @throws exception::InvalidEnvGraph If the named directed graph do not share the same vertices and edges
+     * @throws exception::ReservedName If either sub_graph_name or master_graph_name refers to an internal graph
+     */
+    void mapDirectedGraph(const std::string& sub_graph_name, const std::string& master_graph_name);
 };
 
 }  // namespace flamegpu

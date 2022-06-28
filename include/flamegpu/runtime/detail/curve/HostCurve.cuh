@@ -38,7 +38,7 @@ class HostCurve {
 
     /**
      * Registers the specified agent variable within the curve hash table, storing the specified metadata
-     * Initially the variables devive ptr will be set to nullptr
+     * Initially the variables device ptr will be set to nullptr
      *
      * @param variable_name The name used to access the agent variable
      * @param type The type index of the variable, this is currently unused as device code does not support type checking
@@ -53,6 +53,8 @@ class HostCurve {
     void registerAgentOutputVariable(const std::string& variable_name, std::type_index type, size_t type_size, unsigned int elements);
     void registerSetEnvironmentProperty(const std::string &variable_name, std::type_index type, size_t type_size, unsigned int elements, ptrdiff_t offset);
     void registerSetMacroEnvironmentProperty(const std::string &variable_name, std::type_index type, size_t type_size, unsigned int elements, void* d_ptr);
+    void registerEnvironmentDirectedGraphVertexProperty(const std::string& graph_name, const std::string& variable_name, std::type_index type, size_t type_size, unsigned int elements);
+    void registerEnvironmentDirectedGraphEdgeProperty(const std::string& graph_name, const std::string& variable_name, std::type_index type, size_t type_size, unsigned int elements);
     /**
      * Updates the device pointer stored for the specified agent variable
      * @param variable_name The name of the variable to update
@@ -63,6 +65,8 @@ class HostCurve {
     void setMessageInputVariable(const std::string& variable_name, void *d_ptr, unsigned int message_in_count);
     void setMessageOutputVariable(const std::string& variable_name, void *d_ptr, unsigned int message_out_count);
     void setAgentOutputVariable(const std::string& variable_name, void *d_ptr, unsigned int agent_count);
+    void setEnvironmentDirectedGraphVertexProperty(const std::string& graph_name, const std::string& variable_name, void* d_ptr, unsigned int vertex_count);
+    void setEnvironmentDirectedGraphEdgeProperty(const std::string& graph_name, const std::string& variable_name, void* d_ptr, unsigned int edge_count);
     /**
      * Check how many items are in the hash table
      *
@@ -108,7 +112,7 @@ class HostCurve {
      * Namespace hashes used to calculate variable hashes
      * @todo These could be static inside Curve/namespace
      */
-    const NamespaceHash message_in_hash, message_out_hash, agent_out_hash, environment_hash, macro_environment_hash;
+    const NamespaceHash message_in_hash, message_out_hash, agent_out_hash, environment_hash, macro_environment_hash, directed_graph_vertex_hash, directed_graph_edge_hash;
 
  public:
      /**
