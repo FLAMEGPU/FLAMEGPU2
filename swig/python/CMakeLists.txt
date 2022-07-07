@@ -148,6 +148,12 @@ target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE Python3::Module)
 #   target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE ${Python3_LIBRARIES})
 # endif()
 
+# List non swig python source file for code generator module that should be packaged
+set(PYTHON_CODEGEN_SRC_FILES
+  codegen/__init__.py
+  codegen/codegen.py
+)
+
 #######################
 ## Python Packaging  ##
 #######################
@@ -155,6 +161,11 @@ target_link_libraries(${PYTHON_MODULE_NAME} PRIVATE Python3::Module)
 foreach(FLAMEGPU_INC_FILE IN LISTS FLAMEGPU_INCLUDE)
   file(RELATIVE_PATH FLAMEGPU_INC_FILE_CLEAN "${FLAMEGPU_ROOT}" "${FLAMEGPU_INC_FILE}")
   set(FLAMEGPU_INCLUDE_CLEAN "${FLAMEGPU_INCLUDE_CLEAN}'${FLAMEGPU_INC_FILE_CLEAN}', ")
+endforeach()
+
+# cleanup code generator module files, so they're seperated by `", "` (file list is already using relative paths)
+foreach(PYTHON_CODEGEN_FILE IN LISTS PYTHON_CODEGEN_SRC_FILES)
+  set(FLAMEGPU_CODEGEN_INCLUDE_CLEAN "${FLAMEGPU_CODEGEN_INCLUDE_CLEAN}'${PYTHON_CODEGEN_FILE}', ")
 endforeach()
 
 # Build a list of OS specific python package_data entries.
@@ -218,6 +229,18 @@ add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD     # Adds a post-bui
         "${FLAMEGPU_ROOT}/include"                                     # <--this is in-dir
         "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/include" # <--this is out-dir path
     ) 
+
+# Create code generator directory
+add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD 
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/codegen"
+)
+# Copy python codegen source files to library output directory ready for packaging
+foreach( file_py ${PYTHON_CODEGEN_SRC_FILES})
+  add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${file_py}" "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/codegen"  # <- Requires the absolute file path of inputs
+  )
+endforeach( file_py )
+
 # Copy the visualisation dlls if required, this must occur before the wheel is built
 if (VISUALISATION)
     # Copy DLLs
@@ -261,7 +284,7 @@ if (VISUALISATION)
 endif()
 
 # Configure and build the python package
-# The file configurations above will already have output setup.py and __init__.py to the appropriate places and created the directory for the module
+# The file configurations above will already have output setup.py, __init__.py and the code generator module files to the appropriate places and created the directory for the module
 add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
 	# copy generated python file to library output location
 	COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_LIB_TEMP_DIRECTORY}/${PYTHON_MODULE_NAME}/${PYTHON_MODULE_NAME}.py ${PYTHON_MODULE_NAME}
