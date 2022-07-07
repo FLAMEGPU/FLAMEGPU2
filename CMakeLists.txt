@@ -108,6 +108,16 @@ option(USE_NVTX "Build with NVTX markers enabled" OFF)
 # Option to enable/disable logging of dynamic RTC files to disk
 option(EXPORT_RTC_SOURCES "Export RTC source files to disk at runtime" OFF)
 
+# If a mutli-config generator is beign used, and swig / python bindings are enabled, then CMake must be >= 3.20 not >= 3.18 due to cmake limitations.
+if(BUILD_SWIG_PYTHON AND "${CMAKE_VERSION}" VERSION_LESS "3.20")
+get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+  if(${isMultiConfig})
+    # Multiconfig generators (visual studio, eclipse, ninja multi config) do not support genex in byproducts/outptus, but these are required.
+    message(FATAL_ERROR "CMake >= 3.20 is required for ${PYTHON_MODULE_NAME} when using a multi-config generator such as '${CMAKE_GENERATOR}'. Please upgrade your CMake, or use a single-config geneator if possible.")
+  endif()
+  unset(isMultiConfig)
+endif()
+
 # If CUDA >= 11.2, add an option to enable using NVCC_THREASD
 if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.2)
     option(USE_NVCC_THREADS "Enable parallel compilation of multiple NVCC targets. See NVCC_THREADS for more control." ON)
