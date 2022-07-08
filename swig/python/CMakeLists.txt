@@ -323,6 +323,7 @@ if(BUILD_SWIG_PYTHON_VENV)
 		# create venv
     COMMAND ${VENV_EXECUTABLE} ${VENV_DIR}
     # Install the wheel from the dist dir. Specify a version incase the same build dir has been used for a previous build 
+    # Relaxed the no-index option to allow setup.py to install requirements
     COMMAND ${VENV_PIP} install --force-reinstall --find-links=dist -U ${PYTHON_DISTRIBUTION_NAME}==${FLAMEGPU_VERSION_PYTHON}
     # install pytest
     COMMAND ${VENV_PIP} install pytest
