@@ -219,6 +219,7 @@ endfunction()
 search_python_module(setuptools)
 search_python_module(wheel)
 
+
 # Create the package directory before we try and copy files to it
 add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/include")
@@ -322,7 +323,7 @@ if(BUILD_SWIG_PYTHON_VENV)
 		# create venv
     COMMAND ${VENV_EXECUTABLE} ${VENV_DIR}
     # Install the wheel from the dist dir. Specify a version incase the same build dir has been used for a previous build 
-    COMMAND ${VENV_PIP} install --force-reinstall --find-links=dist --no-index -U ${PYTHON_DISTRIBUTION_NAME}==${FLAMEGPU_VERSION_PYTHON}
+    COMMAND ${VENV_PIP} install --force-reinstall --find-links=dist -U ${PYTHON_DISTRIBUTION_NAME}==${FLAMEGPU_VERSION_PYTHON}
     # install pytest
     COMMAND ${VENV_PIP} install pytest
     BYPRODUCTS ${VENV_BYPRODUCTS}

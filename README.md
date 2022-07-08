@@ -269,7 +269,7 @@ To run the python test suite:
     Or if using Powershell:
 
     ```powershell
-    . lib\Release\python\venv\activate.ps1
+    . lib\Release\python\venv\Scripts\activate.ps1
     ```
 
 4. Run `pytest` on the `tests/swig/python` directory. This may take some time.
