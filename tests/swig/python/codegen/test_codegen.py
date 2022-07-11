@@ -304,7 +304,7 @@ def func(message_in: MessageNone, message_out: MessageBruteForce):
     pass
 """
 cpp_fgpu_agent_func = """\
-FLAMEGPU_AGENT_FUNCTION(func, MessageNone, MessageBruteForce){
+FLAMEGPU_AGENT_FUNCTION(func, flamegpu::MessageNone, flamegpu::MessageBruteForce){
     ;
 }
 """
@@ -339,10 +339,47 @@ def func(message_in: MessageNone, message_out: MessageBruteForce) -> int :
     pass
 """
 cpp_fgpu_agent_func_return_type = """\
-FLAMEGPU_AGENT_FUNCTION(func, MessageNone, MessageBruteForce){
+FLAMEGPU_AGENT_FUNCTION(func, flamegpu::MessageNone, flamegpu::MessageBruteForce){
     ;
 }
 """
+
+py_fgpu_device_func_args = """\
+@flamegpu_device_function
+def func(x: int) -> int :
+    pass
+"""
+
+cpp_fgpu_device_func_args = """\
+FLAMEGPU_DEVICE_FUNCTION int func(int x){
+    ;
+}
+"""
+
+py_fgpu_device_func_no_type = """\
+@flamegpu_device_function
+def func(x) -> int :
+    pass
+"""
+
+py_fgpu_device_func_no_return_type = """\
+@flamegpu_device_function
+def func(x: int) :
+    pass
+"""
+
+cpp_fgpu_device_func_no_return_type = """\
+FLAMEGPU_DEVICE_FUNCTION void func(int x){
+    ;
+}
+"""
+
+py_fgpu_device_func_no_decorator = """\
+def func(x: int) -> int :
+    pass
+"""
+
+
 class CodeGenTest(unittest.TestCase):
 
 
@@ -647,37 +684,20 @@ class CodeGenTest(unittest.TestCase):
     def test_fgpu_agent_func_return_type(self):
         """ Return type on an agent function raises a warning not error """
         self._checkWarning(py_fgpu_agent_func_return_type, cpp_fgpu_agent_func_return_type, "Function definition return type not supported")
-            
         
     # device functions, arg types and calling
     
     def test_fgpu_device_func(self):
-        pass
+        self._checkExpected(py_fgpu_device_func_args, cpp_fgpu_device_func_args)
+        # function argument requires a type
+        self._checkException(py_fgpu_device_func_no_type, "Device function argument requires type annotation")
+        # no function return type should use void
+        self._checkExpected(py_fgpu_device_func_no_return_type, cpp_fgpu_device_func_no_return_type)
+        # function requires decorator
+        self._checkException(py_fgpu_device_func_no_decorator, "Function definitions require a single FLAMEGPU decorator of")
         
-    # function calls star args, kwargs, keyword args
-    
-    
-    @unittest.skip
-    def test_function_arguments(self):
-        self._checkExpected("def f(): pass", "")
-        self._checkExpected("def f(a): pass")
-        self._checkExpected("def f(b = 2): pass")
-        self._checkExpected("def f(a, b): pass")
-        self._checkExpected("def f(a, b = 2): pass")
-        self._checkExpected("def f(a = 5, b = 2): pass")
-        self._checkExpected("def f(*args, **kwargs): pass")
-        if six.PY3:
-            self._checkExpected("def f(*, a = 1, b = 2): pass")
-            self._checkExpected("def f(*, a = 1, b): pass")
-            self._checkExpected("def f(*, a, b = 2): pass")
-            self._checkExpected("def f(a, b = None, *, c, **kwds): pass")
-            self._checkExpected("def f(a=2, *args, c=5, d, **kwds): pass")
-            
-    @unittest.skip
-    def test_annotations(self):
-        self._checkExpected("def f(a : int): pass")
-        self._checkExpected("def f(a: int = 5): pass")
-        self._checkExpected("def f(*args: [int]): pass")
-        self._checkExpected("def f(**kwargs: dict): pass")
-        self._checkExpected("def f() -> None: pass")
+
+    def test_alive_dead(self):
+        self._checkExpected(str("FLAMEGPU.ALIVE"), "flamegpu::ALIVE;")
+        self._checkExpected(str("FLAMEGPU.DEAD"), "flamegpu::DEAD;")
     

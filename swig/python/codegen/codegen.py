@@ -214,6 +214,7 @@ class CodeGenerator:
         if tree.args.args[0].annotation.id not in self.fgpu_message_types:
             self.RaiseError(tree.args.args[0], "Message input type annotation not a supported message type")
         self._input_message_var = tree.args.args[0].arg  # store the message input variable name
+        self.write("flamegpu::")        # requires namespace
         self.dispatch(tree.args.args[0].annotation)
         self.write(", ")
         # output message
@@ -222,6 +223,7 @@ class CodeGenerator:
         if tree.args.args[1].annotation.id not in self.fgpu_message_types:
             self.RaiseError(tree.args.args[1], "Message output type annotation not a supported message type")
         self._output_message_var = tree.args.args[1].arg  # store the message output variable name
+        self.write("flamegpu::")        # requires namespace
         self.dispatch(tree.args.args[1].annotation)
     
     def dispatchType(self, tree):
@@ -911,7 +913,7 @@ class CodeGenerator:
             if t.value.id == "FLAMEGPU":
                 if t.attr in self.fgpu_attrs:
                     # proceed
-                    self.write("FLAMEGPU::")
+                    self.write("flamegpu::")
                     self.write(t.attr)
                 else:
                     self.RaiseError(t, f"Attriobute '{t.attr}' does not exist in FLAMEGPU object")
