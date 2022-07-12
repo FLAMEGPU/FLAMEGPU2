@@ -206,6 +206,8 @@ class CodeGenerator:
         Handles arguments for a FLAME GPU function. Arguments must have syntax of `message_in: MessageInType, message_out: MessageOutType`
         Type hinting is required to translate a type into a FLAME GPU Message type implementation
         """
+        # reset the locals variable stack
+        self._locals = ["FLAMEGPU"]
         if len(tree.args.args) != 2:
             self.RaiseError(tree, "Expected two FLAME GPU function arguments (input message and output message)")
         # input message
@@ -252,6 +254,8 @@ class CodeGenerator:
         """
         Handles arguments for a FLAME GPU device function. Arguments must use type hinting to be translated to cpp.
         """
+        # reset the locals variable stack
+        self._locals = ["FLAMEGPU"]
         # input message
         first = True
         annotation = None
@@ -263,7 +267,9 @@ class CodeGenerator:
             if not first:
                 self.write(", ")
             self.dispatchType(arg.annotation)
-            self.write(f" {arg.arg}")   
+            self.write(f" {arg.arg}")
+            # add arg to local variable stack
+            self._locals.append(arg.arg)
             first = False    
     
     def dispatchMessageLoop(self, tree):
@@ -630,7 +636,11 @@ class CodeGenerator:
         # allow calls but only to range function
         elif isinstance(t.iter, ast.Call):
             if isinstance(t.iter.func, ast.Name):
-                if t.iter.func.id == "range":
+                # catch case of message_input with arguments (e.g. spatial messaging)
+                if t.iter.func.id == self._input_message_var:
+                    self.dispatchMessageLoop(t)
+                # otherwise permit only range based for loops
+                elif t.iter.func.id == "range":
                     # switch on different uses of range based on number of arguments
                     if len(t.iter.args) == 1:
                         self.fill(f"for (int ")
@@ -937,16 +947,16 @@ class CodeGenerator:
 
     def _Call(self, t):
         """
-        Some basic checks are undertaken on calls to ensure that the function being called if either a builtin or defined device function.]
+        Some basic checks are undertaken on calls to ensure that the function being called is either a builtin or defined device function.
         A special dispatcher is required 
         """
         # check calls but let attributes check in their own dispatcher
-        funcs = self._device_functions + self.pythonbuiltins
+        funcs = self._device_functions + self.pythonbuiltins + [self._input_message_var] # message_input variable is a valid function name as certain message types have arguments on iterator
         if isinstance(t.func, ast.Name):
             if (t.func.id not in funcs):
                 self.RaiseWarning(t, "Function call is not a defined FLAME GPU device function or a supported python built in.")
-            else:
-                self.dispatch(t.func)
+            # dispatch even if warning raised
+            self.dispatch(t.func)
         elif isinstance(t.func, ast.Lambda):
             self.dispatch(t.func) # not supported
         else:

@@ -286,6 +286,16 @@ for m in message_in:
     i = m.unsupported()
 """
 
+py_fgpu_for_msg_input_args = """\
+for m in message_in(x, y, z) : 
+    pass
+"""
+cpp_fgpu_for_msg_input_args = """\
+for (const auto& m : FLAMEGPU->message_in(x, y, z)){
+    ;
+}
+"""
+
 py_fgpu_msg_output = """\
 message_out.setVariableFloat("f", f)
 message_out.setVariableDouble("d", d)
@@ -367,7 +377,6 @@ py_fgpu_device_func_no_return_type = """\
 def func(x: int) :
     pass
 """
-
 cpp_fgpu_device_func_no_return_type = """\
 FLAMEGPU_DEVICE_FUNCTION void func(int x){
     ;
@@ -377,6 +386,40 @@ FLAMEGPU_DEVICE_FUNCTION void func(int x){
 py_fgpu_device_func_no_decorator = """\
 def func(x: int) -> int :
     pass
+"""
+
+py_fgpu_device_func_arg_modified = """\
+@flamegpu_device_function
+def func(x: int) :
+    x = 10
+"""
+cpp_fgpu_device_func_arg_modified = """\
+FLAMEGPU_DEVICE_FUNCTION void func(int x){
+    x = 10;
+}
+"""
+
+py_fgpu_device_local_args_stack = """\
+@flamegpu_device_function
+def funcA(x: int) :
+    a = 1
+    x = 10
+
+@flamegpu_device_function
+def funcB(y: int) :
+    a = 1
+    y= 10
+"""
+cpp_fgpu_device_local_args_stack = """\
+FLAMEGPU_DEVICE_FUNCTION void funcA(int x){
+    auto a = 1;
+    x = 10;
+}
+
+FLAMEGPU_DEVICE_FUNCTION void funcB(int y){
+    auto a = 1;
+    y = 10;
+}
 """
 
 
@@ -619,6 +662,17 @@ class CodeGenTest(unittest.TestCase):
         self._checkExpected(py_fgpu_for_msg_input_funcs, cpp_fgpu_for_msg_input_funcs)    
         # Test message input with unknown function
         self._checkException(py_fgpu_for_msg_input_func_unknown, "Function 'unsupported' does not exist") 
+        # Test message input where message input requires arguments (e.g. spatial messaging)
+        self._checkExpected(py_fgpu_for_msg_input_args, cpp_fgpu_for_msg_input_args)
+        # Test to ensure that arguments are processed as local variables 
+        self._checkExpected(py_fgpu_device_func_arg_modified, cpp_fgpu_device_func_arg_modified)
+
+    def test_tempt(self):
+        # Test local variables of device functions to ensure locals are in fact local (by correctly specifying auto where required)
+        self._checkExpected(py_fgpu_device_local_args_stack, cpp_fgpu_device_local_args_stack)
+
+        
+
     
     # message output
     

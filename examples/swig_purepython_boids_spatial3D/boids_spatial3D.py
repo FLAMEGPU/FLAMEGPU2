@@ -3,11 +3,8 @@ import pyflamegpu.codegen
 import sys, random, math
 
 """
-  FLAME GPU 2 implementation of the Boids model, using spatial3D messaging.
-  This is based on the FLAME GPU 1 implementation, but with dynamic generation of agents. 
-  Agents are also clamped to be within the environment bounds, rather than wrapped as in FLAME GPU 1.
-
-  @todo - Should the agent's velocity change when it is clamped to the environment?
+  FLAME GPU 2 implementation of the Boids model, using spatial3D messaging and pure Python agent functions.
+  This is based on the FLAME GPU 1 implementation, but with dynamic generation of agents and is equivalent to the non pure Python version.
 """
 
 
@@ -105,21 +102,8 @@ def clampPosition(x, y, z, MIN_POSITION, MAX_POSITION):
 VISUALISATION = True;
 
 """
-  Pure python version of outputdata agent function for Boid agents, which outputs publicly visible properties to a message list. This should translate to the following cpp
-
-FLAMEGPU_AGENT_FUNCTION(outputdata, flamegpu::MessageNone, flamegpu::MessageSpatial3D) {
-    // Output each agents publicly visible properties.
-    FLAMEGPU->message_out.setVariable<flamegpu::id_t>("id", FLAMEGPU->getID());
-    FLAMEGPU->message_out.setVariable<float>("x", FLAMEGPU->getVariable<float>("x"));
-    FLAMEGPU->message_out.setVariable<float>("y", FLAMEGPU->getVariable<float>("y"));
-    FLAMEGPU->message_out.setVariable<float>("z", FLAMEGPU->getVariable<float>("z"));
-    FLAMEGPU->message_out.setVariable<float>("fx", FLAMEGPU->getVariable<float>("fx"));
-    FLAMEGPU->message_out.setVariable<float>("fy", FLAMEGPU->getVariable<float>("fy"));
-    FLAMEGPU->message_out.setVariable<float>("fz", FLAMEGPU->getVariable<float>("fz"));
-    return flamegpu::ALIVE;
-}
+  Pure python version of outputdata agent function for Boid agents, which outputs publicly visible properties to a message list. 
 """
-
 outputdata_py = r"""
 @flamegpu_agent_function
 def outputdata(message_in: MessageNone, message_out: MessageSpatial3D):
@@ -135,225 +119,207 @@ def outputdata(message_in: MessageNone, message_out: MessageSpatial3D):
 """
 
 """
-  inputdata agent function for Boid agents, which reads data from neighbouring Boid agents, to perform the boid flocking model.
+  Pure python version of inputdata agent function for Boid agents, which reads data from neighboring Boid agents, to perform the boid flocking model.
+  Helper functions which use pass by reference basic types are not possible without the use of python containers.
 """
-inputdata = r"""
-// Vector utility functions, see top of file for versions with commentary
-FLAMEGPU_HOST_DEVICE_FUNCTION float vec3Length(const float x, const float y, const float z) {
-    return sqrtf(x * x + y * y + z * z);
-}
-FLAMEGPU_HOST_DEVICE_FUNCTION void vec3Add(float &x, float &y, float &z, const float value) {
-    x += value;
-    y += value;
-    z += value;
-}
-FLAMEGPU_HOST_DEVICE_FUNCTION void vec3Sub(float &x, float &y, float &z, const float value) {
-    x -= value;
-    y -= value;
-    z -= value;
-}
-FLAMEGPU_HOST_DEVICE_FUNCTION void vec3Mult(float &x, float &y, float &z, const float multiplier) {
-    x *= multiplier;
-    y *= multiplier;
-    z *= multiplier;
-}
-FLAMEGPU_HOST_DEVICE_FUNCTION void vec3Div(float &x, float &y, float &z, const float divisor) {
-    x /= divisor;
-    y /= divisor;
-    z /= divisor;
-}
-FLAMEGPU_HOST_DEVICE_FUNCTION void vec3Normalize(float &x, float &y, float &z) {
-    // Get the length
-    float length = vec3Length(x, y, z);
-    vec3Div(x, y, z, length);
-}
-FLAMEGPU_HOST_DEVICE_FUNCTION void clampPosition(float &x, float &y, float &z, const float MIN_POSITION, const float MAX_POSITION) {
-    x = (x < MIN_POSITION)? MIN_POSITION: x;
-    x = (x > MAX_POSITION)? MAX_POSITION: x;
+inputdata_py = r"""
+# Vector utility functions, see top of file for versions with commentary
+@flamegpu_device_function
+def vec3Length(x: float, y: float, z: float) -> float :
+    return sqrtf(x * x + y * y + z * z)
 
-    y = (y < MIN_POSITION)? MIN_POSITION: y;
-    y = (y > MAX_POSITION)? MAX_POSITION: y;
+@flamegpu_device_function
+def clamp(v : float, min: float, max: float) -> float:
+    v = min if v < min else v
+    v = max if v > max else v
+    return v
 
-    z = (z < MIN_POSITION)? MIN_POSITION: z;
-    z = (z > MAX_POSITION)? MAX_POSITION: z;
-}
-// Agent function
-FLAMEGPU_AGENT_FUNCTION(inputdata, flamegpu::MessageSpatial3D, flamegpu::MessageNone) {
-    // Agent properties in local register
-    const flamegpu::id_t id = FLAMEGPU->getID();
-    // Agent position
-    float agent_x = FLAMEGPU->getVariable<float>("x");
-    float agent_y = FLAMEGPU->getVariable<float>("y");
-    float agent_z = FLAMEGPU->getVariable<float>("z");
-    // Agent velocity
-    float agent_fx = FLAMEGPU->getVariable<float>("fx");
-    float agent_fy = FLAMEGPU->getVariable<float>("fy");
-    float agent_fz = FLAMEGPU->getVariable<float>("fz");
 
-    // Boids percieved center
-    float perceived_centre_x = 0.0f;
-    float perceived_centre_y = 0.0f;
-    float perceived_centre_z = 0.0f;
-    int perceived_count = 0;
+@flamegpu_agent_function
+def inputdata(message_in: MessageSpatial3D, message_out: MessageNone):
+    # Agent properties in local register
+    id = FLAMEGPU.getID()
+    # Agent position
+    agent_x = FLAMEGPU.getVariableFloat("x")
+    agent_y = FLAMEGPU.getVariableFloat("y")
+    agent_z = FLAMEGPU.getVariableFloat("z")
+    #/ Agent velocity
+    agent_fx = FLAMEGPU.getVariableFloat("fx")
+    agent_fy = FLAMEGPU.getVariableFloat("fy")
+    agent_fz = FLAMEGPU.getVariableFloat("fz")
 
-    // Boids global velocity matching
-    float global_velocity_x = 0.0f;
-    float global_velocity_y = 0.0f;
-    float global_velocity_z = 0.0f;
+    # Boids percieved center
+    perceived_centre_x = 0.0
+    perceived_centre_y = 0.0
+    perceived_centre_z = 0.0
+    perceived_count = 0
 
-    // Total change in velocity
-    float velocity_change_x = 0.f;
-    float velocity_change_y = 0.f;
-    float velocity_change_z = 0.f;
+    # Boids global velocity matching
+    global_velocity_x = 0.0
+    global_velocity_y = 0.0
+    global_velocity_z = 0.0
 
-    const float INTERACTION_RADIUS = FLAMEGPU->environment.getProperty<float>("INTERACTION_RADIUS");
-    const float SEPARATION_RADIUS = FLAMEGPU->environment.getProperty<float>("SEPARATION_RADIUS");
-    // Iterate location messages, accumulating relevant data and counts.
-    for (const auto &message : FLAMEGPU->message_in(agent_x, agent_y, agent_z)) {
-        // Ignore self messages.
-        if (message.getVariable<flamegpu::id_t>("id") != id) {
-            // Get the message location and velocity.
-            const float message_x = message.getVariable<float>("x");
-            const float message_y = message.getVariable<float>("y");
-            const float message_z = message.getVariable<float>("z");
+    # Total change in velocity
+    velocity_change_x = 0.0
+    velocity_change_y = 0.0
+    velocity_change_z = 0.0
 
-            // Check interaction radius
-            float separation = vec3Length(agent_x - message_x, agent_y - message_y, agent_z - message_z);
+    INTERACTION_RADIUS = FLAMEGPU.environment.getPropertyFloat("INTERACTION_RADIUS")
+    SEPARATION_RADIUS = FLAMEGPU.environment.getPropertyFloat("SEPARATION_RADIUS")
+    # Iterate location messages, accumulating relevant data and counts.
+    for message in message_in(agent_x, agent_y, agent_z) :
+        # Ignore self messages.
+        if message.getVariableInt("id") != id :
+            # Get the message location and velocity.
+            message_x = message.getVariableFloat("x")
+            message_y = message.getVariableFloat("y")
+            message_z = message.getVariableFloat("z")
 
-            if (separation < INTERACTION_RADIUS) {
-                // Update the percieved centre
-                perceived_centre_x += message_x;
-                perceived_centre_y += message_y;
-                perceived_centre_z += message_z;
-                perceived_count++;
+            # Check interaction radius
+            separation = vec3Length(agent_x - message_x, agent_y - message_y, agent_z - message_z)
 
-                // Update percieved velocity matching
-                const float message_fx = message.getVariable<float>("fx");
-                const float message_fy = message.getVariable<float>("fy");
-                const float message_fz = message.getVariable<float>("fz");
-                global_velocity_x += message_fx;
-                global_velocity_y += message_fy;
-                global_velocity_z += message_fz;
+            if separation < INTERACTION_RADIUS :
+                # Update the perceived centre
+                perceived_centre_x += message_x
+                perceived_centre_y += message_y
+                perceived_centre_z += message_z
+                perceived_count += 1
 
-                // Update collision centre
-                if (separation < (SEPARATION_RADIUS)) {  // dependant on model size
-                    // Rule 3) Avoid other nearby boids (Separation)
-                    float normalizedSeparation = (separation / SEPARATION_RADIUS);
-                    float invNormSep = (1.0f - normalizedSeparation);
-                    float invSqSep = invNormSep * invNormSep;
+                # Update perceived velocity matching
+                message_fx = message.getVariableFloat("fx")
+                message_fy = message.getVariableFloat("fy")
+                message_fz = message.getVariableFloat("fz")
+                global_velocity_x += message_fx
+                global_velocity_y += message_fy
+                global_velocity_z += message_fz
 
-                    const float collisionScale = FLAMEGPU->environment.getProperty<float>("COLLISION_SCALE");
-                    velocity_change_x += collisionScale * (agent_x - message_x) * invSqSep;
-                    velocity_change_y += collisionScale * (agent_y - message_y) * invSqSep;
-                    velocity_change_z += collisionScale * (agent_z - message_z) * invSqSep;
-                }
-            }
-        }
-    }
+                # Update collision centre
+                if separation < SEPARATION_RADIUS :  # dependant on model size
+                    # Rule 3) Avoid other nearby boids (Separation)
+                    normalizedSeparation = (separation / SEPARATION_RADIUS)
+                    invNormSep = (float(1.0) - normalizedSeparation)
+                    invSqSep = invNormSep * invNormSep
 
-    if (perceived_count) {
-        // Divide positions/velocities by relevant counts.
-        vec3Div(perceived_centre_x, perceived_centre_y, perceived_centre_z, perceived_count);
-        vec3Div(global_velocity_x, global_velocity_y, global_velocity_z, perceived_count);
+                    collisionScale = FLAMEGPU.environment.getPropertyFloat("COLLISION_SCALE")
+                    velocity_change_x += collisionScale * (agent_x - message_x) * invSqSep
+                    velocity_change_y += collisionScale * (agent_y - message_y) * invSqSep
+                    velocity_change_z += collisionScale * (agent_z - message_z) * invSqSep
 
-        // Rule 1) Steer towards perceived centre of flock (Cohesion)
-        float steer_velocity_x = 0.f;
-        float steer_velocity_y = 0.f;
-        float steer_velocity_z = 0.f;
 
-        const float STEER_SCALE = FLAMEGPU->environment.getProperty<float>("STEER_SCALE");
-        steer_velocity_x = (perceived_centre_x - agent_x) * STEER_SCALE;
-        steer_velocity_y = (perceived_centre_y - agent_y) * STEER_SCALE;
-        steer_velocity_z = (perceived_centre_z - agent_z) * STEER_SCALE;
+    if (perceived_count) :
+        # Divide positions/velocities by relevant counts.
+        perceived_centre_x /= perceived_count
+        perceived_centre_y /= perceived_count
+        perceived_centre_z /= perceived_count
+        global_velocity_x /= perceived_count
+        global_velocity_y /= perceived_count
+        global_velocity_z /= perceived_count
 
-        velocity_change_x += steer_velocity_x;
-        velocity_change_y += steer_velocity_y;
-        velocity_change_z += steer_velocity_z;
+        # Rule 1) Steer towards perceived centre of flock (Cohesion)
+        steer_velocity_x = 0.0
+        steer_velocity_y = 0.0
+        steer_velocity_z = 0.0
 
-        // Rule 2) Match neighbours speeds (Alignment)
-        float match_velocity_x = 0.f;
-        float match_velocity_y = 0.f;
-        float match_velocity_z = 0.f;
+        STEER_SCALE = FLAMEGPU.environment.getPropertyFloat("STEER_SCALE")
+        steer_velocity_x = (perceived_centre_x - agent_x) * STEER_SCALE
+        steer_velocity_y = (perceived_centre_y - agent_y) * STEER_SCALE
+        steer_velocity_z = (perceived_centre_z - agent_z) * STEER_SCALE
 
-        const float MATCH_SCALE = FLAMEGPU->environment.getProperty<float>("MATCH_SCALE");
-        match_velocity_x = global_velocity_x * MATCH_SCALE;
-        match_velocity_y = global_velocity_y * MATCH_SCALE;
-        match_velocity_z = global_velocity_z * MATCH_SCALE;
+        velocity_change_x += steer_velocity_x
+        velocity_change_y += steer_velocity_y
+        velocity_change_z += steer_velocity_z
 
-        velocity_change_x += match_velocity_x - agent_fx;
-        velocity_change_y += match_velocity_y - agent_fy;
-        velocity_change_z += match_velocity_z - agent_fz;
-    }
+        # Rule 2) Match neighbours speeds (Alignment)
+        match_velocity_x = 0.0
+        match_velocity_y = 0.0
+        match_velocity_z = 0.0
 
-    // Global scale of velocity change
-    vec3Mult(velocity_change_x, velocity_change_y, velocity_change_z, FLAMEGPU->environment.getProperty<float>("GLOBAL_SCALE"));
+        MATCH_SCALE = FLAMEGPU.environment.getPropertyFloat("MATCH_SCALE")
+        match_velocity_x = global_velocity_x * MATCH_SCALE
+        match_velocity_y = global_velocity_y * MATCH_SCALE
+        match_velocity_z = global_velocity_z * MATCH_SCALE
 
-    // Update agent velocity
-    agent_fx += velocity_change_x;
-    agent_fy += velocity_change_y;
-    agent_fz += velocity_change_z;
+        velocity_change_x += match_velocity_x - agent_fx
+        velocity_change_y += match_velocity_y - agent_fy
+        velocity_change_z += match_velocity_z - agent_fz
 
-    // Bound velocity
-    float agent_fscale = vec3Length(agent_fx, agent_fy, agent_fz);
-    if (agent_fscale > 1) {
-        vec3Div(agent_fx, agent_fy, agent_fz, agent_fscale);
-    }
 
-    float minSpeed = 0.5f;
-    if (agent_fscale < minSpeed) {
-        // Normalise
-        vec3Div(agent_fx, agent_fy, agent_fz, agent_fscale);
+    # Global scale of velocity change
+    GLOBAL_SCALE = FLAMEGPU.environment.getPropertyFloat("GLOBAL_SCALE")
+    velocity_change_x *= GLOBAL_SCALE
+    velocity_change_y *= GLOBAL_SCALE
+    velocity_change_z *= GLOBAL_SCALE
 
-        // Scale to min
-        vec3Mult(agent_fx, agent_fy, agent_fz, minSpeed);
-    }
+    # Update agent velocity
+    agent_fx += velocity_change_x
+    agent_fy += velocity_change_y
+    agent_fz += velocity_change_z
 
-    // Steer away from walls - Computed post normalization to ensure good avoidance. Prevents constant term getting swamped
-    const float wallInteractionDistance = 0.10f;
-    const float wallSteerStrength = 0.05f;
-    const float minPosition = FLAMEGPU->environment.getProperty<float>("MIN_POSITION");
-    const float maxPosition = FLAMEGPU->environment.getProperty<float>("MAX_POSITION");
+    # Bound velocity
+    agent_fscale = vec3Length(agent_fx, agent_fy, agent_fz)
+    if agent_fscale > 1 : 
+        agent_fx /=  agent_fscale
+        agent_fy /=  agent_fscale
+        agent_fz /=  agent_fscale
+    
 
-    if (agent_x - minPosition < wallInteractionDistance) {
-        agent_fx += wallSteerStrength;
-    }
-    if (agent_y - minPosition < wallInteractionDistance) {
-        agent_fy += wallSteerStrength;
-    }
-    if (agent_z - minPosition < wallInteractionDistance) {
-        agent_fz += wallSteerStrength;
-    }
+    minSpeed = float(0.5)
+    if agent_fscale < minSpeed :
+        # Normalise
+        agent_fx /= agent_fscale
+        agent_fy /= agent_fscale
+        agent_fz /= agent_fscale
 
-    if (maxPosition - agent_x < wallInteractionDistance) {
-        agent_fx -= wallSteerStrength;
-    }
-    if (maxPosition - agent_y < wallInteractionDistance) {
-        agent_fy -= wallSteerStrength;
-    }
-    if (maxPosition - agent_z < wallInteractionDistance) {
-        agent_fz -= wallSteerStrength;
-    }
+        # Scale to min
+        agent_fx *= minSpeed
+        agent_fy *= minSpeed
+        agent_fz *= minSpeed
 
-    // Apply the velocity
-    const float TIME_SCALE = FLAMEGPU->environment.getProperty<float>("TIME_SCALE");
-    agent_x += agent_fx * TIME_SCALE;
-    agent_y += agent_fy * TIME_SCALE;
-    agent_z += agent_fz * TIME_SCALE;
+    # Steer away from walls - Computed post normalization to ensure good avoidance. Prevents constant term getting swamped
+    wallInteractionDistance = float(0.10)
+    wallSteerStrength = float(0.05)
+    minPosition = FLAMEGPU.environment.getPropertyFloat("MIN_POSITION")
+    maxPosition = FLAMEGPU.environment.getPropertyFloat("MAX_POSITION")
 
-    // Bound position
-    clampPosition(agent_x, agent_y, agent_z, FLAMEGPU->environment.getProperty<float>("MIN_POSITION"), FLAMEGPU->environment.getProperty<float>("MAX_POSITION"));
+    if (agent_x - minPosition) < wallInteractionDistance :
+        agent_fx += wallSteerStrength
+    if (agent_y - minPosition) < wallInteractionDistance :
+        agent_fy += wallSteerStrength
+    if (agent_z - minPosition) < wallInteractionDistance :
+        agent_fz += wallSteerStrength
 
-    // Update global agent memory.
-    FLAMEGPU->setVariable<float>("x", agent_x);
-    FLAMEGPU->setVariable<float>("y", agent_y);
-    FLAMEGPU->setVariable<float>("z", agent_z);
+    if (maxPosition - agent_x) < wallInteractionDistance :
+        agent_fx -= wallSteerStrength
+    if (maxPosition - agent_y) < wallInteractionDistance :
+        agent_fy -= wallSteerStrength
+    if (maxPosition - agent_z) < wallInteractionDistance :
+        agent_fz -= wallSteerStrength
 
-    FLAMEGPU->setVariable<float>("fx", agent_fx);
-    FLAMEGPU->setVariable<float>("fy", agent_fy);
-    FLAMEGPU->setVariable<float>("fz", agent_fz);
 
-    return flamegpu::ALIVE;
-}
+    # Apply the velocity
+    TIME_SCALE = FLAMEGPU.environment.getPropertyFloat("TIME_SCALE")
+    agent_x += agent_fx * TIME_SCALE
+    agent_y += agent_fy * TIME_SCALE
+    agent_z += agent_fz * TIME_SCALE
+
+    # Bound position
+    MIN_POSITION = FLAMEGPU.environment.getPropertyFloat("MIN_POSITION")
+    MAX_POSITION = FLAMEGPU.environment.getPropertyFloat("MAX_POSITION")
+    clamp(agent_x, MIN_POSITION, MAX_POSITION)
+    clamp(agent_y, MIN_POSITION, MAX_POSITION)
+    clamp(agent_z, MIN_POSITION, MAX_POSITION)
+
+    # Update global agent memory.
+    FLAMEGPU.setVariableFloat("x", agent_x)
+    FLAMEGPU.setVariableFloat("y", agent_y)
+    FLAMEGPU.setVariableFloat("z", agent_z)
+
+    FLAMEGPU.setVariableFloat("fx", agent_fx)
+    FLAMEGPU.setVariableFloat("fy", agent_fy)
+    FLAMEGPU.setVariableFloat("fz", agent_fz)
+
+    return FLAMEGPU.ALIVE
+
 """
 
 model = pyflamegpu.ModelDescription("Boids_BruteForce");
@@ -415,9 +381,10 @@ agent.newVariableFloat("fx");
 agent.newVariableFloat("fy");
 agent.newVariableFloat("fz");
 outputdata_translated = pyflamegpu.codegen.translate(outputdata_py)
-print(outputdata_translated)
+inputdata_translated = pyflamegpu.codegen.translate(inputdata_py)
+print(inputdata_translated)
 agent.newRTCFunction("outputdata", outputdata_translated).setMessageOutput("location");
-agent.newRTCFunction("inputdata", inputdata).setMessageInput("location");
+agent.newRTCFunction("inputdata", inputdata_translated).setMessageInput("location");
 
 
 """
