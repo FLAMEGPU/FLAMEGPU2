@@ -281,6 +281,11 @@ for (const auto& m : FLAMEGPU->message_in.wrap(x, y)){
 }
 """
 
+py_fgpu_for_msg_input_unsupported = """\
+for m in message_in.radius(): 
+    pass
+"""
+
 py_fgpu_for_msg_input_funcs = """\
 for m in message_in: 
     i = m.getIndex()
@@ -678,9 +683,11 @@ class CodeGenTest(unittest.TestCase):
         self._checkExpected(py_fgpu_device_func_arg_modified, cpp_fgpu_device_func_arg_modified)
         # Test local variables of device functions to ensure locals are in fact local (by correctly specifying auto where required)
         self._checkExpected(py_fgpu_device_local_args_stack, cpp_fgpu_device_local_args_stack)
-
-    def test_temp(self):
+        # Test to ensure use of wrap is ok
         self._checkExpected(py_fgpu_for_msg_input_wrap, cpp_fgpu_for_msg_input_wrap)
+        # Test to ensure 'message_in' does not allow non iterator functions
+        self._checkException(py_fgpu_for_msg_input_unsupported, "Message input loop iterator 'radius' is not supported") # not currently raising an exception
+
     
 
     

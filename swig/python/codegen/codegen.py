@@ -284,6 +284,9 @@ class CodeGenerator:
             self.write(f"FLAMEGPU->{tree.func.id}")
         if isinstance(tree.func, ast.Attribute) :
             if isinstance(tree.func.value, ast.Name):
+                # check that the iterator is supported
+                if not tree.func.attr in self.fgpu_input_msg_iter_funcs:
+                    self.RaiseError(tree, f"Message input loop iterator '{tree.func.attr}' is not supported.")
                 self.write(f"FLAMEGPU->{tree.func.value.id}.{tree.func.attr}")
             else:
                 self.RaiseError(tree, "Message input loop iterator format incorrect.")
