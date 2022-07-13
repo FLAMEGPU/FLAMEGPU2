@@ -81,7 +81,9 @@ class CodeGenerator:
     # getVariableType and setVariableType functions are added dynamically    
     fgpu_funcs = [ "getID", "getStepCounter", "getThreadIndex" ]   
     fgpu_attrs = ["ALIVE", "DEAD"]
-    fgpu_input_msg_funcs = ["getIndex"] 
+    fgpu_input_msg_funcs = ["radius"]   # functions that can be called on message_in that do NOT return iterators
+    fgpu_input_msg_iter_funcs = ["wrap", "vn", "vn_wrap"] # functions that can be called on message_in that do return iterators
+    fgpu_input_msg_iter_var_funcs = ["getIndex", "getVirtualX", "getVirtualY", "getVirtualZ"] 
     fgpu_output_msg_funcs = []
     fgpu_agent_out_msg_funcs = ["getID"]
     fgpu_env_funcs = ["containsProperty"] # TODO: Get macro property
@@ -272,6 +274,25 @@ class CodeGenerator:
             self._locals.append(arg.arg)
             first = False    
     
+    def dispatchMessageIteratorCall(self, tree):
+        """
+        Message iterator call maybe a simple one (e.g. message_in(x, y, z)) or a call to a member (e.g. message_in.wrap())
+        Using this function avoid using the global call one which may accept member function calls to things that are not iterators.
+        """
+        # simple case not a member function just an iterator with arguments
+        if isinstance(tree.func, ast.Name):
+            self.write(f"FLAMEGPU->{tree.func.id}")
+        if isinstance(tree.func, ast.Attribute) :
+            if isinstance(tree.func.value, ast.Name):
+                self.write(f"FLAMEGPU->{tree.func.value.id}.{tree.func.attr}")
+            else:
+                self.RaiseError(tree, "Message input loop iterator format incorrect.")
+
+        # handle function arguments        
+        self.write("(")
+        self._CallArguments(tree)
+        self.write(")")
+
     def dispatchMessageLoop(self, tree):
         """
         This is a special case of a range based for loop in which iterator item returns a const referecne to the message.
@@ -279,8 +300,19 @@ class CodeGenerator:
         """
         self.fill("for (const auto& ")
         self.dispatch(tree.target)
-        self.write(" : FLAMEGPU->")
-        self.dispatch(tree.iter)
+        self.write(" : ")
+        # if simple message iterator
+        if isinstance(tree.iter, ast.Name):
+            if not tree.iter.id == self._input_message_var:
+                self.RaiseError(t, f"Message input loop requires use of '{self._input_message_var}' as iterator.")
+            # write with prefix
+            self.write(f"FLAMEGPU->{self._input_message_var}")
+        # if it is a call then handle the different cases
+        elif isinstance(tree.iter, ast.Call):
+            self.dispatchMessageIteratorCall(tree.iter)
+        #otherwise not supported
+        else :
+            self.RaiseError(tree, f"Message input loop iterator in unsupported format")
         self.write(")")
         self._message_iterator_var = tree.target.id
         self.enter()
@@ -291,7 +323,7 @@ class CodeGenerator:
     def dispatchMemberFunction(self,t):
         """
         A very limited set of function calls to members are supported so these are fully evaluated here.
-        Function calls permittred are;
+        Function calls permitted are;
          * FLAMEGPU.function - a supported function call. e.g. FLAMEGPU.getVariableFloat(). This will be translated into a typed Cpp call.
          * message_input.function - a call to the message input variable (the name of which is specified in the function definition)
          * message_output.function - a call to the message output variable (the name of which is specified in the function definition)
@@ -299,7 +331,7 @@ class CodeGenerator:
          * math.function - Any function calls from python `math` are translated to calls raw function calls. E.g. `math.sin()` becomes `sin()`
          * numpy.type - Any numpy types are translated to static casts
         """
-        # Environment
+        # Nested member functions (e.g. x.y.z())
         if isinstance(t.value, ast.Attribute):
             # only nested attribute type is environment
             if not isinstance(t.value.value, ast.Name):
@@ -347,8 +379,9 @@ class CodeGenerator:
                     self.write(py_func)
             else:
                 self.RaiseError(t, f"Unknown or unsupported nested attribute in {t.value.value.id}")
-        # FLAMEGPU singleton
+        # Non nested member functions (e.g. x.y())
         elif isinstance(t.value, ast.Name):
+            # FLAMEGPU singleton
             if t.value.id == "FLAMEGPU":
                 # check for legit FGPU function calls 
                 self.write("FLAMEGPU->")
@@ -362,13 +395,22 @@ class CodeGenerator:
                         self.RaiseError(t, f"Function '{t.attr}' does not exist in FLAMEGPU object")
                     # proceed
                     self.write(py_func)
-                
-            # message input arg
+
+            # message_in function using whatever variable was named in function declaration (e.g radius)
+            elif t.value.id == self._input_message_var:
+                # only process functions on message_in that are not iterators
+                if t.attr in self.fgpu_input_msg_funcs:
+                    self.write(f"FLAMEGPU->{self._input_message_var}.")
+                    self.write(t.attr)  
+                else:
+                    self.RaiseError(t, f"Message input variable '{self._input_message_var}' does not have a supported function '{t.attr}'") 
+
+            # message input iterator arg
             elif self._message_iterator_var:
                 if t.value.id == self._message_iterator_var:
                     self.write(f"{self._message_iterator_var}.")
                     # check for legit FGPU function calls and translate
-                    if t.attr in self.fgpu_input_msg_funcs:     
+                    if t.attr in self.fgpu_input_msg_iter_var_funcs:     
                         # proceed
                         self.write(t.attr)
                     else:
@@ -378,9 +420,7 @@ class CodeGenerator:
                             self.RaiseError(t, f"Function '{t.attr}' does not exist in '{self._message_iterator_var}' message input iterable object")
                         # proceed
                         self.write(py_func)
-                        
-                        
-                        
+              
             # message output arg
             elif t.value.id == self._output_message_var:
                 # check for legit FGPU function calls and translate
@@ -635,6 +675,7 @@ class CodeGenerator:
             self.RaiseError(t, "For else not supported")
         # allow calls but only to range function
         elif isinstance(t.iter, ast.Call):
+            # simple function call e.g. message_in() or range()
             if isinstance(t.iter.func, ast.Name):
                 # catch case of message_input with arguments (e.g. spatial messaging)
                 if t.iter.func.id == self._input_message_var:
@@ -685,6 +726,13 @@ class CodeGenerator:
                     self.leave()
                 else:
                     self.RaiseError(t, "Range based for loops only support calls to the 'range' function")
+            # member function call can only be on message_in.func() type call.
+            elif isinstance(t.iter.func, ast.Attribute):
+                # must be an attribute (e.g. calling a member of message_in)
+                if t.iter.func.value.id == self._input_message_var:
+                    self.dispatchMessageLoop(t)
+                else:
+                    self.RaiseError(t, "Range based for loops only support calling members of message input variable")
             else:
                 self.RaiseError(t, "Range based for loops only support message iteration or use of 'range'")
         else:
@@ -926,7 +974,7 @@ class CodeGenerator:
                     self.write("flamegpu::")
                     self.write(t.attr)
                 else:
-                    self.RaiseError(t, f"Attriobute '{t.attr}' does not exist in FLAMEGPU object")
+                    self.RaiseError(t, f"Attribute '{t.attr}' does not exist in FLAMEGPU object")
             # math functions (try them in raw function call format) or constants
             elif t.value.id == "math":
                 if t.attr in self.mathconsts:
@@ -945,6 +993,20 @@ class CodeGenerator:
         else:
             self.RaiseError(t, "Unsupported attribute")
 
+    def _CallArguments(self, t):
+        comma = False
+        for e in t.args:
+            if comma: self.write(", ")
+            else: comma = True
+            self.dispatch(e)
+        if len(t.keywords):
+            self.RaiseWarning(t, "Keyword argument not supported. Ignored.")
+        if sys.version_info[:2] < (3, 5):
+            if t.starargs:
+                self.RaiseWarning(t, "Starargs not supported. Ignored.")
+            if t.kwargs:
+                self.RaiseWarning(t, "Kwargs not supported. Ignored.")
+    
     def _Call(self, t):
         """
         Some basic checks are undertaken on calls to ensure that the function being called is either a builtin or defined device function.
@@ -964,18 +1026,7 @@ class CodeGenerator:
             # This would otherwise be an attribute
             self.dispatchMemberFunction(t.func)        
         self.write("(")
-        comma = False
-        for e in t.args:
-            if comma: self.write(", ")
-            else: comma = True
-            self.dispatch(e)
-        if len(t.keywords):
-            self.RaiseWarning(t, "Keyword argument not supported. Ignored.")
-        if sys.version_info[:2] < (3, 5):
-            if t.starargs:
-                self.RaiseWarning(t, "Starargs not supported. Ignored.")
-            if t.kwargs:
-                self.RaiseWarning(t, "Kwargs not supported. Ignored.")
+        self._CallArguments(t)
         self.write(")")
 
     def _Subscript(self, t):

@@ -271,6 +271,16 @@ for (const auto& m : FLAMEGPU->message_in){
 }
 """
 
+py_fgpu_for_msg_input_wrap = """\
+for m in message_in.wrap(x, y): 
+    pass
+"""
+cpp_fgpu_for_msg_input_wrap = """\
+for (const auto& m : FLAMEGPU->message_in.wrap(x, y)){
+    ;
+}
+"""
+
 py_fgpu_for_msg_input_funcs = """\
 for m in message_in: 
     i = m.getIndex()
@@ -658,7 +668,7 @@ class CodeGenTest(unittest.TestCase):
         self._checkExpected(py_fgpu_for_msg_input, cpp_fgpu_for_msg_input)
         # Test the use of a different message input variable within the for loop
         self._checkExpected(py_fgpu_for_msg_input_var, cpp_fgpu_for_msg_input_var)
-        # Test message input funcs
+        # Test message input iterator funcs
         self._checkExpected(py_fgpu_for_msg_input_funcs, cpp_fgpu_for_msg_input_funcs)    
         # Test message input with unknown function
         self._checkException(py_fgpu_for_msg_input_func_unknown, "Function 'unsupported' does not exist") 
@@ -666,12 +676,12 @@ class CodeGenTest(unittest.TestCase):
         self._checkExpected(py_fgpu_for_msg_input_args, cpp_fgpu_for_msg_input_args)
         # Test to ensure that arguments are processed as local variables 
         self._checkExpected(py_fgpu_device_func_arg_modified, cpp_fgpu_device_func_arg_modified)
-
-    def test_tempt(self):
         # Test local variables of device functions to ensure locals are in fact local (by correctly specifying auto where required)
         self._checkExpected(py_fgpu_device_local_args_stack, cpp_fgpu_device_local_args_stack)
 
-        
+    def test_temp(self):
+        self._checkExpected(py_fgpu_for_msg_input_wrap, cpp_fgpu_for_msg_input_wrap)
+    
 
     
     # message output
