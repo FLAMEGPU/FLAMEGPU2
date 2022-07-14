@@ -322,6 +322,31 @@ FLAMEGPU->message_out.setVariable<double>("d", d);
 FLAMEGPU->message_out.setVariable<int>("i", i);
 """
 
+py_fgpu_macro_env_permitted = """\
+a = FLAMEGPU.environment.getMacroPropertyInt('a') 
+a += 1
+a.exchange(b) 
+a.CAS(b, c)
+a.min(b)
+a.max(b)
+"""
+cpp_fgpu_macro_env_permitted = """\
+auto a = FLAMEGPU->environment.getMacroProperty<int>("a");
+a += 1;
+a.exchange(b);
+a.CAS(b, c);
+a.min(b);
+a.max(b);
+"""
+
+py_fgpu_macro_env_function = """\
+a = FLAMEGPU.environment.getMacroPropertyInt('a')"
+a += 1
+a.exchange(b)
+a.CAS(b, c)
+a.min(b)
+a.max(b)
+"""
 
 py_fgpu_agent_func = """\
 @flamegpu_agent_function
@@ -716,6 +741,22 @@ class CodeGenTest(unittest.TestCase):
         self._checkExpected("FLAMEGPU.environment.containsProperty('p')", 'FLAMEGPU->environment.containsProperty("p");')
         self._checkException("FLAMEGPU.environment.getPropertyBadType()", "'BadType' is not a valid FLAME GPU type")
         self._checkException("FLAMEGPU.environment.unsupported()", "Function 'unsupported' does not exist in FLAMEGPU.environment")
+
+    # macro environment
+    def test_fgpu_macro_environment(self):
+        # return a device macro property (not an array)
+        self._checkExpected("FLAMEGPU.environment.getMacroPropertyFloat('a')", 'FLAMEGPU->environment.getMacroProperty<float>("a");')
+        # return a device macro property (array)
+        self._checkExpected("FLAMEGPU.environment.getMacroPropertyFloat('big_prop', 1, 2, 3)", 'FLAMEGPU->environment.getMacroProperty<float, 1, 2, 3>("big_prop");')
+        # check for contains macro property
+        self._checkExpected("FLAMEGPU.environment.containsMacroProperty('p')", 'FLAMEGPU->environment.containsMacroProperty("p");')
+        # perform a permitted function on a device macro property (inline)
+        self._checkExpected("FLAMEGPU.environment.getMacroPropertyInt('a').exchange(10)", 'FLAMEGPU->environment.getMacroProperty<int>("a").exchange(10);')
+        # perform permitted operation on a macro device property variable
+        self._checkExpected(py_fgpu_macro_env_permitted, cpp_fgpu_macro_env_permitted)
+        # Possible additional test would be to do not allow a non device macro property to use the device macro functions (requires type checking)
+        # Possible additional test could be to check that a macro device property does not call a function unsupported by the type (this also requires type checking and is probably overkill as it will be caught in compilation anyway)
+
     
     # agent functions, args renaming, arg types
     
