@@ -292,6 +292,7 @@ add_custom_command(TARGET ${PYTHON_MODULE_NAME} POST_BUILD
 	# copy the compiled pyd file to library output location
 	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PYTHON_MODULE_NAME}> ${PYTHON_MODULE_NAME}
 	COMMAND ${Python3_EXECUTABLE} setup.py bdist_wheel
+  DEPENDS ${PYTHON_CODEGEN_SRC_FILES}
 	# by products of the packaging
 	BYPRODUCTS
 		${PYTHON_MODULE_NAME}

@@ -176,20 +176,20 @@ async with g() as x:
 
 
 py_fgpu_types = """\
-f = FLAMEGPU.getVariableFloat("f")
-d = FLAMEGPU.getVariableDouble("d")
-i = FLAMEGPU.getVariableInt("i")
-ui = FLAMEGPU.getVariableUInt("ui")
-i8 = FLAMEGPU.getVariableInt8("i8")
-ui8 = FLAMEGPU.getVariableUInt8("ui8")
-c = FLAMEGPU.getVariableChar("c")
-uc = FLAMEGPU.getVariableUChar("uc")
-i16 = FLAMEGPU.getVariableInt16("i16")
-ui16 = FLAMEGPU.getVariableUInt16("ui16")
-i32 = FLAMEGPU.getVariableInt32("i32")
-ui32 = FLAMEGPU.getVariableUInt32("ui32")
-i64 = FLAMEGPU.getVariableInt64("i64")
-ui64 = FLAMEGPU.getVariableUInt64("ui64")
+f = pyflamegpu.getVariableFloat("f")
+d = pyflamegpu.getVariableDouble("d")
+i = pyflamegpu.getVariableInt("i")
+ui = pyflamegpu.getVariableUInt("ui")
+i8 = pyflamegpu.getVariableInt8("i8")
+ui8 = pyflamegpu.getVariableUInt8("ui8")
+c = pyflamegpu.getVariableChar("c")
+uc = pyflamegpu.getVariableUChar("uc")
+i16 = pyflamegpu.getVariableInt16("i16")
+ui16 = pyflamegpu.getVariableUInt16("ui16")
+i32 = pyflamegpu.getVariableInt32("i32")
+ui32 = pyflamegpu.getVariableUInt32("ui32")
+i64 = pyflamegpu.getVariableInt64("i64")
+ui64 = pyflamegpu.getVariableUInt64("ui64")
 """
 
 cpp_fgpu_types = """\
@@ -210,20 +210,20 @@ auto ui64 = FLAMEGPU->getVariable<uint_64>("ui64");
 """
 
 py_fgpu_array_types = """\
-f = FLAMEGPU.getVariableFloatArray1("f")
-d = FLAMEGPU.getVariableDoubleArray2("d")
-i = FLAMEGPU.getVariableIntArray3("i")
-ui = FLAMEGPU.getVariableUIntArray4("ui")
-i8 = FLAMEGPU.getVariableInt8Array5("i8")
-ui8 = FLAMEGPU.getVariableUInt8Array6("ui8")
-c = FLAMEGPU.getVariableCharArray7("c")
-uc = FLAMEGPU.getVariableUCharArray8("uc")
-i16 = FLAMEGPU.getVariableInt16Array9("i16")
-ui16 = FLAMEGPU.getVariableUInt16Array10("ui16")
-i32 = FLAMEGPU.getVariableInt32Array11("i32")
-ui32 = FLAMEGPU.getVariableUInt32Array12("ui32")
-i64 = FLAMEGPU.getVariableInt64Array13("i64")
-ui64 = FLAMEGPU.getVariableUInt64Array14("ui64")
+f = pyflamegpu.getVariableFloatArray1("f")
+d = pyflamegpu.getVariableDoubleArray2("d")
+i = pyflamegpu.getVariableIntArray3("i")
+ui = pyflamegpu.getVariableUIntArray4("ui")
+i8 = pyflamegpu.getVariableInt8Array5("i8")
+ui8 = pyflamegpu.getVariableUInt8Array6("ui8")
+c = pyflamegpu.getVariableCharArray7("c")
+uc = pyflamegpu.getVariableUCharArray8("uc")
+i16 = pyflamegpu.getVariableInt16Array9("i16")
+ui16 = pyflamegpu.getVariableUInt16Array10("ui16")
+i32 = pyflamegpu.getVariableInt32Array11("i32")
+ui32 = pyflamegpu.getVariableUInt32Array12("ui32")
+i64 = pyflamegpu.getVariableInt64Array13("i64")
+ui64 = pyflamegpu.getVariableUInt64Array14("ui64")
 """
 
 cpp_fgpu_array_types = """\
@@ -244,11 +244,11 @@ auto ui64 = FLAMEGPU->getVariable<uint_64, 14>("ui64");
 """
 
 py_fgpu_unknown_type = """\
-i = FLAMEGPU.getVariableUnknownType("i")
+i = pyflamegpu.getVariableUnknownType("i")
 """
 
 py_fgpu_for_msg_input = """\
-for msg in message_in: 
+for msg in message_in:
     f = msg.getVariableFloat("f")
     d = msg.getVariableDouble("d")
     i = msg.getVariableInt("i")
@@ -262,7 +262,7 @@ for (const auto& msg : FLAMEGPU->message_in){
 """
 
 py_fgpu_for_msg_input_var = """\
-for m in message_in: 
+for m in message_in:
     i = m.getVariableInt("i")
 """
 cpp_fgpu_for_msg_input_var = """\
@@ -287,7 +287,7 @@ for m in message_in.radius():
 """
 
 py_fgpu_for_msg_input_funcs = """\
-for m in message_in: 
+for m in message_in:
     i = m.getIndex()
 """
 cpp_fgpu_for_msg_input_funcs = """\
@@ -297,7 +297,7 @@ for (const auto& m : FLAMEGPU->message_in){
 """
 
 py_fgpu_for_msg_input_func_unknown = """\
-for m in message_in: 
+for m in message_in:
     i = m.unsupported()
 """
 
@@ -323,7 +323,7 @@ FLAMEGPU->message_out.setVariable<int>("i", i);
 """
 
 py_fgpu_macro_env_permitted = """\
-a = FLAMEGPU.environment.getMacroPropertyInt('a') 
+a = pyflamegpu.environment.getMacroPropertyInt('a') 
 a += 1
 a.exchange(b) 
 a.CAS(b, c)
@@ -340,7 +340,7 @@ a.max(b);
 """
 
 py_fgpu_macro_env_function = """\
-a = FLAMEGPU.environment.getMacroPropertyInt('a')"
+a = pyflamegpu.environment.getMacroPropertyInt('a')"
 a += 1
 a.exchange(b)
 a.CAS(b, c)
@@ -349,8 +349,8 @@ a.max(b)
 """
 
 py_fgpu_agent_func = """\
-@flamegpu_agent_function
-def func(message_in: MessageNone, message_out: MessageBruteForce):
+@pyflamegpu.agent_function
+def func(message_in: pyflamegpu.MessageNone, message_out: pyflamegpu.MessageBruteForce):
     pass
 """
 cpp_fgpu_agent_func = """\
@@ -360,32 +360,32 @@ FLAMEGPU_AGENT_FUNCTION(func, flamegpu::MessageNone, flamegpu::MessageBruteForce
 """
 
 py_fgpu_agent_func_no_input_msg_type = """\
-@flamegpu_agent_function
-def func(message_in, message_out: MessageBruteForce):
+@pyflamegpu.agent_function
+def func(message_in, message_out: pyflamegpu.MessageBruteForce):
     pass
 """
 
 py_fgpu_agent_func_no_output_msg_type = """\
-@flamegpu_agent_function
-def func(message_in: MessageNone, message_out):
+@pyflamegpu.agent_function
+def func(message_in: pyflamegpu.MessageNone, message_out):
     pass
 """
 
 py_fgpu_agent_func_extra_args = """\
-@flamegpu_agent_function
-def func(message_in: MessageBruteForce, message_out: MessageBruteForce, other):
+@pyflamegpu.agent_function
+def func(message_in: pyflamegpu.MessageBruteForce, message_out: pyflamegpu.MessageBruteForce, other):
     pass
 """
 
 py_fgpu_agent_func_extra_args = """\
-@flamegpu_agent_function
-def func(message_in: MessageBruteForce, message_out: MessageBruteForce, other):
+@pyflamegpu.agent_function
+def func(message_in: pyflamegpu.MessageBruteForce, message_out: pyflamegpu.MessageBruteForce, other):
     pass
 """
 
 py_fgpu_agent_func_return_type = """\
-@flamegpu_agent_function
-def func(message_in: MessageNone, message_out: MessageBruteForce) -> int :
+@pyflamegpu.agent_function
+def func(message_in: pyflamegpu.MessageNone, message_out: pyflamegpu.MessageBruteForce) -> int :
     pass
 """
 cpp_fgpu_agent_func_return_type = """\
@@ -395,7 +395,7 @@ FLAMEGPU_AGENT_FUNCTION(func, flamegpu::MessageNone, flamegpu::MessageBruteForce
 """
 
 py_fgpu_device_func_args = """\
-@flamegpu_device_function
+@pyflamegpu.device_function
 def func(x: int) -> int :
     pass
 """
@@ -407,13 +407,13 @@ FLAMEGPU_DEVICE_FUNCTION int func(int x){
 """
 
 py_fgpu_device_func_no_type = """\
-@flamegpu_device_function
+@pyflamegpu.device_function
 def func(x) -> int :
     pass
 """
 
 py_fgpu_device_func_no_return_type = """\
-@flamegpu_device_function
+@pyflamegpu.device_function
 def func(x: int) :
     pass
 """
@@ -429,7 +429,7 @@ def func(x: int) -> int :
 """
 
 py_fgpu_device_func_arg_modified = """\
-@flamegpu_device_function
+@pyflamegpu.device_function
 def func(x: int) :
     x = 10
 """
@@ -440,12 +440,12 @@ FLAMEGPU_DEVICE_FUNCTION void func(int x){
 """
 
 py_fgpu_device_local_args_stack = """\
-@flamegpu_device_function
+@pyflamegpu.device_function
 def funcA(x: int) :
     a = 1
     x = 10
 
-@flamegpu_device_function
+@pyflamegpu.device_function
 def funcB(y: int) :
     a = 1
     y= 10
@@ -727,31 +727,31 @@ class CodeGenTest(unittest.TestCase):
     # random
     
     def test_fgpu_random(self):
-        self._checkExpected("FLAMEGPU.random.uniformFloat()", "FLAMEGPU->random.uniform<float>();")
-        self._checkExpected("FLAMEGPU.random.uniformDouble()", "FLAMEGPU->random.uniform<double>();")
-        self._checkExpected("FLAMEGPU.random.uniformInt()", "FLAMEGPU->random.uniform<int>();")
-        self._checkException("FLAMEGPU.random.uniformBadType()", "'BadType' is not a valid FLAME GPU type")
-        self._checkException("FLAMEGPU.random.unsupported()", "Function 'unsupported' does not exist in FLAMEGPU.random")
+        self._checkExpected("pyflamegpu.random.uniformFloat()", "FLAMEGPU->random.uniform<float>();")
+        self._checkExpected("pyflamegpu.random.uniformDouble()", "FLAMEGPU->random.uniform<double>();")
+        self._checkExpected("pyflamegpu.random.uniformInt()", "FLAMEGPU->random.uniform<int>();")
+        self._checkException("pyflamegpu.random.uniformBadType()", "'BadType' is not a valid FLAME GPU type")
+        self._checkException("pyflamegpu.random.unsupported()", "Function 'unsupported' does not exist in pyflamegpu.random")
     
     # environment    
     def test_fgpu_environment(self):
-        self._checkExpected("FLAMEGPU.environment.getPropertyFloat('f')", 'FLAMEGPU->environment.getProperty<float>("f");')
-        self._checkExpected("FLAMEGPU.environment.getPropertyDouble('d')", 'FLAMEGPU->environment.getProperty<double>("d");')
-        self._checkExpected("FLAMEGPU.environment.getPropertyInt('i')", 'FLAMEGPU->environment.getProperty<int>("i");')
-        self._checkExpected("FLAMEGPU.environment.containsProperty('p')", 'FLAMEGPU->environment.containsProperty("p");')
-        self._checkException("FLAMEGPU.environment.getPropertyBadType()", "'BadType' is not a valid FLAME GPU type")
-        self._checkException("FLAMEGPU.environment.unsupported()", "Function 'unsupported' does not exist in FLAMEGPU.environment")
+        self._checkExpected("pyflamegpu.environment.getPropertyFloat('f')", 'FLAMEGPU->environment.getProperty<float>("f");')
+        self._checkExpected("pyflamegpu.environment.getPropertyDouble('d')", 'FLAMEGPU->environment.getProperty<double>("d");')
+        self._checkExpected("pyflamegpu.environment.getPropertyInt('i')", 'FLAMEGPU->environment.getProperty<int>("i");')
+        self._checkExpected("pyflamegpu.environment.containsProperty('p')", 'FLAMEGPU->environment.containsProperty("p");')
+        self._checkException("pyflamegpu.environment.getPropertyBadType()", "'BadType' is not a valid FLAME GPU type")
+        self._checkException("pyflamegpu.environment.unsupported()", "Function 'unsupported' does not exist in pyflamegpu.environment")
 
     # macro environment
     def test_fgpu_macro_environment(self):
         # return a device macro property (not an array)
-        self._checkExpected("FLAMEGPU.environment.getMacroPropertyFloat('a')", 'FLAMEGPU->environment.getMacroProperty<float>("a");')
+        self._checkExpected("pyflamegpu.environment.getMacroPropertyFloat('a')", 'FLAMEGPU->environment.getMacroProperty<float>("a");')
         # return a device macro property (array)
-        self._checkExpected("FLAMEGPU.environment.getMacroPropertyFloat('big_prop', 1, 2, 3)", 'FLAMEGPU->environment.getMacroProperty<float, 1, 2, 3>("big_prop");')
+        self._checkExpected("pyflamegpu.environment.getMacroPropertyFloat('big_prop', 1, 2, 3)", 'FLAMEGPU->environment.getMacroProperty<float, 1, 2, 3>("big_prop");')
         # check for contains macro property
-        self._checkExpected("FLAMEGPU.environment.containsMacroProperty('p')", 'FLAMEGPU->environment.containsMacroProperty("p");')
+        self._checkExpected("pyflamegpu.environment.containsMacroProperty('p')", 'FLAMEGPU->environment.containsMacroProperty("p");')
         # perform a permitted function on a device macro property (inline)
-        self._checkExpected("FLAMEGPU.environment.getMacroPropertyInt('a').exchange(10)", 'FLAMEGPU->environment.getMacroProperty<int>("a").exchange(10);')
+        self._checkExpected("pyflamegpu.environment.getMacroPropertyInt('a').exchange(10)", 'FLAMEGPU->environment.getMacroProperty<int>("a").exchange(10);')
         # perform permitted operation on a macro device property variable
         self._checkExpected(py_fgpu_macro_env_permitted, cpp_fgpu_macro_env_permitted)
         # Possible additional test would be to do not allow a non device macro property to use the device macro functions (requires type checking)
@@ -767,22 +767,24 @@ class CodeGenTest(unittest.TestCase):
         """ Try all the message input types by using a string replacement """
         # try all correct types
         for msg_type in pyflamegpu.codegen.CodeGenerator.fgpu_message_types:
-            py_func = py_fgpu_agent_func.replace("MessageNone", msg_type)
-            cpp_output = cpp_fgpu_agent_func.replace("MessageNone", msg_type)
+            py_func = py_fgpu_agent_func.replace("pyflamegpu.MessageNone", msg_type)
+            cpp_msg_type = msg_type.replace("pyflamegpu.", "flamegpu::")
+            cpp_output = cpp_fgpu_agent_func.replace("flamegpu::MessageNone", cpp_msg_type)
             self._checkExpected(py_func, cpp_output)
         # try an incorrect type
-        py_func = py_fgpu_agent_func.replace("MessageNone", "UnsupportedMessageType")
+        py_func = py_fgpu_agent_func.replace("pyflamegpu.MessageNone", "pyflamegpu.UnsupportedMessageType")
         self._checkException(py_func, "Message input type annotation not a supported message type")
         
     def test_fgpu_agent_func_output_types(self):
         """ Try all the message output types by using a string replacement """
         # try all correct types
         for msg_type in pyflamegpu.codegen.CodeGenerator.fgpu_message_types:
-            py_func = py_fgpu_agent_func.replace("MessageBruteForce", msg_type)
-            cpp_output = cpp_fgpu_agent_func.replace("MessageBruteForce", msg_type)
+            py_func = py_fgpu_agent_func.replace("pyflamegpu.MessageBruteForce", msg_type)
+            cpp_msg_type = msg_type.replace("pyflamegpu.", "flamegpu::")
+            cpp_output = cpp_fgpu_agent_func.replace("flamegpu::MessageBruteForce", cpp_msg_type)
             self._checkExpected(py_func, cpp_output)
         # try an incorrect type
-        py_func = py_fgpu_agent_func.replace("MessageBruteForce", "UnsupportedMessageType")
+        py_func = py_fgpu_agent_func.replace("pyflamegpu.MessageBruteForce", "pyflamegpu.UnsupportedMessageType")
         self._checkException(py_func, "Message output type annotation not a supported message type")
         
     def test_fgpu_agent_func_incorrect_args(self):
@@ -806,10 +808,10 @@ class CodeGenTest(unittest.TestCase):
         # no function return type should use void
         self._checkExpected(py_fgpu_device_func_no_return_type, cpp_fgpu_device_func_no_return_type)
         # function requires decorator
-        self._checkException(py_fgpu_device_func_no_decorator, "Function definitions require a single FLAMEGPU decorator of")
+        self._checkException(py_fgpu_device_func_no_decorator, "Function definitions require a single pyflamegpu decorator of")
         
 
     def test_alive_dead(self):
-        self._checkExpected(str("FLAMEGPU.ALIVE"), "flamegpu::ALIVE;")
-        self._checkExpected(str("FLAMEGPU.DEAD"), "flamegpu::DEAD;")
+        self._checkExpected(str("pyflamegpu.ALIVE"), "flamegpu::ALIVE;")
+        self._checkExpected(str("pyflamegpu.DEAD"), "flamegpu::DEAD;")
     

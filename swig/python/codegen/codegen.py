@@ -53,7 +53,7 @@ class CodeGenerator:
                   "uint": "unisgned int",
                   "longlong": "long long",
                   "ulonglong": "unsigned long long",
-                  "half": "half",       # cuda supported
+                  "half": "half",       # cuda supported 
                   "single": "float",
                   "double": "double",
                   "longdouble": "long double",
@@ -89,7 +89,7 @@ class CodeGenerator:
     fgpu_env_funcs = ["containsProperty", "containsMacroProperty"]
     fgpu_env_macro_funcs = ["exchange", "CAS", "min", "max"]
     fgpu_rand_funcs = []
-    fgpu_message_types = ["MessageNone", "MessageBruteForce", "MessageBucket", "MessageSpatial2D", "MessageSpatial3D", "MessageArray", "MessageArray2D", "MessageArray3D"]
+    fgpu_message_types = ["pyflamegpu.MessageNone", "pyflamegpu.MessageBruteForce", "pyflamegpu.MessageBucket", "pyflamegpu.MessageSpatial2D", "pyflamegpu.MessageSpatial3D", "pyflamegpu.MessageArray", "pyflamegpu.MessageArray2D", "pyflamegpu.MessageArray3D"]
     
     _fgpu_types = {"Float": "float",
                   "Double": "double",
@@ -115,7 +115,7 @@ class CodeGenerator:
         self.future_imports = []
         self._indent = 0
         # dict of locals used to determine if variable already exists in assignments
-        self._locals = ["FLAMEGPU"]
+        self._locals = ["pyflamegpu"]
         self._device_functions = []
         self._message_iterator_var = None           # default
         self._input_message_var = 'message_in'      # default
@@ -241,26 +241,34 @@ class CodeGenerator:
         Type hinting is required to translate a type into a FLAME GPU Message type implementation
         """
         # reset the locals variable stack
-        self._locals = ["FLAMEGPU"]
+        self._locals = ["pyflamegpu"]
         if len(tree.args.args) != 2:
             self.RaiseError(tree, "Expected two FLAME GPU function arguments (input message and output message)")
         # input message
         if not tree.args.args[0].annotation:
             self.RaiseError(tree.args.args[0], "Message input requires a supported type annotation")
-        if tree.args.args[0].annotation.id not in self.fgpu_message_types:
+        if not isinstance(tree.args.args[0].annotation, ast.Attribute):
+            self.RaiseError(tree.args.args[0], "Message input type annotation should be an attribute of the form pyflamegpu.MessageType")
+        if not isinstance(tree.args.args[0].annotation.value, ast.Name):
+            self.RaiseError(tree.args.args[0], "Message output type annotation should be an attribute of the form pyflamegpu.MessageType")
+        input_message_attr = tree.args.args[0].annotation.value.id + "." + tree.args.args[0].annotation.attr
+        if input_message_attr not in self.fgpu_message_types:
             self.RaiseError(tree.args.args[0], "Message input type annotation not a supported message type")
         self._input_message_var = tree.args.args[0].arg  # store the message input variable name
-        self.write("flamegpu::")        # requires namespace
-        self.dispatch(tree.args.args[0].annotation)
+        self.write(f"flamegpu::{tree.args.args[0].annotation.attr}")        # requires namespace
         self.write(", ")
         # output message
         if not tree.args.args[1].annotation:
             self.RaiseError(tree.args.args[1], "Message output requires a supported type annotation")
-        if tree.args.args[1].annotation.id not in self.fgpu_message_types:
+        if not isinstance(tree.args.args[1].annotation, ast.Attribute):
+            self.RaiseError(tree.args.args[1], "Message output type annotation should be an attribute of the form pyflamegpu.MessageType")
+        if not isinstance(tree.args.args[1].annotation.value, ast.Name):
+            self.RaiseError(tree.args.args[1], "Message output type annotation should be an attribute of the form pyflamegpu.MessageType")
+        output_message_attr = tree.args.args[1].annotation.value.id + "." + tree.args.args[1].annotation.attr
+        if output_message_attr not in self.fgpu_message_types:
             self.RaiseError(tree.args.args[1], "Message output type annotation not a supported message type")
         self._output_message_var = tree.args.args[1].arg  # store the message output variable name
-        self.write("flamegpu::")        # requires namespace
-        self.dispatch(tree.args.args[1].annotation)
+        self.write(f"flamegpu::{tree.args.args[1].annotation.attr}")        # requires namespace
     
     def dispatchType(self, tree):
         """
@@ -289,7 +297,7 @@ class CodeGenerator:
         Handles arguments for a FLAME GPU device function. Arguments must use type hinting to be translated to cpp.
         """
         # reset the locals variable stack
-        self._locals = ["FLAMEGPU"]
+        self._locals = ["pyflamegpu"]
         # input message
         first = True
         annotation = None
@@ -360,11 +368,11 @@ class CodeGenerator:
         A very limited set of function calls to members are supported so these are fully evaluated here.
         t_parent is the Call ast object required if the argument need to be modified (i.e. in the case of macro environment properties)
         Function calls permitted are;
-         * FLAMEGPU.function - a supported function call. e.g. FLAMEGPU.getVariableFloat(). This will be translated into a typed Cpp call.
+         * pyflamegpu.function - a supported function call. e.g. pyflamegpu.getVariableFloat(). This will be translated into a typed Cpp call.
          * message_input.function - a call to the message input variable (the name of which is specified in the function definition)
          * msg.function - a call to the message input iterator objection variable (the name of which is specified in the message function loop)
          * message_output.function - a call to the message output variable (the name of which is specified in the function definition)
-         * FLAMEGPU.environment.function - the only nested attribute type. This will be translated into a typed Cpp call.
+         * pyflamegpu.environment.function - the only nested attribute type. This will be translated into a typed Cpp call.
          * math.function - Any function calls from python `math` are translated to calls raw function calls. E.g. `math.sin()` becomes `sin()`
          * numpy.type - Any numpy types are translated to static casts
         """
@@ -379,8 +387,8 @@ class CodeGenerator:
             # only nested attribute type is environment
             if not isinstance(t.value.value, ast.Name):
                 self.RaiseError(t, "Unknown or unsupported nested attribute")
-            # FLAMEGPU->environment
-            if t.value.value.id == "FLAMEGPU" and t.value.attr == "environment":
+            # pyflamegpu.environment
+            if t.value.value.id == "pyflamegpu" and t.value.attr == "environment":
                 # check it is a supported environment function
                 self.write("FLAMEGPU->environment.")
                 if t.attr in self.fgpu_env_funcs: 
@@ -392,7 +400,7 @@ class CodeGenerator:
                         # possible getter setter type function
                         py_func = self._deviceVariableFunctionName(t, ["getProperty"])
                         if not py_func:
-                            self.RaiseError(t, f"Function '{t.attr}' is not a supported FLAMEGPU.environment property function.")
+                            self.RaiseError(t, f"Function '{t.attr}' is not a supported pyflamegpu.environment property function.")
                         # write the getProperty type function
                         self.write(py_func)
                         t_parent.call_type = "Environment"
@@ -402,15 +410,15 @@ class CodeGenerator:
                         # no not permit lengths (e.g. Float4) as these will be passed as arguments
                         py_func = self._deviceVariableFunctionName(t, ["getMacroProperty"], allow_lengths=False)
                         if not py_func:
-                            self.RaiseError(t, f"Function '{t.attr}' is not a supported FLAMEGPU.environment macro property function.")
+                            self.RaiseError(t, f"Function '{t.attr}' is not a supported pyflamegpu.environment macro property function.")
                         # handle case
                         self.dispatchMacroEnvFunction(t, t_parent)
                         t_parent.call_type = "MacroEnvironment"
                     else:
-                        self.RaiseError(t, f"Function '{t.attr}' does not exist in FLAMEGPU.environment object")
+                        self.RaiseError(t, f"Function '{t.attr}' does not exist in pyflamegpu.environment object")
                           
-            # FLAMEGPU->random
-            elif t.value.value.id == "FLAMEGPU" and t.value.attr == "random":
+            # pyflamegpu.random
+            elif t.value.value.id == "pyflamegpu" and t.value.attr == "random":
                 # check it is a supported random function
                 self.write("FLAMEGPU->random.")
                 if t.attr in self.fgpu_rand_funcs: 
@@ -420,11 +428,11 @@ class CodeGenerator:
                     # possible getter setter type function
                     py_func = self._deviceVariableFunctionName(t, ["uniform", "normal", "logNormal"], allow_lengths=False)
                     if not py_func:
-                        self.RaiseError(t, f"Function '{t.attr}' does not exist in FLAMEGPU.random object")
+                        self.RaiseError(t, f"Function '{t.attr}' does not exist in pyflamegpu.random object")
                     # proceed
                     self.write(py_func) 
                     t_parent.call_type = "Random"
-            elif t.value.value.id == "FLAMEGPU" and t.value.attr == "agent_out":
+            elif t.value.value.id == "pyflamegpu" and t.value.attr == "agent_out":
                 # check it is a supported agent_out function
                 self.write("FLAMEGPU->agent_out.")
                 if t.attr in self.fgpu_agent_out_msg_funcs: 
@@ -434,7 +442,7 @@ class CodeGenerator:
                     # possible getter setter type function
                     py_func = self._deviceVariableFunctionName(t, ["setVariable"])
                     if not py_func:
-                        self.RaiseError(t, f"Function '{t.attr}' does not exist in FLAMEGPU.agent_out object")
+                        self.RaiseError(t, f"Function '{t.attr}' does not exist in pyflamegpu.agent_out object")
                     # proceed
                     self.write(py_func)
                     t_parent.call_type = "AgentOut"
@@ -442,8 +450,8 @@ class CodeGenerator:
                 self.RaiseError(t, f"Unknown or unsupported nested attribute in {t.value.value.id}")
         # Non nested member functions (e.g. x.y())
         elif isinstance(t.value, ast.Name):
-            # FLAMEGPU singleton
-            if t.value.id == "FLAMEGPU":
+            # pyflamegpu singleton
+            if t.value.id == "pyflamegpu":
                 # check for legit FGPU function calls 
                 self.write("FLAMEGPU->")
                 if t.attr in self.fgpu_funcs:
@@ -453,7 +461,7 @@ class CodeGenerator:
                     # possible getter setter type function
                     py_func = self._deviceVariableFunctionName(t, ["getVariable", "setVariable"])
                     if not py_func:
-                        self.RaiseError(t, f"Function '{t.attr}' does not exist in FLAMEGPU object")
+                        self.RaiseError(t, f"Function '{t.attr}' does not exist in pyflamegpu object")
                     # proceed
                     self.write(py_func)
 
@@ -513,9 +521,9 @@ class CodeGenerator:
                 self.write(f"{t.value.id}.{t.attr}")
             else:
                 self.RaiseError(t, f"Global '{t.value.id}' identifier not supported")
-        # Call is a very nested situation which can occur only on macro environment properties. E.g. 'FLAMEGPU.environment.getMacroPropertyInt('a').exchange(10)'
+        # Call is a very nested situation which can occur only on macro environment properties. E.g. 'pyflamegpu.environment.getMacroPropertyInt('a').exchange(10)'
         elif isinstance(t.value, ast.Call):
-            # handle the call by recursively calling this function to do the depth first execution of FLAMEGPU.environment.getMacroPropertyInt('a')
+            # handle the call by recursively calling this function to do the depth first execution of pyflamegpu.environment.getMacroPropertyInt('a')
             self.dispatchMemberFunction(t.value.func, t.value)
             # check that the handler was actually for macro environment 
             if t.value.call_type != "MacroEnvironment" :
@@ -693,7 +701,7 @@ class CodeGenerator:
     def _TryExcept(self, t):
         self.RaiseError(t, "Exceptions not supported")
 
-    def _TryFinally(self, t):
+    def _TryFinally(self, t): 
         self.RaiseError(t, "Exceptions not supported")
 
     def _ExceptHandler(self, t):
@@ -704,23 +712,23 @@ class CodeGenerator:
 
     def _FunctionDef(self, t):
         """
-        Checks the decorators of the function definition much must be either 'flamegpu_agent_function' or 'flamegpu_device_function'.
+        Checks the decorators of the function definition much must be either 'pyflamegpu.agent_function' or 'pyflamegpu.device_function'.
         Each is then processed in a different way using a specific dispatcher.
         Function calls are actually checked and only permitted (or user defined) function calls are supported.
         """
         self.write("\n")
         # check decorators
-        if len(t.decorator_list) != 1 or not isinstance(t.decorator_list[0], ast.Name):
-            self.RaiseError(t, "Function definitions require a single FLAMEGPU decorator of either 'flamegpu_agent_function' or 'flamegpu_device_function'")       
+        if len(t.decorator_list) != 1 or not isinstance(t.decorator_list[0], ast.Attribute):
+            self.RaiseError(t, "Function definitions require a single pyflamegpu decorator of either 'pyflamegpu.agent_function' or 'pyflamegpu.device_function'")       
         # FLAMEGPU_AGENT_FUNCTION
-        if t.decorator_list[0].id == 'flamegpu_agent_function' :
+        if t.decorator_list[0].attr == 'agent_function' and t.decorator_list[0].value.id == 'pyflamegpu':
             if getattr(t, "returns", False):
-                self.RaiseWarning(t, "Function definition return type not supported on 'flamegpu_agent_function'")
+                self.RaiseWarning(t, "Function definition return type not supported on 'pyflamegpu.agent_function'")
             self.fill(f"FLAMEGPU_AGENT_FUNCTION({t.name}, ")
             self.dispatchFGPUFunctionArgs(t)
             self.write(")")
         # FLAMEGPU_DEVICE_FUNCTION
-        elif t.decorator_list[0].id == 'flamegpu_device_function' :
+        elif t.decorator_list[0].attr == 'device_function' and t.decorator_list[0].value.id == 'pyflamegpu':
             self.fill(f"FLAMEGPU_DEVICE_FUNCTION ")
             if t.returns:
                 self.dispatchType(t.returns)
@@ -732,7 +740,7 @@ class CodeGenerator:
             # add to list of defined functions that can be called
             self._device_functions.append(t.name)
         else:
-            self.RaiseError(t, "Function definition uses an unsupported decorator. Must use either 'flamegpu_agent_function' or 'flamegpu_device_function'")
+            self.RaiseError(t, "Function definition uses an unsupported decorator. Must use either 'pyflamegpu.agent_function' or 'pyflamegpu.device_function'")
         self.enter()
         self.dispatch(t.body)
         self.leave()
@@ -743,7 +751,7 @@ class CodeGenerator:
     def _For(self, t):
         """
         Two type for for loop are supported. Either;
-        1) Message for loop in which case the format requires a iterator using the named FLAMEGPU function argument of 'message_in'
+        1) Message for loop in which case the format requires a iterator using the named pyflamegpu function argument of 'message_in'
         2) A range based for loop with 1 to 3 arguments which is converted into a c style loop
         """
         # if message loop then process differently
@@ -1042,21 +1050,21 @@ class CodeGenerator:
         """
         A very limited set of attributes are supported so these are fully evaluated here. Other places where attribute type expressions may occur will also evaluate them fully rather than recursively call this function.
         Attributes supported are only;
-         * FLAMEGPU.attribute - a supported attribute e.g. FLAMEGPU.ALIVE. This will be translated into a namespace member.
+         * pyflamegpu.attribute - a supported attribute e.g. pyflamegpu.ALIVE. This will be translated into a namespace member.
          * math.constant - Any supported math constants are translated to C definition versions
         """
         # Only a limited set of globals supported
         func_dict = None
         
-        # FLAMEGPU singleton
+        # pyflamegpu singleton
         if isinstance(t.value, ast.Name):
-            if t.value.id == "FLAMEGPU":
+            if t.value.id == "pyflamegpu":
                 if t.attr in self.fgpu_attrs:
                     # proceed
                     self.write("flamegpu::")
                     self.write(t.attr)
                 else:
-                    self.RaiseError(t, f"Attribute '{t.attr}' does not exist in FLAMEGPU object")
+                    self.RaiseError(t, f"Attribute '{t.attr}' does not exist in pyflamegpu object")
             # math functions (try them in raw function call format) or constants
             elif t.value.id == "math":
                 if t.attr in self.mathconsts:
