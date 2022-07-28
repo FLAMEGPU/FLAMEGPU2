@@ -1,12 +1,10 @@
 from __future__ import print_function, unicode_literals
-import six
 import sys
 import ast
 import os
 import tokenize
 import warnings
-from six import StringIO
-
+from io import StringIO
 
 def interleave(inter, f, seq):
     """Call f on each item in seq, calling inter() in between.
@@ -171,7 +169,7 @@ class CodeGenerator:
 
     def write(self, text):
         "Append a piece of text to the current line."
-        self.f.write(six.text_type(text))
+        self.f.write(str(text))
 
     def enter(self):
         "Print '{', and increase the indentation."
@@ -197,7 +195,6 @@ class CodeGenerator:
         
     def RaiseError(self, tree, str):
         raise CodeGenException(f"Error ({tree.lineno}, {tree.col_offset}): {str}")
-
 
     ############### Cutsom Unparsing methods ###############
     # These are special versions of the ast unparsing      #
@@ -542,10 +539,6 @@ class CodeGenerator:
         else:
             self.RaiseError(t, "Unsupported function call syntax")
      
-    
-   
-     
-
     ############### Unparsing methods ######################
     # There should be one method per concrete grammar type #
     # Constructors should be grouped by sum type. Ideally, #
@@ -569,6 +562,11 @@ class CodeGenerator:
         """
         Same as a standard python expression but ends with semicolon
         """
+        # Catch odd case of multi line strings and doc strings which are Expr with a Constant string type value
+        if isinstance(tree.value, ast.Constant):
+            if isinstance(tree.value.value, str):
+                return
+        # otherwise treat like a normal expression
         self.fill()
         self.dispatch(tree.value)
         self.write(";")

@@ -2,46 +2,43 @@
 from textwrap import indent
 from pyflamegpu import *
 import pyflamegpu.codegen
-#from pyflamegpu import *
 import sys, random, math
 
-"""
-  Pure python version of inputdata agent function for Boid agents, which reads data from neighboring Boid agents, to perform the boid flocking model.
-"""
+
 
 # Vector utility functions, see top of file for versions with commentary
 
-"""
-  Multiply a vector by a scalar value in-place
-  @param x x component of the vector
-  @param y y component of the vector
-  @param z z component of the vector
-  @param multiplier scalar value to multiply by
-"""
 def vec3Mult(x, y, z, multiplier):
+    """
+      Multiply a vector by a scalar value in-place
+      @param x x component of the vector
+      @param y y component of the vector
+      @param z z component of the vector
+      @param multiplier scalar value to multiply by
+    """
     x *= multiplier
     y *= multiplier
     z *= multiplier
     
-"""
-  Divide a vector by a scalar value in-place
-  @param x x component of the vector
-  @param y y component of the vector
-  @param z z component of the vector
-  @param divisor scalar value to divide by
-"""
 def vec3Div(x, y, z, divisor):
+    """
+      Divide a vector by a scalar value in-place
+      @param x x component of the vector
+      @param y y component of the vector
+      @param z z component of the vector
+      @param divisor scalar value to divide by
+    """
     x /= divisor
     y /= divisor
     z /= divisor
 
-"""
-  Normalize a 3 component vector in-place
-  @param x x component of the vector
-  @param y y component of the vector
-  @param z z component of the vector
-"""
 def vec3Normalize(x, y, z):
+    """
+      Normalize a 3 component vector in-place
+      @param x x component of the vector
+      @param y y component of the vector
+      @param z z component of the vector
+    """
     # Get the length (dont call the device vec3Length func)
     length = math.sqrt(x * x + y * y + z * z)
     vec3Div(x, y, z, length)
@@ -61,6 +58,9 @@ def clamp(v : float, min: float, max: float) -> float:
 
 @pyflamegpu.agent_function
 def outputdata(message_in: pyflamegpu.MessageNone, message_out: pyflamegpu.MessageSpatial3D):
+    """
+    Pure python version of output agent function for Boid agents, which outputs a spatial message
+    """
     # Output each agents publicly visible properties.
     message_out.setVariableInt("id", pyflamegpu.getID())
     message_out.setVariableFloat("x", pyflamegpu.getVariableFloat("x"))
@@ -71,9 +71,11 @@ def outputdata(message_in: pyflamegpu.MessageNone, message_out: pyflamegpu.Messa
     message_out.setVariableFloat("fz", pyflamegpu.getVariableFloat("fz"))
     return pyflamegpu.ALIVE
 
-
 @pyflamegpu.agent_function
 def inputdata(message_in: pyflamegpu.MessageSpatial3D, message_out: pyflamegpu.MessageNone):
+    """
+    Pure python version of inputdata agent function for Boid agents, which reads data from neighboring Boid agents, to perform the boid flocking model.
+    """
     # Agent properties in local register
     id = pyflamegpu.getID()
     # Agent position
@@ -257,14 +259,12 @@ def inputdata(message_in: pyflamegpu.MessageSpatial3D, message_out: pyflamegpu.M
 
     return pyflamegpu.ALIVE
 
-    return pyflamegpu.ALIVE
-
 
 model = pyflamegpu.ModelDescription("Boids_BruteForce")
 
-"""
-  GLOBALS
-"""
+
+# GLOBALS
+
 env = model.Environment()
 # Population size to generate, if no agents are loaded from disk
 env.newPropertyUInt("POPULATION_TO_GENERATE", 4000)
@@ -290,9 +290,9 @@ env.newPropertyFloat("STEER_SCALE", 0.055)
 env.newPropertyFloat("COLLISION_SCALE", 10.0)
 env.newPropertyFloat("MATCH_SCALE", 0.015)
 
-"""
-  Location message
-"""
+
+# Location message
+
 message = model.newMessageSpatial3D("location")
 # Set the range and bounds.
 message.setRadius(env.getPropertyFloat("INTERACTION_RADIUS"))
@@ -308,9 +308,9 @@ message.newVariableFloat("fx")
 message.newVariableFloat("fy")
 message.newVariableFloat("fz")
     
-"""
-  Boid agent
-"""
+
+# Boid agent
+
 agent = model.newAgent("Boid")
 agent.newVariableFloat("x")
 agent.newVariableFloat("y")
@@ -324,25 +324,23 @@ agent.newRTCFunction("outputdata", outputdata_translated).setMessageOutput("loca
 agent.newRTCFunction("inputdata", inputdata_translated).setMessageInput("location")
 
 
-"""
-  Control flow
-"""    
+# Control flow
+    
 # Layer #1
 model.newLayer().addAgentFunction("Boid", "outputdata")
 # Layer #2
 model.newLayer().addAgentFunction("Boid", "inputdata")
 
-"""
-  Create Model Runner
-"""   
+# Create Model Runner
+   
 cudaSimulation = pyflamegpu.CUDASimulation(model)
 
-"""
-  Create Visualisation
-"""
+# Create Visualisation
+
 if pyflamegpu.VISUALISATION:
     visualisation = cudaSimulation.getVisualisation()
     # Configure vis
+    visualisation.setClearColor(255, 255, 255)
     envWidth = env.getPropertyFloat("MAX_POSITION") - env.getPropertyFloat("MIN_POSITION")
     INIT_CAM = env.getPropertyFloat("MAX_POSITION") * 1.25
     visualisation.setInitialCameraLocation(INIT_CAM, INIT_CAM, INIT_CAM)
@@ -357,9 +355,8 @@ if pyflamegpu.VISUALISATION:
     circ_agt.setModelScale(env.getPropertyFloat("SEPARATION_RADIUS") /3.0)
     visualisation.activate()
 
-"""
-  Initialise Model
-"""
+# Initialise Model
+
 cudaSimulation.initialise(sys.argv)
 
 # If no xml model file was is provided, generate a population.
@@ -397,14 +394,10 @@ if not cudaSimulation.SimulationConfig().input_file:
 
     cudaSimulation.setPopulationData(population)
 
-"""
-  Execution
-"""
+# Execution
 cudaSimulation.simulate()
 
-"""
-  Export Pop
-"""
+# Export Pop (optional)
 # cudaSimulation.exportData("end.xml")
 
 if pyflamegpu.VISUALISATION:

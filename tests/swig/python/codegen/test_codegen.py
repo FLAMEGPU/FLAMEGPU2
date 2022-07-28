@@ -1,7 +1,6 @@
 import codecs
 import os
 import sys
-import six
 import pytest
 import unittest
 import ast
@@ -353,6 +352,21 @@ py_fgpu_agent_func = """\
 def func(message_in: pyflamegpu.MessageNone, message_out: pyflamegpu.MessageBruteForce):
     pass
 """
+py_fgpu_agent_func_docstring = """\
+@pyflamegpu.agent_function
+def func(message_in: pyflamegpu.MessageNone, message_out: pyflamegpu.MessageBruteForce):
+    \"\"\"
+    This is a docstring
+    \"\"\"
+    pass
+"""
+py_fgpu_agent_func_comment = """\
+@pyflamegpu.agent_function
+def func(message_in: pyflamegpu.MessageNone, message_out: pyflamegpu.MessageBruteForce):
+    # This is a comment
+    pass
+"""
+
 cpp_fgpu_agent_func = """\
 FLAMEGPU_AGENT_FUNCTION(func, flamegpu::MessageNone, flamegpu::MessageBruteForce){
     ;
@@ -511,7 +525,7 @@ class CodeGenTest(unittest.TestCase):
         self._checkExpected(py_for_range_arg2, cpp_for_range_arg2)
         self._checkExpected(py_for_range_arg3, cpp_for_range_arg3)   
         # check that non range function loops are rejected
-        self._checkException(py_for_unsupported, "Range based for loops only support")
+        self._checkException(py_for_unsupported, "Range based for loops only support message iteration using 'message_in' iterator")
        
     def test_while_else(self):
         self._checkException(py_while_else, "While else not supported")
@@ -530,9 +544,6 @@ class CodeGenTest(unittest.TestCase):
 
     def test_huge_float(self):
         self._checkExpected("1e1000", "inf;")
-        #self._checkExpected("-1e1000")
-        #self._checkExpected("1e1000j")
-        #self._checkExpected("-1e1000j")
 
     def test_min_int30(self):
         self._checkExpected(str(-2**31), "(-2147483648);")
@@ -762,6 +773,13 @@ class CodeGenTest(unittest.TestCase):
     
     def test_fgpu_agent_func(self):
         self._checkExpected(py_fgpu_agent_func, cpp_fgpu_agent_func)
+
+    def test_fgpu_agent_func_comments(self):
+        """
+        Comments and doc string should be removed and not translated
+        """
+        self._checkExpected(py_fgpu_agent_func_comment, cpp_fgpu_agent_func)
+        self._checkExpected(py_fgpu_agent_func_docstring, cpp_fgpu_agent_func)
         
     def test_fgpu_agent_func_input_types(self):
         """ Try all the message input types by using a string replacement """
