@@ -613,9 +613,15 @@ void CUDAScatter::arrayMessageReorder(
         // Report bad ones
         unsigned int *hd_write_flag = (unsigned int *)malloc(sizeof(unsigned int) * array_length);
         gpuErrchk(cudaMemcpy(hd_write_flag, d_write_flag, sizeof(unsigned int)* array_length, cudaMemcpyDeviceToHost));
+        unsigned int last_fail_index = std::numeric_limits<unsigned int>::max();
         for (unsigned int i = 0; i < array_length; ++i) {
-            if (hd_write_flag[i] > 1)
+            if (hd_write_flag[i] > 1) {
                 fprintf(stderr, "Array messagelist contains %u messages at index %u!\n", hd_write_flag[i], i);
+                last_fail_index = i;
+            }
+        }
+        if (last_fail_index == 0) {
+            fprintf(stderr, "This may occur if optional message output was not enabled, and some agents failed to create a message.\n");
         }
         THROW exception::ArrayMessageWriteConflict("Multiple threads output array messages to the same index, see stderr.\n");
     }
