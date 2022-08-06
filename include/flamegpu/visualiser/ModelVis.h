@@ -206,6 +206,10 @@ class ModelVis {
      * @param sc Step count, the step count value shown in visualisation HUD
      */
     void updateBuffers(const unsigned int &sc = UINT_MAX);
+    /**
+     * Random seed has changed
+     */
+    void updateRandomSeed();
 
  private:
     /**

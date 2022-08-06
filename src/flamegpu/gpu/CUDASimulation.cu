@@ -1431,9 +1431,11 @@ void CUDASimulation::applyConfig_derived() {
 
     // Handle console_mode
 #ifdef VISUALISATION
-    if (getSimulationConfig().console_mode) {
-        if (visualisation) {
-            visualisation->deactivate();
+    if (visualisation) {
+        if (getSimulationConfig().console_mode) {
+                visualisation->deactivate();
+        } else {
+            visualisation->updateRandomSeed();
         }
     }
 #endif
@@ -1544,6 +1546,12 @@ void CUDASimulation::initialiseSingletons() {
 
         // Store the WDDM/TCC driver mode status, for timer class decisions. Result is cached in the anon namespace to avoid multiple queries
         deviceUsingWDDM = util::detail::wddm::deviceIsWDDM();
+
+#ifdef VISUALISATION
+        if (visualisation) {
+            visualisation->updateRandomSeed();  // Incase user hasn't triggered applyConfig()
+        }
+#endif
 
         singletonsInitialised = true;
     } else {

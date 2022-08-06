@@ -65,6 +65,7 @@ void ModelVis::_activate() {
     if ((!visualiser || !visualiser->isRunning()) && !model.getSimulationConfig().console_mode) {
         // Init visualiser
         visualiser = std::make_unique<FLAMEGPU_Visualisation>(modelCfg);  // Window resolution
+        visualiser->setRandomSeed(model.getSimulationConfig().random_seed);
         for (auto &agent : agents) {
             // If x and y aren't set, throw exception
             if (agent.second.core_tex_buffers.find(TexBufferConfig::Position_x) == agent.second.core_tex_buffers.end() &&
@@ -124,6 +125,13 @@ void ModelVis::updateBuffers(const unsigned int &sc) {
             a.second.updateBuffers(visualiser);
         }
         visualiser->releaseMutex();
+    }
+}
+
+void ModelVis::updateRandomSeed() {
+    if (visualiser) {
+        // Yolo thread safety, shouldn't matter if random seed is printed wrong for a single frame
+        visualiser->setRandomSeed(model.getSimulationConfig().random_seed);
     }
 }
 
