@@ -79,7 +79,18 @@ void ModelVis::_activate() {
             }
             agent.second.initBindings(visualiser);
         }
+        env_registered = false;
+        registerEnvProperties();
         visualiser->start();
+    }
+}
+void ModelVis::registerEnvProperties() {
+    if (model.singletons && !env_registered) {
+        char * const host_env_origin = const_cast<char *>(static_cast<const char *>(model.singletons->environment->getHostBuffer()));
+        for (const auto& prop : model.singletons->environment->getPropertiesMap()) {
+            visualiser->registerEnvironmentProperty(prop.first, host_env_origin + prop.second.offset, prop.second.type, prop.second.elements, prop.second.isConst);
+        }
+        env_registered = true;
     }
 }
 

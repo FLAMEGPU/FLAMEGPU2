@@ -210,6 +210,10 @@ class ModelVis {
      * Random seed has changed
      */
     void updateRandomSeed();
+    /**
+     * Singletons have init, so env props are ready to grab
+     */
+    void registerEnvProperties();
 
  private:
     /**
@@ -242,6 +246,10 @@ class ModelVis {
      * Pointer to the visualisation
      */
     std::unique_ptr<FLAMEGPU_Visualisation> visualiser;
+    /**
+     * Only need to register env properties once
+     */
+    bool env_registered = false;
 };
 
 }  // namespace visualiser

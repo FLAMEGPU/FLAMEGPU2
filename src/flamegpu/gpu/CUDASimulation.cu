@@ -1550,6 +1550,7 @@ void CUDASimulation::initialiseSingletons() {
 #ifdef VISUALISATION
         if (visualisation) {
             visualisation->updateRandomSeed();  // Incase user hasn't triggered applyConfig()
+            visualisation->registerEnvProperties();
         }
 #endif
 
