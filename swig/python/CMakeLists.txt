@@ -11,6 +11,8 @@ find_package(CUDAToolkit REQUIRED)
 include(${FLAMEGPU_ROOT}/cmake/warnings.cmake)
 # include CMake function to enable setting of gencode flags
 include(${FLAMEGPU_ROOT}/cmake/cuda_arch.cmake)
+# Set binary/library/archive output directories if not already set.
+include(${FLAMEGPU_ROOT}/cmake/set_output_directories.cmake)
 # Set the C++ and CUDA standard to use
 include(${FLAMEGPU_ROOT}/cmake/cxxstd.cmake)
 # Get FLAMEGPU Version information
@@ -39,11 +41,13 @@ endif()
 # Set the output directory where the wheel etc should be placed.
 # CMAKE 3.20 is required for byproducts contianing $<CONFIG> (i.e. multiconfig generators.) Workaround by only setting if supported, or usiing CMAKE_BUILD_TYPE for non-multi-generators.
 # This is required for msvc multi-generator usage. For older cmake and non-mulit-config generators CMAKE_BUILD_TYPE can be used instead.
-SET(PYTHON_LIB_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/$<CONFIG>/python)
+SET(PYTHON_LIB_OUTPUT_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/python)
 SET(PYTHON_LIB_OUTPUT_DIRECTORY_BYPRODUCTS TRUE)
 if(${CMAKE_VERSION} VERSION_LESS "3.20")
   if(NOT ${GENERATOR_IS_MULTI_CONFIG})
-    SET(PYTHON_LIB_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/${CMAKE_BUILD_TYPE}/python)
+    string(REPLACE "$<CONFIG>" "${CMAKE_BUILD_TYPE}" PYTHON_LIB_OUTPUT_DIRECTORY "${PYTHON_LIB_OUTPUT_DIRECTORY}")
+    message("PYTHON_LIB_OUTPUT_DIRECTORY ${PYTHON_LIB_OUTPUT_DIRECTORY}")
+    # SET(PYTHON_LIB_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/${CMAKE_BUILD_TYPE}/python)
   else()
     SET(PYTHON_LIB_OUTPUT_DIRECTORY_BYPRODUCTS FALSE)
   endif()

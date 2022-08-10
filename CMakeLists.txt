@@ -123,6 +123,9 @@ endif()
 # Control target CUDA_ARCH to compile for
 SET(CUDA_ARCH "${CUDA_ARCH}" CACHE STRING "List of CUDA Architectures to target. E.g. 61;70" FORCE)
 
+# Set the lib and bin dirs early, so they do not need re-setting
+include(cmake/set_output_directories.cmake)
+
 # Define a function to add a lint target.
 find_file(CPPLINT NAMES cpplint cpplint.exe)
 if(CPPLINT)
