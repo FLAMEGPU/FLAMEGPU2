@@ -15,6 +15,11 @@ if(POLICY CMP0086)
   cmake_policy(SET CMP0086 NEW)
 endif()
 
+# As the URL method is used for download, set the policy if available
+if(POLICY CMP0135)
+  cmake_policy(SET CMP0135 NEW)
+endif()
+
 # Find Python3, optionally an exact version for windows CI, or use in manylinux
 if(PYTHON3_EXACT_VERSION)
     set(PYTHON3_EXACT_VERSION_ARG ${PYTHON3_EXACT_VERSION} EXACT)
