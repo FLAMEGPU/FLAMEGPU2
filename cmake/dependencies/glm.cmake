@@ -2,6 +2,11 @@
 # glm #
 #######
 
+# As the URL method is used for download, set the policy if available
+if(POLICY CMP0135)
+  cmake_policy(SET CMP0135 NEW)
+endif()
+
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/modules/ ${CMAKE_MODULE_PATH})
 include(FetchContent)
 
