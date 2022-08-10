@@ -65,7 +65,7 @@ class MessageSpatial2D {
         /**
          * max-lowerBound
          */
-        float environmentWidth[3];
+        float environmentWidth[2];
     };
 };
 

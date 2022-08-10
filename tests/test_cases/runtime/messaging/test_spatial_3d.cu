@@ -14,7 +14,7 @@ namespace flamegpu {
 namespace test_message_spatial3d {
 
 FLAMEGPU_AGENT_FUNCTION(out_mandatory3D, MessageNone, MessageSpatial3D) {
-    FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
+    FLAMEGPU->message_out.setVariable<flamegpu::id_t>("id", FLAMEGPU->getID());
     FLAMEGPU->message_out.setLocation(
         FLAMEGPU->getVariable<float>("x"),
         FLAMEGPU->getVariable<float>("y"),
@@ -23,7 +23,7 @@ FLAMEGPU_AGENT_FUNCTION(out_mandatory3D, MessageNone, MessageSpatial3D) {
 }
 FLAMEGPU_AGENT_FUNCTION(out_optional3D, MessageNone, MessageSpatial3D) {
     if (FLAMEGPU->getVariable<int>("do_output")) {
-        FLAMEGPU->message_out.setVariable<int>("id", FLAMEGPU->getVariable<int>("id"));
+        FLAMEGPU->message_out.setVariable<flamegpu::id_t>("id", FLAMEGPU->getID());
         FLAMEGPU->message_out.setLocation(
             FLAMEGPU->getVariable<float>("x"),
             FLAMEGPU->getVariable<float>("y"),
@@ -79,11 +79,10 @@ TEST(Spatial3DMessageTest, Mandatory) {
         message.setMax(5, 5, 5);
         message.setRadius(1);
         // 5x5x5 bins, total 125
-        message.newVariable<int>("id");  // unused by current test
+        message.newVariable<flamegpu::id_t>("id");  // unused by current test
     }
     {   // Circle agent
         AgentDescription &agent = model.newAgent("agent");
-        agent.newVariable<int>("id");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
@@ -112,7 +111,6 @@ TEST(Spatial3DMessageTest, Mandatory) {
         std::uniform_real_distribution<float> dist(0.0f, 5.0f);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             AgentVector::Agent instance = population[i];
-            instance.setVariable<int>("id", i);
             float pos[3] = { dist(rng), dist(rng), dist(rng) };
             instance.setVariable<float>("x", pos[0]);
             instance.setVariable<float>("y", pos[1]);
@@ -221,11 +219,10 @@ TEST(Spatial3DMessageTest, Optional) {
         message.setMax(5, 5, 5);
         message.setRadius(1);
         // 5x5x5 bins, total 125
-        message.newVariable<int>("id");  // unused by current test
+        message.newVariable<flamegpu::id_t>("id");  // unused by current test
     }
     {   // Circle agent
         AgentDescription &agent = model.newAgent("agent");
-        agent.newVariable<int>("id");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
@@ -257,7 +254,6 @@ TEST(Spatial3DMessageTest, Optional) {
         std::uniform_real_distribution<float> dist(0.0f, 5.0f);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             AgentVector::Agent instance = population[i];
-            instance.setVariable<int>("id", i);
             float pos[3] = { dist(rng), dist(rng), dist(rng) };
             int do_output = dist(rng) < 4 ? 1 : 0;  // 80% chance of output  // NEW!
             instance.setVariable<float>("x", pos[0]);
@@ -372,11 +368,10 @@ TEST(Spatial3DMessageTest, OptionalNone) {
         message.setMax(5, 5, 5);
         message.setRadius(1);
         // 5x5x5 bins, total 125
-        message.newVariable<int>("id");  // unused by current test
+        message.newVariable<flamegpu::id_t>("id");  // unused by current test
     }
     {   // Circle agent
         AgentDescription &agent = model.newAgent("agent");
-        agent.newVariable<int>("id");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
@@ -408,7 +403,6 @@ TEST(Spatial3DMessageTest, OptionalNone) {
         std::uniform_real_distribution<float> dist(0.0f, 5.0f);
         for (unsigned int i = 0; i < AGENT_COUNT; i++) {
             AgentVector::Agent instance = population[i];
-            instance.setVariable<int>("id", i);
             float pos[3] = { dist(rng), dist(rng), dist(rng) };
             int do_output = dist(rng) < 4 ? 1 : 0;  // 80% chance of output  // NEW!
             instance.setVariable<float>("x", pos[0]);
@@ -518,7 +512,7 @@ TEST(Spatial3DMessageTest, ReadEmpty) {
         message.setMin(-3, -3, -3);
         message.setMax(3, 3, 3);
         message.setRadius(2);
-        message.newVariable<int>("id");  // unused by current test
+        message.newVariable<flamegpu::id_t>("id");  // unused by current test
     }
     {   // Circle agent
         AgentDescription &agent = model.newAgent("agent");
@@ -858,5 +852,133 @@ TEST(Spatial3DMessageTest, DISABLED_ArrayVariable_glm) { }
 TEST(RTCSpatial3DMessageTest, DISABLED_ArrayVariable_glm) { }
 #endif
 
+FLAMEGPU_AGENT_FUNCTION(inWrapped3D, MessageSpatial3D, MessageNone) {
+    const float x1 = FLAMEGPU->getVariable<float>("x");
+    const float y1 = FLAMEGPU->getVariable<float>("y");
+    const float z1 = FLAMEGPU->getVariable<float>("z");
+    const flamegpu::id_t ID = FLAMEGPU->getID();
+    unsigned int count = 0;
+    unsigned int badCount = 0;
+    float xSum = 0;
+    float ySum = 0;
+    float zSum = 0;
+    // Count how many messages we recieved (including our own)
+    // This is all those which fall within the 3x3x3 Moore neighbourhood
+    // Not our search radius
+    for (const auto& message : FLAMEGPU->message_in.wrap(x1, y1, z1)) {
+        const float x2 = message.getVirtualX(x1);
+        const float y2 = message.getVirtualY(y1);
+        const float z2 = message.getVirtualZ(z1);
+        float x21 = x2 - x1;
+        float y21 = y2 - y1;
+        float z21 = z2 - z1;
+        const float distance = sqrt(x21 * x21 + y21 * y21 + z21 * z21);
+        if (distance > FLAMEGPU->message_in.radius() ||
+            (abs(x21) != 2.0f && x2 != x1) ||
+            (abs(y21) != 2.0f && y2 != y1) ||
+            (abs(z21) != 2.0f && z2 != z1)
+        ) {
+            badCount++;
+        } else {
+            count++;
+            if (message.getVariable<flamegpu::id_t>("id") != ID) {
+                xSum += (x21);
+                ySum += (y21);
+                zSum += (z21);
+            }
+        }
+    }
+    FLAMEGPU->setVariable<unsigned int>("count", count);
+    FLAMEGPU->setVariable<unsigned int>("badCount", badCount);
+    FLAMEGPU->setVariable<float>("result_x", xSum);
+    FLAMEGPU->setVariable<float>("result_y", ySum);
+    FLAMEGPU->setVariable<float>("result_z", zSum);
+    return ALIVE;
+}
+void wrapped_3d_test(const float x_offset, const float y_offset, const float z_offset, const float out_of_bounds = 0) {
+    std::unordered_map<int, unsigned int> bin_counts;
+    // Construct model
+    ModelDescription model("Spatial2DMessageTestModel");
+    {   // Location message
+        MessageSpatial3D::Description& message = model.newMessage<MessageSpatial3D>("location");
+        message.setMin(0 + x_offset, 0 + y_offset, 0 + z_offset);
+        message.setMax(70 + x_offset, 70 + y_offset, 70 + z_offset);
+        message.setRadius(3.5);  // With a grid of agents spaced 2 units apart, this configuration should give each agent 8 neighbours (assuming my basic maths guessing works out)
+        message.newVariable<flamegpu::id_t>("id");  // unused by current test
+    }
+    {   // Circle agent
+        AgentDescription& agent = model.newAgent("agent");
+        agent.newVariable<float>("x");
+        agent.newVariable<float>("y");
+        agent.newVariable<float>("z");
+        agent.newVariable<float>("result_x");  // Sum all virtual X values, and this should equal 0 (or very close)
+        agent.newVariable<float>("result_y");  // Sum all virtual X values, and this should equal 0 (or very close)
+        agent.newVariable<float>("result_z");  // Sum all virtual X values, and this should equal 0 (or very close)
+        agent.newVariable<unsigned int>("count");  // Count how many messages we receive
+        agent.newVariable<unsigned int>("badCount");  // Count how many messages we receive that have bad data
+        agent.newFunction("out", out_mandatory3D).setMessageOutput("location");
+        agent.newFunction("in", inWrapped3D).setMessageInput("location");
+    }
+    {   // Layer #1
+        LayerDescription& layer = model.newLayer();
+        layer.addAgentFunction(out_mandatory3D);
+    }
+    {   // Layer #2
+        LayerDescription& layer = model.newLayer();
+        layer.addAgentFunction(inWrapped3D);
+    }
+    CUDASimulation cudaSimulation(model);
+
+    AgentVector population(model.Agent("agent"), 35u * 35u * 35u);  // This must fit the env dims/radius set out above
+    // Initialise agents (TODO)
+    {
+        // Currently population has not been init, so generate an agent population on the fly
+        for (unsigned int i = 0; i < 35u; i++) {
+            for (unsigned int j = 0; j < 35u; j++) {
+                for (unsigned int k = 0; k < 35u; k++) {
+                    unsigned int w =  (i * 35u+ j) * 35u + k;
+                    AgentVector::Agent instance = population[w];
+                    instance.setVariable<float>("x", i * 2.0f + x_offset + out_of_bounds);
+                    instance.setVariable<float>("y", j * 2.0f + y_offset);
+                    instance.setVariable<float>("z", k * 2.0f + z_offset);
+                }
+            }
+        }
+        cudaSimulation.setPopulationData(population);
+    }
+
+    // Execute a single step of the model
+    cudaSimulation.step();
+
+    // Recover the results and check they match what was expected
+    cudaSimulation.getPopulationData(population);
+    // Validate each agent has same result
+    const unsigned int badCount = population[0].getVariable<unsigned int>("badCount");
+    for (AgentVector::Agent ai : population) {
+        EXPECT_EQ(0.0f, ai.getVariable<float>("result_x"));
+        EXPECT_EQ(0.0f, ai.getVariable<float>("result_y"));
+        EXPECT_EQ(0.0f, ai.getVariable<float>("result_z"));
+        EXPECT_LE(ai.getVariable<unsigned int>("badCount"), 189u);
+        EXPECT_EQ(27u, ai.getVariable<unsigned int>("count"));
+    }
+}
+TEST(Spatial3DMessageTest, Wrapped) {
+    wrapped_3d_test(0.0f, 0.0f, 0.0f);
+}
+// Test that it doesn't fall over if the environment min is not 0, with a few configurations
+TEST(Spatial3DMessageTest, Wrapped2) {
+    wrapped_3d_test(141.0f, -540.0f, 200.0f);
+}
+TEST(Spatial3DMessageTest, Wrapped3) {
+    wrapped_3d_test(-1401.5f, 5640.3f, -2008.8f);
+}
+#if !defined(SEATBELTS) || SEATBELTS
+// Test that SEATBELTS catches out of bounds messages
+TEST(Spatial3DMessageTest, Wrapped_OutOfBounds) {
+    EXPECT_THROW(wrapped_3d_test(141.0f, -540.0f, 0.0f, 200.0f), exception::DeviceError);
+}
+#else
+TEST(Spatial3DMessageTest, DISABLED_Wrapped_OutOfBounds) { }
+#endif
 }  // namespace test_message_spatial3d
 }  // namespace flamegpu
