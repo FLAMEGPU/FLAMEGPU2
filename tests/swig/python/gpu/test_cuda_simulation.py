@@ -50,14 +50,32 @@ class TestSimulation(TestCase):
             c.initialise(argv)
         assert e.value.type() == "UnsupportedFileType"
         assert c.SimulationConfig().input_file == argv[2]
-        # Blank init resets value to default
-        argv = []
-        c.initialise(argv)
-        assert c.SimulationConfig().input_file == ""
+        # Blank init does not reset value to default
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::UnsupportedFileType exception
+            c.initialise([])
+        assert e.value.type() == "UnsupportedFileType"
+        # assert c.SimulationConfig().input_file == ""
+        assert c.SimulationConfig().input_file == argv[2]
 
-    @pytest.mark.skip(reason="no way of intercepting exit called with c/c++ code from python")
     def test_argparse_inputfile_short(self):
         m = pyflamegpu.ModelDescription("test_argparse_inputfile_short")
+        c = pyflamegpu.CUDASimulation(m)
+        argv = [ "prog.exe", "-i", "test" ]
+        assert c.SimulationConfig().input_file == ""
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::UnsupportedFileType exception
+            c.initialise(argv)
+        assert e.value.type() == "UnsupportedFileType"
+        assert c.SimulationConfig().input_file == argv[2]
+        # Blank init does not reset value to default
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::UnsupportedFileType exception
+            c.initialise([])
+        assert e.value.type() == "UnsupportedFileType"
+        # assert c.SimulationConfig().input_file == ""
+        assert c.SimulationConfig().input_file == argv[2]
+
+    @pytest.mark.skip(reason="no way of intercepting exit called with c/c++ code from python")
+    def test_argparse_inputfile_short_exit(self):
+        m = pyflamegpu.ModelDescription("test_argparse_inputfile_short_exit")
         c = pyflamegpu.CUDASimulation(m)
         argv = [ "prog.exe", "-i", "I_DO_NOT_EXIST.xml" ]
         assert c.SimulationConfig().input_file == ""
@@ -77,10 +95,9 @@ class TestSimulation(TestCase):
         assert c.SimulationConfig().steps == 1
         c.initialise(argv)
         assert c.SimulationConfig().steps == 12
-        # Blank init resets value to default
-        argv = []
-        c.initialise(argv)
-        assert c.SimulationConfig().steps == 1
+        # Blank does not reset value to default
+        c.initialise([])
+        assert c.SimulationConfig().steps == 12
         
     def test_argparse_steps_short(self):
         m = pyflamegpu.ModelDescription("test_argparse_steps_short")
@@ -89,10 +106,9 @@ class TestSimulation(TestCase):
         assert c.SimulationConfig().steps == 1
         c.initialise(argv)
         assert c.SimulationConfig().steps == 12
-        # Blank init resets value to default
-        argv = []
-        c.initialise(argv)
-        assert c.SimulationConfig().steps == 1
+        # Blank does not reset value to default
+        c.initialise([])
+        assert c.SimulationConfig().steps == 12
         
     def test_argparse_randomseed_long(self):
         m = pyflamegpu.ModelDescription("test_argparse_randomseed_long")
@@ -101,10 +117,9 @@ class TestSimulation(TestCase):
         assert c.SimulationConfig().random_seed != 12
         c.initialise(argv)
         assert c.SimulationConfig().random_seed == 12
-        # Blank init resets value to default
-        argv = []
-        c.initialise(argv)
-        assert c.SimulationConfig().random_seed != 12
+        # Blank does not reset value to default
+        c.initialise([])
+        assert c.SimulationConfig().random_seed == 12
         
     def test_argparse_randomseed_short(self):
         m = pyflamegpu.ModelDescription("test_argparse_randomseed_short")
@@ -113,10 +128,9 @@ class TestSimulation(TestCase):
         assert c.SimulationConfig().random_seed != 12
         c.initialise(argv)
         assert c.SimulationConfig().random_seed == 12
-        # Blank init resets value to default
-        argv = []
-        c.initialise(argv)
-        assert c.SimulationConfig().random_seed != 12
+        # Blank does not reset value to default
+        c.initialise([])
+        assert c.SimulationConfig().random_seed == 12
         
     def test_argparse_device_long(self):
         m = pyflamegpu.ModelDescription("test_argparse_device_long")
@@ -129,10 +143,12 @@ class TestSimulation(TestCase):
             c.initialise(argv)
         assert e.value.type() == "InvalidCUDAdevice"
         assert c.CUDAConfig().device_id == 1200
-        # Blank init resets value to default
+        # Blank init does not reset value to default
         argv = []
-        c.initialise(argv)
-        assert c.CUDAConfig().device_id == 0
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidCUDAdevice exception 
+            c.initialise(argv)
+            assert e.value.type() == "InvalidCUDAdevice"
+        assert c.CUDAConfig().device_id == 1200
         
     def test_argparse_device_short(self):
         m = pyflamegpu.ModelDescription("test_argparse_device_short")
@@ -145,10 +161,12 @@ class TestSimulation(TestCase):
             c.initialise(argv)
         assert e.value.type() == "InvalidCUDAdevice"
         assert c.CUDAConfig().device_id == 1200
-        # Blank init resets value to default
+        # Blank init does not reset value to default
         argv = []
-        c.initialise(argv)
-        assert c.CUDAConfig().device_id == 0
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidCUDAdevice exception 
+            c.initialise(argv)
+            assert e.value.type() == "InvalidCUDAdevice"
+        assert c.CUDAConfig().device_id == 1200
 
 
     SetGetFn = """
