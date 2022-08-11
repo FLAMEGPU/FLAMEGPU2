@@ -110,7 +110,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
     // Init runners, devices * concurrent runs
     std::atomic<unsigned int> err_ct = {0};
     std::atomic<unsigned int> next_run = {0};
-    const size_t TOTAL_RUNNERS = devices.size() * config.concurrent_runs;
+    const unsigned int TOTAL_RUNNERS = static_cast<unsigned int>(devices.size()) * config.concurrent_runs;
     SimRunner *runners = static_cast<SimRunner *>(malloc(sizeof(SimRunner) * TOTAL_RUNNERS));
 
     // Log Time (We can't use CUDA events here, due to device resets)
@@ -127,10 +127,6 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
 
     // Init with placement new
     {
-        if (!config.quiet) {
-            printf("\rCUDAEnsemble progress: %u/%u", 0, static_cast<unsigned int>(plans.size()));
-            fflush(stdout);
-        }
         unsigned int i = 0;
         for (auto &d : devices) {
             for (unsigned int j = 0; j < config.concurrent_runs; ++j) {
@@ -138,7 +134,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
                     step_log_config, exit_log_config,
                     d, j,
                     !config.quiet, config.error_level == EnsembleConfig::Fast,
-                    run_logs, log_export_queue, log_export_queue_mutex, log_export_queue_cdn, fast_err_detail);
+                    run_logs, log_export_queue, log_export_queue_mutex, log_export_queue_cdn, fast_err_detail, TOTAL_RUNNERS);
             }
         }
     }

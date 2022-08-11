@@ -49,6 +49,7 @@ class SimRunner {
      * @param log_export_queue_mutex This mutex must be locked to access log_export_queue
      * @param log_export_queue_cdn The condition is notified every time a log has been added to the queue
      * @param fast_err_detail Structure to store error details on fast failure for main thread rethrow
+     * @param _total_runners Total number of runners executing
      */
     SimRunner(const std::shared_ptr<const ModelData> _model,
         std::atomic<unsigned int> &_err_ct,
@@ -64,7 +65,8 @@ class SimRunner {
         std::queue<unsigned int> &log_export_queue,
         std::mutex &log_export_queue_mutex,
         std::condition_variable &log_export_queue_cdn,
-        ErrorDetail &fast_err_detail);
+        ErrorDetail &fast_err_detail,
+        unsigned int _total_runners);
     /**
      * Each sim runner takes it's own clone of model description hierarchy, so it can manipulate environment without conflict
      */
@@ -81,6 +83,11 @@ class SimRunner {
      * Per instance unique runner id
      */
     const unsigned int runner_id;
+    /**
+     * Total number of runners executing
+     * This is used to calculate the progress on job completion
+     */
+    const unsigned int total_runners;
     /**
      * Flag for whether to print progress
      */
