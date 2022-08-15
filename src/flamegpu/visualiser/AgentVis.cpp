@@ -15,13 +15,16 @@ AgentVis::AgentVis(CUDAAgent &_agent, const std::shared_ptr<AutoPalette>& autopa
     : owned_auto_palette(nullptr)
     , agent(_agent)
     , agentData(_agent.getAgentDescription()) {
-    if (_agent.getAgentDescription().variables.find("x") != _agent.getAgentDescription().variables.end()) {
+    if (_agent.getAgentDescription().variables.find("x") != _agent.getAgentDescription().variables.end() &&
+        _agent.getAgentDescription().variables.at("x").type == std::type_index(typeid(float))) {
         setXVariable("x");
     }
-    if (_agent.getAgentDescription().variables.find("y") != _agent.getAgentDescription().variables.end()) {
+    if (_agent.getAgentDescription().variables.find("y") != _agent.getAgentDescription().variables.end() &&
+        _agent.getAgentDescription().variables.at("y").type == std::type_index(typeid(float))) {
         setYVariable("y");
     }
-    if (_agent.getAgentDescription().variables.find("z") != _agent.getAgentDescription().variables.end()) {
+    if (_agent.getAgentDescription().variables.find("z") != _agent.getAgentDescription().variables.end() &&
+        _agent.getAgentDescription().variables.at("z").type == std::type_index(typeid(float))) {
         setZVariable("z");
     }
     if (autopalette) {
