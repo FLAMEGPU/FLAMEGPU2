@@ -724,8 +724,10 @@ void AgentVis::setModel(const std::string &modelPath, const std::string &texture
 }
 void AgentVis::setModel(const Stock::Models::Model &model) {
     AgentStateConfig::setString(&defaultConfig.model_path, model.modelPath);
-    if (model.texturePath && model.texturePath[0] != '\0')
+    if (model.texturePath && model.texturePath[0] != '\0') {
         AgentStateConfig::setString(&defaultConfig.model_texture, model.texturePath);
+        clearColor();
+    }
     // Apply to all states which haven't had the setting overridden
     for (auto &s : states) {
         if (!s.second.configFlags.model_path) {
@@ -734,6 +736,41 @@ void AgentVis::setModel(const Stock::Models::Model &model) {
                 AgentStateConfig::setString(&s.second.config.model_texture, model.texturePath);
         }
     }
+}
+void AgentVis::setKeyFrameModel(const std::string& modelPathA, const std::string& modelPathB, const std::string& lerpVariableName, const std::string& texturePath) {
+    auto it = agentData.variables.find(lerpVariableName);
+    if (it == agentData.variables.end()) {
+        THROW exception::InvalidAgentVar("Variable '%s' was not found within agent '%s', "
+            "in AgentVis::setKeyFrameModel()\n",
+            lerpVariableName.c_str(), agentData.name.c_str());
+    } else if (it->second.type != std::type_index(typeid(float)) || it->second.elements != 1) {
+        THROW exception::InvalidAgentVar("Visualisation animation lerp variable must be type float[1], agent '%s' variable '%s' is type %s[%u], "
+            "in AgentVis::setKeyFrameModel()\n",
+            agentData.name.c_str(), lerpVariableName.c_str(), it->second.type.name(), it->second.elements);
+    }
+    AgentStateConfig::setString(&defaultConfig.model_path, modelPathA);
+    AgentStateConfig::setString(&defaultConfig.model_pathB, modelPathB);
+    if (!texturePath.empty()) {
+        AgentStateConfig::setString(&defaultConfig.model_texture, texturePath);
+        clearColor();
+    }
+    core_tex_buffers.erase(TexBufferConfig::AnimationLerp);
+    core_tex_buffers[TexBufferConfig::AnimationLerp].agentVariableName = lerpVariableName;
+    // Apply to all states which haven't had the setting overridden
+    for (auto& s : states) {
+        if (!s.second.configFlags.model_path) {
+            AgentStateConfig::setString(&s.second.config.model_path, modelPathA);
+            AgentStateConfig::setString(&s.second.config.model_pathB, modelPathB);
+            if (!texturePath.empty()) {
+                AgentStateConfig::setString(&s.second.config.model_texture, texturePath);
+                // Clear colour in state
+                s.second.config.color_shader_src = "";
+            }
+        }
+    }
+}
+void AgentVis::setKeyFrameModel(const Stock::Models::KeyFrameModel& model, const std::string& lerpVariableName) {
+    setKeyFrameModel(model.modelPathA, model.modelPathB, lerpVariableName, model.texturePath ? model.texturePath : "");
 }
 void AgentVis::setModelScale(float xLen, float yLen, float zLen) {
     if (xLen <= 0 || yLen <= 0 || zLen <= 0) {

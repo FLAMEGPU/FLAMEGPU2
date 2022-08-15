@@ -489,6 +489,22 @@ class AgentVis {
      */
     void setModel(const Stock::Models::Model &model);
     /**
+     * Use a keyframe animated model from file
+     * @param modelPathA The path to the model's first file (must be .obj)
+     * @param modelPathB The path to the model's second file (must be .obj, have the same number of vertices/polygons as the first file)
+     * @param lerpVariableName Name of the agent variable used for controlling linear interpolation between the two frames. This must be a `float` type variable with a value in the inclusive-inclusive range [0, 1]
+     * @param texturePath Optional path to the texture used by the two models
+     * @see setModel(const std::string &, const std::string &) This version can be used to provide agents a static model
+     */
+    void setKeyFrameModel(const std::string& modelPathA, const std::string& modelPathB, const std::string& lerpVariableName, const std::string& texturePath = "");
+    /**
+     * Use a stock keyframe animated model
+     * @param model Model from the libraries internal resources
+     * @param lerpVariableName Name of the agent variable used for controlling linear interpolation between the two frames. This must be a `float` type variable with a value in the inclusive-inclusive range [0, 1]
+     * @see setModel(const Stock::Models::Model &) This version can be used to provide agents a static model
+     */
+    void setKeyFrameModel(const Stock::Models::KeyFrameModel& model, const std::string& lerpVariableName);
+    /**
      * Scale each dimension of the model to the corresponding world scales
      * @param xLen World scale of the model's on the x axis
      * @param yLen World scale of the model's on the y axis

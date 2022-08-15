@@ -26,6 +26,22 @@ void AgentStateVis::setModel(const Stock::Models::Model &model) {
     AgentStateConfig::setString(&config.model_path, model.modelPath);
     configFlags.model_path = 1;
 }
+void AgentStateVis::setKeyFrameModel(const std::string& modelPathA, const std::string& modelPathB, const std::string& texturePath) {
+    if (parent.core_tex_buffers.find(TexBufferConfig::AnimationLerp) == parent.core_tex_buffers.end()) {
+        THROW exception::InvalidOperation("Unable to use AgentStateVis::setKeyFrameModel(), AgentVis::setKeyFrameModel()"
+            " must be called first to specify the lerp variable for all agent states.\n");
+    }
+    AgentStateConfig::setString(&config.model_path, modelPathA);
+    AgentStateConfig::setString(&config.model_pathB, modelPathB);
+    if (!texturePath.empty()) {
+        AgentStateConfig::setString(&config.model_texture, texturePath);
+        clearColor();
+    }
+    configFlags.model_path = 1;
+}
+void AgentStateVis::setKeyFrameModel(const Stock::Models::KeyFrameModel& model) {
+    setKeyFrameModel(model.modelPathA, model.modelPathB, model.texturePath ? model.texturePath : "");
+}
 void AgentStateVis::setModelScale(float xLen, float yLen, float zLen) {
     if (xLen <= 0 || yLen <= 0 || zLen <= 0) {
         THROW exception::InvalidArgument("AgentStateVis::setModelScale(): Invalid argument, lengths must all be positive.\n");

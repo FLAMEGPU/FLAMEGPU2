@@ -48,6 +48,22 @@ class AgentStateVis {
      */
     void setModel(const Stock::Models::Model &model);
     /**
+     * Use a keyframe animated model from file
+     * @param modelPathA The path to the model's first file (must be .obj)
+     * @param modelPathB The path to the model's second file (must be .obj, have the same number of vertices/polygons as the first file)
+     * @param texturePath Optional path to the texture used by the two models
+     * @see setModel(const std::string &, const std::string &) This version can be used to provide agents a static model
+     * @note Lerp variable must be set first via AgentVis::setKeyFrameModel() otherwise an exception will be thrown.
+     */
+    void setKeyFrameModel(const std::string& modelPathA, const std::string& modelPathB, const std::string& texturePath = "");
+    /**
+     * Use a stock keyframe animated model
+     * @param model Model from the libraries internal resources
+     * @see setModel(const Stock::Models::Model &) This version can be used to provide agents a static model
+     * @note Lerp variable must be set first via AgentVis::setKeyFrameModel() otherwise an exception will be thrown.
+     */
+    void setKeyFrameModel(const Stock::Models::KeyFrameModel& model);
+    /**
      * Scale each dimension of the model to the corresponding world scales
      * @param xLen World scale of the model's on the x axis
      * @param yLen World scale of the model's on the y axis
