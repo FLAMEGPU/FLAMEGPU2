@@ -271,6 +271,8 @@ int XMLStateReader::parse() {
           it.second->reserve(f->second);
     }
 
+    bool hasWarnedElements = false;
+    bool hasWarnedMissingVar = false;
     // Read in agent data
     for (pElement = pRoot->FirstChildElement("xagent"); pElement != nullptr; pElement = pElement->NextSiblingElement("xagent")) {
         // Find agent name
@@ -289,8 +291,6 @@ int XMLStateReader::parse() {
         // Create instance to store variable data in
         agentVec->push_back();
         AgentVector::Agent instance = agentVec->back();
-        bool hasWarnedElements = false;
-        bool hasWarnedMissingVar = false;
         // Iterate agent variables
         for (auto iter = agentVariables.begin(); iter != agentVariables.end(); ++iter) {
             const std::string variable_name = iter->first;
