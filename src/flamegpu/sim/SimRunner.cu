@@ -28,11 +28,13 @@ SimRunner::SimRunner(const std::shared_ptr<const ModelData> _model,
     std::queue<unsigned int> &_log_export_queue,
     std::mutex &_log_export_queue_mutex,
     std::condition_variable &_log_export_queue_cdn,
-    ErrorDetail &_fast_err_detail)
+    ErrorDetail &_fast_err_detail,
+    const unsigned int _total_runners)
       : model(_model->clone())
       , run_id(0)
       , device_id(_device_id)
       , runner_id(_runner_id)
+      , total_runners(_total_runners)
       , verbose(_verbose)
       , fail_fast(_fail_fast)
       , err_ct(_err_ct)
@@ -103,7 +105,8 @@ void SimRunner::start() {
             log_export_queue_cdn.notify_one();
             // Print progress to console
             if (verbose) {
-                fprintf(stdout, "\rCUDAEnsemble progress: %u/%u", run_id + 1, static_cast<unsigned int>(plans.size()));
+                const int progress = static_cast<int>(next_run.load()) - static_cast<int>(total_runners) + 1;
+                fprintf(stdout, "\rCUDAEnsemble progress: %d/%u", progress < 1 ? 1 : progress, static_cast<unsigned int>(plans.size()));
                 fflush(stdout);
             }
         } catch(std::exception &e) {
