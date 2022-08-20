@@ -73,7 +73,7 @@ const char *LAYER_NAME = "Layer1";
 TEST(DependencyGraphTest, ValidateEmptyGraph) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription &a = _m.newAgent(AGENT_NAME);
-    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    a.newFunction(FUNCTION_NAME1, agent_fn1);
     ModelDescription model(MODEL_NAME);
     const DependencyGraph& graph = model.getDependencyGraph();
     EXPECT_THROW(graph.validateDependencyGraph(), exception::InvalidDependencyGraph);
@@ -149,7 +149,6 @@ TEST(DependencyGraphTest, ConstructLayersSingleChain) {
     AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
     f2.dependsOn(f);
     f3.dependsOn(f2);
-    const DependencyGraph& graph = _m.getDependencyGraph();
     _m.addExecutionRoot(f);
     _m.generateLayers();
 }
@@ -162,7 +161,6 @@ TEST(DependencyGraphTest, ConstructLayersRootTwoChildrenConflict) {
     AgentFunctionDescription &f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
     f2.dependsOn(f);
     f3.dependsOn(f);
-    const DependencyGraph& graph = _m.getDependencyGraph();
     _m.addExecutionRoot(f);
     _m.generateLayers();
 }
@@ -173,7 +171,6 @@ TEST(DependencyGraphTest, AddHostFunctionAsDependent) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     HostFunctionDescription hf(HOST_FN_NAME1, host_fn1);
     hf.dependsOn(f);
-    const DependencyGraph& graph = _m.getDependencyGraph();
     _m.addExecutionRoot(f);
     _m.generateLayers();
 }
@@ -184,7 +181,6 @@ TEST(DependencyGraphTest, AddHostFunctionAsDependency) {
     AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     HostFunctionDescription hf(HOST_FN_NAME1, host_fn1);
     f.dependsOn(hf);
-    const DependencyGraph& graph = _m.getDependencyGraph();
     _m.addExecutionRoot(hf);
     _m.generateLayers();
 }
@@ -200,7 +196,6 @@ TEST(DependencyGraphTest, AddSubmodelAsDependent) {
     SubModelDescription& _smd = _m.newSubModel("sub", _sm);
 
     _smd.dependsOn(f);
-    const DependencyGraph& graph = _m.getDependencyGraph();
     _m.addExecutionRoot(f);
     _m.generateLayers();
 }
@@ -216,7 +211,6 @@ TEST(DependencyGraphTest, AddSubmodelAsDependency) {
     SubModelDescription& _smd = _m.newSubModel("sub", _sm);
 
     f.dependsOn(_smd);
-    const DependencyGraph& graph = _m.getDependencyGraph();
     _m.addExecutionRoot(_smd);
     _m.generateLayers();
 }
