@@ -101,6 +101,13 @@ using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, 
 %template(function ## Double) classfunction<double>;
 %enddef
 
+// Array version, passing default 2nd template arg 0
+%define TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_FLOATS(function, classfunction) 
+// float and double
+%template(function ## Float) classfunction<float, 0>;
+%template(function ## Double) classfunction<double, 0>;
+%enddef
+
 /**
  * TEMPLATE_VARIABLE_INSTANTIATE macro
  * Expands for int types
@@ -117,6 +124,21 @@ using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, 
 // default int types
 %template(function ## Int) classfunction<int>;
 %template(function ## UInt) classfunction<unsigned int>;
+%enddef
+
+// Array version, passing default 2nd template arg 0
+%define TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_INTS(function, classfunction) 
+// signed ints
+%template(function ## Int16) classfunction<int16_t, 0>;
+%template(function ## Int32) classfunction<int32_t, 0>;
+%template(function ## Int64) classfunction<int64_t, 0>;
+// unsigned ints
+%template(function ## UInt16) classfunction<uint16_t, 0>;
+%template(function ## UInt32) classfunction<uint32_t, 0>;
+%template(function ## UInt64) classfunction<uint64_t, 0>;
+// default int types
+%template(function ## Int) classfunction<int, 0>;
+%template(function ## UInt) classfunction<unsigned int, 0>;
 %enddef
 
 /**
@@ -139,6 +161,19 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(function, classfunction)
 //%template(function ## Bool) classfunction<bool>;
 %enddef
 
+// Array version, passing default 2nd template arg 0
+%define TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function, classfunction) 
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_FLOATS(function, classfunction)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_INTS(function, classfunction)
+// char types
+%template(function ## Int8) classfunction<int8_t, 0>;
+%template(function ## UInt8) classfunction<uint8_t, 0>;
+%template(function ## Char) classfunction<char, 0>;
+%template(function ## UChar) classfunction<unsigned char, 0>;
+// bool type (not supported causes error)
+//%template(function ## Bool) classfunction<bool, 0>;
+%enddef
+
 /**
  * Special case of the macro for message types
  * This also maps ID to id_t, this should be synonymous with UInt/unsigned int
@@ -146,6 +181,12 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(function, classfunction)
 %define TEMPLATE_VARIABLE_INSTANTIATE_ID(function, classfunction)
 TEMPLATE_VARIABLE_INSTANTIATE(function, classfunction) 
 %template(function ## ID) classfunction<flamegpu::id_t>;
+%enddef
+
+// Array version, passing default 2nd template arg 0
+%define TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(function, classfunction)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function, classfunction) 
+%template(function ## ID) classfunction<flamegpu::id_t, 0>;
 %enddef
 
 
@@ -891,6 +932,8 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
     %ignore flamegpu::visualiser::Palette::begin;
     %ignore flamegpu::visualiser::Palette::end;
     %ignore flamegpu::visualiser::Palette::colors;  // This is protected, i've no idea why SWIG is trying to wrap it
+    // Mark PanelVis as a class where assignment operator is not supported
+    %feature("valuewrapper") flamegpu::visualiser::PanelVis;
     // Rename directives. These go before any %includes
     // -----------------
     // Director features. These go before the %includes.
@@ -904,6 +947,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
     %include "flamegpu/visualiser/AgentStateVis.h"
     %include "flamegpu/visualiser/AgentVis.h"
     %include "flamegpu/visualiser/LineVis.h"
+    %include "flamegpu/visualiser/PanelVis.h"
     %include "flamegpu/visualiser/ModelVis.h"
     %include "flamegpu/visualiser/color/Color.h"
     %include "flamegpu/visualiser/color/ColorFunction.h"
@@ -954,7 +998,17 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
     // Manually create the two DiscretColor templates
     %template(iDiscreteColor) flamegpu::visualiser::DiscreteColor<int32_t>;
     %template(uDiscreteColor) flamegpu::visualiser::DiscreteColor<uint32_t>;
+    TEMPLATE_VARIABLE_INSTANTIATE_ID(newEnvironmentPropertySlider, flamegpu::visualiser::PanelVis::newEnvironmentPropertySlider)
+    TEMPLATE_VARIABLE_INSTANTIATE_ID(newEnvironmentPropertyDrag, flamegpu::visualiser::PanelVis::newEnvironmentPropertyDrag)
+    TEMPLATE_VARIABLE_INSTANTIATE_ID(newEnvironmentPropertyInput, flamegpu::visualiser::PanelVis::newEnvironmentPropertyInput)
+    TEMPLATE_VARIABLE_INSTANTIATE_INTS(newEnvironmentPropertyToggle, flamegpu::visualiser::PanelVis::newEnvironmentPropertyToggle)
+    
+    TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(newEnvironmentPropertySlider, flamegpu::visualiser::PanelVis::newEnvironmentPropertySlider)
+    TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(newEnvironmentPropertyDrag, flamegpu::visualiser::PanelVis::newEnvironmentPropertyDrag)
+    TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(newEnvironmentPropertyInput, flamegpu::visualiser::PanelVis::newEnvironmentPropertyInput)
+    TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_INTS(newEnvironmentPropertyToggle, flamegpu::visualiser::PanelVis::newEnvironmentPropertyToggle)
 
+    
     // Redefine the value to ensure it makes it into the python modules
     #undef VISUALISATION
     #define VISUALISATION true

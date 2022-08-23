@@ -51,6 +51,9 @@ class CUDASimulation : public Simulation {
     friend class HostAgentAPI;
     friend class SimRunner;
     friend class CUDAEnsemble;
+#ifdef VISUALISATION
+    friend class visualiser::ModelVis;
+#endif
     /**
      * Map of a number of CUDA agents by name.
      * The CUDA agents are responsible for allocating and managing all the device memory
