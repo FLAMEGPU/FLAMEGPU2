@@ -65,6 +65,7 @@ void ModelVis::_activate() {
     if ((!visualiser || !visualiser->isRunning()) && !model.getSimulationConfig().console_mode) {
         // Init visualiser
         visualiser = std::make_unique<FLAMEGPU_Visualisation>(modelCfg);  // Window resolution
+        visualiser->setRandomSeed(model.getSimulationConfig().random_seed);
         for (auto &agent : agents) {
             // If x and y aren't set, throw exception
             if (agent.second.core_tex_buffers.find(TexBufferConfig::Position_x) == agent.second.core_tex_buffers.end() &&
@@ -78,10 +79,25 @@ void ModelVis::_activate() {
             }
             agent.second.initBindings(visualiser);
         }
+        env_registered = false;
+        registerEnvProperties();
         visualiser->start();
     }
 }
-
+void ModelVis::registerEnvProperties() {
+    if (model.singletons && !env_registered) {
+        char* const host_env_origin = const_cast<char*>(static_cast<const char*>(model.singletons->environment->getHostBuffer()));
+        for (const auto &panel : modelCfg.panels) {
+            for (const auto &element : panel.second->ui_elements) {
+                if (auto a = dynamic_cast<EnvPropertyElement*>(element.get())) {
+                    auto & prop = model.singletons->environment->getPropertiesMap().at(a->getName());
+                    visualiser->registerEnvironmentProperty(a->getName(), host_env_origin + prop.offset, prop.type, prop.elements, prop.isConst);
+                }
+            }
+        }
+        env_registered = true;
+    }
+}
 void ModelVis::deactivate() {
     if (visualiser && visualiser->isRunning()) {
         visualiser->stop();
@@ -126,7 +142,12 @@ void ModelVis::updateBuffers(const unsigned int &sc) {
         visualiser->releaseMutex();
     }
 }
-
+void ModelVis::updateRandomSeed() {
+    if (visualiser) {
+        // Yolo thread safety, shouldn't matter if random seed is printed wrong for a single frame
+        visualiser->setRandomSeed(model.getSimulationConfig().random_seed);
+    }
+}
 void ModelVis::setWindowTitle(const std::string& title) {
     ModelConfig::setString(&modelCfg.windowTitle, title);
 }
@@ -208,6 +229,14 @@ LineVis ModelVis::newPolylineSketch(float r, float g, float b, float a) {
     auto m = std::make_shared<LineConfig>(LineConfig::Type::Polyline);
     modelCfg.lines.push_back(m);
     return LineVis(m, r, g, b, a);
+}
+PanelVis ModelVis::newUIPanel(const std::string& panel_title) {
+    if (modelCfg.panels.find(panel_title) != modelCfg.panels.end()) {
+        THROW exception::InvalidOperation("Panel with title '%s' already exists.\n", panel_title.c_str());
+    }
+    auto m = std::make_shared<PanelConfig>(panel_title);
+    modelCfg.panels.emplace(panel_title, m);
+    return PanelVis(m, model.getModelDescription().environment);
 }
 
 }  // namespace visualiser

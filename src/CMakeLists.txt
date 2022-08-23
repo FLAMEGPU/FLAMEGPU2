@@ -298,6 +298,7 @@ SET(SRC_INCLUDE_VISUALISER
     ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/AgentStateVis.h
     ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/StaticModelVis.h
     ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/LineVis.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/PanelVis.h
     ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/Color.h
     ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/ColorFunction.h
     ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/DiscreteColor.h
@@ -314,6 +315,7 @@ set(SRC_FLAMEGPU_VISUALISER
     ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/AgentStateVis.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/StaticModelVis.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/LineVis.cpp
+        ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/PanelVis.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/color/DiscreteColor.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/color/StaticColor.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/color/HSVInterpolation.cpp

@@ -12,6 +12,7 @@
 #include "flamegpu/visualiser/AgentVis.h"
 #include "flamegpu/visualiser/StaticModelVis.h"
 #include "flamegpu/visualiser/LineVis.h"
+#include "flamegpu/visualiser/PanelVis.h"
 #include "flamegpu/visualiser/color/AutoPalette.h"
 #include "flamegpu/visualiser/config/ModelConfig.h"
 
@@ -178,6 +179,13 @@ class ModelVis {
      */
     LineVis newPolylineSketch(float r, float g, float b, float a = 1.0f);
     /**
+     * Add a customisable user interface panel to the visualisation
+     *
+     * Each panel can be moved around the screen/minimised with custom elements representing environment properties added
+     * @param panel_title The string that will be visible in the title of the panel
+     */
+    PanelVis newUIPanel(const std::string& panel_title);
+    /**
      * Sets the visualisation running in a background thread
      */
     void activate() {
@@ -202,10 +210,18 @@ class ModelVis {
      */
     bool isRunning() const;
     /**
+     * Random seed has changed
+     */
+    void updateRandomSeed();
+    /**
      * Updates all agent renders from corresponding
      * @param sc Step count, the step count value shown in visualisation HUD
      */
     void updateBuffers(const unsigned int &sc = UINT_MAX);
+    /**
+     * Singletons have init, so env props are ready to grab
+     */
+    void registerEnvProperties();
 
  private:
     /**
@@ -238,6 +254,10 @@ class ModelVis {
      * Pointer to the visualisation
      */
     std::unique_ptr<FLAMEGPU_Visualisation> visualiser;
+    /**
+     * Only need to register env properties once
+     */
+    bool env_registered = false;
 };
 
 }  // namespace visualiser
