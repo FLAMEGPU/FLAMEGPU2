@@ -453,6 +453,35 @@ FLAMEGPU_DEVICE_FUNCTION void func(int x){
 }
 """
 
+py_fgpu_cond_func = """\
+@pyflamegpu.agent_function_condition
+def conditionalFunc() -> bool :
+    return True
+"""
+
+cpp_fgpu_cond_func = """\
+FLAMEGPU_AGENT_FUNCTION_CONDITION(conditionalFunc){
+    return true;
+}
+"""
+
+py_fgpu_cond_func_args = """\
+@pyflamegpu.agent_function_condition
+def conditionalFunc(arg: int) -> bool:
+    return True
+"""
+py_fgpu_cond_func_no_return_type = """\
+@pyflamegpu.agent_function_condition
+def conditionalFunc() :
+    return True
+"""
+py_fgpu_cond_func_wrong_return_type = """\
+@pyflamegpu.agent_function_condition
+def conditionalFunc() -> int :
+    return True
+"""
+
+
 py_fgpu_device_local_args_stack = """\
 @pyflamegpu.device_function
 def funcA(x: int) :
@@ -819,6 +848,16 @@ class CodeGenTest(unittest.TestCase):
         
     # device functions, arg types and calling
     
+    def test_fgpu_agent_func_condition(self):
+        # check correct format
+        self._checkExpected(py_fgpu_cond_func, cpp_fgpu_cond_func)
+        # function is not allowed arguments but only a warning
+        self._checkWarning(py_fgpu_cond_func_args, cpp_fgpu_cond_func, "Agent function conditions does not support arguments")
+        # must have bool return type
+        self._checkException(py_fgpu_cond_func_no_return_type, "Agent function conditions return type must be 'bool'")
+        # only bool return type
+        self._checkException(py_fgpu_cond_func_wrong_return_type, "Agent function conditions return type must be 'bool'")
+
     def test_fgpu_device_func(self):
         self._checkExpected(py_fgpu_device_func_args, cpp_fgpu_device_func_args)
         # function argument requires a type

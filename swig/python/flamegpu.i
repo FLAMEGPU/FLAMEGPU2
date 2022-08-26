@@ -844,6 +844,13 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
             # do not allow passthrough (host exection of this function)
             pass
         return wrapper
+		
+    def agent_function_condition(func):
+        @wraps(func)
+        def wrapper():
+            # do not allow passthrough (host exection of this function)
+            pass
+        return wrapper
 
     def device_function(func):
         @wraps(func)
