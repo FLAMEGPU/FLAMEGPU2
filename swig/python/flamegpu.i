@@ -833,6 +833,31 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(uniform, flamegpu::HostRandom::uniformRange)
 TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(normal, flamegpu::HostRandom::normal)
 TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
 
+// Extend the python to add the pure python class decorators
+%pythoncode %{
+
+    from functools import wraps
+
+    def agent_function(func):
+        @wraps(func)
+        def wrapper():
+            # do not allow passthrough (host exection of this function)
+            pass
+        return wrapper
+
+    def device_function(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            # essenitally a passthrough in case the function is also used in python host code
+            # passthrough obviously does not support pyflamegpu device functions
+            return func(*args, **kwargs)
+        
+        # create an attribute to identify the wrapped function as having this decorator (without having to parse)
+        wrapper.__is_pyflamegpu_device_function = True
+        return wrapper
+%}
+
+
 
 // Include visualisation support if enabled.
 #ifdef VISUALISATION

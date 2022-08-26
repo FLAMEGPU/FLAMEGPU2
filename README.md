@@ -25,6 +25,7 @@ This includes a number of key Agent-based Modelling (ABM) building blocks such a
 <!-- Remove this section once it is no longer in pre-release / alpha state -->
 
 FLAME GPU 2 is currently in an pre-release (alpha) state, and although we hope there will not be significant changes to the API prior to a stable release there may be breaking changes as we fix issues, adjust the API and improve performance.
+The use of native Python agent functions (agent functions expressed as Python syntax which are transpiled to C++) is currently supported (see examples) but classed as an *experimental* feature.
 
 If you encounter issues while using FLAME GPU, please provide bug reports, feedback or ask questions via [GitHub Issues](https://github.com/FLAMEGPU/FLAMEGPU2/issues) and [Discussions](https://github.com/FLAMEGPU/FLAMEGPU2/discussions).
 
@@ -61,9 +62,10 @@ This is used to build the FLAMEGPU2 library, examples, tests and documentation.
 Building FLAME GPU has the following requirements. There are also optional dependencies which are required for some components, such as Documentation or Python bindings.
 
 + [CMake](https://cmake.org/download/) `>= 3.18`
+  + `>= 3.20` if building python bindings using a multi-config generator (Visual Studio, Eclipse or Ninja Multi-Config)
 + [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 11.0` and a [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 3.5` NVIDIA GPU.
 + C++17 capable C++ compiler (host), compatible with the installed CUDA version
-  + [Microsoft Visual Studio 2019](https://visualstudio.microsoft.com/) (Windows)
+  + [Microsoft Visual Studio 2019 or 2022](https://visualstudio.microsoft.com/) (Windows)
     + *Note:* Visual Studio must be installed before the CUDA toolkit is installed. See the [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) for more information.
   + [make](https://www.gnu.org/software/make/) and [GCC](https://gcc.gnu.org/) `>= 8.1` (Linux)
 + [git](https://git-scm.com/)
@@ -269,7 +271,7 @@ To run the python test suite:
     Or if using Powershell:
 
     ```powershell
-    . lib\Release\python\venv\activate.ps1
+    . lib\Release\python\venv\Scripts\activate.ps1
     ```
 
 4. Run `pytest` on the `tests/swig/python` directory. This may take some time.
