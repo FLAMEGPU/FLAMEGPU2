@@ -207,7 +207,7 @@ void ModelVis::setBeginPaused(const bool& beginPaused) {
     modelCfg.beginPaused = beginPaused;
 }
 
-StaticModelVis ModelVis::addStaticModel(const std::string &modelPath, const std::string &texturePath) {
+StaticModelVis ModelVis::newStaticModel(const std::string &modelPath, const std::string &texturePath) {
     // Create ModelConfig::StaticModel
     auto m = std::make_shared<ModelConfig::StaticModel>();
     // set modelPath, texturePath
