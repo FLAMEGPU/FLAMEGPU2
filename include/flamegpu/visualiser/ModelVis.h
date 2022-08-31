@@ -161,7 +161,7 @@ class ModelVis {
      * @param modelPath Path of the model on disk
      * @param texturePath Optional path to a texture fore the model on disk
      */
-    StaticModelVis addStaticModel(const std::string &modelPath, const std::string &texturePath = "");
+    StaticModelVis newStaticModel(const std::string &modelPath, const std::string &texturePath = "");
     /**
      * Create a new sketch constructed from individual line segments to the visualisation
      * @param r Initial color's red component
