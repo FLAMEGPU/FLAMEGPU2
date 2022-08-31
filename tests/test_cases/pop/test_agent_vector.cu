@@ -1439,16 +1439,14 @@ TEST(AgentVectorTest, AgentVector_Agent) {
         EXPECT_THROW(ai.setVariable<int>("float", 1), exception::InvalidVarType);
     }
     {  // setVariable(const std::string &variable_name, const std::array<T, N> &value)
-        auto fn = &AgentVector::Agent::setVariable<int, 3>;
-        auto fn2 = &AgentVector::Agent::setVariable<float, 3>;
         const std::array<int, 3> int3_ref2 = { 2, 3, 4 };
         const std::array<float, 3> float3_ref = { 2.0f, 3.0f, 4.0f };
         // Bad name
-        EXPECT_THROW((ai.*fn)("wrong", int3_ref2), exception::InvalidAgentVar);
+        EXPECT_THROW((ai.setVariable<int, 3>)("wrong", int3_ref2), exception::InvalidAgentVar);
         // Array passed to non-array method
-        EXPECT_THROW((ai.*fn)("int2", int3_ref2), exception::InvalidVarType);
+        EXPECT_THROW((ai.setVariable<int, 3>)("int2", int3_ref2), exception::InvalidVarType);
         // Wrong type
-        EXPECT_THROW((ai.*fn2)("int3", float3_ref), exception::InvalidVarType);
+        EXPECT_THROW((ai.setVariable<float, 3>)("int3", float3_ref), exception::InvalidVarType);
     }
     {  // setVariable(const std::string &variable_name, const unsigned int &array_index, const T &value)
         // Bad name
@@ -1475,14 +1473,12 @@ TEST(AgentVectorTest, AgentVector_Agent) {
         EXPECT_THROW(ai.getVariable<int>("float"), exception::InvalidVarType);
     }
     {  // getVariable(const std::string &variable_name)
-        auto fn = &AgentVector::Agent::getVariable<int, 3>;
-        auto fn2 = &AgentVector::Agent::getVariable<float, 3>;
         // Bad name
-        EXPECT_THROW((ai.*fn)("wrong"), exception::InvalidAgentVar);
+        EXPECT_THROW((ai.getVariable<int, 3>)("wrong"), exception::InvalidAgentVar);
         // Array passed to non-array method
-        EXPECT_THROW((ai.*fn)("int2"), exception::InvalidVarType);
+        EXPECT_THROW((ai.getVariable<int, 3>)("int2"), exception::InvalidVarType);
         // Wrong type
-        EXPECT_THROW((ai.*fn2)("int3"), exception::InvalidVarType);
+        EXPECT_THROW((ai.getVariable<float, 3>)("int3"), exception::InvalidVarType);
     }
     {  // getVariable(const std::string &variable_name, const unsigned int &array_index)
         // Bad name

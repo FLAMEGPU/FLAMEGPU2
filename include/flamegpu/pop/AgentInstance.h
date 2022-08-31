@@ -54,7 +54,7 @@ class AgentInstance {
     T getVariable(const std::string& variable_name) const;
     template <typename T, unsigned int N>
     std::array<T, N> getVariable(const std::string& variable_name) const;
-    template <typename T>
+    template <typename T, unsigned int N = 0>
     T getVariable(const std::string& variable_name, const unsigned int& index) const;
 #ifdef SWIG
     template <typename T>
@@ -68,7 +68,7 @@ class AgentInstance {
     void setVariable(const std::string& variable_name, const T& value);
     template <typename T, unsigned int N>
     void setVariable(const std::string& variable_name, const std::array<T, N>& value);
-    template <typename T>
+    template <typename T, unsigned int N = 0>
     void setVariable(const std::string& variable_name, const unsigned int& index, const T& value);
 #ifdef SWIG
     template <typename T>
@@ -127,7 +127,7 @@ std::array<T, N> AgentInstance::getVariable(const std::string& variable_name) co
     memcpy(rtn.data(), v_buff.ptr, sizeof(T) * N);
     return rtn;
 }
-template <typename T>
+template <typename T, unsigned int N>
 T AgentInstance::getVariable(const std::string& variable_name, const unsigned int& index) const {
     const auto v_it = _data.find(variable_name);
     if (v_it == _data.end()) {
@@ -136,6 +136,11 @@ T AgentInstance::getVariable(const std::string& variable_name, const unsigned in
             variable_name.c_str());
     }
     const auto& v_buff = v_it->second;
+    if (N && N != v_buff.elements) {
+        THROW exception::OutOfBoundsException("Variable array '%s' length mismatch '%u' != '%u', "
+            "in AgentInstance::getVariable()\n",
+            variable_name.c_str(), N, v_buff.elements);
+    }
     if (v_buff.elements % type_decode<T>::len_t != 0) {
         THROW exception::InvalidVarType("Variable array length (%u) is not visible by vector length (%u),  "
             "in AgentInstance::getVariable().",
@@ -226,7 +231,7 @@ void AgentInstance::setVariable(const std::string& variable_name, const std::arr
     }
     memcpy(static_cast<T*>(v_buff.ptr), value.data(), sizeof(T) * N);
 }
-template <typename T>
+template <typename T, unsigned int N>
 void AgentInstance::setVariable(const std::string& variable_name, const unsigned int& index, const T& value) {
     const auto v_it = _data.find(variable_name);
     if (v_it == _data.end()) {
@@ -235,6 +240,11 @@ void AgentInstance::setVariable(const std::string& variable_name, const unsigned
             variable_name.c_str());
     }
     auto& v_buff = v_it->second;
+    if (N && N != v_buff.elements) {
+        THROW exception::OutOfBoundsException("Variable array '%s' length mismatch '%u' != '%u', "
+            "in AgentInstance::setVariable()\n",
+            variable_name.c_str(), N, v_buff.elements);
+    }
     if (v_buff.elements % type_decode<T>::len_t != 0) {
         THROW exception::InvalidVarType("Variable array length (%u) is not visible by vector length (%u),  "
             "in AgentInstance::setVariable().",

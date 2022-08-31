@@ -89,11 +89,12 @@ class RunPlan {
      * @param index Length of the array to be returned
      * @param value Environment property value (override)
      * @tparam T Type of the environment property
+     * @tparam N (Optional) Length of the array property
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
      * @throws exception::OutOfBoundsException If index is not in range of the length of the property array
      */
-    template<typename T>
+    template<typename T, EnvironmentManager::size_type N = 0>
     void setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value);
 #ifdef SWIG
     /**
@@ -148,11 +149,12 @@ class RunPlan {
      * @param name name used for accessing the property
      * @param index element from the environment property array to return
      * @tparam T Type of the value to be returned
+     * @tparam N (Optional) Length of the array property
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
      * @throws exception::OutOfBoundsException If index is not in range of the length of the property array
      */
-    template<typename T>
+    template<typename T, EnvironmentManager::size_type N = 0>
     T getProperty(const std::string &name, const EnvironmentManager::size_type &index) const;
 #ifdef SWIG
     /**
@@ -236,7 +238,7 @@ void RunPlan::setProperty(const std::string &name, const std::array<T, N> &value
     property_overrides.erase(name);
     property_overrides.emplace(name, util::Any(value.data(), sizeof(T) * N, typeid(typename type_decode<T>::type_t), type_decode<T>::len_t * N));
 }
-template<typename T>
+template<typename T, EnvironmentManager::size_type N>
 void RunPlan::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value) {
     // Validation
     const auto it = environment->find(name);
@@ -249,6 +251,11 @@ void RunPlan::setProperty(const std::string &name, const EnvironmentManager::siz
         THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlan::setProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(typename type_decode<T>::type_t)).name());
+    }
+    if (N && N != it->second.data.elements) {
+        THROW exception::OutOfBoundsException("Environment property '%s' length mismatch '%u' != '%u', "
+            "in RunPlan::setProperty()\n",
+            name.c_str(), N, it->second.data.elements);
     }
     const unsigned int t_index = type_decode<T>::len_t * index + type_decode<T>::len_t;
     if (it->second.data.elements < t_index || t_index < index) {
@@ -350,7 +357,7 @@ std::array<T, N> RunPlan::getProperty(const std::string &name) const {
     }
     return rtn;
 }
-template<typename T>
+template<typename T, EnvironmentManager::size_type N>
 T RunPlan::getProperty(const std::string &name, const EnvironmentManager::size_type &index) const {
     // Validation
     const auto it = environment->find(name);
@@ -363,6 +370,11 @@ T RunPlan::getProperty(const std::string &name, const EnvironmentManager::size_t
         THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
             "in RunPlan::getProperty()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(typename type_decode<T>::type_t)).name());
+    }
+    if (N && N != it->second.data.elements) {
+        THROW exception::OutOfBoundsException("Environment property '%s' length mismatch '%u' != '%u', "
+            "in RunPlan::getProperty()\n",
+            name.c_str(), N, it->second.data.elements);
     }
     const unsigned int t_index = type_decode<T>::len_t * index + type_decode<T>::len_t;
     if (it->second.data.elements < t_index || t_index < index) {

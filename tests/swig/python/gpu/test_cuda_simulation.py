@@ -30,6 +30,8 @@ class Check_setEnvironmentProperty(pyflamegpu.HostFunctionCallback):
     def run(self, FLAMEGPU):
       # Check env property has expected value
       assert FLAMEGPU.environment.getPropertyInt("int") == 25
+      assert FLAMEGPU.environment.getPropertyInt("int2", 0) == 22
+      assert FLAMEGPU.environment.getPropertyInt("int2", 1) == 23
       assert FLAMEGPU.environment.getPropertyArrayInt("int3") == (6, 7, 8);
 
 
@@ -446,15 +448,20 @@ class TestSimulation(TestCase):
         m = pyflamegpu.ModelDescription("test_agentid")
         m.newAgent("agent");
         m.Environment().newPropertyInt("int", 2);
+        m.Environment().newPropertyArrayInt("int2", [ 12, 13 ]);
         m.Environment().newPropertyArrayInt("int3", [ 56, 57, 58 ]);
         m.newLayer().addHostFunctionCallback(Check_setEnvironmentProperty().__disown__());
         s = pyflamegpu.CUDASimulation(m);
         s.SimulationConfig().steps = 1;
         # Test the getters work
         assert s.getEnvironmentPropertyInt("int") == 2;
+        assert s.getEnvironmentPropertyInt("int2", 0) == 12;
+        assert s.getEnvironmentPropertyInt("int2", 1) == 13;
         assert s.getEnvironmentPropertyArrayInt("int3") == (56, 57, 58);
         # Test the setters work
         s.setEnvironmentPropertyInt("int", 25);
+        s.setEnvironmentPropertyInt("int2", 0, 22);
+        s.setEnvironmentPropertyInt("int2", 1, 23);
         s.setEnvironmentPropertyArrayInt("int3", [6, 7, 8]);
         # Test the exceptions work
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
@@ -474,6 +481,22 @@ class TestSimulation(TestCase):
         assert e.value.type() == "OutOfBoundsException"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvPropertyType exception
             s.getEnvironmentPropertyFloat("int");  # Bad type
+        assert e.value.type() == "InvalidEnvPropertyType"
+        # Test the exceptions work (array element methods)
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+            s.setEnvironmentPropertyInt("float", 0, 1);  # Bad name
+        assert e.value.type() == "InvalidEnvProperty"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvPropertyType exception
+            s.setEnvironmentPropertyInt("int2", 10, 0);  # Bad length
+        assert e.value.type() == "OutOfBoundsException"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvPropertyType exception
+            s.setEnvironmentPropertyFloat("int2", 0, 1.0);  # Bad type
+        assert e.value.type() == "InvalidEnvPropertyType"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
+            s.setEnvironmentPropertyInt("float", 0);  # Bad name
+        assert e.value.type() == "InvalidEnvProperty"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvPropertyType exception
+            s.getEnvironmentPropertyFloat("int2", 0);  # Bad type
         assert e.value.type() == "InvalidEnvPropertyType"
         # Test the exceptions work (array methods)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidEnvProperty exception
