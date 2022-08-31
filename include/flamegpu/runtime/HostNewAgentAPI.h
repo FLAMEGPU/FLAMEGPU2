@@ -152,6 +152,33 @@ struct NewAgentStorage {
         }
         memcpy(data + var->second.offset, &val, var->second.len);
     }
+    template<typename T, unsigned int N = 0>
+    void setVariable(const std::string &var_name, const unsigned int &index, const T &val) {
+        const auto &var = offsets.vars.find(var_name);
+        if (var == offsets.vars.end()) {
+            THROW exception::InvalidAgentVar("Variable '%s' not found, "
+                "in NewAgentStorage::setVariable().",
+                var_name.c_str());
+        }
+        if (N && N != var->second.len / sizeof(typename type_decode<T>::type_t)) {
+            THROW exception::InvalidAgentVar("Agent variable '%s' length mismatch %u != %u, "
+                "in NewAgentStorage::setVariable().",
+                var_name.c_str(), N, var->second.len / sizeof(typename type_decode<T>::type_t));
+        }
+        const auto t_type = std::type_index(typeid(typename type_decode<T>::type_t));
+        if (var->second.type != t_type) {
+            THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
+                "in NewAgentStorage::setVariable().",
+                var_name.c_str(), var->second.type.name(), t_type.name());
+        }
+        if (var->second.len < (sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t) * (index + 1)) {
+            THROW exception::OutOfRangeVarArray("Variable '%s' is an array with %u elements, index %u is out of range, "
+                "in NewAgentStorage::setVariable().",
+                var_name.c_str(), var->second.len / (sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t), index);
+        }
+        memcpy(data + var->second.offset + (index * sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t), &val, sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t);
+    }
+#ifndef SWIG
     template<typename T, unsigned int N>
     void setVariable(const std::string &var_name, const std::array<T, N> &val) {
         const auto &var = offsets.vars.find(var_name);
@@ -178,33 +205,7 @@ struct NewAgentStorage {
         }
         memcpy(data + var->second.offset, val.data(), var->second.len);
     }
-    template<typename T>
-    void setVariable(const std::string &var_name, const unsigned int &index, const T &val) {
-        const auto &var = offsets.vars.find(var_name);
-        if (var == offsets.vars.end()) {
-            THROW exception::InvalidAgentVar("Variable '%s' not found, "
-                "in NewAgentStorage::setVariable().",
-                var_name.c_str());
-        }
-        // if (var.second.len == 1) {
-        //     THROW exception::InvalidAgentVar("Agent variable '%s' in not an array variable, "
-        //         "in NewAgentStorage::setVariable().",
-        //         var_name.c_str());
-        // }
-        const auto t_type = std::type_index(typeid(typename type_decode<T>::type_t));
-        if (var->second.type != t_type) {
-            THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
-                "in NewAgentStorage::setVariable().",
-                var_name.c_str(), var->second.type.name(), t_type.name());
-        }
-        if (var->second.len < (sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t) * (index + 1)) {
-            THROW exception::OutOfRangeVarArray("Variable '%s' is an array with %u elements, index %u is out of range, "
-                "in NewAgentStorage::setVariable().",
-                var_name.c_str(), var->second.len / (sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t), index);
-        }
-        memcpy(data + var->second.offset + (index * sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t), &val, sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t);
-    }
-#ifdef SWIG
+#else
     template<typename T>
     void setVariableArray(const std::string &var_name, const std::vector<T> &val) {
         const auto &var = offsets.vars.find(var_name);
@@ -254,6 +255,33 @@ struct NewAgentStorage {
         }
         return *reinterpret_cast<T*>(data + var->second.offset);
     }
+    template<typename T, unsigned int N = 0>
+    T getVariable(const std::string &var_name, const unsigned int &index) {
+        const auto &var = offsets.vars.find(var_name);
+        if (var == offsets.vars.end()) {
+            THROW exception::InvalidAgentVar("Variable '%s' not found, "
+                "in NewAgentStorage::getVariable().",
+                var_name.c_str());
+        }
+        if (N && N != var->second.len / sizeof(typename type_decode<T>::type_t)) {
+            THROW exception::InvalidAgentVar("Agent variable '%s' length mismatch %u != %u, "
+                "in NewAgentStorage::getVariable().",
+                var_name.c_str(), N, var->second.len / sizeof(typename type_decode<T>::type_t));
+        }
+        const auto t_type = std::type_index(typeid(typename type_decode<T>::type_t));
+        if (var->second.type != t_type) {
+            THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
+                "in NewAgentStorage::getVariable().",
+                var_name.c_str(), var->second.type.name(), t_type.name());
+        }
+        if (var->second.len < sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t * (index + 1)) {
+            THROW exception::OutOfRangeVarArray("Variable '%s' is an array with %u elements, index %u is out of range, "
+                "in NewAgentStorage::getVariable().",
+                var_name.c_str(), var->second.len / (sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t), index);
+        }
+        return *reinterpret_cast<T*>(data + var->second.offset + (index * sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t));
+    }
+#ifndef SWIG
     template<typename T, unsigned int N>
     std::array<T, N> getVariable(const std::string &var_name) {
         const auto &var = offsets.vars.find(var_name);
@@ -282,33 +310,7 @@ struct NewAgentStorage {
         memcpy(rtn.data(), data + var->second.offset, var->second.len);
         return rtn;
     }
-    template<typename T>
-    T getVariable(const std::string &var_name, const unsigned int &index) {
-        const auto &var = offsets.vars.find(var_name);
-        if (var == offsets.vars.end()) {
-            THROW exception::InvalidAgentVar("Variable '%s' not found, "
-                "in NewAgentStorage::getVariable().",
-                var_name.c_str());
-        }
-        // if (var.second.len == 1) {
-        //     THROW exception::InvalidAgentVar("Agent variable '%s' in not an array variable, "
-        //         "in NewAgentStorage::getVariable().",
-        //         var_name.c_str());
-        // }
-        const auto t_type = std::type_index(typeid(typename type_decode<T>::type_t));
-        if (var->second.type != t_type) {
-            THROW exception::InvalidVarType("Variable '%s' has type '%s, incorrect  type '%s' was requested, "
-                "in NewAgentStorage::getVariable().",
-                var_name.c_str(), var->second.type.name(), t_type.name());
-        }
-        if (var->second.len < sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t * (index + 1)) {
-            THROW exception::OutOfRangeVarArray("Variable '%s' is an array with %u elements, index %u is out of range, "
-                "in NewAgentStorage::getVariable().",
-                var_name.c_str(), var->second.len / (sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t), index);
-        }
-        return *reinterpret_cast<T*>(data + var->second.offset + (index * sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t));
-    }
-#ifdef SWIG
+#else
     template<typename T>
     std::vector<T> getVariableArray(const std::string &var_name) {
         const auto &var = offsets.vars.find(var_name);
@@ -385,23 +387,24 @@ class HostNewAgentAPI {
         }
         s->setVariable<T>(var_name, val);
     }
+    template<typename T, unsigned int N = 0>
+    void setVariable(const std::string &var_name, const unsigned int &index, const T &val) {
+        if (!var_name.empty() && var_name[0] == '_') {
+            THROW exception::ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
+                "in HostNewAgentAPI::setVariable().");
+        }
+        s->setVariable<T, N>(var_name, index, val);
+    }
+#ifndef SWIG
     template<typename T, unsigned int N>
-    void setVariable(const std::string &var_name, const std::array<T, N> &val) {
+    void setVariable(const std::string& var_name, const std::array<T, N>& val) {
         if (!var_name.empty() && var_name[0] == '_') {
             THROW exception::ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
                 "in HostNewAgentAPI::setVariable().");
         }
         s->setVariable<T, N>(var_name, val);
     }
-    template<typename T>
-    void setVariable(const std::string &var_name, const unsigned int &index, const T &val) {
-        if (!var_name.empty() && var_name[0] == '_') {
-            THROW exception::ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
-                "in HostNewAgentAPI::setVariable().");
-        }
-        s->setVariable<T>(var_name, index, val);
-    }
-#ifdef SWIG
+#else
     template<typename T>
     void setVariableArray(const std::string &var_name, const std::vector<T> &val) {
         if (!var_name.empty() && var_name[0] == '_') {
@@ -418,15 +421,16 @@ class HostNewAgentAPI {
     T getVariable(const std::string &var_name) const {
         return s->getVariable<T>(var_name);
     }
+    template<typename T, unsigned int N = 0>
+    T getVariable(const std::string &var_name, const unsigned int &index) {
+        return s->getVariable<T, N>(var_name, index);
+    }
+#ifndef SWIG
     template<typename T, unsigned int N>
-    std::array<T, N> getVariable(const std::string &var_name) {
+    std::array<T, N> getVariable(const std::string& var_name) {
         return s->getVariable<T, N>(var_name);
     }
-    template<typename T>
-    T getVariable(const std::string &var_name, const unsigned int &index) {
-        return s->getVariable<T>(var_name, index);
-    }
-#ifdef SWIG
+#else
     template<typename T>
     std::vector<T> getVariableArray(const std::string &var_name) {
         return s->getVariableArray<T>(var_name);

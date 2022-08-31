@@ -692,13 +692,17 @@ TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::AgentDescription::n
 
 // Instantiate template versions of AgentVector_Agent/AgentInstance from the API
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariable, flamegpu::AgentVector_Agent::setVariable)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(setVariable, flamegpu::AgentVector_Agent::setVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariableArray, flamegpu::AgentVector_Agent::setVariableArray)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariable, flamegpu::AgentVector_Agent::getVariable)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(getVariable, flamegpu::AgentVector_Agent::getVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariableArray, flamegpu::AgentVector_Agent::getVariableArray)
 
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariable, flamegpu::AgentInstance::setVariable)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(setVariable, flamegpu::AgentInstance::setVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariableArray, flamegpu::AgentInstance::setVariableArray)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariable, flamegpu::AgentInstance::getVariable)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(getVariable, flamegpu::AgentInstance::getVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariableArray, flamegpu::AgentInstance::getVariableArray)
 
 // Instantiate template versions of host agent instance functions from the API
@@ -712,15 +716,19 @@ TEMPLATE_VARIABLE_INSTANTIATE(meanStandardDeviation, flamegpu::HostAgentAPI::mea
 
 // Instantiate template versions of host environment functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getProperty, flamegpu::HostEnvironment::getProperty)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(getProperty, flamegpu::HostEnvironment::getProperty)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyArray, flamegpu::HostEnvironment::getPropertyArray)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, flamegpu::HostEnvironment::setProperty)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(setProperty, flamegpu::HostEnvironment::setProperty)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, flamegpu::HostEnvironment::setPropertyArray)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getMacroProperty, flamegpu::HostEnvironment::getMacroProperty_swig)
 
 // Instantiate template versions of CUDASimulation environment functions
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setEnvironmentProperty, flamegpu::CUDASimulation::setEnvironmentProperty)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(setEnvironmentProperty, flamegpu::CUDASimulation::setEnvironmentProperty)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setEnvironmentPropertyArray, flamegpu::CUDASimulation::setEnvironmentPropertyArray)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getEnvironmentProperty, flamegpu::CUDASimulation::getEnvironmentProperty)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(getEnvironmentProperty, flamegpu::CUDASimulation::getEnvironmentProperty)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getEnvironmentPropertyArray, flamegpu::CUDASimulation::getEnvironmentPropertyArray)
 
 // Instance template versions of the HostMacroProperty class
@@ -790,8 +798,10 @@ TEMPLATE_VARIABLE_INSTANTIATE_ID(HostMacroProperty, flamegpu::HostMacroProperty_
 
 // Instantiate template versions of host agent functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariable, flamegpu::HostNewAgentAPI::getVariable)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(getVariable, flamegpu::HostNewAgentAPI::getVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getVariableArray, flamegpu::HostNewAgentAPI::getVariableArray)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariable, flamegpu::HostNewAgentAPI::setVariable)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(setVariable, flamegpu::HostNewAgentAPI::setVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setVariableArray, flamegpu::HostNewAgentAPI::setVariableArray)
 
 
@@ -807,12 +817,15 @@ TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, flamegpu::EnvironmentDescript
 
 // Instantiate template versions of RunPlan functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, flamegpu::RunPlan::setProperty)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(setProperty, flamegpu::RunPlan::setProperty)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, flamegpu::RunPlan::setPropertyArray)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getProperty, flamegpu::RunPlan::getProperty)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(getProperty, flamegpu::RunPlan::getProperty)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyArray, flamegpu::RunPlan::getPropertyArray)
 
 // Instantiate template versions of RunPlanVector functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, flamegpu::RunPlanVector::setProperty)
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(setProperty, flamegpu::RunPlanVector::setProperty)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, flamegpu::RunPlanVector::setPropertyArray)
 TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformDistribution, flamegpu::RunPlanVector::setPropertyUniformDistribution)
 TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformRandom, flamegpu::RunPlanVector::setPropertyUniformRandom)

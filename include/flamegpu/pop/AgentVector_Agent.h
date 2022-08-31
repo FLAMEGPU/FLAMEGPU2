@@ -37,7 +37,7 @@ class AgentVector_CAgent {
     T getVariable(const std::string& variable_name) const;
     template <typename T, unsigned int N>
     std::array<T, N> getVariable(const std::string& variable_name) const;
-    template <typename T>
+    template <typename T, unsigned int N = 0>
     T getVariable(const std::string& variable_name, const unsigned int& index) const;
 #ifdef SWIG
     template <typename T>
@@ -84,7 +84,7 @@ class AgentVector_Agent : public AgentVector_CAgent {
     void setVariable(const std::string &variable_name, const T &value);
     template <typename T, unsigned int N>
     void setVariable(const std::string &variable_name, const std::array<T, N> &value);
-    template <typename T>
+    template <typename T, unsigned int N = 0>
     void setVariable(const std::string &variable_name, const unsigned int &index, const T &value);
 #ifdef SWIG
     template <typename T>
@@ -205,7 +205,7 @@ void AgentVector_Agent::setVariable(const std::string &variable_name, const std:
     // Notify (_data was locked above)
     _parent->_changed(variable_name, index);
 }
-template <typename T>
+template <typename T, unsigned int N>
 void AgentVector_Agent::setVariable(const std::string &variable_name, const unsigned int &array_index, const T &value) {
     if (!variable_name.empty() && variable_name[0] == '_') {
         THROW exception::ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
@@ -223,9 +223,14 @@ void AgentVector_Agent::setVariable(const std::string &variable_name, const unsi
             variable_name.c_str());
     }
     auto& v_buff = v_it->second;
+    if (N && N != v_buff->getElements()) {
+        THROW exception::OutOfBoundsException("Variable array '%s' length mismatch '%u' != '%u', "
+            "in AgentVector_Agent::setVariable()\n",
+            variable_name.c_str(), N, v_buff->getElements());
+    }
     if (v_buff->getElements() % type_decode<T>::len_t != 0) {
         THROW exception::InvalidVarType("Variable array length (%u) is not divisible by vector type length (%u) for variable '%s',  "
-            "in AgentVector_Agent::getVariable().",
+            "in AgentVector_Agent::setVariable().",
             v_buff->getElements(), type_decode<T>::len_t, variable_name.c_str());
     }
     if (v_buff->getType() != std::type_index(typeid(typename type_decode<T>::type_t))) {
@@ -343,7 +348,7 @@ std::array<T, N> AgentVector_CAgent::getVariable(const std::string &variable_nam
     memcpy(rtn.data(), static_cast<const T*>(v_buff->getReadOnlyDataPtr()) + (index * N), sizeof(T) * N);
     return rtn;
 }
-template <typename T>
+template <typename T, unsigned int N>
 T AgentVector_CAgent::getVariable(const std::string &variable_name, const unsigned int &array_index) const {
     const auto data = _data.lock();
     if (!data) {
@@ -357,6 +362,11 @@ T AgentVector_CAgent::getVariable(const std::string &variable_name, const unsign
             variable_name.c_str());
     }
     const auto& v_buff = v_it->second;
+    if (N && N != v_buff->getElements()) {
+        THROW exception::OutOfBoundsException("Variable array '%s' length mismatch '%u' != '%u', "
+            "in AgentVector_Agent::getVariable()\n",
+            variable_name.c_str(), N, v_buff->getElements());
+    }
     if (v_buff->getElements() % type_decode<T>::len_t != 0) {
         THROW exception::InvalidVarType("Variable array length (%u) is not divisible by vector type length (%u) for variable '%s',  "
             "in AgentVector_Agent::getVariable().",
