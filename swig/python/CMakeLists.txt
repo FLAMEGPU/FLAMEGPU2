@@ -400,7 +400,8 @@ endif()
 # set project folders (for better organisation in visual studio)
 if (CMAKE_USE_FOLDERS)
   set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-  set_property(TARGET "${PYTHON_MODULE_NAME}" PROPERTY FOLDER "FLAMEGPU")
+  set_property(TARGET "${PYTHON_SWIG_TARGET_NAME}" PROPERTY FOLDER "FLAMEGPU")
+  set_property(TARGET "${PYTHON_MODULE_TARGET_NAME}" PROPERTY FOLDER "FLAMEGPU")
 endif ()
 
 # Specify visual studio and eclpse source_group filters as required.
