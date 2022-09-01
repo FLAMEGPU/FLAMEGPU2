@@ -534,7 +534,6 @@ class CodeGenTest(unittest.TestCase):
             # code generate
             code = pyflamegpu.codegen.codegen(tree)
         if EXCEPTION_MSG_CHECKING:
-            print(str(e.value))
             assert exception_str in str(e.value)
            
         
