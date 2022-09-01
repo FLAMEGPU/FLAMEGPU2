@@ -58,14 +58,12 @@ class GPUTest(TestCase):
         """
         m = pyflamegpu.ModelDescription("test_gpu_codegen_simulation")
         a = m.newAgent("agent")
-        a.newVariableInt("id")
         a.newVariableInt("x")
         func_translated = pyflamegpu.codegen.translate(add_func)
         func = a.newRTCFunction("add_func", func_translated)
         p = pyflamegpu.AgentVector(a, AGENT_COUNT)
         for i in range(AGENT_COUNT):
             instance = p[i]
-            instance.setVariableInt("id", i)
             instance.setVariableInt("x", i)
         layer = m.newLayer("add_layer")
         layer.addAgentFunction(func)
