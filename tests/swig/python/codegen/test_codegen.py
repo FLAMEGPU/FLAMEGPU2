@@ -534,6 +534,7 @@ class CodeGenTest(unittest.TestCase):
             # code generate
             code = pyflamegpu.codegen.codegen(tree)
         if EXCEPTION_MSG_CHECKING:
+            print(str(e.value))
             assert exception_str in str(e.value)
            
         
@@ -613,7 +614,7 @@ class CodeGenTest(unittest.TestCase):
         self._checkException(py_try, "Exceptions not supported")
 
     def test_bytes(self):
-        self._checkException("b'123'", "Byte strings not supported")
+        self._checkException("b'123'", "Byte strings and Bytes function not supported")
 
     def test_strings(self):
         self._checkException('f"{value}"', "not supported")

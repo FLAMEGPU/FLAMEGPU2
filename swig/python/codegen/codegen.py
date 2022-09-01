@@ -222,11 +222,16 @@ class CodeGenerator:
             bounds = tree_parent.args[1:]
             # process bounds by appending to cpp function template arguments
             for i in bounds:
-                if not isinstance(i, ast.Constant):
-                    self.RaiseError(tree, f" Macro environment function argument '{i}' should be an constant value.")
-                if not isinstance(i.value, int):
-                    self.RaiseError(tree, f" Macro environment function argument '{i}' should be an integer value.")
-                cpp_func_name += f", {i.value}"
+                if isinstance(i, ast.Num): # num required for python 3.7
+                    if not isinstance(i.n, int):
+                        self.RaiseError(tree, f" Macro environment function argument '{i}' should be an integer value.")
+                    cpp_func_name += f", {i.n}"
+                else: # all Python > 3.7    
+                    if not isinstance(i, ast.Constant):
+                        self.RaiseError(tree, f" Macro environment function argument '{i}' should be an constant value (or Num in Python <3.8).")
+                    if not isinstance(i.value, int):
+                        self.RaiseError(tree, f" Macro environment function argument '{i}' should be an integer value.")
+                    cpp_func_name += f", {i.value}"
             # remove bounds from argument list (in place)
             del tree_parent.args[1:]
         cpp_func_name += ">"
@@ -566,6 +571,9 @@ class CodeGenerator:
         if isinstance(tree.value, ast.Constant):
             if isinstance(tree.value.value, str):
                 return
+        # catch special case of Python 3.7 Where doc string is a Str and not a Constant
+        elif isinstance(tree.value, ast.Str):
+            return 
         # otherwise treat like a normal expression
         self.fill()
         self.dispatch(tree.value)
@@ -892,10 +900,11 @@ class CodeGenerator:
 
     # expr
     def _Bytes(self, t):
-        self.RaiseError(t, "Bytes function not supported")
+        self.RaiseError(t, "Byte strings and Bytes function not supported")
 
     def _Str(self, tree):
-        self.write(repr(tree.s))
+        # force writing in double quotes
+        self.write(f'"{tree.s}"')
         
     def _JoinedStr(self, t):
         self.RaiseError(t, "Joined strings not supported")
@@ -922,7 +931,13 @@ class CodeGenerator:
         self.write(t.id)
 
     def _NameConstant(self, t):
-        self.RaiseError(t, "NameConstant depreciated and not supported")
+        # Required only for Python 3.7
+        if t.value == None:
+            self.write(0)
+        elif t.value:
+            self.write("true")
+        else:
+            self.write("false")
 
     def _Repr(self, t):
         self.RaiseError(t, "Repr not supported")
@@ -944,7 +959,7 @@ class CodeGenerator:
         elif isinstance(value, str): 
             self.write(f'"{value}"')
         elif isinstance(value, (bytes, bytearray)):  # reject bytes strings e.g. b'123' 
-            self.RaiseError(t, "Byte strings not supported")
+            self.RaiseError(t, "Byte strings and Bytes function not supported")
         elif isinstance(value, bool):
             if value:
                 self.write("true")
