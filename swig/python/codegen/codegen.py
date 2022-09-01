@@ -710,14 +710,14 @@ class CodeGenerator:
 
     def _FunctionDef(self, t):
         """
-        Checks the decorators of the function definition much must be either 'pyflamegpu.agent_function' or 'pyflamegpu.device_function'.
+        Checks the decorators of the function definition much must be either 'pyflamegpu.agent_function', 'pyflamegpu.agent_function_condition' or 'pyflamegpu.device_function'.
         Each is then processed in a different way using a specific dispatcher.
         Function calls are actually checked and only permitted (or user defined) function calls are supported.
         """
         self.write("\n")
         # check decorators
         if len(t.decorator_list) != 1 or not isinstance(t.decorator_list[0], ast.Attribute):
-            self.RaiseError(t, "Function definitions require a single pyflamegpu decorator of either 'pyflamegpu.agent_function' or 'pyflamegpu.device_function'")       
+            self.RaiseError(t, "Function definitions require a single pyflamegpu decorator of either 'pyflamegpu.agent_function', 'pyflamegpu.agent_function_condition' or 'pyflamegpu.device_function'")       
         # FLAMEGPU_AGENT_FUNCTION
         if t.decorator_list[0].attr == 'agent_function' and t.decorator_list[0].value.id == 'pyflamegpu':
             if getattr(t, "returns", False):
@@ -737,8 +737,23 @@ class CodeGenerator:
             self.write(")")
             # add to list of defined functions that can be called
             self._device_functions.append(t.name)
+        # FLAMEGPU_DEVICE_FUNCTION
+        elif t.decorator_list[0].attr == 'agent_function_condition' and t.decorator_list[0].value.id == 'pyflamegpu':
+            # check for return annotation
+            if not hasattr(t, "returns"):
+                self.RaiseError(t, "Agent function conditions must have a 'bool' return type specified as a return type annotation")
+            # check for return annotation type
+            if not isinstance(t.returns, ast.Name):
+                self.RaiseError(t, "Agent function conditions return type must be 'bool'")
+            if t.returns.id is not 'bool':
+                self.RaiseError(t, "Agent function conditions return type must be 'bool'")
+            # check to ensure no arguments (discard any with a warning)
+            if t.args.args:
+                self.RaiseWarning(t, "Agent function conditions does not support arguments. These will be discarded.")
+            # write the agent function macro
+            self.fill(f"FLAMEGPU_AGENT_FUNCTION_CONDITION({t.name})")
         else:
-            self.RaiseError(t, "Function definition uses an unsupported decorator. Must use either 'pyflamegpu.agent_function' or 'pyflamegpu.device_function'")
+            self.RaiseError(t, "Function definition uses an unsupported decorator. Must use either 'pyflamegpu.agent_function', 'pyflamegpu.agent_function_condition' or 'pyflamegpu.device_function'")
         self.enter()
         self.dispatch(t.body)
         self.leave()
