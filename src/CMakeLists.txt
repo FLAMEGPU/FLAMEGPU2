@@ -290,37 +290,47 @@ SET(SRC_FLAMEGPU
 SET(SRC_DYNAMIC
     ${DYNAMIC_VERSION_SRC_DEST}
 )
+# List include/visualiser files so they can be linted outside of visualiser builds
+SET(SRC_INCLUDE_VISUALISER
+    ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/visualiser_api.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/ModelVis.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/AgentVis.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/AgentStateVis.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/StaticModelVis.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/LineVis.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/Color.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/ColorFunction.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/DiscreteColor.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/StaticColor.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/HSVInterpolation.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/ViridisInterpolation.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/Palette.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/AutoPalette.h
+)
+# List flamegpu/visualiser files so they can be linted outside of visualiser builds
+set(SRC_FLAMEGPU_VISUALISER
+    ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/ModelVis.cpp    
+    ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/AgentVis.cpp     
+    ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/AgentStateVis.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/StaticModelVis.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/LineVis.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/color/DiscreteColor.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/color/StaticColor.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/color/HSVInterpolation.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/color/ViridisInterpolation.cpp
+)
+# If visualisation is enabled, the the visualiser inc/src files must be in the appropriate lists
 if (VISUALISATION)
     SET(SRC_INCLUDE
         ${SRC_INCLUDE}
-        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/visualiser_api.h
-        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/ModelVis.h
-        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/AgentVis.h
-        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/AgentStateVis.h
-        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/StaticModelVis.h
-        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/LineVis.h
-        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/Color.h
-        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/ColorFunction.h
-        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/DiscreteColor.h
-        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/StaticColor.h
-        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/HSVInterpolation.h
-        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/ViridisInterpolation.h
-        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/Palette.h
-        ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/color/AutoPalette.h
+        ${SRC_INCLUDE_VISUALISER}
     )
     SET(SRC_FLAMEGPU
         ${SRC_FLAMEGPU}
-        ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/ModelVis.cpp    
-        ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/AgentVis.cpp     
-        ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/AgentStateVis.cpp
-        ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/StaticModelVis.cpp
-        ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/LineVis.cpp
-        ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/color/DiscreteColor.cpp
-        ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/color/StaticColor.cpp
-        ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/color/HSVInterpolation.cpp
-        ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/color/ViridisInterpolation.cpp
+        ${SRC_FLAMEGPU_VISUALISER}
     )
 endif()
+# Build the list of all source files.
 SET(ALL_SRC
     ${SRC_INCLUDE}
     ${SRC_FLAMEGPU}
@@ -476,9 +486,14 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
-# Flag the new linter target and the files to be linted.
-new_linter_target(${PROJECT_NAME} "${ALL_SRC}")
-
+# Flag the new linter target and the files to be linted. Ensure vis sources are linted even if vis is not enabled (mostly for CI)
+if (VISUALISATION)
+    # If vis is enabled, just use ALL_SRC
+    new_linter_target(${PROJECT_NAME} "${ALL_SRC}")
+else()
+    # If vis is not enabled, pass in the vis source files too.
+    new_linter_target(${PROJECT_NAME} "${ALL_SRC};${SRC_INCLUDE_VISUALISER};${SRC_FLAMEGPU_VISUALISER}")
+endif()
 # Put within FLAMEGPU filter
 CMAKE_SET_TARGET_FOLDER(${PROJECT_NAME} "FLAMEGPU")
 # Put the tinyxml2 in the folder
