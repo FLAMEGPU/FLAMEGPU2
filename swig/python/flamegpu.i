@@ -52,6 +52,7 @@ using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, 
 %include <std_string.i>
 %include <std_vector.i>
 %include <std_unordered_map.i>
+%include <std_map.i>
 %include <std_array.i>
 %include <std_list.i>
 %include <std_set.i>
@@ -947,6 +948,9 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
 
     // Template expansions. Go after the %include and extends
     // -----------------
+    // Must declare the base class version above before instantiating template
+    %template(iColorMap) std::map<int32_t, flamegpu::visualiser::Color>;
+    %template(uColorMap) std::map<uint32_t, flamegpu::visualiser::Color>;
     // Manually create the two DiscretColor templates
     %template(iDiscreteColor) flamegpu::visualiser::DiscreteColor<int32_t>;
     %template(uDiscreteColor) flamegpu::visualiser::DiscreteColor<uint32_t>;
