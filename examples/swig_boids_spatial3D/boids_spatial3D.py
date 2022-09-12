@@ -341,7 +341,7 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, flamegpu::MessageSpatial3D, flamegpu::Message
 }
 """
 
-model = pyflamegpu.ModelDescription("Boids_BruteForce");
+model = pyflamegpu.ModelDescription("Boids Spatial3D (Python)");
 
 """
   GLOBALS
@@ -434,6 +434,18 @@ if pyflamegpu.VISUALISATION:
     circ_agt.setForwardZVariable("fz");
     circ_agt.setModel(pyflamegpu.STUNTPLANE);
     circ_agt.setModelScale(env.getPropertyFloat("SEPARATION_RADIUS") /3.0);
+    # Add a settings UI
+    ui = visualisation.newUIPanel("Environment");
+    ui.newStaticLabel("Interaction");
+    ui.newEnvironmentPropertyDragFloat("INTERACTION_RADIUS", 0.0, 0.05, 0.001);
+    ui.newEnvironmentPropertyDragFloat("SEPARATION_RADIUS", 0.0, 0.05, 0.001);
+    ui.newStaticLabel("Environment Scalars");
+    ui.newEnvironmentPropertyDragFloat("TIME_SCALE", 0.0, 1.0, 0.0001);
+    ui.newEnvironmentPropertyDragFloat("GLOBAL_SCALE", 0.0, 0.5, 0.001);
+    ui.newStaticLabel("Force Scalars");
+    ui.newEnvironmentPropertyDragFloat("STEER_SCALE", 0.0, 10.0, 0.001);
+    ui.newEnvironmentPropertyDragFloat("COLLISION_SCALE", 0.0, 10.0, 0.001);
+    ui.newEnvironmentPropertyDragFloat("MATCH_SCALE", 0.0, 10.0, 0.001);
     visualisation.activate();
 
 """

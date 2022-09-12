@@ -66,7 +66,7 @@ FLAMEGPU_STEP_FUNCTION(Validation) {
     printf("%.2f%% Drift correct\n", 100 * driftDropped / static_cast<float>(driftDropped + driftIncreased));
 }
 int main(int argc, const char ** argv) {
-    flamegpu::ModelDescription model("Circles_BruteForce_example");
+    flamegpu::ModelDescription model("Circles Spatial3D");
 
     const unsigned int AGENT_COUNT = 16384;
     const float ENV_MAX = static_cast<float>(floor(cbrt(AGENT_COUNT)));

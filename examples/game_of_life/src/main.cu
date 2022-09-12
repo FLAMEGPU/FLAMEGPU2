@@ -35,7 +35,7 @@ int main(int argc, const char ** argv) {
     const unsigned int AGENT_COUNT = SQRT_AGENT_COUNT * SQRT_AGENT_COUNT;
     NVTX_RANGE("main");
     NVTX_PUSH("ModelDescription");
-    flamegpu::ModelDescription model("Game_of_Life_example");
+    flamegpu::ModelDescription model("Game of Life");
 
     {   // Location message
         flamegpu::MessageArray2D::Description &message = model.newMessage<flamegpu::MessageArray2D>("is_alive_message");

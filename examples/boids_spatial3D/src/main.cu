@@ -309,7 +309,7 @@ FLAMEGPU_AGENT_FUNCTION(inputdata, flamegpu::MessageSpatial3D, flamegpu::Message
 }
 
 int main(int argc, const char ** argv) {
-    flamegpu::ModelDescription model("boids_spatial3D");
+    flamegpu::ModelDescription model("Boids Spatial3D");
 
     /**
      * GLOBALS
@@ -408,8 +408,20 @@ int main(int argc, const char ** argv) {
         circ_agt.setForwardXVariable("fx");
         circ_agt.setForwardYVariable("fy");
         circ_agt.setForwardZVariable("fz");
-        circ_agt.setModel(flamegpu::visualiser::Stock::Models::ICOSPHERE);
+        circ_agt.setModel(flamegpu::visualiser::Stock::Models::STUNTPLANE);
         circ_agt.setModelScale(env.getProperty<float>("SEPARATION_RADIUS")/3.0f);
+        // Add a settings UI
+        flamegpu::visualiser::PanelVis ui = visualisation.newUIPanel("Environment");
+        ui.newStaticLabel("Interaction");
+        ui.newEnvironmentPropertyDrag<float>("INTERACTION_RADIUS", 0.0f, 0.05f, 0.001f);
+        ui.newEnvironmentPropertyDrag<float>("SEPARATION_RADIUS", 0.0f, 0.05f, 0.001f);
+        ui.newStaticLabel("Environment Scalars");
+        ui.newEnvironmentPropertyDrag<float>("TIME_SCALE", 0.0f, 1.0f, 0.0001f);
+        ui.newEnvironmentPropertyDrag<float>("GLOBAL_SCALE", 0.0f, 0.5f, 0.001f);
+        ui.newStaticLabel("Force Scalars");
+        ui.newEnvironmentPropertyDrag<float>("STEER_SCALE", 0.0f, 10.0f, 0.001f);
+        ui.newEnvironmentPropertyDrag<float>("COLLISION_SCALE", 0.0f, 10.0f, 0.001f);
+        ui.newEnvironmentPropertyDrag<float>("MATCH_SCALE", 0.0f, 10.0f, 0.001f);
     }
     visualisation.activate();
 #endif
