@@ -312,7 +312,7 @@ int main(int argc, const char ** argv) {
         submodel.addExitCondition(MovementExitCondition);
     }
 
-    flamegpu::ModelDescription model("Sugarscape_example");
+    flamegpu::ModelDescription model("Sugarscape");
 
     /**
      * Agents

@@ -67,7 +67,7 @@ FLAMEGPU_STEP_FUNCTION(Validation) {
 int main(int argc, const char ** argv) {
     NVTX_RANGE("main");
     NVTX_PUSH("ModelDescription");
-    flamegpu::ModelDescription model("Circles_BruteForce_example");
+    flamegpu::ModelDescription model("Circles BruteForce");
 
     const unsigned int AGENT_COUNT = 16384;
     const float ENV_MAX = static_cast<float>(floor(cbrt(AGENT_COUNT)));
