@@ -105,7 +105,7 @@ jobs:
       run: |
         sudo apt-get install python3-venv
         python3 -m pip install --upgrade wheel
-        python3 -m pip install --upgrade 'setuptools; python_version >= "3.6"' 'setuptools<51.3.0; python_version < "3.6" and python_version >= "3.0"'
+        python3 -m pip install --upgrade setuptools
 
     - name: Install Visualisation Dependencies
       if: ${{ startswith(env.OS, 'ubuntu') && env.VISUALISATION == 'ON' }}

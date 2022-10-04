@@ -22,9 +22,9 @@ defaults:
 # + Thorough Windows builds
 #   + Oldest and newest cuda, lots of arch, vis off, tests on
 # + Wheel producing manylinux builds
-#   + CUDA 11.0 and 11.2, py 3.6-9, vis on/off, py only.
+#   + CUDA 11.0 and 11.2, py 3.7-10, vis on/off, py only.
 # + Wheel producing Windows builds
-#   + CUDA 11.0 and 11.2, py 3.6-9, vis on/off, py only.
+#   + CUDA 11.0 and 11.2, py 3.7-10, vis on/off, py only.
 # + Draft github release workflow.
 
 jobs:
@@ -104,7 +104,7 @@ jobs:
       run: |
         sudo apt-get install python3-venv
         python3 -m pip install --upgrade wheel
-        python3 -m pip install --upgrade 'setuptools; python_version >= "3.6"' 'setuptools<51.3.0; python_version < "3.6" and python_version >= "3.0"'
+        python3 -m pip install --upgrade setuptools
 
     - name: Install Visualisation Dependencies
       if: ${{ startswith(env.OS, 'ubuntu') && env.VISUALISATION == 'ON' }}
@@ -297,7 +297,6 @@ jobs:
           - "3.9"
           - "3.8"
           - "3.7"
-          - "3.6"
         config:
           - name: "Release"
             config: "Release"
@@ -453,7 +452,6 @@ jobs:
           - "3.9"
           - "3.8"
           - "3.7"
-          - "3.6"
         config:
           - name: "Release"
             config: "Release"

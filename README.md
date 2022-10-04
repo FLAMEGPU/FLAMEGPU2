@@ -74,7 +74,7 @@ Optionally:
 
 + [cpplint](https://github.com/cpplint/cpplint) for linting code
 + [Doxygen](http://www.doxygen.nl/) to build the documentation
-+ [Python](https://www.python.org/) `>= 3.6` for python integration
++ [Python](https://www.python.org/) `>= 3.7` for python integration
 + [swig](http://www.swig.org/) `>= 4.0.2` for python integration
   + Swig `4.x` will be automatically downloaded by CMake if not provided (if possible).
 + [FLAMEGPU2-visualiser](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser) dependencies
