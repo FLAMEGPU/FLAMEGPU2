@@ -12,6 +12,7 @@ HostAPI::HostAPI(CUDASimulation &_agentModel,
     CUDAScatter &_scatter,
     const AgentOffsetMap &_agentOffsets,
     AgentDataMap &_agentData,
+    std::unordered_map<std::string, std::unique_ptr<CUDAMessage>> &_messageMap,
     const std::shared_ptr<EnvironmentManager>& env,
     CUDAMacroEnvironment &macro_env,
     const unsigned int& _streamId,
@@ -19,6 +20,7 @@ HostAPI::HostAPI(CUDASimulation &_agentModel,
     : random(rng)
     , environment(_agentModel.getInstanceID(), env, macro_env)
     , agentModel(_agentModel)
+    , messageMap(_messageMap)
     , d_output_space(nullptr)
     , d_output_space_size(0)
     , agentOffsets(_agentOffsets)

@@ -4,11 +4,12 @@
 #include <memory>
 #include <string>
 
-#include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/runtime/messaging/MessageSpatial3D.h"
 #include "flamegpu/runtime/messaging/MessageSpatial2D/MessageSpatial2DHost.h"
 #include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h"
+
+class CUDAMessage;
 
 namespace flamegpu {
 
@@ -17,6 +18,8 @@ namespace flamegpu {
  * Allocates memory for and constructs PBM
  */
 class MessageSpatial3D::CUDAModelHandler : public MessageSpecialisationHandler {
+    friend class MessageSpatial3D::HostAPI;
+
  public:
     /**
      * Constructor
@@ -60,6 +63,10 @@ class MessageSpatial3D::CUDAModelHandler : public MessageSpecialisationHandler {
      * Returns a pointer to the metadata struct, this is required for reading the message data
      */
     const void *getMetaDataDevicePtr() const override { return d_data; }
+    /**
+     * On next PBM rebuild the pbm may be reallocated and metadata updated on device
+     */
+    void setMetadataChangedFlag() { metadata_changed_flag = true; }
 
  private:
     /**
@@ -79,6 +86,10 @@ class MessageSpatial3D::CUDAModelHandler : public MessageSpecialisationHandler {
      * Number of bins, arrays are +1 this length
      */
     unsigned int binCount = 0;
+    /**
+     * Number of bins in hd_data.PBM
+     */
+    unsigned int allocated_binCount = 0;
     /**
      * Size of currently allocated temp storage memory for cub
      */
@@ -111,6 +122,10 @@ class MessageSpatial3D::CUDAModelHandler : public MessageSpecialisationHandler {
      * Owning CUDAMessage, provides access to message storage etc
      */
     CUDAMessage &sim_message;
+    /**
+     * If true, PBM rebuild will realloc a different sized PBM first
+     */
+    bool metadata_changed_flag;
 };
 
 /**
@@ -199,6 +214,48 @@ class MessageSpatial3D::Description : public MessageBruteForce::Description {
     float getMaxX() const;
     float getMaxY() const;
     float getMaxZ() const;
+};
+
+class MessageSpatial3D::HostAPI {
+    CUDAMessage &cudaMessage;
+    CUDAModelHandler &messageHandler;
+
+ public:
+    HostAPI(CUDAMessage &_cudaMessage, CUDAModelHandler &_messageHandler)
+        : cudaMessage(_cudaMessage)
+        , messageHandler(_messageHandler) { }
+    void setRadius(const float& r);
+    void setMinX(const float& x);
+    void setMinY(const float& y);
+    void setMinZ(const float& z);
+    void setMin(const float& x, const float& y, const float& z);
+    void setMaxX(const float& x);
+    void setMaxY(const float& y);
+    void setMaxZ(const float& z);
+    void setMax(const float& x, const float& y, const float& z);
+    void clearMessages();
+
+    float getRadius() const {
+        return messageHandler.hd_data.radius;
+    }
+    float getMinX() const {
+        return messageHandler.hd_data.min[0];
+    }
+    float getMinY() const {
+        return messageHandler.hd_data.min[1];
+    }
+    float getMinZ() const {
+        return messageHandler.hd_data.min[2];
+    }
+    float getMaxX() const {
+        return messageHandler.hd_data.max[0];
+    }
+    float getMaxY() const {
+        return messageHandler.hd_data.max[1];
+    }
+    float getMaxZ() const {
+        return messageHandler.hd_data.max[2];
+    }
 };
 
 }  // namespace flamegpu

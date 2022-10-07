@@ -10,14 +10,6 @@ namespace flamegpu {
 class CUDAScatter;
 class CUDAMessage;
 
-/**
- * Map used to map a variable name to buffer
- */
-typedef std::map <std::string, void*> CUDAMessageMap;
-/**
- * Key Value pair of CUDAMessageMap
- */
-typedef std::pair <std::string, void*> CUDAMessageMapPair;
 
 /**
  * This is the internal device memory handler for CUDAMessage
@@ -25,9 +17,17 @@ typedef std::pair <std::string, void*> CUDAMessageMapPair;
  */
 class CUDAMessageList {
  public:
-     /**
-      * Initially allocates message lists based on cuda_message.getMaximumListSize()
-      */
+    /**
+     * Map used to map a variable name to buffer
+     */
+    typedef std::map<std::string, void*> MessageMap;
+    /**
+     * Key Value pair of CUDAMessageMap
+     */
+    typedef std::pair<std::string, void*> MessageMapPair;
+    /**
+     * Initially allocates message lists based on cuda_message.getMaximumListSize()
+     */
     explicit CUDAMessageList(CUDAMessage& cuda_message, CUDAScatter &scatter, cudaStream_t stream, unsigned int streamId);
     /**
      * Frees all message list memory
@@ -93,40 +93,40 @@ class CUDAMessageList {
     /**
      * @return Returns the map<variable_name, device_ptr> for reading message data
      */
-    const CUDAMessageMap &getReadList() { return d_list; }
+    const MessageMap &getReadList() { return d_list; }
     /**
      * @return Returns the map<variable_name, device_ptr> for writing message data (aka swap buffers)
      */
-    const CUDAMessageMap &getWriteList() { return d_swap_list; }
+    const MessageMap &getWriteList() { return d_swap_list; }
 
  protected:
     /**
      * Allocates device memory for the provided message list
      * @param memory_map Message list to perform operation on
      */
-    void allocateDeviceMessageList(CUDAMessageMap &memory_map);
+    void allocateDeviceMessageList(MessageMap &memory_map);
     /**
      * Frees device memory for the provided message list
      * @param memory_map Message list to perform operation on
      */
-    void releaseDeviceMessageList(CUDAMessageMap &memory_map);
+    void releaseDeviceMessageList(MessageMap &memory_map);
     /**
      * Zeros device memory for the provided message list
      * @param memory_map Message list to perform operation on
      * @param stream The CUDAStream to use for CUDA operations
      * @param skip_offset Number of items at the start of the list to not zero
      */
-    void zeroDeviceMessageList_async(CUDAMessageMap &memory_map, cudaStream_t stream, unsigned int skip_offset = 0);
+    void zeroDeviceMessageList_async(MessageMap &memory_map, cudaStream_t stream, unsigned int skip_offset = 0);
 
  private:
      /**
       * Message storage for reading
       */
-    CUDAMessageMap d_list;
+    MessageMap d_list;
     /**
      * Message storage for writing
      */
-    CUDAMessageMap d_swap_list;
+    MessageMap d_swap_list;
     /**
      * Parent which this provides storage for
      */

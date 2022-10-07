@@ -9,6 +9,8 @@
 #include <vector>
 #include <memory>
 
+#include "flamegpu/gpu/CUDAMessage.h"
+#include "flamegpu/gpu/CUDAMessageList.h"
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/runtime/utility/HostRandom.cuh"
 #include "flamegpu/runtime/utility/HostEnvironment.cuh"
@@ -53,6 +55,7 @@ class HostAPI {
           CUDAScatter &scatter,
           const AgentOffsetMap &agentOffsets,
           AgentDataMap &agentData,
+          std::unordered_map<std::string, std::unique_ptr<CUDAMessage>> &_messageMap,
           const std::shared_ptr<EnvironmentManager> &env,
           CUDAMacroEnvironment &macro_env,
           const unsigned int &streamId,
@@ -65,6 +68,11 @@ class HostAPI {
      * Returns methods that work on all agents of a certain type currently in a given state
      */
     HostAgentAPI agent(const std::string &agent_name, const std::string &stateName = ModelData::DEFAULT_STATE);
+    /**
+     * Returns methods that work on all agents of a certain type currently in a given state
+     */
+    template<typename Msg>
+    typename Msg::HostAPI message(const std::string& message_name);
     /**
      * Host API access to seeded random number generation
      */
@@ -98,6 +106,10 @@ class HostAPI {
      */
     AgentDataMap &agentData;
     /**
+     * References to the model's messages
+     */
+    std::unordered_map<std::string, std::unique_ptr<CUDAMessage>> &messageMap;
+    /**
      * Cuda scatter singleton
      */
     CUDAScatter &scatter;
@@ -120,6 +132,14 @@ void HostAPI::resizeOutputSpace(const unsigned int &items) {
         gpuErrchk(cudaMalloc(&d_output_space, sizeof(T) * items));
         d_output_space_size = sizeof(T) * items;
     }
+}
+template<typename Msg>
+typename Msg::HostAPI HostAPI::message(const std::string& message_name) {
+    const auto &it = messageMap.find(message_name);
+    if (it == messageMap.end()) {
+        THROW exception::InvalidMessageName("Message with name '%s' was not found within the model, in HostAPI::message()\n", message_name.c_str());
+    }
+    return it->second->getHostAPI<Msg>();
 }
 
 }  // namespace flamegpu

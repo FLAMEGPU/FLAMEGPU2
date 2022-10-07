@@ -2,6 +2,7 @@
 #include "flamegpu/runtime/messaging/MessageSpatial3D/MessageSpatial3DDevice.cuh"
 
 #include "flamegpu/gpu/CUDAScatter.cuh"
+#include "flamegpu/gpu/CUDAMessage.h"
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #pragma warning(disable : 4706 4834)
@@ -17,7 +18,8 @@ namespace flamegpu {
 
 MessageSpatial3D::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
   : MessageSpecialisationHandler()
-  , sim_message(a) {
+  , sim_message(a)
+  , metadata_changed_flag(false) {
     NVTX_RANGE("Spatial3D::CUDAModelHandler");
     const Data &d = (const Data &)a.getMessageDescription();
     hd_data.radius = d.radius;
@@ -27,12 +29,6 @@ MessageSpatial3D::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
     hd_data.max[0] = d.maxX;
     hd_data.max[1] = d.maxY;
     hd_data.max[2] = d.maxZ;
-    binCount = 1;
-    for (unsigned int axis = 0; axis < 3; ++axis) {
-        hd_data.environmentWidth[axis] = hd_data.max[axis] - hd_data.min[axis];
-        hd_data.gridDim[axis] = static_cast<unsigned int>(ceil(hd_data.environmentWidth[axis] / hd_data.radius));
-        binCount *= hd_data.gridDim[axis];
-    }
     // Device allocation occurs in allocateMetaDataDevicePtr rather than the constructor.
 }
 
@@ -65,8 +61,15 @@ void MessageSpatial3D::CUDAModelHandler::init(CUDAScatter &, unsigned int, cudaS
 
 void MessageSpatial3D::CUDAModelHandler::allocateMetaDataDevicePtr(cudaStream_t stream) {
     if (d_data == nullptr) {
+        binCount = 1;
+        for (unsigned int axis = 0; axis < 3; ++axis) {
+            hd_data.environmentWidth[axis] = hd_data.max[axis] - hd_data.min[axis];
+            hd_data.gridDim[axis] = static_cast<unsigned int>(ceil(hd_data.environmentWidth[axis] / hd_data.radius));
+            binCount *= hd_data.gridDim[axis];
+        }
         gpuErrchk(cudaMalloc(&d_histogram, (binCount + 1) * sizeof(unsigned int)));
         gpuErrchk(cudaMalloc(&hd_data.PBM, (binCount + 1) * sizeof(unsigned int)));
+        allocated_binCount = binCount;
         gpuErrchk(cudaMalloc(&d_data, sizeof(MetaData)));
         gpuErrchk(cudaMemcpyAsync(d_data, &hd_data, sizeof(MetaData), cudaMemcpyHostToDevice, stream));
         gpuErrchk(cudaStreamSynchronize(stream));
@@ -97,6 +100,26 @@ void MessageSpatial3D::CUDAModelHandler::freeMetaDataDevicePtr() {
 
 void MessageSpatial3D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
     NVTX_RANGE("MessageSpatial3D::CUDAModelHandler::buildIndex");
+    // Regen bincount
+    if (metadata_changed_flag) {
+        binCount = 1;
+        for (unsigned int axis = 0; axis < 3; ++axis) {
+            hd_data.environmentWidth[axis] = hd_data.max[axis] - hd_data.min[axis];
+            hd_data.gridDim[axis] = static_cast<unsigned int>(ceil(hd_data.environmentWidth[axis] / hd_data.radius));
+            binCount *= hd_data.gridDim[axis];
+        }
+        // If it differs, we must realloc the PBM (this is a very naive way of checking if metadata has changed)
+        if (binCount != allocated_binCount) {
+            gpuErrchk(cudaFree(d_histogram));
+            gpuErrchk(cudaFree(hd_data.PBM));
+            gpuErrchk(cudaMalloc(&d_histogram, (binCount + 1) * sizeof(unsigned int)));
+            gpuErrchk(cudaMalloc(&hd_data.PBM, (binCount + 1) * sizeof(unsigned int)));
+            allocated_binCount = binCount;
+            resizeCubTemp(stream);
+        }
+        gpuErrchk(cudaMemcpyAsync(d_data, &hd_data, sizeof(MetaData), cudaMemcpyHostToDevice, stream));
+        metadata_changed_flag = false;
+    }
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count
     {  // Build atomic histogram
@@ -287,6 +310,109 @@ float MessageSpatial3D::Description::getMaxY() const {
 }
 float MessageSpatial3D::Description::getMaxZ() const {
     return reinterpret_cast<Data *>(message)->maxZ;
+}
+void MessageSpatial3D::HostAPI::setRadius(const float& r) {
+    if (r <= 0) {
+        THROW exception::InvalidArgument("Spatial messaging radius must be a positive value, %f is not valid.", r);
+    }
+    messageHandler.hd_data.radius = r;
+    cudaMessage.setPBMConstructionRequiredFlag();
+    messageHandler.setMetadataChangedFlag();
+}
+void MessageSpatial3D::HostAPI::setMinX(const float& x) {
+    if (!isnan(messageHandler.hd_data.max[0]) &&
+        x >= messageHandler.hd_data.max[0]) {
+        THROW exception::InvalidArgument("Spatial messaging min x bound must be lower than max bound, %f !< %f", x, messageHandler.hd_data.max[0]);
+    }
+    messageHandler.hd_data.min[0] = x;
+    cudaMessage.setPBMConstructionRequiredFlag();
+    messageHandler.setMetadataChangedFlag();
+}
+void MessageSpatial3D::HostAPI::setMinY(const float& y) {
+    if (!isnan(messageHandler.hd_data.max[1]) &&
+        y >= messageHandler.hd_data.max[1]) {
+        THROW exception::InvalidArgument("Spatial messaging min bound must be lower than max bound, %f !< %f", y, messageHandler.hd_data.max[1]);
+    }
+    messageHandler.hd_data.min[1] = y;
+    cudaMessage.setPBMConstructionRequiredFlag();
+    messageHandler.setMetadataChangedFlag();
+}
+void MessageSpatial3D::HostAPI::setMinZ(const float& z) {
+    if (!isnan(messageHandler.hd_data.max[2]) &&
+        z >= messageHandler.hd_data.max[2]) {
+        THROW exception::InvalidArgument("Spatial messaging min z bound must be lower than max bound, %f !< %f", z, messageHandler.hd_data.max[2]);
+    }
+    messageHandler.hd_data.min[2] = z;
+    cudaMessage.setPBMConstructionRequiredFlag();
+    messageHandler.setMetadataChangedFlag();
+}
+void MessageSpatial3D::HostAPI::setMin(const float& x, const float& y, const float& z) {
+    if (!isnan(messageHandler.hd_data.max[0]) &&
+        x >= messageHandler.hd_data.max[0]) {
+        THROW exception::InvalidArgument("Spatial messaging min x bound must be lower than max bound, %f !< %f", x, messageHandler.hd_data.max[0]);
+    }
+    if (!isnan(messageHandler.hd_data.max[1]) &&
+        y >= messageHandler.hd_data.max[1]) {
+        THROW exception::InvalidArgument("Spatial messaging min y bound must be lower than max bound, %f !< %f", y, messageHandler.hd_data.max[1]);
+    }
+    if (!isnan(messageHandler.hd_data.max[2]) &&
+        z >= messageHandler.hd_data.max[2]) {
+        THROW exception::InvalidArgument("Spatial messaging min z bound must be lower than max bound, %f !< %f", z, messageHandler.hd_data.max[2]);
+    }
+    messageHandler.hd_data.min[0] = x;
+    messageHandler.hd_data.min[1] = y;
+    messageHandler.hd_data.min[2] = z;
+    cudaMessage.setPBMConstructionRequiredFlag();
+    messageHandler.setMetadataChangedFlag();
+}
+void MessageSpatial3D::HostAPI::setMaxX(const float& x) {
+    if (!isnan(messageHandler.hd_data.min[0]) &&
+        x <= messageHandler.hd_data.min[0]) {
+        THROW exception::InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f", x, messageHandler.hd_data.min[0]);
+    }
+    messageHandler.hd_data.max[0] = x;
+    cudaMessage.setPBMConstructionRequiredFlag();
+    messageHandler.setMetadataChangedFlag();
+}
+void MessageSpatial3D::HostAPI::setMaxY(const float& y) {
+    if (!isnan(messageHandler.hd_data.min[1]) &&
+        y <= messageHandler.hd_data.min[1]) {
+        THROW exception::InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f", y, messageHandler.hd_data.min[1]);
+    }
+    messageHandler.hd_data.max[1] = y;
+    cudaMessage.setPBMConstructionRequiredFlag();
+    messageHandler.setMetadataChangedFlag();
+}
+void  MessageSpatial3D::HostAPI::setMaxZ(const float& z) {
+    if (!isnan(messageHandler.hd_data.min[2]) &&
+        z <= messageHandler.hd_data.min[2]) {
+        THROW exception::InvalidArgument("Spatial messaging max z bound must be greater than min bound, %f !> %f", z, messageHandler.hd_data.min[2]);
+    }
+    messageHandler.hd_data.max[2] = z;
+    cudaMessage.setPBMConstructionRequiredFlag();
+    messageHandler.setMetadataChangedFlag();
+}
+void MessageSpatial3D::HostAPI::setMax(const float& x, const float& y, const float& z) {
+    if (!isnan(messageHandler.hd_data.min[0]) &&
+        x <= messageHandler.hd_data.min[0]) {
+        THROW exception::InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f", x, messageHandler.hd_data.min[0]);
+    }
+    if (!isnan(messageHandler.hd_data.min[1]) &&
+        y <= messageHandler.hd_data.min[1]) {
+        THROW exception::InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f", y, messageHandler.hd_data.min[1]);
+    }
+    if (!isnan(messageHandler.hd_data.min[2]) &&
+        z <= messageHandler.hd_data.min[2]) {
+        THROW exception::InvalidArgument("Spatial messaging max z bound must be greater than min bound, %f !> %f", z, messageHandler.hd_data.min[2]);
+    }
+    messageHandler.hd_data.max[0] = x;
+    messageHandler.hd_data.max[1] = y;
+    messageHandler.hd_data.max[2] = z;
+    cudaMessage.setPBMConstructionRequiredFlag();
+    messageHandler.setMetadataChangedFlag();
+}
+void MessageSpatial3D::HostAPI::clearMessages() {
+    cudaMessage.setMessageCount(0);
 }
 
 }  // namespace flamegpu
