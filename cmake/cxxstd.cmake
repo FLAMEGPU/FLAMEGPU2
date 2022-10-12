@@ -23,21 +23,6 @@ if(NOT FLAMEGPU_CXX_STD)
 
     # Set a cmake variable so this is only calcualted once, and can be applied afterwards.
     set(FLAMEGPU_CXX_STD 17)
-
-    # Emit a developer warning if using CUDA 11.0 and GCC 9 in c++17 mode re std::vector<std::tuple<...>>::push_back
-    # @todo - promote this to a try compile, and issue the (author) warning if the erorr is encountered?
-    if( CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.0"
-        AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS "11.1"
-        AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
-        AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9"
-        AND CMAKE_CXX_COMILER_VERSION VERSION_LESS "10"
-        AND (FLAMEGPU_CXX_STD EQUAL 17 OR CMAKE_CUDA_STANDARD EQUAL 17))
-        # https://github.com/FLAMEGPU/FLAMEGPU2/issues/650
-        message(AUTHOR_WARNING 
-            "CUDA 11.0 with g++ 9 in c++17 mode may encounter compiler segmentation faults with 'std::vector<std::tuple<...>>::push_back'.\n"
-            "Consider using CUDA 11.1+ or gcc 8 to avoid potential issues.\n"
-            "See https://github.com/FLAMEGPU/FLAMEGPU2/issues/650 for more information.")
-    endif()
 endif()
 
 # @future - set this on a per target basis using set_target_properties?
