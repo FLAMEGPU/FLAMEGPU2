@@ -28,7 +28,7 @@ authors:
     family-names: Leach
     affiliation: The University of Sheffield
     alias: MILeach
-    orcud: "https://orcid.org/0000-0002-8901-5609"
+    orcid: "https://orcid.org/0000-0002-8901-5609"
   - given-names: Mozhgan
     family-names: Kabiri Chimeh
     alias: mozhgan-kch 
@@ -38,3 +38,4 @@ identifiers:
   - description: The collection of archived snapshots of all versions of FLAME GPU 2
     type: doi
     value: "10.5281/zenodo.5428984"
+
