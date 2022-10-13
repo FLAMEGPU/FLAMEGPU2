@@ -66,6 +66,15 @@ class CUDAEnsemble {
          * Defaults to Slow
          */
         ErrorLevel error_level = Slow;
+        /**
+         * Prevents the computer from entering standby whilst the ensemble is running
+         * @note This feature is currently only supported by Windows builds.
+         */
+#ifdef _MSC_VER
+        bool block_standby = true;
+#else
+        const bool block_standby = false;
+#endif
     };
     /**
      * Initialise CUDA Ensemble
