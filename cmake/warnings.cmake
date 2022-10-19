@@ -119,9 +119,11 @@ if(NOT COMMAND flamegpu_suppress_some_compiler_warnings)
             # Suppress unused-private-field warnings on Clang, which are falsely emitted in some cases where a private member is used in device code (i.e. ArrayMessage)
             target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-unused-private-field>")
             target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wno-unused-private-field>")
-            # Suppress unused-but-set-variable which triggers on some device code.
-            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-unused-but-set-variable>")
-            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wno-unused-but-set-variable>")
+            # Suppress unused-but-set-variable which triggers on some device code, clang 13+
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 13.0)
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-unused-but-set-variable>")
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wno-unused-but-set-variable>")
+            endif()
         endif()
         # Generic OS/host compiler warning suppressions
         # Ensure NVCC outputs warning numbers
