@@ -11,6 +11,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/modules/ ${CMAKE_MODULE_PATH})
 # This might be a little aggressive to go in comon.
 include(${FLAMEGPU_ROOT}/cmake/OutOfSourceOnly.cmake)
 
+# Ensure there are no spaces in the build directory path
+include(${FLAMEGPU_ROOT}/cmake/CheckBinaryDirPathForSpaces.cmake)
+
 # include CUDA_ARCH processing code.
 # Uses -DCUDA_ARCH values (and modifies if appropriate). 
 # Adds -gencode argumetns to cuda compiler options
