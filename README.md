@@ -75,6 +75,7 @@ Optionally:
 + [cpplint](https://github.com/cpplint/cpplint) for linting code
 + [Doxygen](http://www.doxygen.nl/) to build the documentation
 + [Python](https://www.python.org/) `>= 3.7` for python integration
+  + With `setuptools`, `wheel` and optionally `venv` python packages installed
 + [swig](http://www.swig.org/) `>= 4.0.2` for python integration
   + Swig `4.x` will be automatically downloaded by CMake if not provided (if possible).
 + [FLAMEGPU2-visualiser](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser) dependencies
@@ -159,8 +160,8 @@ cmake --build . --target all
 | `CMAKE_BUILD_TYPE`       | `Release`/`Debug`/`MinSizeRel`/`RelWithDebInfo` | Select the build configuration for single-target generators such as `make`   |
 | `SEATBELTS`              | `ON`/`OFF`        | Enable / Disable additional runtime checks which harm performance but increase usability. Default `ON`     |
 | `CUDA_ARCH`              | `"52 60 70 80"`   | Select [CUDA Compute Capabilities](https://developer.nvidia.com/cuda-gpus) to build/optimise for, as a space or `;` separated list. Defaults to `""` |
-| `BUILD_SWIG_PYTHON`      | `ON`/`OFF`        | Enable Python target `pyflamegpu` via Swig. Default `OFF`                                                  |
-| `BUILD_SWIG_PYTHON_VENV` | `ON`/`OFF`        | Use a python `venv` when building the python Swig target. Default `ON`.                                    |
+| `BUILD_SWIG_PYTHON`      | `ON`/`OFF`        | Enable Python target `pyflamegpu` via Swig. Default `OFF`. Python packages `setuptools` & `wheel` required |
+| `BUILD_SWIG_PYTHON_VENV` | `ON`/`OFF`        | Use a python `venv` when building the python Swig target. Default `ON`. Python package `venv` required     |
 | `BUILD_TESTS`            | `ON`/`OFF`        | Build the C++/CUDA test suite. Default `OFF`.                                                              |
 | `BUILD_TESTS_DEV`        | `ON`/`OFF`        | Build the reduced-scope development test suite. Default `OFF`                                              |
 | `VISUALISATION`          | `ON`/`OFF`        | Enable Visualisation. Default `OFF`.                                                                       |

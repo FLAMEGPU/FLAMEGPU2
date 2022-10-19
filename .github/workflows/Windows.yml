@@ -96,6 +96,12 @@ jobs:
       with:
         python-version: ${{ env.PYTHON }}
 
+    - name: Install python dependencies
+      if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }}
+      run: |
+        python3 -m pip install --upgrade wheel
+        python3 -m pip install --upgrade setuptools
+
     - name: Add custom problem matchers for annotations
       run: echo "::add-matcher::.github/problem-matchers.json"
 

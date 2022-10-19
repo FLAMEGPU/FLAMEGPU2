@@ -218,8 +218,7 @@ file(GENERATE
 	OUTPUT ${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/__init__.py
 	INPUT ${PYTHON_LIB_TEMP_DIRECTORY}/__init__.py.in)
 
-# Function to find if python module MODULE_NAME is available, if not then install it to the Python user install directory.
-# @todo - we should not be performing user installs/ upgrades of setuptools/wheel. See https://github.com/FLAMEGPU/FLAMEGPU2/issues/639
+# Function to find if python module MODULE_NAME is available, and error if it is not available.
 function(search_python_module MODULE_NAME)
   execute_process(
     COMMAND ${Python3_EXECUTABLE} -c "import ${MODULE_NAME}; print(${MODULE_NAME}.__version__) if hasattr(${MODULE_NAME}, '__version__') else print('Unknown');"
@@ -231,16 +230,14 @@ function(search_python_module MODULE_NAME)
   if(${_RESULT} STREQUAL "0")
     message(STATUS "Found python module: ${MODULE_NAME} (version \"${MODULE_VERSION}\")")
   else()
-    message(WARNING "Can't find python module \"${MODULE_NAME}\", user install it using pip...")
-    execute_process(
-      COMMAND ${Python3_EXECUTABLE} -m pip install --upgrade --user ${MODULE_NAME}
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-      )
+    message(FATAL_ERROR 
+      "  Unable to find required python module \"${MODULE_NAME}\".\n"
+      "  Please install this to your python environment, e.g.\n"
+      "    python3 -m pip install ${MODULE_NAME}")
   endif()
 endfunction()
 
-# Look for required python modules to build the python module
-# @todo - Do not install into the --user see https://github.com/FLAMEGPU/FLAMEGPU2/issues/639. Either error, or let python error saying wheel is missing instead (or create and use a venv).
+# Look for required python modules to build the python module, error if they are not found.
 search_python_module(setuptools)
 search_python_module(wheel)
 
@@ -383,8 +380,8 @@ add_dependencies(${PYTHON_MODULE_TARGET_NAME} ${PYTHON_SWIG_TARGET_NAME})
 
 # Build Virtual Environment for python testing and install the packaged wheel
 if(BUILD_SWIG_PYTHON_VENV)
-	# Look for python module venv
-	search_python_module(venv) # @todo - do not install if missing, configuration error instead?
+	# Look for python module venv, error if not found
+	search_python_module(venv)
 	# Testing using a virtual environment
 	set(VENV_EXECUTABLE ${Python3_EXECUTABLE} -m venv)
 	set(VENV_DIR ${PYTHON_LIB_OUTPUT_DIRECTORY}/venv)
