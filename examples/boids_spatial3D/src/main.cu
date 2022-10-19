@@ -361,29 +361,28 @@ int main(int argc, const char ** argv) {
         message.newVariable<float>("fy");
         message.newVariable<float>("fz");
     }
-    {   // Boid agent
-        flamegpu::AgentDescription &agent = model.newAgent("Boid");
-        agent.newVariable<float>("x");
-        agent.newVariable<float>("y");
-        agent.newVariable<float>("z");
-        agent.newVariable<float>("fx");
-        agent.newVariable<float>("fy");
-        agent.newVariable<float>("fz");
-        agent.newFunction("outputdata", outputdata).setMessageOutput("location");
-        agent.newFunction("inputdata", inputdata).setMessageInput("location");
-    }
 
-    /**
-     * Control flow
-     */     
-    {   // Layer #1
-        flamegpu::LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(outputdata);
-    }
-    {   // Layer #2
-        flamegpu::LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(inputdata);
-    }
+    // Boid agent
+    flamegpu::AgentDescription &agent = model.newAgent("Boid");
+    agent.newVariable<float>("x");
+    agent.newVariable<float>("y");
+    agent.newVariable<float>("z");
+    agent.newVariable<float>("fx");
+    agent.newVariable<float>("fy");
+    agent.newVariable<float>("fz");
+    flamegpu::AgentFunctionDescription& outputdataDescription = agent.newFunction("outputdata", outputdata);
+    outputdataDescription.setMessageOutput("location");
+    flamegpu::AgentFunctionDescription& inputdataDescription = agent.newFunction("inputdata", inputdata);
+    inputdataDescription.setMessageInput("location");
+
+    // Dependency specification
+    inputdataDescription.dependsOn(outputdataDescription);
+
+    // Identify the root of execution
+    model.addExecutionRoot(outputdataDescription);
+
+    // Build the execution graph
+    model.generateLayers();
 
 
     /**
