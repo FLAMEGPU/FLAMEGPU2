@@ -77,7 +77,7 @@ jobs:
             VISUALISATION: "ON"
 
     # Name the job based on matrix/env options
-    name: "build (${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
+    name: "build (${{ matrix.cudacxx.cuda }}, ${{ matrix.cudacxx.hostcxx }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
 
     # Define job-wide env constants, and promote matrix elements to env constants for portable steps.
     env:
@@ -118,7 +118,7 @@ jobs:
         echo "CUDAHOSTCXX=/usr/bin/g++-${gcc_version}" >> $GITHUB_ENV
 
     - name: Install/Select clang and clang++
-      if: ${{ startsWith(env.HOSTCXX, 'clang')}}
+      if: ${{ startsWith(env.HOSTCXX, 'clang-')}}
       run: |
         clang=${{ env.HOSTCXX }}
         clang_version=${clang/clang-/}
