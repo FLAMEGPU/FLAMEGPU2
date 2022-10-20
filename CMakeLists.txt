@@ -119,7 +119,7 @@ get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 endif()
 
 # Option to change curand engine used for CUDA random generation
-set(CURAND_ENGINE "XORWOW" CACHE STRING "The curand engine to use. Suitable options: \"XORWOW\", \"PHILOX\", \"MRG\"")
+set(CURAND_ENGINE "PHILOX" CACHE STRING "The curand engine to use. Suitable options: \"XORWOW\", \"PHILOX\", \"MRG\"")
 mark_as_advanced(CURAND_ENGINE)
 
 # If CUDA >= 11.2, add an option to enable using NVCC_THREASD
