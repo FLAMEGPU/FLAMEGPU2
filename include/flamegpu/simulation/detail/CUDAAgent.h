@@ -315,17 +315,17 @@ class CUDAAgent : public AgentInterface {
      * @param state_name Agent state to affect
      * @param d_vec The DeviceAgentVector to be stored
      */
-    void setPopulationVec(const std::string& state_name, const std::shared_ptr<DeviceAgentVector_impl>& d_vec);
+    void setPopulationVec(const std::string& state_name, const std::shared_ptr<DeviceAgentVector_impl>& d_vec) override;
     /**
      * Used to allow HostAgentAPI to retrieve a stored DeviceAgentVector
      * @param state_name Agent state to affect
      */
-    std::shared_ptr<DeviceAgentVector_impl> getPopulationVec(const std::string& state_name);
+    std::shared_ptr<DeviceAgentVector_impl> getPopulationVec(const std::string& state_name) override;
     /**
      * Used to allow HostAgentAPI to clear the stored DeviceAgentVector
      * Any changes will be synchronised first
      */
-    void resetPopulationVecs();
+    void resetPopulationVecs() override;
 
  private:
     /**
