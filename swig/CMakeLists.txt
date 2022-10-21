@@ -74,7 +74,8 @@ if(NOT SWIG_FOUND)
             set(SWIG_EXECUTABLE "${swig_SOURCE_DIR}/swig.exe")
             set(SWIG_EXECUTABLE "${swig_SOURCE_DIR}/swig.exe" CACHE FILEPATH "Path to SWIG executable")
         endif()
-    else()
+    # If under linux, and using gcc download, extract, build and install swig
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         # Under linux, download the .tar.gz, extract, build and install.
         # This must be done at configure time, as FindSwig requires the swig executable.
         # FetchContent allows download at configure time, but must use execute_process to run commands at configure time.
