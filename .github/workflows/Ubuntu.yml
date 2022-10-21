@@ -45,11 +45,19 @@ jobs:
             cuda_arch: "35"
             hostcxx: clang-14
             os: ubuntu-22.04
-          - cuda: "11.1"
+          - cuda: "11.6"
             cuda_arch: "35"
-            hostcxx: clang-9
+            hostcxx: clang-13
+            os: ubuntu-22.04
+          - cuda: "11.4"
+            cuda_arch: "35"
+            hostcxx: clang-12
             os: ubuntu-20.04
-          - cuda: "11.0"
+          - cuda: "11.2"
+            cuda_arch: "35"
+            hostcxx: clang-11
+            os: ubuntu-20.04
+          - cuda: "11.1"
             cuda_arch: "35"
             hostcxx: clang-10
             os: ubuntu-20.04
