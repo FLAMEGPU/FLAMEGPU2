@@ -365,7 +365,10 @@ if pyflamegpu.VISUALISATION:
     boid_agt.setForwardYVariable("fy")
     boid_agt.setForwardZVariable("fz")
     #boid_agt.setModel(pyflamegpu.ARROWHEAD) # Alternative simple 3D model for very large pop sizes
-    boid_agt.setKeyFrameModel("./model/bird_a.obj", "./model/bird_b.obj", "wing_animation")
+    script_dir = pathlib.Path(__file__).parent.resolve()
+    bird_a = str(script_dir / "model/bird_a.obj")
+    bird_b = str(script_dir / "model/bird_b.obj")
+    boid_agt.setKeyFrameModel(bird_a, bird_b, "wing_animation")
     boid_agt.setModelScale(env.getPropertyFloat("SEPARATION_RADIUS") /2.0)
     boid_agt.setColor(pyflamegpu.RED);
     # Visualisation UI
