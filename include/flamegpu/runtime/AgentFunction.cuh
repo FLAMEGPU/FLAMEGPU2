@@ -86,7 +86,7 @@ __global__ void agent_function_wrapper(
     __syncthreads();
     #endif  // __CUDACC__
     // Must be terminated here, else AgentRandom has bounds issues inside DeviceAPI constructor
-    if (DeviceAPI<MessageIn, MessageOut>::getThreadIndex() >= popNo)
+    if (DeviceAPI<MessageIn, MessageOut>::getIndex() >= popNo)
         return;
     // create a new device FLAME_GPU instance
     DeviceAPI<MessageIn, MessageOut> api = DeviceAPI<MessageIn, MessageOut>(
@@ -100,7 +100,7 @@ __global__ void agent_function_wrapper(
     AGENT_STATUS flag = AgentFunction()(&api);
     if (scanFlag_agentDeath) {
         // (scan flags will not be processed unless agent death has been requested in model definition)
-        scanFlag_agentDeath[DeviceAPI<MessageIn, MessageOut>::getThreadIndex()] = flag;
+        scanFlag_agentDeath[DeviceAPI<MessageIn, MessageOut>::getIndex()] = flag;
 #if !defined(SEATBELTS) || SEATBELTS
     } else if (flag == DEAD) {
         DTHROW("Agent death must be enabled per agent function when defining the model.\n");

@@ -55,7 +55,7 @@ class ReadOnlyDeviceAPI {
      * @param d_rng Pointer to the device random state buffer to be used
      */
     __device__ ReadOnlyDeviceAPI(util::detail::curandState *&d_rng)
-        : random(AgentRandom(&d_rng[getThreadIndex()]))
+        : random(AgentRandom(&d_rng[getIndex()]))
         , environment(DeviceEnvironment()) { }
     /**
      * Returns the specified variable from the currently executing agent
@@ -106,11 +106,12 @@ class ReadOnlyDeviceAPI {
     const ReadOnlyDeviceEnvironment environment;
 
     /**
-     * Returns the current CUDA thread of the agent
-     * All agents execute in a unique thread, but their associated thread may change between agent functions
+     * Returns the current index of the agent within the state list population.
+     * As agents are mapped linearly to a unique thread this is in effect the thread index within the execution grid block.
+     * The index may change between agent functions as a result of state list transitions or other internal algorithms which effect order.
      * Thread indices begin at 0 and continue to 1 below the number of agents executing
      */
-    __forceinline__ __device__ static unsigned int getThreadIndex() {
+    __forceinline__ __device__ static unsigned int getIndex() {
         /*
         // 3D version
         auto blockId = blockIdx.x + blockIdx.y * gridDim.x
@@ -245,7 +246,7 @@ class DeviceAPI {
         : message_in(message_in)
         , message_out(message_out)
         , agent_out(AgentOut(d_agent_output_nextID, scanFlag_agentOutput))
-        , random(AgentRandom(&d_rng[getThreadIndex()]))
+        , random(AgentRandom(&d_rng[getIndex()]))
         , environment(DeviceEnvironment())
     { }
         /**
@@ -312,11 +313,12 @@ class DeviceAPI {
     }
 
     /**
-     * Returns the current CUDA thread of the agent
-     * All agents execute in a unique thread, but their associated thread may change between agent functions
+     * Returns the current index of the agent within the state list population.
+     * As agents are mapped linearly to a unique thread this is in effect the thread index within the execution grid block.
+     * The index may change between agent functions as a result of state list transitions or other internal algorithms which effect order.
      * Thread indices begin at 0 and continue to 1 below the number of agents executing
      */
-    __forceinline__ __device__ static unsigned int getThreadIndex() {
+    __forceinline__ __device__ static unsigned int getIndex() {
         /*
         // 3D version
         auto blockId = blockIdx.x + blockIdx.y * gridDim.x
