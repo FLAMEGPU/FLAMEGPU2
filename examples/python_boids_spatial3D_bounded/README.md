@@ -1,6 +1,6 @@
 # Python Boids example
 
-This FLAME GPU 2 example uses the `pyflamegpu` library. It uses Spatial 3D messaging to demonstrate communication over a fixed radius. The agent function behaviour is specified using C++ style agent function strings which are compiled just in time.
+This FLAME GPU 2 example uses the `pyflamegpu` library. It uses Spatial 3D messaging to demonstrate communication over a fixed radius. The agent function behaviour is specified using C++ style agent function strings which are compiled just in time. The environment in this example is bounded and agents will bounce off the sides.
 
 # Running the example
 
@@ -25,3 +25,5 @@ in Linux.
 If running with visualisation enabled then passing the argument `--steps 0` will ensure the simulation runs indefinitely. E.g. 
 
 `python boids_spatial3D.py --steps 0`
+
+Alternatively, specifying 100 steps would allow you to explore the final simulation state after 100 steps have completed.

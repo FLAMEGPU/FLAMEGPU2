@@ -26,7 +26,7 @@ If running with visualisation enabled then passing the argument `--steps 0` will
 
 `python boids_spatial3D.py --steps 0`
 
-The visualisation in this example allows you to control some fo the environment variables effecting behaviour. E.g. 
+Alternatively, specifying 100 steps would allow you to explore the final simulation state after 100 steps have completed. The visualisation in this example allows you to control some of the environment variables effecting behaviour. E.g. 
 
 * **TIME_SCALE**: Controls the time steps each simulation step represents. Increasing this value will increase simulation speed but reduce the numerical accuracy of the velocity calculations. 
 * **GLOBAL_SCALE**: Controls the maximum force that can be applied to an agent per time step.

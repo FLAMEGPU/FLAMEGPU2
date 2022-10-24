@@ -280,8 +280,8 @@ model = pyflamegpu.ModelDescription("Boids_BruteForce")
 # GLOBALS
 
 env = model.Environment()
-# Population size to generate, if no agents are loaded from disk, number may need to be reduced for debug builds or small GPUs.
-env.newPropertyUInt("POPULATION_TO_GENERATE", 100000)
+# Population size to generate, if no agents are loaded from disk, number may need to be reduced for debug builds or small GPUs. Alternatively top end GPUs can handle much larger values.
+env.newPropertyUInt("POPULATION_TO_GENERATE", 40000)
 
 # Environment Bounds
 env.newPropertyFloat("MIN_POSITION", -0.5)
