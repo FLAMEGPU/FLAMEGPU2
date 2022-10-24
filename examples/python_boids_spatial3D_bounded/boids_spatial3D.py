@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 from pyflamegpu import *
 import sys, random, math
 
