@@ -1,6 +1,6 @@
 # Python Boids example
 
-This FLAME GPU 2 example uses the `pyflamegpu` library. It uses Spatial 3D messaging to demonstrate communication over a fixed radius. The agent function behaviour is specified using ["Agent Python"](https://docs.flamegpu.com/guide/agent-functions/defining-agent-functions.html) a subset of Python which is translated to C++ and compiled just in time.
+This FLAME GPU 2 example uses the `pyflamegpu` library. It uses Spatial 3D messaging to demonstrate communication over a fixed radius. The agent function behaviour is specified using ["Agent Python"](https://docs.flamegpu.com/guide/agent-functions/defining-agent-functions.html) a subset of Python which is translated to C++ and compiled just in time. The environment in this example is wrapped. Agents will communicate over boundaries and teleport to form a continuous torus environment.
 
 # Running the example
 
