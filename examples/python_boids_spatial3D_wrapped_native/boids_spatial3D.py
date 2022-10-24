@@ -234,6 +234,15 @@ def inputdata(message_in: pyflamegpu.MessageSpatial3D, message_out: pyflamegpu.M
     agent_y += agent_fy * TIME_SCALE
     agent_z += agent_fz * TIME_SCALE
 
+    # Choas factor reverses direction
+    CHAOS_PROBABILITY = pyflamegpu.environment.getPropertyFloat("CHAOS_PROBABILITY")
+    uniform_float = pyflamegpu.random.uniformFloat()
+    if uniform_float < CHAOS_PROBABILITY :
+        agent_fx = -agent_fx
+        agent_fy = -agent_fy
+        agent_fz = -agent_fz
+
+
 
     # Wrap positions
     minPosition = pyflamegpu.environment.getPropertyFloat("MIN_POSITION")
@@ -278,7 +287,7 @@ model = pyflamegpu.ModelDescription("Boids_BruteForce")
 # GLOBALS
 
 env = model.Environment()
-# Population size to generate, if no agents are loaded from disk
+# Population size to generate, if no agents are loaded from disk, number may need to be reduced for debug builds or small GPUs.
 env.newPropertyUInt("POPULATION_TO_GENERATE", 100000)
 
 # Environment Bounds
@@ -301,6 +310,9 @@ env.newPropertyFloat("GLOBAL_SCALE", 0.25)
 env.newPropertyFloat("STEER_SCALE", 0.055)
 env.newPropertyFloat("COLLISION_SCALE", 10.0)
 env.newPropertyFloat("MATCH_SCALE", 0.015)
+
+# chaos factor
+env.newPropertyFloat("CHAOS_PROBABILITY", 0.0)
 
 
 # Location message
@@ -375,6 +387,7 @@ if pyflamegpu.VISUALISATION:
     ui.newEnvironmentPropertySliderFloat("STEER_SCALE", 0.00, 1.0)
     ui.newEnvironmentPropertySliderFloat("COLLISION_SCALE", 0.00, 100.0)
     ui.newEnvironmentPropertySliderFloat("MATCH_SCALE", 0.00, 0.10)
+    ui.newEnvironmentPropertySliderFloat("CHAOS_PROBABILITY", 0.00, 0.10)
     
     visualisation.activate()
 
