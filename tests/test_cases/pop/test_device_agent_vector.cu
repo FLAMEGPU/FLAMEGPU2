@@ -30,7 +30,17 @@ FLAMEGPU_STEP_FUNCTION(SetGetHalf) {
     // agent.setPopulationData(av);
 }
 
-
+FLAMEGPU_STEP_FUNCTION(GetIndex) {
+    flamegpu::HostAgentAPI agents = FLAMEGPU->agent(AGENT_NAME);
+    // Get DeviceAgentVector to the population
+    flamegpu::DeviceAgentVector agent_vector = agents.getPopulationData();
+    // check all index values
+    unsigned int counter = 0;
+    for (auto a : agent_vector) {
+        ASSERT_EQ(a.getIndex(), counter);
+        counter++;
+    }
+}
 TEST(DeviceAgentVectorTest, SetGet) {
     // Initialise an agent population with values in a variable [0,1,2..N]
     // Inside a step function, retrieve the agent population as a DeviceAgentVector
@@ -110,6 +120,25 @@ TEST(DeviceAgentVectorTest, SetGetHalf) {
             ASSERT_EQ(av[i].getVariable<int>("int"), static_cast<int>(i) + 24);
         }
     }
+}
+TEST(DeviceAgentVectorTest, GetIndex) {
+    // Initialise an agent population with values in a variable [0,1,2..N]
+    // Inside a step function, iterate the device agent vector
+    // Assert that agent index matches the order in the vector.
+    ModelDescription model(MODEL_NAME);
+    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    agent.newVariable<int>("int", 0);
+    model.addStepFunction(GetIndex);
+
+    // Init agent pop
+    AgentVector av(agent, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i)
+        av[i].setVariable<int>("int", static_cast<int>(i));
+
+    // Create and step simulation
+    CUDASimulation sim(model);
+    sim.setPopulationData(av);
+    sim.step(); //agent step function involved
 }
 FLAMEGPU_AGENT_FUNCTION(MasterIncrement, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<unsigned int>("uint", FLAMEGPU->getVariable<unsigned int>("uint") + 1);

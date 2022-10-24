@@ -44,6 +44,7 @@ class AgentVector_CAgent {
     std::vector<T> getVariableArray(const std::string& variable_name) const;
 #endif
     id_t getID() const;
+    unsigned int getIndex() const;
 
  protected:
     /**
