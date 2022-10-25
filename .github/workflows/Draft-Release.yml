@@ -75,7 +75,7 @@ jobs:
       VISUALISATION: ${{ matrix.VISUALISATION }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install CUDA
       if: ${{ startswith(env.OS, 'ubuntu') && env.CUDA != '' }}
@@ -94,7 +94,7 @@ jobs:
 
     - name: Select Python
       if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }} 
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ env.PYTHON }}
 
@@ -222,7 +222,7 @@ jobs:
       VISUALISATION: ${{ matrix.VISUALISATION }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install CUDA (Windows)
       if: ${{ runner.os == 'Windows' && env.CUDA != '' }}
@@ -234,7 +234,7 @@ jobs:
 
     - name: Select Python
       if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }} 
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ env.PYTHON }}
 
@@ -333,7 +333,7 @@ jobs:
       VISUALISATION: ${{ matrix.VISUALISATION }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     # Downgrade the devtoolset in the image based on the build matrix, using:
     # gcc-10 for CUDA >= 11.2. Unclear if devtoolset-10 will upgrade to unpatched 11.3 which breaks CUDA builds that use <chrono>. 
@@ -422,7 +422,7 @@ jobs:
     # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
     - name: Upload Wheel Artifacts
       if: ${{ env.BUILD_SWIG_PYTHON == 'ON' }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{ env.ARTIFACT_NAME }}
         path: ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/*.whl
@@ -484,7 +484,7 @@ jobs:
       VISUALISATION: ${{ matrix.VISUALISATION }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install CUDA (Windows)
       if: ${{ runner.os == 'Windows' && env.CUDA != '' }}
@@ -496,7 +496,7 @@ jobs:
 
     - name: Select Python
       if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }} 
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ env.PYTHON }}
 
@@ -525,7 +525,7 @@ jobs:
     # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
     - name: Upload Wheel Artifacts
       if: ${{env.BUILD_SWIG_PYTHON == 'ON' }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{ env.ARTIFACT_NAME }}
         path: ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/*.whl
@@ -543,12 +543,12 @@ jobs:
     if: ${{ success() && startsWith(github.ref, 'refs/tags/v') && github.event_name != 'workflow_dispatch' }}
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     # Download python wheels from previous jobs.
     - name: Download Wheel Artifacts
       id: download
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         path: artifacts
 

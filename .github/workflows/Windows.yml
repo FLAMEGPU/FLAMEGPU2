@@ -80,7 +80,7 @@ jobs:
 
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install CUDA (Windows)
       if: ${{ runner.os == 'Windows' && env.CUDA != '' }}
@@ -92,7 +92,7 @@ jobs:
 
     - name: Select Python
       if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }} 
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ env.PYTHON }}
 
@@ -128,7 +128,7 @@ jobs:
     # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
     - name: Upload Wheel Artifacts
       if: ${{env.BUILD_SWIG_PYTHON == 'ON' }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{ env.ARTIFACT_NAME }}
         path: ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/*.whl

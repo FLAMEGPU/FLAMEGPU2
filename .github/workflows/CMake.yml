@@ -67,7 +67,7 @@ jobs:
       CMAKE: ${{ matrix.cmake }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install cmake from GitHub Releases
       if: ${{ env.CMAKE != '' && env.CMAKE != 'default' }}
@@ -95,7 +95,7 @@ jobs:
 
     - name: Select Python
       if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }} 
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ env.PYTHON }}
 

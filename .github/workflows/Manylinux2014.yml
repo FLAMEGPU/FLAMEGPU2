@@ -75,7 +75,7 @@ jobs:
       VISUALISATION: ${{ matrix.VISUALISATION }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     # Downgrade the devtoolset in the image based on the build matrix, using:
     # gcc-10 for CUDA >= 11.2. Unclear if devtoolset-10 will upgrade to unpatched 11.3 which breaks CUDA builds that use <chrono>. 
@@ -166,7 +166,7 @@ jobs:
     # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
     - name: Upload Wheel Artifacts
       if: ${{env.BUILD_SWIG_PYTHON == 'ON' }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{ env.ARTIFACT_NAME }}
         path: ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/*.whl
