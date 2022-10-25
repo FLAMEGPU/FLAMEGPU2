@@ -41,7 +41,7 @@ void RandomManager::reseedDevice() {
     // curand is initialised on access if length does not match. This would need a second device length?
 }
 
-void RandomManager::reseed(const uint64_t &seed) {
+void RandomManager::reseed(const uint64_t seed) {
     // Set the instance's seed to the new value
     mSeed = seed;
 

@@ -113,7 +113,7 @@ class DeviceMacroProperty : public ReadOnlyDeviceMacroProperty<T, I, J, K, W> {
      * Note, taking value of the returned object will fail, due to the risk of atomic conflicts
      * @note Only suitable where T is type int32_t, uint32_t, uint64_t, float, double
      */
-    __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& operator +=(const T& val);
+    __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& operator +=(T val);
     /**
      * atomic subtraction
      * @param val The 2nd operand
@@ -121,19 +121,19 @@ class DeviceMacroProperty : public ReadOnlyDeviceMacroProperty<T, I, J, K, W> {
      * Note, taking value of the returned object will fail, due to the risk of atomic conflicts
      * @note Only suitable where T is type int32_t or uint32_t
      */
-    __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& operator -=(const T& val);
+    __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& operator -=(T val);
     /**
      * atomic add
      * @param val The 2nd operand
      * @return (this + val)
      */
-    __device__ __forceinline__ T operator+(const T& val) const;
+    __device__ __forceinline__ T operator+(T val) const;
     /**
      * atomic subtraction
      * @param val The 2nd operand
      * @return (this - val)
      */
-    __device__ __forceinline__ T operator-(const T& val) const;
+    __device__ __forceinline__ T operator-(T val) const;
     /**
      * atomic pre-increment
      * @return the value after the increment operation is performed
@@ -280,7 +280,7 @@ __device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, I, J, K, W>::operator 
     return *this->ptr;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
-__device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& DeviceMacroProperty<T, I, J, K, W>::operator+=(const T& val) {
+__device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& DeviceMacroProperty<T, I, J, K, W>::operator+=(const T val) {
     static_assert(std::is_same<T, int32_t>::value ||
         std::is_same<T, uint32_t>::value ||
         std::is_same<T, uint64_t>::value ||
@@ -299,7 +299,7 @@ __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& DeviceMacroProper
     return *this;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
-__device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& DeviceMacroProperty<T, I, J, K, W>::operator-=(const T& val) {
+__device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& DeviceMacroProperty<T, I, J, K, W>::operator-=(const T val) {
     static_assert(std::is_same<T, uint32_t>::value || std::is_same<T, int32_t>::value, "atomic subtract only supports the types int32_t/uint32_t.");
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
@@ -314,7 +314,7 @@ __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& DeviceMacroProper
     return *this;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
-__device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator+(const T& val) const {
+__device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator+(const T val) const {
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
@@ -327,7 +327,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator+(const
     return *this->ptr + val;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
-__device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator-(const T& val) const {
+__device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator-(const T val) const {
 #if !defined(SEATBELTS) || SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");

@@ -627,7 +627,7 @@ class ModelVis;
  * It is required to ingore the original defintion of uniform and separate the two functions to have a distinct name
  */
 %extend flamegpu::HostRandom{
-    template<typename T> inline T uniformRange(const T& min, const T& max) const {
+    template<typename T> inline T uniformRange(const T min, const T max) const {
         return $self->uniform<T>(min, max);
     }
 

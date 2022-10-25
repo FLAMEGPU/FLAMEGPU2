@@ -260,7 +260,7 @@ class EnvironmentDescription {
      * @return Returns the previous value of the environment property array element which has been set
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws std::out_of_range
-     * @see set(const std::string &, const T &value)
+     * @see set(const std::string &, T value)
      */
     template<typename T>
     T setProperty(const std::string &name, EnvironmentManager::size_type index, T value);

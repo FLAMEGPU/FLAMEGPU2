@@ -24,7 +24,7 @@ struct Any {
         memcpy(ptr, _ptr, length);
     }
     template<typename T>
-    explicit Any(const T&other)
+    explicit Any(const T other)
         : ptr(malloc(sizeof(T)))
         , length(sizeof(T))
         , type(typeid(T))

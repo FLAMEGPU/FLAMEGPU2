@@ -41,7 +41,7 @@ class AgentRandom {
      * @note Available as float or double
      */
     template<typename T>
-    __forceinline__ __device__ T logNormal(const T& mean, const T& stddev) const;
+    __forceinline__ __device__ T logNormal(T mean, T stddev) const;
     /**
      * Returns an integer uniformly distributed in the inclusive range [min, max]
      * or
@@ -50,7 +50,7 @@ class AgentRandom {
      * @note Available as signed and unsigned: char, short, int, long long, float, double
      */
     template<typename T>
-    __forceinline__ __device__ T uniform(const T& min, const T& max) const;
+    __forceinline__ __device__ T uniform(T min, T max) const;
 
  private:
     /**
@@ -91,19 +91,19 @@ __forceinline__ __device__ double AgentRandom::normal() const {
  * Log Normal floating point
  */
 template<>
-__forceinline__ __device__ float AgentRandom::logNormal(const float& mean, const float& stddev) const {
+__forceinline__ __device__ float AgentRandom::logNormal(const float mean, const float stddev) const {
     return curand_log_normal(d_random_state, mean, stddev);
 }
 template<>
-__forceinline__ __device__ double AgentRandom::logNormal(const double& mean, const double& stddev) const {
+__forceinline__ __device__ double AgentRandom::logNormal(const double mean, const double stddev) const {
     return curand_log_normal_double(d_random_state, mean, stddev);
 }
 /**
 * Uniform Range
 */
 template<typename T>
-__forceinline__ __device__ T AgentRandom::uniform(const T& min, const T& max) const {
-    static_assert(util::detail::StaticAssert::_Is_IntType<T>::value, "Invalid template argument for AgentRandom::uniform(const T& lowerBound, const T& max)");
+__forceinline__ __device__ T AgentRandom::uniform(T min, T max) const {
+    static_assert(util::detail::StaticAssert::_Is_IntType<T>::value, "Invalid template argument for AgentRandom::uniform(T lowerBound, T max)");
 #if !defined(SEATBELTS) || SEATBELTS
     if (min > max) {
         DTHROW("Invalid arguments passed to AgentRandom::uniform(), %lld > %lld\n", static_cast<int64_t>(min), static_cast<int64_t>(max));
@@ -121,7 +121,7 @@ __forceinline__ __device__ int64_t AgentRandom::uniform(const int64_t& min, cons
     return static_cast<int64_t>(min + (max - min) * uniform<double>());
 }
 template<>
-__forceinline__ __device__ uint64_t AgentRandom::uniform(const uint64_t& min, const uint64_t& max) const {
+__forceinline__ __device__ uint64_t AgentRandom::uniform(const uint64_t min, const uint64_t max) const {
 #if !defined(SEATBELTS) || SEATBELTS
     if (min > max) {
         DTHROW("Invalid arguments passed to AgentRandom::uniform(), %lld > %lld\n", static_cast<int64_t>(min), static_cast<int64_t>(max));
@@ -130,7 +130,7 @@ __forceinline__ __device__ uint64_t AgentRandom::uniform(const uint64_t& min, co
     return static_cast<uint64_t>(min + (max - min) * uniform<double>());
 }
 template<>
-__forceinline__ __device__ float AgentRandom::uniform(const float& min, const float& max) const {
+__forceinline__ __device__ float AgentRandom::uniform(const float min, const float max) const {
 #if !defined(SEATBELTS) || SEATBELTS
     if (min > max) {
         DTHROW("Invalid arguments passed to AgentRandom::uniform(), %f > %f\n", min, max);
@@ -139,7 +139,7 @@ __forceinline__ __device__ float AgentRandom::uniform(const float& min, const fl
     return min + (max - min) * uniform<float>();
 }
 template<>
-__forceinline__ __device__ double AgentRandom::uniform(const double& min, const double& max) const {
+__forceinline__ __device__ double AgentRandom::uniform(const double min, const double max) const {
 #if !defined(SEATBELTS) || SEATBELTS
     if (min > max) {
         DTHROW("Invalid arguments passed to AgentRandom::uniform(), %f > %f\n", min, max);

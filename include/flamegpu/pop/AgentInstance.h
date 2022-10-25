@@ -65,11 +65,11 @@ class AgentInstance {
      * Setters
      */
     template <typename T>
-    void setVariable(const std::string& variable_name, const T& value);
+    void setVariable(const std::string& variable_name, T value);
     template <typename T, unsigned int N>
     void setVariable(const std::string& variable_name, const std::array<T, N>& value);
     template <typename T, unsigned int N = 0>
-    void setVariable(const std::string& variable_name, unsigned int index, const T& value);
+    void setVariable(const std::string& variable_name, unsigned int index, T value);
 #ifdef SWIG
     template <typename T>
     void setVariableArray(const std::string& variable_name, const std::vector<T>& value);
@@ -187,7 +187,7 @@ std::vector<T> AgentInstance::getVariableArray(const std::string& variable_name)
 }
 #endif
 template <typename T>
-void AgentInstance::setVariable(const std::string& variable_name, const T& value) {
+void AgentInstance::setVariable(const std::string& variable_name, T value) {
     const auto v_it = _data.find(variable_name);
     if (v_it == _data.end()) {
         THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent, "
@@ -232,7 +232,7 @@ void AgentInstance::setVariable(const std::string& variable_name, const std::arr
     memcpy(static_cast<T*>(v_buff.ptr), value.data(), sizeof(T) * N);
 }
 template <typename T, unsigned int N>
-void AgentInstance::setVariable(const std::string& variable_name, const unsigned int index, const T& value) {
+void AgentInstance::setVariable(const std::string& variable_name, const unsigned int index, T value) {
     const auto v_it = _data.find(variable_name);
     if (v_it == _data.end()) {
         THROW exception::InvalidAgentVar("Variable with name '%s' was not found in agent, "

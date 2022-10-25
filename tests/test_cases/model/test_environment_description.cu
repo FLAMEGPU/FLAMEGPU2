@@ -20,9 +20,9 @@ namespace {
 const int ARRAY_TEST_LEN = 5;
 
 /**
- * Tests void EnvDesc::newProperty<T>(const std::string &, const T&) 
+ * Tests void EnvDesc::newProperty<T>(const std::string &, T) 
  * Tests T EnvDesc::get<T>(const std::string &)
- * Tests T EnvDesc::set<T>(const std::string &, const T&) 
+ * Tests T EnvDesc::set<T>(const std::string &, T) 
  * Tests T EnvDesc::get<T>(const std::string &)
  */
 template<typename T>
@@ -106,7 +106,7 @@ void AddGet_SetGet_array_vec_test() {
 /**
  * Tests void EnvDesc::newProperty<T, N>(const std::string &, const std::array<T, N>&)
  * Tests T EnvDesc::get<T, N>(const std::string &, size_type)
- * Tests T EnvDesc::set<T, N>(const std::string &, size_type, const T &)
+ * Tests T EnvDesc::set<T, N>(const std::string &, size_type, T)
  * Tests T EnvDesc::get<T, N>(const std::string &, size_type)
  */
 template<typename T>

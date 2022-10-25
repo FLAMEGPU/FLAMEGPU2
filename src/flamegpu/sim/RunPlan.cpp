@@ -25,7 +25,7 @@ RunPlan& RunPlan::operator=(const RunPlan& other) {
         this->property_overrides.emplace(i.first, util::Any(i.second));
     return *this;
 }
-void RunPlan::setRandomSimulationSeed(const uint64_t &_random_seed) {
+void RunPlan::setRandomSimulationSeed(const uint64_t _random_seed) {
     random_seed = _random_seed;
 }
 void RunPlan::setSteps(const unsigned int _steps) {

@@ -974,7 +974,7 @@ class MessageArray3D::In {
          * @param z Search origin z coord
          * @param _radius Search radius
          */
-        inline __device__ VonNeumannFilter(const MetaData* _metadata, size_type& x, size_type& y, size_type& z, size_type& _radius);
+        inline __device__ VonNeumannFilter(const MetaData* _metadata, size_type x, size_type y, size_type z, size_type _radius);
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * A null filter which always returns 0 messages

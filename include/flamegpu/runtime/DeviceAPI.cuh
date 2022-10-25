@@ -295,7 +295,7 @@ class DeviceAPI {
      * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N, unsigned int M>
-    __device__ void setVariable(const char(&variable_name)[M], unsigned int index, const T &value);
+    __device__ void setVariable(const char(&variable_name)[M], unsigned int index, T value);
     /**
      * Returns the agent's unique identifier
      */
@@ -427,7 +427,7 @@ __device__ void DeviceAPI<MessageIn, MessageOut>::setVariable(const char(&variab
 }
 template<typename MessageIn, typename MessageOut>
 template<typename T, unsigned int N, unsigned int M>
-__device__ void DeviceAPI<MessageIn, MessageOut>::setVariable(const char(&variable_name)[M], const unsigned int array_index, const T &value) {
+__device__ void DeviceAPI<MessageIn, MessageOut>::setVariable(const char(&variable_name)[M], const unsigned int array_index, const T value) {
     if (variable_name[0] == '_') {
 #if !defined(SEATBELTS) || SEATBELTS
         DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in DeviceAPI::setVariable().\n", variable_name);

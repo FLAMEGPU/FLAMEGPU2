@@ -112,7 +112,7 @@ class HostMacroProperty {
      * @param val New value of the element
      * @throws exception::InvalidOperation If template arguments I, J, K , W are not all 1. Which denotes the macro property has more dimensions remaining to be indexed. 
      */
-    HostMacroProperty<T, I, J, K, W>& operator=(const T &val);
+    HostMacroProperty<T, I, J, K, W>& operator=(T val);
     /**
      * Zero's the selected area of the array
      */
@@ -132,30 +132,30 @@ class HostMacroProperty {
      * Arithmetic operators
      */
     template<typename T2>
-    auto operator+(const T2& b) const;
+    auto operator+(T2 b) const;
     template<typename T2>
-    auto operator-(const T2& b) const;
+    auto operator-(T2 b) const;
     template<typename T2>
-    auto operator*(const T2& b) const;
+    auto operator*(T2 b) const;
     template<typename T2>
-    auto operator/(const T2& b) const;
+    auto operator/(T2 b) const;
     template<typename T2>
-    auto operator%(const T2& b) const;
+    auto operator%(T2 b) const;
 #endif
     /**
      * Assignment operators
      */
-    // HostMacroProperty<T, I, J, K, W>& operator=(const T& b);  // Defined above
+    // HostMacroProperty<T, I, J, K, W>& operator=(T b);  // Defined above
     template<typename T2>
-    HostMacroProperty<T, I, J, K, W>& operator+=(const T2& b);
+    HostMacroProperty<T, I, J, K, W>& operator+=(T2 b);
     template<typename T2>
-    HostMacroProperty<T, I, J, K, W>& operator-=(const T2& b);
+    HostMacroProperty<T, I, J, K, W>& operator-=(T2 b);
     template<typename T2>
-    HostMacroProperty<T, I, J, K, W>& operator*=(const T2& b);
+    HostMacroProperty<T, I, J, K, W>& operator*=(T2 b);
     template<typename T2>
-    HostMacroProperty<T, I, J, K, W>& operator/=(const T2& b);
+    HostMacroProperty<T, I, J, K, W>& operator/=(T2 b);
     template<typename T2>
-    HostMacroProperty<T, I, J, K, W>& operator%=(const T2& b);
+    HostMacroProperty<T, I, J, K, W>& operator%=(T2 b);
 
  private:
     /**
@@ -210,7 +210,7 @@ class HostMacroProperty_swig {
      * @throws exception::OutOfBoundsException If i >= I.
      * @throws exception::InvalidOperation If the macro property has no dimensions remaining to be indexed.
      */
-    void __setitem__(unsigned int i,  const T &val);
+    void __setitem__(unsigned int i,  T val);
     /**
      * Explicit set method, as we lack operator= in python
      */
@@ -221,12 +221,12 @@ class HostMacroProperty_swig {
     double __float__();
     bool __bool__();
 
-    bool __eq__(const T& other) const;
-    bool __ne__(const T &other) const;
-    bool __lt__(const T& other) const;
-    bool __le__(const T& other) const;
-    bool __gt__(const T& other) const;
-    bool __ge__(const T& other) const;
+    bool __eq__(T other) const;
+    bool __ne__(T other) const;
+    bool __lt__(T other) const;
+    bool __le__(T other) const;
+    bool __gt__(T other) const;
+    bool __ge__(T other) const;
 
     /**
      * Required for iterable
@@ -345,64 +345,64 @@ T HostMacroProperty<T, I, J, K, W>::operator--(int) {
 #ifndef SWIG
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 template<typename T2>
-auto HostMacroProperty<T, I, J, K, W>::operator+(const T2& b) const {
+auto HostMacroProperty<T, I, J, K, W>::operator+(const T2 b) const {
     return _get() + b;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 template<typename T2>
-auto HostMacroProperty<T, I, J, K, W>::operator-(const T2& b) const {
+auto HostMacroProperty<T, I, J, K, W>::operator-(const T2 b) const {
     return _get() - b;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 template<typename T2>
-auto HostMacroProperty<T, I, J, K, W>::operator*(const T2& b) const {
+auto HostMacroProperty<T, I, J, K, W>::operator*(const T2 b) const {
     return _get() * b;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 template<typename T2>
-auto HostMacroProperty<T, I, J, K, W>::operator/(const T2& b) const {
+auto HostMacroProperty<T, I, J, K, W>::operator/(const T2 b) const {
     return _get() / b;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 template<typename T2>
-auto HostMacroProperty<T, I, J, K, W>::operator%(const T2& b) const {
+auto HostMacroProperty<T, I, J, K, W>::operator%(const T2 b) const {
     return _get() % b;
 }
 #endif
 
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 template<typename T2>
-HostMacroProperty<T, I, J, K, W>& HostMacroProperty<T, I, J, K, W>::operator+=(const T2& b) {
+HostMacroProperty<T, I, J, K, W>& HostMacroProperty<T, I, J, K, W>::operator+=(const T2 b) {
     _get() += b;
     return *this;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 template<typename T2>
-HostMacroProperty<T, I, J, K, W>& HostMacroProperty<T, I, J, K, W>::operator-=(const T2& b) {
+HostMacroProperty<T, I, J, K, W>& HostMacroProperty<T, I, J, K, W>::operator-=(const T2 b) {
     _get() -= b;
     return *this;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 template<typename T2>
-HostMacroProperty<T, I, J, K, W>& HostMacroProperty<T, I, J, K, W>::operator*=(const T2& b) {
+HostMacroProperty<T, I, J, K, W>& HostMacroProperty<T, I, J, K, W>::operator*=(const T2 b) {
     _get() *= b;
     return *this;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 template<typename T2>
-HostMacroProperty<T, I, J, K, W>& HostMacroProperty<T, I, J, K, W>::operator/=(const T2& b) {
+HostMacroProperty<T, I, J, K, W>& HostMacroProperty<T, I, J, K, W>::operator/=(const T2 b) {
     _get() /= b;
     return *this;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 template<typename T2>
-HostMacroProperty<T, I, J, K, W>& HostMacroProperty<T, I, J, K, W>::operator%=(const T2& b) {
+HostMacroProperty<T, I, J, K, W>& HostMacroProperty<T, I, J, K, W>::operator%=(const T2 b) {
     _get() %= b;
     return *this;
 }
 
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
-HostMacroProperty<T, I, J, K, W>& HostMacroProperty<T, I, J, K, W>::operator=(const T& val) {
+HostMacroProperty<T, I, J, K, W>& HostMacroProperty<T, I, J, K, W>::operator=(const T val) {
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         THROW exception::InvalidOperation("Indexing error, property has more dimensions.\n");
     }
@@ -458,7 +458,7 @@ void HostMacroProperty_swig<T>::set(T val) {
     metadata->has_changed = true;
 }
 template<typename T>
-void HostMacroProperty_swig<T>::__setitem__(unsigned int i, const T& val) {
+void HostMacroProperty_swig<T>::__setitem__(unsigned int i, const T val) {
     if (dimensions[1] != 1 || dimensions[2] != 1 || dimensions[3] != 1) {
         THROW exception::InvalidOperation("Indexing error, property has more dimensions.\n");
     } else if (i >= dimensions[0]) {
@@ -502,7 +502,7 @@ bool HostMacroProperty_swig<T>::__bool__() {
     return static_cast<bool>(reinterpret_cast<T*>(metadata->h_base_ptr)[offset]);
 }
 template<typename T>
-bool HostMacroProperty_swig<T>::__eq__(const T& other) const {
+bool HostMacroProperty_swig<T>::__eq__(const T other) const {
     if (dimensions[0] != 1 || dimensions[1] != 1 || dimensions[2] != 1 || dimensions[3] != 1) {
         THROW exception::InvalidOperation("Indexing error, property has more dimensions.\n");
     }
@@ -510,7 +510,7 @@ bool HostMacroProperty_swig<T>::__eq__(const T& other) const {
     return reinterpret_cast<T*>(metadata->h_base_ptr)[offset] == other;
 }
 template<typename T>
-bool HostMacroProperty_swig<T>::__ne__(const T& other) const {
+bool HostMacroProperty_swig<T>::__ne__(const T other) const {
     if (dimensions[0] != 1 || dimensions[1] != 1 || dimensions[2] != 1 || dimensions[3] != 1) {
         THROW exception::InvalidOperation("Indexing error, property has more dimensions.\n");
     }
@@ -518,7 +518,7 @@ bool HostMacroProperty_swig<T>::__ne__(const T& other) const {
     return reinterpret_cast<T*>(metadata->h_base_ptr)[offset] != other;
 }
 template<typename T>
-bool HostMacroProperty_swig<T>::__lt__(const T& other) const {
+bool HostMacroProperty_swig<T>::__lt__(const T other) const {
     if (dimensions[0] != 1 || dimensions[1] != 1 || dimensions[2] != 1 || dimensions[3] != 1) {
         THROW exception::InvalidOperation("Indexing error, property has more dimensions.\n");
     }
@@ -526,7 +526,7 @@ bool HostMacroProperty_swig<T>::__lt__(const T& other) const {
     return reinterpret_cast<T*>(metadata->h_base_ptr)[offset] < other;
 }
 template<typename T>
-bool HostMacroProperty_swig<T>::__le__(const T& other) const {
+bool HostMacroProperty_swig<T>::__le__(const T other) const {
     if (dimensions[0] != 1 || dimensions[1] != 1 || dimensions[2] != 1 || dimensions[3] != 1) {
         THROW exception::InvalidOperation("Indexing error, property has more dimensions.\n");
     }
@@ -534,7 +534,7 @@ bool HostMacroProperty_swig<T>::__le__(const T& other) const {
     return reinterpret_cast<T*>(metadata->h_base_ptr)[offset] <= other;
 }
 template<typename T>
-bool HostMacroProperty_swig<T>::__gt__(const T& other) const {
+bool HostMacroProperty_swig<T>::__gt__(const T other) const {
     if (dimensions[0] != 1 || dimensions[1] != 1 || dimensions[2] != 1 || dimensions[3] != 1) {
         THROW exception::InvalidOperation("Indexing error, property has more dimensions.\n");
     }
@@ -542,7 +542,7 @@ bool HostMacroProperty_swig<T>::__gt__(const T& other) const {
     return reinterpret_cast<T*>(metadata->h_base_ptr)[offset] > other;
 }
 template<typename T>
-bool HostMacroProperty_swig<T>::__ge__(const T& other) const {
+bool HostMacroProperty_swig<T>::__ge__(const T other) const {
     if (dimensions[0] != 1 || dimensions[1] != 1 || dimensions[2] != 1 || dimensions[3] != 1) {
         THROW exception::InvalidOperation("Indexing error, property has more dimensions.\n");
     }
@@ -550,7 +550,7 @@ bool HostMacroProperty_swig<T>::__ge__(const T& other) const {
     return reinterpret_cast<T*>(metadata->h_base_ptr)[offset] >= other;
 }
 // template<typename T>
-// T HostMacroProperty_swig<T>::__mod__(const T& other) {
+// T HostMacroProperty_swig<T>::__mod__(const T other) {
 //     if (dimensions[0] != 1 || dimensions[1] != 1 || dimensions[2] != 1 || dimensions[3] != 1) {
 //         THROW exception::InvalidOperation("Indexing error, property has more dimensions.\n");
 //     }

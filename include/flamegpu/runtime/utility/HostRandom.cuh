@@ -38,7 +38,7 @@ class HostRandom {
     * @note Available as float or double
     */
     template<typename T>
-    inline T logNormal(const T& mean, const T& stddev) const;
+    inline T logNormal(const T mean, const T stddev) const;
     /**
      * Returns an integer uniformly distributed in the inclusive range [min, max]
      * or
@@ -47,12 +47,12 @@ class HostRandom {
      * @note Available as signed and unsigned: char, short, int, long long
      */
     template<typename T>
-    inline T uniform(const T& min, const T& max) const;
+    inline T uniform(T min, T max) const;
     /**
      * Change the seed used for random generation
      * @param seed New random seed
      */
-    void setSeed(const uint64_t &seed);
+    void setSeed(uint64_t seed);
     /**
      * Returns the last value used to seed random generation
      */
@@ -80,15 +80,15 @@ inline T HostRandom::normal() const {
 }
 
 template<typename T>
-inline T HostRandom::logNormal(const T& mean, const T& stddev) const {
-    static_assert(util::detail::StaticAssert::_Is_RealType<T>::value, "Invalid template argument for HostRandom::logNormal(const T& mean, const T& stddev)");
+inline T HostRandom::logNormal(const T mean, const T stddev) const {
+    static_assert(util::detail::StaticAssert::_Is_RealType<T>::value, "Invalid template argument for HostRandom::logNormal(T mean, T stddev)");
     std::lognormal_distribution<T> dist(mean, stddev);
     return rng.getDistribution<T>(dist);
 }
 
 template<typename T>
-inline T HostRandom::uniform(const T& min, const T& max) const {
-    static_assert(util::detail::StaticAssert::_Is_IntType<T>::value, "Invalid template argument for HostRandom::uniform(const T& lowerBound, const T& max)");
+inline T HostRandom::uniform(const T min, const T max) const {
+    static_assert(util::detail::StaticAssert::_Is_IntType<T>::value, "Invalid template argument for HostRandom::uniform(T lowerBound, T max)");
     std::uniform_int_distribution<T> dist(min, max);
     return rng.getDistribution<T>(dist);
 }
@@ -109,17 +109,17 @@ inline unsigned char HostRandom::uniform(const unsigned char min, const unsigned
 }
 
 template<>
-inline signed char HostRandom::uniform(const signed char& min, const signed char& max) const {
+inline signed char HostRandom::uniform(const signed char min, const signed char max) const {
     std::uniform_int_distribution<int16_t> dist(min, max);
     return static_cast<signed char>(rng.getDistribution<int16_t>(dist));
 }
 template<>
-inline float HostRandom::uniform(const float& min, const float& max) const {
+inline float HostRandom::uniform(const float min, const float max) const {
     std::uniform_real_distribution<float> dist(min, max);
     return rng.getDistribution<float>(dist);
 }
 template<>
-inline double HostRandom::uniform(const double& min, const double& max) const {
+inline double HostRandom::uniform(const double min, const double max) const {
     std::uniform_real_distribution<double> dist(min, max);
     return rng.getDistribution<double>(dist);
 }

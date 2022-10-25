@@ -1490,7 +1490,7 @@ void CUDASimulation::applyConfig_derived() {
     reseed(getSimulationConfig().random_seed);
 }
 
-void CUDASimulation::reseed(const uint64_t &seed) {
+void CUDASimulation::reseed(const uint64_t seed) {
     SimulationConfig().random_seed = seed;
     singletons->rng.reseed(seed);
 
@@ -1788,7 +1788,7 @@ void CUDASimulation::resetLog() {
 #endif
     run_log->performance_specs.flamegpu_version = VERSION_FULL;
 }
-void CUDASimulation::processStepLog(const double &step_time_seconds) {
+void CUDASimulation::processStepLog(const double step_time_seconds) {
     if (!step_log_config)
         return;
     if (step_count % step_log_config->frequency != 0)

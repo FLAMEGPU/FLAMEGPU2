@@ -53,7 +53,7 @@ class RandomManager {
      * Reseeds all owned random generators
      * @note Can be called multiple times to reseed, doing so releases existing memory allocations
      */
-    void reseed(const uint64_t &seed);
+    void reseed(uint64_t seed);
     /**
      * Resizes random array according to the rules:
      *   while(length<_length)

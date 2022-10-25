@@ -2,7 +2,7 @@
 
 namespace flamegpu {
 
-void HostRandom::setSeed(const uint64_t &seed) {
+void HostRandom::setSeed(const uint64_t seed) {
     rng.reseed(seed);
 }
 uint64_t HostRandom::getSeed() const {

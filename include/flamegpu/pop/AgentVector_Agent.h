@@ -81,11 +81,11 @@ class AgentVector_Agent : public AgentVector_CAgent {
 
  public:
     template <typename T>
-    void setVariable(const std::string &variable_name, const T &value);
+    void setVariable(const std::string &variable_name, T value);
     template <typename T, unsigned int N>
     void setVariable(const std::string &variable_name, const std::array<T, N> &value);
     template <typename T, unsigned int N = 0>
-    void setVariable(const std::string &variable_name, unsigned int index, const T &value);
+    void setVariable(const std::string &variable_name, unsigned int index, T value);
 #ifdef SWIG
     template <typename T>
     void setVariableArray(const std::string &variable_name, const std::vector<T> &value);
@@ -132,7 +132,7 @@ class AgentVector_Agent : public AgentVector_CAgent {
 };
 
 template <typename T>
-void AgentVector_Agent::setVariable(const std::string &variable_name, const T &value) {
+void AgentVector_Agent::setVariable(const std::string &variable_name, const T value) {
     if (!variable_name.empty() && variable_name[0] == '_') {
         THROW exception::ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
             "in AgentVector::Agent::setVariable().");
@@ -206,7 +206,7 @@ void AgentVector_Agent::setVariable(const std::string &variable_name, const std:
     _parent->_changed(variable_name, index);
 }
 template <typename T, unsigned int N>
-void AgentVector_Agent::setVariable(const std::string &variable_name, const unsigned int array_index, const T &value) {
+void AgentVector_Agent::setVariable(const std::string &variable_name, const unsigned int array_index, const T value) {
     if (!variable_name.empty() && variable_name[0] == '_') {
         THROW exception::ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
             "in AgentVector::Agent::setVariable().");

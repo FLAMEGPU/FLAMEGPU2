@@ -47,7 +47,7 @@ class RunPlan {
      * Set the random seed passed to this run of the simulation
      * @param random_seed Seed for random generation during execution
      */
-    void setRandomSimulationSeed(const uint64_t &random_seed);
+    void setRandomSimulationSeed(uint64_t random_seed);
     /**
      * Set the number of steps for this instance of the simulation
      * A steps value of 0 requires the ModelDescription to have atleast 1 exit condition
@@ -69,7 +69,7 @@ class RunPlan {
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
      */
     template<typename T>
-    void setProperty(const std::string &name, const T&value);
+    void setProperty(const std::string &name, T value);
     /**
      * Set the environment property override for this run of the model
      * This version should be used for array properties
@@ -95,7 +95,7 @@ class RunPlan {
      * @throws exception::OutOfBoundsException If index is not in range of the length of the property array
      */
     template<typename T, EnvironmentManager::size_type N = 0>
-    void setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value);
+    void setProperty(const std::string &name, EnvironmentManager::size_type index, T value);
 #ifdef SWIG
     /**
      * Set the environment property override for this run of the model
@@ -155,7 +155,7 @@ class RunPlan {
      * @throws exception::OutOfBoundsException If index is not in range of the length of the property array
      */
     template<typename T, EnvironmentManager::size_type N = 0>
-    T getProperty(const std::string &name, const EnvironmentManager::size_type &index) const;
+    T getProperty(const std::string &name, EnvironmentManager::size_type index) const;
 #ifdef SWIG
     /**
      * Gets the currently configured environment property array value
@@ -193,7 +193,7 @@ class RunPlan {
 };
 
 template<typename T>
-void RunPlan::setProperty(const std::string &name, const T&value) {
+void RunPlan::setProperty(const std::string &name, T value) {
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
@@ -239,7 +239,7 @@ void RunPlan::setProperty(const std::string &name, const std::array<T, N> &value
     property_overrides.emplace(name, util::Any(value.data(), sizeof(T) * N, typeid(typename type_decode<T>::type_t), type_decode<T>::len_t * N));
 }
 template<typename T, EnvironmentManager::size_type N>
-void RunPlan::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value) {
+void RunPlan::setProperty(const std::string &name, const EnvironmentManager::size_type index, T value) {
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
@@ -358,7 +358,7 @@ std::array<T, N> RunPlan::getProperty(const std::string &name) const {
     return rtn;
 }
 template<typename T, EnvironmentManager::size_type N>
-T RunPlan::getProperty(const std::string &name, const EnvironmentManager::size_type &index) const {
+T RunPlan::getProperty(const std::string &name, const EnvironmentManager::size_type index) const {
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
