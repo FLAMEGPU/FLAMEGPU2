@@ -614,7 +614,7 @@ class ModelVis;
         def __len__(self):
             return self.size()
     }
-    flamegpu::AgentVector::Agent flamegpu::AgentVector::__getitem__(const int &index) {
+    flamegpu::AgentVector::Agent flamegpu::AgentVector::__getitem__(const int index) {
         if (index >= 0)
             return $self->operator[](index);
         return $self->operator[]($self->size() + index);
@@ -649,7 +649,7 @@ class ModelVis;
         else: # "insert" is used as if the vector is a native C++ container
             return self.insert(self, i, x)
    }
-   flamegpu::RunPlan &flamegpu::RunPlanVector::__getitem__(const int &index) {
+   flamegpu::RunPlan &flamegpu::RunPlanVector::__getitem__(const int index) {
         if (index >= 0)
             return $self->operator[](index);
         return $self->operator[]($self->size() + index);
@@ -667,7 +667,7 @@ class ModelVis;
         def __len__(self):
             return self.size()
     }
-    flamegpu::DeviceAgentVector_impl::Agent flamegpu::DeviceAgentVector_impl::__getitem__(const int &index) {
+    flamegpu::DeviceAgentVector_impl::Agent flamegpu::DeviceAgentVector_impl::__getitem__(const int index) {
         if (index >= 0)
             return $self->operator[](index);
         return $self->operator[]($self->size() + index);
@@ -992,7 +992,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
             def __len__(self):
                 return self.size()
         }
-        flamegpu::visualiser::Color flamegpu::visualiser::Palette::__getitem__(const int &index) {
+        flamegpu::visualiser::Color flamegpu::visualiser::Palette::__getitem__(const int index) {
             if (index >= 0)
                 return $self->operator[](index);
             return $self->operator[]($self->size() + index);

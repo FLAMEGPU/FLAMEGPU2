@@ -38,7 +38,7 @@ class AgentVector_CAgent {
     template <typename T, unsigned int N>
     std::array<T, N> getVariable(const std::string& variable_name) const;
     template <typename T, unsigned int N = 0>
-    T getVariable(const std::string& variable_name, const unsigned int& index) const;
+    T getVariable(const std::string& variable_name, unsigned int index) const;
 #ifdef SWIG
     template <typename T>
     std::vector<T> getVariableArray(const std::string& variable_name) const;
@@ -85,7 +85,7 @@ class AgentVector_Agent : public AgentVector_CAgent {
     template <typename T, unsigned int N>
     void setVariable(const std::string &variable_name, const std::array<T, N> &value);
     template <typename T, unsigned int N = 0>
-    void setVariable(const std::string &variable_name, const unsigned int &index, const T &value);
+    void setVariable(const std::string &variable_name, unsigned int index, const T &value);
 #ifdef SWIG
     template <typename T>
     void setVariableArray(const std::string &variable_name, const std::vector<T> &value);
@@ -206,7 +206,7 @@ void AgentVector_Agent::setVariable(const std::string &variable_name, const std:
     _parent->_changed(variable_name, index);
 }
 template <typename T, unsigned int N>
-void AgentVector_Agent::setVariable(const std::string &variable_name, const unsigned int &array_index, const T &value) {
+void AgentVector_Agent::setVariable(const std::string &variable_name, const unsigned int array_index, const T &value) {
     if (!variable_name.empty() && variable_name[0] == '_') {
         THROW exception::ReservedName("Agent variable names that begin with '_' are reserved for internal usage and cannot be changed directly, "
             "in AgentVector::Agent::setVariable().");
@@ -349,7 +349,7 @@ std::array<T, N> AgentVector_CAgent::getVariable(const std::string &variable_nam
     return rtn;
 }
 template <typename T, unsigned int N>
-T AgentVector_CAgent::getVariable(const std::string &variable_name, const unsigned int &array_index) const {
+T AgentVector_CAgent::getVariable(const std::string &variable_name, const unsigned int array_index) const {
     const auto data = _data.lock();
     if (!data) {
         THROW exception::ExpiredWeakPtr("The AgentVector which owns this AgentVector::Agent has been deallocated, "

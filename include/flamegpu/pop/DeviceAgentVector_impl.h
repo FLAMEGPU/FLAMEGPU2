@@ -45,7 +45,7 @@ class DeviceAgentVector_impl : protected AgentVector {
      */
     DeviceAgentVector_impl(CUDAAgent& _cuda_agent, const std::string& cuda_agent_state,
         const VarOffsetStruct& _agentOffsets, std::vector<NewAgentStorage>& _newAgentData,
-        CUDAScatter& scatter, const unsigned int& streamId, const cudaStream_t& stream);
+        CUDAScatter& scatter, unsigned int streamId, const cudaStream_t& stream);
     /**
      * Copy operations are disabled
      */
@@ -351,7 +351,7 @@ class DeviceAgentVector_impl : protected AgentVector {
      * @param new_capacity New buffer capacity
      * @param init If true, new memory is init
      */
-    void resizeUnboundBuffers(const unsigned int& new_capacity, bool init);
+    void resizeUnboundBuffers(unsigned int new_capacity, bool init);
     CUDAAgent& cuda_agent;
     std::string cuda_agent_state;
 
@@ -360,7 +360,7 @@ class DeviceAgentVector_impl : protected AgentVector {
     std::vector<NewAgentStorage>& newAgentData;
 
     CUDAScatter& scatter;
-    const unsigned int& streamId;
+    const unsigned int streamId;
     const cudaStream_t& stream;
 };
 

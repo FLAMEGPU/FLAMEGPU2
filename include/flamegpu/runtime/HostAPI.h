@@ -55,7 +55,7 @@ class HostAPI {
           AgentDataMap &agentData,
           const std::shared_ptr<EnvironmentManager> &env,
           CUDAMacroEnvironment &macro_env,
-          const unsigned int &streamId,
+          unsigned int streamId,
          cudaStream_t stream);
     /**
      * Frees held device memory
@@ -82,7 +82,7 @@ class HostAPI {
 
  private:
     template<typename T>
-    void resizeOutputSpace(const unsigned int &items = 1);
+    void resizeOutputSpace(unsigned int items = 1);
     CUDASimulation &agentModel;
     void *d_output_space;
     size_t d_output_space_size;
@@ -112,7 +112,7 @@ class HostAPI {
 };
 
 template<typename T>
-void HostAPI::resizeOutputSpace(const unsigned int &items) {
+void HostAPI::resizeOutputSpace(const unsigned int items) {
     if (sizeof(T) * items > d_output_space_size) {
         if (d_output_space_size) {
             gpuErrchk(cudaFree(d_output_space));

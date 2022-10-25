@@ -39,13 +39,13 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @param step The value added to the previous seed to calculate the next seed
      * @note A step of 0, will give the exact same seed to all RunPlans
      */
-    void setRandomSimulationSeed(const uint64_t &initial_seed, const unsigned int &step = 0);
+    void setRandomSimulationSeed(const uint64_t &initial_seed, unsigned int step = 0);
     /**
      * Set the steps of each RunPlan currently within this vector
      * @param steps The number of steps to be executed
      * @note If 0 is provided, the model must have an exit condition
      */
-    void setSteps(const unsigned int &steps);
+    void setSteps(unsigned int steps);
     /**
      * Set the the sub directory within the output directory for outputs of runplans in this vector
      * @param subdir The name of the subdirectory
@@ -287,11 +287,11 @@ class RunPlanVector : private std::vector<RunPlan>  {
     RunPlanVector operator+(const RunPlanVector& rhs) const;
     RunPlanVector& operator+=(const RunPlan& rhs);
     RunPlanVector& operator+=(const RunPlanVector& rhs);
-    RunPlanVector& operator*=(const unsigned int& rhs);
-    RunPlanVector operator*(const unsigned int& rhs) const;
+    RunPlanVector& operator*=(unsigned int rhs);
+    RunPlanVector operator*(unsigned int rhs) const;
 
  private:
-    RunPlanVector(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> &environment, const bool &allow_0_steps);
+    RunPlanVector(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> &environment, bool allow_0_steps);
     /**
      * Seed used for the current `rand` instance, which is only valid for elements generated since the last call to setRandomPropertySeed
      */

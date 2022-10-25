@@ -1448,7 +1448,7 @@ TEST(AgentVectorTest, AgentVector_Agent) {
         // Wrong type
         EXPECT_THROW((ai.setVariable<float, 3>)("int3", float3_ref), exception::InvalidVarType);
     }
-    {  // setVariable(const std::string &variable_name, const unsigned int &array_index, const T &value)
+    {  // setVariable(const std::string &variable_name, unsigned int array_index, const T &value)
         // Bad name
         EXPECT_THROW(ai.setVariable<int>("wrong", 0, 1), exception::InvalidAgentVar);
         // Index out of bounds
@@ -1480,7 +1480,7 @@ TEST(AgentVectorTest, AgentVector_Agent) {
         // Wrong type
         EXPECT_THROW((ai.getVariable<float, 3>)("int3"), exception::InvalidVarType);
     }
-    {  // getVariable(const std::string &variable_name, const unsigned int &array_index)
+    {  // getVariable(const std::string &variable_name, unsigned int array_index)
         // Bad name
         EXPECT_THROW(ai.getVariable<int>("wrong", 0), exception::InvalidAgentVar);
         // Index out of bounds

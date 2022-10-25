@@ -53,7 +53,7 @@ class EnvironmentDescription {
          * @param _is_const Is the property constant
          * @param _data The data to initially fill the property with
          */
-        PropData(const bool &_is_const, const util::Any &_data)
+        PropData(bool _is_const, const util::Any &_data)
             : isConst(_is_const)
             , data(_data) { }
         bool isConst;

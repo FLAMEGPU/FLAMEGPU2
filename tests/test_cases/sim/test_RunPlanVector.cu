@@ -625,7 +625,7 @@ TEST(TestRunPlanVector, operatorAddition) {
     EXPECT_THROW((planVector += otherPlanVector), flamegpu::exception::InvalidArgument);
     EXPECT_THROW((otherPlanVector += planVector), flamegpu::exception::InvalidArgument);
 }
-// RunPlanVector operator*(const unsigned int& rhs) const;
+// RunPlanVector operator*(unsigned int rhs) const;
 TEST(TestRunPlanVector, operatorMultiplication) {
     // Define the simple model to use
     flamegpu::ModelDescription model("test");
@@ -635,14 +635,14 @@ TEST(TestRunPlanVector, operatorMultiplication) {
     EXPECT_EQ(plans.size(), totalPlans);
 
     // Multiply the plan vector by a fixed size
-    // RunPlanVector operator*(const unsigned int& rhs) const;
+    // RunPlanVector operator*(unsigned int rhs) const;
     const uint32_t mult = 2u;
     flamegpu::RunPlanVector morePlans = plans * mult;
     const uint32_t expectedSize = mult * totalPlans;
     EXPECT_EQ(morePlans.size(), expectedSize);
 
     // multiply a plan in-place
-    // RunPlanVector& operator*=(const unsigned int& rhs);
+    // RunPlanVector& operator*=(unsigned int rhs);
     plans *= mult;
     EXPECT_EQ(plans.size(), expectedSize);
 }

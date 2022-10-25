@@ -125,7 +125,7 @@ class MessageBruteForce::In {
          * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
          */
         template<typename T, MessageNone::size_type N, unsigned int M> __device__
-        T getVariable(const char(&variable_name)[M], const unsigned int &index) const;
+        T getVariable(const char(&variable_name)[M], unsigned int index) const;
     };
 
     /**
@@ -210,7 +210,7 @@ class MessageBruteForce::Out {
      * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N, unsigned int M>
-    __device__ void setVariable(const char(&variable_name)[M], const unsigned int& index, T value) const;
+    __device__ void setVariable(const char(&variable_name)[M], unsigned int index, T value) const;
 
  protected:
     /**
@@ -237,7 +237,7 @@ __device__ T MessageBruteForce::In::Message::getVariable(const char(&variable_na
     return value;
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
-T MessageBruteForce::In::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
+T MessageBruteForce::In::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
     // simple indexing assumes index is the thread number (this may change later)
     const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 #if !defined(SEATBELTS) || SEATBELTS
@@ -275,7 +275,7 @@ __device__ void MessageBruteForce::Out::setVariable(const char(&variable_name)[N
     this->scan_flag[index] = 1;
 }
 template<typename T, unsigned int N, unsigned int M>
-__device__ void MessageBruteForce::Out::setVariable(const char(&variable_name)[M], const unsigned int& array_index, T value) const {
+__device__ void MessageBruteForce::Out::setVariable(const char(&variable_name)[M], const unsigned int array_index, T value) const {
     if (variable_name[0] == '_') {
 #if !defined(SEATBELTS) || SEATBELTS
         DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in MessageBruteForce::Out::setVariable().\n", variable_name);

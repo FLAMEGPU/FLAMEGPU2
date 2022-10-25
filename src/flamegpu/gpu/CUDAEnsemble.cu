@@ -79,7 +79,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
     if (device_count == 0) {
         THROW exception::InvalidCUDAdevice("Error no CUDA devices found!, in CUDAEnsemble::simulate()");
     }
-    for (const int &id : config.devices) {
+    for (const int id : config.devices) {
         if (id >= device_count) {
             THROW exception::InvalidCUDAdevice("Requested CUDA device %d is not valid, only %d CUDA devices available!, in CUDAEnsemble::simulate()", id, device_count);
         }

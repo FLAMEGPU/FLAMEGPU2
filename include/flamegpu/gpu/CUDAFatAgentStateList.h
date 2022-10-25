@@ -160,15 +160,15 @@ class CUDAFatAgentStateList {
      */
     void addSubAgentVariables(
       const AgentData &description,
-      const unsigned int &master_fat_index,
-      const unsigned int &sub_fat_index,
+      unsigned int master_fat_index,
+      unsigned int sub_fat_index,
       const std::shared_ptr<SubAgentData> &mapping);
     /**
      * Returns the VariableBuffer for the corresponding agent variable
      * @param fat_index Fat index of the corresponding agent
      * @param name Name of the variable within the corresponding agent
      */
-    std::shared_ptr<VariableBuffer> getVariableBuffer(const unsigned int &fat_index, const std::string &name);
+    std::shared_ptr<VariableBuffer> getVariableBuffer(unsigned int fat_index, const std::string &name);
     /**
      * Resize all variable buffers
      * @param minSize The minimum number of agents that must be representable
@@ -193,7 +193,7 @@ class CUDAFatAgentStateList {
      * @param newCount New number of alive (and active agents)
      * @param resetDisabled If true, the disableAgents count will be set to 0, else it will be added to newCount for the internal true alive count
      */
-    void setAgentCount(const unsigned int &newCount, const bool &resetDisabled = false);
+    void setAgentCount(unsigned int newCount, bool resetDisabled = false);
     /**
      * Scatters all living agents (including disabled, according to the provided stream's death flag)
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
@@ -201,7 +201,7 @@ class CUDAFatAgentStateList {
      * @param stream CUDA stream to be used for async CUDA operations
      * @return The number of agents that are still alive (this includes temporarily disabled agents due to agent function condition)
      */
-    unsigned int scatterDeath(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
+    unsigned int scatterDeath(CUDAScatter &scatter, unsigned int streamId, const cudaStream_t &stream);
     /**
      * Scatters all living agents which failed the agent function condition into the swap buffer (there should be no disabled at this time)
      * This does not swap buffers or update disabledAgent)
@@ -209,9 +209,9 @@ class CUDAFatAgentStateList {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      * @return The number of agents that were scattered (the number of agents which failed the condition)
-     * @see scatterAgentFunctionConditionTrue(const unsigned int &, const unsigned int &)
+     * @see scatterAgentFunctionConditionTrue(unsigned int, unsigned int)
      */
-    unsigned int scatterAgentFunctionConditionFalse(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
+    unsigned int scatterAgentFunctionConditionFalse(CUDAScatter &scatter, unsigned int streamId, const cudaStream_t &stream);
     /**
      * Scatters all living agents which passed the agent function condition into the swap buffer (there should be no disabled at this time)
      * Also swaps the buffers and sets the number of disabled agents
@@ -220,10 +220,10 @@ class CUDAFatAgentStateList {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      * @return The number of agents that were scattered (the number of agents which passed the condition)
-     * @see scatterAgentFunctionConditionFalse(const unsigned int &)
-     * @see setConditionState(const unsigned int &)
+     * @see scatterAgentFunctionConditionFalse(unsigned int)
+     * @see setConditionState(unsigned int)
      */
-    unsigned int scatterAgentFunctionConditionTrue(const unsigned int &conditionFailCount, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
+    unsigned int scatterAgentFunctionConditionTrue(unsigned int conditionFailCount, CUDAScatter &scatter, unsigned int streamId, const cudaStream_t &stream);
     /**
      * Sorts all agent variables according to the positions stored inside Message Output scan buffer
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
@@ -236,7 +236,7 @@ class CUDAFatAgentStateList {
      * Updates member var disabledAgents and data_condition for every item inside variables_unique
      * @param numberOfDisabled The new number of disabled agents (this can increase of decrease)
      */
-    void setDisabledAgents(const unsigned int &numberOfDisabled);
+    void setDisabledAgents(unsigned int numberOfDisabled);
     /**
      * Resets the value of all variables not present in exclusionSet to their defaults
      *
@@ -248,7 +248,7 @@ class CUDAFatAgentStateList {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void initVariables(std::set<std::shared_ptr<VariableBuffer>> &exclusionSet, const unsigned int initCount, const unsigned initOffset, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
+    void initVariables(std::set<std::shared_ptr<VariableBuffer>> &exclusionSet, const unsigned int initCount, const unsigned initOffset, CUDAScatter &scatter, unsigned int streamId, const cudaStream_t &stream);
     /**
      * Returns the collection of unique variable buffers held by this CUDAFatAgentStateList
      */

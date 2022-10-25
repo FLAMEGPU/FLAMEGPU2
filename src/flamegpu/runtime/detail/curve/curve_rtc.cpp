@@ -185,7 +185,7 @@ $DYNAMIC_ENV_GETVARIABLE_IMPL
 }
 
 template<typename T, unsigned int N, unsigned int M>
-__device__ __forceinline__ T ReadOnlyDeviceEnvironment::getProperty(const char(&name)[M], const unsigned int &index) const {
+__device__ __forceinline__ T ReadOnlyDeviceEnvironment::getProperty(const char(&name)[M], const unsigned int index) const {
 $DYNAMIC_ENV_GETARRAYVARIABLE_IMPL
 }
 

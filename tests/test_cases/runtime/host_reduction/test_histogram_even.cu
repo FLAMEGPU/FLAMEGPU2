@@ -39,7 +39,7 @@ FLAMEGPU_STEP_FUNCTION(step_histogramEvenuint64_t) {
  * Doesn't work great with odd boundaries and ranges near integer limits
  */
 template<typename InT, typename OutT>
-std::vector<OutT> histogramEven(const std::array<InT, TEST_LEN> &variables, const unsigned int &histogramBins, const InT &lowerBound, const InT &upperBound) {
+std::vector<OutT> histogramEven(const std::array<InT, TEST_LEN> &variables, const unsigned int histogramBins, const InT &lowerBound, const InT &upperBound) {
     assert(upperBound > lowerBound);
     std::vector<OutT> rtn(histogramBins);
     for (auto &i : rtn)

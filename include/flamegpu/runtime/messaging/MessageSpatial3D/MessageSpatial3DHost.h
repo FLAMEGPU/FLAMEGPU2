@@ -74,7 +74,7 @@ class MessageSpatial3D::CUDAModelHandler : public MessageSpecialisationHandler {
      * @param newSize The new number of agents to represent
      * @note This only scales upwards, it will never reduce the size
      */
-    void resizeKeysVals(const unsigned int &newSize);
+    void resizeKeysVals(unsigned int newSize);
     /**
      * Number of bins, arrays are +1 this length
      */

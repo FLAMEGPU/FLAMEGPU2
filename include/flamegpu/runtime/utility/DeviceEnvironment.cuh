@@ -48,7 +48,7 @@ class ReadOnlyDeviceEnvironment {
      * @throws exception::DeviceError If N does not match the length of the environment property array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N = 0, unsigned int M>
-    __device__ __forceinline__ T getProperty(const char(&name)[M], const unsigned int&index) const;
+    __device__ __forceinline__ T getProperty(const char(&name)[M], unsigned int index) const;
     /**
      * Returns a read-only accessor to the named macro property
      * @param name name used for accessing the property, this value should be a string literal e.g. "foobar"
@@ -92,7 +92,7 @@ __device__ __forceinline__ T ReadOnlyDeviceEnvironment::getProperty(const char(&
     return detail::curve::DeviceCurve::getEnvironmentProperty<T>(name);
 }
 template<typename T, unsigned int N, unsigned int M>
-__device__ __forceinline__ T ReadOnlyDeviceEnvironment::getProperty(const char(&name)[M], const unsigned int &index) const {
+__device__ __forceinline__ T ReadOnlyDeviceEnvironment::getProperty(const char(&name)[M], const unsigned int index) const {
     return detail::curve::DeviceCurve::getEnvironmentArrayProperty<T, N>(name,  index);
 }
 

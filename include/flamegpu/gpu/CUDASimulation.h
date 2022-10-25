@@ -571,7 +571,7 @@ class CUDASimulation : public Simulation {
      * @param streamId Stream index to perform scatter on
      * @note called at the end of step() and after all init/hostLayer functions and exit conditions have finished
      */
-    void processHostAgentCreation(const unsigned int &streamId);
+    void processHostAgentCreation(unsigned int streamId);
 
  public:
     typedef std::vector<NewAgentStorage> AgentDataBuffer;

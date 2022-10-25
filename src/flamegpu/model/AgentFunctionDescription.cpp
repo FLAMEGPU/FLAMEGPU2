@@ -286,7 +286,7 @@ void AgentFunctionDescription::setMessageOutput(MessageBruteForce::Description &
             mdl->name.c_str(), message.getName().c_str());
     }
 }
-void AgentFunctionDescription::setMessageOutputOptional(const bool &output_is_optional) {
+void AgentFunctionDescription::setMessageOutputOptional(const bool output_is_optional) {
     if (output_is_optional != this->function->message_output_optional) {
         this->function->message_output_optional = output_is_optional;
         if (auto b = this->function->message_output.lock()) {
@@ -362,7 +362,7 @@ void AgentFunctionDescription::setAgentOutput(AgentDescription &agent, const std
             mdl->name.c_str(), agent.getName().c_str());
     }
 }
-void AgentFunctionDescription::setAllowAgentDeath(const bool &has_death) {
+void AgentFunctionDescription::setAllowAgentDeath(const bool has_death) {
     function->has_agent_death = has_death;
 }
 

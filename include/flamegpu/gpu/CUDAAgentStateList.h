@@ -31,7 +31,7 @@ class CUDAAgentStateList {
     CUDAAgentStateList(
         const std::shared_ptr<CUDAFatAgentStateList> &fat_list,
         CUDAAgent& cuda_agent,
-        const unsigned int &_fat_index,
+        unsigned int _fat_index,
         const AgentData& description,
         bool _isSubStateList = false);
     /**
@@ -46,7 +46,7 @@ class CUDAAgentStateList {
     CUDAAgentStateList(
         const std::shared_ptr<CUDAFatAgentStateList> &fat_list,
         CUDAAgent& cuda_agent,
-        const unsigned int &_fat_index,
+        unsigned int _fat_index,
         const AgentData& description,
         bool _isSubStateList,
         const SubAgentData::Mapping &mapping);
@@ -56,7 +56,7 @@ class CUDAAgentStateList {
      * @param minimumSize The minimum number of agents that must be representable
      * @param retainData If true existing buffer data is retained
      * @param stream The stream used to perform memcpys if data is retained
-     * @see CUDAFatAgentStateList::resize(const unsigned int &, const bool &)
+     * @see CUDAFatAgentStateList::resize(unsigned int, bool)
      */
     void resize(unsigned int minimumSize, bool retainData, cudaStream_t stream);
     /**
@@ -105,7 +105,7 @@ class CUDAAgentStateList {
     void scatterSort_async(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Scatters agents from the currently assigned device agent birth buffer (see member variable newBuffs)
-     * The device buffer must be packed in the same format as CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData&, const unsigned int &, const unsigned int &)
+     * The device buffer must be packed in the same format as CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData&, unsigned int, unsigned int)
      * @param d_newBuff The buffer holding the new agent data
      * @param newSize The maximum number of new agents (this will be the size of the agent state executing func)
      * @param scatter Scatter instance and scan arrays to be used
@@ -124,7 +124,7 @@ class CUDAAgentStateList {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void initUnmappedVars(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
+    void initUnmappedVars(CUDAScatter &scatter, unsigned int streamId, const cudaStream_t &stream);
     /**
      * Initialises any agent variables within the CUDAFatAgentStateList which are not present in this CUDAAgentStateList
      * @param count Number of variables to init
@@ -133,7 +133,7 @@ class CUDAAgentStateList {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void initExcludedVars(const unsigned int& count, const unsigned int& offset, CUDAScatter& scatter, const unsigned int& streamId, const cudaStream_t& stream);
+    void initExcludedVars(unsigned int count, unsigned int offset, CUDAScatter& scatter, unsigned int streamId, const cudaStream_t& stream);
     /**
      * Returns the statelist to an empty state
      * This resets the size to 0.
@@ -144,7 +144,7 @@ class CUDAAgentStateList {
      * @param newSize Number of active agents
      * @throw exception::InvalidMemoryCapacity If the new number of disabled + active agents would exceed currently allocated buffer capacity
      */
-    void setAgentCount(const unsigned int& newSize);
+    void setAgentCount(unsigned int newSize);
     /**
      * Returns a list of variable buffers attached to bound agents, not available in this agent
      * @note This access is only intended for DeviceAgentVector's correctly handling of subagents

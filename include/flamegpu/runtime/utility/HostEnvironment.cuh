@@ -36,7 +36,7 @@ class HostEnvironment {
     /**
      * Constructor, to be called by HostAPI
      */
-    explicit HostEnvironment(const unsigned int &instance_id, const std::shared_ptr<EnvironmentManager> &env, CUDAMacroEnvironment &_macro_env);
+    explicit HostEnvironment(unsigned int instance_id, const std::shared_ptr<EnvironmentManager> &env, CUDAMacroEnvironment &_macro_env);
     /**
      * Provides access to EnvironmentManager singleton
      */

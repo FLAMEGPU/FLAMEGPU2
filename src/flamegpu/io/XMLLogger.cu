@@ -282,7 +282,7 @@ void XMLLogger::writeCommonLogFrame(tinyxml2::XMLDocument &doc, tinyxml2::XMLEle
     }
 }
 
-void XMLLogger::writeAny(tinyxml2::XMLElement *pElement, const util::Any &value, const unsigned int &elements) const {
+void XMLLogger::writeAny(tinyxml2::XMLElement *pElement, const util::Any &value, const unsigned int elements) const {
     std::stringstream ss;
     // Loop through elements, to construct csv string
     for (unsigned int el = 0; el < elements; ++el) {

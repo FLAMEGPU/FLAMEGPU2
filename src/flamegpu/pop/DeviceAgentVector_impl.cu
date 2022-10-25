@@ -5,7 +5,7 @@ namespace flamegpu {
 
 DeviceAgentVector_impl::DeviceAgentVector_impl(CUDAAgent& _cuda_agent, const std::string &_cuda_agent_state,
     const VarOffsetStruct& _agentOffsets, std::vector<NewAgentStorage>& _newAgentData,
-    CUDAScatter& _scatter, const unsigned int& _streamId, const cudaStream_t& _stream)
+    CUDAScatter& _scatter, const unsigned int _streamId, const cudaStream_t& _stream)
     : AgentVector(_cuda_agent.getAgentDescription(), 0)
     , unbound_buffers_has_changed(false)
     , known_device_buffer_size(_cuda_agent.getStateSize(_cuda_agent_state))
@@ -142,7 +142,7 @@ void DeviceAgentVector_impl::reinitUnboundBuffers() {
     unbound_buffers_has_changed = true;  // Probably not required, but if they are being init, high chance they're going to be changed
     unbound_host_buffer_invalid = false;
 }
-void DeviceAgentVector_impl::resizeUnboundBuffers(const unsigned int& new_capacity, bool init) {
+void DeviceAgentVector_impl::resizeUnboundBuffers(const unsigned int new_capacity, bool init) {
     // Resize to match agent_count
     for (auto& buff : unbound_buffers) {
         if (!buff.host) {

@@ -83,7 +83,7 @@ class MessageArray::In {
          * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
          */
         template<typename T, MessageNone::size_type N, unsigned int M>
-        __device__ T getVariable(const char(&variable_name)[M], const unsigned int& index) const;
+        __device__ T getVariable(const char(&variable_name)[M], unsigned int index) const;
     };
     /**
      * This class is created when a search origin is provided to MessageArray::In::operator()(size_type, size_type, size_type = 1)
@@ -124,7 +124,7 @@ class MessageArray::In {
              * Constructs a message and directly initialises all of it's member variables
              * @note See member variable documentation for their purposes
              */
-            __device__ Message(const WrapFilter&parent, const int &relative_x)
+            __device__ Message(const WrapFilter&parent, const int relative_x)
                 : _parent(parent) {
                 relative_cell = relative_x;
             }
@@ -182,7 +182,7 @@ class MessageArray::In {
              * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
              */
             template<typename T, MessageNone::size_type N, unsigned int M> __device__
-            T getVariable(const char(&variable_name)[M], const unsigned int &index) const;
+            T getVariable(const char(&variable_name)[M], unsigned int index) const;
         };
         /**
          * Stock iterator for iterating MessageSpatial3D::In::WrapFilter::Message objects
@@ -199,7 +199,7 @@ class MessageArray::In {
              * This iterator is constructed by MessageArray::In::WrapFilter::begin()(size_type, size_type)
              * @see MessageArray::In::wrap(size_type, size_type)
              */
-            __device__ iterator(const WrapFilter&parent, const int &relative_x)
+            __device__ iterator(const WrapFilter&parent, const int relative_x)
                 : _message(parent, relative_x) {
                 // Increment to find first message
                 ++_message;
@@ -324,7 +324,7 @@ class MessageArray::In {
              * Constructs a message and directly initialises all of it's member variables
              * @note See member variable documentation for their purposes
              */
-            __device__ Message(const Filter& parent, const int& relative_x)
+            __device__ Message(const Filter& parent, const int relative_x)
                 : _parent(parent) {
                 relative_cell = relative_x;
             }
@@ -381,7 +381,7 @@ class MessageArray::In {
              * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
              */
             template<typename T, MessageNone::size_type N, unsigned int M>
-            __device__ T getVariable(const char(&variable_name)[M], const unsigned int& index) const;
+            __device__ T getVariable(const char(&variable_name)[M], unsigned int index) const;
         };
         /**
          * Stock iterator for iterating MessageSpatial3D::In::Filter::Message objects
@@ -398,7 +398,7 @@ class MessageArray::In {
              * This iterator is constructed by MessageArray::In::Filter::begin()(size_type, size_type)
              * @see MessageArray::In::Operator()(size_type, size_type)
              */
-            __device__ iterator(const Filter& parent, const int& relative_x)
+            __device__ iterator(const Filter& parent, const int relative_x)
                 : _message(parent, relative_x) {
                 // Increment to find first message
                 ++_message;
@@ -621,7 +621,7 @@ class MessageArray::Out {
      * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N, unsigned int M>
-    __device__ void setVariable(const char(&variable_name)[M], const unsigned int& index, T value) const;
+    __device__ void setVariable(const char(&variable_name)[M], unsigned int index, T value) const;
 
  protected:
     /**
@@ -647,7 +647,7 @@ __device__ T MessageArray::In::Message::getVariable(const char(&variable_name)[N
     return detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, index);
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
-T MessageArray::In::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
+T MessageArray::In::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
     // simple indexing assumes index is the thread number (this may change later)
 #if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
@@ -673,7 +673,7 @@ __device__ T MessageArray::In::WrapFilter::Message::getVariable(const char(&vari
     return detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, index_1d);
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
-T MessageArray::In::WrapFilter::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
+T MessageArray::In::WrapFilter::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
     // simple indexing assumes index is the thread number (this may change later)
 #if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
@@ -699,7 +699,7 @@ __device__ T MessageArray::In::Filter::Message::getVariable(const char(&variable
     return detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, index_1d);
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
-T MessageArray::In::Filter::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
+T MessageArray::In::Filter::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
     // simple indexing assumes index is the thread number (this may change later)
 #if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
@@ -729,7 +729,7 @@ __device__ void MessageArray::Out::setVariable(const char(&variable_name)[N], T 
     // setIndex() sets the optional message scan flag
 }
 template<typename T, unsigned int N, unsigned int M>
-__device__ void MessageArray::Out::setVariable(const char(&variable_name)[M], const unsigned int& array_index, T value) const {
+__device__ void MessageArray::Out::setVariable(const char(&variable_name)[M], const unsigned int array_index, T value) const {
     if (variable_name[0] == '_') {
 #if !defined(SEATBELTS) || SEATBELTS
         DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in MessageArray::Out::setVariable().\n", variable_name);

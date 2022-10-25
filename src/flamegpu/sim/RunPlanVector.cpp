@@ -12,20 +12,20 @@ RunPlanVector::RunPlanVector(const ModelDescription &model, unsigned int initial
     this->resize(initial_length, RunPlan(environment, allow_0_steps));
 }
 
-RunPlanVector::RunPlanVector(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> &_environment, const bool &_allow_0_steps)
+RunPlanVector::RunPlanVector(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> &_environment, const bool _allow_0_steps)
     : std::vector<RunPlan>()
     , randomPropertySeed(std::random_device()())
     , rand(randomPropertySeed)
     , environment(_environment)
     , allow_0_steps(_allow_0_steps) { }
-void RunPlanVector::setRandomSimulationSeed(const uint64_t &initial_seed, const unsigned int &step) {
+void RunPlanVector::setRandomSimulationSeed(const uint64_t &initial_seed, const unsigned int step) {
     uint64_t current_seed = initial_seed;
     for (auto &i : *this) {
         i.setRandomSimulationSeed(current_seed);
         current_seed += step;
     }
 }
-void RunPlanVector::setSteps(const unsigned int &steps) {
+void RunPlanVector::setSteps(const unsigned int steps) {
     if (steps == 0 && !allow_0_steps) {
         throw exception::OutOfBoundsException("Model description requires atleast 1 exit condition to have unlimited steps, "
             "in RunPlanVector::setSteps()");
@@ -104,7 +104,7 @@ RunPlanVector& RunPlanVector::operator+=(const RunPlanVector& rhs) {
     }
     return *this;
 }
-RunPlanVector& RunPlanVector::operator*=(const unsigned int& rhs) {
+RunPlanVector& RunPlanVector::operator*=(const unsigned int rhs) {
     RunPlanVector copy(*this);
     this->clear();
     this->reserve(copy.size() * rhs);
@@ -116,7 +116,7 @@ RunPlanVector& RunPlanVector::operator*=(const unsigned int& rhs) {
     }
     return *this;
 }
-RunPlanVector RunPlanVector::operator*(const unsigned int& rhs) const {
+RunPlanVector RunPlanVector::operator*(const unsigned int rhs) const {
     RunPlanVector rtn(this->environment, this->allow_0_steps);
     rtn.reserve(size() * rhs);
     for (unsigned int i = 0; i < rhs; ++i) {

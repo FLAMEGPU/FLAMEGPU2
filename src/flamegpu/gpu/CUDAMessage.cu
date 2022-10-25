@@ -69,7 +69,7 @@ unsigned int CUDAMessage::getMaximumListSize() const {
 unsigned int CUDAMessage::getMessageCount() const {
     return message_count;
 }
-void CUDAMessage::setMessageCount(const unsigned int &_message_count) {
+void CUDAMessage::setMessageCount(const unsigned int _message_count) {
     if (_message_count > max_list_size) {
         THROW exception::OutOfBoundsException("message count exceeds allocated message list size (%u > %u) in CUDAMessage::setMessageCount().", _message_count, max_list_size);
     }
@@ -121,7 +121,7 @@ void *CUDAMessage::getReadPtr(const std::string &var_name) {
     }
     return message_list->getReadMessageListVariablePointer(var_name);
 }
-void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &writeLen, cudaStream_t stream) const {
+void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int writeLen, cudaStream_t stream) const {
     // check that the message list has been allocated
     if (!message_list) {
         THROW exception::InvalidMessageData("Error: Initial message list for message '%s' has not been allocated, "
@@ -196,7 +196,7 @@ void CUDAMessage::swap() {
     message_list->swap();
 }
 
-void CUDAMessage::buildIndex(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream) {
+void CUDAMessage::buildIndex(CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t &stream) {
     // Build the index if required.
     if (pbm_construction_required) {
         specialisation_handler->buildIndex(scatter, streamId, stream);

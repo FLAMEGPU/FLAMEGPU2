@@ -41,7 +41,7 @@ class StateWriterFactory {
         const std::string& model_name,
         const std::shared_ptr<EnvironmentManager>& env_manager,
         const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>& model_state,
-        const unsigned int& iterations,
+        const unsigned int iterations,
         const std::string& output_file,
         const Simulation* sim_instance) {
         const std::string extension = std::filesystem::path(output_file).extension().string();

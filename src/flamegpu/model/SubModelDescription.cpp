@@ -127,7 +127,7 @@ const SubEnvironmentDescription &SubModelDescription::getSubEnvironment(bool aut
     return *data->subenvironment->description;
 }
 
-void SubModelDescription::setMaxSteps(const unsigned int &max_steps) {
+void SubModelDescription::setMaxSteps(const unsigned int max_steps) {
     data->max_steps = max_steps;
 }
 unsigned int SubModelDescription::getMaxSteps() const {

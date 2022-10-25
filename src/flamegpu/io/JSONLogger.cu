@@ -26,7 +26,7 @@ void JSONLogger::log(const RunLog &log, bool logConfig, bool logSteps, bool logE
 }
 
 template<typename T>
-void JSONLogger::writeAny(T &writer, const util::Any &value, const unsigned int &elements) const {
+void JSONLogger::writeAny(T &writer, const util::Any &value, const unsigned int elements) const {
     // Output value
     if (elements > 1) {
         writer.StartArray();

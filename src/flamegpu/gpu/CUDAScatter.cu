@@ -36,7 +36,7 @@ CUDAScatter::StreamData::~StreamData() {
     d_data = nullptr;
     data_len = 0;
 }
-void CUDAScatter::StreamData::resize(const unsigned int &newLen) {
+void CUDAScatter::StreamData::resize(const unsigned int newLen) {
     if (newLen > data_len) {
         if (d_data) {
             gpuErrchk(cudaFree(d_data));
@@ -99,16 +99,16 @@ __global__ void scatter_all_generic(
 }
 
 unsigned int CUDAScatter::scatter(
-    const unsigned int &streamResourceId,
+    const unsigned int streamResourceId,
     const cudaStream_t &stream,
     const Type &messageOrAgent,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,
-    const unsigned int &itemCount,
-    const unsigned int &out_index_offset,
-    const bool &invert_scan_flag,
-    const unsigned int &scatter_all_count) {
+    const unsigned int itemCount,
+    const unsigned int out_index_offset,
+    const bool invert_scan_flag,
+    const unsigned int scatter_all_count) {
     std::vector<ScatterData> scatterData;
     for (const auto &v : vars) {
         char *in_p = reinterpret_cast<char*>(in.at(v.first));
@@ -118,14 +118,14 @@ unsigned int CUDAScatter::scatter(
     return scatter(streamResourceId, stream, messageOrAgent, scatterData, itemCount, out_index_offset, invert_scan_flag, scatter_all_count);
 }
 unsigned int CUDAScatter::scatter(
-    const unsigned int &streamResourceId,
+    const unsigned int streamResourceId,
     const cudaStream_t &stream,
     const Type &messageOrAgent,
     const std::vector<ScatterData> &sd,
-    const unsigned int &itemCount,
-    const unsigned int &out_index_offset,
-    const bool &invert_scan_flag,
-    const unsigned int &scatter_all_count) {
+    const unsigned int itemCount,
+    const unsigned int out_index_offset,
+    const bool invert_scan_flag,
+    const unsigned int scatter_all_count) {
     int blockSize = 0;  // The launch configurator returned block size
     int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
     int gridSize = 0;  // The actual grid size needed, based on input size
@@ -192,22 +192,22 @@ void CUDAScatter::scatterPosition_async(
     gpuErrchkLaunch();
 }
 unsigned int CUDAScatter::scatterCount(
-    const unsigned int &streamResourceId,
+    const unsigned int streamResourceId,
     const cudaStream_t &stream,
     const Type &messageOrAgent,
-    const unsigned int &itemCount,
-    const unsigned int &scatter_all_count) {
+    const unsigned int itemCount,
+    const unsigned int scatter_all_count) {
     unsigned int rtn = 0;
     gpuErrchk(cudaMemcpy(&rtn, scan.Config(messageOrAgent, streamResourceId).d_ptrs.position + itemCount - scatter_all_count, sizeof(unsigned int), cudaMemcpyDeviceToHost));
     return rtn;
 }
 
 unsigned int CUDAScatter::scatterAll(
-    const unsigned int &streamResourceId,
+    const unsigned int streamResourceId,
     const cudaStream_t &stream,
     const std::vector<ScatterData> &sd,
-    const unsigned int &itemCount,
-    const unsigned int &out_index_offset) {
+    const unsigned int itemCount,
+    const unsigned int out_index_offset) {
     if (!itemCount)
         return itemCount;  // No work to do
     int blockSize = 0;  // The launch configurator returned block size
@@ -231,13 +231,13 @@ unsigned int CUDAScatter::scatterAll(
     return itemCount;
 }
 unsigned int CUDAScatter::scatterAll(
-    const unsigned int &streamResourceId,
+    const unsigned int streamResourceId,
     const cudaStream_t &stream,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,
-    const unsigned int &itemCount,
-    const unsigned int &out_index_offset) {
+    const unsigned int itemCount,
+    const unsigned int out_index_offset) {
     std::vector<ScatterData> scatterData;
     for (const auto &v : vars) {
         char *in_p = reinterpret_cast<char*>(in.at(v.first));
@@ -268,12 +268,12 @@ __global__ void pbm_reorder_generic(
 }
 
 void CUDAScatter::pbm_reorder(
-    const unsigned int &streamResourceId,
+    const unsigned int streamResourceId,
     const cudaStream_t &stream,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,
-    const unsigned int &itemCount,
+    const unsigned int itemCount,
     const unsigned int *d_bin_index,
     const unsigned int *d_bin_sub_index,
     const unsigned int *d_pbm) {
@@ -340,12 +340,12 @@ __global__ void scatter_new_agents(
     memcpy(out_ptr, in_ptr, scatter_data[var_out].typeLen);
 }
 void CUDAScatter::scatterNewAgents(
-    const unsigned int &streamResourceId,
+    const unsigned int streamResourceId,
     const cudaStream_t &stream,
     const std::vector<ScatterData> &sd,
     const size_t &totalAgentSize,
-    const unsigned int &inCount,
-    const unsigned int &outIndexOffset) {
+    const unsigned int inCount,
+    const unsigned int outIndexOffset) {
     // 1 thread per agent variable
     const unsigned int threadCount = static_cast<unsigned int>(sd.size()) * inCount;
     int blockSize = 0;  // The launch configurator returned block size
@@ -539,13 +539,13 @@ __global__ void reorder_array_messages(
     }
 }
 void CUDAScatter::arrayMessageReorder(
-    const unsigned int &streamResourceId,
+    const unsigned int streamResourceId,
     const cudaStream_t &stream,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,
-    const unsigned int &itemCount,
-    const unsigned int &array_length,
+    const unsigned int itemCount,
+    const unsigned int array_length,
     unsigned int *d_write_flag) {
     // If itemCount is 0, then there is no work to be done.
     if (itemCount == 0) {

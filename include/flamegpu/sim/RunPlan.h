@@ -53,7 +53,7 @@ class RunPlan {
      * A steps value of 0 requires the ModelDescription to have atleast 1 exit condition
      * @param steps The number of steps to execute, 0 is unlimited but requires an exit condition
      */
-    void setSteps(const unsigned int &steps);
+    void setSteps(unsigned int steps);
     /**
      * Set the sub directory within the output directory for outputs of this run
      * If left empty, output will not goto subdirectories
@@ -173,10 +173,10 @@ class RunPlan {
      */
     RunPlanVector operator+(const RunPlan& rhs) const;
     RunPlanVector operator+(const RunPlanVector& rhs) const;
-    RunPlanVector operator*(const unsigned int& rhs) const;
+    RunPlanVector operator*(unsigned int rhs) const;
 
  private:
-    explicit RunPlan(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> &environment, const bool &allow_0);
+    explicit RunPlan(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> &environment, bool allow_0);
     uint64_t random_seed;
     unsigned int steps;
     std::string output_subdirectory;

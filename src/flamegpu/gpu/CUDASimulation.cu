@@ -1655,7 +1655,7 @@ void CUDASimulation::initOffsetsAndMap() {
     }
 }
 
-void CUDASimulation::processHostAgentCreation(const unsigned int &streamId) {
+void CUDASimulation::processHostAgentCreation(const unsigned int streamId) {
     size_t t_bufflen = 0;
     char *t_buff = nullptr;
     char *dt_buff = nullptr;
