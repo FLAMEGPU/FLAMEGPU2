@@ -112,7 +112,7 @@ __forceinline__ __device__ T AgentRandom::uniform(T min, T max) const {
     return static_cast<T>(min + (max - min) * uniform<float>());
 }
 template<>
-__forceinline__ __device__ int64_t AgentRandom::uniform(const int64_t& min, const int64_t& max) const {
+__forceinline__ __device__ int64_t AgentRandom::uniform(const int64_t min, const int64_t max) const {
 #if !defined(SEATBELTS) || SEATBELTS
     if (min > max) {
         DTHROW("Invalid arguments passed to AgentRandom::uniform(), %lld > %lld\n", static_cast<int64_t>(min), static_cast<int64_t>(max));
