@@ -497,6 +497,112 @@ TEST(TestCUDAEnsemble, ErrorFast) {
     EXPECT_EQ(tracked_runs_ct, 2u);
 }
 
+/*
+ * Test that use of a CUDA ensemble does not break existing device memory (e.g. an existing simulation) by incorrectly resetting devices.
+ * This was an issue previously noticed within the python test suite, due to GC delay.
+ * see https://github.com/FLAMEGPU/FLAMEGPU2/issues/939
+ */
+TEST(TestCUDAEnsemble, SimualteWithExistingCUDASimulation) {
+    // Number of simulations to run.
+    constexpr uint32_t planCount = 2u;
+    constexpr uint32_t populationSize = 32u;
+    // Create a model containing atleast one agent type and function.
+    flamegpu::ModelDescription model("test");
+    // Environmental constant for initial population
+    model.Environment().newProperty<uint32_t>("POPULATION_TO_GENERATE", populationSize, true);
+    // Agent(s)
+    flamegpu::AgentDescription &agent = model.newAgent("Agent");
+    agent.newVariable<uint32_t>("counter", 0);
+    agent.newFunction("simulateAgentFn", simulateAgentFn);
+    // Control flow
+    model.newLayer().addAgentFunction(simulateAgentFn);
+    model.addInitFunction(simulateInit);
+    // Crete a small runplan, using a different number of steps per sim.
+    uint64_t expectedResult = 0;
+    flamegpu::RunPlanVector plans(model, planCount);
+    for (uint32_t idx = 0; idx < plans.size(); idx++) {
+        auto &plan = plans[idx];
+        plan.setSteps(idx + 1);  // Can't have 0 steps without exit condition
+        // Increment the expected result based on the number of steps.
+        expectedResult += (idx + 1) * populationSize;
+    }
+
+    // Create and use but do not destroy a CUDASimulation, so it can be used to check for device reset issues later
+    flamegpu::CUDASimulation simulation(model);
+    simulation.SimulationConfig().steps = 1;
+    simulation.simulate();
+
+    // Create an ensemble
+    flamegpu::CUDAEnsemble ensemble(model);
+    // Make it quiet to avoid outputting during the test suite
+    ensemble.Config().quiet = true;
+    ensemble.Config().out_format = "";  // Suppress warning
+    // Simulate the ensemble,
+    EXPECT_NO_THROW(ensemble.simulate(plans));
+
+    // At this point, the cudaSim should still be usable (and dtor-able), but errors in the CUDAEnsemble::Simulate cudaDeviceReset logic would result in an error?
+    EXPECT_NO_THROW(simulation.step());  // alternatively checking dtor would be valid / useful?
+}
+
+/*
+ * Test that use of a CUDA ensemble does not break existing device memory (Explicit malloc) by incorrectly resetting devices.
+ * This was an issue previously noticed within the python test suite, due to GC delay.
+ * see https://github.com/FLAMEGPU/FLAMEGPU2/issues/939
+ */
+TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc) {
+    // Allocate some arbitraty device memory.
+    int * d_int = nullptr;
+    gpuErrchk(cudaMalloc(&d_int, sizeof(int)));
+    // Validate that the ptr is a valid device pointer
+    cudaPointerAttributes attributes = {};
+    gpuErrchk(cudaPointerGetAttributes(&attributes, d_int));
+    EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
+
+    // Add extra layer of scope, so the ensemble get's dtor'd incase the dtor triggers a reset
+    {
+        // Number of simulations to run.
+        constexpr uint32_t planCount = 2u;
+        constexpr uint32_t populationSize = 32u;
+        // Create a model containing atleast one agent type and function.
+        flamegpu::ModelDescription model("test");
+        // Environmental constant for initial population
+        model.Environment().newProperty<uint32_t>("POPULATION_TO_GENERATE", populationSize, true);
+        // Agent(s)
+        flamegpu::AgentDescription &agent = model.newAgent("Agent");
+        agent.newVariable<uint32_t>("counter", 0);
+        agent.newFunction("simulateAgentFn", simulateAgentFn);
+        // Control flow
+        model.newLayer().addAgentFunction(simulateAgentFn);
+        model.addInitFunction(simulateInit);
+        // Crete a small runplan, using a different number of steps per sim.
+        uint64_t expectedResult = 0;
+        flamegpu::RunPlanVector plans(model, planCount);
+        for (uint32_t idx = 0; idx < plans.size(); idx++) {
+            auto &plan = plans[idx];
+            plan.setSteps(idx + 1);  // Can't have 0 steps without exit condition
+            // Increment the expected result based on the number of steps.
+            expectedResult += (idx + 1) * populationSize;
+        }
+        // Create an ensemble
+        flamegpu::CUDAEnsemble ensemble(model);
+        // Make it quiet to avoid outputting during the test suite
+        ensemble.Config().quiet = true;
+        ensemble.Config().out_format = "";  // Suppress warning
+        // Simulate the ensemble,
+        EXPECT_NO_THROW(ensemble.simulate(plans));
+    }
+
+    // At this point, the manually allocated data should still be valid, i.e. cudaMemoryTypeDevice
+    gpuErrchk(cudaPointerGetAttributes(&attributes, d_int));
+    EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
+
+    // Free explicit device memory, if it was valid (to get the correct error)
+    if (attributes.type == cudaMemoryTypeDevice) {
+        gpuErrchk(cudaFree(d_int));
+    }
+    d_int = nullptr;
+}
+
 }  // namespace test_cuda_ensemble
 }  // namespace tests
 }  // namespace flamegpu
