@@ -145,7 +145,7 @@ class MessageArray::Description : public MessageBruteForce::Description {
     Description& operator=(Description &&other_message) noexcept = delete;
 
  public:
-    void setLength(const size_type &len);
+    void setLength(const size_type len);
 
     size_type getLength() const;
 };

@@ -589,22 +589,22 @@ inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, con
     setPropertyRandom<double>(name, index, dist);
 }
 template<>
-inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const char &min, const char &max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const char min, const char max) {
     std::uniform_int_distribution<int16_t> dist(min, max);
     setPropertyRandom<char>(name, dist);
 }
 template<>
-inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const char &min, const char &max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const char min, const char max) {
     std::uniform_int_distribution<int16_t> dist(min, max);
     setPropertyRandom<char>(name, index, dist);
 }
 template<>
-inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const unsigned char &min, const unsigned char &max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const unsigned char min, const unsigned char max) {
     std::uniform_int_distribution<uint16_t> dist(min, max);
     setPropertyRandom<unsigned char>(name, dist);
 }
 template<>
-inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const unsigned char &min, const unsigned char &max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const unsigned char min, const unsigned char max) {
     std::uniform_int_distribution<uint16_t> dist(min, max);
     setPropertyRandom<unsigned char>(name, index, dist);
 }

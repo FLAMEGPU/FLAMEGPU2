@@ -97,13 +97,13 @@ inline T HostRandom::uniform(const T& min, const T& max) const {
  * Special cases, std::random doesn't support char, emulate behaviour
  */
 template<>
-inline char HostRandom::uniform(const char& min, const char& max) const {
+inline char HostRandom::uniform(const char min, const char max) const {
     std::uniform_int_distribution<int16_t> dist(min, max);
     return static_cast<char>(rng.getDistribution<int16_t>(dist));
 }
 
 template<>
-inline unsigned char HostRandom::uniform(const unsigned char& min, const unsigned char& max) const {
+inline unsigned char HostRandom::uniform(const unsigned char min, const unsigned char max) const {
     std::uniform_int_distribution<uint16_t> dist(min, max);
     return static_cast<unsigned char>(rng.getDistribution<uint16_t>(dist));
 }

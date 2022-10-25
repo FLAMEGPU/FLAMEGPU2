@@ -672,7 +672,7 @@ class ModelVis;
             return $self->operator[](index);
         return $self->operator[]($self->size() + index);
     }
-    void flamegpu::DeviceAgentVector_impl::__setitem__(const size_type &index, const Agent &value) {
+    void flamegpu::DeviceAgentVector_impl::__setitem__(const size_type index, const Agent &value) {
         $self->operator[](index).setData(value);
     }
 }

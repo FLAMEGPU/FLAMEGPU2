@@ -122,7 +122,7 @@ std::type_index MessageArray::Data::getType() const { return std::type_index(typ
 MessageArray::Description::Description(const std::shared_ptr<const ModelData>&_model, Data *const data)
     : MessageBruteForce::Description(_model, data) { }
 
-void MessageArray::Description::setLength(const size_type &len) {
+void MessageArray::Description::setLength(const size_type len) {
     if (len == 0) {
         THROW exception::InvalidArgument("Array messaging length must not be zero.\n");
     }

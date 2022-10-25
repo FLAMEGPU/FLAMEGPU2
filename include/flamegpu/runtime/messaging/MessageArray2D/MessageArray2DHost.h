@@ -146,7 +146,7 @@ class MessageArray2D::Description : public MessageBruteForce::Description {
      Description& operator=(Description &&other_message) noexcept = delete;
 
  public:
-     void setDimensions(const size_type &len_x, const size_type &len_y);
+     void setDimensions(size_type len_x, size_type len_y);
      void setDimensions(const std::array<size_type, 2> &dims);
 
     std::array<size_type, 2> getDimensions() const;

@@ -120,7 +120,7 @@ class RandomManager {
      * If shrinking, 'deallocated' curand states are backed up to host until next required,
      *  this prevents them being reinitialised with the same seed.
      */
-    void resizeDeviceArray(const size_type &_length, cudaStream_t stream);
+    void resizeDeviceArray(size_type _length, cudaStream_t stream);
     /**
      * Host copy of 'deallocated' curand states
      * When the device array shrinks in size, shrunk away curand states are stored here

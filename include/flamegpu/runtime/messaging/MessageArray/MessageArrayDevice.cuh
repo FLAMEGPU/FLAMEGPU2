@@ -39,7 +39,7 @@ class MessageArray::In {
         * index is always init to 0
         * @note See member variable documentation for their purposes
         */
-        __device__ Message(const MessageArray::In &parent, const size_type &_index) : _parent(parent), index(_index) {}
+        __device__ Message(const MessageArray::In &parent, const size_type _index) : _parent(parent), index(_index) {}
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * A null message which always returns the message at index 0
@@ -243,7 +243,7 @@ class MessageArray::In {
          * @param x Search origin x coord
          * @param _radius Search radius
          */
-        inline __device__ WrapFilter(const size_type &_length, const size_type &x, const size_type &_radius);
+        inline __device__ WrapFilter(const size_type _length, const size_type x, const size_type _radius);
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * A null filter which always returns 0 messages
@@ -443,7 +443,7 @@ class MessageArray::In {
          * @param _radius Search radius
          */
 
-        inline __device__ Filter(const size_type& _length, const size_type& x, const size_type& _radius);
+        inline __device__ Filter(size_type _length, size_type x, size_type _radius);
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * A null filter which always returns 0 messages
@@ -506,7 +506,7 @@ class MessageArray::In {
      * @note radius of 0 is unsupported
      * @note The location x must be within the bounds of the message list
      */
-    inline __device__ WrapFilter wrap(const size_type &x, const size_type &radius = 1) const {
+    inline __device__ WrapFilter wrap(const size_type x, const size_type radius = 1) const {
 #if !defined(SEATBELTS) || SEATBELTS
         if (radius == 0) {
             DTHROW("Invalid radius %u for accessing array messagelist of length %u\n", radius, length);
@@ -539,7 +539,7 @@ class MessageArray::In {
      * @note radius of 0 is unsupported
      * @note The location x must be within the bounds of the message list
      */
-    inline __device__ Filter operator() (const size_type &x, const size_type &radius = 1) const {
+    inline __device__ Filter operator() (const size_type x, const size_type radius = 1) const {
 #if !defined(SEATBELTS) || SEATBELTS
         if (radius == 0) {
             DTHROW("Invalid radius %u for accessing array messagelist of length %u\n", radius, length);
@@ -558,7 +558,7 @@ class MessageArray::In {
     __device__ size_type size(void) const {
         return length;
     }
-    __device__ Message at(const size_type &index) const {
+    __device__ Message at(const size_type index) const {
 #if !defined(SEATBELTS) || SEATBELTS
         if (index >= length) {
             DTHROW("Index is out of bounds for Array messagelist (%u >= %u).\n", index, length);
@@ -597,7 +597,7 @@ class MessageArray::Out {
     /**
      * Sets the array index to store the message in
      */
-    __device__ inline void setIndex(const size_type &id) const;
+    __device__ inline void setIndex(const size_type id) const;
     /**
      * Sets the specified variable for this agents message
      * @param variable_name Name of the variable
@@ -747,7 +747,7 @@ __device__ void MessageArray::Out::setVariable(const char(&variable_name)[M], co
 /**
 * Sets the array index to store the message in
 */
-__device__ void MessageArray::Out::setIndex(const size_type &id) const {
+__device__ void MessageArray::Out::setIndex(const size_type id) const {
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
 #if !defined(SEATBELTS) || SEATBELTS
@@ -762,7 +762,7 @@ __device__ void MessageArray::Out::setIndex(const size_type &id) const {
     // Set scan flag incase the message is optional
     this->scan_flag[index] = 1;
 }
-__device__ MessageArray::In::WrapFilter::WrapFilter(const size_type &_length, const size_type &x, const size_type &_radius)
+__device__ MessageArray::In::WrapFilter::WrapFilter(const size_type _length, const size_type x, const size_type _radius)
     : radius(_radius)
     , length(_length) {
     loc = x;
@@ -788,7 +788,7 @@ __device__ MessageArray::In::WrapFilter::Message& MessageArray::In::WrapFilter::
     index_1d = (this->_parent.loc + relative_cell + this->_parent.length) % this->_parent.length;
     return *this;
 }
-__device__ MessageArray::In::Filter::Filter(const size_type &_length, const size_type &x, const size_type &_radius)
+__device__ MessageArray::In::Filter::Filter(const size_type _length, const size_type x, const size_type _radius)
     : length(_length) {
     loc = x;
     min_cell = static_cast<int>(x) - static_cast<int>(_radius) < 0 ? -static_cast<int>(x) : -static_cast<int>(_radius);

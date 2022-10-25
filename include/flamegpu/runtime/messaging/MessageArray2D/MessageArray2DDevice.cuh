@@ -35,7 +35,7 @@ class MessageArray2D::In {
          * index is always init to 0
          * @note See member variable documentation for their purposes
          */
-        __device__ Message(const MessageArray2D::In &parent, const size_type &_index) : _parent(parent), index(_index) {}
+        __device__ Message(const MessageArray2D::In &parent, const size_type _index) : _parent(parent), index(_index) {}
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * A null message which always returns the message at index 0
@@ -258,7 +258,7 @@ class MessageArray2D::In {
          * @param y Search origin y coord
          * @param _radius Search radius
          */
-        inline __device__ WrapFilter(const MetaData *_metadata, const size_type &x, const size_type &y, const size_type &_radius);
+        inline __device__ WrapFilter(const MetaData *_metadata, size_type x, size_type y, size_type _radius);
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * A null filter which always returns 0 messages
@@ -473,7 +473,7 @@ class MessageArray2D::In {
          * @param y Search origin y coord
          * @param _radius Search radius
          */
-        inline __device__ Filter(const MetaData *_metadata, const size_type &x, const size_type &y, const size_type &_radius);
+        inline __device__ Filter(const MetaData *_metadata, size_type x, size_type y, size_type _radius);
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * A null filter which always returns 0 messages
@@ -691,7 +691,7 @@ class MessageArray2D::In {
          * @param y Search origin y coord
          * @param _radius Search radius
          */
-        inline __device__ VonNeumannWrapFilter(const MetaData *_metadata, const size_type &x, const size_type &y, const size_type &_radius);
+        inline __device__ VonNeumannWrapFilter(const MetaData *_metadata, size_type x, size_type y, size_type _radius);
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * A null filter which always returns 0 messages
@@ -906,7 +906,7 @@ class MessageArray2D::In {
          * @param y Search origin y coord
          * @param _radius Search radius
          */
-        inline __device__ VonNeumannFilter(const MetaData *_metadata, const size_type &x, const size_type &y, const size_type &_radius);
+        inline __device__ VonNeumannFilter(const MetaData *_metadata, size_type x, size_type y, size_type _radius);
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * A null filter which always returns 0 messages
@@ -974,7 +974,7 @@ class MessageArray2D::In {
      * @note radius of 0 is unsupported
      * @note The location [x, y] must be within the bounds of the message list
      */
-    inline __device__ WrapFilter wrap(const size_type & x, const size_type & y, const size_type & radius = 1) const {
+    inline __device__ WrapFilter wrap(const size_type x, const size_type y, const size_type radius = 1) const {
 #if !defined(SEATBELTS) || SEATBELTS
         if (radius == 0) {
             DTHROW("%u is not a valid radius for accessing Array2D message lists.\n", radius);
@@ -1009,7 +1009,7 @@ class MessageArray2D::In {
      * @note radius of 0 is unsupported
      * @note The location [x, y] must be within the bounds of the message list
      */
-    inline __device__ Filter operator() (const size_type &x, const size_type &y, const size_type &radius = 1) const {
+    inline __device__ Filter operator() (const size_type x, const size_type y, const size_type radius = 1) const {
 #if !defined(SEATBELTS) || SEATBELTS
         if (radius == 0) {
             DTHROW("%u is not a valid radius for accessing Array2D message lists.\n", radius);
@@ -1038,7 +1038,7 @@ class MessageArray2D::In {
      * @note radius of 0 is unsupported
      * @note The location [x, y] must be within the bounds of the message list
      */
-    inline __device__ VonNeumannWrapFilter vn_wrap(const size_type & x, const size_type & y, const size_type & radius = 1) const {
+    inline __device__ VonNeumannWrapFilter vn_wrap(const size_type x, const size_type y, const size_type radius = 1) const {
 #if !defined(SEATBELTS) || SEATBELTS
         if (radius == 0) {
             DTHROW("%u is not a valid radius for accessing Array2D message lists.\n", radius);
@@ -1073,7 +1073,7 @@ class MessageArray2D::In {
      * @note radius of 0 is unsupported
      * @note The location [x, y] must be within the bounds of the message list
      */
-    inline __device__ VonNeumannFilter vn(const size_type &x, const size_type &y, const size_type &radius = 1) const {
+    inline __device__ VonNeumannFilter vn(const size_type x, const size_type y, const size_type radius = 1) const {
 #if !defined(SEATBELTS) || SEATBELTS
         if (radius == 0) {
             DTHROW("%u is not a valid radius for accessing Array2D message lists.\n", radius);
@@ -1106,7 +1106,7 @@ class MessageArray2D::In {
     __device__ size_type size(void) const {
         return metadata->length;
     }
-    __device__ Message at(const size_type &x, const size_type &y) const {
+    __device__ Message at(const size_type x, const size_type y) const {
 #if !defined(SEATBELTS) || SEATBELTS
         if (x >= metadata->dimensions[0] || y >= metadata->dimensions[1]) {
             DTHROW("Index is out of bounds for Array2D messagelist ([%u, %u] >= [%u, %u]).\n", x, y, metadata->dimensions[0], metadata->dimensions[1]);
@@ -1145,7 +1145,7 @@ class MessageArray2D::Out {
     /**
      * Sets the array index to store the message in
      */
-    inline __device__ void setIndex(const size_type &x, const size_type &y) const;
+    inline __device__ void setIndex(const size_type x, const size_type y) const;
     /**
      * Sets the specified variable for this agents message
      * @param variable_name Name of the variable
@@ -1345,7 +1345,7 @@ __device__ void MessageArray2D::Out::setVariable(const char(&variable_name)[M], 
 /**
  * Sets the array index to store the message in
  */
-__device__ void MessageArray2D::Out::setIndex(const size_type &x, const size_type &y) const {
+__device__ void MessageArray2D::Out::setIndex(const size_type x, const size_type y) const {
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
     size_type index_1d =
         y * metadata->dimensions[0] +
@@ -1363,7 +1363,7 @@ __device__ void MessageArray2D::Out::setIndex(const size_type &x, const size_typ
     this->scan_flag[index] = 1;
 }
 // Moore Wrap
-__device__ MessageArray2D::In::WrapFilter::WrapFilter(const MetaData* _metadata, const size_type& x, const size_type& y, const size_type& _radius)
+__device__ MessageArray2D::In::WrapFilter::WrapFilter(const MetaData* _metadata, const size_type x, const size_type y, const size_type _radius)
     : radius(_radius)
     , metadata(_metadata) {
     loc[0] = x;
@@ -1401,7 +1401,7 @@ __device__ MessageArray2D::In::WrapFilter::Message& MessageArray2D::In::WrapFilt
     return *this;
 }
 // Moore
-__device__ MessageArray2D::In::Filter::Filter(const MetaData *_metadata,  const size_type &x, const size_type &y, const size_type &_radius)
+__device__ MessageArray2D::In::Filter::Filter(const MetaData *_metadata,  const size_type x, const size_type y, const size_type _radius)
     : metadata(_metadata) {
     loc[0] = x;
     loc[1] = y;
@@ -1447,7 +1447,7 @@ __device__ MessageArray2D::In::Filter::Message& MessageArray2D::In::Filter::Mess
     return *this;
 }
 // Von Neumann Wrap
-__device__ MessageArray2D::In::VonNeumannWrapFilter::VonNeumannWrapFilter(const MetaData* _metadata, const size_type& x, const size_type& y, const size_type& _radius)
+__device__ MessageArray2D::In::VonNeumannWrapFilter::VonNeumannWrapFilter(const MetaData* _metadata, const size_type x, const size_type y, const size_type _radius)
     : radius(static_cast<int>(_radius))
     , metadata(_metadata) {
     loc[0] = x;
@@ -1492,7 +1492,7 @@ __device__ MessageArray2D::In::VonNeumannWrapFilter::Message& MessageArray2D::In
     return *this;
 }
 // Von Neumann
-__device__ MessageArray2D::In::VonNeumannFilter::VonNeumannFilter(const MetaData* _metadata, const size_type& x, const size_type& y, const size_type& _radius)
+__device__ MessageArray2D::In::VonNeumannFilter::VonNeumannFilter(const MetaData* _metadata, const size_type x, const size_type y, const size_type _radius)
     : radius(static_cast<int>(_radius))
     , metadata(_metadata) {
     loc[0] = x;

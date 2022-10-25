@@ -123,7 +123,7 @@ std::type_index MessageArray2D::Data::getType() const { return std::type_index(t
 MessageArray2D::Description::Description(const std::shared_ptr<const ModelData> &_model, Data *const data)
     : MessageBruteForce::Description(_model, data) { }
 
-void MessageArray2D::Description::setDimensions(const size_type& len_x, const size_type& len_y) {
+void MessageArray2D::Description::setDimensions(const size_type len_x, const size_type len_y) {
     setDimensions({ len_x , len_y });
 }
 void MessageArray2D::Description::setDimensions(const std::array<size_type, 2> &dims) {
