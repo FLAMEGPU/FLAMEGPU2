@@ -138,7 +138,7 @@ TEST(DeviceAgentVectorTest, GetIndex) {
     // Create and step simulation
     CUDASimulation sim(model);
     sim.setPopulationData(av);
-    sim.step(); //agent step function involved
+    sim.step();  // agent step function involved
 }
 FLAMEGPU_AGENT_FUNCTION(MasterIncrement, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<unsigned int>("uint", FLAMEGPU->getVariable<unsigned int>("uint") + 1);
