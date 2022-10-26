@@ -206,7 +206,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @see setPropertyNormalRandom(const std::string &name, T mean, T stddev)
      */
     template<typename T>
-    void setPropertyNormalRandom(const std::string &name, const EnvironmentManager::size_type index, const T mean, const T stddev);
+    void setPropertyNormalRandom(const std::string &name, EnvironmentManager::size_type index, T mean, T stddev);
     /**
      * Sweep named environment property over a log normal random distribution
      * Only floating point types are supported
