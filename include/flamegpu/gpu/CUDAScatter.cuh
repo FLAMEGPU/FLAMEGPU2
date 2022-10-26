@@ -129,7 +129,7 @@ class CUDAScatter {
         const std::vector<ScatterData> &scatterData,
         unsigned int itemCount,
         unsigned int out_index_offset = 0,
-        const bool invert_scan_flag = false,
+        bool invert_scan_flag = false,
         unsigned int scatter_all_count = 0);
     /**
      * Scatters agents from SoA to SoA according to d_position flag as input_source, all variables are scattered
