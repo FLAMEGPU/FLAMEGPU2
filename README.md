@@ -75,6 +75,7 @@ Optionally:
 + [cpplint](https://github.com/cpplint/cpplint) for linting code
 + [Doxygen](http://www.doxygen.nl/) to build the documentation
 + [Python](https://www.python.org/) `>= 3.7` for python integration
+  + With `setuptools`, `wheel`, `build` and optionally `venv` python packages installed
 + [swig](http://www.swig.org/) `>= 4.0.2` for python integration
   + Swig `4.x` will be automatically downloaded by CMake if not provided (if possible).
 + [FLAMEGPU2-visualiser](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser) dependencies
@@ -93,6 +94,8 @@ Building via CMake is a three step process, with slight differences depending on
 2. Configure CMake into the build directory
     + Using the CMake GUI or CLI tools
     + Specifying build options such as the CUDA Compute Capabilities to target, the inclusion of Visualisation or Python components, or performance impacting features such as `SEATBELTS`. See [CMake Configuration Options](#CMake-Configuration-Options) for details of the available configuration options
+    + CMake will automatically find and select compilers, libraries and python interpreters based on current environmental variables and default locations. See [Mastering CMake](https://cmake.org/cmake/help/book/mastering-cmake/chapter/Getting%20Started.html#specifying-the-compiler-to-cmake) for more information.
+        + Python dependencies must be installed in the selected python environment. If needed you can instruct CMake to use a specific python implementation using the `Python_ROOT_DIR` and `Python_Executable` CMake options at configure time.
 3. Build compilation targets using the configured build system
     + See [Available Targets](#Available-targets) for a list of available targets.
 
@@ -159,8 +162,8 @@ cmake --build . --target all
 | `CMAKE_BUILD_TYPE`       | `Release`/`Debug`/`MinSizeRel`/`RelWithDebInfo` | Select the build configuration for single-target generators such as `make`   |
 | `SEATBELTS`              | `ON`/`OFF`        | Enable / Disable additional runtime checks which harm performance but increase usability. Default `ON`     |
 | `CUDA_ARCH`              | `"52 60 70 80"`   | Select [CUDA Compute Capabilities](https://developer.nvidia.com/cuda-gpus) to build/optimise for, as a space or `;` separated list. Defaults to `""` |
-| `BUILD_SWIG_PYTHON`      | `ON`/`OFF`        | Enable Python target `pyflamegpu` via Swig. Default `OFF`                                                  |
-| `BUILD_SWIG_PYTHON_VENV` | `ON`/`OFF`        | Use a python `venv` when building the python Swig target. Default `ON`.                                    |
+| `BUILD_SWIG_PYTHON`      | `ON`/`OFF`        | Enable Python target `pyflamegpu` via Swig. Default `OFF`. Python packages `setuptools`, `build` & `wheel` required |
+| `BUILD_SWIG_PYTHON_VENV` | `ON`/`OFF`        | Use a python `venv` when building the python Swig target. Default `ON`. Python package `venv` required     |
 | `BUILD_TESTS`            | `ON`/`OFF`        | Build the C++/CUDA test suite. Default `OFF`.                                                              |
 | `BUILD_TESTS_DEV`        | `ON`/`OFF`        | Build the reduced-scope development test suite. Default `OFF`                                              |
 | `VISUALISATION`          | `ON`/`OFF`        | Enable Visualisation. Default `OFF`.                                                                       |
