@@ -16,7 +16,7 @@ struct Any {
      * @param _elements How many elements does the property have (1 if it's not an array)
      * @note Copies the data
      */
-    Any(const void *_ptr, const size_t &_length, const std::type_index &_type, const unsigned int &_elements)
+    Any(const void *_ptr, const size_t _length, const std::type_index &_type, const unsigned int _elements)
         : ptr(malloc(_length))
         , length(_length)
         , type(_type)
@@ -24,7 +24,7 @@ struct Any {
         memcpy(ptr, _ptr, length);
     }
     template<typename T>
-    explicit Any(const T&other)
+    explicit Any(const T other)
         : ptr(malloc(sizeof(T)))
         , length(sizeof(T))
         , type(typeid(T))

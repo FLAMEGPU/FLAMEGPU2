@@ -128,7 +128,7 @@ void MessageBucket::CUDAModelHandler::resizeCubTemp() {
     }
 }
 
-void MessageBucket::CUDAModelHandler::resizeKeysVals(const unsigned int &newSize) {
+void MessageBucket::CUDAModelHandler::resizeKeysVals(const unsigned int newSize) {
     size_t bytesCheck = newSize * sizeof(unsigned int);
     if (bytesCheck > d_keys_vals_storage_bytes) {
         if (d_keys) {

@@ -8,7 +8,7 @@ namespace flamegpu {
 RunPlan::RunPlan(const ModelDescription &model)
     : RunPlan(std::make_shared<std::unordered_map<std::string, EnvironmentDescription::PropData> const>(model.model->environment->getPropertiesMap()),
       model.model->exitConditions.size() + model.model->exitConditionCallbacks.size() > 0) { }
-RunPlan::RunPlan(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>>  &environment, const bool &allow_0)
+RunPlan::RunPlan(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>>  &environment, const bool allow_0)
     : random_seed(0)
     , steps(1)
     , environment(environment)
@@ -25,10 +25,10 @@ RunPlan& RunPlan::operator=(const RunPlan& other) {
         this->property_overrides.emplace(i.first, util::Any(i.second));
     return *this;
 }
-void RunPlan::setRandomSimulationSeed(const uint64_t &_random_seed) {
+void RunPlan::setRandomSimulationSeed(const uint64_t _random_seed) {
     random_seed = _random_seed;
 }
-void RunPlan::setSteps(const unsigned int &_steps) {
+void RunPlan::setSteps(const unsigned int _steps) {
     if (_steps == 0 && !allow_0_steps) {
         throw exception::OutOfBoundsException("Model description requires atleast 1 exit condition to have unlimited steps, "
             "in RunPlan::setSteps()");
@@ -73,7 +73,7 @@ RunPlanVector RunPlan::operator+(const RunPlanVector& rhs) const {
     rtn+=*this;
     return rtn;
 }
-RunPlanVector RunPlan::operator*(const unsigned int& rhs) const {
+RunPlanVector RunPlan::operator*(const unsigned int rhs) const {
     // Operation
     RunPlanVector rtn(this->environment, this->allow_0_steps);
     for (unsigned int i = 0; i < rhs; ++i) {

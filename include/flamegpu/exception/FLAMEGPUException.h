@@ -38,7 +38,7 @@ class FLAMEGPUException : public std::exception {
     /**
      * Sets internal members file and line, which are used by constructor
      */
-     static void setLocation(const char *_file, const unsigned int &_line);
+     static void setLocation(const char *_file, unsigned int _line);
 
  protected:
     /**

@@ -41,7 +41,7 @@ void RandomManager::reseedDevice() {
     // curand is initialised on access if length does not match. This would need a second device length?
 }
 
-void RandomManager::reseed(const uint64_t &seed) {
+void RandomManager::reseed(const uint64_t seed) {
     // Set the instance's seed to the new value
     mSeed = seed;
 
@@ -109,7 +109,7 @@ __global__ void init_curand(util::detail::curandState *d_random_state, unsigned 
     if (id < threadCount)
         curand_init(seed, offset + id, 0, &d_random_state[offset + id]);
 }
-void RandomManager::resizeDeviceArray(const size_type &_length, cudaStream_t stream) {
+void RandomManager::resizeDeviceArray(const size_type _length, cudaStream_t stream) {
     // Mark that the device hsa now been initialised.
     deviceInitialised = true;
     if (_length > h_max_random_size) {

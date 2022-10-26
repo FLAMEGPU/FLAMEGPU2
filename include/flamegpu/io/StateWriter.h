@@ -35,7 +35,7 @@ class StateWriter {
     StateWriter(const std::string &_model_name,
         const std::shared_ptr<EnvironmentManager>& _env_manager,
         const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &_model_state,
-        const unsigned int &_iterations,
+        const unsigned int _iterations,
         const std::string &output_file,
         const Simulation *_sim_instance)
     : model_state(_model_state)

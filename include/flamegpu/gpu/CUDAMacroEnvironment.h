@@ -42,7 +42,7 @@ class CUDAMacroEnvironment {
          * @param _type_size The size of the base type (e.g. sizeof(float))
          * @param _elements Number of elements in each dimension
          */
-        MacroEnvProp(const std::type_index& _type, const size_t &_type_size, const std::array<unsigned int, 4> &_elements)
+        MacroEnvProp(const std::type_index& _type, const size_t _type_size, const std::array<unsigned int, 4> &_elements)
             : type(_type)
             , type_size(_type_size)
             , elements(_elements)

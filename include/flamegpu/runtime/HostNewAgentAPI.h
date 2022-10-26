@@ -28,7 +28,7 @@ struct VarOffsetStruct {
          * @param _len Length of the variables data within the buffer
          * @param _type Type of the variable's base type (does not account for whether it's an array)
          */
-        OffsetLen(const ptrdiff_t &_offset, const size_t &_len, const std::type_index _type)
+        OffsetLen(const ptrdiff_t &_offset, const size_t _len, const std::type_index _type)
             : offset(_offset)
             , len(_len)
             , type(_type) { }
@@ -131,7 +131,7 @@ struct NewAgentStorage {
             free(data);
     }
     template<typename T>
-    void setVariable(const std::string &var_name, const T &val) {
+    void setVariable(const std::string &var_name, const T val) {
         const auto &var = offsets.vars.find(var_name);
         if (var == offsets.vars.end()) {
             THROW exception::InvalidAgentVar("Variable '%s' not found, "
@@ -153,7 +153,7 @@ struct NewAgentStorage {
         memcpy(data + var->second.offset, &val, var->second.len);
     }
     template<typename T, unsigned int N = 0>
-    void setVariable(const std::string &var_name, const unsigned int &index, const T &val) {
+    void setVariable(const std::string &var_name, const unsigned int index, const T val) {
         const auto &var = offsets.vars.find(var_name);
         if (var == offsets.vars.end()) {
             THROW exception::InvalidAgentVar("Variable '%s' not found, "
@@ -256,7 +256,7 @@ struct NewAgentStorage {
         return *reinterpret_cast<T*>(data + var->second.offset);
     }
     template<typename T, unsigned int N = 0>
-    T getVariable(const std::string &var_name, const unsigned int &index) {
+    T getVariable(const std::string &var_name, const unsigned int index) {
         const auto &var = offsets.vars.find(var_name);
         if (var == offsets.vars.end()) {
             THROW exception::InvalidAgentVar("Variable '%s' not found, "
@@ -380,7 +380,7 @@ class HostNewAgentAPI {
      * Updates a variable within the new agent
      */
     template<typename T>
-    void setVariable(const std::string &var_name, const T &val) {
+    void setVariable(const std::string &var_name, const T val) {
         if (!var_name.empty() && var_name[0] == '_') {
             THROW exception::ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
                 "in HostNewAgentAPI::setVariable().");
@@ -388,7 +388,7 @@ class HostNewAgentAPI {
         s->setVariable<T>(var_name, val);
     }
     template<typename T, unsigned int N = 0>
-    void setVariable(const std::string &var_name, const unsigned int &index, const T &val) {
+    void setVariable(const std::string &var_name, const unsigned int index, const T val) {
         if (!var_name.empty() && var_name[0] == '_') {
             THROW exception::ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
                 "in HostNewAgentAPI::setVariable().");
@@ -422,7 +422,7 @@ class HostNewAgentAPI {
         return s->getVariable<T>(var_name);
     }
     template<typename T, unsigned int N = 0>
-    T getVariable(const std::string &var_name, const unsigned int &index) {
+    T getVariable(const std::string &var_name, const unsigned int index) {
         return s->getVariable<T, N>(var_name, index);
     }
 #ifndef SWIG

@@ -41,7 +41,7 @@ class CUDAScatter {
          __device__ InversionIterator operator++ (int a) { p += a;  return *this; }
          __device__ InversionIterator operator++ () { p++;  return *this; }
          __device__ unsigned int operator *() { return invert(*p); }
-         __device__ InversionIterator operator+(const int &b) const { return InversionIterator(p + b); }
+         __device__ InversionIterator operator+(const int b) const { return InversionIterator(p + b); }
          __device__ unsigned int operator[](int b) const { return  invert(p[b]); }
       private:
          __device__ unsigned int invert(unsigned int c) const { return c == 0 ? 1 : 0; }
@@ -71,7 +71,7 @@ class CUDAScatter {
         unsigned int data_len;
         StreamData();
         ~StreamData();
-        void resize(const unsigned int &newLen);
+        void resize(unsigned int newLen);
     };
     std::array<StreamData, CUDAScanCompaction::MAX_STREAMS> streamResources;
     std::array<detail::CubTemporaryMemory, CUDAScanCompaction::MAX_STREAMS> cubTemps;
@@ -98,16 +98,16 @@ class CUDAScatter {
      * @note This is deprecated, unclear if still used
      */
      unsigned int scatter(
-        const unsigned int &streamResourceId,
-        const cudaStream_t &stream,
+        unsigned int streamResourceId,
+        cudaStream_t stream,
         const Type &messageOrAgent,
         const VariableMap &vars,
         const std::map<std::string, void*> &in,
         const std::map<std::string, void*> &out,
-        const unsigned int &itemCount,
-        const unsigned int &out_index_offset = 0,
-        const bool &invert_scan_flag = false,
-        const unsigned int &scatter_all_count = 0);
+        unsigned int itemCount,
+        unsigned int out_index_offset = 0,
+        bool invert_scan_flag = false,
+        unsigned int scatter_all_count = 0);
     /**
      * Scatters agents from SoA to SoA according to d_position flag
      * Used for device agent creation and agent death
@@ -123,14 +123,14 @@ class CUDAScatter {
      * @param scatter_all_count The number of agents at the start of in to be copied, ones after this use scanflag
      */
     unsigned int scatter(
-        const unsigned int &streamResourceId,
-        const cudaStream_t &stream,
+        unsigned int streamResourceId,
+        cudaStream_t stream,
         const Type &messageOrAgent,
         const std::vector<ScatterData> &scatterData,
-        const unsigned int &itemCount,
-        const unsigned int &out_index_offset = 0,
-        const bool &invert_scan_flag = false,
-        const unsigned int &scatter_all_count = 0);
+        unsigned int itemCount,
+        unsigned int out_index_offset = 0,
+        bool invert_scan_flag = false,
+        unsigned int scatter_all_count = 0);
     /**
      * Scatters agents from SoA to SoA according to d_position flag as input_source, all variables are scattered
      * Used for Host function sort agent
@@ -163,11 +163,11 @@ class CUDAScatter {
      * @param scatter_all_count The number offset into the array where the scan began
      */
     unsigned int scatterCount(
-        const unsigned int &streamResourceId,
-        const cudaStream_t &stream,
+        unsigned int streamResourceId,
+        cudaStream_t stream,
         const Type &messageOrAgent,
-        const unsigned int &itemCount,
-        const unsigned int &scatter_all_count = 0);
+        unsigned int itemCount,
+        unsigned int scatter_all_count = 0);
     /**
      * Scatters a contigous block from SoA to SoA
      * CUDAScanCompaction::scan_flag/position are not used
@@ -179,11 +179,11 @@ class CUDAScatter {
      * @note If calling scatter() with itemCount == scatter_all_count works the same
      */
     unsigned int scatterAll(
-        const unsigned int &streamResourceId,
-        const cudaStream_t &stream,
+        unsigned int streamResourceId,
+        cudaStream_t stream,
         const std::vector<ScatterData> &scatterData,
-        const unsigned int &itemCount,
-        const unsigned int &out_index_offset = 0);
+        unsigned int itemCount,
+        unsigned int out_index_offset = 0);
     /**
      * Convenience wrapper to scatterAll()
      * @param streamResourceId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
@@ -195,13 +195,13 @@ class CUDAScatter {
      * @param out_index_offset The offset to be applied to the output index (e.g. if out already contains data)
      */
     unsigned int scatterAll(
-        const unsigned int &streamResourceId,
-        const cudaStream_t &stream,
+        unsigned int streamResourceId,
+        cudaStream_t stream,
         const VariableMap &vars,
         const std::map<std::string, void*> &in,
         const std::map<std::string, void*> &out,
-        const unsigned int &itemCount,
-        const unsigned int &out_index_offset);
+        unsigned int itemCount,
+        unsigned int out_index_offset);
     /**
      * Used for reordering messages from SoA to SoA
      * Position information is taken using PBM data, rather than d_position
@@ -217,12 +217,12 @@ class CUDAScatter {
      * @param d_pbm This is the PBM, it identifies at which index a bin's storage begins
      */
     void pbm_reorder(
-        const unsigned int &streamResourceId,
-        const cudaStream_t &stream,
+        unsigned int streamResourceId,
+        cudaStream_t stream,
         const VariableMap &vars,
         const std::map<std::string, void*> &in,
         const std::map<std::string, void*> &out,
-        const unsigned int &itemCount,
+        unsigned int itemCount,
         const unsigned int *d_bin_index,
         const unsigned int *d_bin_sub_index,
         const unsigned int *d_pbm);
@@ -237,12 +237,12 @@ class CUDAScatter {
      * @param out_index_offset The offset to be applied to the ouput index (e.g. if out already contains data)
      */
     void scatterNewAgents(
-        const unsigned int &streamResourceId,
-        const cudaStream_t &stream,
+        unsigned int streamResourceId,
+        cudaStream_t stream,
         const std::vector<ScatterData> &scatterData,
-        const size_t &totalAgentSize,
-        const unsigned int &inCount,
-        const unsigned int &out_index_offset);
+        size_t totalAgentSize,
+        unsigned int inCount,
+        unsigned int out_index_offset);
     /**
      * Broadcasts a single value for each variable to a contiguous block in SoA
      * Used prior to device agent creation
@@ -291,13 +291,13 @@ class CUDAScatter {
      * @param d_write_flag Device pointer to array for tracking how many messages output to each bin, caller responsibiltiy to ensure it is array_length or longer
      */
     void arrayMessageReorder(
-        const unsigned int &streamResourceId,
-        const cudaStream_t &stream,
+        unsigned int streamResourceId,
+        cudaStream_t stream,
         const VariableMap &vars,
         const std::map<std::string, void*> &in,
         const std::map<std::string, void*> &out,
-        const unsigned int &itemCount,
-        const unsigned int &array_length,
+        unsigned int itemCount,
+        unsigned int array_length,
         unsigned int *d_write_flag = nullptr);
 
  private:

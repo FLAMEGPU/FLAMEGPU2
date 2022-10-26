@@ -68,7 +68,7 @@ StepLoggingConfig::StepLoggingConfig(const StepLoggingConfig &other)
 StepLoggingConfig::StepLoggingConfig(const LoggingConfig &other)
     : LoggingConfig(other)
     , frequency(1) { }
-void StepLoggingConfig::setFrequency(const unsigned int &steps) {
+void StepLoggingConfig::setFrequency(const unsigned int steps) {
     frequency = steps;
 }
 

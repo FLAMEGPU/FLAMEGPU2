@@ -174,7 +174,7 @@ class CUDASimulation : public Simulation {
      * @throws exception::ReadOnlyEnvProperty If the named environment property is marked as read-only
      */
     template<typename T>
-    void setEnvironmentProperty(const std::string &property_name, const T& value);
+    void setEnvironmentProperty(const std::string &property_name, T value);
     /**
      * Update the current value of the named environment property array
      * @param property_name Name of the environment property to be updated
@@ -196,7 +196,7 @@ class CUDASimulation : public Simulation {
      * @throws exception::ReadOnlyEnvProperty If the named environment property is marked as read-only
      */
     template<typename T, EnvironmentManager::size_type N = 0>
-    void setEnvironmentProperty(const std::string& property_name, const EnvironmentManager::size_type &index, const T& value);
+    void setEnvironmentProperty(const std::string& property_name, EnvironmentManager::size_type index, T value);
 #ifdef SWIG
     /**
      * Update the current value of the named environment property array
@@ -235,7 +235,7 @@ class CUDASimulation : public Simulation {
      * @throws exception::InvalidEnvPropertyType If the named environment property does not exist with the specified type
      */
     template<typename T, EnvironmentManager::size_type N = 0>
-    T getEnvironmentProperty(const std::string& property_name, const EnvironmentManager::size_type& index);
+    T getEnvironmentProperty(const std::string& property_name, EnvironmentManager::size_type index);
 #ifdef SWIG
     /**
      * Return the current value of the named environment property array
@@ -372,7 +372,7 @@ class CUDASimulation : public Simulation {
      * Reinitalises random generation for this model and all submodels
      * @param seed New random seed (this updates stored seed in config)
      */
-    void reseed(const uint64_t &seed);
+    void reseed(uint64_t seed);
     /**
      * Number of times step() has been called since sim was last reset/init
      */
@@ -435,7 +435,7 @@ class CUDASimulation : public Simulation {
      * If true, add the current simulation state to the step log
      * @param step_time_seconds Duration of the step to be logged in seconds
      */
-    void processStepLog(const double &step_time_seconds);
+    void processStepLog(const double step_time_seconds);
     /**
      * Replace the current exit log with the current simulation state
      */
@@ -571,7 +571,7 @@ class CUDASimulation : public Simulation {
      * @param streamId Stream index to perform scatter on
      * @note called at the end of step() and after all init/hostLayer functions and exit conditions have finished
      */
-    void processHostAgentCreation(const unsigned int &streamId);
+    void processHostAgentCreation(unsigned int streamId);
 
  public:
     typedef std::vector<NewAgentStorage> AgentDataBuffer;
@@ -629,7 +629,7 @@ class CUDASimulation : public Simulation {
 };
 
 template<typename T>
-void CUDASimulation::setEnvironmentProperty(const std::string& property_name, const T& value) {
+void CUDASimulation::setEnvironmentProperty(const std::string& property_name, const T value) {
     if (!property_name.empty() && property_name[0] == '_') {
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in CUDASimulation::setEnvironmentProperty().");
@@ -649,7 +649,7 @@ void CUDASimulation::setEnvironmentProperty(const std::string& property_name, co
     singletons->environment->setProperty<T, N>(property_name, value);
 }
 template<typename T, EnvironmentManager::size_type N>
-void CUDASimulation::setEnvironmentProperty(const std::string& property_name, const EnvironmentManager::size_type& index, const T& value) {
+void CUDASimulation::setEnvironmentProperty(const std::string& property_name, const EnvironmentManager::size_type index, const T value) {
     if (!singletonsInitialised)
         initialiseSingletons();
     singletons->environment->setProperty<T, N>(property_name, index, value);
@@ -667,7 +667,7 @@ std::array<T, N> CUDASimulation::getEnvironmentProperty(const std::string& prope
     return singletons->environment->getProperty<T, N>(property_name);
 }
 template<typename T, EnvironmentManager::size_type N>
-T CUDASimulation::getEnvironmentProperty(const std::string& property_name, const EnvironmentManager::size_type& index) {
+T CUDASimulation::getEnvironmentProperty(const std::string& property_name, const EnvironmentManager::size_type index) {
     if (!singletonsInitialised)
         initialiseSingletons();
     return singletons->environment->getProperty<T, N>(property_name, index);

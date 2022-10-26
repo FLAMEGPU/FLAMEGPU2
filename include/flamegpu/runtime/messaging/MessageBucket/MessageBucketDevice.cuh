@@ -89,7 +89,7 @@ class MessageBucket::In {
              * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
              */
             template<typename T, MessageNone::size_type N, unsigned int M> __device__
-            T getVariable(const char(&variable_name)[M], const unsigned int &index) const;
+            T getVariable(const char(&variable_name)[M], unsigned int index) const;
         };
         /**
         * Stock iterator for iterating MessageBucket::In::Filter::Message objects
@@ -330,7 +330,7 @@ __device__ T MessageBucket::In::Filter::Message::getVariable(const char(&variabl
     return value;
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
-T MessageBucket::In::Filter::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
+T MessageBucket::In::Filter::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
 #if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
     if (cell_index >= _parent.bucket_end) {

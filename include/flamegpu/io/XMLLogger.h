@@ -113,7 +113,7 @@ class XMLLogger : public Logger{
      * @tparam T Instance of rapidjson::Writer or subclass (e.g. rapidjson::PrettyWriter)
      * @note Templated as can't forward declare rapidjson::Writer<rapidjson::StringBuffer>
      */
-    void writeAny(tinyxml2::XMLElement *element, const util::Any &value, const unsigned int &elements = 1) const;
+    void writeAny(tinyxml2::XMLElement *element, const util::Any &value, unsigned int elements = 1) const;
 
     std::string out_path;
     bool prettyPrint;

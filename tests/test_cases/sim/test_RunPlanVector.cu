@@ -114,7 +114,7 @@ TEST(TestRunPlanVector, setProperty) {
     const int32_t iNew = 2;
     const std::array<uint32_t, 3> u3New = {{3u, 4u, 5u}};
     const std::array<double, 3> d3New = {{3., 4., 5.}};
-    // void RunPlanVector::setProperty(const std::string &name, const T &value) {
+    // void RunPlanVector::setProperty(const std::string &name, T value) {
     plans.setProperty("f", fNew);
     plans.setProperty("i", iNew);
     // Check setting full arrays
@@ -122,7 +122,7 @@ TEST(TestRunPlanVector, setProperty) {
     // Explicit type is required, to coerce the std::array. Might need partial template specialisation for  where the value is a stdarray of T?
     plans.setProperty<uint32_t, 3>("u3", u3New);
     // Check setting individual array elements
-    // void RunPlanVector::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value) {
+    // void RunPlanVector::setProperty(const std::string &name, EnvironmentManager::size_type index, T value) {
     plans.setProperty<double>("d3", 0, d3New[0]);
     plans.setProperty<double>("d3", 1, d3New[1]);
     plans.setProperty<double>("d3", 2, d3New[2]);
@@ -153,7 +153,7 @@ TEST(TestRunPlanVector, setProperty) {
     // Tests for exceptions
     // --------------------
     // Note litereals used must match the templated type not the incorrect types used, to appease MSVC warnings.
-    // void RunPlanVector::setProperty(const std::string &name, const T &value)
+    // void RunPlanVector::setProperty(const std::string &name, T value)
     EXPECT_THROW(plans.setProperty<float>("does_not_exist", 1.f), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW(plans.setProperty<float>("i", 1.f), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW(plans.setProperty<uint32_t>("u3", 1u), flamegpu::exception::InvalidEnvPropertyType);
@@ -163,7 +163,7 @@ TEST(TestRunPlanVector, setProperty) {
     EXPECT_THROW((plans.setProperty<float, 3>("u3", {2.f, 2.f, 2.f})), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW((plans.setProperty<double, 2>("d3", {-2, 0})), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW((plans.setProperty<double, 4>("d3", {-2, 0, 2, 2})), flamegpu::exception::InvalidEnvPropertyType);
-    // void RunPlanVector::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value)
+    // void RunPlanVector::setProperty(const std::string &name, EnvironmentManager::size_type index, T value)
     EXPECT_THROW((plans.setProperty<float>("does_not_exist", 0u, 3.f)), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW((plans.setProperty<float>("u3", 0u, 3.f)), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW((plans.setProperty<double>("d3", static_cast<EnvironmentManager::size_type>(-1), 3)), exception::OutOfBoundsException);
@@ -174,7 +174,7 @@ TEST(TestRunPlanVector, setProperty) {
 #endif
 }
 template<typename T>
-double t_lerp(const T &_min, const T &_max, const double &a) {
+double t_lerp(const T _min, const T _max, const double a) {
     double min = static_cast<double>(_min);
     double max = static_cast<double>(_max);
     return min * (1.0 - a) + max * a;
@@ -212,12 +212,12 @@ TEST(TestRunPlanVector, setPropertyUniformDistribution) {
     const std::array<uint32_t, 3> u3Max = {{100u, 200u, 300u}};
     const std::array<float, 2> f2Min = { {1.0f, 100.f} };
     const std::array<float, 2> f2Max = { {0.0f, -100.0f} };
-    // void setPropertyUniformDistribution(const std::string &name, const T &min, const T &max);
+    // void setPropertyUniformDistribution(const std::string &name, T min, T max);
     plans.setPropertyUniformDistribution("f", fMin, fMax);
     plans.setPropertyUniformDistribution("fb", fbMin, fbMax);
     plans.setPropertyUniformDistribution("i", iMin, iMax);
     // Check setting individual array elements
-    // void setPropertyUniformDistribution(const std::string &name, const EnvironmentManager::size_type &index, const T &min, const T &max);
+    // void setPropertyUniformDistribution(const std::string &name, EnvironmentManager::size_type index, T min, T max);
     plans.setPropertyUniformDistribution("u3", 0, u3Min[0], u3Max[0]);
     plans.setPropertyUniformDistribution("u3", 1, u3Min[1], u3Max[1]);
     plans.setPropertyUniformDistribution("u3", 2, u3Min[2], u3Max[2]);
@@ -245,7 +245,7 @@ TEST(TestRunPlanVector, setPropertyUniformDistribution) {
     // --------------------
     flamegpu::RunPlanVector singlePlanVector(model, 1);
     // Note literals used must match the templated type not the incorrect types used, to appease MSVC warnings.
-    // void RunPlanVector::setPropertyUniformDistribution(const std::string &name, const T &min, const T &max)
+    // void RunPlanVector::setPropertyUniformDistribution(const std::string &name, T min, T max)
     EXPECT_THROW((singlePlanVector.setPropertyUniformDistribution<float>("f", 1.f, 100.f)), exception::OutOfBoundsException);
     EXPECT_THROW((plans.setPropertyUniformDistribution<float>("does_not_exist", 1.f, 100.f)), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW((plans.setPropertyUniformDistribution<float>("i", 1.f, 100.f)), flamegpu::exception::InvalidEnvPropertyType);
@@ -284,11 +284,11 @@ TEST(TestRunPlanVector, setPropertyUniformRandom) {
     const int32_t iMax = 100;
     const std::array<uint32_t, 3> u3Min = {{1u, 101u, 201u}};
     const std::array<uint32_t, 3> u3Max = {{100u, 200u, 300u}};
-    // void setPropertyUniformRandom(const std::string &name, const T &min, const T &Max);
+    // void setPropertyUniformRandom(const std::string &name, T min, T Max);
     plans.setPropertyUniformRandom("f", fMin, fMax);
     plans.setPropertyUniformRandom("i", iMin, iMax);
     // Check setting individual array elements
-    // void setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &min, const T &Max);
+    // void setPropertyUniformRandom(const std::string &name, EnvironmentManager::size_type index, T min, T Max);
     plans.setPropertyUniformRandom("u3", 0, u3Min[0], u3Max[0]);
     plans.setPropertyUniformRandom("u3", 1, u3Min[1], u3Max[1]);
     plans.setPropertyUniformRandom("u3", 2, u3Min[2], u3Max[2]);
@@ -335,10 +335,10 @@ TEST(TestRunPlanVector, setPropertyNormalRandom) {
     const float fStddev = 100.f;
     const std::array<double, 3> d3Mean = {{1., 101., 201.}};
     const std::array<double, 3> d3Stddev = {{100., 200., 300.}};
-    // void setPropertyNormalRandom(const std::string &name, const T &mean, const T &stddev);
+    // void setPropertyNormalRandom(const std::string &name, T mean, T stddev);
     plans.setPropertyNormalRandom("f", fMean, fStddev);
     // Check setting individual array elements
-    // void setPropertyNormalRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &mean, const T &stddev);
+    // void setPropertyNormalRandom(const std::string &name, EnvironmentManager::size_type index, T mean, T stddev);
     plans.setPropertyNormalRandom("d3", 0, d3Mean[0], d3Stddev[0]);
     plans.setPropertyNormalRandom("d3", 1, d3Mean[1], d3Stddev[1]);
     plans.setPropertyNormalRandom("d3", 2, d3Mean[2], d3Stddev[2]);
@@ -391,10 +391,10 @@ TEST(TestRunPlanVector, setPropertyLogNormalRandom) {
     const float fStddev = 100.f;
     const std::array<double, 3> d3Mean = {{1., 101., 201.}};
     const std::array<double, 3> d3Stddev = {{100., 200., 300.}};
-    // void RunPlanVector::setPropertyLogNormalRandom(const std::string &name, const T &mean, const T &stddev) {
+    // void RunPlanVector::setPropertyLogNormalRandom(const std::string &name, T mean, T stddev) {
     plans.setPropertyLogNormalRandom("f", fMean, fStddev);
     // Check setting individual array elements
-    // void RunPlanVector::setPropertyLogNormalRandom(const std::string &name, const EnvironmentManager::size_type &index, const T &mean, const T &stddev) {
+    // void RunPlanVector::setPropertyLogNormalRandom(const std::string &name, EnvironmentManager::size_type index, T mean, T stddev) {
     plans.setPropertyLogNormalRandom("d3", 0, d3Mean[0], d3Stddev[0]);
     plans.setPropertyLogNormalRandom("d3", 1, d3Mean[1], d3Stddev[1]);
     plans.setPropertyLogNormalRandom("d3", 2, d3Mean[2], d3Stddev[2]);
@@ -450,7 +450,7 @@ TEST(TestRunPlanVector, setPropertyRandom) {
     std::uniform_real_distribution<float> fdist(fMin, fMax);
     plans.setPropertyRandom<float>("f", fdist);
     // Check setting individual array elements
-    // void setPropertyRandom(const std::string &name, const EnvironmentManager::size_type &index, rand_dist &distribution);
+    // void setPropertyRandom(const std::string &name, EnvironmentManager::size_type index, rand_dist &distribution);
     std::normal_distribution<double> d3dist0(d3Mean[0], d3Stddev[0]);
     std::normal_distribution<double> d3dist1(d3Mean[1], d3Stddev[1]);
     std::normal_distribution<double> d3dist2(d3Mean[2], d3Stddev[2]);
@@ -489,7 +489,7 @@ TEST(TestRunPlanVector, setPropertyRandom) {
     EXPECT_THROW((plans.setPropertyRandom<float>("does_not_exist", fdist)), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW((plans.setPropertyRandom<double>("f", d3dist0)), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW((plans.setPropertyRandom<double>("d3", d3dist0)), flamegpu::exception::InvalidEnvPropertyType);
-    // void RunPlanVector::setPropertyRandom(const std::string &name, const EnvironmentManager::size_type &index, rand_dist &distribution)
+    // void RunPlanVector::setPropertyRandom(const std::string &name, EnvironmentManager::size_type index, rand_dist &distribution)
     // Extra brackets within the macro mean commas can be used due to how preproc tokenizers work
     EXPECT_THROW((singlePlanVector.setPropertyRandom<double>("d3", 0u, d3dist0)), exception::OutOfBoundsException);
     EXPECT_THROW((plans.setPropertyRandom<float>("does_not_exist", 0u, fdist)), flamegpu::exception::InvalidEnvProperty);
@@ -625,7 +625,7 @@ TEST(TestRunPlanVector, operatorAddition) {
     EXPECT_THROW((planVector += otherPlanVector), flamegpu::exception::InvalidArgument);
     EXPECT_THROW((otherPlanVector += planVector), flamegpu::exception::InvalidArgument);
 }
-// RunPlanVector operator*(const unsigned int& rhs) const;
+// RunPlanVector operator*(unsigned int rhs) const;
 TEST(TestRunPlanVector, operatorMultiplication) {
     // Define the simple model to use
     flamegpu::ModelDescription model("test");
@@ -635,14 +635,14 @@ TEST(TestRunPlanVector, operatorMultiplication) {
     EXPECT_EQ(plans.size(), totalPlans);
 
     // Multiply the plan vector by a fixed size
-    // RunPlanVector operator*(const unsigned int& rhs) const;
+    // RunPlanVector operator*(unsigned int rhs) const;
     const uint32_t mult = 2u;
     flamegpu::RunPlanVector morePlans = plans * mult;
     const uint32_t expectedSize = mult * totalPlans;
     EXPECT_EQ(morePlans.size(), expectedSize);
 
     // multiply a plan in-place
-    // RunPlanVector& operator*=(const unsigned int& rhs);
+    // RunPlanVector& operator*=(unsigned int rhs);
     plans *= mult;
     EXPECT_EQ(plans.size(), expectedSize);
 }

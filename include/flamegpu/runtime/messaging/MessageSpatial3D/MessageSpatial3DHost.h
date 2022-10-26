@@ -74,7 +74,7 @@ class MessageSpatial3D::CUDAModelHandler : public MessageSpecialisationHandler {
      * @param newSize The new number of agents to represent
      * @note This only scales upwards, it will never reduce the size
      */
-    void resizeKeysVals(const unsigned int &newSize);
+    void resizeKeysVals(unsigned int newSize);
     /**
      * Number of bins, arrays are +1 this length
      */
@@ -182,15 +182,15 @@ class MessageSpatial3D::Description : public MessageBruteForce::Description {
     Description& operator=(Description &&other_message) noexcept = delete;
 
  public:
-    void setRadius(const float &r);
-    void setMinX(const float &x);
-    void setMinY(const float &y);
-    void setMinZ(const float &z);
-    void setMin(const float &x, const float &y, const float &z);
-    void setMaxX(const float &x);
-    void setMaxY(const float &y);
-    void setMaxZ(const float &z);
-    void setMax(const float &x, const float &y, const float &z);
+    void setRadius(float r);
+    void setMinX(float x);
+    void setMinY(float y);
+    void setMinZ(float z);
+    void setMin(float x, float y, float z);
+    void setMaxX(float x);
+    void setMaxY(float y);
+    void setMaxZ(float z);
+    void setMax(float x, float y, float z);
 
     float getRadius() const;
     float getMinX() const;

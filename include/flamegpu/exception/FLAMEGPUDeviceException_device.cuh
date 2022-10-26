@@ -112,7 +112,7 @@ class DeviceException {
      * This is required to process var args, it performs recursion to scrape of each arg
      */
     template<typename T, typename... Args>
-    __device__ void subformat_recurse(DeviceExceptionBuffer *buff, const T &t, Args... args) {
+    __device__ void subformat_recurse(DeviceExceptionBuffer *buff, const T t, Args... args) {
         // Call subformat with T
         subformat(buff, t);
         // Recurse with the rest of the list

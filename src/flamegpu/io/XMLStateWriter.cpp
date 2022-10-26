@@ -65,7 +65,7 @@ XMLStateWriter::XMLStateWriter(
     const std::string &model_name,
     const std::shared_ptr<EnvironmentManager>& env_manager,
     const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model,
-    const unsigned int &iterations,
+    const unsigned int iterations,
     const std::string &output_file,
     const Simulation *_sim_instance)
     : StateWriter(model_name, env_manager, model, iterations, output_file, _sim_instance) {}

@@ -56,7 +56,7 @@ struct CUDAScanCompactionConfig {
      * Resize the two scan buffers inside d_ptrs
      * @param count The number of items required to fit in the resized buffers
      */
-    void resize_scan_flag(const unsigned int& count);
+    void resize_scan_flag(unsigned int count);
     /**
      * Reset all data inside the two scan buffers to 0
      * @param stream The CUDA stream used to execute the memset
@@ -104,7 +104,7 @@ class CUDAScanCompaction {
      * @param type The type of the scan flag buffer to be resized
      * @param streamId The stream index of the scan flag buffer to be resized
      */
-    void resize(const unsigned int& newCount, const Type& type, const unsigned int& streamId);
+    void resize(unsigned int newCount, const Type& type, unsigned int streamId);
     /**
      * Reset all scan flags in the buffer for the specified stream and type to zero
      * @param type The type of the scan flag buffer to be zerod
@@ -119,14 +119,14 @@ class CUDAScanCompaction {
      * @param streamId The stream index of the scan flag buffer to return
      * @see Config() for the non-const variant.
      */
-    const CUDAScanCompactionConfig &getConfig(const Type& type, const unsigned int& streamId);
+    const CUDAScanCompactionConfig &getConfig(const Type& type, unsigned int streamId);
     /**
      * Returns a reference to the scan flag config structure for the specified stream and type
      * @param type The type of the scan flag buffer to return
      * @param streamId The stream index of the scan flag buffer to return
      * @see getConfig() for the const variant.
      */
-    CUDAScanCompactionConfig &Config(const Type& type, const unsigned int& streamId);
+    CUDAScanCompactionConfig &Config(const Type& type, unsigned int streamId);
 
  private:
     /**

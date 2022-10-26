@@ -25,7 +25,7 @@ const char * FLAMEGPUException::what() const noexcept {
     return err_message.c_str();
 }
 
-void FLAMEGPUException::setLocation(const char *_file, const unsigned int &_line) {
+void FLAMEGPUException::setLocation(const char *_file, const unsigned int _line) {
     file = _file;
     line = _line;
 }

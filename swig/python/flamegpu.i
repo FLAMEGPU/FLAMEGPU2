@@ -614,7 +614,7 @@ class ModelVis;
         def __len__(self):
             return self.size()
     }
-    flamegpu::AgentVector::Agent flamegpu::AgentVector::__getitem__(const int &index) {
+    flamegpu::AgentVector::Agent flamegpu::AgentVector::__getitem__(const int index) {
         if (index >= 0)
             return $self->operator[](index);
         return $self->operator[]($self->size() + index);
@@ -627,7 +627,7 @@ class ModelVis;
  * It is required to ingore the original defintion of uniform and separate the two functions to have a distinct name
  */
 %extend flamegpu::HostRandom{
-    template<typename T> inline T uniformRange(const T& min, const T& max) const {
+    template<typename T> inline T uniformRange(const T min, const T max) const {
         return $self->uniform<T>(min, max);
     }
 
@@ -649,12 +649,12 @@ class ModelVis;
         else: # "insert" is used as if the vector is a native C++ container
             return self.insert(self, i, x)
    }
-   flamegpu::RunPlan &flamegpu::RunPlanVector::__getitem__(const int &index) {
+   flamegpu::RunPlan &flamegpu::RunPlanVector::__getitem__(const int index) {
         if (index >= 0)
             return $self->operator[](index);
         return $self->operator[]($self->size() + index);
    }
-   void RunPlanVector::__setitem__(const size_t &index, flamegpu::RunPlan &value) {
+   void RunPlanVector::__setitem__(const size_t index, flamegpu::RunPlan &value) {
         $self->operator[](index) = value;
    }
 }
@@ -667,12 +667,12 @@ class ModelVis;
         def __len__(self):
             return self.size()
     }
-    flamegpu::DeviceAgentVector_impl::Agent flamegpu::DeviceAgentVector_impl::__getitem__(const int &index) {
+    flamegpu::DeviceAgentVector_impl::Agent flamegpu::DeviceAgentVector_impl::__getitem__(const int index) {
         if (index >= 0)
             return $self->operator[](index);
         return $self->operator[]($self->size() + index);
     }
-    void flamegpu::DeviceAgentVector_impl::__setitem__(const size_type &index, const Agent &value) {
+    void flamegpu::DeviceAgentVector_impl::__setitem__(const size_type index, const Agent &value) {
         $self->operator[](index).setData(value);
     }
 }
@@ -992,7 +992,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
             def __len__(self):
                 return self.size()
         }
-        flamegpu::visualiser::Color flamegpu::visualiser::Palette::__getitem__(const int &index) {
+        flamegpu::visualiser::Color flamegpu::visualiser::Palette::__getitem__(const int index) {
             if (index >= 0)
                 return $self->operator[](index);
             return $self->operator[]($self->size() + index);

@@ -128,7 +128,7 @@ class AgentDescription {
      * @throws exception::InvalidAgentVar If a variable already exists within the agent with the same name
      */
     template<typename T>
-    void newVariable(const std::string& variable_name, const T& default_value = {});
+    void newVariable(const std::string& variable_name, T default_value = {});
 #else
     /**
      * Adds a new variable to the agent
@@ -141,7 +141,7 @@ class AgentDescription {
      * Hence, easiest to require python users to init GLM types as arrays
      */
     template<typename T>
-    void newVariable(const std::string& variable_name, const T& default_value = 0);
+    void newVariable(const std::string& variable_name, T default_value = 0);
     /**
      * Adds a new variable array to the agent
      * @param variable_name Name of the variable array
@@ -328,7 +328,7 @@ void AgentDescription::newVariable(const std::string &variable_name, const std::
         agent->name.c_str(), variable_name.c_str());
 }
 template <typename T>
-void AgentDescription::newVariable(const std::string &variable_name, const T &default_value) {
+void AgentDescription::newVariable(const std::string &variable_name, const T default_value) {
     newVariable<T, 1>(variable_name, { default_value });
 }
 #ifdef SWIG

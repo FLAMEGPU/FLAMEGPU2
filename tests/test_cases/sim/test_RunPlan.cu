@@ -89,7 +89,7 @@ TEST(TestRunPlan, setProperty) {
     flamegpu::RunPlan plan(model);
     // Set properties to new values
     // Compare the old and new values, to ensure that thy do not match
-    // RunPlan::setProperty(const std::string &name, const T&value)
+    // RunPlan::setProperty(const std::string &name, T value)
     plan.setProperty<float>("f", 2.0f);
     plan.setProperty<int32_t>("i", 2);
     plan.setProperty<uint32_t>("u", 2u);
@@ -98,7 +98,7 @@ TEST(TestRunPlan, setProperty) {
     plan.setProperty<float, 3>("f_a", {-2.0f, 0.0f, 2.0f});
     plan.setProperty<int32_t, 3>("i_a", {-2, 0, 2});
     // Set individual elements at a time
-    // RunPlan::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value)
+    // RunPlan::setProperty(const std::string &name, EnvironmentManager::size_type index, T value)
     plan.setProperty<uint32_t>("u_a", 0, 3u);
     plan.setProperty<uint32_t>("u_a", 1, 4u);
     plan.setProperty<uint32_t>("u_a", 2, 5u);
@@ -129,7 +129,7 @@ TEST(TestRunPlan, setProperty) {
 #endif
 
     // Update properties again (previous bug)
-    // RunPlan::setProperty(const std::string &name, const T&value)
+    // RunPlan::setProperty(const std::string &name, T value)
     plan.setProperty<float>("f", 3.0f);
     plan.setProperty<int32_t>("i", 3);
     plan.setProperty<uint32_t>("u", 3u);
@@ -138,7 +138,7 @@ TEST(TestRunPlan, setProperty) {
     plan.setProperty<float, 3>("f_a", { 3.0f, 0.0f, -3.0f });
     plan.setProperty<int32_t, 3>("i_a", { 3, 0, 5 });
     // Set individual elements at a time
-    // RunPlan::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value)
+    // RunPlan::setProperty(const std::string &name, EnvironmentManager::size_type index, T value)
     plan.setProperty<uint32_t>("u_a", 0, 13u);
     plan.setProperty<uint32_t>("u_a", 1, 14u);
     plan.setProperty<uint32_t>("u_a", 2, 15u);
@@ -171,17 +171,17 @@ TEST(TestRunPlan, setProperty) {
     // Tests for exceptions
     // --------------------
     // Note literals used must match the templated type not the incorrect types used, to appease MSVC warnings.
-    // RunPlan::setProperty(const std::string &name, const T&value)
+    // RunPlan::setProperty(const std::string &name, T value)
     EXPECT_THROW(plan.setProperty<float>("does_not_exist", 1.f), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW(plan.setProperty<float>("i", 1.f), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW(plan.setProperty<uint32_t>("u_a", 1u), flamegpu::exception::InvalidEnvPropertyType);
-    // RunPlan::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value)
+    // RunPlan::setProperty(const std::string &name, EnvironmentManager::size_type index, T value)
     // Extra brackets within the macro mean commas can be used due to how preproc tokenizers work
     EXPECT_THROW((plan.setProperty<float, 3>("does_not_exist", {2.f, 2.f, 2.f})), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW((plan.setProperty<float, 3>("u_a", {2.f, 2.f, 2.f})), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW((plan.setProperty<int32_t, 2>("i_a", {-2, 0})), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW((plan.setProperty<int32_t, 4>("i_a", {-2, 0, 2, 2})), flamegpu::exception::InvalidEnvPropertyType);
-    // RunPlan::setProperty(const std::string &name, const EnvironmentManager::size_type &index, const T &value)
+    // RunPlan::setProperty(const std::string &name, EnvironmentManager::size_type index, T value)
     EXPECT_THROW((plan.setProperty<float>("does_not_exist", 0u, 3.f)), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW((plan.setProperty<float>("u_a", 0u, 3.f)), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW((plan.setProperty<int32_t>("i_a", static_cast<EnvironmentManager::size_type>(-1), 3)), exception::OutOfBoundsException);
@@ -191,13 +191,13 @@ TEST(TestRunPlan, setProperty) {
     EXPECT_THROW(plan.getProperty<float>("does_not_exist"), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW(plan.getProperty<float>("i"), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW(plan.getProperty<uint32_t>("u_a"), flamegpu::exception::InvalidEnvPropertyType);
-    // RunPlan::getProperty(const std::string &name, const EnvironmentManager::size_type &index)
+    // RunPlan::getProperty(const std::string &name, EnvironmentManager::size_type index)
     // Extra brackets within the macro mean commas can be used due to how preproc tokenizers work
     EXPECT_THROW((plan.getProperty<float, 3>("does_not_exist")), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW((plan.getProperty<float, 3>("u_a")), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW((plan.getProperty<int32_t, 2>("i_a")), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW((plan.getProperty<int32_t, 4>("i_a")), flamegpu::exception::InvalidEnvPropertyType);
-    // RunPlan::getProperty(const std::string &name, const EnvironmentManager::size_type &index)
+    // RunPlan::getProperty(const std::string &name, EnvironmentManager::size_type index)
     EXPECT_THROW((plan.getProperty<float>("does_not_exist", 0u)), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW((plan.getProperty<float>("u_a", 0u)), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW((plan.getProperty<int32_t>("i_a", static_cast<EnvironmentManager::size_type>(-1))), exception::OutOfBoundsException);
@@ -274,7 +274,7 @@ TEST(TestRunPlan, getProperty) {
     EXPECT_THROW((plan.getProperty<float, 3>("u_a")), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW((plan.getProperty<int32_t, 2>("i_a")), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW((plan.getProperty<int32_t, 4>("i_a")), flamegpu::exception::InvalidEnvPropertyType);
-    // T RunPlan::getProperty(const std::string &name, const EnvironmentManager::size_type &index) const
+    // T RunPlan::getProperty(const std::string &name, EnvironmentManager::size_type index) const
     EXPECT_THROW((plan.getProperty<float>("does_not_exist", 0u)), flamegpu::exception::InvalidEnvProperty);
     EXPECT_THROW((plan.getProperty<float>("u_a", 0u)), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW((plan.getProperty<int32_t>("i_a", static_cast<EnvironmentManager::size_type>(-1))), exception::OutOfBoundsException);

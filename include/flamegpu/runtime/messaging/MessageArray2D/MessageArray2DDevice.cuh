@@ -35,7 +35,7 @@ class MessageArray2D::In {
          * index is always init to 0
          * @note See member variable documentation for their purposes
          */
-        __device__ Message(const MessageArray2D::In &parent, const size_type &_index) : _parent(parent), index(_index) {}
+        __device__ Message(const MessageArray2D::In &parent, const size_type _index) : _parent(parent), index(_index) {}
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * A null message which always returns the message at index 0
@@ -79,7 +79,7 @@ class MessageArray2D::In {
          * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
          */
         template<typename T, MessageNone::size_type N, unsigned int M>
-        __device__ T getVariable(const char(&variable_name)[M], const unsigned int& index) const;
+        __device__ T getVariable(const char(&variable_name)[M], unsigned int index) const;
     };
 
     /**
@@ -122,7 +122,7 @@ class MessageArray2D::In {
              * Constructs a message and directly initialises all of it's member variables
              * @note See member variable documentation for their purposes
              */
-            __device__ Message(const WrapFilter&parent, const int &relative_x, const int &relative_y)
+            __device__ Message(const WrapFilter&parent, const int relative_x, const int relative_y)
                 : _parent(parent) {
                 relative_cell[0] = relative_x;
                 relative_cell[1] = relative_y;
@@ -196,7 +196,7 @@ class MessageArray2D::In {
              * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
              */
             template<typename T, MessageNone::size_type N, unsigned int M>
-            __device__ T getVariable(const char(&variable_name)[M], const unsigned int& index) const;
+            __device__ T getVariable(const char(&variable_name)[M], unsigned int index) const;
         };
         /**
          * Stock iterator for iterating MessageSpatial3D::In::WrapFilter::Message objects
@@ -213,7 +213,7 @@ class MessageArray2D::In {
              * This iterator is constructed by MessageArray2D::In::WrapFilter::begin()(size_type, size_type, size_type)
              * @see MessageArray2D::In::wrap(size_type, size_type, size_type)
              */
-            __device__ iterator(const WrapFilter&parent, const int &relative_x, const int &relative_y)
+            __device__ iterator(const WrapFilter&parent, const int relative_x, const int relative_y)
                 : _message(parent, relative_x, relative_y) {
                 // Increment to find first message
                 ++_message;
@@ -258,7 +258,7 @@ class MessageArray2D::In {
          * @param y Search origin y coord
          * @param _radius Search radius
          */
-        inline __device__ WrapFilter(const MetaData *_metadata, const size_type &x, const size_type &y, const size_type &_radius);
+        inline __device__ WrapFilter(const MetaData *_metadata, size_type x, size_type y, size_type _radius);
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * A null filter which always returns 0 messages
@@ -339,7 +339,7 @@ class MessageArray2D::In {
              * Constructs a message and directly initialises all of it's member variables
              * @note See member variable documentation for their purposes
              */
-            __device__ Message(const Filter &parent, const int &relative_x, const int &relative_y)
+            __device__ Message(const Filter &parent, const int relative_x, const int relative_y)
                 : _parent(parent) {
                 relative_cell[0] = relative_x;
                 relative_cell[1] = relative_y;
@@ -411,7 +411,7 @@ class MessageArray2D::In {
              * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
              */
             template<typename T, MessageNone::size_type N, unsigned int M>
-            __device__ T getVariable(const char(&variable_name)[M], const unsigned int& index) const;
+            __device__ T getVariable(const char(&variable_name)[M], unsigned int index) const;
         };
         /**
          * Stock iterator for iterating MessageSpatial3D::In::Filter::Message objects
@@ -428,7 +428,7 @@ class MessageArray2D::In {
              * This iterator is constructed by MessageArray2D::In::Filter::begin()(size_type, size_type, size_type)
              * @see MessageArray2D::In::Operator()(size_type, size_type, size_type)
              */
-            __device__ iterator(const Filter &parent, const int &relative_x, const int &relative_y)
+            __device__ iterator(const Filter &parent, const int relative_x, const int relative_y)
                 : _message(parent, relative_x, relative_y) {
                 // Increment to find first message
                 ++_message;
@@ -473,7 +473,7 @@ class MessageArray2D::In {
          * @param y Search origin y coord
          * @param _radius Search radius
          */
-        inline __device__ Filter(const MetaData *_metadata, const size_type &x, const size_type &y, const size_type &_radius);
+        inline __device__ Filter(const MetaData *_metadata, size_type x, size_type y, size_type _radius);
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * A null filter which always returns 0 messages
@@ -555,7 +555,7 @@ class MessageArray2D::In {
              * Constructs a message and directly initialises all of it's member variables
              * @note See member variable documentation for their purposes
              */
-            __device__ Message(const VonNeumannWrapFilter&parent, const int &relative_x, const int &relative_y)
+            __device__ Message(const VonNeumannWrapFilter&parent, const int relative_x, const int relative_y)
                 : _parent(parent) {
                 relative_cell[0] = relative_x;
                 relative_cell[1] = relative_y;
@@ -629,7 +629,7 @@ class MessageArray2D::In {
              * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
              */
             template<typename T, MessageNone::size_type N, unsigned int M>
-            __device__ T getVariable(const char(&variable_name)[M], const unsigned int& index) const;
+            __device__ T getVariable(const char(&variable_name)[M], unsigned int index) const;
         };
         /**
          * Stock iterator for iterating MessageSpatial3D::In::WrapFilter::Message objects
@@ -646,7 +646,7 @@ class MessageArray2D::In {
              * This iterator is constructed by MessageArray2D::In::WrapFilter::begin()(size_type, size_type, size_type)
              * @see MessageArray2D::In::wrap(size_type, size_type, size_type)
              */
-            __device__ iterator(const VonNeumannWrapFilter&parent, const int &relative_x, const int &relative_y)
+            __device__ iterator(const VonNeumannWrapFilter&parent, const int relative_x, const int relative_y)
                 : _message(parent, relative_x, relative_y) {
                 // Increment to find first message
                 ++_message;
@@ -691,7 +691,7 @@ class MessageArray2D::In {
          * @param y Search origin y coord
          * @param _radius Search radius
          */
-        inline __device__ VonNeumannWrapFilter(const MetaData *_metadata, const size_type &x, const size_type &y, const size_type &_radius);
+        inline __device__ VonNeumannWrapFilter(const MetaData *_metadata, size_type x, size_type y, size_type _radius);
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * A null filter which always returns 0 messages
@@ -772,7 +772,7 @@ class MessageArray2D::In {
              * Constructs a message and directly initialises all of it's member variables
              * @note See member variable documentation for their purposes
              */
-            __device__ Message(const VonNeumannFilter &parent, const int &relative_x, const int &relative_y)
+            __device__ Message(const VonNeumannFilter &parent, const int relative_x, const int relative_y)
                 : _parent(parent) {
                 relative_cell[0] = relative_x;
                 relative_cell[1] = relative_y;
@@ -844,7 +844,7 @@ class MessageArray2D::In {
              * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
              */
             template<typename T, MessageNone::size_type N, unsigned int M>
-            __device__ T getVariable(const char(&variable_name)[M], const unsigned int& index) const;
+            __device__ T getVariable(const char(&variable_name)[M], unsigned int index) const;
         };
         /**
          * Stock iterator for iterating MessageSpatial3D::In::Filter::Message objects
@@ -861,7 +861,7 @@ class MessageArray2D::In {
              * This iterator is constructed by MessageArray2D::In::Filter::begin()(size_type, size_type, size_type)
              * @see MessageArray2D::In::Operator()(size_type, size_type, size_type)
              */
-            __device__ iterator(const VonNeumannFilter&parent, const int &relative_x, const int &relative_y)
+            __device__ iterator(const VonNeumannFilter&parent, const int relative_x, const int relative_y)
                 : _message(parent, relative_x, relative_y) {
                 // Increment to find first message
                 ++_message;
@@ -906,7 +906,7 @@ class MessageArray2D::In {
          * @param y Search origin y coord
          * @param _radius Search radius
          */
-        inline __device__ VonNeumannFilter(const MetaData *_metadata, const size_type &x, const size_type &y, const size_type &_radius);
+        inline __device__ VonNeumannFilter(const MetaData *_metadata, size_type x, size_type y, size_type _radius);
 #if !defined(SEATBELTS) || SEATBELTS
         /**
          * A null filter which always returns 0 messages
@@ -974,7 +974,7 @@ class MessageArray2D::In {
      * @note radius of 0 is unsupported
      * @note The location [x, y] must be within the bounds of the message list
      */
-    inline __device__ WrapFilter wrap(const size_type & x, const size_type & y, const size_type & radius = 1) const {
+    inline __device__ WrapFilter wrap(const size_type x, const size_type y, const size_type radius = 1) const {
 #if !defined(SEATBELTS) || SEATBELTS
         if (radius == 0) {
             DTHROW("%u is not a valid radius for accessing Array2D message lists.\n", radius);
@@ -1009,7 +1009,7 @@ class MessageArray2D::In {
      * @note radius of 0 is unsupported
      * @note The location [x, y] must be within the bounds of the message list
      */
-    inline __device__ Filter operator() (const size_type &x, const size_type &y, const size_type &radius = 1) const {
+    inline __device__ Filter operator() (const size_type x, const size_type y, const size_type radius = 1) const {
 #if !defined(SEATBELTS) || SEATBELTS
         if (radius == 0) {
             DTHROW("%u is not a valid radius for accessing Array2D message lists.\n", radius);
@@ -1038,7 +1038,7 @@ class MessageArray2D::In {
      * @note radius of 0 is unsupported
      * @note The location [x, y] must be within the bounds of the message list
      */
-    inline __device__ VonNeumannWrapFilter vn_wrap(const size_type & x, const size_type & y, const size_type & radius = 1) const {
+    inline __device__ VonNeumannWrapFilter vn_wrap(const size_type x, const size_type y, const size_type radius = 1) const {
 #if !defined(SEATBELTS) || SEATBELTS
         if (radius == 0) {
             DTHROW("%u is not a valid radius for accessing Array2D message lists.\n", radius);
@@ -1073,7 +1073,7 @@ class MessageArray2D::In {
      * @note radius of 0 is unsupported
      * @note The location [x, y] must be within the bounds of the message list
      */
-    inline __device__ VonNeumannFilter vn(const size_type &x, const size_type &y, const size_type &radius = 1) const {
+    inline __device__ VonNeumannFilter vn(const size_type x, const size_type y, const size_type radius = 1) const {
 #if !defined(SEATBELTS) || SEATBELTS
         if (radius == 0) {
             DTHROW("%u is not a valid radius for accessing Array2D message lists.\n", radius);
@@ -1106,7 +1106,7 @@ class MessageArray2D::In {
     __device__ size_type size(void) const {
         return metadata->length;
     }
-    __device__ Message at(const size_type &x, const size_type &y) const {
+    __device__ Message at(const size_type x, const size_type y) const {
 #if !defined(SEATBELTS) || SEATBELTS
         if (x >= metadata->dimensions[0] || y >= metadata->dimensions[1]) {
             DTHROW("Index is out of bounds for Array2D messagelist ([%u, %u] >= [%u, %u]).\n", x, y, metadata->dimensions[0], metadata->dimensions[1]);
@@ -1145,7 +1145,7 @@ class MessageArray2D::Out {
     /**
      * Sets the array index to store the message in
      */
-    inline __device__ void setIndex(const size_type &x, const size_type &y) const;
+    inline __device__ void setIndex(const size_type x, const size_type y) const;
     /**
      * Sets the specified variable for this agents message
      * @param variable_name Name of the variable
@@ -1169,7 +1169,7 @@ class MessageArray2D::Out {
      * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N, unsigned int M>
-    __device__ void setVariable(const char(&variable_name)[M], const unsigned int& index, T value) const;
+    __device__ void setVariable(const char(&variable_name)[M], unsigned int index, T value) const;
 
  protected:
     /**
@@ -1197,7 +1197,7 @@ __device__ T MessageArray2D::In::Message::getVariable(const char(&variable_name)
     return detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, index);
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
-T MessageArray2D::In::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
+T MessageArray2D::In::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
 #if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
     if (index >= this->_parent.metadata->length) {
@@ -1222,7 +1222,7 @@ __device__ T MessageArray2D::In::WrapFilter::Message::getVariable(const char(&va
     return detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, index_1d);
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
-T MessageArray2D::In::WrapFilter::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
+T MessageArray2D::In::WrapFilter::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
 #if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
     if (index_1d >= this->_parent.metadata->length) {
@@ -1247,7 +1247,7 @@ __device__ T MessageArray2D::In::Filter::Message::getVariable(const char(&variab
     return detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, index_1d);
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
-T MessageArray2D::In::Filter::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
+T MessageArray2D::In::Filter::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
 #if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
     if (index_1d >= this->_parent.metadata->length) {
@@ -1272,7 +1272,7 @@ __device__ T MessageArray2D::In::VonNeumannWrapFilter::Message::getVariable(cons
     return detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, index_1d);
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
-T MessageArray2D::In::VonNeumannWrapFilter::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
+T MessageArray2D::In::VonNeumannWrapFilter::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
 #if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
     if (index_1d >= this->_parent.metadata->length) {
@@ -1297,7 +1297,7 @@ __device__ T MessageArray2D::In::VonNeumannFilter::Message::getVariable(const ch
     return detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, index_1d);
 }
 template<typename T, MessageNone::size_type N, unsigned int M> __device__
-T MessageArray2D::In::VonNeumannFilter::Message::getVariable(const char(&variable_name)[M], const unsigned int& array_index) const {
+T MessageArray2D::In::VonNeumannFilter::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
 #if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
     if (index_1d >= this->_parent.metadata->length) {
@@ -1326,7 +1326,7 @@ __device__ void MessageArray2D::Out::setVariable(const char(&variable_name)[N], 
     // setIndex() sets the optional message scan flag
 }
 template<typename T, unsigned int N, unsigned int M>
-__device__ void MessageArray2D::Out::setVariable(const char(&variable_name)[M], const unsigned int& array_index, T value) const {
+__device__ void MessageArray2D::Out::setVariable(const char(&variable_name)[M], const unsigned int array_index, T value) const {
     if (variable_name[0] == '_') {
 #if !defined(SEATBELTS) || SEATBELTS
         DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in MessageArray2D::Out::setVariable().\n", variable_name);
@@ -1345,7 +1345,7 @@ __device__ void MessageArray2D::Out::setVariable(const char(&variable_name)[M], 
 /**
  * Sets the array index to store the message in
  */
-__device__ void MessageArray2D::Out::setIndex(const size_type &x, const size_type &y) const {
+__device__ void MessageArray2D::Out::setIndex(const size_type x, const size_type y) const {
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
     size_type index_1d =
         y * metadata->dimensions[0] +
@@ -1363,7 +1363,7 @@ __device__ void MessageArray2D::Out::setIndex(const size_type &x, const size_typ
     this->scan_flag[index] = 1;
 }
 // Moore Wrap
-__device__ MessageArray2D::In::WrapFilter::WrapFilter(const MetaData* _metadata, const size_type& x, const size_type& y, const size_type& _radius)
+__device__ MessageArray2D::In::WrapFilter::WrapFilter(const MetaData* _metadata, const size_type x, const size_type y, const size_type _radius)
     : radius(_radius)
     , metadata(_metadata) {
     loc[0] = x;
@@ -1401,7 +1401,7 @@ __device__ MessageArray2D::In::WrapFilter::Message& MessageArray2D::In::WrapFilt
     return *this;
 }
 // Moore
-__device__ MessageArray2D::In::Filter::Filter(const MetaData *_metadata,  const size_type &x, const size_type &y, const size_type &_radius)
+__device__ MessageArray2D::In::Filter::Filter(const MetaData *_metadata,  const size_type x, const size_type y, const size_type _radius)
     : metadata(_metadata) {
     loc[0] = x;
     loc[1] = y;
@@ -1447,7 +1447,7 @@ __device__ MessageArray2D::In::Filter::Message& MessageArray2D::In::Filter::Mess
     return *this;
 }
 // Von Neumann Wrap
-__device__ MessageArray2D::In::VonNeumannWrapFilter::VonNeumannWrapFilter(const MetaData* _metadata, const size_type& x, const size_type& y, const size_type& _radius)
+__device__ MessageArray2D::In::VonNeumannWrapFilter::VonNeumannWrapFilter(const MetaData* _metadata, const size_type x, const size_type y, const size_type _radius)
     : radius(static_cast<int>(_radius))
     , metadata(_metadata) {
     loc[0] = x;
@@ -1492,7 +1492,7 @@ __device__ MessageArray2D::In::VonNeumannWrapFilter::Message& MessageArray2D::In
     return *this;
 }
 // Von Neumann
-__device__ MessageArray2D::In::VonNeumannFilter::VonNeumannFilter(const MetaData* _metadata, const size_type& x, const size_type& y, const size_type& _radius)
+__device__ MessageArray2D::In::VonNeumannFilter::VonNeumannFilter(const MetaData* _metadata, const size_type x, const size_type y, const size_type _radius)
     : radius(static_cast<int>(_radius))
     , metadata(_metadata) {
     loc[0] = x;

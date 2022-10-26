@@ -8,7 +8,7 @@ LogFrame::LogFrame()
 
 LogFrame::LogFrame(const std::map<std::string, util::Any> &_environment,
 const std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>> &_agents,
-const unsigned int &_step_count)
+const unsigned int _step_count)
     : environment(_environment)
     , agents(_agents)
     , step_count(_step_count) { }
@@ -29,7 +29,7 @@ AgentLogFrame LogFrame::getAgent(const std::string &agent_name, const std::strin
     return AgentLogFrame(it->second.first, it->second.second);
 }
 
-AgentLogFrame::AgentLogFrame(const std::map<LoggingConfig::NameReductionFn, util::Any> &_data, const unsigned int &_count)
+AgentLogFrame::AgentLogFrame(const std::map<LoggingConfig::NameReductionFn, util::Any> &_data, const unsigned int _count)
     : data(_data)
     , count(_count) { }
 
@@ -66,7 +66,7 @@ StepLogFrame::StepLogFrame()
 
 StepLogFrame::StepLogFrame(const std::map<std::string, util::Any>&& _environment,
     const std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>>&& _agents,
-    const unsigned int& _step_count)
+    const unsigned int _step_count)
     : LogFrame(_environment, _agents, _step_count)
     , step_time(0.0) { }
 
@@ -80,7 +80,7 @@ ExitLogFrame::ExitLogFrame()
 
 ExitLogFrame::ExitLogFrame(const std::map<std::string, util::Any>&& _environment,
     const std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>>&& _agents,
-    const unsigned int& _step_count)
+    const unsigned int _step_count)
     : LogFrame(_environment, _agents, _step_count)
     , rtc_time(0.0)
     , init_time(0.0)

@@ -232,7 +232,7 @@ class MessageBruteForce::Description {
      * @throws exception::InvalidMessageVar If length is <= 0
      */
     template<typename T>
-    void newVariableArray(const std::string& variable_name, const size_type& length);
+    void newVariableArray(const std::string& variable_name, size_type length);
 #endif
     /**
      * @return The message's name
@@ -301,7 +301,7 @@ void MessageBruteForce::Description::newVariable(const std::string& variable_nam
 }
 #ifdef SWIG
 template<typename T>
-void MessageBruteForce::Description::newVariableArray(const std::string& variable_name, const size_type& length) {
+void MessageBruteForce::Description::newVariableArray(const std::string& variable_name, const size_type length) {
     if (!variable_name.empty() && variable_name[0] == '_') {
         THROW exception::ReservedName("Message variable names cannot begin with '_', this is reserved for internal usage, "
             "in MessageDescription::newVariable().");

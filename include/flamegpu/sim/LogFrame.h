@@ -34,7 +34,7 @@ struct LogFrame {
      */
     LogFrame(const std::map<std::string, util::Any> &_environment,
     const std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>> &_agents,
-    const unsigned int &_step_count);
+    unsigned int _step_count);
     /**
      * Returns the step count of the log
      * 0 is the state prior to the first step
@@ -92,7 +92,7 @@ struct StepLogFrame : public LogFrame {
      */
     StepLogFrame(const std::map<std::string, util::Any>&& _environment,
         const std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>>&& _agents,
-        const unsigned int& _step_count);
+        unsigned int _step_count);
 
     /**
      * Return the execution time of the associated step, in seconds
@@ -123,7 +123,7 @@ struct ExitLogFrame : public LogFrame {
      */
     ExitLogFrame(const std::map<std::string, util::Any>&& _environment,
         const std::map<util::StringPair, std::pair<std::map<LoggingConfig::NameReductionFn, util::Any>, unsigned int>>&& _agents,
-        const unsigned int& _step_count);
+        unsigned int _step_count);
 
     /**
      * Return the runtime compilation time, in seconds
@@ -267,7 +267,7 @@ struct AgentLogFrame {
      * @param data Map of reduction data
      * @param count Population size (alive agents)
      */
-    explicit AgentLogFrame(const std::map<LoggingConfig::NameReductionFn, util::Any> &data, const unsigned int &count);
+    explicit AgentLogFrame(const std::map<LoggingConfig::NameReductionFn, util::Any> &data, unsigned int count);
     /**
      * Return the number of alive agents in the population
      * @return The population size
@@ -335,7 +335,7 @@ struct AgentLogFrame {
     /**
      * Population size of the related agent state
      */
-    const unsigned int &count;
+    const unsigned int count;
 };
 
 template<typename T>

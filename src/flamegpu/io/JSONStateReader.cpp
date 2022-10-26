@@ -64,7 +64,7 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
         , env_init(_env_init)
         , model_state(_model_state) { }
     template<typename T>
-    bool processValue(const T&val) {
+    bool processValue(const T val) {
         Mode isArray = Nop;
         if (mode.top() == VariableArray) {
             isArray = mode.top();
@@ -289,7 +289,7 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
         , cudamodel_instance(dynamic_cast<CUDASimulation*>(_sim_instance)) { }
 
     template<typename T>
-    bool processValue(const T&val) {
+    bool processValue(const T val) {
         Mode isArray = Nop;
         if (mode.top() == VariableArray) {
             isArray = mode.top();

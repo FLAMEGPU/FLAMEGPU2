@@ -58,7 +58,7 @@ class CUDAMessage {
      * @note This should be used cautiously
      * @note Required by array message types
      */
-    void setMessageCount(const unsigned int &_message_count);
+    void setMessageCount(unsigned int _message_count);
     /**
      * Initialise the CUDAMessagelist
      * This allocates and initialises any CUDA data structures for reading the messagelist, and sets them asthough the messagelist were empty.
@@ -92,7 +92,7 @@ class CUDAMessage {
      * @param stream The CUDAStream to use for CUDA operations
      * @note swap() or scatter() should be called after the agent function has written messages
      */
-    void mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int &writeLen, cudaStream_t stream) const;
+    void mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, unsigned int writeLen, cudaStream_t stream) const;
     void *getReadPtr(const std::string &var_name);
     const CUDAMessageMap &getReadList() { return message_list->getReadList(); }
     const CUDAMessageMap &getWriteList() { return message_list->getWriteList(); }
@@ -122,7 +122,7 @@ class CUDAMessage {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void buildIndex(CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
+    void buildIndex(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     const void *getMetaDataDevicePtr() const;
 
  protected:

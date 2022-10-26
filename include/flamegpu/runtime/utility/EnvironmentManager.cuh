@@ -56,7 +56,7 @@ class EnvironmentManager : public std::enable_shared_from_this<EnvironmentManage
          * @param _elements How many elements does the stored data contain (1 if not array)
          * @param _type Type of property (from typeid())
          */
-        EnvProp(const ptrdiff_t& _offset, const size_t& _length, const bool& _isConst, const size_type& _elements, const std::type_index& _type)
+        EnvProp(const ptrdiff_t& _offset, const size_t _length, const bool _isConst, const size_type _elements, const std::type_index& _type)
             : offset(_offset),
             length(_length),
             isConst(_isConst),
@@ -98,7 +98,7 @@ class EnvironmentManager : public std::enable_shared_from_this<EnvironmentManage
         * @param _elements How many elements does the stored data contain (1 if not array)
         * @param _type Type of property (from typeid())
         */
-        DefragProp(void *_data, const size_t &_length, const bool &_isConst, const size_type &_elements, const std::type_index &_type)
+        DefragProp(void *_data, const size_t _length, bool _isConst, const size_type _elements, const std::type_index &_type)
             : data(_data),
             length(_length),
             isConst(_isConst),
@@ -116,8 +116,8 @@ class EnvironmentManager : public std::enable_shared_from_this<EnvironmentManage
      * Transparent operators for DefragMap
      * This allows them to be secondarily ordered based on name if size is equal
      */
-    friend bool operator<(const std::pair<size_t, std::string>& fk, const size_t& lk) { return fk.first < lk; }
-    friend bool operator<(const size_t& lk, const std::pair<size_t, std::string>& fk) { return lk < fk.first; }
+    friend bool operator<(const std::pair<size_t, std::string>& fk, const size_t lk) { return fk.first < lk; }
+    friend bool operator<(const size_t lk, const std::pair<size_t, std::string>& fk) { return lk < fk.first; }
     friend bool operator<(const std::pair<size_t, std::string>& fk1, const std::pair<size_t, std::string>& fk2) {
         if (fk1.first == fk2.first) {
             // If size is equal, order by name

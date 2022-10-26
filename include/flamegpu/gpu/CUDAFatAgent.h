@@ -33,7 +33,7 @@ class CUDAFatAgent {
         /**
          * Index assigned to the agent when it is added to the CUDAFatAgent
          * @note An index is used as two mapped agents from different models may share the same name
-         * @see CUDAFatAgent::addSubAgent(const AgentData &, const unsigned int &, const std::shared_ptr<SubAgentData> &)
+         * @see CUDAFatAgent::addSubAgent(const AgentData &, unsigned int, const std::shared_ptr<SubAgentData> &)
          */
         const unsigned int agent;
         /**
@@ -78,14 +78,14 @@ class CUDAFatAgent {
      */
     void addSubAgent(
       const AgentData &description,
-      const unsigned int &master_fat_index,
+      unsigned int master_fat_index,
       const std::shared_ptr<SubAgentData> &mapping);
     /**
      * This function builds and returns the state_map required by the named CUDAAgent
      * @param fat_index The index of the CUDAAgent within this CUDAFatAgent
      * @return a statemap suitable for the named agent
      */
-    std::unordered_map<std::string, std::shared_ptr<CUDAFatAgentStateList>> getStateMap(const unsigned int &fat_index);
+    std::unordered_map<std::string, std::shared_ptr<CUDAFatAgentStateList>> getStateMap(unsigned int fat_index);
     /**
      * Scatters all active agents within the named state to remove agents with death flag set
      * This updates the alive agent count
@@ -95,7 +95,7 @@ class CUDAFatAgent {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void processDeath(const unsigned int &agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
+    void processDeath(unsigned int agent_fat_id, const std::string &state_name, CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Transitions all active agents from the source state to the destination state
      * @param agent_fat_id The index of the CUDAAgent within this CUDAFatAgent
@@ -115,14 +115,14 @@ class CUDAFatAgent {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void processFunctionCondition(const unsigned int &agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int &streamId, const cudaStream_t &stream);
+    void processFunctionCondition(unsigned int agent_fat_id, const std::string &state_name, CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Marks the specified number of agents within the specified statelist as disabled
      * @param agent_fat_id The index of the CUDAAgent within this CUDAFatAgent
      * @param state_name The name of the state attached to the named fat agent index
      * @param numberOfDisabled The number of agents to be marked as disabled
      */
-    void setConditionState(const unsigned int &agent_fat_id, const std::string &state_name, const unsigned int numberOfDisabled);
+    void setConditionState(unsigned int agent_fat_id, const std::string &state_name, unsigned int numberOfDisabled);
     /**
      * Returns a device pointer of atleast type_size x new_agents bytes available
      * @param total_agent_size Total number of bytes required to fit all variables in the agent
@@ -131,10 +131,10 @@ class CUDAFatAgent {
      * @note It is assumed that when splitting the buffer into variables, each variable's sub-buffer will be 64 bit aligned
      * @note New buffers are shared between all states and mapped/unmapped agents
      */
-    void *allocNewBuffer(const size_t &total_agent_size, const unsigned int &new_agents, const size_t &varCount);
+    void *allocNewBuffer(size_t total_agent_size, unsigned int new_agents, size_t varCount);
     /**
      * Marks the named buffer as free
-     * @param buff The buffer to free, this must be a pointer returned by allocNewBuffer(const size_t &, const unsigned int &, const size_t &)
+     * @param buff The buffer to free, this must be a pointer returned by allocNewBuffer(size_t, unsigned int, size_t)
      */
     void freeNewBuffer(void *buff);
     /**

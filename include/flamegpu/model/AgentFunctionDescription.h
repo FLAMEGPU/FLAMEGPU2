@@ -122,7 +122,7 @@ class AgentFunctionDescription : public DependencyNode {
      * @throws exception::InvalidMessageName If a message with the same name is not found within the model's hierarchy
      * @throws exception::InvalidMessageName If the same message is already bound to the message input of this agent function
      * @see AgentFunctionDescription::setMessageOutput(MessageDescription &)
-     * @see AgentFunctionDescription::setMessageOutputOptional(const bool &) To configure whether all agents must output messages
+     * @see AgentFunctionDescription::setMessageOutputOptional(bool) To configure whether all agents must output messages
      */
     void setMessageOutput(const std::string &message_name);
     /**
@@ -133,7 +133,7 @@ class AgentFunctionDescription : public DependencyNode {
      * @throws exception::InvalidMessageName If a message with the same name is not found within the model's hierarchy
      * @throws exception::InvalidMessageName If the same message is already bound to the message input of this agent function
      * @see AgentFunctionDescription::setMessageInput(const std::string &)
-     * @see AgentFunctionDescription::setMessageOutputOptional(const bool &) To configure whether all agents must output messages
+     * @see AgentFunctionDescription::setMessageOutputOptional(bool) To configure whether all agents must output messages
      */
     void setMessageOutput(MessageBruteForce::Description &message);
     /**
@@ -143,7 +143,7 @@ class AgentFunctionDescription : public DependencyNode {
      * @param output_is_optional True if not all agents executing this function will output messages
      * @note Defaults to false
      */
-    void setMessageOutputOptional(const bool &output_is_optional);
+    void setMessageOutputOptional(bool output_is_optional);
     /**
      * Sets the agent type that can be output during this agent function
      * This is optional, and only one type of agent can be output per agent function
@@ -173,7 +173,7 @@ class AgentFunctionDescription : public DependencyNode {
      * @see AgentFunctionDescription::getAllowAgentDeath()
      * @note Defaults to false
      */
-    void setAllowAgentDeath(const bool &has_death);
+    void setAllowAgentDeath(bool has_death);
     /**
      * Sets the function condition for the agent function
      * This is an FLAMEGPU_AGENT_FUNCTION_CONDITION which returns a boolean value (true or false)
@@ -219,13 +219,13 @@ class AgentFunctionDescription : public DependencyNode {
     /**
      * @return A mutable reference to the message output optional configuration flag
      * @see AgentFunctionDescription::getAgentOutputOptional()
-     * @see AgentFunctionDescription::setAgentOutputOptional(const bool &)
+     * @see AgentFunctionDescription::setAgentOutputOptional(bool)
      */
     bool &MessageOutputOptional();
     /**
      * @return A mutable reference to the allow agent death configuration flag
      * @see AgentFunctionDescription::getAllowAgentDeath()
-     * @see AgentFunctionDescription::setAllowAgentDeath(const bool &)
+     * @see AgentFunctionDescription::setAllowAgentDeath(bool)
      */
     bool &AllowAgentDeath();
 

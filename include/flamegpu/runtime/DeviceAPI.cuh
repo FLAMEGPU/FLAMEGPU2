@@ -79,7 +79,7 @@ class ReadOnlyDeviceAPI {
      * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N, unsigned int M> __device__
-    T getVariable(const char(&variable_name)[M], const unsigned int &index) const;
+    T getVariable(const char(&variable_name)[M], unsigned int index) const;
     /**
      * Returns the agent's unique identifier
      */
@@ -201,7 +201,7 @@ class DeviceAPI {
          * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
          */
         template<typename T, unsigned int N, unsigned int M>
-        __device__ void setVariable(const char(&variable_name)[M], const unsigned int &index, T value) const;
+        __device__ void setVariable(const char(&variable_name)[M], unsigned int index, T value) const;
         /**
          * Return the ID of the agent to be created
          * @note Calling AgentOut::setVariable() or AgentOut::getID() will trigger agent output
@@ -270,7 +270,7 @@ class DeviceAPI {
      * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N, unsigned int M> __device__
-    T getVariable(const char(&variable_name)[M], const unsigned int &index) const;
+    T getVariable(const char(&variable_name)[M], unsigned int index) const;
     /**
      * Sets a variable within the currently executing agent
      * @param variable_name The name of the variable
@@ -295,7 +295,7 @@ class DeviceAPI {
      * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N, unsigned int M>
-    __device__ void setVariable(const char(&variable_name)[M], const unsigned int &index, const T &value);
+    __device__ void setVariable(const char(&variable_name)[M], unsigned int index, T value);
     /**
      * Returns the agent's unique identifier
      */
@@ -373,7 +373,7 @@ __device__ T ReadOnlyDeviceAPI::getVariable(const char(&variable_name)[N]) const
     return value;
 }
 template<typename T, unsigned int N, unsigned int M>
-__device__ T ReadOnlyDeviceAPI::getVariable(const char(&variable_name)[M], const unsigned int &array_index) const {
+__device__ T ReadOnlyDeviceAPI::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
     // simple indexing assumes index is the thread number (this may change later)
     const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
@@ -400,7 +400,7 @@ __device__ T DeviceAPI<MessageIn, MessageOut>::getVariable(const char(&variable_
 
 template<typename MessageIn, typename MessageOut>
 template<typename T, unsigned int N, unsigned int M>
-__device__ T DeviceAPI<MessageIn, MessageOut>::getVariable(const char(&variable_name)[M], const unsigned int &array_index) const {
+__device__ T DeviceAPI<MessageIn, MessageOut>::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
     // simple indexing assumes index is the thread number (this may change later)
     const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
@@ -427,7 +427,7 @@ __device__ void DeviceAPI<MessageIn, MessageOut>::setVariable(const char(&variab
 }
 template<typename MessageIn, typename MessageOut>
 template<typename T, unsigned int N, unsigned int M>
-__device__ void DeviceAPI<MessageIn, MessageOut>::setVariable(const char(&variable_name)[M], const unsigned int &array_index, const T &value) {
+__device__ void DeviceAPI<MessageIn, MessageOut>::setVariable(const char(&variable_name)[M], const unsigned int array_index, const T value) {
     if (variable_name[0] == '_') {
 #if !defined(SEATBELTS) || SEATBELTS
         DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in DeviceAPI::setVariable().\n", variable_name);
@@ -467,7 +467,7 @@ __device__ void DeviceAPI<MessageIn, MessageOut>::AgentOut::setVariable(const ch
 }
 template<typename MessageIn, typename MessageOut>
 template<typename T, unsigned int N, unsigned int M>
-__device__ void DeviceAPI<MessageIn, MessageOut>::AgentOut::setVariable(const char(&variable_name)[M], const unsigned int &array_index, T value) const {
+__device__ void DeviceAPI<MessageIn, MessageOut>::AgentOut::setVariable(const char(&variable_name)[M], const unsigned int array_index, T value) const {
     if (nextID) {
         if (variable_name[0] == '_') {
 #if !defined(SEATBELTS) || SEATBELTS

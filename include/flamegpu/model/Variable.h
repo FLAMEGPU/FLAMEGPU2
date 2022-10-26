@@ -66,7 +66,7 @@ struct Variable {
       * @tparam T The type of the variable, it's size and std::type_index are derived from this
       */
     template<typename T>
-    explicit Variable(const unsigned int &N, const std::vector<T> &_default_value)
+    explicit Variable(const unsigned int N, const std::vector<T> &_default_value)
         : type(typeid(T))
         , type_size(sizeof(T))
         , elements(N)

@@ -181,7 +181,7 @@ class StepLoggingConfig : public LoggingConfig {
      * How many steps between each log collection, defaults to 1, so a log is collected every step
      * A value of 0 disables step log collection
      */
-    void setFrequency(const unsigned int &steps);
+    void setFrequency(unsigned int steps);
 
  private:
     /**
