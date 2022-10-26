@@ -263,7 +263,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @throws exception::OutOfBoundsException If this vector has a length less than 2
      */
     template<typename T, typename rand_dist>
-    void setPropertyRandom(const std::string &name, const EnvironmentManager::size_type index, rand_dist &distribution);
+    void setPropertyRandom(const std::string &name, EnvironmentManager::size_type index, rand_dist &distribution);
 
     /**
      * Expose inherited std::vector methods/classes
