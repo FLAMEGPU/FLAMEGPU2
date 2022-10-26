@@ -219,7 +219,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @throws exception::OutOfBoundsException If this vector has a length less than 2
      */
     template<typename T>
-    void setPropertyLogNormalRandom(const std::string &name, const T mean, const T stddev);
+    void setPropertyLogNormalRandom(const std::string &name, T mean, T stddev);
     /**
      * Array property element equivalent of setPropertyLogNormalRandom()
      * Sweep named environment property over a log normal random distribution
