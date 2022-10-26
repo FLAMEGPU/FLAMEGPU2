@@ -1,13 +1,13 @@
-!# /usr/bin/env python3
+#! /usr/bin/env python3
 from textwrap import indent
 from pyflamegpu import *
 import pyflamegpu.codegen
 import sys, random, math
 
 """
-  FLAME GPU 2 implementation of boids in python 3, using python to define agent functions rather than CUDA C++ RTC.
+  FLAME GPU 2 implementation of Boids in python 3, using python to define agent functions rather than CUDA C++ RTC.
   This is based on the FLAME GPU 1 implementation, but with dynamic generation of agents.
-  Agents are also clamped to be within the environment bounds, rather than wrapped as in FLAME GPU 1.
+  Agents are also wrapped within the environment bounds and use key framing to show the animation of flapping wings.
 """
 
 def vec3Mult(x, y, z, multiplier):
@@ -120,13 +120,13 @@ def inputdata(message_in: pyflamegpu.MessageSpatial3D, message_out: pyflamegpu.M
     INTERACTION_RADIUS = pyflamegpu.environment.getPropertyFloat("INTERACTION_RADIUS")
     SEPARATION_RADIUS = pyflamegpu.environment.getPropertyFloat("SEPARATION_RADIUS")
     # Iterate location messages, accumulating relevant data and counts.
-    for message in message_in(agent_x, agent_y, agent_z) :
+    for message in message_in.wrap(agent_x, agent_y, agent_z) :
         # Ignore self messages.
         if message.getVariableInt("id") != id :
             # Get the message location and velocity.
-            message_x = message.getVariableFloat("x")
-            message_y = message.getVariableFloat("y")
-            message_z = message.getVariableFloat("z")
+            message_x = message.getVirtualX()
+            message_y = message.getVirtualY()
+            message_z = message.getVirtualZ()
 
             # Check interaction radius
             separation = vec3Length(agent_x - message_x, agent_y - message_y, agent_z - message_z)
@@ -228,26 +228,6 @@ def inputdata(message_in: pyflamegpu.MessageSpatial3D, message_out: pyflamegpu.M
         agent_fy *= minSpeed
         agent_fz *= minSpeed
 
-    # Steer away from walls - Computed post normalization to ensure good avoidance. Prevents constant term getting swamped
-    wallInteractionDistance = float(0.10)
-    wallSteerStrength = float(0.05)
-    minPosition = pyflamegpu.environment.getPropertyFloat("MIN_POSITION")
-    maxPosition = pyflamegpu.environment.getPropertyFloat("MAX_POSITION")
-
-    if (agent_x - minPosition) < wallInteractionDistance :
-        agent_fx += wallSteerStrength
-    if (agent_y - minPosition) < wallInteractionDistance :
-        agent_fy += wallSteerStrength
-    if (agent_z - minPosition) < wallInteractionDistance :
-        agent_fz += wallSteerStrength
-
-    if (maxPosition - agent_x) < wallInteractionDistance :
-        agent_fx -= wallSteerStrength
-    if (maxPosition - agent_y) < wallInteractionDistance :
-        agent_fy -= wallSteerStrength
-    if (maxPosition - agent_z) < wallInteractionDistance :
-        agent_fz -= wallSteerStrength
-
 
     # Apply the velocity
     TIME_SCALE = pyflamegpu.environment.getPropertyFloat("TIME_SCALE")
@@ -255,12 +235,29 @@ def inputdata(message_in: pyflamegpu.MessageSpatial3D, message_out: pyflamegpu.M
     agent_y += agent_fy * TIME_SCALE
     agent_z += agent_fz * TIME_SCALE
 
-    # Bound position
-    MIN_POSITION = pyflamegpu.environment.getPropertyFloat("MIN_POSITION")
-    MAX_POSITION = pyflamegpu.environment.getPropertyFloat("MAX_POSITION")
-    clamp(agent_x, MIN_POSITION, MAX_POSITION)
-    clamp(agent_y, MIN_POSITION, MAX_POSITION)
-    clamp(agent_z, MIN_POSITION, MAX_POSITION)
+
+
+    # Wrap positions
+    minPosition = pyflamegpu.environment.getPropertyFloat("MIN_POSITION")
+    maxPosition = pyflamegpu.environment.getPropertyFloat("MAX_POSITION")
+    width = maxPosition-minPosition
+    if (agent_x < minPosition) :
+        agent_x += width
+    if (agent_y < minPosition) :
+        agent_y += width
+    if (agent_z < minPosition) :
+        agent_z += width
+
+    if (agent_x > maxPosition) :
+        agent_x -= width
+    if (agent_y > maxPosition) :
+        agent_y -= width
+    if (agent_z > maxPosition) :
+        agent_z -= width
+
+    # Update wing speed and animation position
+    agent_fscale = vec3Length(agent_fx, agent_fy, agent_fz)
+    wing_position = pyflamegpu.getVariableFloat("wing_position") + agent_fscale*GLOBAL_SCALE
 
     # Update global agent memory.
     pyflamegpu.setVariableFloat("x", agent_x)
@@ -271,6 +268,9 @@ def inputdata(message_in: pyflamegpu.MessageSpatial3D, message_out: pyflamegpu.M
     pyflamegpu.setVariableFloat("fy", agent_fy)
     pyflamegpu.setVariableFloat("fz", agent_fz)
 
+    pyflamegpu.setVariableFloat("wing_position", wing_position)
+    pyflamegpu.setVariableFloat("wing_animation", math.sinf(wing_position))
+
     return pyflamegpu.ALIVE
 
 
@@ -280,8 +280,8 @@ model = pyflamegpu.ModelDescription("Boids_BruteForce")
 # GLOBALS
 
 env = model.Environment()
-# Population size to generate, if no agents are loaded from disk
-env.newPropertyUInt("POPULATION_TO_GENERATE", 4000)
+# Population size to generate, if no agents are loaded from disk, number may need to be reduced for debug builds or small GPUs. Alternatively top end GPUs can handle much larger values.
+env.newPropertyUInt("POPULATION_TO_GENERATE", 40000)
 
 # Environment Bounds
 env.newPropertyFloat("MIN_POSITION", -0.5)
@@ -296,8 +296,8 @@ env.newPropertyFloat("INTERACTION_RADIUS", 0.05)
 env.newPropertyFloat("SEPARATION_RADIUS", 0.01)
 
 # Global Scalers
-env.newPropertyFloat("TIME_SCALE", 0.0005)
-env.newPropertyFloat("GLOBAL_SCALE", 0.15)
+env.newPropertyFloat("TIME_SCALE", 0.001)
+env.newPropertyFloat("GLOBAL_SCALE", 0.25)
 
 # Rule scalers
 env.newPropertyFloat("STEER_SCALE", 0.055)
@@ -330,6 +330,8 @@ agent.newVariableFloat("z")
 agent.newVariableFloat("fx")
 agent.newVariableFloat("fy")
 agent.newVariableFloat("fz")
+agent.newVariableFloat("wing_position")
+agent.newVariableFloat("wing_animation")
 outputdata_translated = pyflamegpu.codegen.translate(outputdata)
 inputdata_translated = pyflamegpu.codegen.translate(inputdata)
 agent.newRTCFunction("outputdata", outputdata_translated).setMessageOutput("location")
@@ -353,17 +355,32 @@ if pyflamegpu.VISUALISATION:
     # Configure vis
     visualisation.setClearColor(255, 255, 255)
     envWidth = env.getPropertyFloat("MAX_POSITION") - env.getPropertyFloat("MIN_POSITION")
-    INIT_CAM = env.getPropertyFloat("MAX_POSITION") * 1.25
-    visualisation.setInitialCameraLocation(INIT_CAM, INIT_CAM, INIT_CAM)
+    INIT_CAM = env.getPropertyFloat("MAX_POSITION") * 3.0
+    visualisation.setInitialCameraLocation(0, 0, INIT_CAM)
     visualisation.setCameraSpeed(0.001 * envWidth)
     visualisation.setViewClips(0.00001, 50)
-    circ_agt = visualisation.addAgent("Boid")
+    boid_agt = visualisation.addAgent("Boid")
     # Position vars are named x, y, z so they are used by default
-    circ_agt.setForwardXVariable("fx")
-    circ_agt.setForwardYVariable("fy")
-    circ_agt.setForwardZVariable("fz")
-    circ_agt.setModel(pyflamegpu.STUNTPLANE)
-    circ_agt.setModelScale(env.getPropertyFloat("SEPARATION_RADIUS") /3.0)
+    boid_agt.setForwardXVariable("fx")
+    boid_agt.setForwardYVariable("fy")
+    boid_agt.setForwardZVariable("fz")
+    #boid_agt.setModel(pyflamegpu.ARROWHEAD) # Alternative simple 3D model for very large pop sizes
+    script_dir = pathlib.Path(__file__).parent.resolve()
+    bird_a = str(script_dir / "model/bird_a.obj")
+    bird_b = str(script_dir / "model/bird_b.obj")
+    boid_agt.setKeyFrameModel(bird_a, bird_b, "wing_animation")
+    boid_agt.setModelScale(env.getPropertyFloat("SEPARATION_RADIUS") /2.0)
+    boid_agt.setColor(pyflamegpu.RED);
+    # Visualisation UI
+    ui = visualisation.newUIPanel("Settings")
+    ui.newSection("Model Parameters")
+    ui.newEnvironmentPropertySliderFloat("TIME_SCALE", 0.00001, 0.01)
+    ui.newEnvironmentPropertySliderFloat("GLOBAL_SCALE", 0.05, 0.5)
+    ui.newEnvironmentPropertySliderFloat("SEPARATION_RADIUS", 0.01, env.getPropertyFloat("INTERACTION_RADIUS"))
+    ui.newEnvironmentPropertySliderFloat("STEER_SCALE", 0.00, 1.0)
+    ui.newEnvironmentPropertySliderFloat("COLLISION_SCALE", 0.00, 100.0)
+    ui.newEnvironmentPropertySliderFloat("MATCH_SCALE", 0.00, 0.10)
+    
     visualisation.activate()
 
 # Initialise Model
@@ -402,6 +419,10 @@ if not cudaSimulation.SimulationConfig().input_file:
         instance.setVariableFloat("fx", fx)
         instance.setVariableFloat("fy", fy)
         instance.setVariableFloat("fz", fz)
+
+        # initialise wing speed
+        instance.setVariableFloat("wing_position", random.uniform(0, 3.14))
+        instance.setVariableFloat("wing_animation", 0)
 
     cudaSimulation.setPopulationData(population)
 

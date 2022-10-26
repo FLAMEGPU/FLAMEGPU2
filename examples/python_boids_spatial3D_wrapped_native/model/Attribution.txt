@@ -1,0 +1,1 @@
+The 3D bird models (bird_a.obj and bird_b.obj) are key frames extracted from "Flying Bird" 3D model (https://sketchfab.com/3d-models/flying-bird-eb843194e06d429ebef7dd4aa7e265c1) by "sandeep.s" licenced under CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
