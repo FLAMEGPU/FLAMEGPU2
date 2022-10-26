@@ -240,6 +240,7 @@ endfunction()
 # Look for required python modules to build the python module, error if they are not found.
 search_python_module(setuptools)
 search_python_module(wheel)
+search_python_module(build)
 
 ## ------
 # Define custom commands to produce files in the current cmake directory, a custom target which the user invokes to build the python wheel with appropraite dependencies configured, and any post-build steps required.
@@ -362,7 +363,7 @@ add_custom_target(${PYTHON_MODULE_TARGET_NAME}
   # Copy the python .pyd/.so file to the working dir
   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PYTHON_SWIG_TARGET_NAME}> ${PYTHON_MODULE_NAME}/$<TARGET_FILE_NAME:${PYTHON_SWIG_TARGET_NAME}>
   # Build the wheel in the working dir
-  COMMAND ${Python3_EXECUTABLE} setup.py bdist_wheel
+  COMMAND ${Python3_EXECUTABLE} -m build --wheel 
   WORKING_DIRECTORY ${PYTHON_LIB_OUTPUT_DIRECTORY}
   BYPRODUCTS
     ${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}

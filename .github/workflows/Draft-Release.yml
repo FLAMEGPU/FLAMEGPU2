@@ -103,8 +103,7 @@ jobs:
       if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }}
       run: |
         sudo apt-get install python3-venv
-        python3 -m pip install --upgrade wheel
-        python3 -m pip install --upgrade setuptools
+        python3 -m pip install --upgrade wheel build setuptools
 
     - name: Install Visualisation Dependencies
       if: ${{ startswith(env.OS, 'ubuntu') && env.VISUALISATION == 'ON' }}
