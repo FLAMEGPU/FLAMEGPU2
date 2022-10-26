@@ -161,7 +161,7 @@ class ModelDescription {
      * @param name Name used to refer to the desired layer within the model description hierarchy
      * @return A mutable reference to the specified LayerDescription
      * @throws exception::InvalidFuncLayerIndx If a layer with the name does not exist within the model description hierarchy
-     * @see ModelDescription::Layer(const ModelData::size_type &)
+     * @see ModelDescription::Layer(const flamegpu::size_type &)
      * @see ModelDescription::getLayer(const std::string &) for the immutable version
      */
     LayerDescription& Layer(const std::string &name);
@@ -171,9 +171,9 @@ class ModelDescription {
      * @return A mutable reference to the specified LayerDescription
      * @throws exception::InvalidFuncLayerIndx If a layer with the name does not exist within the model description hierarchy
      * @see ModelDescription::Layer(const std::string &)
-     * @see ModelDescription::getLayer(const ModelData::size_type &) for the immutable version
+     * @see ModelDescription::getLayer(const flamegpu::size_type &) for the immutable version
      */
-    LayerDescription& Layer(const ModelData::size_type &layer_index);
+    LayerDescription& Layer(const flamegpu::size_type &layer_index);
 
     /**
      * Adds an init function to the simulation
@@ -330,7 +330,7 @@ class ModelDescription {
      * @param name Name used to refer to the desired layer within the model description hierarchy
      * @return An immutable reference to the specified LayerDescription
      * @throws exception::InvalidFuncLayerIndx If a layer with the name does not exist within the model description hierarchy
-     * @see ModelDescription::getLayer(const ModelData::size_type &)
+     * @see ModelDescription::getLayer(const flamegpu::size_type &)
      * @see ModelDescription::Layer(const std::string &) for the mutable version
      */
     const LayerDescription& getLayer(const std::string &name) const;
@@ -340,9 +340,9 @@ class ModelDescription {
      * @return An immutable reference to the specified LayerDescription
      * @throws exception::InvalidFuncLayerIndx If a layer with the name does not exist within the model description hierarchy
      * @see ModelDescription::getLayer(const std::string &)
-     * @see ModelDescription::Layer(const ModelData::size_type &) for the mutable version
+     * @see ModelDescription::Layer(const flamegpu::size_type &) for the mutable version
      */
-    const LayerDescription& getLayer(const ModelData::size_type &layer_index) const;
+    const LayerDescription& getLayer(const flamegpu::size_type &layer_index) const;
 
     /**
      * @param agent_name Name of the agent to check
@@ -372,7 +372,7 @@ class ModelDescription {
      * @param layer_index Index of the agent to check
      * @return True when a layer with the specified index exists within the model's hierarchy
      */
-    bool hasLayer(const ModelData::size_type &layer_index) const;
+    bool hasLayer(const flamegpu::size_type &layer_index) const;
     /**
      * @param submodel_name Name of the submodel to check
      * @return True when a submodel with the specified name exists within the model's hierarchy
@@ -382,15 +382,15 @@ class ModelDescription {
     /**
      * @return The number of agents within the model's hierarchy
      */
-    ModelData::size_type getAgentsCount() const;
+    flamegpu::size_type getAgentsCount() const;
     /**
      * @return The number of messages within the model's hierarchy
      */
-    ModelData::size_type getMessagesCount() const;
+    flamegpu::size_type getMessagesCount() const;
     /**
      * @return The number of layers within the model's hierarchy
      */
-    ModelData::size_type getLayersCount() const;
+    flamegpu::size_type getLayersCount() const;
 
  private:
     /**

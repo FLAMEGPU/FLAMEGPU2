@@ -42,7 +42,7 @@ class AgentDescription {
     /**
      * AgentVector takes a clone of AgentData
      */
-    friend AgentVector::AgentVector(const AgentDescription& agent_desc, AgentVector::size_type);
+    friend AgentVector::AgentVector(const AgentDescription& agent_desc, flamegpu::size_type);
     friend AgentInstance::AgentInstance(const AgentDescription& agent_desc);
     friend bool AgentVector::matchesAgentType(const AgentDescription& other) const;
     /**
@@ -117,7 +117,7 @@ class AgentDescription {
      * @throws exception::InvalidAgentVar If a variable already exists within the agent with the same name
      * @throws exception::InvalidAgentVar If N is <= 0
      */
-    template<typename T, ModelData::size_type N>
+    template<typename T, flamegpu::size_type N>
     void newVariable(const std::string &variable_name, const std::array<T, N> &default_value = {});
 #ifndef SWIG
     /**
@@ -152,7 +152,7 @@ class AgentDescription {
      * @throws exception::InvalidAgentVar If length is <= 0
      */
     template<typename T>
-    void newVariableArray(const std::string &variable_name, const ModelData::size_type &length, const std::vector<T>&default_value = {});
+    void newVariableArray(const std::string &variable_name, const flamegpu::size_type &length, const std::vector<T>&default_value = {});
 #endif
 
     /**
@@ -204,7 +204,7 @@ class AgentDescription {
     /**
      * @return The number of possible states agents of this type can enter
      */
-    ModelData::size_type getStatesCount() const;
+    flamegpu::size_type getStatesCount() const;
     /**
      * @return The state which newly created agents of this type begin in
      */
@@ -226,13 +226,13 @@ class AgentDescription {
      * @return The number of elements in the name variable (1 if it isn't an array)
      * @throws exception::InvalidAgentVar If a variable with the name does not exist within the agent
      */
-    ModelData::size_type getVariableLength(const std::string &variable_name) const;
+    flamegpu::size_type getVariableLength(const std::string &variable_name) const;
     /**
      * Get the total number of variables this agent has
      * @return The total number of variables within the agent
      * @note This count includes internal variables used to track things such as agent ID
      */
-    ModelData::size_type getVariablesCount() const;
+    flamegpu::size_type getVariablesCount() const;
     /**
      * Returns an immutable reference to the named agent function
      * @param function_name Name used to refer to the desired agent function
@@ -245,13 +245,13 @@ class AgentDescription {
      * Get the total number of functions this agent has
      * @return The total number of functions within the agent
      */
-    ModelData::size_type getFunctionsCount() const;
+    flamegpu::size_type getFunctionsCount() const;
     /**
      * The total number of agent functions, within the ModelDescription hierarchy, which create new agents of this type
      * @return The total number of agent functions within the ModelDescription hierarchy which create new agents of this type
      * @see AgentDescription::isOutputOnDevice()
      */
-    ModelData::size_type getAgentOutputsCount() const;
+    flamegpu::size_type getAgentOutputsCount() const;
     /**
      * @param state_name Name of the state to check
      * @return True when a state with the specified name exists within the agent
@@ -298,7 +298,7 @@ class AgentDescription {
 /**
  * Template implementation
  */
-template <typename T, ModelData::size_type N>
+template <typename T, flamegpu::size_type N>
 void AgentDescription::newVariable(const std::string &variable_name, const std::array<T, N> &default_value) {
     if (!variable_name.empty() && variable_name[0] == '_') {
         THROW exception::ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
@@ -333,7 +333,7 @@ void AgentDescription::newVariable(const std::string &variable_name, const T def
 }
 #ifdef SWIG
 template<typename T>
-void AgentDescription::newVariableArray(const std::string& variable_name, const ModelData::size_type& length, const std::vector<T>& default_value) {
+void AgentDescription::newVariableArray(const std::string& variable_name, const flamegpu::size_type& length, const std::vector<T>& default_value) {
     if (!variable_name.empty() && variable_name[0] == '_') {
         THROW exception::ReservedName("Agent variable names cannot begin with '_', this is reserved for internal usage, "
             "in AgentDescription::newVariable().");

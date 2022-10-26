@@ -112,7 +112,7 @@ LayerDescription& ModelDescription::newLayer(const std::string &name) {
     model->layers.push_back(rtn);
     return *rtn->description;
 }
-LayerDescription& ModelDescription::Layer(const ModelData::size_type &layer_index) {
+LayerDescription& ModelDescription::Layer(const flamegpu::size_type &layer_index) {
     if (model->layers.size() > layer_index) {
         auto it = model->layers.begin();
         for (auto i = 0u; i < layer_index; ++i)
@@ -220,7 +220,7 @@ const LayerDescription& ModelDescription::getLayer(const std::string &name) cons
         "in ModelDescription::getAgent().",
         name.c_str());
 }
-const LayerDescription& ModelDescription::getLayer(const ModelData::size_type &layer_index) const {
+const LayerDescription& ModelDescription::getLayer(const flamegpu::size_type &layer_index) const {
     if (model->layers.size() > layer_index) {
         auto it = model->layers.begin();
         for (auto i = 0u; i < layer_index; ++i)
@@ -250,7 +250,7 @@ bool ModelDescription::hasLayer(const std::string &name) const {
     }
     return false;
 }
-bool ModelDescription::hasLayer(const ModelData::size_type &layer_index) const {
+bool ModelDescription::hasLayer(const flamegpu::size_type &layer_index) const {
     return layer_index < model->layers.size();
 }
 
@@ -261,17 +261,17 @@ std::string ModelDescription::getConstructedLayersString() const {
     return model->dependencyGraph->getConstructedLayersString();
 }
 
-ModelData::size_type ModelDescription::getAgentsCount() const {
+flamegpu::size_type ModelDescription::getAgentsCount() const {
     // This down-cast is safe
-    return static_cast<ModelData::size_type>(model->agents.size());
+    return static_cast<flamegpu::size_type>(model->agents.size());
 }
-ModelData::size_type ModelDescription::getMessagesCount() const {
+flamegpu::size_type ModelDescription::getMessagesCount() const {
     // This down-cast is safe
-    return static_cast<ModelData::size_type>(model->messages.size());
+    return static_cast<flamegpu::size_type>(model->messages.size());
 }
-ModelData::size_type ModelDescription::getLayersCount() const {
+flamegpu::size_type ModelDescription::getLayersCount() const {
     // This down-cast is safe
-    return static_cast<ModelData::size_type>(model->layers.size());
+    return static_cast<flamegpu::size_type>(model->layers.size());
 }
 
 }  // namespace flamegpu

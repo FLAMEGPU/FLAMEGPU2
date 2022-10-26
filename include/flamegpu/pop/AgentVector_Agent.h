@@ -23,10 +23,10 @@ class AgentInstance;
  * const view into AgentVector
  */
 class AgentVector_CAgent {
-    friend AgentVector::CAgent AgentVector::at(AgentVector::size_type) const;
+    friend AgentVector::CAgent AgentVector::at(flamegpu::size_type) const;
     friend AgentVector::CAgent AgentVector::const_iterator::operator*() const;
     friend AgentVector::CAgent AgentVector::const_reverse_iterator::operator*() const;
-    friend AgentVector::iterator AgentVector::insert(AgentVector::size_type pos, AgentVector::size_type count, const AgentVector::Agent&);
+    friend AgentVector::iterator AgentVector::insert(flamegpu::size_type pos, flamegpu::size_type count, const AgentVector::Agent&);
     friend class AgentInstance;
     // friend AgentInstance::AgentInstance(const AgentVector::CAgent&);
     // friend AgentInstance& AgentInstance::operator=(const AgentVector::CAgent&);
@@ -50,7 +50,7 @@ class AgentVector_CAgent {
     /**
      * Constructor, only ever called by AgentVector
      */
-    AgentVector_CAgent(AgentVector* parent, const std::shared_ptr<const AgentData> &agent, const std::weak_ptr<AgentVector::AgentDataMap> &data, AgentVector::size_type pos);
+    AgentVector_CAgent(AgentVector* parent, const std::shared_ptr<const AgentData> &agent, const std::weak_ptr<AgentVector::AgentDataMap> &data, flamegpu::size_type pos);
     /**
      * Index within _data
      */
@@ -76,7 +76,7 @@ class AgentVector_CAgent {
  * @note To set an agent's id, the agent must be part of a model which has begun (id's are automatically assigned before initialisation functions and can not be manually set by users)
  */
 class AgentVector_Agent : public AgentVector_CAgent {
-    friend AgentVector::Agent AgentVector::at(AgentVector::size_type);
+    friend AgentVector::Agent AgentVector::at(flamegpu::size_type);
     friend AgentVector::Agent AgentVector::iterator::operator*() const;
     friend AgentVector::Agent AgentVector::reverse_iterator::operator*() const;
 
@@ -129,7 +129,7 @@ class AgentVector_Agent : public AgentVector_CAgent {
     /**
      * Constructor, only ever called by AgentVector
      */
-    AgentVector_Agent(AgentVector* parent, const std::shared_ptr<const AgentData> &agent, const std::weak_ptr<AgentVector::AgentDataMap> &data, AgentVector::size_type pos);
+    AgentVector_Agent(AgentVector* parent, const std::shared_ptr<const AgentData> &agent, const std::weak_ptr<AgentVector::AgentDataMap> &data, flamegpu::size_type pos);
 };
 
 template <typename T>

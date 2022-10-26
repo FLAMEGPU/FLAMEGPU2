@@ -207,17 +207,17 @@ bool AgentVector::empty() const {
     _requireLength();
     return _size == 0;
 }
-AgentVector::size_type AgentVector::size() const {
+flamegpu::size_type AgentVector::size() const {
     _requireLength();
     return _size;
 }
-AgentVector::size_type AgentVector::max_size() { return std::numeric_limits<size_type>::max() - 1; }
+flamegpu::size_type AgentVector::max_size() { return std::numeric_limits<size_type>::max() - 1; }
 void AgentVector::reserve(size_type new_cap) {
     if (new_cap > _capacity) {
         internal_resize(new_cap, true);
     }
 }
-AgentVector::size_type AgentVector::capacity() const { return _capacity; }
+flamegpu::size_type AgentVector::capacity() const { return _capacity; }
 void AgentVector::shrink_to_fit() {
     _requireLength();
     if (_size > _capacity) {

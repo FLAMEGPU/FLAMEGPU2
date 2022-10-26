@@ -220,7 +220,7 @@ class MessageBruteForce::Description {
      * @throws exception::InvalidMessageVar If a variable already exists within the message with the same name
      * @throws exception::InvalidMessageVar If N is <= 0
      */
-    template<typename T, MessageNone::size_type N>
+    template<typename T, flamegpu::size_type N>
     void newVariable(const std::string& variable_name);
 #ifdef SWIG
     /**
@@ -283,7 +283,7 @@ template<typename T>
 void MessageBruteForce::Description::newVariable(const std::string &variable_name) {
     newVariable<T, 1>(variable_name);
 }
-template<typename T, MessageNone::size_type N>
+template<typename T, flamegpu::size_type N>
 void MessageBruteForce::Description::newVariable(const std::string& variable_name) {
     if (!variable_name.empty() && variable_name[0] == '_') {
         THROW exception::ReservedName("Message variable names cannot begin with '_', this is reserved for internal usage, "

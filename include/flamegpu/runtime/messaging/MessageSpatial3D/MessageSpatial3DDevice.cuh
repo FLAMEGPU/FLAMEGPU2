@@ -123,7 +123,7 @@ class MessageSpatial3D::In {
              * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
              * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
              */
-            template<typename T, MessageNone::size_type N, unsigned int M> __device__
+            template<typename T, flamegpu::size_type N, unsigned int M> __device__
             T getVariable(const char(&variable_name)[M], unsigned int index) const;
         };
         /**
@@ -342,7 +342,7 @@ class MessageSpatial3D::In {
              * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
              * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
              */
-            template<typename T, MessageNone::size_type N, unsigned int M> __device__
+            template<typename T, flamegpu::size_type N, unsigned int M> __device__
             T getVariable(const char(&variable_name)[M], unsigned int index) const;
             /**
              * Returns the virtual x variable of the message, relative to the search origin
@@ -595,7 +595,7 @@ __device__ T MessageSpatial3D::In::Filter::Message::getVariable(const char(&vari
     T value = detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, cell_index);
     return value;
 }
-template<typename T, MessageNone::size_type N, unsigned int M> __device__
+template<typename T, flamegpu::size_type N, unsigned int M> __device__
 T MessageSpatial3D::In::Filter::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
 #if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.
@@ -621,7 +621,7 @@ __device__ T MessageSpatial3D::In::WrapFilter::Message::getVariable(const char(&
     T value = detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, cell_index);
     return value;
 }
-template<typename T, MessageNone::size_type N, unsigned int M> __device__
+template<typename T, flamegpu::size_type N, unsigned int M> __device__
 T MessageSpatial3D::In::WrapFilter::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
 #if !defined(SEATBELTS) || SEATBELTS
     // Ensure that the message is within bounds.

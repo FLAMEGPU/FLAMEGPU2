@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "flamegpu/defines.h"
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/runtime/detail/curve/HostCurve.cuh"
 #include "flamegpu/util/type_decode.h"
@@ -36,13 +37,6 @@ class EnvironmentManager : public std::enable_shared_from_this<EnvironmentManage
      * The latter could probably be moved into EnvironmentManager (behind a private method)
      */
     friend class CUDASimulation;
-
- public:
-    /**
-     * Offset relative to c_buffer
-     * Length in bytes
-     */
-    typedef unsigned int size_type;
 
  private:
     /**
@@ -412,7 +406,7 @@ T EnvironmentManager::setProperty(const std::string &name, const T value) {
     propagateMappedPropertyValue(name, dest_ptr);
     return rtn;
 }
-template<typename T, EnvironmentManager::size_type N>
+template<typename T, flamegpu::size_type N>
 std::array<T, N> EnvironmentManager::setProperty(const std::string &name, const std::array<T, N> &value) {
     const EnvProp& prop = findProperty<T>(name, true, N);
     // Copy old data to return
@@ -425,7 +419,7 @@ std::array<T, N> EnvironmentManager::setProperty(const std::string &name, const 
     propagateMappedPropertyValue(name, dest_ptr);
     return rtn;
 }
-template<typename T, EnvironmentManager::size_type N>
+template<typename T, flamegpu::size_type N>
 T EnvironmentManager::setProperty(const std::string &name, const size_type index, const T value) {
     const EnvProp& prop = findProperty<T>(name, true, 0);
     if (N && N != prop.elements / type_decode<T>::len_t) {
@@ -474,7 +468,7 @@ T EnvironmentManager::getProperty(const std::string &name) {
     memcpy(&rtn, h_buffer + prop.offset, sizeof(T));
     return rtn;
 }
-template<typename T, EnvironmentManager::size_type N>
+template<typename T, flamegpu::size_type N>
 std::array<T, N> EnvironmentManager::getProperty(const std::string &name) {
     const EnvProp& prop = findProperty<T>(name, false, N);
     // Copy old data to return
@@ -482,7 +476,7 @@ std::array<T, N> EnvironmentManager::getProperty(const std::string &name) {
     memcpy(rtn.data(), h_buffer + prop.offset, sizeof(T) * N);
     return rtn;
 }
-template<typename T, EnvironmentManager::size_type N>
+template<typename T, flamegpu::size_type N>
 T EnvironmentManager::getProperty(const std::string &name, const size_type index) {
     const EnvProp& prop = findProperty<T>(name, false, 0);
     if (N && N != prop.elements / type_decode<T>::len_t) {

@@ -72,7 +72,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length to N
      */
-    template<typename T, EnvironmentManager::size_type N>
+    template<typename T, flamegpu::size_type N>
     void setProperty(const std::string &name, const std::array<T, N> &value);
     /**
      * Array property element equivalent of setProperty()
@@ -86,7 +86,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @see setProperty(const std::string &name, T value)
      */
     template<typename T>
-    void setProperty(const std::string &name, const EnvironmentManager::size_type index, const T value);
+    void setProperty(const std::string &name, const flamegpu::size_type index, const T value);
 #ifdef SWIG
     /**
      * Set named environment property array to a specific value
@@ -132,7 +132,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @see setPropertyUniformDistribution(const std::string &name, T min, T max)
      */
     template<typename T>
-    void setPropertyUniformDistribution(const std::string &name, const EnvironmentManager::size_type index, const T min, const T max);
+    void setPropertyUniformDistribution(const std::string &name, const flamegpu::size_type index, const T min, const T max);
     /**
      * Seed the internal random generator used for random property distributions
      * This will only affect subsequent calls to setPropertyRandom()
@@ -176,7 +176,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @see setPropertyUniformRandom(const std::string &name, T min, T max)
      */
     template<typename T>
-    void setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type index, const T min, const T max);
+    void setPropertyUniformRandom(const std::string &name, const flamegpu::size_type index, const T min, const T max);
     /**
      * Sweep named environment property over a normal random distribution
      * Only floating point types are supported
@@ -206,7 +206,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @see setPropertyNormalRandom(const std::string &name, T mean, T stddev)
      */
     template<typename T>
-    void setPropertyNormalRandom(const std::string &name, EnvironmentManager::size_type index, T mean, T stddev);
+    void setPropertyNormalRandom(const std::string &name, flamegpu::size_type index, T mean, T stddev);
     /**
      * Sweep named environment property over a log normal random distribution
      * Only floating point types are supported
@@ -236,7 +236,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @see setPropertyNormalRandom(const std::string &name, T mean, T stddev)
      */
     template<typename T>
-    void setPropertyLogNormalRandom(const std::string &name, EnvironmentManager::size_type index, T mean, T stddev);
+    void setPropertyLogNormalRandom(const std::string &name, flamegpu::size_type index, T mean, T stddev);
     /**
      * Use a random distribution to generate parameters for the named environment property
      * @param name The name of the environment property to set
@@ -263,7 +263,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @throws exception::OutOfBoundsException If this vector has a length less than 2
      */
     template<typename T, typename rand_dist>
-    void setPropertyRandom(const std::string &name, EnvironmentManager::size_type index, rand_dist &distribution);
+    void setPropertyRandom(const std::string &name, flamegpu::size_type index, rand_dist &distribution);
 
     /**
      * Expose inherited std::vector methods/classes
@@ -328,7 +328,7 @@ void RunPlanVector::setProperty(const std::string &name, const T value) {
         i.setProperty<T>(name, value);
     }
 }
-template<typename T, EnvironmentManager::size_type N>
+template<typename T, flamegpu::size_type N>
 void RunPlanVector::setProperty(const std::string &name, const std::array<T, N> &value) {
     // Validation
     const auto it = environment->find(name);
@@ -352,7 +352,7 @@ void RunPlanVector::setProperty(const std::string &name, const std::array<T, N> 
     }
 }
 template<typename T>
-void RunPlanVector::setProperty(const std::string &name, const EnvironmentManager::size_type index, const T value) {
+void RunPlanVector::setProperty(const std::string &name, const flamegpu::size_type index, const T value) {
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
@@ -434,7 +434,7 @@ void RunPlanVector::setPropertyUniformDistribution(const std::string &name, cons
     }
 }
 template<typename T>
-void RunPlanVector::setPropertyUniformDistribution(const std::string &name, const EnvironmentManager::size_type index, const T min, const T max) {
+void RunPlanVector::setPropertyUniformDistribution(const std::string &name, const flamegpu::size_type index, const T min, const T max) {
     // Validation
     if (this->size() < 2) {
         THROW exception::OutOfBoundsException("Unable to apply a property distribution a vector with less than 2 elements, "
@@ -495,7 +495,7 @@ void RunPlanVector::setPropertyRandom(const std::string &name, rand_dist &distri
     }
 }
 template<typename T, typename rand_dist>
-void RunPlanVector::setPropertyRandom(const std::string &name, const EnvironmentManager::size_type index, rand_dist &distribution) {
+void RunPlanVector::setPropertyRandom(const std::string &name, const flamegpu::size_type index, rand_dist &distribution) {
     // Validation
     if (this->size() < 2) {
         THROW exception::OutOfBoundsException("Unable to apply a property distribution a vector with less than 2 elements, "
@@ -531,8 +531,8 @@ void RunPlanVector::setPropertyUniformRandom(const std::string &name, const T mi
     setPropertyRandom<T>(name, dist);
 }
 template<typename T>
-void RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type index, const T min, const T max) {
-    static_assert(util::detail::StaticAssert::_Is_IntType<T>::value, "Invalid template argument for RunPlanVector::setPropertyUniformRandom(const std::string &name, EnvironmentManager::size_type index, T min, T max)");
+void RunPlanVector::setPropertyUniformRandom(const std::string &name, const flamegpu::size_type index, const T min, const T max) {
+    static_assert(util::detail::StaticAssert::_Is_IntType<T>::value, "Invalid template argument for RunPlanVector::setPropertyUniformRandom(const std::string &name, flamegpu::size_type index, T min, T max)");
     std::uniform_int_distribution<T> dist(min, max);
     setPropertyRandom<T>(name, index, dist);
 }
@@ -543,9 +543,9 @@ void RunPlanVector::setPropertyNormalRandom(const std::string &name, const T mea
     setPropertyRandom<T>(name, dist);
 }
 template<typename T>
-void RunPlanVector::setPropertyNormalRandom(const std::string &name, const EnvironmentManager::size_type index, const T mean, const T stddev) {
+void RunPlanVector::setPropertyNormalRandom(const std::string &name, const flamegpu::size_type index, const T mean, const T stddev) {
     static_assert(util::detail::StaticAssert::_Is_RealType<T>::value,
-        "Invalid template argument for RunPlanVector::setPropertyNormalRandom(const std::string &name, EnvironmentManager::size_type index, T mean, T stddev)");
+        "Invalid template argument for RunPlanVector::setPropertyNormalRandom(const std::string &name, flamegpu::size_type index, T mean, T stddev)");
     std::normal_distribution<T> dist(mean, stddev);
     setPropertyRandom<T>(name, index, dist);
 }
@@ -557,9 +557,9 @@ void RunPlanVector::setPropertyLogNormalRandom(const std::string &name, const T 
     setPropertyRandom<T>(name, dist);
 }
 template<typename T>
-void RunPlanVector::setPropertyLogNormalRandom(const std::string &name, const EnvironmentManager::size_type index, const T mean, const T stddev) {
+void RunPlanVector::setPropertyLogNormalRandom(const std::string &name, const flamegpu::size_type index, const T mean, const T stddev) {
     static_assert(util::detail::StaticAssert::_Is_RealType<T>::value,
-    "Invalid template argument for RunPlanVector::setPropertyLogNormalRandom(const std::string &name, EnvironmentManager::size_type index, T mean, T stddev)");
+    "Invalid template argument for RunPlanVector::setPropertyLogNormalRandom(const std::string &name, flamegpu::size_type index, T mean, T stddev)");
     std::lognormal_distribution<T> dist(mean, stddev);
     setPropertyRandom<T>(name, index, dist);
 }
@@ -574,7 +574,7 @@ inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, con
     setPropertyRandom<float>(name, dist);
 }
 template<>
-inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type index, const float min, const float max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const flamegpu::size_type index, const float min, const float max) {
     std::uniform_real_distribution<float> dist(min, max);
     setPropertyRandom<float>(name, index, dist);
 }
@@ -584,7 +584,7 @@ inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, con
     setPropertyRandom<double>(name, dist);
 }
 template<>
-inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type index, const double min, const double max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const flamegpu::size_type index, const double min, const double max) {
     std::uniform_real_distribution<double> dist(min, max);
     setPropertyRandom<double>(name, index, dist);
 }
@@ -594,7 +594,7 @@ inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, con
     setPropertyRandom<char>(name, dist);
 }
 template<>
-inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type index, const char min, const char max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const flamegpu::size_type index, const char min, const char max) {
     std::uniform_int_distribution<int16_t> dist(min, max);
     setPropertyRandom<char>(name, index, dist);
 }
@@ -604,7 +604,7 @@ inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, con
     setPropertyRandom<unsigned char>(name, dist);
 }
 template<>
-inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type index, const unsigned char min, const unsigned char max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const flamegpu::size_type index, const unsigned char min, const unsigned char max) {
     std::uniform_int_distribution<uint16_t> dist(min, max);
     setPropertyRandom<unsigned char>(name, index, dist);
 }
@@ -614,7 +614,7 @@ inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, con
     setPropertyRandom<signed char>(name, dist);
 }
 template<>
-inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const EnvironmentManager::size_type index, const signed char min, const signed char max) {
+inline void RunPlanVector::setPropertyUniformRandom(const std::string &name, const flamegpu::size_type index, const signed char min, const signed char max) {
     std::uniform_int_distribution<int16_t> dist(min, max);
     setPropertyRandom<signed char>(name, index, dist);
 }

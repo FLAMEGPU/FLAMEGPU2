@@ -15,11 +15,6 @@ struct ModelData;
  */
 class MessageBruteForce {
  public:
-    /**
-     * Common size type
-     */
-    typedef MessageNone::size_type size_type;
-
     // Host
     struct Data;        // Forward declare inner classes
     class Description;  // Forward declare inner classes

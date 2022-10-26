@@ -20,8 +20,8 @@ class AgentDescription;
  * @note Not 100% on the name, might change
  */
 class AgentInstance {
-    friend AgentVector::iterator AgentVector::insert(AgentVector::const_iterator pos, AgentVector::size_type count, const AgentInstance& value);
-    friend AgentVector::iterator AgentVector::insert(AgentVector::size_type pos, AgentVector::size_type count, const AgentInstance& value);
+    friend AgentVector::iterator AgentVector::insert(AgentVector::const_iterator pos, flamegpu::size_type count, const AgentInstance& value);
+    friend AgentVector::iterator AgentVector::insert(flamegpu::size_type pos, flamegpu::size_type count, const AgentInstance& value);
 
  public:
     /**

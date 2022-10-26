@@ -18,7 +18,7 @@ class AgentInterface {
     virtual ~AgentInterface() = default;
     virtual const AgentData &getAgentDescription() const = 0;
     virtual void *getStateVariablePtr(const std::string &state_name, const std::string &variable_name) = 0;
-    virtual ModelData::size_type getStateSize(const std::string &state_name) const = 0;
+    virtual flamegpu::size_type getStateSize(const std::string &state_name) const = 0;
     /**
      * Returns the next free agent id, and increments the ID tracker by the specified count
      * @param count Number that will be added to the return value on next call to this function

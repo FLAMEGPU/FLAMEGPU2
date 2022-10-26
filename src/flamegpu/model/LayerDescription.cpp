@@ -192,18 +192,18 @@ std::string LayerDescription::getName() const {
     return layer->name;
 }
 
-ModelData::size_type LayerDescription::getIndex() const {
+flamegpu::size_type LayerDescription::getIndex() const {
     return layer->index;
 }
 
 
-ModelData::size_type LayerDescription::getAgentFunctionsCount() const {
+flamegpu::size_type LayerDescription::getAgentFunctionsCount() const {
     // Safe down-cast
-    return static_cast<ModelData::size_type>(layer->agent_functions.size());
+    return static_cast<flamegpu::size_type>(layer->agent_functions.size());
 }
-ModelData::size_type LayerDescription::getHostFunctionsCount() const {
+flamegpu::size_type LayerDescription::getHostFunctionsCount() const {
     // Safe down-cast
-    return static_cast<ModelData::size_type>(layer->host_functions.size());
+    return static_cast<flamegpu::size_type>(layer->host_functions.size());
 }
 
 const AgentFunctionDescription &LayerDescription::getAgentFunction(unsigned int index) const {

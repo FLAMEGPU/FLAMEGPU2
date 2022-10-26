@@ -2,7 +2,7 @@
 
 namespace flamegpu {
 
-AgentVector_CAgent::AgentVector_CAgent(AgentVector* parent, const std::shared_ptr<const AgentData>& agent, const std::weak_ptr<AgentVector::AgentDataMap>& data, AgentVector::size_type pos)
+AgentVector_CAgent::AgentVector_CAgent(AgentVector* parent, const std::shared_ptr<const AgentData>& agent, const std::weak_ptr<AgentVector::AgentDataMap>& data, flamegpu::size_type pos)
     : index(pos)
     , _data(data)
     , _agent(agent)
@@ -19,10 +19,11 @@ id_t AgentVector_CAgent::getID() const {
         THROW exception::UnknownInternalError("Internal Error: Unable to read internal ID variable for agent '%s', in AgentVector::CAgent::getID()\n", _agent->name.c_str());
     }
 }
+
 unsigned int AgentVector_CAgent::getIndex() const {
     return index;
 }
-AgentVector_Agent::AgentVector_Agent(AgentVector *parent, const std::shared_ptr<const AgentData>& agent, const std::weak_ptr<AgentVector::AgentDataMap>& data, AgentVector::size_type pos)
+AgentVector_Agent::AgentVector_Agent(AgentVector* parent, const std::shared_ptr<const AgentData>& agent, const std::weak_ptr<AgentVector::AgentDataMap>& data, flamegpu::size_type pos)
     : AgentVector_CAgent(parent, agent, data, pos) { }
 
 void AgentVector_Agent::resetID() {

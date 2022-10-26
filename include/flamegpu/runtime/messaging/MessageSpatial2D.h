@@ -15,11 +15,6 @@ namespace flamegpu {
  * Unlike FLAMEGPU1, these spatial messages do not wrap over environment bounds.
  */
 class MessageSpatial2D {
-    /**
-     * Common size type
-     */
-    typedef MessageNone::size_type size_type;
-
  public:
     // Host
     struct Data;        // Forward declare inner classes

@@ -128,7 +128,7 @@ void MessageArray::Description::setLength(const size_type len) {
     }
     reinterpret_cast<Data *>(message)->length = len;
 }
-MessageArray::size_type MessageArray::Description::getLength() const {
+flamegpu::size_type MessageArray::Description::getLength() const {
     return reinterpret_cast<Data *>(message)->length;
 }
 
