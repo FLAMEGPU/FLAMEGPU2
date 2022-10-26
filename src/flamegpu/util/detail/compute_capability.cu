@@ -90,7 +90,7 @@ std::vector<int> compute_capability::getNVRTCSupportedComputeCapabilties() {
 
 int compute_capability::selectAppropraiteComputeCapability(const int target, const std::vector<int>& architectures) {
     int maxArch = 0;
-    for (const int arch : architectures) {
+    for (const int &arch : architectures) {
         if (arch <= target && arch > maxArch) {
             maxArch = arch;
             // The vector is in ascending order, so we can potentially early exit
