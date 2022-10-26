@@ -94,6 +94,8 @@ Building via CMake is a three step process, with slight differences depending on
 2. Configure CMake into the build directory
     + Using the CMake GUI or CLI tools
     + Specifying build options such as the CUDA Compute Capabilities to target, the inclusion of Visualisation or Python components, or performance impacting features such as `SEATBELTS`. See [CMake Configuration Options](#CMake-Configuration-Options) for details of the available configuration options
+    + CMake will automatically find and select compilers, libraries and python interpreters based on current environmental variables and default locations. See [Mastering CMake](https://cmake.org/cmake/help/book/mastering-cmake/chapter/Getting%20Started.html#specifying-the-compiler-to-cmake) for more information.
+        + Python dependencies must be installed in the selected python environment. If needed you can instruct CMake to use a specific python implementation using the `Python_ROOT_DIR` and `Python_Executable` CMake options at configure time.
 3. Build compilation targets using the configured build system
     + See [Available Targets](#Available-targets) for a list of available targets.
 
