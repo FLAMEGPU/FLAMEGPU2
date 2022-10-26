@@ -122,7 +122,7 @@ class CUDAMessage {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void buildIndex(CUDAScatter &scatter, unsigned int streamId, const cudaStream_t &stream);
+    void buildIndex(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     const void *getMetaDataDevicePtr() const;
 
  protected:

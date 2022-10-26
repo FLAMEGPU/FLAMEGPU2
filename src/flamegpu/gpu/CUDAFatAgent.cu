@@ -87,7 +87,7 @@ void CUDAFatAgent::addSubAgent(
     mappedAgentCount++;
 }
 
-void CUDAFatAgent::processDeath(const unsigned int agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t &stream) {
+void CUDAFatAgent::processDeath(const unsigned int agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t stream) {
     auto sm = states.find({agent_fat_id, state_name});
     if (sm == states.end()) {
         THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
@@ -168,7 +168,7 @@ void CUDAFatAgent::transitionState(unsigned int agent_fat_id, const std::string 
     }
 }
 
-void CUDAFatAgent::processFunctionCondition(const unsigned int agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t &stream) {
+void CUDAFatAgent::processFunctionCondition(const unsigned int agent_fat_id, const std::string &state_name, CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t stream) {
     auto sm = states.find({agent_fat_id, state_name});
     if (sm == states.end()) {
         THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
@@ -231,7 +231,7 @@ void CUDAFatAgent::setConditionState(const unsigned int agent_fat_id, const std:
     sm->second->setDisabledAgents(numberOfDisabled);
 }
 
-void *CUDAFatAgent::allocNewBuffer(const size_t &total_agent_size, const unsigned int new_agents, const size_t &varCount) {
+void *CUDAFatAgent::allocNewBuffer(const size_t total_agent_size, const unsigned int new_agents, const size_t varCount) {
     std::lock_guard<std::mutex> guard(d_newLists_mutex);
     // It is assumed that the buffer will be split into sub-buffers, each 64bit aligned
     // So for total number of variables-1, add 64 bits incase required for alignment.

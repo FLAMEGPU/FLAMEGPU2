@@ -235,7 +235,7 @@ unsigned int CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int
 bool CUDAAgentStateList::getIsSubStatelist() {
     return isSubStateList;
 }
-void CUDAAgentStateList::initUnmappedVars(CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t &stream) {
+void CUDAAgentStateList::initUnmappedVars(CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t stream) {
     assert(parent_list->getSizeWithDisabled() == parent_list->getSize());
     if (parent_list->getSize()) {
         assert(isSubStateList);
@@ -245,7 +245,7 @@ void CUDAAgentStateList::initUnmappedVars(CUDAScatter &scatter, const unsigned i
         }
     }
 }
-void CUDAAgentStateList::initExcludedVars(const unsigned int count, const unsigned int offset, CUDAScatter& scatter, const unsigned int streamId, const cudaStream_t& stream) {
+void CUDAAgentStateList::initExcludedVars(const unsigned int count, const unsigned int offset, CUDAScatter& scatter, const unsigned int streamId, const cudaStream_t stream) {
     std::set<std::shared_ptr<VariableBuffer>> exclusionSet;
     for (auto& a : variables)
         exclusionSet.insert(a.second);

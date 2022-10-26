@@ -654,7 +654,7 @@ class ModelVis;
             return $self->operator[](index);
         return $self->operator[]($self->size() + index);
    }
-   void RunPlanVector::__setitem__(const size_t &index, flamegpu::RunPlan &value) {
+   void RunPlanVector::__setitem__(const size_t index, flamegpu::RunPlan &value) {
         $self->operator[](index) = value;
    }
 }

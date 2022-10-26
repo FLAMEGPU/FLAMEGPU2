@@ -99,7 +99,7 @@ class CUDAScatter {
      */
      unsigned int scatter(
         unsigned int streamResourceId,
-        const cudaStream_t &stream,
+        cudaStream_t stream,
         const Type &messageOrAgent,
         const VariableMap &vars,
         const std::map<std::string, void*> &in,
@@ -124,7 +124,7 @@ class CUDAScatter {
      */
     unsigned int scatter(
         unsigned int streamResourceId,
-        const cudaStream_t &stream,
+        cudaStream_t stream,
         const Type &messageOrAgent,
         const std::vector<ScatterData> &scatterData,
         unsigned int itemCount,
@@ -164,7 +164,7 @@ class CUDAScatter {
      */
     unsigned int scatterCount(
         unsigned int streamResourceId,
-        const cudaStream_t &stream,
+        cudaStream_t stream,
         const Type &messageOrAgent,
         unsigned int itemCount,
         unsigned int scatter_all_count = 0);
@@ -180,7 +180,7 @@ class CUDAScatter {
      */
     unsigned int scatterAll(
         unsigned int streamResourceId,
-        const cudaStream_t &stream,
+        cudaStream_t stream,
         const std::vector<ScatterData> &scatterData,
         unsigned int itemCount,
         unsigned int out_index_offset = 0);
@@ -196,7 +196,7 @@ class CUDAScatter {
      */
     unsigned int scatterAll(
         unsigned int streamResourceId,
-        const cudaStream_t &stream,
+        cudaStream_t stream,
         const VariableMap &vars,
         const std::map<std::string, void*> &in,
         const std::map<std::string, void*> &out,
@@ -218,7 +218,7 @@ class CUDAScatter {
      */
     void pbm_reorder(
         unsigned int streamResourceId,
-        const cudaStream_t &stream,
+        cudaStream_t stream,
         const VariableMap &vars,
         const std::map<std::string, void*> &in,
         const std::map<std::string, void*> &out,
@@ -238,9 +238,9 @@ class CUDAScatter {
      */
     void scatterNewAgents(
         unsigned int streamResourceId,
-        const cudaStream_t &stream,
+        cudaStream_t stream,
         const std::vector<ScatterData> &scatterData,
-        const size_t &totalAgentSize,
+        size_t totalAgentSize,
         unsigned int inCount,
         unsigned int out_index_offset);
     /**
@@ -292,7 +292,7 @@ class CUDAScatter {
      */
     void arrayMessageReorder(
         unsigned int streamResourceId,
-        const cudaStream_t &stream,
+        cudaStream_t stream,
         const VariableMap &vars,
         const std::map<std::string, void*> &in,
         const std::map<std::string, void*> &out,

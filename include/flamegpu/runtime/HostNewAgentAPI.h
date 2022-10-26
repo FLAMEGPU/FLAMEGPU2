@@ -28,7 +28,7 @@ struct VarOffsetStruct {
          * @param _len Length of the variables data within the buffer
          * @param _type Type of the variable's base type (does not account for whether it's an array)
          */
-        OffsetLen(const ptrdiff_t &_offset, const size_t &_len, const std::type_index _type)
+        OffsetLen(const ptrdiff_t &_offset, const size_t _len, const std::type_index _type)
             : offset(_offset)
             , len(_len)
             , type(_type) { }

@@ -81,7 +81,7 @@ class CUDAAgent : public AgentInterface {
      * @param stream CUDA stream to be used for async CUDA operations
      * @note Scatter is required for initialising submodel vars
      */
-    void setPopulationData(const AgentVector& population, const std::string &state_name, CUDAScatter &scatter, unsigned int streamId, const cudaStream_t& stream);
+    void setPopulationData(const AgentVector& population, const std::string &state_name, CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Copies population data the device buffers held by this object
      * To the hosts object (overwriting any existing agent data)
@@ -118,7 +118,7 @@ class CUDAAgent : public AgentInterface {
      * @param stream CUDA stream to be used for async CUDA operations
      * @see CUDAFatAgent::processDeath(unsigned int, const std::string &, unsigned int)
      */
-    void processDeath(const AgentFunctionData& func, CUDAScatter &scatter, unsigned int streamId, const cudaStream_t &stream);
+    void processDeath(const AgentFunctionData& func, CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Transitions all active agents from the source state to the destination state
      * @param _src The source state
@@ -128,7 +128,7 @@ class CUDAAgent : public AgentInterface {
      * @param stream CUDA stream to be used for async CUDA operations
      * @see CUDAFatAgent::transitionState(unsigned int, const std::string &, const std::string &, unsigned int)
      */
-    void transitionState(const std::string &_src, const std::string &_dest, CUDAScatter &scatter, unsigned int streamId, const cudaStream_t &stream);
+    void transitionState(const std::string &_src, const std::string &_dest, CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Scatters agents based on their output of the agent function condition
      * Agents which failed the condition are scattered to the front and marked as disabled
@@ -141,7 +141,7 @@ class CUDAAgent : public AgentInterface {
      * @note Named state must not already contain disabled agents
      * @note The disabled agents are re-enabled using clearFunctionCondition(const std::string &)
      */
-    void processFunctionCondition(const AgentFunctionData& func, CUDAScatter &scatter, unsigned int streamId, const cudaStream_t &stream);
+    void processFunctionCondition(const AgentFunctionData& func, CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Scatters agents from the provided device buffer, this is used for host agent creation
      * The device buffer must be packed according to the param offsets
@@ -153,7 +153,7 @@ class CUDAAgent : public AgentInterface {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void scatterHostCreation(const std::string &state_name, unsigned int newSize, char *const d_inBuff, const VarOffsetStruct &offsets, CUDAScatter &scatter, unsigned int streamId, const cudaStream_t &stream);
+    void scatterHostCreation(const std::string &state_name, unsigned int newSize, char *const d_inBuff, const VarOffsetStruct &offsets, CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Sorts all agent variables according to the positions stored inside Message Output scan buffer
      * @param state_name The state agents are scattered into
@@ -190,7 +190,7 @@ class CUDAAgent : public AgentInterface {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void scatterNew(const AgentFunctionData& func, unsigned int newSize, CUDAScatter &scatter, unsigned int streamId, const cudaStream_t &stream);
+    void scatterNew(const AgentFunctionData& func, unsigned int newSize, CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Reenables all disabled agents within the named state
      * @param state The named state to enable all agents within
@@ -240,7 +240,7 @@ class CUDAAgent : public AgentInterface {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void initUnmappedVars(CUDAScatter& scatter, unsigned int streamId, const cudaStream_t& stream);
+    void initUnmappedVars(CUDAScatter& scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Initialises any agent variables within the CUDAFatAgentStateList of state which are not present in the agent-state's CUDAAgentStateList
      * @param state Affected state
@@ -250,7 +250,7 @@ class CUDAAgent : public AgentInterface {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void initExcludedVars(const std::string& state, unsigned int count, unsigned int offset, CUDAScatter& scatter, unsigned int streamId, const cudaStream_t& stream);
+    void initExcludedVars(const std::string& state, unsigned int count, unsigned int offset, CUDAScatter& scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Resets the number of agents in every statelist to 0
      */

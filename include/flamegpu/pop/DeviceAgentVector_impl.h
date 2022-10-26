@@ -45,7 +45,7 @@ class DeviceAgentVector_impl : protected AgentVector {
      */
     DeviceAgentVector_impl(CUDAAgent& _cuda_agent, const std::string& cuda_agent_state,
         const VarOffsetStruct& _agentOffsets, std::vector<NewAgentStorage>& _newAgentData,
-        CUDAScatter& scatter, unsigned int streamId, const cudaStream_t& stream);
+        CUDAScatter& scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Copy operations are disabled
      */
@@ -361,7 +361,7 @@ class DeviceAgentVector_impl : protected AgentVector {
 
     CUDAScatter& scatter;
     const unsigned int streamId;
-    const cudaStream_t& stream;
+    const cudaStream_t stream;
 };
 
 }  // namespace flamegpu

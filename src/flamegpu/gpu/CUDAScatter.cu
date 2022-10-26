@@ -100,7 +100,7 @@ __global__ void scatter_all_generic(
 
 unsigned int CUDAScatter::scatter(
     const unsigned int streamResourceId,
-    const cudaStream_t &stream,
+    const cudaStream_t stream,
     const Type &messageOrAgent,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
@@ -119,7 +119,7 @@ unsigned int CUDAScatter::scatter(
 }
 unsigned int CUDAScatter::scatter(
     const unsigned int streamResourceId,
-    const cudaStream_t &stream,
+    const cudaStream_t stream,
     const Type &messageOrAgent,
     const std::vector<ScatterData> &sd,
     const unsigned int itemCount,
@@ -193,7 +193,7 @@ void CUDAScatter::scatterPosition_async(
 }
 unsigned int CUDAScatter::scatterCount(
     const unsigned int streamResourceId,
-    const cudaStream_t &stream,
+    const cudaStream_t stream,
     const Type &messageOrAgent,
     const unsigned int itemCount,
     const unsigned int scatter_all_count) {
@@ -204,7 +204,7 @@ unsigned int CUDAScatter::scatterCount(
 
 unsigned int CUDAScatter::scatterAll(
     const unsigned int streamResourceId,
-    const cudaStream_t &stream,
+    const cudaStream_t stream,
     const std::vector<ScatterData> &sd,
     const unsigned int itemCount,
     const unsigned int out_index_offset) {
@@ -232,7 +232,7 @@ unsigned int CUDAScatter::scatterAll(
 }
 unsigned int CUDAScatter::scatterAll(
     const unsigned int streamResourceId,
-    const cudaStream_t &stream,
+    const cudaStream_t stream,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,
@@ -269,7 +269,7 @@ __global__ void pbm_reorder_generic(
 
 void CUDAScatter::pbm_reorder(
     const unsigned int streamResourceId,
-    const cudaStream_t &stream,
+    const cudaStream_t stream,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,
@@ -341,9 +341,9 @@ __global__ void scatter_new_agents(
 }
 void CUDAScatter::scatterNewAgents(
     const unsigned int streamResourceId,
-    const cudaStream_t &stream,
+    const cudaStream_t stream,
     const std::vector<ScatterData> &sd,
-    const size_t &totalAgentSize,
+    const size_t totalAgentSize,
     const unsigned int inCount,
     const unsigned int outIndexOffset) {
     // 1 thread per agent variable
@@ -540,7 +540,7 @@ __global__ void reorder_array_messages(
 }
 void CUDAScatter::arrayMessageReorder(
     const unsigned int streamResourceId,
-    const cudaStream_t &stream,
+    const cudaStream_t stream,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,

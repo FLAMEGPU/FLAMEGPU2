@@ -124,7 +124,7 @@ class CUDAAgentStateList {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void initUnmappedVars(CUDAScatter &scatter, unsigned int streamId, const cudaStream_t &stream);
+    void initUnmappedVars(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Initialises any agent variables within the CUDAFatAgentStateList which are not present in this CUDAAgentStateList
      * @param count Number of variables to init
@@ -133,7 +133,7 @@ class CUDAAgentStateList {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void initExcludedVars(unsigned int count, unsigned int offset, CUDAScatter& scatter, unsigned int streamId, const cudaStream_t& stream);
+    void initExcludedVars(unsigned int count, unsigned int offset, CUDAScatter& scatter, unsigned int streamId, cudaStream_t stream);
     /**
      * Returns the statelist to an empty state
      * This resets the size to 0.
