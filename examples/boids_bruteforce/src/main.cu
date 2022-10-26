@@ -6,7 +6,7 @@
 #include "flamegpu/flamegpu.h"
 
 /**
- * FLAME GPU 2 implementation of the Boids model, using BruteForce messaging.
+ * FLAME GPU 2 implementation of the Boids model, using BruteForce messaging and DependencyGraph.
  * This is based on the FLAME GPU 1 implementation, but with dynamic generation of agents. 
  * Agents are also clamped to be within the environment bounds, rather than wrapped as in FLAME GPU 1.
  * 
@@ -320,18 +320,28 @@ int main(int argc, const char ** argv) {
         message.newVariable<float>("fy");
         message.newVariable<float>("fz");
     }
-    {   // Boid agent
-        flamegpu::AgentDescription &agent = model.newAgent("Boid");
-        agent.newVariable<float>("x");
-        agent.newVariable<float>("y");
-        agent.newVariable<float>("z");
-        agent.newVariable<float>("fx");
-        agent.newVariable<float>("fy");
-        agent.newVariable<float>("fz");
-        agent.newFunction("outputdata", outputdata).setMessageOutput("location");
-        agent.newFunction("inputdata", inputdata).setMessageInput("location");
-    }
 
+    // Boid agent
+    flamegpu::AgentDescription &agent = model.newAgent("Boid");
+    agent.newVariable<float>("x");
+    agent.newVariable<float>("y");
+    agent.newVariable<float>("z");
+    agent.newVariable<float>("fx");
+    agent.newVariable<float>("fy");
+    agent.newVariable<float>("fz");
+    flamegpu::AgentFunctionDescription& outputdataDescription = agent.newFunction("outputdata", outputdata);
+    outputdataDescription.setMessageOutput("location");
+    flamegpu::AgentFunctionDescription& inputdataDescription = agent.newFunction("inputdata", inputdata);
+    inputdataDescription.setMessageInput("location");
+
+    // Dependency specification
+    inputdataDescription.dependsOn(outputdataDescription);
+
+    // Identify the root of execution
+    model.addExecutionRoot(outputdataDescription);
+
+    // Build the execution graph
+    model.generateLayers();
 
     /**
      * GLOBALS
@@ -362,18 +372,6 @@ int main(int argc, const char ** argv) {
         env.newProperty("STEER_SCALE", 0.055f);
         env.newProperty("COLLISION_SCALE", 10.0f);
         env.newProperty("MATCH_SCALE", 0.015f);
-    }
-
-    /**
-     * Control flow
-     */     
-    {   // Layer #1
-        flamegpu::LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(outputdata);
-    }
-    {   // Layer #2
-        flamegpu::LayerDescription &layer = model.newLayer();
-        layer.addAgentFunction(inputdata);
     }
 
     /**
