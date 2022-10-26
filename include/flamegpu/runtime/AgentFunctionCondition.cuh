@@ -67,7 +67,7 @@ __global__ void agent_function_condition_wrapper(
     __syncthreads();
 #endif  // __CUDACC__
     // Must be terminated here, else AgentRandom has bounds issues inside DeviceAPI constructor
-    if (ReadOnlyDeviceAPI::getThreadIndex() >= popNo)
+    if (ReadOnlyDeviceAPI::getIndex() >= popNo)
         return;
     // create a new device FLAME_GPU instance
     ReadOnlyDeviceAPI api = ReadOnlyDeviceAPI(d_rng);
@@ -77,7 +77,7 @@ __global__ void agent_function_condition_wrapper(
         // Negate the return value, we want false at the start of the scattered array
         bool conditionResult = !(AgentFunctionCondition()(&api));
         // (scan flags will be processed to filter agents
-        scanFlag_conditionResult[ReadOnlyDeviceAPI::getThreadIndex()] = conditionResult;
+        scanFlag_conditionResult[ReadOnlyDeviceAPI::getIndex()] = conditionResult;
     }
 }
 

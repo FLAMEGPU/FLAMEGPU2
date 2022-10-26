@@ -840,7 +840,8 @@ class AgentVectorTest(TestCase):
             assert ai.getVariableInt("int2", 0) == 5
             assert ai.getVariableInt("int2", 1) == 6
             assert ai.getVariableFloat("float") == 15.0
-
+            # check index value is as expected
+            assert ai.getIndex() == i
 
         # Update values
         for i in range(POP_SIZE):

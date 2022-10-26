@@ -1376,6 +1376,8 @@ TEST(AgentVectorTest, AgentVector_Agent) {
         ASSERT_EQ(ai.getVariable<int>("int2", 0), 5);
         ASSERT_EQ(ai.getVariable<int>("int2", 1), 6);
         ASSERT_EQ(ai.getVariable<float>("float"), 15.0f);
+        // check index value is as expected
+        ASSERT_EQ(ai.getIndex(), i);
 #ifdef USE_GLM
         ASSERT_EQ(ai.getVariable<glm::vec3>("vec3"), glm::vec3(2.0f, 4.0f, 6.0f));
         const auto vec_array_test = ai.getVariable<glm::ivec3, 3>("ivec3_3");

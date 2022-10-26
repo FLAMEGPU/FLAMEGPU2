@@ -77,7 +77,7 @@ class CodeGenerator:
                   }
     
     # getVariableType and setVariableType functions are added dynamically    
-    fgpu_funcs = [ "getID", "getStepCounter", "getThreadIndex" ]   
+    fgpu_funcs = [ "getID", "getStepCounter", "getIndex" ]   
     fgpu_attrs = ["ALIVE", "DEAD"]
     fgpu_input_msg_funcs = ["radius", "at"]               # functions that can be called on message_in that do NOT return iterators
     fgpu_input_msg_iter_funcs = ["wrap", "vn", "vn_wrap"] # functions that can be called on message_in that do return iterators
