@@ -38,7 +38,7 @@ class HostRandom {
     * @note Available as float or double
     */
     template<typename T>
-    inline T logNormal(const T mean, const T stddev) const;
+    inline T logNormal(T mean, T stddev) const;
     /**
      * Returns an integer uniformly distributed in the inclusive range [min, max]
      * or
