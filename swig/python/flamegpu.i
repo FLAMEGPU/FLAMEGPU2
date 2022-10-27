@@ -596,6 +596,9 @@ class ModelVis;
 %include "flamegpu/sim/RunPlan.h"
 %include "flamegpu/sim/RunPlanVector.h"
 
+// Include  cleanup utility method
+%include "flamegpu/util/cleanup.h"
+
 // %extend classes go after %includes, but before tempalates (that use them)
 // -----------------
 

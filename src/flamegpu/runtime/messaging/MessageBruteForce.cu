@@ -2,6 +2,7 @@
 #include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceDevice.cuh"
 #include "flamegpu/model/AgentDescription.h"  // Used by Move-Assign
 #include "flamegpu/gpu/CUDAMessage.h"
+#include "flamegpu/util/detail/cuda.cuh"
 
 namespace flamegpu {
 
@@ -21,7 +22,7 @@ void MessageBruteForce::CUDAModelHandler::allocateMetaDataDevicePtr(cudaStream_t
 
 void MessageBruteForce::CUDAModelHandler::freeMetaDataDevicePtr() {
     if (d_metadata != nullptr) {
-        gpuErrchk(cudaFree(d_metadata));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_metadata));
     }
     d_metadata = nullptr;
 }

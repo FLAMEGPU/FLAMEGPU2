@@ -5,6 +5,7 @@
 #include "flamegpu/model/AgentFunctionData.cuh"
 #include "flamegpu/model/SubEnvironmentData.h"
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
+#include "flamegpu/util/detail/cuda.cuh"
 
 namespace flamegpu {
 
@@ -73,7 +74,7 @@ void CUDAMacroEnvironment::free() {
     for (auto& prop : properties) {
         if (prop.second.d_ptr) {
             if (!prop.second.is_sub) {
-                gpuErrchk(cudaFree(prop.second.d_ptr));
+                gpuErrchk(flamegpu::util::detail::cuda::cudaFree(prop.second.d_ptr));
             }
             prop.second.d_ptr = nullptr;
         }

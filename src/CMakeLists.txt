@@ -197,6 +197,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/HostRandom.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/RandomManager.cuh    
     ${FLAMEGPU_ROOT}/include/flamegpu/util/Any.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/cleanup.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/nvtx.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/StringPair.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/type_decode.h
@@ -204,6 +205,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/curand.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/wddm.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/CUDAEventTimer.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/cuda.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/cxxname.hpp
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/SignalHandlers.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/StaticAssert.h
@@ -278,6 +280,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/EnvironmentManager.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/RandomManager.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/HostRandom.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/util/cleanup.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/detail/compute_capability.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/detail/wddm.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/detail/JitifyCache.cu

@@ -6,6 +6,7 @@
 
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/gpu/CUDAFatAgentStateList.h"
+#include "flamegpu/util/detail/cuda.cuh"
 
 #ifdef _MSC_VER
 #pragma warning(push, 1)
@@ -31,7 +32,7 @@ CUDAScatter::StreamData::~StreamData() {
      As this is only ever destroyed at exit time, it's not a real memory leak either.
     */
     if (d_data) {
-        gpuErrchk(cudaFree(d_data));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_data));
     }
     d_data = nullptr;
     data_len = 0;
@@ -39,7 +40,7 @@ CUDAScatter::StreamData::~StreamData() {
 void CUDAScatter::StreamData::resize(const unsigned int newLen) {
     if (newLen > data_len) {
         if (d_data) {
-            gpuErrchk(cudaFree(d_data));
+            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_data));
         }
         gpuErrchk(cudaMalloc(&d_data, newLen * sizeof(ScatterData)));
         data_len = newLen;

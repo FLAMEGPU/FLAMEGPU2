@@ -1660,7 +1660,7 @@ void CUDASimulation::processHostAgentCreation(const unsigned int streamId) {
                     if (size_req > t_bufflen) {
                         if (t_buff) {
                             free(t_buff);
-                            gpuErrchk(cudaFree(dt_buff));
+                            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(dt_buff));
                         }
                         t_buff = reinterpret_cast<char*>(malloc(size_req));
                         gpuErrchk(cudaMalloc(&dt_buff, size_req));
@@ -1684,7 +1684,7 @@ void CUDASimulation::processHostAgentCreation(const unsigned int streamId) {
     // Release temp memory
     if (t_buff) {
         free(t_buff);
-        gpuErrchk(cudaFree(dt_buff));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(dt_buff));
     }
 }
 
@@ -1878,9 +1878,21 @@ cudaStream_t CUDASimulation::getStream(const unsigned int n) {
 }
 
 void CUDASimulation::destroyStreams() {
-    // Destroy streams.
-    for (auto stream : streams) {
-        gpuErrchk(cudaStreamDestroy(stream));
+    // early exit if there are no streams to reset
+    if (streams.size() == 0) {
+        return;
+    }
+    /*
+    This method is called by ~CUDASimulation(), which may be after a device reset and / or CUDA shutdown (if static, or if GC'd by python implementation)
+    cudaStreamDestroy and cudaStreamQuery under linux with CUDA 11.8 (and potentialy others) would occasionally segfault after a reset, so it's error code could not be relied on to check if the cudaStream was valid for the current primary context or not.
+    Instead, we can use the cudaDriverAPI to check the primary context is correct / valid for the device, and if it is attempt to destory the stream. If it is not, we can assume the device has been reset or CUDA has been shutdown, so the stream has already been destroyed.
+    */
+    bool ctxIsActive = flamegpu::util::detail::cuda::cuDevicePrimaryContextIsActive(deviceInitialised);
+    if (ctxIsActive) {
+        // Destroy streams.
+        for (auto stream : streams) {
+            gpuErrchk(cudaStreamDestroy(stream));
+        }
     }
     streams.clear();
 }

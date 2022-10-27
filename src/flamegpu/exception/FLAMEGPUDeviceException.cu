@@ -1,6 +1,8 @@
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/util/detail/cuda.cuh"
+
 #if !defined(SEATBELTS) || SEATBELTS
 
 namespace flamegpu {
@@ -14,7 +16,7 @@ DeviceExceptionManager::DeviceExceptionManager()
 }
 DeviceExceptionManager::~DeviceExceptionManager() {
     for (auto &i : d_buffer) {
-        gpuErrchk(cudaFree(i));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(i));
     }
 }
 DeviceExceptionBuffer *DeviceExceptionManager::getDevicePtr(const unsigned int streamId, const cudaStream_t stream) {

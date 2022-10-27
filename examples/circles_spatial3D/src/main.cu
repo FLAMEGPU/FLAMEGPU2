@@ -191,5 +191,9 @@ int main(int argc, const char ** argv) {
 #ifdef VISUALISATION
     m_vis.join();
 #endif
+
+    // Ensure profiling / memcheck work correctly
+    flamegpu::util::cleanup();
+
     return 0;
 }

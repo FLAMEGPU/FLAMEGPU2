@@ -5,6 +5,7 @@
 #include "flamegpu/flamegpu.h"
 #include "gtest/gtest.h"
 #include "flamegpu/util/detail/compute_capability.cuh"
+#include "flamegpu/util/detail/cuda.cuh"
 
 namespace flamegpu {
 
@@ -644,7 +645,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Environment) {
     // BEGIN: Attempt to pre init contexts
     for (int device = 0; device < devices; ++device) {
         ASSERT_EQ(cudaSetDevice(device), cudaSuccess);
-        ASSERT_EQ(cudaFree(nullptr), cudaSuccess);
+        ASSERT_EQ(flamegpu::util::detail::cuda::cudaFree(nullptr), cudaSuccess);
     }
     ASSERT_EQ(cudaSetDevice(0), cudaSuccess);
     // END: Attempt to pre init contexts

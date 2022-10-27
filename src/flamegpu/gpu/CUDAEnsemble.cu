@@ -21,6 +21,7 @@
 #include "flamegpu/sim/SimRunner.h"
 #include "flamegpu/sim/LogFrame.h"
 #include "flamegpu/sim/SimLogger.h"
+#include "flamegpu/util/detail/cuda.cuh"
 
 namespace flamegpu {
 
@@ -113,7 +114,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
             --d;
         } else {
             gpuErrchk(cudaSetDevice(*d));
-            gpuErrchk(cudaFree(nullptr));
+            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(nullptr));
         }
     }
     // Return to device 0 (or check original device first?)

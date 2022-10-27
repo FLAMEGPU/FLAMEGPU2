@@ -86,6 +86,8 @@ int main(int argc, const char ** argv) {
     printf("Ensemble init: %u, calculated init %u\n", atomic_init.load(), init_sum);
     printf("Ensemble result: %zu, calculated result %zu\n", atomic_result.load(), result_sum);
 
+    // Ensure profiling / memcheck work correctly
+    flamegpu::util::cleanup();
 
     return 0;
 }

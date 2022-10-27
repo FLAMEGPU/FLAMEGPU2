@@ -3,6 +3,7 @@
 #include "flamegpu/gpu/CUDAScatter.cuh"
 #include "flamegpu/runtime/HostAPI.h"
 #include "flamegpu/util/nvtx.h"
+#include "flamegpu/util/detail/cuda.cuh"
 
 #ifdef _MSC_VER
 #pragma warning(push, 1)
@@ -32,10 +33,10 @@ CUDAFatAgent::CUDAFatAgent(const AgentData& description)
 }
 CUDAFatAgent::~CUDAFatAgent() {
     if (d_nextID) {
-        gpuErrchk(cudaFree(d_nextID));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_nextID));
     }
     for (auto &b : d_newLists) {
-        gpuErrchk(cudaFree(b.data));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(b.data));
     }
     d_newLists.clear();
 }
@@ -258,7 +259,7 @@ void *CUDAFatAgent::allocNewBuffer(const size_t total_agent_size, const unsigned
             NewBuffer my_b = b;
             // Erase and resize/reinsert to d_newLists to mark as in use
             d_newLists.erase(b);
-            gpuErrchk(cudaFree(my_b.data));
+            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(my_b.data));
             gpuErrchk(cudaMalloc(&my_b.data, ALLOCATION_SIZE));
             my_b.size = ALLOCATION_SIZE;
             my_b.in_use = true;

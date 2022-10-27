@@ -7,6 +7,7 @@
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h"
 #include "flamegpu/gpu/CUDAScatter.cuh"
+#include "flamegpu/util/detail/cuda.cuh"
 
 namespace flamegpu {
 
@@ -96,7 +97,7 @@ void CUDAMessageList::releaseDeviceMessageList(CUDAMessageMap& memory_map) {
     // for each device pointer in the cuda memory map we need to free these
     for (const auto &mm : memory_map) {
         // free the memory on the device
-        gpuErrchk(cudaFree(mm.second));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(mm.second));
     }
     memory_map.clear();
 }

@@ -5,6 +5,7 @@
 
 #include "flamegpu/runtime/messaging/MessageArray3D/MessageArray3DHost.h"
 // #include "flamegpu/runtime/messaging/MessageArray3D/MessageArray3DDevice.cuh"
+#include "flamegpu/util/detail/cuda.cuh"
 
 namespace flamegpu {
 
@@ -50,12 +51,12 @@ void MessageArray3D::CUDAModelHandler::allocateMetaDataDevicePtr(cudaStream_t st
 
 void MessageArray3D::CUDAModelHandler::freeMetaDataDevicePtr() {
     if (d_metadata != nullptr) {
-        gpuErrchk(cudaFree(d_metadata));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_metadata));
     }
     d_metadata = nullptr;
 
     if (d_write_flag) {
-        gpuErrchk(cudaFree(d_write_flag));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_write_flag));
     }
     d_write_flag = nullptr;
     d_write_flag_len = 0;
@@ -78,7 +79,7 @@ void MessageArray3D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, unsigned
         if (d_write_flag_len < MESSAGE_COUNT) {
             // Increase length
             if (d_write_flag) {
-                gpuErrchk(cudaFree(d_write_flag));
+                gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_write_flag));
             }
             d_write_flag_len = static_cast<unsigned int>(MESSAGE_COUNT * 1.1f);
             gpuErrchk(cudaMalloc(&d_write_flag, sizeof(unsigned int) * d_write_flag_len));

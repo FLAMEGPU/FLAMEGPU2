@@ -4,6 +4,7 @@
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/runtime/utility/EnvironmentManager.cuh"
+#include "flamegpu/util/detail/cuda.cuh"
 
 // jitify include for demangle
 #ifdef _MSC_VER
@@ -209,7 +210,7 @@ CurveRTCHost::CurveRTCHost() : header(CurveRTCHost::curve_rtc_dynamic_h_template
 }
 
 CurveRTCHost::~CurveRTCHost() {
-    gpuErrchk(cudaFreeHost(h_data_buffer));
+    gpuErrchk(flamegpu::util::detail::cuda::cudaFreeHost(h_data_buffer));
 }
 
 void CurveRTCHost::registerAgentVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {

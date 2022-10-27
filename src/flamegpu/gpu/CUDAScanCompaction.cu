@@ -3,6 +3,7 @@
 #include "flamegpu/gpu/CUDAScanCompaction.h"
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/gpu/CUDASimulation.h"
+#include "flamegpu/util/detail/cuda.cuh"
 
 namespace flamegpu {
 
@@ -35,11 +36,11 @@ CUDAScanCompactionConfig::~CUDAScanCompactionConfig() {
 }
 void CUDAScanCompactionConfig::free_scan_flag() {
     if (d_ptrs.scan_flag) {
-        gpuErrchk(cudaFree(d_ptrs.scan_flag));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_ptrs.scan_flag));
         d_ptrs.scan_flag = nullptr;
     }
     if (d_ptrs.position) {
-        gpuErrchk(cudaFree(d_ptrs.position));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_ptrs.position));
         d_ptrs.position = nullptr;
     }
 }

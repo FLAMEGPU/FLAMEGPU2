@@ -1,5 +1,6 @@
 #include "flamegpu/gpu/CUDAFatAgentStateList.h"
 #include "flamegpu/gpu/CUDAScatter.cuh"
+#include "flamegpu/util/detail/cuda.cuh"
 
 namespace flamegpu {
 
@@ -38,8 +39,8 @@ CUDAFatAgentStateList::CUDAFatAgentStateList(const CUDAFatAgentStateList& other)
 }
 CUDAFatAgentStateList::~CUDAFatAgentStateList() {
     for (const auto &buff : variables_unique) {
-        gpuErrchk(cudaFree(buff->data));
-        gpuErrchk(cudaFree(buff->data_swap));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(buff->data));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(buff->data_swap));
     }
 }
 void CUDAFatAgentStateList::addSubAgentVariables(
@@ -80,7 +81,7 @@ void CUDAFatAgentStateList::resize(const unsigned int minSize, const bool retain
         const size_t var_size = buff->type_size * buff->elements;
         const size_t buff_size = var_size * newSize;
         // Free old swap buffer
-        gpuErrchk(cudaFree(buff->data_swap));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(buff->data_swap));
         // Allocate new buffer to swap
         gpuErrchk(cudaMalloc(&buff->data_swap, buff_size));
         // Copy old data to new buffer in swap
@@ -106,7 +107,7 @@ void CUDAFatAgentStateList::resize(const unsigned int minSize, const bool retain
         // Swap buffers
         std::swap(buff->data_swap, buff->data);
         // Free old swap buffer
-        gpuErrchk(cudaFree(buff->data_swap));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(buff->data_swap));
         // Allocate new buffer to swap
         gpuErrchk(cudaMalloc(&buff->data_swap, buff_size));
         // Update condition list
