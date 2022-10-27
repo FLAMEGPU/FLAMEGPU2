@@ -365,7 +365,7 @@ TEST(TestRunPlan, operatorMultiplication) {
         // @todo - compare more than one part? Operator== might be easier / cleaner
     }
 }
-TEST(TestRunPlan, outputWarning) {
+TEST(TestRunPlan, noOutputWarning) {
     // Create a model
     flamegpu::ModelDescription model("test");
     // Create an individual run plan vector

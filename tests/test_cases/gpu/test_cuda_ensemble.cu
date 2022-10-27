@@ -233,7 +233,6 @@ TEST(TestCUDAEnsemble, simulate) {
     flamegpu::CUDAEnsemble ensemble(model);
     // Make it quiet to avoid outputting during the test suite
     ensemble.Config().quiet = true;
-    ensemble.Config().out_format = "";  // Suppress warning
     // Simulate the ensemble,
     EXPECT_NO_THROW(ensemble.simulate(plans));
     // Get the sum of sums from the atomic.
@@ -268,7 +267,6 @@ TEST(TestCUDAEnsemble, setStepLog) {
     flamegpu::CUDAEnsemble ensemble(model);
     // Make it quiet to avoid outputting during the test suite
     ensemble.Config().quiet = true;
-    ensemble.Config().out_format = "";  // Suppress warning
     // Set the StepLog config.
     EXPECT_NO_THROW(ensemble.setStepLog(slcfg));
     // Run the ensemble, generating logs
@@ -312,7 +310,6 @@ TEST(TestCUDAEnsemble, setExitLog) {
     flamegpu::CUDAEnsemble ensemble(model);
     // Make it quiet to avoid outputting during the test suite
     ensemble.Config().quiet = true;
-    ensemble.Config().out_format = "";  // Suppress warning
     // Set the StepLog config.
     EXPECT_NO_THROW(ensemble.setExitLog(lcfg));
     // Run the ensemble, generating logs
@@ -383,7 +380,6 @@ TEST(TestCUDAEnsemble, getEnsembleElapsedTime) {
     flamegpu::CUDAEnsemble ensemble(model);
     // Make it quiet to avoid outputting during the test suite
     ensemble.Config().quiet = true;
-    ensemble.Config().out_format = "";  // Suppress warning
     // Get the elapsed seconds before the sim has been executed
     EXPECT_NO_THROW(ensemble.getEnsembleElapsedTime());
     // Assert that it is LE zero.
@@ -428,7 +424,6 @@ TEST(TestCUDAEnsemble, ErrorOff) {
     flamegpu::CUDAEnsemble ensemble(model);
     // Make it quiet to avoid outputting during the test suite
     ensemble.Config().quiet = true;
-    ensemble.Config().out_format = "";  // Suppress warning
     ensemble.Config().error_level = CUDAEnsemble::EnsembleConfig::Off;
     ensemble.Config().concurrent_runs = 1;  // Single device/no concurrency to ensure we get consistent data
     ensemble.Config().devices = {0};
@@ -461,7 +456,6 @@ TEST(TestCUDAEnsemble, ErrorSlow) {
     flamegpu::CUDAEnsemble ensemble(model);
     // Make it quiet to avoid outputting during the test suite
     ensemble.Config().quiet = true;
-    ensemble.Config().out_format = "";  // Suppress warning
     ensemble.Config().error_level = CUDAEnsemble::EnsembleConfig::Slow;
     ensemble.Config().concurrent_runs = 1;  // Single device/no concurrency to ensure we get consistent data
     ensemble.Config().devices = { 0 };
@@ -492,7 +486,6 @@ TEST(TestCUDAEnsemble, ErrorFast) {
     flamegpu::CUDAEnsemble ensemble(model);
     // Make it quiet to avoid outputting during the test suite
     ensemble.Config().quiet = true;
-    ensemble.Config().out_format = "";  // Suppress warning
     ensemble.Config().error_level = CUDAEnsemble::EnsembleConfig::Fast;
     ensemble.Config().concurrent_runs = 1;  // Single device/no concurrency to ensure we get consistent data
     ensemble.Config().devices = { 0 };
