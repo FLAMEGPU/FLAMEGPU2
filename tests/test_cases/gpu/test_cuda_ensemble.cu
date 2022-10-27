@@ -540,8 +540,8 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDASimulation) {
     // Simulate the ensemble,
     EXPECT_NO_THROW(ensemble.simulate(plans));
 
-    // At this point, the cudaSim should still be usable (and dtor-able), but errors in the CUDAEnsemble::Simulate cudaDeviceReset logic would result in an error?
-    EXPECT_NO_THROW(simulation.step());  // alternatively checking dtor would be valid / useful?
+    // At this point, the cudaSim should still be usable (and dtor-able()
+    EXPECT_NO_THROW(simulation.step());
 }
 
 /*

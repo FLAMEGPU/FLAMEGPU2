@@ -50,8 +50,6 @@ FLAMEGPU_EXIT_FUNCTION(ExitIncrementCounterSlow) {
 TEST(TestCUDASimulation, ApplyConfigDerivedContextCreation) {
     // Simply get the result from the method provided by the helper file.
     ASSERT_TRUE(getCUDASimulationContextCreationTestResult());
-    // Reset the device, just to be sure.
-    ASSERT_EQ(cudaSuccess, cudaDeviceReset());
 }
 // Test that the CUDASimulation applyConfig_derived works for multiple GPU device_id values (if available)
 TEST(TestCUDASimulation, AllDeviceIdValues) {
@@ -780,8 +778,6 @@ TEST(TestCUDASimulation, setEnvironmentProperty) {
  * see https://github.com/FLAMEGPU/FLAMEGPU2/issues/939
  */
 TEST(TestCUDASimulation, SimulationWithExistingCUDAMalloc) {
-    // Test requires auto device reset enabled
-    flamegpu::CUDASimulation::AUTO_CUDA_DEVICE_RESET = true;
     // Allocate some arbitraty device memory.
     int * d_int = nullptr;
     gpuErrchk(cudaMalloc(&d_int, sizeof(int)));
@@ -813,9 +809,6 @@ TEST(TestCUDASimulation, SimulationWithExistingCUDAMalloc) {
         gpuErrchk(cudaFree(d_int));
     }
     d_int = nullptr;
-
-    // re-disable auto device reset
-    flamegpu::CUDASimulation::AUTO_CUDA_DEVICE_RESET = false;
 }
 
 

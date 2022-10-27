@@ -167,12 +167,6 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
     ensemble_timer.stop();
     ensemble_elapsed_time = ensemble_timer.getElapsedSeconds();
 
-    // Reset every used device
-    for (auto d = devices.begin(); d != devices.end(); ++d) {
-        gpuErrchk(cudaSetDevice(*d));
-        gpuErrchk(cudaDeviceReset());
-    }
-
     // Ensemble has finished, print summary
     if (!config.quiet) {
         printf("\rCUDAEnsemble completed %u runs successfully!\n", static_cast<unsigned int>(plans.size() - err_ct));
