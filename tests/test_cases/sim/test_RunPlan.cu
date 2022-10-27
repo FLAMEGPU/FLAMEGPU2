@@ -365,6 +365,19 @@ TEST(TestRunPlan, operatorMultiplication) {
         // @todo - compare more than one part? Operator== might be easier / cleaner
     }
 }
+TEST(TestRunPlan, outputWarning) {
+    // Create a model
+    flamegpu::ModelDescription model("test");
+    // Create an individual run plan vector
+    flamegpu::RunPlanVector runs(model, 10);
+    testing::internal::CaptureStderr();
+    // Construct the ensemble
+    flamegpu::CUDAEnsemble cuda_ensemble(model);
+    // Simulate (nothing)
+    EXPECT_THROW(cuda_ensemble.simulate(runs), flamegpu::exception::EnsembleError);  // No agents so expect exception
+    std::string output = testing::internal::GetCapturedStderr();
+    EXPECT_TRUE(output.find("Warning: ") == std::string::npos);  // No warnings should be output
+}
 /*
 getPropertyArray/setPropertyArray are only declared if SWIG is defined.
 // This is not currently the case when building the test suite, so these cannot be tested here.
