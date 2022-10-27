@@ -619,7 +619,7 @@ class ModelVis;
             return $self->operator[](index);
         return $self->operator[]($self->size() + index);
     }
-    void flamegpu::AgentVector::__setitem__(const flamegpu::flamegpu::size_type &index, const flamegpu::AgentVector::Agent &value) {
+    void flamegpu::AgentVector::__setitem__(const flamegpu::size_type &index, const flamegpu::AgentVector::Agent &value) {
         $self->operator[](index).setData(value);
     }
 }
