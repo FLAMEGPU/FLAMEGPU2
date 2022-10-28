@@ -74,7 +74,7 @@ TEST(TestMessage_BruteForce, Mandatory1) {
     ModelDescription m(MODEL_NAME);
     MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
@@ -120,7 +120,7 @@ TEST(TestMessage_BruteForce, Mandatory2) {
     ModelDescription m(MODEL_NAME);
     MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
@@ -175,7 +175,7 @@ TEST(TestMessage_BruteForce, Optional1) {
     ModelDescription m(MODEL_NAME);
     MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
@@ -221,7 +221,7 @@ TEST(TestMessage_BruteForce, Optional2) {
     ModelDescription m(MODEL_NAME);
     MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
@@ -278,7 +278,7 @@ TEST(TestMessage_BruteForce, OptionalNone) {
     ModelDescription m(MODEL_NAME);
     MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction_OptionalNone);
@@ -337,7 +337,7 @@ TEST(TestMessage_BruteForce, ReadEmpty) {
         message.newVariable<int>("id");  // unused by current test
     }
     {   // Circle agent
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<unsigned int>("count", 0);  // Count the number of messages read
         agent.newFunction("in", countBF).setMessageInput("location");
     }
@@ -385,7 +385,7 @@ TEST(TestMessage_BruteForce, ArrayVariable) {
     MessageBruteForce::Description &message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("index");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
@@ -445,7 +445,7 @@ TEST(TestRTCMessage_BruteForce, ArrayVariable) {
     MessageBruteForce::Description& message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("index");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
     AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
@@ -500,7 +500,7 @@ TEST(TestMessage_BruteForce, ArrayVariable_glm) {
     MessageBruteForce::Description &message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("index");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
@@ -557,7 +557,7 @@ TEST(TestRTCMessage_BruteForce, ArrayVariable_glm) {
     MessageBruteForce::Description& message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("index");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
     AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);

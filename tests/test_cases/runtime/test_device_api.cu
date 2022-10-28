@@ -14,7 +14,7 @@ FLAMEGPU_AGENT_FUNCTION(agent_fn_ad_array, MessageNone, MessageNone) {
 }
 TEST(DeviceAPITest, AgentDeath_array) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
     agent.newVariable<int, 4>("array_var");
     agent.newVariable<float>("y");
@@ -77,7 +77,7 @@ FLAMEGPU_AGENT_FUNCTION(agent_fn_da_get, MessageNone, MessageNone) {
 }
 TEST(DeviceAPITest, ArraySet) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
     agent.newVariable<int, 4>("array_var");
     agent.newVariable<float>("y");
@@ -120,7 +120,7 @@ TEST(DeviceAPITest, ArraySet) {
 }
 TEST(DeviceAPITest, ArrayGet) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
     agent.newVariable<int, 4>("array_var");
     agent.newVariable<float>("y");
@@ -185,7 +185,7 @@ FLAMEGPU_AGENT_FUNCTION(agent_fn_da_get_glm, MessageNone, MessageNone) {
 }
 TEST(DeviceAPITest, ArraySet_glm) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
     agent.newVariable<glm::ivec4>("array_var");
     agent.newVariable<float>("y");
@@ -228,7 +228,7 @@ TEST(DeviceAPITest, ArraySet_glm) {
 }
 TEST(DeviceAPITest, ArrayGet_glm) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
     agent.newVariable<glm::ivec4>("array_var");
     agent.newVariable<float>("y");
@@ -286,7 +286,7 @@ FLAMEGPU_AGENT_FUNCTION(agent_testGetStepCounter, MessageNone, MessageNone) {
 }
 TEST(DeviceAPITest, getStepCounter) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("step");
     // Do nothing, but ensure variables are made available on device
     AgentFunctionDescription &func = agent.newFunction("some_function", agent_testGetStepCounter);
@@ -329,7 +329,7 @@ FLAMEGPU_AGENT_FUNCTION(condition_testGetStepCounterFunction, MessageNone, Messa
 }
 TEST(DeviceAPITest, getStepCounterFunctionCondition) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("count");
     // Do nothing, but ensure variables are made available on device
     AgentFunctionDescription &func = agent.newFunction("some_function", condition_testGetStepCounterFunction);

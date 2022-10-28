@@ -107,7 +107,7 @@ TEST(BucketMessageTest, Mandatory) {
         message.newVariable<int>("id");
     }
     {   // AgentDescription
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<int>("id");
         agent.newVariable<unsigned int>("count1", 0);  // Number of messages iterated
         agent.newVariable<unsigned int>("count2", 0);  // Size of bucket as returned by size()
@@ -171,7 +171,7 @@ TEST(BucketMessageTest, Optional) {
         message.newVariable<int>("id");
     }
     {   // AgentDescription
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<int>("id");
         agent.newVariable<int>("do_output");
         agent.newVariable<unsigned int>("count1", 0);  // Number of messages iterated
@@ -245,7 +245,7 @@ TEST(BucketMessageTest, OptionalNone) {
         message.newVariable<int>("id");
     }
     {   // AgentDescription
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<int>("id");
         agent.newVariable<unsigned int>("count1", 0);  // Number of messages iterated
         agent.newVariable<unsigned int>("count2", 0);  // Size of bucket as returned by size()
@@ -436,7 +436,7 @@ TEST(BucketMessageTest, Mandatory_Range) {
         message.newVariable<int>("id");
     }
     {   // AgentDescription
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<int>("id");
         agent.newVariable<unsigned int>("count1", 0);  // Number of messages iterated
         agent.newVariable<unsigned int>("count2", 0);  // Size of id bucket as returned by size()
@@ -518,7 +518,7 @@ TEST(TestMessage_Bucket, ArrayVariable) {
     MessageBucket::Description &message = m.newMessage<MessageBucket>(MESSAGE_NAME);
     message.setBounds(0, AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
@@ -575,7 +575,7 @@ TEST(TestRTCMessage_Bucket, ArrayVariable) {
     MessageBucket::Description& message = m.newMessage<MessageBucket>(MESSAGE_NAME);
     message.setBounds(0, AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
     AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
@@ -627,7 +627,7 @@ TEST(TestMessage_Bucket, ArrayVariable_glm) {
     MessageBucket::Description &message = m.newMessage<MessageBucket>(MESSAGE_NAME);
     message.setBounds(0, AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
@@ -681,7 +681,7 @@ TEST(TestRTCMessage_Bucket, ArrayVariable_glm) {
     MessageBucket::Description& message = m.newMessage<MessageBucket>(MESSAGE_NAME);
     message.setBounds(0, AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
     AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);

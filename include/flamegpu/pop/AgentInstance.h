@@ -27,7 +27,7 @@ class AgentInstance {
     /**
      * Initialises the agent variables with their default values
      */
-    explicit AgentInstance(const AgentDescription &agent_desc);
+    explicit AgentInstance(const CAgentDescription &agent_desc);
 
     /**
      * Copy constructors

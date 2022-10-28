@@ -113,7 +113,7 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Message) {
     // This test covers agent variable set/get
 
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
     a.newVariable<int>("x", 0);
@@ -180,7 +180,7 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Environment) {
     // This test covers agent variable set/get
 
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x", 0);
     auto &fn1 = a.newRTCFunction(FUNCTION_NAME1, rtc_SlowFn2);
     auto &fn2 = a.newRTCFunction(FUNCTION_NAME2, rtc_FastFn2);
@@ -275,7 +275,7 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
     // This test covers agent variable set/get
 
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x", 0);
     auto &fn1 = a.newRTCFunction(FUNCTION_NAME1, rtc_SlowFn3);
     auto &fn2 = a.newRTCFunction(FUNCTION_NAME2, rtc_FastFn);
@@ -351,7 +351,7 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
     // This test covers agent variable set/get
 
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x", 0);
     auto &fn1 = a.newRTCFunction(FUNCTION_NAME1, rtc_SlowFn);
     auto &fn2 = a.newRTCFunction(FUNCTION_NAME2, rtc_FastFn);

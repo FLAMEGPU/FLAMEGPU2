@@ -24,7 +24,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 )###";
 TEST(RTCDeviceExceptionTest, getAgentVar_name) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getAgentVar);
@@ -59,7 +59,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 )###";
 TEST(RTCDeviceExceptionTest, getAgentVar_typesize) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getAgentVarType);
@@ -87,7 +87,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 )###";
 TEST(RTCDeviceExceptionTest, getAgentArrayVar_name) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 2>("id");
     // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getAgentArrayVar);
@@ -121,7 +121,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 )###";
 TEST(RTCDeviceExceptionTest, getAgentArrayVar_typesize) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 2>("id");
     // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getAgentArrayVar1);
@@ -145,7 +145,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 )###";
 TEST(RTCDeviceExceptionTest, getAgentArrayVar_length) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 2>("id");
     // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getAgentArrayVar2);
@@ -169,7 +169,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 )###";
 TEST(RTCDeviceExceptionTest, getAgentArrayVar_bounds) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 2>("id");
     // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_getAgentArrayVar3);
@@ -196,7 +196,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 )###";
 TEST(RTCDeviceExceptionTest, setAgentVar_name) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_setAgentVar);
@@ -231,7 +231,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 )###";
 TEST(RTCDeviceExceptionTest, setAgentVar_typesize) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_setAgentVar2);
@@ -259,7 +259,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 )###";
 TEST(RTCDeviceExceptionTest, setAgentArrayVar_name) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 2>("id");
     // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_setAgentArrayVar);
@@ -293,7 +293,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 )###";
 TEST(RTCDeviceExceptionTest, setAgentArrayVar_typesize) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 2>("id");
     // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_setAgentArrayVar1);
@@ -317,7 +317,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 )###";
 TEST(RTCDeviceExceptionTest, setAgentArrayVar_length) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 2>("id");
     // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_setAgentArrayVar2);
@@ -341,7 +341,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 )###";
 TEST(RTCDeviceExceptionTest, setAgentArrayVar_bounds) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 2>("id");
     // add RTC agent function
     AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_dthrow_agent_func_setAgentArrayVar3);
@@ -368,7 +368,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 )###";
 TEST(RTCDeviceExceptionTest, getEnvironmentProp_name) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     model.Environment().newProperty<int>("test", 12);
     // add RTC agent function
@@ -404,7 +404,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 )###";
 TEST(RTCDeviceExceptionTest, getEnvironmentProp_typesize) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     model.Environment().newProperty<int>("test", 12);
     // add RTC agent function
@@ -433,7 +433,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 )###";
 TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_name) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     model.Environment().newProperty<int>("test", 12);
     // add RTC agent function
@@ -469,7 +469,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 )###";
 TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_typesize) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     model.Environment().newProperty<int, 2>("test", {11, 12});
     // add RTC agent function
@@ -496,7 +496,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 )###";
 TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_length) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     model.Environment().newProperty<int, 2>("test", {11, 12});
     // add RTC agent function
@@ -522,7 +522,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 )###";
 TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_bounds) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     model.Environment().newProperty<int, 2>("test", {11, 12});
     // add RTC agent function

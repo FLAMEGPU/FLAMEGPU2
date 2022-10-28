@@ -415,7 +415,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, LayerConcurrency) {
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_slowAgentFunction");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
         auto &f = a.newFunction(agent_function, SlowAgentFunction);
         layer.addAgentFunction(f);
@@ -457,7 +457,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastLayerConcurrency) 
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_fastAgentFunction");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
         auto &f = a.newFunction(agent_function, FastAgentFunction);
         layer.addAgentFunction(f);
@@ -499,7 +499,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutput) {
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_SlowMessageOutputAgentFunction");
         std::string message_name(agent_name + "_messages");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
         MessageBruteForce::Description &message = m.newMessage(message_name);
         message.newVariable<float>("v");
@@ -548,7 +548,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInput) {
         std::string agent_function_out(agent_name + "_SlowMessageOutputAgentFunction");
         std::string agent_function_in(agent_name + "_SlowMessageInputAgentFunction");
         std::string message_name(agent_name + "_messages");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
         MessageBruteForce::Description &message = m.newMessage(message_name);
         message.newVariable<float>("v");
@@ -604,7 +604,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSam
         std::string agent_function_out(agent_name + "_SlowMessageOutputAgentFunction");
         std::string agent_function_in(agent_name + "_SlowMessageInputAgentFunction");
         std::string message_name(agent_name + "_messages");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
         MessageBruteForce::Description &message = m.newMessage(message_name);
         message.newVariable<float>("v");
@@ -661,7 +661,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentOptionalMessageOutput
         std::string agent_function_out(agent_name + "_SlowOptionalMessageOutputAgentFunction");
         std::string agent_function_in(agent_name + "_SlowOptionalMessageInputAgentFunction");
         std::string message_name(agent_name + "_messages");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<unsigned int>("id");
         a.newVariable<float>("v");
         MessageBruteForce::Description &message = m.newMessage(message_name);
@@ -724,7 +724,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
         std::string agent_function_out(agent_name + "_SlowMessageOutputAgentFunctionSpatial2D");
         std::string agent_function_in(agent_name + "_SlowMessageInputAgentFunctionSpatial2D");
         std::string message_name(agent_name + "_messages");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
         a.newVariable<float>("x");
         a.newVariable<float>("y");
@@ -794,7 +794,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
         std::string agent_function_out(agent_name + "_SlowMessageOutputAgentFunctionSpatial3D");
         std::string agent_function_in(agent_name + "_SlowMessageInputAgentFunctionSpatial3D");
         std::string message_name(agent_name + "_messages");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
         a.newVariable<float>("x");
         a.newVariable<float>("y");
@@ -862,7 +862,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_LayerConcurrencyBirth)
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_SlowAgentFunctionBirth");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
         auto &f = a.newFunction(agent_function, SlowAgentFunctionBirth);
         f.setAgentOutput(a);
@@ -903,7 +903,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, LayerConcurrencyDeath) {
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_SlowAgentFunctionDeath");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
         auto &f = a.newFunction(agent_function, SlowAgentFunctionDeath);
         f.setAllowAgentDeath(true);
@@ -944,7 +944,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConditionConcurrencyAllDisabled
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_SlowAgentFunction");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
         auto &f = a.newFunction(agent_function, SlowAgentFunction);
         f.setFunctionCondition(SlowConditionAllFalse);
@@ -985,7 +985,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConditionConcurrencyAllEnabled)
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_SlowAgentFunction");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
         auto &f = a.newFunction(agent_function, SlowAgentFunction);
         f.setFunctionCondition(SlowConditionAllTrue);
@@ -1027,7 +1027,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConditionConcurrency5050) {
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_SlowAgentFunction");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
         auto &f = a.newFunction(agent_function, SlowAgentFunction);
         f.setFunctionCondition(SlowCondition5050);
@@ -1069,7 +1069,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditiRELEASE_ONL
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_FastAgentFunction");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
         auto &f = a.newFunction(agent_function, FastAgentFunction);
         f.setFunctionCondition(FastConditionAllFalse);
@@ -1111,7 +1111,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditionConcurren
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_FastAgentFunction");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
         auto &f = a.newFunction(agent_function, FastAgentFunction);
         f.setFunctionCondition(FastConditionAllTrue);
@@ -1153,7 +1153,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditionConcurren
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_FastAgentFunction");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
         auto &f = a.newFunction(agent_function, FastAgentFunction);
         f.setFunctionCondition(FastCondition5050);
@@ -1194,7 +1194,7 @@ RELEASE_ONLY_SEATBELTS_TEST(TestCUDASimulationConcurrency, LayerConcurrencyDevic
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_SlowAgentFunctionWithDeviceException");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
         auto &f = a.newFunction(agent_function, SlowAgentFunctionWithDeviceException);
         layer.addAgentFunction(f);
@@ -1263,7 +1263,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, RTCLayerConcurrency) {
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_slowAgentFunction");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
 
         // @bug - first argument as the same string for many agent types leads to not all functions executing. Issue #378

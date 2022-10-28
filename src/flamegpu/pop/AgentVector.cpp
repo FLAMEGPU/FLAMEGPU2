@@ -11,7 +11,7 @@ namespace flamegpu {
 
 const float AgentVector::RESIZE_FACTOR = 1.5f;
 
-AgentVector::AgentVector(const AgentDescription& agent_desc, size_type count)
+AgentVector::AgentVector(const CAgentDescription& agent_desc, size_type count)
     : AgentVector(*agent_desc.agent, count) { }
 AgentVector::AgentVector(const AgentData& agent_desc, size_type count)
     : agent(agent_desc.clone())
@@ -587,7 +587,7 @@ bool AgentVector::operator!=(const AgentVector& other) const {
 
 
 bool AgentVector::matchesAgentType(const AgentData& other) const { return *agent == other; }
-bool AgentVector::matchesAgentType(const AgentDescription& other) const { return *agent == *other.agent; }
+bool AgentVector::matchesAgentType(const CAgentDescription& other) const { return *agent == *other.agent; }
 std::type_index AgentVector::getVariableType(const std::string &variable_name) const {
     const auto &it = agent->variables.find(variable_name);
     if (it == agent->variables.end()) {

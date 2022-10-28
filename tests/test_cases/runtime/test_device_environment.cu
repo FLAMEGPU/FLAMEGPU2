@@ -135,7 +135,7 @@ class MiniSim {
         ASSERT_NO_THROW(cudaSimulation->getPopulationData(*population));
     }
     ModelDescription model;
-    AgentDescription &agent;
+    AgentDescription agent;
     AgentVector *population;
     EnvironmentDescription &env;
     CUDASimulation *cudaSimulation;
@@ -477,7 +477,7 @@ TEST(RTCDeviceEnvironmentTest, get_array_shorthand) {
     const std::array<float, 3> t_in = { 12.0f, -12.5f, 13.0f };
     model.Environment().newProperty<float, 3>("k", t_in);
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float, 3>("k");
     AgentFunctionDescription& deviceFn = agent.newRTCFunction("device_function", rtc_get_array_shorthand);
     LayerDescription& devicefn_layer = model.newLayer("devicefn_layer");
@@ -528,7 +528,7 @@ TEST(RTCDeviceEnvironmentTest, Get_array_glm) {
     const glm::vec3 t_in = { 12.0f, -12.5f, 13.0f };
     model.Environment().newProperty<glm::vec3>("k", t_in);
     // Setup agent fn
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<glm::vec3>("k");
     AgentFunctionDescription& deviceFn = agent.newRTCFunction("device_function", rtc_get_array_glm);
     LayerDescription& devicefn_layer = model.newLayer("devicefn_layer");

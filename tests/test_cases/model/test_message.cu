@@ -97,7 +97,7 @@ FLAMEGPU_AGENT_FUNCTION(NoOutput, MessageSpatial2D, MessageNone) {
 
 TEST(MessageDescriptionTest, CorrectMessageTypeBound1) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent("foo");
+    AgentDescription a = m.newAgent("foo");
     AgentFunctionDescription &fo = a.newFunction("bar", NoInput);
     LayerDescription &lo = m.newLayer("foo2");
     lo.addAgentFunction(fo);
@@ -105,7 +105,7 @@ TEST(MessageDescriptionTest, CorrectMessageTypeBound1) {
 }
 TEST(MessageDescriptionTest, CorrectMessageTypeBound2) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent("foo");
+    AgentDescription a = m.newAgent("foo");
     AgentFunctionDescription &fo = a.newFunction("bar", NoOutput);
     LayerDescription &lo = m.newLayer("foo2");
     lo.addAgentFunction(fo);
@@ -113,7 +113,7 @@ TEST(MessageDescriptionTest, CorrectMessageTypeBound2) {
 }
 TEST(MessageDescriptionTest, CorrectMessageTypeBound3) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent("foo");
+    AgentDescription a = m.newAgent("foo");
     AgentFunctionDescription &fo = a.newFunction("bar", NoInput);
     MessageBruteForce::Description &md = m.newMessage<MessageBruteForce>("foo2");
     EXPECT_THROW(fo.setMessageOutput(md), exception::InvalidMessageType);
@@ -121,7 +121,7 @@ TEST(MessageDescriptionTest, CorrectMessageTypeBound3) {
 }
 TEST(MessageDescriptionTest, CorrectMessageTypeBound4) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent("foo");
+    AgentDescription a = m.newAgent("foo");
     AgentFunctionDescription &fo = a.newFunction("bar", NoOutput);
     MessageBruteForce::Description &md = m.newMessage<MessageBruteForce>("foo2");
     EXPECT_THROW(fo.setMessageOutput(md), exception::InvalidMessageType);

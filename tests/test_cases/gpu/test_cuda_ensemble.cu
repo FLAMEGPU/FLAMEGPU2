@@ -274,7 +274,7 @@ TEST(TestCUDAEnsemble, simulate) {
     // Environmental constant for initial population
     model.Environment().newProperty<uint32_t>("POPULATION_TO_GENERATE", populationSize, true);
     // Agent(s)
-    flamegpu::AgentDescription &agent = model.newAgent("Agent");
+    flamegpu::AgentDescription agent = model.newAgent("Agent");
     agent.newVariable<uint32_t>("counter", 0);
     agent.newFunction("simulateAgentFn", simulateAgentFn);
     // Control flow
@@ -397,7 +397,7 @@ TEST(TestCUDAEnsemble, setStepLog) {
     // Environmental constant for initial population
     model.Environment().newProperty<float>("f", 0.f);
     // Add an agent so that the simulation can be ran, to check for presence of logs
-    flamegpu::AgentDescription &agent = model.newAgent("Agent");
+    flamegpu::AgentDescription agent = model.newAgent("Agent");
     agent.newVariable<uint32_t>("counter", 0);
     // Define the logging configuraiton.
     LoggingConfig lcfg(model);
@@ -442,7 +442,7 @@ TEST(TestCUDAEnsemble, setExitLog) {
     // Environmental constant for initial population
     model.Environment().newProperty<float>("f", 0.f);
     // Add an agent so that the simulation can be ran, to check for presence of logs
-    flamegpu::AgentDescription &agent = model.newAgent("Agent");
+    flamegpu::AgentDescription agent = model.newAgent("Agent");
     agent.newVariable<uint32_t>("counter", 0u);
     // Define the logging configuraiton.
     LoggingConfig lcfg(model);
@@ -510,7 +510,7 @@ TEST(TestCUDAEnsemble, getEnsembleElapsedTime) {
     // Environmental constant for initial population
     model.Environment().newProperty<uint32_t>("POPULATION_TO_GENERATE", 1, true);
     // Agent(s)
-    flamegpu::AgentDescription &agent = model.newAgent("Agent");
+    flamegpu::AgentDescription agent = model.newAgent("Agent");
     agent.newVariable<uint32_t>("counter", 0);
     agent.newFunction("elapsedAgentFn", elapsedAgentFn);
     // Control flow
@@ -555,7 +555,7 @@ TEST(TestCUDAEnsemble, ErrorOff) {
     // Environmental constant for initial population
     model.Environment().newProperty<uint32_t>("POPULATION_TO_GENERATE", 1, true);
     // Agent(s)
-    flamegpu::AgentDescription& agent = model.newAgent("Agent");
+    flamegpu::AgentDescription agent = model.newAgent("Agent");
     agent.newVariable<uint32_t>("counter", 0);
     // Control flow
     model.addInitFunction(elapsedInit);
@@ -587,7 +587,7 @@ TEST(TestCUDAEnsemble, ErrorSlow) {
     // Environmental constant for initial population
     model.Environment().newProperty<uint32_t>("POPULATION_TO_GENERATE", 1, true);
     // Agent(s)
-    flamegpu::AgentDescription& agent = model.newAgent("Agent");
+    flamegpu::AgentDescription agent = model.newAgent("Agent");
     agent.newVariable<uint32_t>("counter", 0);
     // Control flow
     model.addInitFunction(elapsedInit);
@@ -617,7 +617,7 @@ TEST(TestCUDAEnsemble, ErrorFast) {
     // Environmental constant for initial population
     model.Environment().newProperty<uint32_t>("POPULATION_TO_GENERATE", 1, true);
     // Agent(s)
-    flamegpu::AgentDescription& agent = model.newAgent("Agent");
+    flamegpu::AgentDescription agent = model.newAgent("Agent");
     agent.newVariable<uint32_t>("counter", 0);
     // Control flow
     model.addInitFunction(elapsedInit);
@@ -655,7 +655,7 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDASimulation) {
     // Environmental constant for initial population
     model.Environment().newProperty<uint32_t>("POPULATION_TO_GENERATE", populationSize, true);
     // Agent(s)
-    flamegpu::AgentDescription &agent = model.newAgent("Agent");
+    flamegpu::AgentDescription agent = model.newAgent("Agent");
     agent.newVariable<uint32_t>("counter", 0);
     agent.newFunction("simulateAgentFn", simulateAgentFn);
     // Control flow
@@ -712,7 +712,7 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc) {
         // Environmental constant for initial population
         model.Environment().newProperty<uint32_t>("POPULATION_TO_GENERATE", populationSize, true);
         // Agent(s)
-        flamegpu::AgentDescription &agent = model.newAgent("Agent");
+        flamegpu::AgentDescription agent = model.newAgent("Agent");
         agent.newVariable<uint32_t>("counter", 0);
         agent.newFunction("simulateAgentFn", simulateAgentFn);
         // Control flow

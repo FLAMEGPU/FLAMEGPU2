@@ -47,7 +47,7 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_Agent) {
     // Success of this test does not mean there isn't a problem
     // This test covers agent variable set/get
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x", 0);
     a.newFunction(FUNCTION_NAME1, SlowFn);
     a.newFunction(FUNCTION_NAME2, FastFn);
@@ -136,7 +136,7 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_Message) {
     // The purpose of this test is to try and catch whether CURVE will hit collisions if two identical models execute at the same time.
     // Success of this test does not mean there isn't a problem
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
     a.newVariable<int>("x", 0);
@@ -224,7 +224,7 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_Environment) {
     // Success of this test does not mean there isn't a problem
     // This test covers environment variable get
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x", 0);
     a.newFunction(FUNCTION_NAME1, SlowFn2);
     a.newFunction(FUNCTION_NAME2, FastFn2);
@@ -314,7 +314,7 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_AgentOutput) {
     // Success of this test does not mean there isn't a problem
     // This test covers agent output
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x", 0);
     a.newFunction(FUNCTION_NAME1, SlowFn3).setAgentOutput(a);
     a.newFunction(FUNCTION_NAME2, FastFn);
@@ -398,7 +398,7 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_AgentFunctionCondition) {
     // Success of this test does not mean there isn't a problem
     // This test covers agent variable set/get within agent function conditions
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x", 0);
     a.newFunction(FUNCTION_NAME1, SlowFn).setFunctionCondition(AllowEvenOnly);
     a.newFunction(FUNCTION_NAME2, FastFn);
@@ -494,7 +494,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Agent) {
     // This test covers agent variable set/get
 
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x", 0);
     a.newFunction(FUNCTION_NAME1, SlowFn);
     a.newFunction(FUNCTION_NAME2, FastFn);
@@ -559,7 +559,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Message) {
     // This test covers agent variable set/get
 
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
     a.newVariable<int>("x", 0);
@@ -624,7 +624,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Environment) {
     // This test covers agent variable set/get
 
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x", 0);
     a.newFunction(FUNCTION_NAME1, SlowFn2);
     a.newFunction(FUNCTION_NAME2, FastFn2);
@@ -719,7 +719,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
     // This test covers agent variable set/get
 
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x", 0);
     a.newFunction(FUNCTION_NAME1, SlowFn3).setAgentOutput(a);
     a.newFunction(FUNCTION_NAME2, FastFn);
@@ -794,7 +794,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
     // This test covers agent variable set/get
 
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x", 0);
     a.newFunction(FUNCTION_NAME1, SlowFn).setFunctionCondition(AllowEvenOnly);
     a.newFunction(FUNCTION_NAME2, FastFn);

@@ -37,7 +37,7 @@ TEST(RTCNamespaceTest, AgentFunctionsExplicit) {
     ModelDescription m("model");
     MessageBruteForce::Description& message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
@@ -100,7 +100,7 @@ TEST(RTCNamespaceTest, AgentFunctionsDeclaration) {
     ModelDescription m("model");
     MessageBruteForce::Description& message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
@@ -159,7 +159,7 @@ TEST(RTCNamespaceTest, AgentFunctionsDirective) {
     ModelDescription m("model");
     MessageBruteForce::Description& message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
@@ -227,7 +227,7 @@ TEST(RTCNamespaceTest, AgentFunctionsNamed) {
     ModelDescription m("model");
     MessageBruteForce::Description& message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
@@ -287,7 +287,7 @@ TEST(RTCNamespaceTest, AgentFunctionsAlias) {
     ModelDescription m("model");
     MessageBruteForce::Description& message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
@@ -346,7 +346,7 @@ TEST(RTCNamespaceTest, AgentFunctionsAliasMixed) {
     ModelDescription m("model");
     MessageBruteForce::Description& message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");

@@ -15,6 +15,7 @@
 namespace flamegpu {
 
 class AgentDescription;
+class CAgentDescription;
 class LayerDescription;
 class SubModelDescription;
 class DependencyNode;
@@ -75,7 +76,7 @@ class ModelDescription {
      * @return A mutable reference to the specified AgentDescription
      * @throws exception::InvalidAgentName If an agent with the same name already exists within the model description hierarchy
      */
-    AgentDescription& newAgent(const std::string &agent_name);
+    AgentDescription newAgent(const std::string &agent_name);
     /**
      * Returns a mutable reference to the named agent, which can be used to configure the agent
      * @param agent_name Name which can be used to the refer to the desired agent within the model description hierarchy
@@ -83,7 +84,7 @@ class ModelDescription {
      * @throws exception::InvalidAgentName If an agent with the name does not exist within the model description hierarchy
      * @see ModelDescription::getAgent(const std::string &) for the immutable version
      */
-    AgentDescription& Agent(const std::string &agent_name);
+    AgentDescription Agent(const std::string &agent_name);
 
     /**
      * Creates a new message with the specified name
@@ -287,7 +288,7 @@ class ModelDescription {
      * @throws exception::InvalidAgentName If an agent with the name does not exist within the model description hierarchy
      * @see ModelDescription::Agent(const std::string &) for the mutable version
      */
-    const AgentDescription& getAgent(const std::string &agent_name) const;
+    CAgentDescription getAgent(const std::string& agent_name) const;
     /**
      * Returns a mutable reference to the named message, which can be used to configure the message
      * @param message_name Name used to refer to the desired message within the model description hierarchy

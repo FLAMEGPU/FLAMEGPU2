@@ -228,6 +228,11 @@ class AgentFunctionDescription : public DependencyNode {
      * @see AgentFunctionDescription::setAllowAgentDeath(bool)
      */
     bool &AllowAgentDeath();
+    /**
+     * @return An interface to the agent output of this agent function
+     * @throw exception::OutOfBoundsException If the agent output has not been set
+     */
+    AgentDescription AgentOutput();
 
     /**
      * @return The function's name
@@ -258,10 +263,10 @@ class AgentFunctionDescription : public DependencyNode {
      */
     bool getMessageOutputOptional() const;
     /**
-     * @return An immutable reference to the agent output of this agent function
+     * @return A immutable interface to the agent output of this agent function
      * @throw exception::OutOfBoundsException If the agent output has not been set
      */
-    const AgentDescription &getAgentOutput() const;
+    CAgentDescription getAgentOutput() const;
     /**
      * @return The state output agents will be output in
      * @throw exception::OutOfBoundsException If the agent output has not been set

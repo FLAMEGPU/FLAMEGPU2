@@ -31,7 +31,7 @@ TEST(AgentRandomTest, AgentRandomCheck) {
     const unsigned int AGENT_COUNT = 5;
 
     ModelDescription model("random_model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
 
     agent.newVariable<float>("a");
     agent.newVariable<float>("b");
@@ -190,7 +190,7 @@ TEST(AgentRandomTest, AgentRandomFunctionsNoExcept) {
 
 
     ModelDescription model("random_model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
 
     agent.newVariable<float>("uniform_float");
     agent.newVariable<double>("uniform_double");

@@ -40,14 +40,14 @@ TEST(SubEnvironmentManagerTest, SubDeviceAPIGetDefault) {
         // These defaults won't be used
         m2.Environment().newProperty<int>("property_read", 0);
         m2.Environment().newProperty<int, 2>("property_read2", {0, 0});
-        auto &a = m2.newAgent("agent");
+        auto a = m2.newAgent("agent");
         a.newFunction("", DeviceAPIGetFn);
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
         m2.newLayer().addAgentFunction(DeviceAPIGetFn);
     }
     ModelDescription m("host");
-    auto &a = m.newAgent("agent");
+    auto a = m.newAgent("agent");
     {
         // Define Model
         m.Environment().newProperty<int>("property_read", PROPERTY_READ_TEST);
@@ -83,14 +83,14 @@ TEST(SubEnvironmentManagerTest, SubDeviceAPIGetMasterChange) {
         // These defaults won't be used
         m2.Environment().newProperty<int>("property_read", 0);
         m2.Environment().newProperty<int, 2>("property_read2", {0, 0});
-        auto &a = m2.newAgent("agent");
+        auto a = m2.newAgent("agent");
         a.newFunction("", DeviceAPIGetFn);
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
         m2.newLayer().addAgentFunction(DeviceAPIGetFn);
     }
     ModelDescription m("host");
-    auto &a = m.newAgent("agent");
+    auto a = m.newAgent("agent");
     {
         // Define Model
         m.Environment().newProperty<int>("property_read", 0);
@@ -131,7 +131,7 @@ TEST(SubEnvironmentManagerTest, SubHostAPIGetMasterChange) {
         m2.newLayer().addHostFunction(HostAPIGetFn);
     }
     ModelDescription m("host");
-    auto &a = m.newAgent("agent");
+    auto a = m.newAgent("agent");
     {
         // Define Model
         m.Environment().newProperty<int>("property_read", 0);
@@ -159,13 +159,13 @@ TEST(SubEnvironmentManagerTest, SubHostAPISetSub) {
         // These defaults won't be used
         m2.Environment().newProperty<int>("property_read", 0);
         m2.Environment().newProperty<int, 2>("property_read2", {0, 0});
-        auto &a = m2.newAgent("agent");
+        auto a = m2.newAgent("agent");
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
         m2.newLayer().addHostFunction(HostAPISetFn);
     }
     ModelDescription m("host");
-    auto &a = m.newAgent("agent");
+    auto a = m.newAgent("agent");
     {
         // Define Model
         m.Environment().newProperty<int>("property_read", 0);
@@ -195,13 +195,13 @@ TEST(SubEnvironmentManagerTest, SubHostAPISetConstSub) {
         // These defaults won't be used
         m2.Environment().newProperty<int>("property_read", 0,  true);
         m2.Environment().newProperty<int, 2>("property_read2", {0, 0},  true);
-        auto &a = m2.newAgent("agent");
+        auto a = m2.newAgent("agent");
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
         m2.newLayer().addHostFunction(HostAPISetIsConstFn);
     }
     ModelDescription m("host");
-    auto &a = m.newAgent("agent");
+    auto a = m.newAgent("agent");
     {
         // Define Model
         m.Environment().newProperty<int>("property_read", PROPERTY_READ_TEST);
@@ -235,7 +235,7 @@ TEST(SubEnvironmentManagerTest, SubSubDeviceAPIGetDefault) {
         // These defaults won't be used
         m2.Environment().newProperty<int>("property_read", 0);
         m2.Environment().newProperty<int, 2>("property_read2", {0, 0});
-        auto &a = m2.newAgent("agent");
+        auto a = m2.newAgent("agent");
         a.newFunction("", DeviceAPIGetFn);
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
@@ -248,7 +248,7 @@ TEST(SubEnvironmentManagerTest, SubSubDeviceAPIGetDefault) {
         // These defaults won't be used
         proxy.Environment().newProperty<int>("property_read", 0);
         proxy.Environment().newProperty<int, 2>("property_read2", {0, 0});
-        auto &a = proxy.newAgent("agent");
+        auto a = proxy.newAgent("agent");
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
         auto &sm = proxy.newSubModel("proxysub", m2);
@@ -257,7 +257,7 @@ TEST(SubEnvironmentManagerTest, SubSubDeviceAPIGetDefault) {
         proxy.newLayer().addSubModel(sm);  // DeviceAPIGetFn
     }
     ModelDescription m("host");
-    auto &a = m.newAgent("agent");
+    auto a = m.newAgent("agent");
     {
         // Define Model
         m.Environment().newProperty<int>("property_read", PROPERTY_READ_TEST);
@@ -293,7 +293,7 @@ TEST(SubEnvironmentManagerTest, SubSubDeviceAPIGetMasterChange) {
         // These defaults won't be used
         m2.Environment().newProperty<int>("property_read", 0);
         m2.Environment().newProperty<int, 2>("property_read2", {0, 0});
-        auto &a = m2.newAgent("agent");
+        auto a = m2.newAgent("agent");
         a.newFunction("", DeviceAPIGetFn);
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
@@ -306,7 +306,7 @@ TEST(SubEnvironmentManagerTest, SubSubDeviceAPIGetMasterChange) {
         // These defaults won't be used
         proxy.Environment().newProperty<int>("property_read", 0);
         proxy.Environment().newProperty<int, 2>("property_read2", {0, 0});
-        auto &a = proxy.newAgent("agent");
+        auto a = proxy.newAgent("agent");
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
         auto &sm = proxy.newSubModel("proxysub", m2);
@@ -315,7 +315,7 @@ TEST(SubEnvironmentManagerTest, SubSubDeviceAPIGetMasterChange) {
         proxy.newLayer().addSubModel(sm);  // DeviceAPIGetFn
     }
     ModelDescription m("host");
-    auto &a = m.newAgent("agent");
+    auto a = m.newAgent("agent");
     {
         // Define Model
         m.Environment().newProperty<int>("property_read", 0);
@@ -368,7 +368,7 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPIGetMasterChange) {
         proxy.newLayer().addSubModel(sm);  // HostAPIGetFn
     }
     ModelDescription m("host");
-    auto &a = m.newAgent("agent");
+    auto a = m.newAgent("agent");
     {
         // Define Model
         m.Environment().newProperty<int>("property_read", 0);
@@ -396,7 +396,7 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPISetSub) {
         // These defaults won't be used
         m2.Environment().newProperty<int>("property_read", 0);
         m2.Environment().newProperty<int, 2>("property_read2", {0, 0});
-        auto &a = m2.newAgent("agent");
+        auto a = m2.newAgent("agent");
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
         m2.newLayer().addHostFunction(HostAPISetFn);
@@ -408,7 +408,7 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPISetSub) {
         // These defaults won't be used
         proxy.Environment().newProperty<int>("property_read", 0);
         proxy.Environment().newProperty<int, 2>("property_read2", {0, 0});
-        auto &a = proxy.newAgent("agent");
+        auto a = proxy.newAgent("agent");
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
         auto &sm = proxy.newSubModel("proxysub", m2);
@@ -417,7 +417,7 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPISetSub) {
         proxy.newLayer().addSubModel(sm);  // DeviceAPIGetFn
     }
     ModelDescription m("host");
-    auto &a = m.newAgent("agent");
+    auto a = m.newAgent("agent");
     {
         // Define Model
         m.Environment().newProperty<int>("property_read", 0);
@@ -448,7 +448,7 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPISetConstSub) {
         // These defaults won't be used
         m2.Environment().newProperty<int>("property_read", 0,  true);
         m2.Environment().newProperty<int, 2>("property_read2", {0, 0},  true);
-        auto &a = m2.newAgent("agent");
+        auto a = m2.newAgent("agent");
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
         m2.newLayer().addHostFunction(HostAPISetIsConstFn);
@@ -460,7 +460,7 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPISetConstSub) {
         // These defaults won't be used
         proxy.Environment().newProperty<int>("property_read", 0);
         proxy.Environment().newProperty<int, 2>("property_read2", {0, 0});
-        auto &a = proxy.newAgent("agent");
+        auto a = proxy.newAgent("agent");
         a.newVariable<int>("property_read", 0);
         a.newVariable<int, 2>("property_read2", {0, 0});
         auto &sm = proxy.newSubModel("proxysub", m2);
@@ -468,7 +468,7 @@ TEST(SubEnvironmentManagerTest, SubSubHostAPISetConstSub) {
         proxy.newLayer().addSubModel(sm);  // DeviceAPIGetFn
     }
     ModelDescription m("host");
-    auto &a = m.newAgent("agent");
+    auto a = m.newAgent("agent");
     {
         // Define Model
         m.Environment().newProperty<int>("property_read", PROPERTY_READ_TEST);
@@ -510,7 +510,7 @@ TEST(SubEnvironmentManagerTest, StepCounterNotMapped) {
         m2.newAgent("agent");
     }
     ModelDescription m("host");
-    auto& a = m.newAgent("agent");
+    auto a = m.newAgent("agent");
     {
         // Define Model
         a.newVariable<unsigned int>("step_read", 0);
@@ -543,7 +543,7 @@ TEST(SubEnvironmentManagerTest, CantMapReserved) {
         m2.newAgent("agent");
     }
     ModelDescription m("host");
-    auto& a = m.newAgent("agent");
+    auto a = m.newAgent("agent");
     {
         // Define Model
         a.newVariable<unsigned int>("step_read", 0);

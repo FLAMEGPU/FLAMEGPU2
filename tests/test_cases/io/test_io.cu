@@ -95,7 +95,7 @@ class MiniSim {
         ASSERT_TRUE(std::numeric_limits<double>::has_signaling_NaN);
         // Model description
         ModelDescription model("test_model");
-        AgentDescription &a = model.newAgent("a");
+        AgentDescription a = model.newAgent("a");
         {
             a.newVariable<float>("float");
             a.newVariable<double>("double");
@@ -116,7 +116,7 @@ class MiniSim {
             a.newVariable<double>("double_inf");
             a.newVariable<double>("double_inf_neg");
         }
-        AgentDescription &b = model.newAgent("b");
+        AgentDescription b = model.newAgent("b");
         b.newState("1");
         b.newState("2");
         {
@@ -369,7 +369,7 @@ TEST(IOTest2, AgentID_JSON_ExportImport) {
     // getPopData to an agent vector
     // Check that IDs are set to anything but unset ID.
     ModelDescription model("test_agentid");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<id_t>("id_other", ID_NOT_SET);
     auto& layer_a = model.newLayer();
     layer_a.addHostFunction(DoNothing);
@@ -413,7 +413,7 @@ TEST(IOTest2, AgentID_XML_ExportImport) {
     // getPopData to an agent vector
     // Check that IDs are set to anything but unset ID.
     ModelDescription model("test_agentid");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<id_t>("id_other", ID_NOT_SET);
     auto& layer_a = model.newLayer();
     layer_a.addHostFunction(DoNothing);
@@ -464,7 +464,7 @@ TEST(IOTest2, AgentID_FileInput_IDCollision) {
     }
 
     ModelDescription model("test_agentid");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<id_t>("id_other", ID_NOT_SET);
     auto& layer_a = model.newLayer();
     layer_a.addHostFunction(DoNothing);

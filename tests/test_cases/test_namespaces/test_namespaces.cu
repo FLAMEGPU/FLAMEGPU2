@@ -31,7 +31,7 @@ TEST(CXXNamespaceTest, AgentFunctionsExplicit) {
     flamegpu::ModelDescription m("model");
     flamegpu::MessageBruteForce::Description& message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    flamegpu::AgentDescription& a = m.newAgent("agent");
+    flamegpu::AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
@@ -99,7 +99,7 @@ TEST(CXXNamespaceTest, AgentFunctionsDeclaration) {
     ModelDescription m("model");
     MessageBruteForce::Description& message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
@@ -158,7 +158,7 @@ TEST(CXXNamespaceTest, AgentFunctionsDirective) {
     ModelDescription m("model");
     MessageBruteForce::Description& message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
@@ -214,7 +214,7 @@ TEST(CXXNamespaceTest, AgentFunctionsNamed) {
     ModelDescription m("model");
     MessageBruteForce::Description& message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
@@ -271,7 +271,7 @@ TEST(CXXNamespaceTest, AgentFunctionsAlias) {
     fgpu::ModelDescription m("model");
     fgpu::MessageBruteForce::Description& message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    fgpu::AgentDescription& a = m.newAgent("agent");
+    fgpu::AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
@@ -326,7 +326,7 @@ TEST(CXXNamespaceTest, AgentFunctionsAliasMixed) {
     fgpu::ModelDescription m("model");
     flamegpu::MessageBruteForce::Description& message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    fgpu::AgentDescription& a = m.newAgent("agent");
+    fgpu::AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");

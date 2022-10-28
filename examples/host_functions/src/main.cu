@@ -69,7 +69,7 @@ int main(int argc, const char ** argv) {
     flamegpu::ModelDescription model("host_functions_example");
 
     {  // agent
-        flamegpu::AgentDescription  &agent = model.newAgent("agent");
+        flamegpu::AgentDescription  agent = model.newAgent("agent");
         agent.newVariable<float>("x");
         agent.newVariable<int>("a");
         agent.newFunction("device_function", device_function);

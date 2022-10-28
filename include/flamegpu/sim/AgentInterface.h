@@ -10,13 +10,14 @@
 
 namespace flamegpu {
 class DeviceAgentVector_impl;
+class CAgentDescription;
 /**
  * Base-class (interface) for classes like CUDAAgent, which provide access to agent data
  */
 class AgentInterface {
  public:
     virtual ~AgentInterface() = default;
-    virtual const AgentData &getAgentDescription() const = 0;
+    virtual CAgentDescription getAgentDescription() const = 0;
     virtual void *getStateVariablePtr(const std::string &state_name, const std::string &variable_name) = 0;
     virtual flamegpu::size_type getStateSize(const std::string &state_name) const = 0;
     /**

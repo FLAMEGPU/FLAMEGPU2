@@ -14,17 +14,21 @@ namespace visualiser {
 AgentVis::AgentVis(CUDAAgent &_agent, const std::shared_ptr<AutoPalette>& autopalette)
     : owned_auto_palette(nullptr)
     , agent(_agent)
-    , agentData(_agent.getAgentDescription()) {
-    if (_agent.getAgentDescription().variables.find("x") != _agent.getAgentDescription().variables.end() &&
-        _agent.getAgentDescription().variables.at("x").type == std::type_index(typeid(float))) {
+    , agentData(*_agent.getAgentDescription().agent) {
+    const CAgentDescription agent_desc = _agent.getAgentDescription();
+    if (agent_desc.hasVariable("x") &&
+        agent_desc.getVariableType("x") == std::type_index(typeid(float)) &&
+        agent_desc.getVariableLength("x") == 1) {
         setXVariable("x");
     }
-    if (_agent.getAgentDescription().variables.find("y") != _agent.getAgentDescription().variables.end() &&
-        _agent.getAgentDescription().variables.at("y").type == std::type_index(typeid(float))) {
+    if (agent_desc.hasVariable("y") &&
+        agent_desc.getVariableType("y") == std::type_index(typeid(float)) &&
+        agent_desc.getVariableLength("y") == 1) {
         setYVariable("y");
     }
-    if (_agent.getAgentDescription().variables.find("z") != _agent.getAgentDescription().variables.end() &&
-        _agent.getAgentDescription().variables.at("z").type == std::type_index(typeid(float))) {
+    if (agent_desc.hasVariable("z") &&
+        agent_desc.getVariableType("z") == std::type_index(typeid(float)) &&
+        agent_desc.getVariableLength("z") == 1) {
         setZVariable("z");
     }
     if (autopalette) {

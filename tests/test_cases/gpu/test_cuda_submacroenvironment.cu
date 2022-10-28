@@ -75,7 +75,7 @@ TEST(SubCUDAMacroEnvironmentTest, SubWriteAgentMasterRead) {
         m.Environment().newMacroProperty<unsigned int>("a");
         m.Environment().newMacroProperty<unsigned int>("b");
     }
-    auto &agt = m.newAgent("test");
+    auto agt = m.newAgent("test");
     auto& sm = m.newSubModel("sub", m2);
     auto& senv = sm.SubEnvironment();
     senv.autoMapMacroProperties();
@@ -105,7 +105,7 @@ TEST(SubCUDAMacroEnvironmentTest, MasterWriteSubReadHost) {
         m.Environment().newMacroProperty<unsigned int>("a");
         m.Environment().newMacroProperty<unsigned int>("b");
     }
-    auto& agt = m.newAgent("test");
+    auto agt = m.newAgent("test");
     auto& sm = m.newSubModel("sub", m2);
     sm.SubEnvironment(true);
     m.newLayer().addHostFunction(Host_Write_5);
@@ -137,7 +137,7 @@ TEST(SubCUDAMacroEnvironmentTest, MasterWriteSubReadAgent) {
         m2.addExitCondition(ExitAlways);
         m2.Environment().newMacroProperty<unsigned int>("a");
         m2.Environment().newMacroProperty<unsigned int>("b");
-        auto &agt = m2.newAgent("test");
+        auto agt = m2.newAgent("test");
         agt.newVariable<unsigned int>("a");
         agt.newVariable<unsigned int>("b");
         agt.newFunction("arw", Agent_Read_Write_5);
@@ -150,7 +150,7 @@ TEST(SubCUDAMacroEnvironmentTest, MasterWriteSubReadAgent) {
         m.Environment().newMacroProperty<unsigned int>("a");
         m.Environment().newMacroProperty<unsigned int>("b");
     }
-    auto& agt = m.newAgent("test");
+    auto agt = m.newAgent("test");
     auto& sm = m.newSubModel("sub", m2);
     auto& senv = sm.SubEnvironment();
     senv.autoMap();

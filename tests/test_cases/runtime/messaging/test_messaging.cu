@@ -39,7 +39,7 @@ TEST(TestMessage, NoAgents) {
     ModelDescription m(MODEL_NAME);
     MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");

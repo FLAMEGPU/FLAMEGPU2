@@ -6,7 +6,7 @@
 
 namespace flamegpu {
 
-AgentInstance::AgentInstance(const AgentDescription& agent_desc)
+AgentInstance::AgentInstance(const CAgentDescription& agent_desc)
     : _agent(agent_desc.agent->clone()) {
     // Fill data map with default values
     for (const auto& v : _agent->variables) {

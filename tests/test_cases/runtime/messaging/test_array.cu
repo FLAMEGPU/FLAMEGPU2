@@ -51,7 +51,7 @@ TEST(TestMessage_Array, Mandatory) {
     MessageArray::Description &message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
@@ -96,7 +96,7 @@ TEST(TestMessage_Array, Optional) {
     MessageArray::Description &message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
@@ -145,7 +145,7 @@ TEST(TestMessage_Array, OptionalNone) {
     MessageArray::Description &message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
@@ -228,7 +228,7 @@ TEST(TestMessage_Array, Moore1W) {
     ModelDescription m(MODEL_NAME);
     MessageArray::Description &message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutSimple);
@@ -261,7 +261,7 @@ TEST(TestMessage_Array, Moore2W) {
     ModelDescription m(MODEL_NAME);
     MessageArray::Description &message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutSimple);
@@ -300,7 +300,7 @@ TEST(TestMessage_Array, DISABLED_DuplicateOutputException) {
     MessageArray::Description &message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("message_write");
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutBad);
     fo.setMessageOutput(message);
@@ -360,7 +360,7 @@ TEST(TestMessage_Array, ReadEmpty) {
         message.newVariable<unsigned int>("value");
     }
     {   // Circle agent
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<unsigned int>("value", 32323);  // Count the number of messages read
         agent.newFunction("in", countArray).setMessageInput("location");
     }
@@ -397,7 +397,7 @@ TEST(TestMessage_Array, DISABLED_MooreWrap_InitOutOfBoundsX) {
     MessageArray::Description& message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
@@ -437,7 +437,7 @@ TEST(TestMessage_Array, DISABLED_MooreWrap_BadRadius1) {
     MessageArray::Description& message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
@@ -477,7 +477,7 @@ TEST(TestMessage_Array, DISABLED_MooreWrap_BadRadius2) {
     MessageArray::Description& message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
@@ -517,7 +517,7 @@ TEST(TestMessage_Array, DISABLED_Moore_InitOutOfBoundsX) {
     MessageArray::Description& message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
@@ -557,7 +557,7 @@ TEST(TestMessage_Array, DISABLED_Moore_BadRadius) {
     MessageArray::Description& message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
@@ -626,7 +626,7 @@ void test_moore_wrap_comradius(
     MessageArray::Description &message = model.newMessage<MessageArray>(MESSAGE_NAME);
     message.newVariable<unsigned int>("index");
     message.setLength(GRID_WIDTH);
-    AgentDescription &agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<unsigned int>("index");
     agent.newVariable<unsigned int>("x");
     agent.newVariable<unsigned int>("message_read", UINT_MAX);
@@ -721,7 +721,7 @@ void test_mooore_comradius(
     MessageArray::Description &message = model.newMessage<MessageArray>(MESSAGE_NAME);
     message.newVariable<unsigned int>("index");
     message.setLength(GRID_WIDTH);
-    AgentDescription &agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<unsigned int>("index");
     agent.newVariable<unsigned int>("x");
     agent.newVariable<unsigned int>("message_read", UINT_MAX);
@@ -801,7 +801,7 @@ TEST(TestMessage_Array, ArrayVariable) {
     MessageArray::Description &message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
@@ -857,7 +857,7 @@ TEST(TestRTCMessage_Array, ArrayVariable) {
     MessageArray::Description& message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
     AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
@@ -908,7 +908,7 @@ TEST(TestMessage_Array, ArrayVariable_glm) {
     MessageArray::Description& message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
     AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
@@ -961,7 +961,7 @@ TEST(TestRTCMessage_Array, ArrayVariable_glm) {
     MessageArray::Description& message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
     AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
@@ -1090,7 +1090,7 @@ void test_arrayMessageReorderError(
     messageAB.setLength(GRID_WIDTH);
 
     // Define the agents
-    AgentDescription &agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<unsigned int>("x");

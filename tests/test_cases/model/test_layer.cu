@@ -68,7 +68,7 @@ const char *OTHER_STATE_NAME = "State4";
 
 TEST(LayerDescriptionTest, AgentFunction) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
     a.newState(STATE_NAME);
     a.newState(NEW_STATE_NAME);
     a.newState(WRONG_STATE_NAME);
@@ -133,8 +133,8 @@ TEST(LayerDescriptionTest, HostFunction) {
 TEST(LayerDescriptionTest, AgentFunction_WrongModel) {
     ModelDescription _m(MODEL_NAME);
     ModelDescription _m2(WRONG_MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
-    AgentDescription &a2 = _m2.newAgent(AGENT_NAME);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
+    AgentDescription a2 = _m2.newAgent(AGENT_NAME);
     AgentFunctionDescription &f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
     AgentFunctionDescription &f2 = a2.newFunction(FUNCTION_NAME1, agent_fn1);
     LayerDescription &l = _m.newLayer(LAYER_NAME);
@@ -145,7 +145,7 @@ TEST(LayerDescriptionTest, AgentFunction_WrongModel) {
 
 TEST(LayerDescriptionTest, SameAgentAndState1) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
     a.newFunction(FUNCTION_NAME1, agent_fn2);
     AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn3);
     LayerDescription &l = _m.newLayer();
@@ -157,7 +157,7 @@ TEST(LayerDescriptionTest, SameAgentAndState1) {
 }
 TEST(LayerDescriptionTest, SameAgentAndState2) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
     a.newState(STATE_NAME);
     a.newState(NEW_STATE_NAME);
     a.newState(WRONG_STATE_NAME);
@@ -176,7 +176,7 @@ TEST(LayerDescriptionTest, SameAgentAndState2) {
 }
 TEST(LayerDescriptionTest, SameAgentAndState3) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
     a.newState(STATE_NAME);
     a.newState(NEW_STATE_NAME);
     a.newState(WRONG_STATE_NAME);
@@ -195,7 +195,7 @@ TEST(LayerDescriptionTest, SameAgentAndState3) {
 }
 TEST(LayerDescriptionTest, SameAgentAndState4) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
     a.newState(STATE_NAME);
     a.newState(NEW_STATE_NAME);
     a.newState(WRONG_STATE_NAME);
@@ -214,7 +214,7 @@ TEST(LayerDescriptionTest, SameAgentAndState4) {
 }
 TEST(LayerDescriptionTest, SameAgentAndState5) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
     a.newState(STATE_NAME);
     a.newState(NEW_STATE_NAME);
     a.newState(WRONG_STATE_NAME);
@@ -233,7 +233,7 @@ TEST(LayerDescriptionTest, SameAgentAndState5) {
 }
 TEST(LayerDescriptionTest, SameAgentAndState6) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
     a.newState(STATE_NAME);
     a.newState(NEW_STATE_NAME);
     a.newState(WRONG_STATE_NAME);
@@ -252,8 +252,8 @@ TEST(LayerDescriptionTest, SameAgentAndState6) {
 }
 TEST(LayerDescriptionTest, SameMessageListOutOut) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription& a1 = _m.newAgent(AGENT_NAME);
-    AgentDescription& a2 = _m.newAgent(AGENT_NAME2);
+    AgentDescription a1 = _m.newAgent(AGENT_NAME);
+    AgentDescription a2 = _m.newAgent(AGENT_NAME2);
     MessageSpatial3D::Description& message = _m.newMessage<MessageSpatial3D>(MESSAGE_NAME);
     AgentFunctionDescription& f1 = a1.newFunction(FUNCTION_NAME1, agent_fn_messageout1);
     AgentFunctionDescription& f2 = a2.newFunction(FUNCTION_NAME1, agent_fn_messageout2);
@@ -268,8 +268,8 @@ TEST(LayerDescriptionTest, SameMessageListOutOut) {
 }
 TEST(LayerDescriptionTest, SameMessageListOutIn) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription& a1 = _m.newAgent(AGENT_NAME);
-    AgentDescription& a2 = _m.newAgent(AGENT_NAME2);
+    AgentDescription a1 = _m.newAgent(AGENT_NAME);
+    AgentDescription a2 = _m.newAgent(AGENT_NAME2);
     MessageSpatial3D::Description& message = _m.newMessage<MessageSpatial3D>(MESSAGE_NAME);
     AgentFunctionDescription& f1 = a1.newFunction(FUNCTION_NAME1, agent_fn_messageout1);
     AgentFunctionDescription& f2 = a2.newFunction(FUNCTION_NAME1, agent_fn_messagein2);
@@ -284,8 +284,8 @@ TEST(LayerDescriptionTest, SameMessageListOutIn) {
 }
 TEST(LayerDescriptionTest, SameMessageListInOut) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription& a1 = _m.newAgent(AGENT_NAME);
-    AgentDescription& a2 = _m.newAgent(AGENT_NAME2);
+    AgentDescription a1 = _m.newAgent(AGENT_NAME);
+    AgentDescription a2 = _m.newAgent(AGENT_NAME2);
     MessageSpatial3D::Description& message = _m.newMessage<MessageSpatial3D>(MESSAGE_NAME);
     AgentFunctionDescription& f1 = a1.newFunction(FUNCTION_NAME1, agent_fn_messagein1);
     AgentFunctionDescription& f2 = a2.newFunction(FUNCTION_NAME1, agent_fn_messageout2);
@@ -301,7 +301,7 @@ TEST(LayerDescriptionTest, SameMessageListInOut) {
 TEST(LayerDescriptionTest, AgentOutMatchesInputState1) {
     // Can't add an agent function which outputs to the same agent state that is an input state for another agent function
     ModelDescription _m(MODEL_NAME);
-    AgentDescription& a1 = _m.newAgent(AGENT_NAME);
+    AgentDescription a1 = _m.newAgent(AGENT_NAME);
     a1.newState("a");
     a1.newState("b");
     AgentFunctionDescription& f1 = a1.newFunction(FUNCTION_NAME1, agent_fn1);
@@ -322,7 +322,7 @@ TEST(LayerDescriptionTest, AgentOutMatchesInputState2) {
     // Can't add an agent function which outputs to the same agent state that is an input state for another agent function
     // This tests the inverse order (agent output fn added first)
     ModelDescription _m(MODEL_NAME);
-    AgentDescription& a1 = _m.newAgent(AGENT_NAME);
+    AgentDescription a1 = _m.newAgent(AGENT_NAME);
     a1.newState("a");
     a1.newState("b");
     AgentFunctionDescription& f1 = a1.newFunction(FUNCTION_NAME1, agent_fn1);
@@ -341,8 +341,8 @@ TEST(LayerDescriptionTest, AgentOutMatchesInputState2) {
 }
 TEST(LayerDescriptionTest, NoSuitableAgentFunctions) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription& a1 = _m.newAgent(AGENT_NAME);
-    AgentDescription& a2 = _m.newAgent(AGENT_NAME2);
+    AgentDescription a1 = _m.newAgent(AGENT_NAME);
+    AgentDescription a2 = _m.newAgent(AGENT_NAME2);
     a1.newFunction(FUNCTION_NAME1, agent_fn2);
     a2.newFunction(FUNCTION_NAME1, agent_fn2);
     LayerDescription& l = _m.newLayer();
@@ -351,8 +351,8 @@ TEST(LayerDescriptionTest, NoSuitableAgentFunctions) {
 }
 TEST(LayerDescriptionTest, MultipleSuitableAgentFunctions) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription& a1 = _m.newAgent(AGENT_NAME);
-    AgentDescription& a2 = _m.newAgent(AGENT_NAME2);
+    AgentDescription a1 = _m.newAgent(AGENT_NAME);
+    AgentDescription a2 = _m.newAgent(AGENT_NAME2);
     a1.newFunction(FUNCTION_NAME1, agent_fn2);
     a2.newFunction(FUNCTION_NAME1, agent_fn2);
     LayerDescription& l = _m.newLayer();
@@ -361,7 +361,7 @@ TEST(LayerDescriptionTest, MultipleSuitableAgentFunctions) {
 }
 TEST(LayerDescriptionTest, AgentFnHostFnSameLayer) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription& a1 = _m.newAgent(AGENT_NAME);
+    AgentDescription a1 = _m.newAgent(AGENT_NAME);
     auto &f1 = a1.newFunction(FUNCTION_NAME1, agent_fn1);
     LayerDescription& l = _m.newLayer();
     // Multiple agent functions within the model use this agent function body
@@ -370,7 +370,7 @@ TEST(LayerDescriptionTest, AgentFnHostFnSameLayer) {
 }
 TEST(LayerDescriptionTest, HostFnAgentFnSameLayer) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription& a1 = _m.newAgent(AGENT_NAME);
+    AgentDescription a1 = _m.newAgent(AGENT_NAME);
     auto& f1 = a1.newFunction(FUNCTION_NAME1, agent_fn1);
     LayerDescription& l = _m.newLayer();
     // Multiple agent functions within the model use this agent function body
@@ -388,8 +388,8 @@ TEST(LayerDescriptionTest, SubModelAndHostOrAgentFunction) {
     ModelDescription m(MODEL_NAME);
     auto &sm = m.newSubModel("sm", m2);
     auto &sm2 = m.newSubModel("sm2", m3);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
-    AgentDescription &a2 = m.newAgent(AGENT_NAME2);
+    AgentDescription a = m.newAgent(AGENT_NAME);
+    AgentDescription a2 = m.newAgent(AGENT_NAME2);
 
     auto &af1 = a.newFunction("a", agent_fn1);
     auto &af2 = a2.newFunction("b", agent_fn2);

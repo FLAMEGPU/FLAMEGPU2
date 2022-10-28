@@ -26,20 +26,20 @@ bool ModelDescription::operator!=(const ModelDescription& rhs) const {
 /**
  * Accessors
  */
-AgentDescription& ModelDescription::newAgent(const std::string &agent_name) {
+AgentDescription ModelDescription::newAgent(const std::string &agent_name) {
     if (!hasAgent(agent_name)) {
         auto rtn = std::shared_ptr<AgentData>(new AgentData(model, agent_name));
         model->agents.emplace(agent_name, rtn);
-        return *rtn->description;
+        return AgentDescription(rtn);
     }
     THROW exception::InvalidAgentName("Agent with name '%s' already exists, "
         "in ModelDescription::newAgent().",
         agent_name.c_str());
 }
-AgentDescription& ModelDescription::Agent(const std::string &agent_name) {
+AgentDescription ModelDescription::Agent(const std::string &agent_name) {
     auto rtn = model->agents.find(agent_name);
     if (rtn != model->agents.end())
-        return *rtn->second->description;
+        return AgentDescription(rtn->second);
     THROW exception::InvalidAgentName("Agent ('%s') was not found, "
         "in ModelDescription::Agent().",
         agent_name.c_str());
@@ -187,10 +187,10 @@ std::string ModelDescription::getName() const {
     return model->name;
 }
 
-const AgentDescription& ModelDescription::getAgent(const std::string &agent_name) const {
+CAgentDescription ModelDescription::getAgent(const std::string& agent_name) const {
     const auto rtn = model->agents.find(agent_name);
     if (rtn != model->agents.end())
-        return *rtn->second->description;
+        return CAgentDescription(rtn->second);
     THROW exception::InvalidAgentName("Agent ('%s') was not found, "
         "in ModelDescription::getAgent().",
         agent_name.c_str());

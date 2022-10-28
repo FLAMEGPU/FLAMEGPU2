@@ -7,7 +7,7 @@ namespace flamegpu {
 
 TEST(AgentInstanceTest, constructor) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("int", 1);
     agent.newVariable<unsigned int>("uint", 2u);
 #ifdef USE_GLM
@@ -23,7 +23,7 @@ TEST(AgentInstanceTest, constructor) {
 }
 TEST(AgentInstanceTest, copy_constructor) {
   ModelDescription model("model");
-  AgentDescription& agent = model.newAgent("agent");
+  AgentDescription agent = model.newAgent("agent");
   agent.newVariable<int>("int", 1);
   agent.newVariable<unsigned int, 3>("uint3", {2u, 3u, 4u});
   const std::array<unsigned int, 3> ai_uint3_ref = { 0u, 1u, 2u };
@@ -60,7 +60,7 @@ TEST(AgentInstanceTest, copy_constructor) {
 }
 TEST(AgentInstanceTest, move_constructor) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("int", 1);
     agent.newVariable<unsigned int, 3>("uint3", { 2u, 3u, 4u });
     const std::array<unsigned int, 3> ai_uint3_ref = { 0u, 1u, 2u };
@@ -84,8 +84,8 @@ TEST(AgentInstanceTest, move_constructor) {
 }
 TEST(AgentInstanceTest, copy_assignment_operator) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
-    AgentDescription& agent2 = model.newAgent("agent2");
+    AgentDescription agent = model.newAgent("agent");
+    AgentDescription agent2 = model.newAgent("agent2");
     agent.newVariable<int>("int", 1);
     agent.newVariable<unsigned int, 3>("uint3", { 2u, 3u, 4u });
 #ifdef USE_GLM
@@ -126,8 +126,8 @@ TEST(AgentInstanceTest, copy_assignment_operator) {
 }
 TEST(AgentInstanceTest, move_assignment_operator) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
-    AgentDescription& agent2 = model.newAgent("agent2");
+    AgentDescription agent = model.newAgent("agent");
+    AgentDescription agent2 = model.newAgent("agent2");
     agent.newVariable<int>("int", 1);
     agent.newVariable<unsigned int, 3>("uint3", { 2u, 3u, 4u });
 #ifdef USE_GLM
@@ -154,7 +154,7 @@ TEST(AgentInstanceTest, getsetVariable) {
     const unsigned int i = 15;  // This is a stripped down version of AgentVectorTest::AgentVector_Agent
     // Test correctness of AgentVector getVariableType
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint", 12u);
     agent.newVariable<int, 3>("int3", { 2, 3, 4 });
     agent.newVariable<int, 2>("int2", { 5, 6 });

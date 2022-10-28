@@ -24,7 +24,7 @@ FLAMEGPU_STEP_FUNCTION(sort_descending_int) {
 TEST(HostAgentSort, Ascending_float) {
     // Define model
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("float");
     agent.newVariable<int>("spare");
     model.newLayer().addHostFunction(sort_ascending_float);
@@ -62,7 +62,7 @@ TEST(HostAgentSort, Ascending_float) {
 TEST(HostAgentSort, Descending_float) {
     // Define model
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("float");
     agent.newVariable<int>("spare");
     model.newLayer().addHostFunction(sort_descending_float);
@@ -100,7 +100,7 @@ TEST(HostAgentSort, Descending_float) {
 TEST(HostAgentSort, Ascending_int) {
     // Define model
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("int");
     agent.newVariable<int>("spare");
     model.newLayer().addHostFunction(sort_ascending_int);
@@ -138,7 +138,7 @@ TEST(HostAgentSort, Ascending_int) {
 TEST(HostAgentSort, Descending_int) {
     // Define model
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("int");
     agent.newVariable<int>("spare");
     model.newLayer().addHostFunction(sort_descending_int);
@@ -195,7 +195,7 @@ FLAMEGPU_STEP_FUNCTION(sort2x_descasc_int) {
 TEST(HostAgentSort, 2x_Ascending_float) {
     // Define model
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("float1");
     agent.newVariable<float>("float2");
     agent.newVariable<int>("spare");
@@ -238,7 +238,7 @@ TEST(HostAgentSort, 2x_Ascending_float) {
 TEST(HostAgentSort, 2x_Descending_float) {
     // Define model
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("float1");
     agent.newVariable<float>("float2");
     agent.newVariable<int>("spare");
@@ -281,7 +281,7 @@ TEST(HostAgentSort, 2x_Descending_float) {
 TEST(HostAgentSort, 2x_Ascending_int) {
     // Define model
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("int1");
     agent.newVariable<int>("int2");
     agent.newVariable<int>("spare");
@@ -324,7 +324,7 @@ TEST(HostAgentSort, 2x_Ascending_int) {
 TEST(HostAgentSort, 2x_Descending_int) {
     // Define model
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("int1");
     agent.newVariable<int>("int2");
     agent.newVariable<int>("spare");
@@ -367,7 +367,7 @@ TEST(HostAgentSort, 2x_Descending_int) {
 TEST(HostAgentSort, 2x_AscDesc_int) {
     // Define model
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("int1");
     agent.newVariable<int>("int2");
     agent.newVariable<int>("spare");
@@ -410,7 +410,7 @@ TEST(HostAgentSort, 2x_AscDesc_int) {
 TEST(HostAgentSort, 2x_DescAsc_int) {
     // Define model
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("int1");
     agent.newVariable<int>("int2");
     agent.newVariable<int>("spare");

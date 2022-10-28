@@ -211,8 +211,8 @@ FLAMEGPU_EXIT_CONDITION(MovementExitCondition) {
 /**
  * Construct the common components of agent shared between both parent and submodel
  */
-flamegpu::AgentDescription &makeCoreAgent(flamegpu::ModelDescription &model) {
-    flamegpu::AgentDescription  &agent = model.newAgent("agent");
+flamegpu::AgentDescription makeCoreAgent(flamegpu::ModelDescription &model) {
+    flamegpu::AgentDescription  agent = model.newAgent("agent");
     agent.newVariable<unsigned int, 2>("pos");
     agent.newVariable<int>("agent_id");
     agent.newVariable<int>("status");
@@ -262,7 +262,7 @@ int main(int argc, const char ** argv) {
          * Agents
          */
         {
-            flamegpu::AgentDescription  &agent = makeCoreAgent(submodel);
+            flamegpu::AgentDescription  agent = makeCoreAgent(submodel);
             auto &fn_output_cell_status = agent.newFunction("output_cell_status", output_cell_status);
             {
                 fn_output_cell_status.setMessageOutput("cell_status");
@@ -318,7 +318,7 @@ int main(int argc, const char ** argv) {
      * Agents
      */
     {   // Per cell agent
-        flamegpu::AgentDescription  &agent = makeCoreAgent(model);
+        flamegpu::AgentDescription  agent = makeCoreAgent(model);
         // Functions
         agent.newFunction("metabolise_and_growback", metabolise_and_growback);
     }
@@ -342,11 +342,11 @@ int main(int argc, const char ** argv) {
      * Control flow
      */
     {   // Layer #1
-        flamegpu::LayerDescription  &layer = model.newLayer();
+        flamegpu::LayerDescription &layer = model.newLayer();
         layer.addAgentFunction(metabolise_and_growback);
     }
     {   // Layer #2
-        flamegpu::LayerDescription  &layer = model.newLayer();
+        flamegpu::LayerDescription &layer = model.newLayer();
         layer.addSubModel(movement_sub);
     }
     NVTX_POP();
@@ -363,7 +363,7 @@ int main(int argc, const char ** argv) {
      * @note FLAMEGPU2 doesn't currently have proper support for discrete/2d visualisations
      */
 #ifdef VISUALISATION
-    flamegpu::visualiser::ModelVis  &visualisation = cudaSimulation.getVisualisation();
+    flamegpu::visualiser::ModelVis &visualisation = cudaSimulation.getVisualisation();
     {
         visualisation.setSimulationSpeed(2);
         visualisation.setInitialCameraLocation(GRID_WIDTH / 2.0f, GRID_HEIGHT / 2.0f, 225.0f);

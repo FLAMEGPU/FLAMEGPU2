@@ -20,9 +20,9 @@ TEST(ModelDescriptionTest, Agent) {
     EXPECT_FALSE(m.hasAgent(test_model::AGENT_NAME1));
     EXPECT_FALSE(m.hasAgent(test_model::AGENT_NAME2));
     EXPECT_EQ(m.getAgentsCount(), 0u);
-    AgentDescription &a = m.newAgent(test_model::AGENT_NAME1);
+    AgentDescription a = m.newAgent(test_model::AGENT_NAME1);
     EXPECT_EQ(m.getAgentsCount(), 1u);
-    AgentDescription &b = m.newAgent(test_model::AGENT_NAME2);
+    AgentDescription b = m.newAgent(test_model::AGENT_NAME2);
     EXPECT_EQ(m.getAgentsCount(), 2u);
     // Cannot create agent with same name
     EXPECT_THROW(m.newAgent(test_model::AGENT_NAME1), exception::InvalidAgentName);
@@ -36,8 +36,8 @@ TEST(ModelDescriptionTest, Agent) {
     // Returned agent is same
     EXPECT_EQ(a, m.Agent(test_model::AGENT_NAME1));
     EXPECT_EQ(b, m.Agent(test_model::AGENT_NAME2));
-    EXPECT_EQ(a, m.getAgent(test_model::AGENT_NAME1));
-    EXPECT_EQ(b, m.getAgent(test_model::AGENT_NAME2));
+    EXPECT_EQ(CAgentDescription(a), m.getAgent(test_model::AGENT_NAME1));
+    EXPECT_EQ(CAgentDescription(b), m.getAgent(test_model::AGENT_NAME2));
 }
 TEST(ModelDescriptionTest, Message) {
     ModelDescription m(test_model::MODEL_NAME);

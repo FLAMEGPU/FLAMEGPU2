@@ -18,7 +18,146 @@
 namespace flamegpu {
 
 class AgentFunctionDescription;
+class AgentDescription;
+namespace visualiser {
+class AgentVis;
+}
 
+class CAgentDescription {
+    friend struct AgentData;
+    /**
+     * AgentVector takes a clone of AgentData
+     */
+    friend AgentVector::AgentVector(const CAgentDescription& agent_desc, flamegpu::size_type);
+    friend AgentInstance::AgentInstance(const CAgentDescription& agent_desc);
+    friend bool AgentVector::matchesAgentType(const CAgentDescription& other) const;
+    /**
+     * Needs internal access to variables
+     */
+    friend class visualiser::AgentVis;
+
+ public:
+    /**
+     * Constructor, creates an interface to the AgentData
+     * @param data Data store of this agent's data
+     */
+    explicit CAgentDescription(std::shared_ptr<AgentData> data);
+    explicit CAgentDescription(std::shared_ptr<const AgentData> data);
+    /**
+     * Copy constructor
+     * Creates a new interface to the same AgentData/ModelData
+     */
+    CAgentDescription(const CAgentDescription& other_agent) = default;
+    CAgentDescription(CAgentDescription&& other_agent) = default;
+    /**
+     * Assignment operator
+     * Assigns this interface to the same AgentData/ModelData
+     */
+    CAgentDescription& operator=(const CAgentDescription& other_agent) = default;
+    CAgentDescription& operator=(CAgentDescription&& other_agent) = default;
+    /**
+     * Equality operator, checks whether AgentDescription hierarchies are functionally the same
+     * @param rhs right hand side
+     * @returns True when agents are the same
+     * @note Instead compare pointers if you wish to check that they are the same instance
+     */
+    bool operator==(const CAgentDescription& rhs) const;
+    /**
+     * Equality operator, checks whether AgentDescription hierarchies are functionally different
+     * @param rhs right hand side
+     * @returns True when agents are not the same
+     * @note Instead compare pointers if you wish to check that they are not the same instance
+     */
+    bool operator!=(const CAgentDescription& rhs) const;
+
+    /**
+     * @return The agent's name
+     */
+    std::string getName() const;
+    /**
+     * @return The number of possible states agents of this type can enter
+     */
+    flamegpu::size_type getStatesCount() const;
+    /**
+     * @return The state which newly created agents of this type begin in
+     */
+    std::string getInitialState() const;
+    /**
+     * @param variable_name Name used to refer to the desired variable
+     * @return The type of the named variable
+     * @throws exception::InvalidAgentVar If a variable with the name does not exist within the agent
+     */
+    const std::type_index& getVariableType(const std::string& variable_name) const;
+    /**
+     * @param variable_name Name used to refer to the desired variable
+     * @return The size of the named variable's type
+     * @throws exception::InvalidAgentVar If a variable with the name does not exist within the agent
+     */
+    size_t getVariableSize(const std::string& variable_name) const;
+    /**
+     * @param variable_name Name used to refer to the desired variable
+     * @return The number of elements in the name variable (1 if it isn't an array)
+     * @throws exception::InvalidAgentVar If a variable with the name does not exist within the agent
+     */
+    flamegpu::size_type getVariableLength(const std::string& variable_name) const;
+    /**
+     * Get the total number of variables this agent has
+     * @return The total number of variables within the agent
+     * @note This count includes internal variables used to track things such as agent ID
+     */
+    flamegpu::size_type getVariablesCount() const;
+    /**
+     * Returns an immutable reference to the named agent function
+     * @param function_name Name used to refer to the desired agent function
+     * @return An immutable reference to the specified AgentFunctionDescription
+     * @throws exception::InvalidAgentFunc If a function with the name does not exist within the agent
+     * @see AgentDescription::Function(const std::string &) for the mutable version
+     */
+    const AgentFunctionDescription& getFunction(const std::string& function_name) const;
+    /**
+     * Get the total number of functions this agent has
+     * @return The total number of functions within the agent
+     */
+    flamegpu::size_type getFunctionsCount() const;
+    /**
+     * The total number of agent functions, within the ModelDescription hierarchy, which create new agents of this type
+     * @return The total number of agent functions within the ModelDescription hierarchy which create new agents of this type
+     * @see AgentDescription::isOutputOnDevice()
+     */
+    flamegpu::size_type getAgentOutputsCount() const;
+    /**
+     * @param state_name Name of the state to check
+     * @return True when a state with the specified name exists within the agent
+     */
+    bool hasState(const std::string& state_name) const;
+    /**
+     * @param variable_name Name of the variable to check
+     * @return True when a variable with the specified name exists within the agent
+     */
+    bool hasVariable(const std::string& variable_name) const;
+    /**
+     * @param function_name Name of the function to check
+     * @return True when a function with the specified name exists within the agent
+     */
+    bool hasFunction(const std::string& function_name) const;
+    /**
+     * Check whether any agent functions output agents of this type
+     * @return True if any agent functions, with the model hierarchy, create new agents of this type
+     * @see AgentDescription::getAgentOutputsCount()
+     */
+    bool isOutputOnDevice() const;
+    /**
+     * Get the set of possible states for an agent of this type
+     * @return An immutable reference to the set of states agents of this type can enter
+     */
+    const std::set<std::string>& getStates() const;
+
+ protected:
+     /**
+      * The class which stores all of the agent's data.
+      */
+     std::shared_ptr<AgentData> agent;
+};
 /**
  * Within the model hierarchy, this class represents the definition of an agent for a FLAMEGPU model
  * This class is used to configure external elements of agents, such as variables and functions
@@ -26,11 +165,7 @@ class AgentFunctionDescription;
  * @see ModelDescription::newAgent(const std::string&) For creating instances of this class
  * @note To set an agent's id, the agent must be part of a model which has begun (id's are automatically assigned before initialisation functions and can not be manually set by users)
  */
-class AgentDescription {
-    /**
-     * Data store class for this description, constructs instances of this class
-     */
-    friend struct AgentData;
+class AgentDescription : public CAgentDescription {
     /**
      * ?
      */
@@ -40,59 +175,41 @@ class AgentDescription {
      */
     friend class DependencyGraph;
     /**
-     * AgentVector takes a clone of AgentData
-     */
-    friend AgentVector::AgentVector(const AgentDescription& agent_desc, flamegpu::size_type);
-    friend AgentInstance::AgentInstance(const AgentDescription& agent_desc);
-    friend bool AgentVector::matchesAgentType(const AgentDescription& other) const;
-    /**
      * AgentFunctionData accesses member variable model
      * to check that agent outputs are from the same model instance
      */
     friend class AgentFunctionDescription;
-    /**
-     * Only way to construct an AgentDescription
-     */
-    friend AgentDescription& ModelDescription::newAgent(const std::string &);
-
-    /**
-     * Constructor, this should only be called by AgentData
-     * @param _model Model at root of model hierarchy
-     * @param data Data store of this agent's data
-     */
-    AgentDescription(std::shared_ptr<const ModelData> _model, AgentData *const data);
-    /**
-     * Default copy constructor, not implemented
-     */
-    AgentDescription(const AgentDescription &other_agent) = delete;
-    /**
-     * Default move constructor, not implemented
-     */
-    AgentDescription(AgentDescription &&other_agent) noexcept = delete;
-    /**
-     * Default copy assignment, not implemented
-     */
-    AgentDescription& operator=(const AgentDescription &other_agent) = delete;
-    /**
-     * Default move assignment, not implemented
-     */
-    AgentDescription& operator=(AgentDescription &&other_agent) noexcept = delete;
 
  public:
+    /**
+     * Constructor, creates an interface to the AgentData
+     * @param data Data store of this agent's data
+     */
+    explicit AgentDescription(std::shared_ptr<AgentData> data);
+    /**
+     * Copy constructor
+     * Creates a new interface to the same AgentData/ModelData
+     */
+    AgentDescription(const AgentDescription& other_agent) = default;
+    /**
+     * Assignment operator
+     * Assigns this interface to the same AgentData/ModelData
+     */
+    AgentDescription& operator=(const AgentDescription& other_agent) = default;
     /**
      * Equality operator, checks whether AgentDescription hierarchies are functionally the same
      * @param rhs right hand side
      * @returns True when agents are the same
      * @note Instead compare pointers if you wish to check that they are the same instance
      */
-    bool operator==(const AgentDescription& rhs) const;
+    bool operator==(const CAgentDescription& rhs) const;
     /**
      * Equality operator, checks whether AgentDescription hierarchies are functionally different
      * @param rhs right hand side
      * @returns True when agents are not the same
      * @note Instead compare pointers if you wish to check that they are not the same instance
      */
-    bool operator!=(const AgentDescription& rhs) const;
+    bool operator!=(const CAgentDescription& rhs) const;
 
     /**
      * Adds a new state to the possible states this agent can enter
@@ -198,101 +315,10 @@ class AgentDescription {
     AgentFunctionDescription &Function(const std::string &function_name);
 
     /**
-     * @return The agent's name
-     */
-    std::string getName() const;
-    /**
-     * @return The number of possible states agents of this type can enter
-     */
-    flamegpu::size_type getStatesCount() const;
-    /**
-     * @return The state which newly created agents of this type begin in
-     */
-    std::string getInitialState() const;
-    /**
-     * @param variable_name Name used to refer to the desired variable
-     * @return The type of the named variable
-     * @throws exception::InvalidAgentVar If a variable with the name does not exist within the agent
-     */
-    const std::type_index &getVariableType(const std::string &variable_name) const;
-    /**
-     * @param variable_name Name used to refer to the desired variable
-     * @return The size of the named variable's type
-     * @throws exception::InvalidAgentVar If a variable with the name does not exist within the agent
-     */
-    size_t getVariableSize(const std::string &variable_name) const;
-    /**
-     * @param variable_name Name used to refer to the desired variable
-     * @return The number of elements in the name variable (1 if it isn't an array)
-     * @throws exception::InvalidAgentVar If a variable with the name does not exist within the agent
-     */
-    flamegpu::size_type getVariableLength(const std::string &variable_name) const;
-    /**
-     * Get the total number of variables this agent has
-     * @return The total number of variables within the agent
-     * @note This count includes internal variables used to track things such as agent ID
-     */
-    flamegpu::size_type getVariablesCount() const;
-    /**
-     * Returns an immutable reference to the named agent function
-     * @param function_name Name used to refer to the desired agent function
-     * @return An immutable reference to the specified AgentFunctionDescription
-     * @throws exception::InvalidAgentFunc If a function with the name does not exist within the agent
-     * @see AgentDescription::Function(const std::string &) for the mutable version
-     */
-    const AgentFunctionDescription& getFunction(const std::string &function_name) const;
-    /**
-     * Get the total number of functions this agent has
-     * @return The total number of functions within the agent
-     */
-    flamegpu::size_type getFunctionsCount() const;
-    /**
-     * The total number of agent functions, within the ModelDescription hierarchy, which create new agents of this type
-     * @return The total number of agent functions within the ModelDescription hierarchy which create new agents of this type
-     * @see AgentDescription::isOutputOnDevice()
-     */
-    flamegpu::size_type getAgentOutputsCount() const;
-    /**
-     * @param state_name Name of the state to check
-     * @return True when a state with the specified name exists within the agent
-     */
-    bool hasState(const std::string &state_name) const;
-    /**
-     * @param variable_name Name of the variable to check
-     * @return True when a variable with the specified name exists within the agent
-     */
-    bool hasVariable(const std::string &variable_name) const;
-    /**
-     * @param function_name Name of the function to check
-     * @return True when a function with the specified name exists within the agent
-     */
-    bool hasFunction(const std::string &function_name) const;
-    /**
-     * Check whether any agent functions output agents of this type
-     * @return True if any agent functions, with the model hierarchy, create new agents of this type
-     * @see AgentDescription::getAgentOutputsCount()
-     */
-    bool isOutputOnDevice() const;
-    /**
-     * Get the set of possible states for an agent of this type
-     * @return An immutable reference to the set of states agents of this type can enter
-     */
-    const std::set<std::string> &getStates() const;
-    /**
      * Set how often this agent is sorted. Default value is 1.
      * @param sortPeriod Sort this agent every sortPeriod steps. A value of 0 means no sorting will take place
      */
     void setSortPeriod(const unsigned int sortPeriod);
-
- private:
-    /**
-     * Root of the model hierarchy
-     */
-    std::weak_ptr<const ModelData> model;
-    /**
-     * The class which stores all of the agent's data.
-     */
-    AgentData *const agent;
 };
 
 /**

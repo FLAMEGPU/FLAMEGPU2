@@ -43,7 +43,7 @@ int main(int argc, const char ** argv) {
         message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     }
     {   // Cell agent
-        flamegpu::AgentDescription  &agent = model.newAgent("cell");
+        flamegpu::AgentDescription  agent = model.newAgent("cell");
         agent.newVariable<unsigned int, 2>("pos");
         agent.newVariable<unsigned int>("is_alive");
 #ifdef VISUALISATION

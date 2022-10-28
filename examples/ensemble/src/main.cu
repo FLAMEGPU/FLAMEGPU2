@@ -37,7 +37,7 @@ int main(int argc, const char ** argv) {
         env.newProperty<int>("offset", 1);
     }
     {   // Agent
-        flamegpu::AgentDescription  &agent = model.newAgent("Agent");
+        flamegpu::AgentDescription  agent = model.newAgent("Agent");
         agent.newVariable<int>("x");
         agent.newFunction("AddOffset", AddOffset);
     }

@@ -72,7 +72,7 @@ void *CUDAAgentStateList::getVariablePointer(const std::string &variable_name) {
     if (var == variables.end()) {
         THROW exception::InvalidAgentVar("Error: Agent ('%s') variable ('%s') was not found "
             "in CUDAAgentStateList::getVariablePointer()",
-            agent.getAgentDescription().name.c_str(), variable_name.c_str());
+            agent.getAgentDescription().getName().c_str(), variable_name.c_str());
     }
 
     return var->second->data_condition;
@@ -97,9 +97,9 @@ void CUDAAgentStateList::setAgentData(const AgentVector& population, CUDAScatter
         // Copy across the required data host->device
         for (auto& _var : variables) {
             // get the variable size from agent description
-            const auto& var = agent.getAgentDescription().variables.at(_var.first);
-            const size_t var_size = var.type_size;
-            const unsigned int  var_elements = var.elements;
+            const CAgentDescription agent_desc = agent.getAgentDescription();
+            const size_t var_size = agent_desc.getVariableSize(_var.first);
+            const unsigned int  var_elements = agent_desc.getVariableLength(_var.first);
 
             // get pointer to vector data
             const void* v_data = population.data(_var.first);
@@ -124,10 +124,9 @@ void CUDAAgentStateList::getAgentData(AgentVector& population) const {
         population.internal_resize(data_count, false);
         // Copy across the required data device->host
         for (auto& _var : variables) {
-            // get the variable size from agent description
-            const auto& var = agent.getAgentDescription().variables.at(_var.first);
-            const size_t var_size = var.type_size;
-            const unsigned int  var_elements = var.elements;
+            const CAgentDescription agent_desc = agent.getAgentDescription();
+            const size_t var_size = agent_desc.getVariableSize(_var.first);
+            const unsigned int  var_elements = agent_desc.getVariableLength(_var.first);
 
             // get pointer to vector data
             // Use the const method, but const cast away the const to avoid the reserved var check

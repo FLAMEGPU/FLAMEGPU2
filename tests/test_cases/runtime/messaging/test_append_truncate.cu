@@ -73,7 +73,7 @@ namespace test_message_AppendTruncate {
         ModelDescription m(MODEL_NAME);
         MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
         message.newVariable<int>("x");
-        AgentDescription &a = m.newAgent(AGENT_NAME);
+        AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count");
         AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, Out_AppendTruncate);
         fo.setMessageOutput(message);
@@ -107,7 +107,7 @@ namespace test_message_AppendTruncate {
         ModelDescription m(MODEL_NAME);
         MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
         message.newVariable<int>("x");
-        AgentDescription &a = m.newAgent(AGENT_NAME);
+        AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count0");
         a.newVariable<unsigned int>("count1");
         AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, Out_AppendTruncate);
@@ -149,7 +149,7 @@ namespace test_message_AppendTruncate {
         ModelDescription m(MODEL_NAME);
         MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
         message.newVariable<int>("x");
-        AgentDescription &a = m.newAgent(AGENT_NAME);
+        AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count");
         a.newVariable<unsigned int>("do_out");
         AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OptionalOut_AppendTruncate);
@@ -193,7 +193,7 @@ namespace test_message_AppendTruncate {
         ModelDescription m(MODEL_NAME);
         MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
         message.newVariable<int>("x");
-        AgentDescription &a = m.newAgent(AGENT_NAME);
+        AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count0");
         a.newVariable<unsigned int>("count1");
         a.newVariable<unsigned int>("do_out");
@@ -276,11 +276,11 @@ namespace test_message_AppendTruncate {
         ModelDescription m(MODEL_NAME);
         MessageBruteForce::Description& message = m.newMessage(MESSAGE_NAME);
         message.newVariable<int>("x");
-        AgentDescription& a = m.newAgent("a");
+        AgentDescription a = m.newAgent("a");
         a.newFunction("Out_1", Out_1).setMessageOutput(message);
-        AgentDescription& b = m.newAgent("b");
+        AgentDescription b = m.newAgent("b");
         b.newFunction("Out_2", Out_2).setMessageOutput(message);
-        AgentDescription& c = m.newAgent("c");
+        AgentDescription c = m.newAgent("c");
         c.newFunction("In", In).setMessageInput(message);
         c.newVariable<unsigned int>("0", 0);
         c.newVariable<unsigned int>("1", 0);

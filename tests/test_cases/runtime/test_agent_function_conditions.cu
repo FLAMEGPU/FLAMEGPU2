@@ -50,7 +50,7 @@ namespace test_agent_function_conditions {
         const std::array<int, 4> ARRAY_REFERENCE2 = { 23, 24, 25, 26 };
         const std::array<int, 4> ARRAY_REFERENCE3 = { 3, 4, 5, 6 };
         ModelDescription m(MODEL_NAME);
-        AgentDescription &a = m.newAgent(AGENT_NAME);
+        AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<int>("x");
         a.newVariable<int, 4>("y");
         a.newState(STATE1);
@@ -109,7 +109,7 @@ namespace test_agent_function_conditions {
         // If all agents got disabled by an agent function condition, they would not get re-enabled
         // This would lead to an exception later on
         ModelDescription m(MODEL_NAME);
-        AgentDescription &a = m.newAgent(AGENT_NAME);
+        AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<int>("x");
         a.newVariable<int, 4>("y");
         AgentFunctionDescription &af1 = a.newFunction(FUNCTION_NAME1, NullFn1);

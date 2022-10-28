@@ -68,7 +68,7 @@ TEST(TestAgentStateTransitions, Src_0_Dest_10) {
     const std::array<int, 4> ARRAY_REFERENCE = { 13, 14, 15, 16 };
     const std::array<int, 4> ARRAY_REFERENCE2 = { 23, 24, 25, 26 };
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newState(START_STATE);
     a.newState(END_STATE);
     a.setInitialState(START_STATE);
@@ -117,7 +117,7 @@ TEST(TestAgentStateTransitions, Src_10_Dest_0) {
     const std::array<int, 4> ARRAY_REFERENCE2 = { 23, 24, 25, 26 };
     const std::array<int, 4> ARRAY_REFERENCE3 = { 3, 4, 5, 6 };
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newState(START_STATE);
     a.newState(END_STATE);
     a.newState(END_STATE2);
@@ -180,7 +180,7 @@ TEST(TestAgentStateTransitions, Src_10_Dest_10) {
     // Each round 10 agents move from start to end state
     // Confirm why values are as expected
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newState(START_STATE);
     a.newState(END_STATE);
     a.setInitialState(START_STATE);

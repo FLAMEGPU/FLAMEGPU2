@@ -79,7 +79,7 @@ int main(int argc, const char ** argv) {
         message.newVariable<float>("z");
     }
     {   // Circle agent
-        flamegpu::AgentDescription  &agent = model.newAgent("Circle");
+        flamegpu::AgentDescription agent = model.newAgent("Circle");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
@@ -93,7 +93,7 @@ int main(int argc, const char ** argv) {
      * GLOBALS
      */
     {
-        flamegpu::EnvironmentDescription  &env = model.Environment();
+        flamegpu::EnvironmentDescription &env = model.Environment();
         env.newProperty("repulse", 0.05f);
         env.newProperty("radius", 2.0f);
     }

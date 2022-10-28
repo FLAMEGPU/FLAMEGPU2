@@ -52,7 +52,7 @@ TEST(LoggingTest, CUDASimulationStep) {
      */
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
@@ -167,7 +167,7 @@ TEST(LoggingTest, CUDASimulationSimulate) {
      */
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
@@ -343,7 +343,7 @@ TEST(LoggingTest, EmptyMean) {
      */
      // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
     m.newLayer().addAgentFunction(f1);
@@ -375,7 +375,7 @@ TEST(LoggingTest, CUDAEnsembleSimulate) {
      */
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
@@ -551,7 +551,7 @@ TEST(TestLogging, Simulation_ToFile_Step) {
 
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
@@ -612,7 +612,7 @@ TEST(TestLogging, Simulation_ToFile_Exit) {
 
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
@@ -673,7 +673,7 @@ TEST(TestLogging, Simulation_ToFile_Common) {
 
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
@@ -733,7 +733,7 @@ TEST(TestLogging, Simulation_ToFile_All) {
 
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
@@ -795,7 +795,7 @@ TEST(TestLogging, Ensemble_ToFile_Step) {
 
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
@@ -856,7 +856,7 @@ TEST(TestLogging, Ensemble_ToFile_Exit) {
 
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
@@ -922,7 +922,7 @@ TEST(TestLogging, Ensemble_ToFile_All) {
 
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");

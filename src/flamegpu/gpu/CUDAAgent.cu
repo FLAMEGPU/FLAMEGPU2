@@ -275,8 +275,8 @@ void CUDAAgent::setStateAgentCount(const std::string& state, const unsigned int 
     }
     sm->second->setAgentCount(newSize);
 }
-const AgentData &CUDAAgent::getAgentDescription() const {
-    return agent_description;
+CAgentDescription CUDAAgent::getAgentDescription() const {
+    return CAgentDescription(agent_description.shared_from_this());
 }
 void *CUDAAgent::getStateVariablePtr(const std::string &state_name, const std::string &variable_name) {
     // check the cuda agent state map to find the correct state list for functions starting state

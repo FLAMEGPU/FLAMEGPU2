@@ -400,7 +400,7 @@ int main(int argc, const char ** argv) {
         message.newVariable<float>("fz");
     }
     {   // Boid agent
-        flamegpu::AgentDescription &agent = model.newAgent("Boid");
+        flamegpu::AgentDescription agent = model.newAgent("Boid");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");

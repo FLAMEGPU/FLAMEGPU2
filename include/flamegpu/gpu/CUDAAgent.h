@@ -102,7 +102,7 @@ class CUDAAgent : public AgentInterface {
     /**
      * Returns the Agent description which this CUDAAgent represents.
      */
-    const AgentData &getAgentDescription() const override;
+    CAgentDescription getAgentDescription() const override;
     /**
      * Returns the device pointer to the buffer for the associated state and variable
      * @note This returns data_condition, such that the buffer does not include disabled agents

@@ -51,7 +51,7 @@ void Simulation::applyConfig() {
         util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> pops;
         for (auto &agent : model->agents) {
             for (const auto &state : agent.second->states) {
-                pops.emplace(util::StringPair{ agent.first, state }, std::make_shared<AgentVector>(*agent.second->description));
+                pops.emplace(util::StringPair{ agent.first, state }, std::make_shared<AgentVector>(*agent.second));
             }
         }
 
@@ -127,7 +127,7 @@ void Simulation::exportData(const std::string &path, bool prettyPrint) {
     util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> pops;
     for (auto &agent : model->agents) {
         for (auto &state : agent.second->states) {
-            auto a = std::make_shared<AgentVector>(*agent.second->description);
+            auto a = std::make_shared<AgentVector>(*agent.second);
             getPopulationData(*a, state);
             pops.emplace(util::StringPair{agent.first, state}, a);
         }
@@ -172,7 +172,7 @@ int Simulation::checkArgs(int argc, const char** argv) {
                 util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> pops;
                 for (auto &agent : model->agents) {
                     for (auto& state : agent.second->states) {
-                        pops.emplace(util::StringPair{ agent.first, state }, std::make_shared<AgentVector>(*agent.second->description));
+                        pops.emplace(util::StringPair{ agent.first, state }, std::make_shared<AgentVector>(*agent.second));
                     }
                 }
                 env_init.clear();

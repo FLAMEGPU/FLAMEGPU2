@@ -253,7 +253,7 @@ class MiniSim {
         }
     }
     ModelDescription model;
-    AgentDescription &agent;
+    AgentDescription agent;
 };
 /**
 * This defines a common fixture used as a base for all test cases in the file

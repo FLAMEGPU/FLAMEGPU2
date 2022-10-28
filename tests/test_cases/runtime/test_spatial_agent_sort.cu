@@ -21,7 +21,7 @@ FLAMEGPU_AGENT_FUNCTION(dummySpatialFunc_2D, MessageSpatial2D, MessageNone) {
 TEST(AutomaticSpatialAgentSort, SortingDisabled) {
     // Define model
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("initial_order");
     agent.newVariable<float>("x");
     agent.newVariable<float>("y");
@@ -67,7 +67,7 @@ TEST(AutomaticSpatialAgentSort, SortingDisabled) {
 TEST(AutomaticSpatialAgentSort, SortEveryStep) {
     // Define model
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("initial_order");
     agent.newVariable<float>("x");
     agent.newVariable<float>("y");
@@ -113,7 +113,7 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep) {
 TEST(AutomaticSpatialAgentSort, SortEveryStep_no_default) {
     // Define model
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("initial_order");
     agent.newState("foobar");
     agent.newVariable<float>("x");
@@ -159,7 +159,7 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep_no_default) {
 TEST(AutomaticSpatialAgentSort, SortEveryStep_vec2) {
     // Define model
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("initial_order");
     agent.newVariable<float, 2>("xy");
     MessageSpatial2D::Description& locationMessage = model.newMessage<MessageSpatial2D>("location");
@@ -198,7 +198,7 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep_vec2) {
 TEST(AutomaticSpatialAgentSort, SortEveryStep_vec3) {
     // Define model
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("initial_order");
     agent.newVariable<float, 3>("xyz");
     MessageSpatial3D::Description& locationMessage = model.newMessage<MessageSpatial3D>("location");

@@ -195,7 +195,7 @@ class AgentVector {
      * @param agent_desc agent_desc Agent description specifying the agent variables to be represented
      * @param count The size of the container
      */
-    explicit AgentVector(const AgentDescription &agent_desc, size_type count = 0);
+    explicit AgentVector(const CAgentDescription &agent_desc, size_type count = 0);
     explicit AgentVector(const AgentData &agent_desc, size_type count = 0);
     /**
      * Copy constructor.
@@ -538,7 +538,7 @@ class AgentVector {
      * Returns true, if the provided agent description matches the internal agent description of the vector
      */
     bool matchesAgentType(const AgentData &other) const;
-    bool matchesAgentType(const AgentDescription& other) const;
+    bool matchesAgentType(const CAgentDescription& other) const;
     /**
      * Returns the type_index of the named variable
      * @throw exception::InvalidAgentVar When variable_name is not valid

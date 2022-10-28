@@ -82,7 +82,7 @@ TEST(Spatial3DMessageTest, Mandatory) {
         message.newVariable<flamegpu::id_t>("id");  // unused by current test
     }
     {   // Circle agent
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
@@ -222,7 +222,7 @@ TEST(Spatial3DMessageTest, Optional) {
         message.newVariable<flamegpu::id_t>("id");  // unused by current test
     }
     {   // Circle agent
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
@@ -371,7 +371,7 @@ TEST(Spatial3DMessageTest, OptionalNone) {
         message.newVariable<flamegpu::id_t>("id");  // unused by current test
     }
     {   // Circle agent
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
@@ -515,7 +515,7 @@ TEST(Spatial3DMessageTest, ReadEmpty) {
         message.newVariable<flamegpu::id_t>("id");  // unused by current test
     }
     {   // Circle agent
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<unsigned int>("count", 0);  // Count the number of messages read
         agent.newFunction("in", count3D).setMessageInput("location");
     }
@@ -580,7 +580,7 @@ TEST(Spatial3DMessageTest, ArrayVariable) {
     message.setMax(static_cast<float>(CBRT_AGENT_COUNT), static_cast<float>(CBRT_AGENT_COUNT), static_cast<float>(CBRT_AGENT_COUNT));
     message.setRadius(1);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 3>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
@@ -660,7 +660,7 @@ TEST(RTCSpatial3DMessageTest, ArrayVariable) {
     message.setMax(static_cast<float>(CBRT_AGENT_COUNT), static_cast<float>(CBRT_AGENT_COUNT), static_cast<float>(CBRT_AGENT_COUNT));
     message.setRadius(1);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 3>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
     AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
@@ -735,7 +735,7 @@ TEST(Spatial3DMessageTest, ArrayVariable_glm) {
     message.setMax(static_cast<float>(CBRT_AGENT_COUNT), static_cast<float>(CBRT_AGENT_COUNT), static_cast<float>(CBRT_AGENT_COUNT));
     message.setRadius(1);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 3>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
@@ -812,7 +812,7 @@ TEST(RTCSpatial3DMessageTest, ArrayVariable_glm) {
     message.setMax(static_cast<float>(CBRT_AGENT_COUNT), static_cast<float>(CBRT_AGENT_COUNT), static_cast<float>(CBRT_AGENT_COUNT));
     message.setRadius(1);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 3>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
     AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
@@ -907,7 +907,7 @@ void wrapped_3d_test(const float x_offset, const float y_offset, const float z_o
         message.newVariable<flamegpu::id_t>("id");  // unused by current test
     }
     {   // Circle agent
-        AgentDescription& agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");

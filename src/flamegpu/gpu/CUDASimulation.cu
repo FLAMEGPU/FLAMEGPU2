@@ -27,6 +27,7 @@
 #include "flamegpu/sim/LogFrame.h"
 #include "flamegpu/sim/RunPlan.h"
 #include "flamegpu/version.h"
+#include "flamegpu/model/AgentFunctionDescription.h"
 #ifdef VISUALISATION
 #include "flamegpu/visualiser/FLAMEGPU_Visualisation.h"
 #endif
@@ -356,7 +357,7 @@ void CUDASimulation::determineAgentsToSort() {
                 // Check if this agent function uses 3D spatial messages
                 if (ptr->getSortingType() == flamegpu::MessageSortingType::spatial3D) {
                     // Agent uses spatial, check it has correct variables
-                    const auto& ad = *(it->second->description);
+                    CAgentDescription ad(it->second);
                     if (ad.hasVariable("x") && ad.hasVariable("y") && ad.hasVariable("z")) {
                         auto& x = it->second->variables.at("x");
                         auto& y = it->second->variables.at("y");
@@ -377,7 +378,7 @@ void CUDASimulation::determineAgentsToSort() {
                 // Check if this agent function uses 2D spatial messages
                 if (ptr->getSortingType() == flamegpu::MessageSortingType::spatial2D) {
                     // Agent uses spatial, check it has correct variables
-                    const auto& ad = *(it->second->description);
+                    CAgentDescription ad(it->second);
                     if (ad.hasVariable("x") && ad.hasVariable("y")) {
                         auto& x = it->second->variables.at("x");
                         auto& y = it->second->variables.at("y");
@@ -407,14 +408,12 @@ void CUDASimulation::spatialSortAgent_async(const std::string& funcName, const s
     if (!state_list_size)
         return;
 
-    auto& cudaAgentData = cuda_agent.getAgentDescription();
-    auto& funcData = cudaAgentData.functions.at(funcName);
-    std::string messageName;
-    if (auto ptr = funcData->message_input.lock()) {
-        messageName = ptr->name;
-    } else {
+    const CAgentDescription cudaAgentData(cuda_agent.getAgentDescription());
+    auto& funcData = cudaAgentData.getFunction(funcName);
+    if (!funcData.hasMessageInput()) {
         THROW exception::InvalidAgentFunc("Function %s registered for auto-spatial sorting but input message type not found!\n", funcName.c_str());
     }
+    std::string messageName = funcData.getMessageInput().getName();
     MessageBruteForce::Data* msgData = model->messages.at(messageName).get();
 
     // Get the spatial metadata
@@ -451,9 +450,9 @@ void CUDASimulation::spatialSortAgent_async(const std::string& funcName, const s
     // TODO: User could supply alternatives to "x", "y", "z" to use alternative variables?
     void* xPtr = nullptr, *yPtr = nullptr, *zPtr = nullptr;
     void* xyPtr = nullptr, * xyzPtr = nullptr;
-    if (mode == Agent3D && cudaAgentData.variables.find("xyz") != cudaAgentData.variables.end()) {
+    if (mode == Agent3D && cudaAgentData.hasVariable("xyz")) {
         xyzPtr = cuda_agent.getStateVariablePtr(state, "xyz");
-    } else if (mode == Agent2D && cudaAgentData.variables.find("xy") != cudaAgentData.variables.end()) {
+    } else if (mode == Agent2D && cudaAgentData.hasVariable("xy")) {
         xyPtr = cuda_agent.getStateVariablePtr(state, "xy");
     } else {
         xPtr = cuda_agent.getStateVariablePtr(state, "x");

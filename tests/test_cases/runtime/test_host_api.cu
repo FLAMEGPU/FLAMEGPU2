@@ -46,7 +46,7 @@ FLAMEGPU_EXIT_FUNCTION(exit_testGetStepCounter) {
 
 TEST(hostAPITest, getStepCounter) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
 
     model.addInitFunction(init_testGetStepCounter);
     model.newLayer().addHostFunction(host_testGetStepCounter);
@@ -77,7 +77,7 @@ TEST(hostAPITest, resizeTempMemory) {
     // This test is an attempt to catch bugs inside HostAPI::tempStorageRequiresResize()
     // e.g. if we don't resize enough memory before calling cub
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("foo");
+    AgentDescription agent = model.newAgent("foo");
     agent.newVariable<float>("bar");
 
     auto& afn = agent.newFunction("birth_agent", birth_agent);

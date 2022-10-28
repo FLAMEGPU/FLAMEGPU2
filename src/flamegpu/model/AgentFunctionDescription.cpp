@@ -32,7 +32,7 @@ bool AgentFunctionDescription::operator!=(const AgentFunctionDescription& rhs) c
  */
 void AgentFunctionDescription::setInitialState(const std::string &init_state) {
     if (auto p = function->parent.lock()) {
-        if (p->description->hasState(init_state)) {
+        if (p->states.find(init_state) != p->states.end()) {
             // Check if this agent function is already in a layer
             auto mdl = model.lock();
             if (!mdl) {
@@ -79,7 +79,7 @@ void AgentFunctionDescription::setInitialState(const std::string &init_state) {
 }
 void AgentFunctionDescription::setEndState(const std::string &exit_state) {
     if (auto p = function->parent.lock()) {
-        if (p->description->hasState(exit_state)) {
+        if (p->states.find(exit_state) != p->states.end()) {
             // Check if this agent function is already in a layer
             auto mdl = model.lock();
             if (!mdl) {
@@ -325,7 +325,7 @@ void AgentFunctionDescription::setAgentOutput(const std::string &agent_name, con
     }
 }
 void AgentFunctionDescription::setAgentOutput(AgentDescription &agent, const std::string state) {
-    if (agent.model.lock() != function->description->model.lock()) {
+    if (agent.agent->model.lock() != function->description->model.lock()) {
         THROW exception::DifferentModel("Attempted to use agent description from a different model, "
             "in AgentFunctionDescription::setAgentOutput().");
     }
@@ -336,7 +336,7 @@ void AgentFunctionDescription::setAgentOutput(AgentDescription &agent, const std
     }
     auto a = mdl->agents.find(agent.getName());
     if (a != mdl->agents.end()) {
-        if (a->second->description.get() == &agent) {
+        if (*a->second == agent) {
             // Check agent state is valid
             if (a->second->states.find(state) != a->second->states.end()) {
                 // Clear old value
@@ -470,9 +470,15 @@ const MessageBruteForce::Description &AgentFunctionDescription::getMessageOutput
 bool AgentFunctionDescription::getMessageOutputOptional() const {
     return this->function->message_output_optional;
 }
-const AgentDescription &AgentFunctionDescription::getAgentOutput() const {
+AgentDescription AgentFunctionDescription::AgentOutput() {
     if (auto a = function->agent_output.lock())
-        return *a->description;
+        return AgentDescription(a);
+    THROW exception::OutOfBoundsException("Agent output has not been set, "
+        "in AgentFunctionDescription::AgentOutput().");
+}
+CAgentDescription AgentFunctionDescription::getAgentOutput() const {
+    if (auto a = function->agent_output.lock())
+        return CAgentDescription(a);
     THROW exception::OutOfBoundsException("Agent output has not been set, "
         "in AgentFunctionDescription::getAgentOutput().");
 }

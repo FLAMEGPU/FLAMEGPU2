@@ -79,7 +79,7 @@ int main(int argc, const char ** argv) {
         message.setMax(ENV_MAX, ENV_MAX, ENV_MAX);
     }
     {   // Circle agent
-        flamegpu::AgentDescription  &agent = model.newAgent("Circle");
+        flamegpu::AgentDescription  agent = model.newAgent("Circle");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");

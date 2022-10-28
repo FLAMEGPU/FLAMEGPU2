@@ -17,7 +17,7 @@ TEST(SubAgentDescriptionTest, RequiresExitCondition) {
         sm.newAgent("a");
     }
     ModelDescription m("host");
-    auto &ma = m.newAgent("b");
+    auto ma = m.newAgent("b");
     {
         // Define Model
         ma.newVariable<float>("b_float");
@@ -53,14 +53,14 @@ TEST(SubAgentDescriptionTest, InvalidAgentState) {
     sm.addExitCondition(ExitAlways);
     {
         // Define SubModel
-        auto &a = sm.newAgent("a");
+        auto a = sm.newAgent("a");
         a.newVariable<float>("a_float");
         a.newVariable<unsigned int>("a_uint");
         a.newState("a");
         a.newState("a2");
     }
     ModelDescription m("host");
-    auto &ma = m.newAgent("b");
+    auto ma = m.newAgent("b");
     {
         // Define Model
         ma.newVariable<float>("b_float");
@@ -86,7 +86,7 @@ TEST(SubAgentDescriptionTest, InvalidAgentVariable) {
     sm.addExitCondition(ExitAlways);
     {
         // Define SubModel
-        auto &a = sm.newAgent("a");
+        auto a = sm.newAgent("a");
         a.newVariable<float>("a_float");
         a.newVariable<unsigned int>("a_uint");
         a.newVariable<unsigned int, 2>("a_uint2");
@@ -94,7 +94,7 @@ TEST(SubAgentDescriptionTest, InvalidAgentVariable) {
         a.newState("a");
     }
     ModelDescription m("host");
-    auto &ma = m.newAgent("b");
+    auto ma = m.newAgent("b");
     {
         // Define Model
         ma.newVariable<float>("b_float");

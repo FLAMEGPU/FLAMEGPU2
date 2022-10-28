@@ -61,7 +61,7 @@ TEST(TestMessage_Array2D, Mandatory) {
     MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
@@ -106,7 +106,7 @@ TEST(TestMessage_Array2D, Optional) {
     MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
@@ -155,7 +155,7 @@ TEST(TestMessage_Array2D, OptionalNone) {
     MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
@@ -250,7 +250,7 @@ TEST(TestMessage_Array2D, Moore1W) {
     ModelDescription m(MODEL_NAME);
     MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutSimple);
@@ -283,7 +283,7 @@ TEST(TestMessage_Array2D, Moore2W) {
     ModelDescription m(MODEL_NAME);
     MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutSimple);
@@ -323,7 +323,7 @@ TEST(TestMessage_Array2D, DISABLED_DuplicateOutputException) {
     MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("message_write");
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutBad);
     fo.setMessageOutput(message);
@@ -386,7 +386,7 @@ TEST(TestMessage_Array2D, ReadEmpty) {
         message.newVariable<unsigned int>("value");  // unused by current test
     }
     {   // Circle agent
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<unsigned int>("value", 32323);  // Count the number of messages read
         agent.newFunction("in", countArray2D).setMessageInput("location");
     }
@@ -423,7 +423,7 @@ TEST(TestMessage_Array2D, DISABLED_MooreW_InitOutOfBoundsX) {
     MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
@@ -463,7 +463,7 @@ TEST(TestMessage_Array2D, DISABLED_MooreW_InitOutOfBoundsY) {
     MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
@@ -503,7 +503,7 @@ TEST(TestMessage_Array2D, DISABLED_MooreW_BadRadius1) {
     MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
@@ -543,7 +543,7 @@ TEST(TestMessage_Array2D, DISABLED_MooreW_BadRadius2) {
     MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
@@ -583,7 +583,7 @@ TEST(TestMessage_Array2D, DISABLED_Moore_InitOutOfBoundsX) {
     MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
@@ -623,7 +623,7 @@ TEST(TestMessage_Array2D, DISABLED_Moore_InitOutOfBoundsY) {
     MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
@@ -663,7 +663,7 @@ TEST(TestMessage_Array2D, DISABLED_Moore_BadRadius) {
     MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
@@ -750,7 +750,7 @@ void test_moore_wrap_comradius(
     message.newVariable<unsigned int>("v");
     message.newVariable<unsigned int, 3>("v2");
     message.setDimensions(GRID_WIDTH, GRID_HEIGHT);
-    AgentDescription &agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<unsigned int>("index");
     agent.newVariable<unsigned int>("x");
     agent.newVariable<unsigned int>("y");
@@ -879,7 +879,7 @@ void test_mooore_comradius(
     message.newVariable<unsigned int>("v");
     message.newVariable<unsigned int, 3>("v2");
     message.setDimensions(GRID_WIDTH, GRID_HEIGHT);
-    AgentDescription &agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<unsigned int>("index");
     agent.newVariable<unsigned int>("x");
     agent.newVariable<unsigned int>("y");
@@ -986,7 +986,7 @@ TEST(TestMessage_Array2D, ArrayVariable) {
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("v2");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
     AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
@@ -1047,7 +1047,7 @@ TEST(TestRTCMessage_Array2D, ArrayVariable) {
     MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
     AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
@@ -1103,7 +1103,7 @@ TEST(TestMessage_Array2D, ArrayVariable_glm) {
     MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
     AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
@@ -1162,7 +1162,7 @@ TEST(TestRTCMessage_Array2D, ArrayVariable_glm) {
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("v2");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
     AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
@@ -1298,7 +1298,7 @@ void test_arrayMessageReorderError(
     messageAB.setDimensions(GRID_WIDTH, GRID_HEIGHT);
 
     // Define the agents
-    AgentDescription &agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<unsigned int>("x");
@@ -1455,7 +1455,7 @@ TEST(TestMessage_Array2D, VonNeumann_r1) {
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("v2");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int>("success", 0);
     a.newVariable<unsigned int>("value_success", 0);
@@ -1495,7 +1495,7 @@ TEST(TestMessage_Array2D, VonNeumann_r2) {
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("v2");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int>("success", 0);
     a.newVariable<unsigned int>("value_success", 0);
@@ -1593,7 +1593,7 @@ TEST(TestMessage_Array2D, VonNeumann_wrap_r1) {
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("v2");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int>("success", 0);
     a.newVariable<unsigned int>("value_success", 0);
@@ -1633,7 +1633,7 @@ TEST(TestMessage_Array2D, VonNeumann_wrap_r2) {
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("v2");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int>("success", 0);
     a.newVariable<unsigned int>("value_success", 0);
