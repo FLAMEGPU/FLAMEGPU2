@@ -354,7 +354,7 @@ int main(int argc, const char ** argv) {
     /**
      * Create Model Runner
      */
-    NVTX_PUSH("CUDAAgentModel creation");
+    NVTX_PUSH("CUDASimulation creation");
     flamegpu::CUDASimulation  cudaSimulation(model);
     NVTX_POP();
 
@@ -392,7 +392,7 @@ int main(int argc, const char ** argv) {
     /**
      * Initialisation
      */
-    NVTX_PUSH("CUDAAgentModel initialisation");
+    NVTX_PUSH("CUDASimulation initialisation");
     cudaSimulation.initialise(argc, argv);
     if (cudaSimulation.getSimulationConfig().input_file.empty()) {
         std::mt19937_64 rng;
