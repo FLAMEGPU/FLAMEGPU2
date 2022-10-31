@@ -26,7 +26,7 @@ macro(SetCUDAGencodes)
     set_property(TARGET ${SCG_TARGET} PROPERTY CUDA_ARCHITECTURES OFF)
 
     # Define the default compute capabilites incase not provided by the user
-    set(DEFAULT_CUDA_ARCH "35;50;60;70;80;")
+    set(DEFAULT_CUDA_ARCH "35;50;60;70;80;90;")
 
     # Determine if the user has provided a non default CUDA_ARCH value 
     string(LENGTH "${CUDA_ARCH}" CUDA_ARCH_LENGTH)
