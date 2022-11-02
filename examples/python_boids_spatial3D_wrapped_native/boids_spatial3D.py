@@ -2,7 +2,7 @@
 from textwrap import indent
 from pyflamegpu import *
 import pyflamegpu.codegen
-import sys, random, math
+import sys, random, math, pathlib
 
 """
   FLAME GPU 2 implementation of Boids in python 3, using python to define agent functions rather than CUDA C++ RTC.
