@@ -46,8 +46,6 @@ TEST(TestUtilCUDAEventTimer, CUDAEventTimer) {
     EXPECT_GE(timer->getElapsedSeconds(), min_expected_seconds);
     // Trigger the destructor.
     EXPECT_NO_THROW(delete timer);
-    // Reset the device for profiling?
-    gpuErrchk(cudaDeviceReset());
 }
 
 }  // namespace test_CUDAEventTimer

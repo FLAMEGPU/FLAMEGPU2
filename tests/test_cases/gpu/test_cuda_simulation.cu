@@ -50,8 +50,6 @@ FLAMEGPU_EXIT_FUNCTION(ExitIncrementCounterSlow) {
 TEST(TestCUDASimulation, ApplyConfigDerivedContextCreation) {
     // Simply get the result from the method provided by the helper file.
     ASSERT_TRUE(getCUDASimulationContextCreationTestResult());
-    // Reset the device, just to be sure.
-    ASSERT_EQ(cudaSuccess, cudaDeviceReset());
 }
 // Test that the CUDASimulation applyConfig_derived works for multiple GPU device_id values (if available)
 TEST(TestCUDASimulation, AllDeviceIdValues) {
@@ -773,6 +771,46 @@ TEST(TestCUDASimulation, setEnvironmentProperty) {
     // Run sim
     s.simulate();
 }
+
+/*
+ * Test that use of a CUDASimulation does not break existing device memory (e.g. an existing CUDAEnsemble) by incorrectly resetting devices.
+ * This was an issue previously noticed within the python test suite, due to GC delay.
+ * see https://github.com/FLAMEGPU/FLAMEGPU2/issues/939
+ */
+TEST(TestCUDASimulation, SimulationWithExistingCUDAMalloc) {
+    // Allocate some arbitraty device memory.
+    int * d_int = nullptr;
+    gpuErrchk(cudaMalloc(&d_int, sizeof(int)));
+    // Validate that the ptr is a valid device pointer
+    cudaPointerAttributes attributes = {};
+    gpuErrchk(cudaPointerGetAttributes(&attributes, d_int));
+    EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
+
+    // Add extra layer of scope, so the ensemble get's dtor'd incase the dtor triggers a reset
+    {
+        ModelDescription m(MODEL_NAME);
+        AgentDescription &a = m.newAgent(AGENT_NAME);
+        AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
+        m.addStepFunction(IncrementCounter);
+        // Instanciate a CUDASimulation of the model
+        CUDASimulation c(m);
+        c.setPopulationData(pop);
+        c.SimulationConfig().steps = 1;
+        // Assert that using the simulation does not trigger an exception
+        c.simulate();
+    }
+
+    // At this point, the manually allocated data should still be valid, i.e. cudaMemoryTypeDevice
+    gpuErrchk(cudaPointerGetAttributes(&attributes, d_int));
+    EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
+
+    // Free explicit device memory, if it was valid (to get the correct error)
+    if (attributes.type == cudaMemoryTypeDevice) {
+        gpuErrchk(cudaFree(d_int));
+    }
+    d_int = nullptr;
+}
+
 
 }  // namespace test_cuda_simulation
 }  // namespace tests

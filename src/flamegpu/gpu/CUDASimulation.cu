@@ -46,9 +46,6 @@ namespace {
     }
 }  // anonymous namespace
 
-std::atomic<int> CUDASimulation::active_instances = {0};
-bool CUDASimulation::AUTO_CUDA_DEVICE_RESET = true;
-
 CUDASimulation::CUDASimulation(const ModelDescription& _model, int argc, const char** argv)
     : CUDASimulation(_model.model) {
     if (argc && argv) {
@@ -70,7 +67,6 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model)
     , singletonsInitialised(false)
     , rtcInitialised(false)
     , isPureRTC(detectPureRTC(model)) {
-    ++active_instances;
     initOffsetsAndMap();
     // Register the signal handler.
     util::detail::SignalHandlers::registerSignalHandlers();
@@ -126,7 +122,6 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
     , singletonsInitialised(false)
     , rtcInitialised(false)
     , isPureRTC(master_model->isPureRTC) {
-    ++active_instances;
     initOffsetsAndMap();
     // Ensure submodel is valid
     if (submodel_desc->submodel->exitConditions.empty() && submodel_desc->submodel->exitConditionCallbacks.empty() && submodel_desc->max_steps == 0) {
@@ -209,14 +204,7 @@ CUDASimulation::~CUDASimulation() {
     // Do this once to re-use existing streams rather than per-step.
     this->destroyStreams();
 
-    // If we are the last instance to destruct, and not part of an ensemble, cudaDeviceReset() for the profiler
-    --active_instances;
-    if (deviceInitialised >= 0 && AUTO_CUDA_DEVICE_RESET) {
-        if (!active_instances && !getCUDAConfig().is_ensemble) {
-            gpuErrchk(cudaDeviceReset());
-        }
-    }
-
+    // Reset the active device if not the device used for this simulation
     if (t_device_id != deviceInitialised) {
         gpuErrchk(cudaSetDevice(t_device_id));
     }

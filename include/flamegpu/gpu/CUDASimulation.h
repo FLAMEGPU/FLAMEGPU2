@@ -604,11 +604,6 @@ class CUDASimulation : public Simulation {
     std::unique_ptr<visualiser::ModelVis> visualisation;
 #endif
     /**
-     * This tracks the current number of alive CUDASimulation instances
-     * When the last is destructed, cudaDeviceReset is triggered();
-     */
-    static std::atomic<int> active_instances;
-    /**
      * Returns false if any agent functions or agent function conditions are not RTC
      * Used by constructor to set isPureRTC constant value
      * @param _model The agent model hierarchy to check
@@ -620,12 +615,6 @@ class CUDASimulation : public Simulation {
      * If true, the model is pureRTC, and hence does not use non-RTC curve
      */
     const bool isPureRTC;
-
- public:
-    /**
-     * If changed to false, will not auto cudaDeviceReset when final CUDASimulation instance is destructed
-     */
-    static bool AUTO_CUDA_DEVICE_RESET;
 };
 
 template<typename T>
