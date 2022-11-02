@@ -214,7 +214,7 @@ def io_test_fixture(IO_FILENAME):
     am_export.SimulationConfig().verbose = False;
     am_export.CUDAConfig().device_id = 0;
     am_export.exportData(IO_FILENAME)
-    del am_export # Delete previous CUDAAgentModel as multiple models with same name cant exist
+    del am_export # Delete previous CUDASimulation as multiple models with same name cant exist
 
     # Run Import
     am = pyflamegpu.CUDASimulation(m)
@@ -270,7 +270,7 @@ def io_test_fixture(IO_FILENAME):
         assert agent_in.getVariableArrayInt8("int8_t") == agent_out.getVariableArrayInt8("int8_t")
         assert agent_in.getVariableArrayUInt8("uint8_t") == agent_out.getVariableArrayUInt8("uint8_t")
     
-    del am # Delete previous CUDAAgentModel as multiple models with same name cant exist
+    del am # Delete previous CUDASimulation as multiple models with same name cant exist
     # Create seperate instance to validate env vars
     am = pyflamegpu.CUDASimulation(m)
 
