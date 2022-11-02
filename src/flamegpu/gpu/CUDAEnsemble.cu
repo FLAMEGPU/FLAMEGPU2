@@ -30,12 +30,24 @@ CUDAEnsemble::CUDAEnsemble(const ModelDescription& _model, int argc, const char*
     initialise(argc, argv);
 }
 CUDAEnsemble::~CUDAEnsemble() {
-    // Nothing to do
+// Call this here incase simulate() exited with an exception
+#ifdef _MSC_VER
+    if (config.block_standby) {
+        // Disable prevention of standby
+        SetThreadExecutionState(ES_CONTINUOUS);
+    }
+#endif
 }
 
 
 
 unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
+#ifdef _MSC_VER
+    if (config.block_standby) {
+        // This thread requires the system continuously until it exits
+        SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED);
+    }
+#endif
     // Validate that RunPlan model matches CUDAEnsemble model
     if (*plans.environment != this->model->environment->properties) {
         THROW exception::InvalidArgument("RunPlan is for a different ModelDescription, in CUDAEnsemble::simulate()");
@@ -186,6 +198,12 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
     } else if (config.error_level == EnsembleConfig::Slow && err_ct.load()) {
         THROW exception::EnsembleError("%u/%u runs failed!\n.", err_ct.load(), static_cast<unsigned int>(plans.size()));
     }
+#ifdef _MSC_VER
+    if (config.block_standby) {
+        // Disable prevention of standby
+        SetThreadExecutionState(ES_CONTINUOUS);
+    }
+#endif
 
     return err_ct.load();
 }
@@ -308,6 +326,13 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
             }
             continue;
         }
+        // --standby Disable the blocking of standby
+        if (arg.compare("--standby") == 0) {
+#ifdef _MSC_VER
+            config.block_standby = false;
+#endif
+            continue;
+        }
         fprintf(stderr, "Unexpected argument: %s\n", arg.c_str());
         printHelp(argv[0]);
         return false;
@@ -328,6 +353,9 @@ void CUDAEnsemble::printHelp(const char *executable) {
     printf(line_fmt, "-q, --quiet", "Don't print progress information to console");
     printf(line_fmt, "-t, --timing", "Output timing information to stdout");
     printf(line_fmt, "-e, --error <error level>", "The error level 0, 1, 2, off, slow or fast");
+#ifdef _MSC_VER
+    printf(line_fmt, "    --standby", "Allow the machine to enter standby during execution");
+#endif
     printf(line_fmt, "", "By default, \"slow\" will be used.");
 }
 void CUDAEnsemble::setStepLog(const StepLoggingConfig &stepConfig) {
