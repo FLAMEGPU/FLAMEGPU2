@@ -102,9 +102,11 @@ void Simulation::applyConfig() {
             THROW exception::InvalidArgument("Failed to create common log file directory: '%s': %s\n", t_path.c_str(), e.what());
         }
     }
-    // If verbose, output the flamegpu version.
+    // If verbose, output the flamegpu version and seed.
     if (config.verbosity == VERBOSE) {
-        fprintf(stdout, "FLAME GPU %s\n", flamegpu::VERSION_FULL);
+        fprintf(stdout, "FLAME GPU %s Simulation configuration\n", flamegpu::VERSION_FULL);
+        fprintf(stdout, "\tRandom Seed: %llu\n", config.random_seed);
+        fprintf(stdout, "\tSteps: %u\n", config.steps);
     }
     // Call derived class config stuff first
     applyConfig_derived();
@@ -148,6 +150,7 @@ int Simulation::checkArgs(int argc, const char** argv) {
 
     // First pass only looks for and handles input files
     // Remaining arguments can override args passed via input file
+    // Any errors to stderr have return false and are expected to raise an exception
     int i = 1;
     for (; i < argc; i++) {
         // Get arg as lowercase

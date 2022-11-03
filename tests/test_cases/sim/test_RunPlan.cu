@@ -373,6 +373,8 @@ TEST(TestRunPlan, noOutputWarning) {
     testing::internal::CaptureStderr();
     // Construct the ensemble
     flamegpu::CUDAEnsemble cuda_ensemble(model);
+    // Disable warnings
+    cuda_ensemble.Config().verbosity = QUIET;
     // Simulate (nothing)
     EXPECT_THROW(cuda_ensemble.simulate(runs), flamegpu::exception::EnsembleError);  // No agents so expect exception
     std::string output = testing::internal::GetCapturedStderr();

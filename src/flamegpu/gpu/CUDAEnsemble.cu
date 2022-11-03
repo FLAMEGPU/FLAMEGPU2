@@ -185,7 +185,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
         if (err_ct)
             printf("There were a total of %u errors.\n", err_ct.load());
     }
-    if (config.timing) {
+    if (config.timing || config.verbosity >= VERBOSE) {
         printf("Ensemble time elapsed: %fs\n", ensemble_elapsed_time);
     }
 
@@ -212,12 +212,11 @@ void CUDAEnsemble::initialise(int argc, const char** argv) {
     if (!checkArgs(argc, argv)) {
         exit(EXIT_FAILURE);
     }
-    /* Disabled as this is printed prior to quiet being accessible 
-    // If verbsoe, output the flamegpu version.
-    if (!config.quiet) {
-        fprintf(stdout, "FLAME GPU %s\n", flamegpu::VERSION_FULL);
+    // If verbose, output the flamegpu version and seed.
+    if (config.verbosity == VERBOSE) {
+        fprintf(stdout, "FLAME GPU %s Ensemble configuration\n", flamegpu::VERSION_FULL);
+        fprintf(stdout, "\tConcurrent runs: %u\n", config.concurrent_runs);
     }
-    */
 }
 int CUDAEnsemble::checkArgs(int argc, const char** argv) {
     // Parse optional args
@@ -355,7 +354,8 @@ void CUDAEnsemble::printHelp(const char *executable) {
     printf(line_fmt, "-c, --concurrent <runs>", "Number of concurrent simulations to run per device");
     printf(line_fmt, "", "By default, 4 will be used.");
     printf(line_fmt, "-o, --out <directory> <filetype>", "Directory and filetype for ensemble outputs");
-    printf(line_fmt, "-q, --quiet", "Don't print progress information to console");
+    printf(line_fmt, "-q, --quiet", "Don't print information to console");
+    printf(line_fmt, "-v, --verbose", "Print addititional information to console");
     printf(line_fmt, "-t, --timing", "Output timing information to stdout");
     printf(line_fmt, "-e, --error <error level>", "The error level 0, 1, 2, off, slow or fast");
 #ifdef _MSC_VER

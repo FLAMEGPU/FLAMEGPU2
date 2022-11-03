@@ -235,7 +235,7 @@ void CUDASimulation::initFunctions() {
     // Record, store and output the elapsed time of the step.
     initFunctionsTimer->stop();
     this->elapsedSecondsInitFunctions = initFunctionsTimer->getElapsedSeconds();
-    if (getSimulationConfig().timing) {
+    if (getSimulationConfig().timing || getSimulationConfig().verbosity >= VERBOSE) {
         fprintf(stdout, "Init Function Processing time: %.6f s\n", this->elapsedSecondsInitFunctions);
     }
 }
@@ -257,7 +257,7 @@ void CUDASimulation::exitFunctions() {
     // Record, store and output the elapsed time of the step.
     exitFunctionsTimer->stop();
     this->elapsedSecondsExitFunctions = exitFunctionsTimer->getElapsedSeconds();
-    if (getSimulationConfig().timing) {
+    if (getSimulationConfig().timing || getSimulationConfig().verbosity >= VERBOSE) {
         fprintf(stdout, "Exit Function Processing time: %.6f s\n", this->elapsedSecondsExitFunctions);
     }
 }
@@ -559,7 +559,7 @@ bool CUDASimulation::step() {
     stepTimer->stop();
     float stepMilliseconds = stepTimer->getElapsedSeconds();
     this->elapsedSecondsPerStep.push_back(stepMilliseconds);
-    if (getSimulationConfig().timing) {
+    if (getSimulationConfig().timing || getSimulationConfig().verbosity >= VERBOSE) {
         // Resolution is 0.5 microseconds, so print to 1 us.
         fprintf(stdout, "Step %d Processing time: %.6f s\n", this->step_count, stepMilliseconds);
     }
@@ -1218,7 +1218,7 @@ void CUDASimulation::simulate() {
     // Record, store and output the elapsed simulation time
     simulationTimer->stop();
     elapsedSecondsSimulation = simulationTimer->getElapsedSeconds();
-    if (getSimulationConfig().timing) {
+    if (getSimulationConfig().timing || getSimulationConfig().verbosity >= VERBOSE) {
         // Resolution is 0.5 microseconds, so print to 1 us.
         fprintf(stdout, "Total Processing time: %.6f s\n", elapsedSecondsSimulation);
     }

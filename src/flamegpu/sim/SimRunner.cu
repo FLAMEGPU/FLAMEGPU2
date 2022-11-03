@@ -85,6 +85,8 @@ void SimRunner::start() {
             simulation->SimulationConfig().steps = plans[run_id].getSteps();
             simulation->SimulationConfig().random_seed = plans[run_id].getRandomSimulationSeed();
             simulation->SimulationConfig().verbosity = DEFAULT;
+            if (verbosity == QUIET)  // Use quiet verbosity for sims if set in ensemble but never verbose
+                simulation->SimulationConfig().verbosity = QUIET;
             simulation->SimulationConfig().timing = false;
             simulation->CUDAConfig().device_id = this->device_id;
             simulation->CUDAConfig().is_ensemble = true;
@@ -125,11 +127,13 @@ void SimRunner::start() {
                 }
                 return;
             } else {
+                // Progress flush
                 if (verbosity == VERBOSE) {
                     fprintf(stdout, "\n");
                     fflush(stdout);
                 }
-                fprintf(stderr, "Run %u failed on device %d, thread %u with exception: \n%s\n", run_id, device_id, runner_id, e.what());
+                if (verbosity > QUIET)
+                    fprintf(stderr, "Warning: Run %u failed on device %d, thread %u with exception: \n%s\n", run_id, device_id, runner_id, e.what());
             }
         }
     }

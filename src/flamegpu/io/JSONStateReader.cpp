@@ -350,7 +350,8 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
             if (sim_instance) {
                 if (lastKey == "input_file") {
                     if (filename != str && str[0] != '\0')
-                        printf("Warning: Input file '%s' refers to second input file '%s', this will not be loaded.\n", filename.c_str(), str);
+                        if (sim_instance->getSimulationConfig().verbosity > 0)
+                            fprintf(stderr, "Warning: Input file '%s' refers to second input file '%s', this will not be loaded.\n", filename.c_str(), str);
                     // sim_instance->SimulationConfig().input_file = str;
                 } else if (lastKey == "step_log_file") {
                     sim_instance->SimulationConfig().step_log_file = str;
