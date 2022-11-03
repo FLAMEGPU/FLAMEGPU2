@@ -145,7 +145,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
                 new (&runners[i++]) SimRunner(model, err_ct, next_run, plans,
                     step_log_config, exit_log_config,
                     d, j,
-                    !config.quiet, config.error_level == EnsembleConfig::Fast,
+                    config.verbosity, config.error_level == EnsembleConfig::Fast,
                     run_logs, log_export_queue, log_export_queue_mutex, log_export_queue_cdn, fast_err_detail, TOTAL_RUNNERS);
             }
         }
@@ -180,7 +180,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
     ensemble_elapsed_time = ensemble_timer.getElapsedSeconds();
 
     // Ensemble has finished, print summary
-    if (!config.quiet) {
+    if (config.verbosity > 0) {
         printf("\rCUDAEnsemble completed %u runs successfully!\n", static_cast<unsigned int>(plans.size() - err_ct));
         if (err_ct)
             printf("There were a total of %u errors.\n", err_ct.load());
@@ -297,7 +297,12 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
         }
         // -q/--quiet, Don't report progress to console.
         if (arg.compare("--quiet") == 0 || arg.compare("-q") == 0) {
-            config.quiet = true;
+            config.verbosity = QUIET;
+            continue;
+        }
+        // -v/--verbose, Report all progress to console.
+        if (arg.compare("--verbose") == 0 || arg.compare("-v") == 0) {
+            config.verbosity = VERBOSE;
             continue;
         }
         // -t/--timing, Output timing information to stdout

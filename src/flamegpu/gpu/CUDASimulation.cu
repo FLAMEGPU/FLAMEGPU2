@@ -166,7 +166,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
         submodel_map.emplace(it_sm->first, std::unique_ptr<CUDASimulation>(new CUDASimulation(it_sm->second, this)));
     }
     // Submodels all run quiet/not verbose by default
-    SimulationConfig().verbose = false;
+    SimulationConfig().verbosity = DEFAULT;
     SimulationConfig().steps = submodel_desc->max_steps;
     CUDAConfig().is_ensemble = true;
 
@@ -525,7 +525,7 @@ bool CUDASimulation::step() {
     this->assignAgentIDs();
 
     // If verbose, print the step number.
-    if (getSimulationConfig().verbose) {
+    if (getSimulationConfig().verbosity == VERBOSE) {
         fprintf(stdout, "Processing Simulation Step %u\n", step_count);
     }
 

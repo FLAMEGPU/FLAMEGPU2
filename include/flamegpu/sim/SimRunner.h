@@ -9,6 +9,8 @@
 #include <thread>
 #include <vector>
 #include <string>
+
+#include "flamegpu/defines.h"
 #include "flamegpu/sim/LogFrame.h"
 
 namespace flamegpu {
@@ -59,7 +61,7 @@ class SimRunner {
         std::shared_ptr<const LoggingConfig> _exit_log_config,
         int _device_id,
         unsigned int _runner_id,
-        bool _verbose,
+        flamegpu::verbosity _verbosity,
         bool _fail_fast,
         std::vector<RunLog> &run_logs,
         std::queue<unsigned int> &log_export_queue,
@@ -91,7 +93,7 @@ class SimRunner {
     /**
      * Flag for whether to print progress
      */
-    const bool verbose;
+    const flamegpu::verbosity verbosity;
     /**
      * Flag for whether the ensemble should throw an exception if it errors out
      */

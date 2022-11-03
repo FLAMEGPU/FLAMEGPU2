@@ -127,16 +127,8 @@ int XMLStateReader::parse() {
                     sim_instance->SimulationConfig().random_seed = static_cast<uint64_t>(stoull(val));
                 } else if (key == "steps") {
                     sim_instance->SimulationConfig().steps = static_cast<unsigned int>(stoull(val));
-                } else if (key == "verbose") {
-                    for (auto& c : val)
-                        c = static_cast<char>(::tolower(c));
-                    if (val == "true") {
-                        sim_instance->SimulationConfig().verbose = true;
-                    } else if (val == "false") {
-                        sim_instance->SimulationConfig().verbose = false;
-                    } else {
-                        sim_instance->SimulationConfig().verbose = static_cast<bool>(stoll(val));
-                    }
+                } else if (key == "verbosity") {
+                    sim_instance->SimulationConfig().verbosity = static_cast<flamegpu::verbosity>(stoull(val));
                 } else if (key == "timing") {
                     for (auto& c : val)
                         c = static_cast<char>(::tolower(c));

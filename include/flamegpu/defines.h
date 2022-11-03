@@ -17,6 +17,10 @@ constexpr const char* ID_VARIABLE_NAME = "_id";
  * If this value is changed, things may break
  */
 constexpr id_t ID_NOT_SET = 0;
+/**
+* Typedef for verbosity level of the API
+*/
+typedef enum {QUIET, DEFAULT, VERBOSE} verbosity;
 
 typedef unsigned int size_type;
 

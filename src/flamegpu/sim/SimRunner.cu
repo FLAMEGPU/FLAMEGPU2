@@ -22,7 +22,7 @@ SimRunner::SimRunner(const std::shared_ptr<const ModelData> _model,
     std::shared_ptr<const LoggingConfig> _exit_log_config,
     int _device_id,
     unsigned int _runner_id,
-    bool _verbose,
+    flamegpu::verbosity _verbosity,
     bool _fail_fast,
     std::vector<RunLog> &_run_logs,
     std::queue<unsigned int> &_log_export_queue,
@@ -35,7 +35,7 @@ SimRunner::SimRunner(const std::shared_ptr<const ModelData> _model,
       , device_id(_device_id)
       , runner_id(_runner_id)
       , total_runners(_total_runners)
-      , verbose(_verbose)
+      , verbosity(_verbosity)
       , fail_fast(_fail_fast)
       , err_ct(_err_ct)
       , next_run(_next_run)
@@ -84,7 +84,7 @@ void SimRunner::start() {
             // Copy steps and seed from runplan
             simulation->SimulationConfig().steps = plans[run_id].getSteps();
             simulation->SimulationConfig().random_seed = plans[run_id].getRandomSimulationSeed();
-            simulation->SimulationConfig().verbose = false;
+            simulation->SimulationConfig().verbosity = DEFAULT;
             simulation->SimulationConfig().timing = false;
             simulation->CUDAConfig().device_id = this->device_id;
             simulation->CUDAConfig().is_ensemble = true;
@@ -104,7 +104,7 @@ void SimRunner::start() {
             }
             log_export_queue_cdn.notify_one();
             // Print progress to console
-            if (verbose) {
+            if (verbosity == VERBOSE) {
                 const int progress = static_cast<int>(next_run.load()) - static_cast<int>(total_runners) + 1;
                 fprintf(stdout, "\rCUDAEnsemble progress: %d/%u", progress < 1 ? 1 : progress, static_cast<unsigned int>(plans.size()));
                 fflush(stdout);
@@ -125,7 +125,7 @@ void SimRunner::start() {
                 }
                 return;
             } else {
-                if (verbose) {
+                if (verbosity == VERBOSE) {
                     fprintf(stdout, "\n");
                     fflush(stdout);
                 }

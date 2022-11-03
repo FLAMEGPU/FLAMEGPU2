@@ -6,6 +6,7 @@
 #include <set>
 #include <vector>
 
+#include "flamegpu/defines.h"
 
 namespace flamegpu {
 
@@ -51,7 +52,7 @@ class CUDAEnsemble {
          * If true progress logging to stdout will be suppressed
          * Defaults to false
          */
-        bool quiet = false;
+        verbosity verbosity = DEFAULT;
         /**
          * If true, the total runtime for the ensemble will be printed to stdout at completion
          * This is independent of the EnsembleConfig::quiet

@@ -118,8 +118,8 @@ int XMLStateWriter::writeStates(bool prettyPrint) {
             pListElement->SetText(sim_cfg.steps);
             pSimCfg->InsertEndChild(pListElement);
             // Verbose output
-            pListElement = doc.NewElement("verbose");
-            pListElement->SetText(sim_cfg.verbose);
+            pListElement = doc.NewElement("verbosity");
+            pListElement->SetText(sim_cfg.verbosity);
             pSimCfg->InsertEndChild(pListElement);
             // Timing Output
             pListElement = doc.NewElement("timing");

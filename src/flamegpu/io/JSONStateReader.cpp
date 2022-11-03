@@ -305,8 +305,8 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
                     sim_instance->SimulationConfig().steps = static_cast<unsigned int>(val);
                 } else if (lastKey == "timing") {
                     sim_instance->SimulationConfig().timing = static_cast<bool>(val);
-                } else if (lastKey == "verbose") {
-                    sim_instance->SimulationConfig().verbose = static_cast<bool>(val);
+                } else if (lastKey == "verbosity") {
+                    sim_instance->SimulationConfig().verbosity = static_cast<flamegpu::verbosity>(val);
                 } else if (lastKey == "console_mode") {
 #ifdef VISUALISATION
                     sim_instance->SimulationConfig().console_mode = static_cast<bool>(val);

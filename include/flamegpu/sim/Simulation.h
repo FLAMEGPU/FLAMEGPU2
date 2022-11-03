@@ -7,6 +7,7 @@
 #include <utility>
 #include <unordered_map>
 
+#include "flamegpu/defines.h"
 #include "flamegpu/sim/AgentInterface.h"
 
 
@@ -39,7 +40,7 @@ class Simulation {
             truncate_log_files = other.truncate_log_files;
             random_seed = other.random_seed;
             steps = other.steps;
-            verbose = other.verbose;
+            verbosity = other.verbosity;
             timing = other.timing;
 #ifdef VISUALISATION
             console_mode = other.console_mode;
@@ -52,7 +53,7 @@ class Simulation {
         bool truncate_log_files = true;
         uint64_t random_seed;
         unsigned int steps = 1;
-        bool verbose = false;
+        verbosity verbosity = DEFAULT;
         bool timing = false;
 #ifdef VISUALISATION
         bool console_mode = false;

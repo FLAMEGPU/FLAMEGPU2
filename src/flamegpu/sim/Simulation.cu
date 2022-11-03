@@ -103,7 +103,7 @@ void Simulation::applyConfig() {
         }
     }
     // If verbose, output the flamegpu version.
-    if (config.verbose) {
+    if (config.verbosity == VERBOSE) {
         fprintf(stdout, "FLAME GPU %s\n", flamegpu::VERSION_FULL);
     }
     // Call derived class config stuff first
@@ -232,7 +232,12 @@ int Simulation::checkArgs(int argc, const char** argv) {
         }
         // -v/--verbose, Verbose FLAME GPU output.
         if (arg.compare("--verbose") == 0 || arg.compare("-v") == 0) {
-            config.verbose = true;
+            config.verbosity = VERBOSE;
+            continue;
+        }
+        // -q/--quiet, Verbose level quiet FLAME GPU output.
+        if (arg.compare("--quiet") == 0 || arg.compare("-q") == 0) {
+            config.verbosity = QUIET;
             continue;
         }
         // -t/--timing, Output timing information to stdout
