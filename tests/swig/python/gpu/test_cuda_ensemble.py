@@ -2,7 +2,7 @@ import pytest
 from unittest import TestCase
 from pyflamegpu import *
 from random import randint
-import time
+import time, sys
 
 
 # Global vars needed in several classes
@@ -103,21 +103,21 @@ class TestCUDAEnsemble(TestCase):
         assert mutableConfig.out_format == "json"
         assert mutableConfig.concurrent_runs == 4
         # assert mutableConfig.devices == std::set<int>()  # @todo - this will need to change
-        assert mutableConfig.quiet == False
+        assert mutableConfig.verbosity == pyflamegpu.DEFAULT
         assert mutableConfig.timing == False
         # Mutate the configuration
         mutableConfig.out_directory = "test"
         mutableConfig.out_format = "xml"
         mutableConfig.concurrent_runs = 1
         # mutableConfig.devices = std::set<int>({0}) # @todo - this will need to change.
-        mutableConfig.quiet = True
+        mutableConfig.verbosity = pyflamegpu.VERBOSE
         mutableConfig.timing = True
         # Check via the const ref, this should show the same value as config was a reference, not a copy.
         assert mutableConfig.out_directory == "test"
         assert mutableConfig.out_format == "xml"
         assert mutableConfig.concurrent_runs == 1
         # assert mutableConfig.devices == std::set<int>({0})  # @todo - this will need to change
-        assert mutableConfig.quiet == True
+        assert mutableConfig.verbosity == pyflamegpu.VERBOSE
         assert mutableConfig.timing == True
 
     @pytest.mark.skip(reason="--help cannot be tested due to exit()")
@@ -172,10 +172,29 @@ class TestCUDAEnsemble(TestCase):
         # Create an ensemble
         ensemble = pyflamegpu.CUDAEnsemble(model)
         # Call initialise with differnt cli arguments, which will mutate values. Check they have the new value.
-        assert ensemble.Config().quiet == False
+        assert ensemble.Config().verbosity == pyflamegpu.DEFAULT
         argv = ["ensemble.exe", "--quiet"]
         ensemble.initialise(argv)
-        assert ensemble.Config().quiet == True
+        assert ensemble.Config().verbosity == pyflamegpu.QUIET
+    
+    def test_initialise_default(self):
+        # Create a model
+        model = pyflamegpu.ModelDescription("test")
+        # Create an ensemble
+        ensemble = pyflamegpu.CUDAEnsemble(model)
+        # Call initialise with differnt cli arguments, which will mutate values. Check they have the new value.
+        assert ensemble.Config().verbosity == pyflamegpu.DEFAULT
+
+    def test_initialise_verbose(self):
+        # Create a model
+        model = pyflamegpu.ModelDescription("test")
+        # Create an ensemble
+        ensemble = pyflamegpu.CUDAEnsemble(model)
+        # Call initialise with differnt cli arguments, which will mutate values. Check they have the new value.
+        assert ensemble.Config().verbosity == pyflamegpu.DEFAULT
+        argv = ["ensemble.exe", "--verbose"]
+        ensemble.initialise(argv)
+        assert ensemble.Config().verbosity == pyflamegpu.VERBOSE
 
     def test_initialise_timing(self):
         # Create a model
@@ -251,8 +270,7 @@ class TestCUDAEnsemble(TestCase):
         # Create an ensemble
         ensemble = pyflamegpu.CUDAEnsemble(model)
         # Make it quiet to avoid outputting during the test suite
-        ensemble.Config().quiet = True
-        ensemble.Config().out_format = ""  # Suppress warning
+        ensemble.Config().verbosity = pyflamegpu.QUIET
         # Simulate the ensemble,
         ensemble.simulate(plans)
 
