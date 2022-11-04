@@ -23,14 +23,8 @@ include(${FLAMEGPU_ROOT}/cmake/version.cmake)
 
 # Python module name (must match module name in swig input *.i file), leading to import <x>
 SET(PYTHON_MODULE_NAME pyflamegpu)
-# Set the python distribution name for uniquely naming wheels based on build config.
+# Set the python distribution name, which in practice should probably always match the module name to avoid metadata issues and duplicate installs of the same module.
 set(PYTHON_DISTRIBUTION_NAME ${PYTHON_MODULE_NAME})
-# If the vis is enabled, suffix it onto the python distribution name.
-if(VISUALISATION)
-  # Python doesn't like dashes, so use underscores.
-  # The recommendations for package / distribution names are also to keep them short and all lowercase, although _ are allowed to improve readability.
-  set(PYTHON_DISTRIBUTION_NAME "${PYTHON_DISTRIBUTION_NAME}_vis")
-endif()
 
 # Set the swig cmake target name (i.e. this needs to not be pyflamegpu)
 set(PYTHON_SWIG_TARGET_NAME "${PYTHON_MODULE_NAME}_swig")

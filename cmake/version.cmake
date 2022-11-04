@@ -112,15 +112,27 @@ endif()
 
 # Local python version identifiers are: <public version identifier>[+<local version label>]
 # Optionally (default on) embed the cuda version in the local version number, to differentiate wheels based on python version.
+# Also mark visuasliation builds in the local build number
+# Builds a list of the local label components, prior to joining with the local label componetn separator
 set(FLAMEGPU_VERSION_PYTHON_LOCAL "${FLAMEGPU_VERSION_PYTHON_PUBLIC}")
+
 # Find and attach the `cudaXY` to the local python version number, if we know what it should be.
 if(CUDAToolkit_FOUND)
-    set(FLAMEGPU_VERSION_PYTHON_LOCAL_SUFFIX "cuda${CUDAToolkit_VERSION_MAJOR}${CUDAToolkit_VERSION_MINOR}")
+    list(APPEND FLAMEGPU_VERSION_PYTHON_LOCAL_SEGMENTS "cuda${CUDAToolkit_VERSION_MAJOR}${CUDAToolkit_VERSION_MINOR}")
 endif()
-if(NOT FLAMEGPU_VERSION_PYTHON_LOCAL_SUFFIX STREQUAL "")
-    set(FLAMEGPU_VERSION_PYTHON_LOCAL "${FLAMEGPU_VERSION_PYTHON_LOCAL}+${FLAMEGPU_VERSION_PYTHON_LOCAL_SUFFIX}")
+
+# If a vis build, also add the visualisation marker
+if(VISUALISATION)
+    list(APPEND FLAMEGPU_VERSION_PYTHON_LOCAL_SEGMENTS "vis")
 endif()
-unset(FLAMEGPU_VERSION_PYTHON_LOCAL_SUFFIX)
+
+# Join the local version segments with the local version separator
+list(JOIN FLAMEGPU_VERSION_PYTHON_LOCAL_SEGMENTS "." FLAMEGPU_VERSION_PYTHON_LOCAL_LABEL)
+
+# If there are local version 
+if(NOT FLAMEGPU_VERSION_PYTHON_LOCAL_LABEL STREQUAL "")
+    set(FLAMEGPU_VERSION_PYTHON_LOCAL "${FLAMEGPU_VERSION_PYTHON_LOCAL}+${FLAMEGPU_VERSION_PYTHON_LOCAL_LABEL}")
+endif()
 
 # Set the python version number to use, based on the local version flag.
 set(FLAMEGPU_VERSION_PYTHON ${FLAMEGPU_VERSION_PYTHON_PUBLIC})
@@ -129,5 +141,7 @@ if(BUILD_SWIG_PYTHON_LOCALVERSION)
 endif()
 
 # Unset temporary variables.
+unset(FLAMEGPU_VERSION_PYTHON_LOCAL_SEGMENTS)
+unset(FLAMEGPU_VERSION_PYTHON_LOCAL_LABEL)
 unset(FLAMEGPU_VERSION_PRERELEASE_LABEL)
 unset(FLAMEGPU_VERSION_PRERELEASE_NUMBER)
