@@ -104,7 +104,7 @@ void Simulation::applyConfig() {
         }
     }
     // If verbose, output the flamegpu version and seed.
-    if (config.verbosity == VERBOSE) {
+    if (config.verbosity == Verbosity::Verbose) {
         fprintf(stdout, "FLAME GPU %s\n", flamegpu::VERSION_FULL);
         fprintf(stdout, "Simulation configuration:\n");
         fprintf(stdout, "\tRandom Seed: %" PRIu64 "\n", config.random_seed);
@@ -237,12 +237,12 @@ int Simulation::checkArgs(int argc, const char** argv) {
         }
         // -v/--verbose, Verbose FLAME GPU output.
         if (arg.compare("--verbose") == 0 || arg.compare("-v") == 0) {
-            config.verbosity = VERBOSE;
+            config.verbosity = Verbosity::Verbose;
             continue;
         }
         // -q/--quiet, Verbose level quiet FLAME GPU output.
         if (arg.compare("--quiet") == 0 || arg.compare("-q") == 0) {
-            config.verbosity = QUIET;
+            config.verbosity = Verbosity::Quiet;
             continue;
         }
         // -t/--timing, Output timing information to stdout

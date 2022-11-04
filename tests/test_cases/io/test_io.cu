@@ -165,7 +165,7 @@ class MiniSim {
             am.SimulationConfig().truncate_log_files = false;
             am.SimulationConfig().random_seed = 654321;
             am.SimulationConfig().steps = 123;
-            am.SimulationConfig().verbosity = QUIET;
+            am.SimulationConfig().verbosity = Verbosity::Quiet;
             am.SimulationConfig().timing = true;
 #ifdef VISUALISATION
             am.SimulationConfig().console_mode = true;
@@ -183,7 +183,7 @@ class MiniSim {
             am.SimulationConfig().truncate_log_files = true;
             am.SimulationConfig().random_seed = 0;
             am.SimulationConfig().steps = 0;
-            am.SimulationConfig().verbosity = VERBOSE;
+            am.SimulationConfig().verbosity = Verbosity::Verbose;
             am.SimulationConfig().timing = false;
 #ifdef VISUALISATION
             am.SimulationConfig().console_mode = false;
@@ -201,7 +201,7 @@ class MiniSim {
             EXPECT_EQ(am.getSimulationConfig().truncate_log_files, false);
             EXPECT_EQ(am.getSimulationConfig().random_seed, 654321u);
             EXPECT_EQ(am.getSimulationConfig().steps, 123u);
-            EXPECT_EQ(am.getSimulationConfig().verbosity, QUIET);
+            EXPECT_EQ(am.getSimulationConfig().verbosity, Verbosity::Quiet);
             EXPECT_EQ(am.getSimulationConfig().timing, true);
 #ifdef VISUALISATION
             EXPECT_EQ(am.getSimulationConfig().console_mode, true);

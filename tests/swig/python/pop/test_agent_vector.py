@@ -813,7 +813,7 @@ class AgentVectorTest(TestCase):
         pop2 = pyflamegpu.AgentVector(agent2);
         pop3 = pyflamegpu.AgentVector(agent3);
         pop4 = pyflamegpu.AgentVector(agent4);
-        assert pop.getInitialState(), pyflamegpu.DEFAULT_STATE
+        assert pop.getInitialState(), pyflamegpu.Verbosity_Default_STATE
         assert pop2.getInitialState(), "test"
         assert pop3.getInitialState(), "test"
         assert pop4.getInitialState(), "test2"

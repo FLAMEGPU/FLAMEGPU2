@@ -821,13 +821,13 @@ TEST(TestCUDASimulation, simulationVerbosity) {
     CUDASimulation c(m);
     c.setPopulationData(pop);
     c.SimulationConfig().steps = 1;
-    // QUIET
+    // Verbosity::Quiet
     {
         // Capture stderr and stdout
         testing::internal::CaptureStdout();
         testing::internal::CaptureStderr();
         // Set verbosity level
-        c.SimulationConfig().verbosity = QUIET;
+        c.SimulationConfig().verbosity = Verbosity::Quiet;
         // Simulate
         EXPECT_NO_THROW(c.simulate());
         // Get stderr and stdout
@@ -843,7 +843,7 @@ TEST(TestCUDASimulation, simulationVerbosity) {
         testing::internal::CaptureStdout();
         testing::internal::CaptureStderr();
         // Set verbosity level
-        c.SimulationConfig().verbosity = DEFAULT;
+        c.SimulationConfig().verbosity = Verbosity::Default;
         // Simulate
         c.resetStepCounter();
         EXPECT_NO_THROW(c.simulate());
@@ -854,13 +854,13 @@ TEST(TestCUDASimulation, simulationVerbosity) {
         EXPECT_TRUE(output.empty());
         EXPECT_TRUE(errors.empty());
     }
-    // VERBOSE
+    // Verbosity::Verbose
     {
         // Capture stderr and stdout
         testing::internal::CaptureStdout();
         testing::internal::CaptureStderr();
         // Set verbosity level
-        c.SimulationConfig().verbosity = VERBOSE;
+        c.SimulationConfig().verbosity = Verbosity::Verbose;
         // Simulate
         c.resetStepCounter();
         EXPECT_NO_THROW(c.simulate());

@@ -180,12 +180,12 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
     ensemble_elapsed_time = ensemble_timer.getElapsedSeconds();
 
     // Ensemble has finished, print summary
-    if (config.verbosity > 0) {
+    if (config.verbosity > Verbosity::Quiet) {
         printf("\rCUDAEnsemble completed %u runs successfully!\n", static_cast<unsigned int>(plans.size() - err_ct));
         if (err_ct)
             printf("There were a total of %u errors.\n", err_ct.load());
     }
-    if (config.timing || config.verbosity >= VERBOSE) {
+    if (config.timing || config.verbosity >= Verbosity::Verbose) {
         printf("Ensemble time elapsed: %fs\n", ensemble_elapsed_time);
     }
 
@@ -213,7 +213,7 @@ void CUDAEnsemble::initialise(int argc, const char** argv) {
         exit(EXIT_FAILURE);
     }
     // If verbose, output the flamegpu version and seed.
-    if (config.verbosity == VERBOSE) {
+    if (config.verbosity == Verbosity::Verbose) {
         fprintf(stdout, "FLAME GPU %s\n", flamegpu::VERSION_FULL);
         fprintf(stdout, "Ensemble configuration:\n");
         fprintf(stdout, "\tConcurrent runs: %u\n", config.concurrent_runs);
@@ -297,12 +297,12 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
         }
         // -q/--quiet, Don't report progress to console.
         if (arg.compare("--quiet") == 0 || arg.compare("-q") == 0) {
-            config.verbosity = QUIET;
+            config.verbosity = Verbosity::Quiet;
             continue;
         }
         // -v/--verbose, Report all progress to console.
         if (arg.compare("--verbose") == 0 || arg.compare("-v") == 0) {
-            config.verbosity = VERBOSE;
+            config.verbosity = Verbosity::Verbose;
             continue;
         }
         // -t/--timing, Output timing information to stdout

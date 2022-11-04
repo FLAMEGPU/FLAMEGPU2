@@ -52,7 +52,7 @@ class CUDAEnsemble {
          * If true progress logging to stdout will be suppressed
          * Defaults to false
          */
-        flamegpu::verbosity verbosity = DEFAULT;
+        flamegpu::Verbosity verbosity = Verbosity::Default;
         /**
          * If true, the total runtime for the ensemble will be printed to stdout at completion
          * This is independent of the EnsembleConfig::quiet

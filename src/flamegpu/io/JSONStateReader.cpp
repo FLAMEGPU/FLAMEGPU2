@@ -306,7 +306,7 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
                 } else if (lastKey == "timing") {
                     sim_instance->SimulationConfig().timing = static_cast<bool>(val);
                 } else if (lastKey == "verbosity") {
-                    sim_instance->SimulationConfig().verbosity = static_cast<flamegpu::verbosity>(val);
+                    sim_instance->SimulationConfig().verbosity = static_cast<flamegpu::Verbosity>(val);
                 } else if (lastKey == "console_mode") {
 #ifdef VISUALISATION
                     sim_instance->SimulationConfig().console_mode = static_cast<bool>(val);
@@ -350,7 +350,7 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
             if (sim_instance) {
                 if (lastKey == "input_file") {
                     if (filename != str && str[0] != '\0')
-                        if (sim_instance->getSimulationConfig().verbosity > 0)
+                        if (sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet)
                             fprintf(stderr, "Warning: Input file '%s' refers to second input file '%s', this will not be loaded.\n", filename.c_str(), str);
                     // sim_instance->SimulationConfig().input_file = str;
                 } else if (lastKey == "step_log_file") {

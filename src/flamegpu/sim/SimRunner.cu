@@ -22,7 +22,7 @@ SimRunner::SimRunner(const std::shared_ptr<const ModelData> _model,
     std::shared_ptr<const LoggingConfig> _exit_log_config,
     int _device_id,
     unsigned int _runner_id,
-    flamegpu::verbosity _verbosity,
+    flamegpu::Verbosity _verbosity,
     bool _fail_fast,
     std::vector<RunLog> &_run_logs,
     std::queue<unsigned int> &_log_export_queue,
@@ -84,9 +84,9 @@ void SimRunner::start() {
             // Copy steps and seed from runplan
             simulation->SimulationConfig().steps = plans[run_id].getSteps();
             simulation->SimulationConfig().random_seed = plans[run_id].getRandomSimulationSeed();
-            simulation->SimulationConfig().verbosity = DEFAULT;
-            if (verbosity == QUIET)  // Use quiet verbosity for sims if set in ensemble but never verbose
-                simulation->SimulationConfig().verbosity = QUIET;
+            simulation->SimulationConfig().verbosity = Verbosity::Default;
+            if (verbosity == Verbosity::Quiet)  // Use quiet verbosity for sims if set in ensemble but never verbose
+                simulation->SimulationConfig().verbosity = Verbosity::Quiet;
             simulation->SimulationConfig().timing = false;
             simulation->CUDAConfig().device_id = this->device_id;
             simulation->CUDAConfig().is_ensemble = true;
@@ -106,7 +106,7 @@ void SimRunner::start() {
             }
             log_export_queue_cdn.notify_one();
             // Print progress to console
-            if (verbosity >= DEFAULT) {
+            if (verbosity >= Verbosity::Default) {
                 const int progress = static_cast<int>(next_run.load()) - static_cast<int>(total_runners) + 1;
                 fprintf(stdout, "\rCUDAEnsemble progress: %d/%u", progress < 1 ? 1 : progress, static_cast<unsigned int>(plans.size()));
                 fflush(stdout);
@@ -128,11 +128,11 @@ void SimRunner::start() {
                 return;
             } else {
                 // Progress flush
-                if (verbosity >= DEFAULT) {
+                if (verbosity >= Verbosity::Default) {
                     fprintf(stdout, "\n");
                     fflush(stdout);
                 }
-                if (verbosity > QUIET)
+                if (verbosity > Verbosity::Quiet)
                     fprintf(stderr, "Warning: Run %u failed on device %d, thread %u with exception: \n%s\n", run_id, device_id, runner_id, e.what());
             }
         }

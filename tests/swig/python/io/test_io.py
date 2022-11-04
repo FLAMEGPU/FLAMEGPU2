@@ -211,7 +211,7 @@ def io_test_fixture(IO_FILENAME):
     am_export.SimulationConfig().random_seed = 654321;
     am_export.SimulationConfig().steps = 123;
     am_export.SimulationConfig().timing = True;
-    am_export.SimulationConfig().verbosity = pyflamegpu.QUIET
+    am_export.SimulationConfig().verbosity = pyflamegpu.Verbosity_Quiet
     am_export.CUDAConfig().device_id = 0;
     am_export.exportData(IO_FILENAME)
     del am_export # Delete previous CUDASimulation as multiple models with same name cant exist
@@ -222,7 +222,7 @@ def io_test_fixture(IO_FILENAME):
     am.SimulationConfig().random_seed = 0;
     am.SimulationConfig().steps = 0;
     am.SimulationConfig().timing = False;
-    am.SimulationConfig().verbosity = pyflamegpu.DEFAULT
+    am.SimulationConfig().verbosity = pyflamegpu.Verbosity_Default
     # Perform import
     am.SimulationConfig().input_file = IO_FILENAME
     am.applyConfig()
@@ -230,7 +230,7 @@ def io_test_fixture(IO_FILENAME):
     assert am.SimulationConfig().random_seed == 654321
     assert am.SimulationConfig().steps == 123
     assert am.SimulationConfig().timing == True
-    assert am.SimulationConfig().verbosity == pyflamegpu.QUIET
+    assert am.SimulationConfig().verbosity == pyflamegpu.Verbosity_Quiet
     assert am.SimulationConfig().input_file == IO_FILENAME
     assert am.CUDAConfig().device_id == 0;
     pop_a_in = pyflamegpu.AgentVector(a)

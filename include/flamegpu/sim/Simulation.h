@@ -53,7 +53,7 @@ class Simulation {
         bool truncate_log_files = true;
         uint64_t random_seed;
         unsigned int steps = 1;
-        flamegpu::verbosity verbosity = DEFAULT;
+        flamegpu::Verbosity verbosity = Verbosity::Default;
         bool timing = false;
 #ifdef VISUALISATION
         bool console_mode = false;

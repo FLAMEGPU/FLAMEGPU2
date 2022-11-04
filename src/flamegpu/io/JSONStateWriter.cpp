@@ -63,7 +63,7 @@ void JSONStateWriter::doWrite(T &writer) {
                 writer.Uint(sim_cfg.steps);
                 // Verbose output
                 writer.Key("verbosity");
-                writer.Uint(sim_cfg.verbosity);
+                writer.Uint(static_cast<unsigned int>(sim_cfg.verbosity));
                 // Timing Output
                 writer.Key("timing");
                 writer.Bool(sim_cfg.timing);

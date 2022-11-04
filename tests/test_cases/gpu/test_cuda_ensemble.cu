@@ -48,21 +48,21 @@ TEST(TestCUDAEnsemble, EnsembleConfig) {
     EXPECT_EQ(immutableConfig.out_format, "json");
     EXPECT_EQ(immutableConfig.concurrent_runs, 4u);
     EXPECT_EQ(immutableConfig.devices, std::set<int>());  // @todo - this will need to change.
-    EXPECT_EQ(immutableConfig.verbosity, DEFAULT);
+    EXPECT_EQ(immutableConfig.verbosity, Verbosity::Default);
     EXPECT_EQ(immutableConfig.timing, false);
     // Mutate the config. Note we cannot mutate the return from getConfig, and connot test this as it is a compialtion failure (requires ctest / standalone .cpp file)
     mutableConfig.out_directory = std::string("test");
     mutableConfig.out_format = std::string("xml");
     mutableConfig.concurrent_runs = 1;
     mutableConfig.devices = std::set<int>({0});
-    mutableConfig.verbosity = VERBOSE;
+    mutableConfig.verbosity = Verbosity::Verbose;
     mutableConfig.timing = true;
     // Check via the const ref, this should show the same value as config was a reference, not a copy.
     EXPECT_EQ(immutableConfig.out_directory, "test");
     EXPECT_EQ(immutableConfig.out_format, "xml");
     EXPECT_EQ(immutableConfig.concurrent_runs, 1u);
     EXPECT_EQ(immutableConfig.devices, std::set<int>({0}));  // @todo - this will need to change.
-    EXPECT_EQ(immutableConfig.verbosity, VERBOSE);
+    EXPECT_EQ(immutableConfig.verbosity, Verbosity::Verbose);
     EXPECT_EQ(immutableConfig.timing, true);
 }
 // This test causes `exit` so cannot be used.
@@ -126,10 +126,10 @@ TEST(TestCUDAEnsemble, initialise_quiet) {
     // Create an ensemble
     flamegpu::CUDAEnsemble ensemble(model);
     // Call initialise with differnt cli arguments, which will mutate values. Check they have the new value.
-    EXPECT_EQ(ensemble.getConfig().verbosity, DEFAULT);
+    EXPECT_EQ(ensemble.getConfig().verbosity, Verbosity::Default);
     const char *argv[2] = { "prog.exe", "--quiet" };
     ensemble.initialise(sizeof(argv) / sizeof(char*), argv);
-    EXPECT_EQ(ensemble.getConfig().verbosity, QUIET);
+    EXPECT_EQ(ensemble.getConfig().verbosity, Verbosity::Quiet);
 }
 TEST(TestCUDAEnsemble, initialise_verbose) {
     // Create a model
@@ -137,10 +137,10 @@ TEST(TestCUDAEnsemble, initialise_verbose) {
     // Create an ensemble
     flamegpu::CUDAEnsemble ensemble(model);
     // Call initialise with differnt cli arguments, which will mutate values. Check they have the new value.
-    EXPECT_EQ(ensemble.getConfig().verbosity, DEFAULT);
+    EXPECT_EQ(ensemble.getConfig().verbosity, Verbosity::Default);
     const char* argv[2] = { "prog.exe", "--verbose" };
     ensemble.initialise(sizeof(argv) / sizeof(char*), argv);
-    EXPECT_EQ(ensemble.getConfig().verbosity, VERBOSE);
+    EXPECT_EQ(ensemble.getConfig().verbosity, Verbosity::Verbose);
 }
 TEST(TestCUDAEnsemble, initialise_timing) {
     // Create a model
@@ -243,7 +243,7 @@ TEST(TestCUDAEnsemble, simulate) {
     // Create an ensemble
     flamegpu::CUDAEnsemble ensemble(model);
     // Make it quiet to avoid outputting during the test suite
-    ensemble.Config().verbosity = QUIET;
+    ensemble.Config().verbosity = Verbosity::Quiet;
     // Simulate the ensemble,
     EXPECT_NO_THROW(ensemble.simulate(plans));
     // Get the sum of sums from the atomic.
@@ -286,13 +286,13 @@ TEST(TestCUDAEnsemble, verbosity) {
     }
     // Create an ensemble
     flamegpu::CUDAEnsemble ensemble(model);
-    // QUIET
+    // Verbosity::Quiet
     {
         // Capture stderr and stdout
         testing::internal::CaptureStdout();
         testing::internal::CaptureStderr();
         // Set verbosity level
-        ensemble.Config().verbosity = QUIET;
+        ensemble.Config().verbosity = Verbosity::Quiet;
         // Simulate the ensemble
         EXPECT_NO_THROW(ensemble.simulate(plans));
         // Get stderr and stdout
@@ -302,13 +302,13 @@ TEST(TestCUDAEnsemble, verbosity) {
         EXPECT_TRUE(output.empty());
         EXPECT_TRUE(errors.empty());
     }
-    // DEFAULT
+    // Verbosity::Default
     {
         // Capture stderr and stdout
         testing::internal::CaptureStdout();
         testing::internal::CaptureStderr();
         // Set verbosity level
-        ensemble.Config().verbosity = DEFAULT;
+        ensemble.Config().verbosity = Verbosity::Default;
         // Simulate the ensemble
         EXPECT_NO_THROW(ensemble.simulate(plans));
         // Get stderr and stdout
@@ -321,13 +321,13 @@ TEST(TestCUDAEnsemble, verbosity) {
         EXPECT_TRUE(output.find("Ensemble time elapsed") == std::string::npos);   // E.g. Ensemble time elapsed: 0.006000s
         EXPECT_TRUE(errors.empty());
     }
-    // VERBOSE
+    // Verbosity::Verbose
     {
         // Capture stderr and stdout
         testing::internal::CaptureStdout();
         testing::internal::CaptureStderr();
         // Set verbosity level
-        ensemble.Config().verbosity = VERBOSE;
+        ensemble.Config().verbosity = Verbosity::Verbose;
         // Simulate the ensemble
         EXPECT_NO_THROW(ensemble.simulate(plans));
         // Get stderr and stdout
@@ -360,7 +360,7 @@ TEST(TestCUDAEnsemble, setStepLog) {
     // Create an ensemble
     flamegpu::CUDAEnsemble ensemble(model);
     // Make it quiet to avoid outputting during the test suite
-    ensemble.Config().verbosity = QUIET;
+    ensemble.Config().verbosity = Verbosity::Quiet;
     // Set the StepLog config.
     EXPECT_NO_THROW(ensemble.setStepLog(slcfg));
     // Run the ensemble, generating logs
@@ -403,7 +403,7 @@ TEST(TestCUDAEnsemble, setExitLog) {
     // Create an ensemble
     flamegpu::CUDAEnsemble ensemble(model);
     // Make it quiet to avoid outputting during the test suite
-    ensemble.Config().verbosity = QUIET;
+    ensemble.Config().verbosity = Verbosity::Quiet;
     // Set the StepLog config.
     EXPECT_NO_THROW(ensemble.setExitLog(lcfg));
     // Run the ensemble, generating logs
@@ -473,7 +473,7 @@ TEST(TestCUDAEnsemble, getEnsembleElapsedTime) {
     // Create an ensemble
     flamegpu::CUDAEnsemble ensemble(model);
     // Make it quiet to avoid outputting during the test suite
-    ensemble.Config().verbosity = QUIET;
+    ensemble.Config().verbosity = Verbosity::Quiet;
     // Get the elapsed seconds before the sim has been executed
     EXPECT_NO_THROW(ensemble.getEnsembleElapsedTime());
     // Assert that it is LE zero.
@@ -517,7 +517,7 @@ TEST(TestCUDAEnsemble, ErrorOff) {
     // Create an ensemble
     flamegpu::CUDAEnsemble ensemble(model);
     // Make it quiet to avoid outputting during the test suite
-    ensemble.Config().verbosity = QUIET;
+    ensemble.Config().verbosity = Verbosity::Quiet;
     ensemble.Config().error_level = CUDAEnsemble::EnsembleConfig::Off;
     ensemble.Config().concurrent_runs = 1;  // Single device/no concurrency to ensure we get consistent data
     ensemble.Config().devices = {0};
@@ -549,7 +549,7 @@ TEST(TestCUDAEnsemble, ErrorSlow) {
     // Create an ensemble
     flamegpu::CUDAEnsemble ensemble(model);
     // Make it quiet to avoid outputting during the test suite
-    ensemble.Config().verbosity = QUIET;
+    ensemble.Config().verbosity = Verbosity::Quiet;
     ensemble.Config().error_level = CUDAEnsemble::EnsembleConfig::Slow;
     ensemble.Config().concurrent_runs = 1;  // Single device/no concurrency to ensure we get consistent data
     ensemble.Config().devices = { 0 };
@@ -579,7 +579,7 @@ TEST(TestCUDAEnsemble, ErrorFast) {
     // Create an ensemble
     flamegpu::CUDAEnsemble ensemble(model);
     // Make it quiet to avoid outputting during the test suite
-    ensemble.Config().verbosity = QUIET;
+    ensemble.Config().verbosity = Verbosity::Quiet;
     ensemble.Config().error_level = CUDAEnsemble::EnsembleConfig::Fast;
     ensemble.Config().concurrent_runs = 1;  // Single device/no concurrency to ensure we get consistent data
     ensemble.Config().devices = { 0 };
@@ -629,7 +629,7 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDASimulation) {
     // Create an ensemble
     flamegpu::CUDAEnsemble ensemble(model);
     // Make it quiet to avoid outputting during the test suite
-    ensemble.Config().verbosity = QUIET;
+    ensemble.Config().verbosity = Verbosity::Quiet;
     ensemble.Config().out_format = "";  // Suppress warning
     // Simulate the ensemble,
     EXPECT_NO_THROW(ensemble.simulate(plans));
@@ -680,7 +680,7 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc) {
         // Create an ensemble
         flamegpu::CUDAEnsemble ensemble(model);
         // Make it quiet to avoid outputting during the test suite
-        ensemble.Config().verbosity = QUIET;
+        ensemble.Config().verbosity = Verbosity::Quiet;
         ensemble.Config().out_format = "";  // Suppress warning
         // Simulate the ensemble,
         EXPECT_NO_THROW(ensemble.simulate(plans));

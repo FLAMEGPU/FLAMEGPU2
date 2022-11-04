@@ -20,7 +20,7 @@ constexpr id_t ID_NOT_SET = 0;
 /**
 * Typedef for verbosity level of the API
 */
-typedef enum {QUIET, DEFAULT, VERBOSE} verbosity;
+enum class Verbosity {Quiet, Default, Verbose};
 
 typedef unsigned int size_type;
 

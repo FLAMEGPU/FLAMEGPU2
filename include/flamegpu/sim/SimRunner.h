@@ -44,7 +44,7 @@ class SimRunner {
      * @param _exit_log_config The config of which data should be logged at run exit
      * @param _device_id The GPU that all runs should execute on
      * @param _runner_id A unique index assigned to the runner
-     * @param _verbosity Verbosity level (QUIET, DEFAULT, VERBOSE)
+     * @param _verbosity Verbosity level (Verbosity::Quiet, Verbosity::Default, Verbosity::Verbose)
      * @param _fail_fast If true, the SimRunner will kill other runners and throw an exception on error
      * @param run_logs Reference to the vector to store generate run logs
      * @param log_export_queue The queue of logs to exported to disk
@@ -61,7 +61,7 @@ class SimRunner {
         std::shared_ptr<const LoggingConfig> _exit_log_config,
         int _device_id,
         unsigned int _runner_id,
-        flamegpu::verbosity _verbosity,
+        flamegpu::Verbosity _verbosity,
         bool _fail_fast,
         std::vector<RunLog> &run_logs,
         std::queue<unsigned int> &log_export_queue,
@@ -93,7 +93,7 @@ class SimRunner {
     /**
      * Flag for whether to print progress
      */
-    const flamegpu::verbosity verbosity;
+    const flamegpu::Verbosity verbosity;
     /**
      * Flag for whether the ensemble should throw an exception if it errors out
      */

@@ -166,7 +166,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
         submodel_map.emplace(it_sm->first, std::unique_ptr<CUDASimulation>(new CUDASimulation(it_sm->second, this)));
     }
     // Submodels all run quiet/not verbose by default
-    SimulationConfig().verbosity = DEFAULT;
+    SimulationConfig().verbosity = Verbosity::Default;
     SimulationConfig().steps = submodel_desc->max_steps;
     CUDAConfig().is_ensemble = true;
 
@@ -235,7 +235,7 @@ void CUDASimulation::initFunctions() {
     // Record, store and output the elapsed time of the step.
     initFunctionsTimer->stop();
     this->elapsedSecondsInitFunctions = initFunctionsTimer->getElapsedSeconds();
-    if (getSimulationConfig().timing || getSimulationConfig().verbosity >= VERBOSE) {
+    if (getSimulationConfig().timing || getSimulationConfig().verbosity >= Verbosity::Verbose) {
         fprintf(stdout, "Init Function Processing time: %.6f s\n", this->elapsedSecondsInitFunctions);
     }
 }
@@ -257,7 +257,7 @@ void CUDASimulation::exitFunctions() {
     // Record, store and output the elapsed time of the step.
     exitFunctionsTimer->stop();
     this->elapsedSecondsExitFunctions = exitFunctionsTimer->getElapsedSeconds();
-    if (getSimulationConfig().timing || getSimulationConfig().verbosity >= VERBOSE) {
+    if (getSimulationConfig().timing || getSimulationConfig().verbosity >= Verbosity::Verbose) {
         fprintf(stdout, "Exit Function Processing time: %.6f s\n", this->elapsedSecondsExitFunctions);
     }
 }
@@ -525,7 +525,7 @@ bool CUDASimulation::step() {
     this->assignAgentIDs();
 
     // If verbose, print the step number.
-    if (getSimulationConfig().verbosity == VERBOSE) {
+    if (getSimulationConfig().verbosity == Verbosity::Verbose) {
         fprintf(stdout, "Processing Simulation Step %u\n", step_count);
     }
 
@@ -559,7 +559,7 @@ bool CUDASimulation::step() {
     stepTimer->stop();
     float stepMilliseconds = stepTimer->getElapsedSeconds();
     this->elapsedSecondsPerStep.push_back(stepMilliseconds);
-    if (getSimulationConfig().timing || getSimulationConfig().verbosity >= VERBOSE) {
+    if (getSimulationConfig().timing || getSimulationConfig().verbosity >= Verbosity::Verbose) {
         // Resolution is 0.5 microseconds, so print to 1 us.
         fprintf(stdout, "Step %d Processing time: %.6f s\n", this->step_count, stepMilliseconds);
     }
@@ -1218,7 +1218,7 @@ void CUDASimulation::simulate() {
     // Record, store and output the elapsed simulation time
     simulationTimer->stop();
     elapsedSecondsSimulation = simulationTimer->getElapsedSeconds();
-    if (getSimulationConfig().timing || getSimulationConfig().verbosity >= VERBOSE) {
+    if (getSimulationConfig().timing || getSimulationConfig().verbosity >= Verbosity::Verbose) {
         // Resolution is 0.5 microseconds, so print to 1 us.
         fprintf(stdout, "Total Processing time: %.6f s\n", elapsedSecondsSimulation);
     }
