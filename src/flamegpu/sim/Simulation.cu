@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cinttypes>  // For PRIu64
 
 #include "flamegpu/version.h"
 #include "flamegpu/model/ModelData.h"
@@ -105,7 +106,7 @@ void Simulation::applyConfig() {
     // If verbose, output the flamegpu version and seed.
     if (config.verbosity == VERBOSE) {
         fprintf(stdout, "FLAME GPU %s Simulation configuration\n", flamegpu::VERSION_FULL);
-        fprintf(stdout, "\tRandom Seed: %llu\n", config.random_seed);
+        fprintf(stdout, "\tRandom Seed: %" PRIu64 "\n", config.random_seed);
         fprintf(stdout, "\tSteps: %u\n", config.steps);
     }
     // Call derived class config stuff first
