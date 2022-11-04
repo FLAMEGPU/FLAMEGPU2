@@ -257,6 +257,89 @@ TEST(TestCUDAEnsemble, simulate) {
     EXPECT_THROW(ensemble.simulate(modelTwoPlans), flamegpu::exception::InvalidArgument);
     // Exceptions can also be thrown if output_directory cannot be created, but I'm unsure how to reliably test this cross platform.
 }
+TEST(TestCUDAEnsemble, verbosity) {
+    // Reset the atomic sum of sums to 0. Just in case.
+    testSimulateSumOfSums = 0;
+    // Number of simulations to run.
+    constexpr uint32_t planCount = 2u;
+    constexpr uint32_t populationSize = 32u;
+    // Create a model containing atleast one agent type and function.
+    flamegpu::ModelDescription model("test");
+    // Environmental constant for initial population
+    model.Environment().newProperty<uint32_t>("POPULATION_TO_GENERATE", populationSize, true);
+    // Agent(s)
+    flamegpu::AgentDescription& agent = model.newAgent("Agent");
+    agent.newVariable<uint32_t>("counter", 0);
+    agent.newFunction("simulateAgentFn", simulateAgentFn);
+    // Control flow
+    model.newLayer().addAgentFunction(simulateAgentFn);
+    model.addInitFunction(simulateInit);
+    model.addExitFunction(simulateExit);
+    // Crete a small runplan, using a different number of steps per sim.
+    uint64_t expectedResult = 0;
+    flamegpu::RunPlanVector plans(model, planCount);
+    for (uint32_t idx = 0; idx < plans.size(); idx++) {
+        auto& plan = plans[idx];
+        plan.setSteps(idx + 1);  // Can't have 0 steps without exit condition
+        // Increment the expected result based on the number of steps.
+        expectedResult += (idx + 1) * populationSize;
+    }
+    // Create an ensemble
+    flamegpu::CUDAEnsemble ensemble(model);
+    // QUIET
+    {
+        // Capture stderr and stdout
+        testing::internal::CaptureStdout();
+        testing::internal::CaptureStderr();
+        // Set verbosity level
+        ensemble.Config().verbosity = QUIET;
+        // Simulate the ensemble
+        EXPECT_NO_THROW(ensemble.simulate(plans));
+        // Get stderr and stdout
+        std::string output = testing::internal::GetCapturedStdout();
+        std::string errors = testing::internal::GetCapturedStderr();
+        // Expect no warnings (stderr) or outputs in Quiet mode
+        EXPECT_TRUE(output.empty());
+        EXPECT_TRUE(errors.empty());
+    }
+    // DEFAULT
+    {
+        // Capture stderr and stdout
+        testing::internal::CaptureStdout();
+        testing::internal::CaptureStderr();
+        // Set verbosity level
+        ensemble.Config().verbosity = DEFAULT;
+        // Simulate the ensemble
+        EXPECT_NO_THROW(ensemble.simulate(plans));
+        // Get stderr and stdout
+        std::string output = testing::internal::GetCapturedStdout();
+        std::string errors = testing::internal::GetCapturedStderr();
+        // Expect no warnings (stderr) but an output reporing the number of completed simulation runs
+        std::ostringstream  expect_output;
+        EXPECT_TRUE(output.find("CUDAEnsemble progress") == std::string::npos);   // E.g. CUDAEnsemble progress: 1/2
+        EXPECT_TRUE(output.find("CUDAEnsemble completed"));                       // E.g. CUDAEnsemble completed 2 runs successfully!
+        EXPECT_TRUE(output.find("Ensemble time elapsed") == std::string::npos);   // E.g. Ensemble time elapsed: 0.006000s
+        EXPECT_TRUE(errors.empty());
+    }
+    // VERBOSE
+    {
+        // Capture stderr and stdout
+        testing::internal::CaptureStdout();
+        testing::internal::CaptureStderr();
+        // Set verbosity level
+        ensemble.Config().verbosity = VERBOSE;
+        // Simulate the ensemble
+        EXPECT_NO_THROW(ensemble.simulate(plans));
+        // Get stderr and stdout
+        std::string output = testing::internal::GetCapturedStdout();
+        std::string errors = testing::internal::GetCapturedStderr();
+        // Expect no warnings (stderr) but outputs on progress and timing
+        EXPECT_TRUE(output.find("CUDAEnsemble progress"));   // E.g. CUDAEnsemble progress: 1/2
+        EXPECT_TRUE(output.find("CUDAEnsemble completed"));  // E.g. CUDAEnsemble completed 2 runs successfully!
+        EXPECT_TRUE(output.find("Ensemble time elapsed"));   // E.g. Ensemble time elapsed: 0.006000s
+        EXPECT_TRUE(errors.empty());
+    }
+}
 // Logging is more thoroughly tested in Logging. Here just make sure the methods work
 TEST(TestCUDAEnsemble, setStepLog) {
     // Create a model containing atleast one agent type and function.

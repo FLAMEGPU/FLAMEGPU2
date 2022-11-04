@@ -810,6 +810,72 @@ TEST(TestCUDASimulation, SimulationWithExistingCUDAMalloc) {
     }
     d_int = nullptr;
 }
+// Test the verbosity levels to ensure correct levels of output
+TEST(TestCUDASimulation, simulationVerbosity) {
+    // Define a simple model - doesn't need to do anything other than take some time.
+    ModelDescription m(MODEL_NAME);
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
+    m.addStepFunction(IncrementCounterSlow);
+    // Create a simulation (verbosity not set until simulate so no config outputs expected)
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    c.SimulationConfig().steps = 1;
+    // QUIET
+    {
+        // Capture stderr and stdout
+        testing::internal::CaptureStdout();
+        testing::internal::CaptureStderr();
+        // Set verbosity level
+        c.SimulationConfig().verbosity = QUIET;
+        // Simulate
+        EXPECT_NO_THROW(c.simulate());
+        // Get stderr and stdout
+        std::string output = testing::internal::GetCapturedStdout();
+        std::string errors = testing::internal::GetCapturedStderr();
+        // Expect no warnings (stderr) or outputs in Quiet mode
+        EXPECT_TRUE(output.empty());
+        EXPECT_TRUE(errors.empty());
+    }
+    // DEFAULT
+    {
+        // Capture stderr and stdout
+        testing::internal::CaptureStdout();
+        testing::internal::CaptureStderr();
+        // Set verbosity level
+        c.SimulationConfig().verbosity = DEFAULT;
+        // Simulate
+        c.resetStepCounter();
+        EXPECT_NO_THROW(c.simulate());
+        // Get stderr and stdout
+        std::string output = testing::internal::GetCapturedStdout();
+        std::string errors = testing::internal::GetCapturedStderr();
+        // Expect no warnings (stderr) and no output
+        EXPECT_TRUE(output.empty());
+        EXPECT_TRUE(errors.empty());
+    }
+    // VERBOSE
+    {
+        // Capture stderr and stdout
+        testing::internal::CaptureStdout();
+        testing::internal::CaptureStderr();
+        // Set verbosity level
+        c.SimulationConfig().verbosity = VERBOSE;
+        // Simulate
+        c.resetStepCounter();
+        EXPECT_NO_THROW(c.simulate());
+        // Get stderr and stdout
+        std::string output = testing::internal::GetCapturedStdout();
+        std::string errors = testing::internal::GetCapturedStderr();
+        // Expect no warnings (stderr) but ...
+        EXPECT_TRUE(output.find("Init Function Processing time"));
+        EXPECT_TRUE(output.find("Processing Simulation Step 1"));
+        EXPECT_TRUE(output.find("Step 1 Processing time"));
+        EXPECT_TRUE(output.find("Exit Function Processing time"));
+        EXPECT_TRUE(output.find("Total Processing time"));
+        EXPECT_TRUE(errors.empty());
+    }
+}
 
 
 }  // namespace test_cuda_simulation
