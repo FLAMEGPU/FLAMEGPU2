@@ -8,7 +8,8 @@
 namespace flamegpu {
 
 AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, const std::string &in_type, const std::string &out_type)
-    : func(agent_function)
+    : model(_parent->model)
+    , func(agent_function)
     , initial_state(_parent->initial_state)
     , end_state(_parent->initial_state)
     , message_output_optional(false)
@@ -19,7 +20,8 @@ AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const s
     , message_in_type(in_type)
     , message_out_type(out_type) { }
 AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string& function_name, const std::string &rtc_function_src, const std::string &in_type, const std::string& out_type, const std::string& code_func_name)
-    : func(nullptr)
+    : model(_parent->model)
+    , func(nullptr)
     , rtc_source(rtc_function_src)
     , rtc_func_name(code_func_name)
     , initial_state(_parent->initial_state)
@@ -32,8 +34,9 @@ AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const s
     , message_in_type(in_type)
     , message_out_type(out_type) { }
 
-AgentFunctionData::AgentFunctionData(const std::shared_ptr<const ModelData> &model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other)
-    : func(other.func)
+AgentFunctionData::AgentFunctionData(const std::shared_ptr<const ModelData> &_model, std::shared_ptr<AgentData> _parent, const AgentFunctionData &other)
+    : model(_model)
+    , func(other.func)
     , rtc_source(other.rtc_source)
     , rtc_func_name(other.rtc_func_name)
     , initial_state(other.initial_state)
@@ -49,10 +52,10 @@ AgentFunctionData::AgentFunctionData(const std::shared_ptr<const ModelData> &mod
     , message_in_type(other.message_in_type)
     , message_out_type(other.message_out_type) {
     // Manually perform lookup copies
-    if (model) {
+    if (_model) {
         if (auto a = other.message_input.lock()) {
-            auto _m = model->messages.find(a->name);
-            if (_m != model->messages.end()) {
+            auto _m = _model->messages.find(a->name);
+            if (_m != _model->messages.end()) {
                 message_input = _m->second;
             }
         } else if (util::detail::cxxname::getUnqualifiedName(other.message_in_type) != util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(std::type_index(typeid(MessageNone))))) {
@@ -62,8 +65,8 @@ AgentFunctionData::AgentFunctionData(const std::shared_ptr<const ModelData> &mod
                 util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(std::type_index(typeid(MessageNone)))).c_str());
         }
         if (auto a = other.message_output.lock()) {
-            auto _m = model->messages.find(a->name);
-            if (_m != model->messages.end()) {
+            auto _m = _model->messages.find(a->name);
+            if (_m != _model->messages.end()) {
                 message_output = _m->second;
             }
         } else if (util::detail::cxxname::getUnqualifiedName(other.message_out_type) != util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(std::type_index(typeid(MessageNone))))) {
@@ -73,8 +76,8 @@ AgentFunctionData::AgentFunctionData(const std::shared_ptr<const ModelData> &mod
                 util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(std::type_index(typeid(MessageNone)))).c_str());
         }
         if (auto a = other.agent_output.lock()) {
-            auto _a = model->agents.find(a->name);
-            if (_a != model->agents.end()) {
+            auto _a = _model->agents.find(a->name);
+            if (_a != _model->agents.end()) {
                 agent_output = _a->second;
             }
         }
@@ -85,6 +88,7 @@ bool AgentFunctionData::operator==(const AgentFunctionData &rhs) const {
     if (this == &rhs)  // They point to same object
         return true;
     if ((name == rhs.name)
+        //  && (model.lock() == rhs.model.lock())  // Don't check weak pointers
         && (func == rhs.func)
         && (rtc_source == rhs.rtc_source)
         && (rtc_func_name == rhs.rtc_func_name)

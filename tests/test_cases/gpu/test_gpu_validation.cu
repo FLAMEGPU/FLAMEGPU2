@@ -126,7 +126,7 @@ TEST(GPUTest, GPUSimulationTest) {
 
     GTEST_COUT << "Testing initial values .." << std::endl;
 
-    LayerDescription &add_layer = flame_model.newLayer("add_layer");
+    LayerDescription add_layer = flame_model.newLayer("add_layer");
     add_layer.addAgentFunction(add_data);
 
 
@@ -189,7 +189,7 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
     }
 
     // multiple functions per simulation layer (from different agents)
-    LayerDescription &concurrent_layer = flame_model.newLayer("concurrent_layer");
+    LayerDescription concurrent_layer = flame_model.newLayer("concurrent_layer");
     concurrent_layer.addAgentFunction(add_data);
     concurrent_layer.addAgentFunction(subtract_data);
 

@@ -48,7 +48,7 @@ TEST(AgentRandomTest, AgentRandomCheck) {
     }
 
 
-    LayerDescription &layer = model.newLayer("layer");
+    LayerDescription layer = model.newLayer("layer");
     layer.addAgentFunction(af);
 
     CUDASimulation cudaSimulation(model);
@@ -222,7 +222,7 @@ TEST(AgentRandomTest, AgentRandomFunctionsNoExcept) {
 
     AgentVector population(agent, AGENT_COUNT);
 
-    LayerDescription &layer = model.newLayer("layer");
+    LayerDescription layer = model.newLayer("layer");
     layer.addAgentFunction(do_random);
 
     CUDASimulation cudaSimulation(model);

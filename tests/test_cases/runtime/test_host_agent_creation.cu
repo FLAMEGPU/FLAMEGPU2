@@ -692,7 +692,7 @@ TEST(HostAgentCreationTest, AgentID_HostNewAgent_MultipleStatesUniqueIDs) {
     agent.newState("a");
     agent.newState("b");
 
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addHostFunction(AgentID_HostNewAgentBirth);
 
     AgentVector pop_in(agent, POP_SIZE);
@@ -752,7 +752,7 @@ TEST(HostAgentCreationTest, AgentID_MultipleAgents) {
     AgentDescription agent2 = model.newAgent("agent2");
     agent2.newVariable<id_t>("id_copy", ID_NOT_SET);
 
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addHostFunction(AgentID_HostNewAgentBirth2);
 
     AgentVector pop_in_a(agent, POP_SIZE);

@@ -412,11 +412,11 @@ int main(int argc, const char ** argv) {
      * Control flow
      */     
     {   // Layer #1
-        flamegpu::LayerDescription &layer = model.newLayer();
+        flamegpu::LayerDescription layer = model.newLayer();
         layer.addAgentFunction("Boid", "outputdata");
     }
     {   // Layer #2
-        flamegpu::LayerDescription &layer = model.newLayer();
+        flamegpu::LayerDescription layer = model.newLayer();
         layer.addAgentFunction("Boid", "inputdata");
     }
 

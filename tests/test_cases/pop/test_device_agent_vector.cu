@@ -1382,7 +1382,7 @@ TEST(DeviceAgentVectorTest, AgentID_MultipleStatesUniqueIDs) {
     agent.newState("a");
     agent.newState("b");
 
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addHostFunction(AgentID_DeviceAgentVectorBirth);
 
     AgentVector pop_in(agent, POP_SIZE);
@@ -1447,7 +1447,7 @@ TEST(DeviceAgentVectorTest, AgentID_MultipleAgents) {
     AgentDescription agent2 = model.newAgent("agent2");
     agent2.newVariable<id_t>("id_copy", ID_NOT_SET);
 
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addHostFunction(AgentID_DeviceAgentVectorBirthMultiAgent);
 
     AgentVector pop_in_a(agent, POP_SIZE);
@@ -1522,7 +1522,7 @@ TEST(DeviceAgentVectorTest, AgentID_MultipleStatesUniqueIDs2) {
     agent.newState("a");
     agent.newState("b");
 
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addHostFunction(AgentID_DeviceAgentVectorBirth2);
 
     AgentVector pop_in(agent, POP_SIZE);
@@ -1585,7 +1585,7 @@ TEST(DeviceAgentVectorTest, AgentID_MultipleStatesUniqueIDs3) {
     agent.newState("a");
     agent.newState("b");
 
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addHostFunction(AgentID_DeviceAgentVectorBirth3);
 
     AgentVector pop_in(agent, POP_SIZE);

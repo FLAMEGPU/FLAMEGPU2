@@ -46,7 +46,7 @@ int main(int argc, const char ** argv) {
      * Control flow
      */     
     {   // Layer #1
-        flamegpu::LayerDescription  &layer = model.newLayer();
+        flamegpu::LayerDescription layer = model.newLayer();
         layer.addAgentFunction(AddOffset);
 
         model.addInitFunction(Init);

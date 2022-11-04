@@ -90,7 +90,7 @@ class MiniSim {
     ModelDescription model;
     AgentDescription agent;
     AgentVector population;
-    LayerDescription &hostfn_layer;
+    LayerDescription hostfn_layer;
 };
 /**
 * This defines a common fixture used as a base for all test cases in the file
@@ -227,7 +227,7 @@ TEST_F(HostFunctionTest, HostLayerFuncDuplicateLayerNoException) {
     EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 1u);
     function_order.clear();
     EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 0u);
-    LayerDescription &hostfn_layer2 = ms->model.newLayer("hostfn_layer2");
+    LayerDescription hostfn_layer2 = ms->model.newLayer("hostfn_layer2");
     ASSERT_NO_THROW(hostfn_layer2.addHostFunction(host_function));
     ASSERT_NO_THROW(ms->run(1));
     EXPECT_EQ(std::count(function_order.begin(), function_order.end(), HostLayer), 2u);

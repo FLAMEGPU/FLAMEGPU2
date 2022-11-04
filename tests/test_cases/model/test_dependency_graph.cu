@@ -542,7 +542,7 @@ TEST(DependencyGraphTest, ModelAlreadyHasLayers) {
     AgentFunctionDescription f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
 
     // Create manual layer
-    LayerDescription &l = _m.newLayer(LAYER_NAME);
+    LayerDescription l = _m.newLayer(LAYER_NAME);
     l.addAgentFunction(f2);
 
     // Create DG

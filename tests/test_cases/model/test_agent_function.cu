@@ -288,7 +288,7 @@ TEST(AgentFunctionDescriptionTest, SameAgentAndStateInLayer) {
     AgentFunctionDescription f2 = a.newFunction(FUNCTION_NAME2, agent_fn3);
     f2.setInitialState(WRONG_STATE_NAME);
     f2.setEndState(OTHER_STATE_NAME);
-    LayerDescription &l = _m.newLayer();
+    LayerDescription l = _m.newLayer();
     // start matches end state
     EXPECT_NO_THROW(l.addAgentFunction(agent_fn2));
     EXPECT_NO_THROW(l.addAgentFunction(agent_fn3));

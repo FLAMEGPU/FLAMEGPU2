@@ -97,7 +97,7 @@ SubModelDescription &ModelDescription::SubModel(const std::string &submodel_name
         submodel_name.c_str());
 }
 
-LayerDescription& ModelDescription::newLayer(const std::string &name) {
+LayerDescription ModelDescription::newLayer(const std::string &name) {
     // Ensure name is unique
     if (!name.empty()) {
         for (auto it = model->layers.begin(); it != model->layers.end(); ++it) {
@@ -110,24 +110,24 @@ LayerDescription& ModelDescription::newLayer(const std::string &name) {
     }
     auto rtn = std::shared_ptr<LayerData>(new LayerData(model, name, static_cast<unsigned int>(model->layers.size())));
     model->layers.push_back(rtn);
-    return *rtn->description;
+    return LayerDescription(rtn);
 }
-LayerDescription& ModelDescription::Layer(const flamegpu::size_type &layer_index) {
+LayerDescription ModelDescription::Layer(const flamegpu::size_type &layer_index) {
     if (model->layers.size() > layer_index) {
         auto it = model->layers.begin();
         for (auto i = 0u; i < layer_index; ++i)
             ++it;
-        return *(*it)->description;
+        return LayerDescription(*it);
     }
     THROW exception::OutOfBoundsException("Layer %d is out of bounds, "
         "in ModelDescription::Layer().",
         layer_index);
 }
-LayerDescription& ModelDescription::Layer(const std::string &name) {
+LayerDescription ModelDescription::Layer(const std::string &name) {
     if (!name.empty()) {  // Can't search for no name, multiple layers might be nameless
         for (auto &layer : model->layers) {
             if (layer->name == name)
-                return *layer->description;
+                return LayerDescription(layer);
         }
     }
     THROW exception::InvalidFuncLayerIndx("Layer '%s' was not found, "
@@ -209,23 +209,23 @@ const SubModelDescription &ModelDescription::getSubModel(const std::string &subm
 const EnvironmentDescription& ModelDescription::getEnvironment() const {
     return *model->environment;
 }
-const LayerDescription& ModelDescription::getLayer(const std::string &name) const {
+CLayerDescription ModelDescription::getLayer(const std::string &name) const {
     if (!name.empty()) {  // Can't search for no name, multiple layers might be nameless
         for (auto it = model->layers.begin(); it != model->layers.end(); ++it) {
             if ((*it)->name == name)
-                return *(*it)->description;
+                return CLayerDescription(*it);
         }
     }
     THROW exception::InvalidFuncLayerIndx("Layer ('%s') was not found, "
         "in ModelDescription::getAgent().",
         name.c_str());
 }
-const LayerDescription& ModelDescription::getLayer(const flamegpu::size_type &layer_index) const {
+CLayerDescription ModelDescription::getLayer(const flamegpu::size_type &layer_index) const {
     if (model->layers.size() > layer_index) {
         auto it = model->layers.begin();
         for (auto i = 0u; i < layer_index; ++i)
             ++it;
-        return *(*it)->description;
+        return CLayerDescription(*it);
     }
     THROW exception::OutOfBoundsException("Layer %d is out of bounds, "
         "in ModelDescription::Layer().",

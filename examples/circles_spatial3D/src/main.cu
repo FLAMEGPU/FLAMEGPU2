@@ -92,7 +92,7 @@ int main(int argc, const char ** argv) {
      * GLOBALS
      */
     {
-        flamegpu::EnvironmentDescription  &env = model.Environment();
+        flamegpu::EnvironmentDescription &env = model.Environment();
         env.newProperty("repulse", 0.05f);
     }
 
@@ -104,24 +104,24 @@ int main(int argc, const char ** argv) {
     }
 
     {   // Layer #1
-        flamegpu::LayerDescription  &layer = model.newLayer();
+        flamegpu::LayerDescription layer = model.newLayer();
         layer.addAgentFunction(output_message);
     }
     {   // Layer #2
-        flamegpu::LayerDescription  &layer = model.newLayer();
+        flamegpu::LayerDescription layer = model.newLayer();
         layer.addAgentFunction(move);
     }
 
     /**
      * Create Model Runner
      */
-    flamegpu::CUDASimulation  cudaSimulation(model, argc, argv);
+    flamegpu::CUDASimulation cudaSimulation(model, argc, argv);
 
     /**
      * Create visualisation
      */
 #ifdef VISUALISATION
-    flamegpu::visualiser::ModelVis  &m_vis = cudaSimulation.getVisualisation();
+    flamegpu::visualiser::ModelVis &m_vis = cudaSimulation.getVisualisation();
     {
         const float INIT_CAM = ENV_MAX * 1.25F;
         m_vis.setInitialCameraLocation(INIT_CAM, INIT_CAM, INIT_CAM);

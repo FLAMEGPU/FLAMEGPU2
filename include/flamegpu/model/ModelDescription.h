@@ -16,6 +16,7 @@ namespace flamegpu {
 
 class AgentDescription;
 class CAgentDescription;
+class CLayerDescription;
 class LayerDescription;
 class SubModelDescription;
 class DependencyNode;
@@ -156,7 +157,7 @@ class ModelDescription {
      * @throws exception::InvalidFuncLayerIndx If a layer with the same name already exists within the model description hierarchy
      * @note Layer names are not required, passing empty string will not set a name
      */
-    LayerDescription& newLayer(const std::string &name = "");
+    LayerDescription newLayer(const std::string &name = "");
     /**
      * Returns a mutable reference to the named layer, which can be used to configure the layer
      * @param name Name used to refer to the desired layer within the model description hierarchy
@@ -165,7 +166,7 @@ class ModelDescription {
      * @see ModelDescription::Layer(const flamegpu::size_type &)
      * @see ModelDescription::getLayer(const std::string &) for the immutable version
      */
-    LayerDescription& Layer(const std::string &name);
+    LayerDescription Layer(const std::string &name);
     /**
      * Returns a mutable reference to the named layer, which can be used to configure the layer
      * @param layer_index Index of the desired layer within the model description hierarchy
@@ -174,7 +175,7 @@ class ModelDescription {
      * @see ModelDescription::Layer(const std::string &)
      * @see ModelDescription::getLayer(const flamegpu::size_type &) for the immutable version
      */
-    LayerDescription& Layer(const flamegpu::size_type &layer_index);
+    LayerDescription Layer(const flamegpu::size_type &layer_index);
 
     /**
      * Adds an init function to the simulation
@@ -334,7 +335,7 @@ class ModelDescription {
      * @see ModelDescription::getLayer(const flamegpu::size_type &)
      * @see ModelDescription::Layer(const std::string &) for the mutable version
      */
-    const LayerDescription& getLayer(const std::string &name) const;
+    CLayerDescription getLayer(const std::string &name) const;
     /**
      * Returns a mutable reference to the named layer, which can be used to configure the layer
      * @param layer_index Index of the desired layer within the model description hierarchy
@@ -343,7 +344,7 @@ class ModelDescription {
      * @see ModelDescription::getLayer(const std::string &)
      * @see ModelDescription::Layer(const flamegpu::size_type &) for the mutable version
      */
-    const LayerDescription& getLayer(const flamegpu::size_type &layer_index) const;
+    CLayerDescription getLayer(const flamegpu::size_type &layer_index) const;
 
     /**
      * @param agent_name Name of the agent to check

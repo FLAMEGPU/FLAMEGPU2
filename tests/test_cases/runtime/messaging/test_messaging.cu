@@ -47,9 +47,9 @@ TEST(TestMessage, NoAgents) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 10;

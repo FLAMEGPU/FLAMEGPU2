@@ -93,11 +93,11 @@ int main(int argc, const char ** argv) {
      * Control flow
      */
     {   // Layer #1
-        flamegpu::LayerDescription &layer = model.newLayer();
+        flamegpu::LayerDescription layer = model.newLayer();
         layer.addAgentFunction(output);
     }
     {   // Layer #2
-        flamegpu::LayerDescription &layer = model.newLayer();
+        flamegpu::LayerDescription layer = model.newLayer();
         layer.addAgentFunction(update);
     }
     model.addExitCondition(stable_temperature);

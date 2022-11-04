@@ -69,9 +69,9 @@ TEST(TestMessage_Array2D, Mandatory) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Create a list of numbers
     std::array<unsigned int, AGENT_COUNT> numbers;
@@ -115,9 +115,9 @@ TEST(TestMessage_Array2D, Optional) {
     fo.setMessageOutputOptional(true);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Create a list of numbers
     std::array<unsigned int, AGENT_COUNT> numbers;
@@ -164,9 +164,9 @@ TEST(TestMessage_Array2D, OptionalNone) {
     fo.setMessageOutputOptional(true);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
 
     // Generate an arbitrary population.
@@ -257,9 +257,9 @@ TEST(TestMessage_Array2D, Moore1W) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, MooreTest1W);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -290,9 +290,9 @@ TEST(TestMessage_Array2D, Moore2W) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, MooreTest2W);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -329,9 +329,9 @@ TEST(TestMessage_Array2D, DISABLED_DuplicateOutputException) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Create a list of numbers
     std::array<unsigned int, AGENT_COUNT> numbers;
@@ -391,7 +391,7 @@ TEST(TestMessage_Array2D, ReadEmpty) {
         agent.newFunction("in", countArray2D).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(countArray2D);
     }
     // Create 1 agent
@@ -431,9 +431,9 @@ TEST(TestMessage_Array2D, DISABLED_MooreW_InitOutOfBoundsX) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreWOutOfBoundsX);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -471,9 +471,9 @@ TEST(TestMessage_Array2D, DISABLED_MooreW_InitOutOfBoundsY) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreWOutOfBoundsY);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -511,9 +511,9 @@ TEST(TestMessage_Array2D, DISABLED_MooreW_BadRadius1) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreWBadRadius1);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -551,9 +551,9 @@ TEST(TestMessage_Array2D, DISABLED_MooreW_BadRadius2) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreWBadRadius2);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -591,9 +591,9 @@ TEST(TestMessage_Array2D, DISABLED_Moore_InitOutOfBoundsX) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreOutOfBoundsX);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -631,9 +631,9 @@ TEST(TestMessage_Array2D, DISABLED_Moore_InitOutOfBoundsY) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreOutOfBoundsY);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -671,9 +671,9 @@ TEST(TestMessage_Array2D, DISABLED_Moore_BadRadius) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreBadRadius);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -762,7 +762,7 @@ void test_moore_wrap_comradius(
     AgentFunctionDescription inputFunction = agent.newFunction("MooreWTestXYC", MooreWTestXYC);
     inputFunction.setMessageInput(message);
     model.newLayer().addAgentFunction(outputFunction);
-    LayerDescription &li = model.newLayer();
+    LayerDescription li = model.newLayer();
     li.addAgentFunction(inputFunction);
     // Assign the numbers in shuffled order to agents
     AgentVector population(agent, agentCount);
@@ -891,7 +891,7 @@ void test_mooore_comradius(
     AgentFunctionDescription inputFunction = agent.newFunction("MooreTestXYC", MooreTestXYC);
     inputFunction.setMessageInput(message);
     model.newLayer().addAgentFunction(outputFunction);
-    LayerDescription &li = model.newLayer();
+    LayerDescription li = model.newLayer();
     li.addAgentFunction(inputFunction);
     // Assign the numbers in shuffled order to agents
     AgentVector population(agent, agentCount);
@@ -993,9 +993,9 @@ TEST(TestMessage_Array2D, ArrayVariable) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
@@ -1054,9 +1054,9 @@ TEST(TestRTCMessage_Array2D, ArrayVariable) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
@@ -1110,9 +1110,9 @@ TEST(TestMessage_Array2D, ArrayVariable_glm) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
@@ -1169,9 +1169,9 @@ TEST(TestRTCMessage_Array2D, ArrayVariable_glm) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
@@ -1463,9 +1463,9 @@ TEST(TestMessage_Array2D, VonNeumann_r1) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_r1);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
@@ -1503,9 +1503,9 @@ TEST(TestMessage_Array2D, VonNeumann_r2) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_r2);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
@@ -1601,9 +1601,9 @@ TEST(TestMessage_Array2D, VonNeumann_wrap_r1) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_wrap_r1);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
@@ -1641,9 +1641,9 @@ TEST(TestMessage_Array2D, VonNeumann_wrap_r2) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_wrap_r2);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);

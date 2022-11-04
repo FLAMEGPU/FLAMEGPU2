@@ -86,11 +86,11 @@ TEST(Spatial2DMessageTest, Mandatory) {
         agent.newFunction("in", in2D).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(out_mandatory2D);
     }
     {   // Layer #2
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(in2D);
     }
     CUDASimulation cudaSimulation(model);
@@ -214,11 +214,11 @@ TEST(Spatial2DMessageTest, Optional) {
         agent.newFunction("in", in2D).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(out_optional2D);  // NEW!
     }
     {   // Layer #2
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(in2D);
     }
     CUDASimulation cudaSimulation(model);
@@ -348,11 +348,11 @@ TEST(Spatial2DMessageTest, OptionalNone) {
         agent.newFunction("in", in2D).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(out_optional2DNone);  // NEW!
     }
     {   // Layer #2
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(in2D);
     }
     CUDASimulation cudaSimulation(model);
@@ -475,7 +475,7 @@ TEST(Spatial2DMessageTest, ReadEmpty) {
         agent.newFunction("in", count2D).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(count2D);
     }
     // Create 1 agent
@@ -537,9 +537,9 @@ TEST(Spatial2DMessageTest, ArrayVariable) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
     int k = 0;
@@ -612,9 +612,9 @@ TEST(RTCSpatial2DMessageTest, ArrayVariable) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
     int k = 0;
@@ -682,9 +682,9 @@ TEST(Spatial2DMessageTest, ArrayVariable_glm) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
     int k = 0;
@@ -754,9 +754,9 @@ TEST(RTCSpatial2DMessageTest, ArrayVariable_glm) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
     int k = 0;
@@ -844,11 +844,11 @@ void wrapped_2d_test(const float x_offset, const float y_offset, const float out
         agent.newFunction("in", inWrapped2D).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription& layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(out_mandatory2D);
     }
     {   // Layer #2
-        LayerDescription& layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(inWrapped2D);
     }
     CUDASimulation cudaSimulation(model);

@@ -353,7 +353,7 @@ TEST(TestCUDASimulation, SharedAgentFunction) {
     auto a1f = agent1.newFunction("add", add_fn);
     auto a2f = agent2.newFunction("add", add_fn);
 
-    auto &layer = model.newLayer();
+    auto layer = model.newLayer();
     layer.addAgentFunction(a1f);
     layer.addAgentFunction(a2f);
 
@@ -649,7 +649,7 @@ TEST(TestCUDASimulation, AgentID_MultipleStatesUniqueIDs) {
     af_b.setEndState("b");
 
 
-    auto& layer = model.newLayer();
+    auto layer = model.newLayer();
     layer.addAgentFunction(af_a);
     layer.addAgentFunction(af_b);
 

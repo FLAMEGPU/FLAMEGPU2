@@ -33,7 +33,7 @@ TEST(AutomaticSpatialAgentSort, SortingDisabled) {
     locationMessage.setRadius(0.2f);
     AgentFunctionDescription dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
     dummyFunc.setMessageInput("location");
-    LayerDescription& layer = model.newLayer();
+    LayerDescription layer = model.newLayer();
     layer.addAgentFunction(dummyFunc);
 
     // Init pop - arranged in reverse order
@@ -78,7 +78,7 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep) {
     locationMessage.setRadius(0.2f);
     AgentFunctionDescription dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
     dummyFunc.setMessageInput("location");
-    LayerDescription& layer = model.newLayer();
+    LayerDescription layer = model.newLayer();
     layer.addAgentFunction(dummyFunc);
 
     // Init pop
@@ -125,7 +125,7 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep_no_default) {
     locationMessage.setRadius(0.2f);
     AgentFunctionDescription dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
     dummyFunc.setMessageInput("location");
-    LayerDescription& layer = model.newLayer();
+    LayerDescription layer = model.newLayer();
     layer.addAgentFunction(dummyFunc);
 
     // Init pop
@@ -168,7 +168,7 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep_vec2) {
     locationMessage.setRadius(0.2f);
     AgentFunctionDescription dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_2D);
     dummyFunc.setMessageInput("location");
-    LayerDescription& layer = model.newLayer();
+    LayerDescription layer = model.newLayer();
     layer.addAgentFunction(dummyFunc);
 
     // Init pop
@@ -207,7 +207,7 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep_vec3) {
     locationMessage.setRadius(0.2f);
     AgentFunctionDescription dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
     dummyFunc.setMessageInput("location");
-    LayerDescription& layer = model.newLayer();
+    LayerDescription layer = model.newLayer();
     layer.addAgentFunction(dummyFunc);
 
     // Init pop

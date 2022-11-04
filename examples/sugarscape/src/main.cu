@@ -294,19 +294,19 @@ int main(int argc, const char ** argv) {
          * Control flow
          */
         {   // Layer #1
-            flamegpu::LayerDescription  &layer = submodel.newLayer();
+            flamegpu::LayerDescription layer = submodel.newLayer();
             layer.addAgentFunction(output_cell_status);
         }
         {   // Layer #2
-            flamegpu::LayerDescription  &layer = submodel.newLayer();
+            flamegpu::LayerDescription layer = submodel.newLayer();
             layer.addAgentFunction(movement_request);
         }
         {   // Layer #3
-            flamegpu::LayerDescription  &layer = submodel.newLayer();
+            flamegpu::LayerDescription layer = submodel.newLayer();
             layer.addAgentFunction(movement_response);
         }
         {   // Layer #4
-            flamegpu::LayerDescription  &layer = submodel.newLayer();
+            flamegpu::LayerDescription layer = submodel.newLayer();
             layer.addAgentFunction(movement_transaction);
         }
         submodel.addExitCondition(MovementExitCondition);
@@ -342,11 +342,11 @@ int main(int argc, const char ** argv) {
      * Control flow
      */
     {   // Layer #1
-        flamegpu::LayerDescription &layer = model.newLayer();
+        flamegpu::LayerDescription layer = model.newLayer();
         layer.addAgentFunction(metabolise_and_growback);
     }
     {   // Layer #2
-        flamegpu::LayerDescription &layer = model.newLayer();
+        flamegpu::LayerDescription layer = model.newLayer();
         layer.addSubModel(movement_sub);
     }
     NVTX_POP();

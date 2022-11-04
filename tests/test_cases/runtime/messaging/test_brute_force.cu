@@ -98,9 +98,9 @@ TEST(TestMessage_BruteForce, Mandatory1) {
         ai.setVariable<int>("sum", 0);
         ai.setVariable<int>("product", 1);
     }
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -151,9 +151,9 @@ TEST(TestMessage_BruteForce, Mandatory2) {
         product = product > 1000000 ? 1 : product;
         product = product < -1000000 ? -1 : product;
     }
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 2;
@@ -202,9 +202,9 @@ TEST(TestMessage_BruteForce, Optional1) {
         ai.setVariable<int>("sum", 0);
         ai.setVariable<int>("product", 1);
     }
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -258,9 +258,9 @@ TEST(TestMessage_BruteForce, Optional2) {
             product = product < -1000000 ? -1 : product;
         }
     }
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 2;
@@ -286,9 +286,9 @@ TEST(TestMessage_BruteForce, OptionalNone) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunctionNone);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
 
     // Generate an arbitrary population.
@@ -342,7 +342,7 @@ TEST(TestMessage_BruteForce, ReadEmpty) {
         agent.newFunction("in", countBF).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(countBF);
     }
     // Create 1 agent
@@ -392,9 +392,9 @@ TEST(TestMessage_BruteForce, ArrayVariable) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -452,9 +452,9 @@ TEST(TestRTCMessage_BruteForce, ArrayVariable) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -507,9 +507,9 @@ TEST(TestMessage_BruteForce, ArrayVariable_glm) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -564,9 +564,9 @@ TEST(TestRTCMessage_BruteForce, ArrayVariable_glm) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);

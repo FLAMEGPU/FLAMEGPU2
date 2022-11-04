@@ -44,7 +44,7 @@ class CAgentFunctionDescription : public DependencyNode {
  public:
      /**
       * Constructor, creates an interface to the AgentFunctionData
-      * @param data Data store of this agent's data
+      * @param data Data store of this function's data
       */
      explicit CAgentFunctionDescription(std::shared_ptr<AgentFunctionData> data);
      explicit CAgentFunctionDescription(std::shared_ptr<const AgentFunctionData> data);
@@ -52,29 +52,28 @@ class CAgentFunctionDescription : public DependencyNode {
       * Copy constructor
       * Creates a new interface to the same AgentFunctionData/ModelData
       */
-     CAgentFunctionDescription(const CAgentFunctionDescription& other_agent) = default;
-     CAgentFunctionDescription(CAgentFunctionDescription&& other_agent) = default;
+     CAgentFunctionDescription(const CAgentFunctionDescription& other_function) = default;
+     CAgentFunctionDescription(CAgentFunctionDescription&& other_function) = default;
      /**
       * Assignment operator
       * Assigns this interface to the same AgentFunctionData/ModelData
       */
-     CAgentFunctionDescription& operator=(const CAgentFunctionDescription& other_agent) = default;
-     CAgentFunctionDescription& operator=(CAgentFunctionDescription&& other_agent) = default;
+     CAgentFunctionDescription& operator=(const CAgentFunctionDescription& other_function) = default;
+     CAgentFunctionDescription& operator=(CAgentFunctionDescription&& other_function) = default;
      /**
-      * Equality operator, checks whether AgentDescription hierarchies are functionally the same
+      * Equality operator, checks whether AgentFunctionDescription hierarchies are functionally the same
       * @param rhs right hand side
-      * @returns True when agents are the same
+      * @returns True when functions are the same
       * @note Instead compare pointers if you wish to check that they are the same instance
       */
      bool operator==(const CAgentFunctionDescription& rhs) const;
      /**
-      * Equality operator, checks whether AgentDescription hierarchies are functionally different
+      * Equality operator, checks whether AgentFunctionDescription hierarchies are functionally different
       * @param rhs right hand side
-      * @returns True when agents are not the same
+      * @returns True when functions are not the same
       * @note Instead compare pointers if you wish to check that they are not the same instance
       */
      bool operator!=(const CAgentFunctionDescription& rhs) const;
-
 
      /**
       * @return The function's name
@@ -156,7 +155,7 @@ class CAgentFunctionDescription : public DependencyNode {
 
  protected:
      /**
-      * The class which stores all of the agent's data.
+      * The class which stores all of the function's data.
       */
      std::shared_ptr<AgentFunctionData> function;
 };

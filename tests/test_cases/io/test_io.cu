@@ -371,7 +371,7 @@ TEST(IOTest2, AgentID_JSON_ExportImport) {
     ModelDescription model("test_agentid");
     AgentDescription agent = model.newAgent("agent");
     agent.newVariable<id_t>("id_other", ID_NOT_SET);
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addHostFunction(DoNothing);
 
     {
@@ -415,7 +415,7 @@ TEST(IOTest2, AgentID_XML_ExportImport) {
     ModelDescription model("test_agentid");
     AgentDescription agent = model.newAgent("agent");
     agent.newVariable<id_t>("id_other", ID_NOT_SET);
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addHostFunction(DoNothing);
 
     {
@@ -466,7 +466,7 @@ TEST(IOTest2, AgentID_FileInput_IDCollision) {
     ModelDescription model("test_agentid");
     AgentDescription agent = model.newAgent("agent");
     agent.newVariable<id_t>("id_other", ID_NOT_SET);
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addHostFunction(DoNothing);
     CUDASimulation sim(model);
     sim.SimulationConfig().input_file = JSON_FILE_NAME;

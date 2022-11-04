@@ -95,12 +95,12 @@ int main(int argc, const char ** argv) {
      }
 
      {
-        flamegpu::LayerDescription  &devicefn_layer = model.newLayer("devicefn_layer");
+        flamegpu::LayerDescription devicefn_layer = model.newLayer("devicefn_layer");
         devicefn_layer.addAgentFunction(device_function);
      }
 
      {
-        flamegpu::LayerDescription  &hostfn_layer = model.newLayer("hostfn_layer");
+        flamegpu::LayerDescription hostfn_layer = model.newLayer("hostfn_layer");
         hostfn_layer.addHostFunction(host_function);
      }
 

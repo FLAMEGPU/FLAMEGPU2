@@ -48,9 +48,9 @@ TEST(CXXNamespaceTest, AgentFunctionsExplicit) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    flamegpu::LayerDescription& lo = m.newLayer("output_layer");
+    flamegpu::LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    flamegpu::LayerDescription& li = m.newLayer("input_layer");
+    flamegpu::LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     flamegpu::CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -116,9 +116,9 @@ TEST(CXXNamespaceTest, AgentFunctionsDeclaration) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    LayerDescription& lo = m.newLayer("output_layer");
+    LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer("input_layer");
+    LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -175,9 +175,9 @@ TEST(CXXNamespaceTest, AgentFunctionsDirective) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    LayerDescription& lo = m.newLayer("output_layer");
+    LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer("input_layer");
+    LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -231,9 +231,9 @@ TEST(CXXNamespaceTest, AgentFunctionsNamed) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    LayerDescription& lo = m.newLayer("output_layer");
+    LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer("input_layer");
+    LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -288,9 +288,9 @@ TEST(CXXNamespaceTest, AgentFunctionsAlias) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    fgpu::LayerDescription& lo = m.newLayer("output_layer");
+    fgpu::LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    fgpu::LayerDescription& li = m.newLayer("input_layer");
+    fgpu::LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     fgpu::CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -343,9 +343,9 @@ TEST(CXXNamespaceTest, AgentFunctionsAliasMixed) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    flamegpu::LayerDescription& lo = m.newLayer("output_layer");
+    flamegpu::LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    fgpu::LayerDescription& li = m.newLayer("input_layer");
+    fgpu::LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     flamegpu::CUDASimulation c(m);
     c.SimulationConfig().steps = 1;

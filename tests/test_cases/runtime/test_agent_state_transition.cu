@@ -77,7 +77,7 @@ TEST(TestAgentStateTransitions, Src_0_Dest_10) {
     AgentFunctionDescription af1 = a.newFunction(FUNCTION_NAME1, AgentGood);
     af1.setInitialState(START_STATE);
     af1.setEndState(END_STATE);
-    LayerDescription &lo1 = m.newLayer(LAYER_NAME1);
+    LayerDescription lo1 = m.newLayer(LAYER_NAME1);
     lo1.addAgentFunction(af1);
     AgentVector pop(a, AGENT_COUNT);
     for (AgentVector::Agent ai : pop) {
@@ -130,8 +130,8 @@ TEST(TestAgentStateTransitions, Src_10_Dest_0) {
     AgentFunctionDescription af2 = a.newFunction(FUNCTION_NAME2, AgentBad);
     af2.setInitialState(END_STATE);
     af2.setEndState(END_STATE2);
-    LayerDescription &lo1 = m.newLayer(LAYER_NAME1);
-    LayerDescription &lo2 = m.newLayer(LAYER_NAME2);
+    LayerDescription lo1 = m.newLayer(LAYER_NAME1);
+    LayerDescription lo2 = m.newLayer(LAYER_NAME2);
     lo1.addAgentFunction(af2);
     lo2.addAgentFunction(af1);
     AgentVector pop(a, AGENT_COUNT);
@@ -195,8 +195,8 @@ TEST(TestAgentStateTransitions, Src_10_Dest_10) {
     af2.setInitialState(START_STATE);
     af2.setEndState(END_STATE);
     af2.setFunctionCondition(Zero_X);
-    LayerDescription &lo1 = m.newLayer(LAYER_NAME1);
-    LayerDescription &lo2 = m.newLayer(LAYER_NAME2);
+    LayerDescription lo1 = m.newLayer(LAYER_NAME1);
+    LayerDescription lo2 = m.newLayer(LAYER_NAME2);
     lo1.addAgentFunction(af1);
     lo2.addAgentFunction(af2);
     // Init pop

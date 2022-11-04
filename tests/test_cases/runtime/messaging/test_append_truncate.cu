@@ -84,9 +84,9 @@ namespace test_message_AppendTruncate {
         for (AgentVector::Agent ai : pop) {
             ai.setVariable<unsigned int>("count", 0);
         }
-        LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+        LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
         lo.addAgentFunction(fo);
-        LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+        LayerDescription li = m.newLayer(IN_LAYER_NAME);
         li.addAgentFunction(fi);
         CUDASimulation c(m);
         c.setPopulationData(pop);
@@ -122,11 +122,11 @@ namespace test_message_AppendTruncate {
             ai.setVariable<unsigned int>("count0", 0);
             ai.setVariable<unsigned int>("count1", 0);
         }
-        LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+        LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
         lo.addAgentFunction(fo);
-        LayerDescription &lo2 = m.newLayer(OUT_LAYER2_NAME);
+        LayerDescription lo2 = m.newLayer(OUT_LAYER2_NAME);
         lo2.addAgentFunction(fo2);
-        LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+        LayerDescription li = m.newLayer(IN_LAYER_NAME);
         li.addAgentFunction(fi);
         CUDASimulation c(m);
         c.setPopulationData(pop);
@@ -170,9 +170,9 @@ namespace test_message_AppendTruncate {
             }
             ai.setVariable<unsigned int>("count", 0);
         }
-        LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+        LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
         lo.addAgentFunction(fo);
-        LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+        LayerDescription li = m.newLayer(IN_LAYER_NAME);
         li.addAgentFunction(fi);
         CUDASimulation c(m);
         c.setPopulationData(pop);
@@ -219,11 +219,11 @@ namespace test_message_AppendTruncate {
             ai.setVariable<unsigned int>("count0", 0);
             ai.setVariable<unsigned int>("count1", 0);
         }
-        LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+        LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
         lo.addAgentFunction(fo);
-        LayerDescription &lo2 = m.newLayer(OUT_LAYER2_NAME);
+        LayerDescription lo2 = m.newLayer(OUT_LAYER2_NAME);
         lo2.addAgentFunction(fo2);
-        LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+        LayerDescription li = m.newLayer(IN_LAYER_NAME);
         li.addAgentFunction(fi);
         CUDASimulation c(m);
         c.setPopulationData(pop);
@@ -286,11 +286,11 @@ namespace test_message_AppendTruncate {
         c.newVariable<unsigned int>("1", 0);
         c.newVariable<unsigned int>("2", 0);
 
-        LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+        LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
         lo.addAgentFunction(Out_1);
-        LayerDescription& lo2 = m.newLayer(OUT_LAYER2_NAME);
+        LayerDescription lo2 = m.newLayer(OUT_LAYER2_NAME);
         lo2.addAgentFunction(Out_2);
-        LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+        LayerDescription li = m.newLayer(IN_LAYER_NAME);
         li.addAgentFunction(In);
         AgentVector pop_a(a, AGENT_COUNT);
         AgentVector pop_b(b, AGENT_COUNT * 2);

@@ -406,7 +406,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, LayerConcurrency) {
     ModelDescription m("concurrency_test");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -448,7 +448,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastLayerConcurrency) 
     ModelDescription m("concurrency_test");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -489,7 +489,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutput) {
     ModelDescription m("ConcurrentMessageOutput");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -536,8 +536,8 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInput) {
     ModelDescription m("ConcurrentMessageOutputInput");
 
     // Create two layers.
-    LayerDescription &layer0  = m.newLayer();
-    LayerDescription &layer1  = m.newLayer();
+    LayerDescription layer0  = m.newLayer();
+    LayerDescription layer1  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -590,8 +590,8 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSam
     ModelDescription m("ConcurrentMessageOutputInputSameList");
 
     // Create two layers.
-    LayerDescription &layer0  = m.newLayer();
-    LayerDescription &layer1  = m.newLayer();
+    LayerDescription layer0  = m.newLayer();
+    LayerDescription layer1  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -647,8 +647,8 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentOptionalMessageOutput
     ModelDescription m("ConcurrentMessageOutputInputSameList");
 
     // Create two layers.
-    LayerDescription &layer0  = m.newLayer();
-    LayerDescription &layer1  = m.newLayer();
+    LayerDescription layer0  = m.newLayer();
+    LayerDescription layer1  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -712,8 +712,8 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
     ModelDescription m("ConcurrentMessageOutputInputSpatial2D");
 
     // Create two layers.
-    LayerDescription &layer0  = m.newLayer();
-    LayerDescription &layer1  = m.newLayer();
+    LayerDescription layer0  = m.newLayer();
+    LayerDescription layer1  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -782,8 +782,8 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
     ModelDescription m("ConcurrentMessageOutputInputSpatial3D");
 
     // Create two layers.
-    LayerDescription &layer0  = m.newLayer();
-    LayerDescription &layer1  = m.newLayer();
+    LayerDescription layer0  = m.newLayer();
+    LayerDescription layer1  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -853,7 +853,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_LayerConcurrencyBirth)
     ModelDescription m("LayerConcurrencyBirth");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
@@ -894,7 +894,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, LayerConcurrencyDeath) {
     ModelDescription m("LayerConcurrencyDeath");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
@@ -935,7 +935,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConditionConcurrencyAllDisabled
     ModelDescription m("ConditionConcurrencyAllDisabled");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
@@ -976,7 +976,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConditionConcurrencyAllEnabled)
     ModelDescription m("ConditionConcurrencyAllEnabled");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
@@ -1018,7 +1018,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConditionConcurrency5050) {
     ModelDescription m("ConditionConcurrency5050");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
@@ -1060,7 +1060,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditiRELEASE_ONL
     ModelDescription m("FastConditionConcurrencyAllDisabled");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
@@ -1102,7 +1102,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditionConcurren
     ModelDescription m("FastConditionConcurrencyAllEnabled");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
@@ -1144,7 +1144,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditionConcurren
     ModelDescription m("FastConditionConcurrency5050");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
@@ -1185,7 +1185,7 @@ RELEASE_ONLY_SEATBELTS_TEST(TestCUDASimulationConcurrency, LayerConcurrencyDevic
     ModelDescription m("LayerConcurrencyDeviceException");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -1254,7 +1254,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, RTCLayerConcurrency) {
     ModelDescription m("rtc_concurrency_test");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 

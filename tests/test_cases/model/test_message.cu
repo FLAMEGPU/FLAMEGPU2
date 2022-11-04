@@ -99,7 +99,7 @@ TEST(MessageDescriptionTest, CorrectMessageTypeBound1) {
     ModelDescription m(MODEL_NAME);
     AgentDescription a = m.newAgent("foo");
     AgentFunctionDescription fo = a.newFunction("bar", NoInput);
-    LayerDescription &lo = m.newLayer("foo2");
+    LayerDescription lo = m.newLayer("foo2");
     lo.addAgentFunction(fo);
     EXPECT_THROW(CUDASimulation c(m), exception::InvalidMessageType);
 }
@@ -107,7 +107,7 @@ TEST(MessageDescriptionTest, CorrectMessageTypeBound2) {
     ModelDescription m(MODEL_NAME);
     AgentDescription a = m.newAgent("foo");
     AgentFunctionDescription fo = a.newFunction("bar", NoOutput);
-    LayerDescription &lo = m.newLayer("foo2");
+    LayerDescription lo = m.newLayer("foo2");
     lo.addAgentFunction(fo);
     EXPECT_THROW(CUDASimulation c(m), exception::InvalidMessageType);
 }

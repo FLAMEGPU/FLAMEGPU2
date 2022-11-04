@@ -507,7 +507,7 @@ TEST(HostMacroPropertyTest, DISABLED_ReadSameLayerAsAgentWrite) {
     agent.newVariable<unsigned int>("w");
     agent.newVariable<unsigned int>("a");
     agent.newFunction("agentwrite", AgentWrite);
-    auto &l = model.newLayer();
+    autol = model.newLayer();
     l.addAgentFunction(AgentWrite);
     l.addHostFunction(HostRead);
     AgentVector population(agent, 1);
@@ -536,7 +536,7 @@ TEST(HostMacroPropertyTest, DISABLED_WriteSameLayerAsAgentRead) {
     agent.newVariable<unsigned int>("w");
     agent.newVariable<unsigned int>("a");
     agent.newFunction("agentread", AgentRead);
-    auto &l = model.newLayer();
+    autol = model.newLayer();
     l.addHostFunction(HostWrite);
     l.addAgentFunction(AgentRead);
     AgentVector population(agent, 1);

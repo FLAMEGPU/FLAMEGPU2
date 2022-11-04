@@ -64,9 +64,9 @@ namespace test_agent_function_conditions {
         af2.setInitialState(STATE1);
         af2.setEndState(STATE3);
         af2.setFunctionCondition(Condition2);
-        LayerDescription &l1 = m.newLayer();
+        LayerDescription l1 = m.newLayer();
         l1.addAgentFunction(af1);
-        LayerDescription &l2 = m.newLayer();
+        LayerDescription l2 = m.newLayer();
         l2.addAgentFunction(af2);
         AgentVector pop(a, AGENT_COUNT * 2);
         for (unsigned int i = 0; i < AGENT_COUNT * 2; ++i) {
@@ -115,9 +115,9 @@ namespace test_agent_function_conditions {
         AgentFunctionDescription af1 = a.newFunction(FUNCTION_NAME1, NullFn1);
         af1.setFunctionCondition(AllFail);
         AgentFunctionDescription af2 = a.newFunction(FUNCTION_NAME2, NullFn2);
-        LayerDescription &l1 = m.newLayer();
+        LayerDescription l1 = m.newLayer();
         l1.addAgentFunction(af1);
-        LayerDescription &l2 = m.newLayer();
+        LayerDescription l2 = m.newLayer();
         l2.addAgentFunction(af2);
         // Create a bunch of empty agents
         AgentVector pop(a, AGENT_COUNT);

@@ -93,11 +93,11 @@ TEST(Spatial3DMessageTest, Mandatory) {
         agent.newFunction("in", in3D).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(out_mandatory3D);
     }
     {   // Layer #2
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(in3D);
     }
     CUDASimulation cudaSimulation(model);
@@ -236,11 +236,11 @@ TEST(Spatial3DMessageTest, Optional) {
         agent.newFunction("in", in3D).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(out_optional3D);  // NEW!
     }
     {   // Layer #2
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(in3D);
     }
     CUDASimulation cudaSimulation(model);
@@ -385,11 +385,11 @@ TEST(Spatial3DMessageTest, OptionalNone) {
         agent.newFunction("in", in3D).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(out_optional3DNone);  // NEW!
     }
     {   // Layer #2
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(in3D);
     }
     CUDASimulation cudaSimulation(model);
@@ -520,7 +520,7 @@ TEST(Spatial3DMessageTest, ReadEmpty) {
         agent.newFunction("in", count3D).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(count3D);
     }
     // Create 1 agent
@@ -587,9 +587,9 @@ TEST(Spatial3DMessageTest, ArrayVariable) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     AgentVector pop(a, CBRT_AGENT_COUNT * CBRT_AGENT_COUNT * CBRT_AGENT_COUNT);
     int t = 0;
@@ -667,9 +667,9 @@ TEST(RTCSpatial3DMessageTest, ArrayVariable) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     AgentVector pop(a, CBRT_AGENT_COUNT * CBRT_AGENT_COUNT * CBRT_AGENT_COUNT);
     int t = 0;
@@ -742,9 +742,9 @@ TEST(Spatial3DMessageTest, ArrayVariable_glm) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     AgentVector pop(a, CBRT_AGENT_COUNT * CBRT_AGENT_COUNT * CBRT_AGENT_COUNT);
     int t = 0;
@@ -819,9 +819,9 @@ TEST(RTCSpatial3DMessageTest, ArrayVariable_glm) {
     fo.setMessageOutput(message);
     AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     AgentVector pop(a, CBRT_AGENT_COUNT * CBRT_AGENT_COUNT * CBRT_AGENT_COUNT);
     int t = 0;
@@ -920,11 +920,11 @@ void wrapped_3d_test(const float x_offset, const float y_offset, const float z_o
         agent.newFunction("in", inWrapped3D).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription& layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(out_mandatory3D);
     }
     {   // Layer #2
-        LayerDescription& layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(inWrapped3D);
     }
     CUDASimulation cudaSimulation(model);

@@ -55,7 +55,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState) {
     agent.newVariable<unsigned int>("id");
     AgentFunctionDescription function = agent.newFunction("output", MandatoryOutput);
     function.setAgentOutput(agent);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -95,7 +95,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState) {
     agent.newVariable<unsigned int>("id");
     AgentFunctionDescription function = agent.newFunction("output", OptionalOutput);
     function.setAgentOutput(agent);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -139,7 +139,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState) {
     function.setInitialState("a");
     function.setEndState("a");
     function.setAgentOutput(agent, "b");
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -181,7 +181,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState) {
     function.setInitialState("a");
     function.setEndState("a");
     function.setAgentOutput(agent, "b");
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -220,7 +220,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath) {
     AgentFunctionDescription function = agent.newFunction("output", MandatoryOutputWithDeath);
     function.setAgentOutput(agent);
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -261,7 +261,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath) {
     AgentFunctionDescription function = agent.newFunction("output", OptionalOutputWithDeath);
     function.setAgentOutput(agent);
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -306,7 +306,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath) {
     function.setEndState("a");
     function.setAgentOutput(agent, "b");
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -346,7 +346,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath) {
     function.setEndState("a");
     function.setAgentOutput(agent, "b");
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -390,7 +390,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent) {
     agent2.newVariable<unsigned int>("id");
     AgentFunctionDescription function = agent2.newFunction("output", MandatoryOutput);
     function.setAgentOutput(agent, "b");
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -450,7 +450,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent) {
     agent2.newVariable<unsigned int>("id");
     AgentFunctionDescription function = agent2.newFunction("output", OptionalOutput);
     function.setAgentOutput(agent, "b");
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -506,7 +506,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent_WithDeath) {
     AgentFunctionDescription function = agent2.newFunction("output", MandatoryOutputWithDeath);
     function.setAgentOutput(agent, "b");
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -565,7 +565,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent_WithDeath) {
     AgentFunctionDescription function = agent2.newFunction("output", OptionalOutputWithDeath);
     function.setAgentOutput(agent, "b");
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -610,7 +610,7 @@ TEST(DeviceAgentCreationTest, DefaultVariableValue) {
     agent2.newVariable<unsigned int>("id");
     AgentFunctionDescription function = agent2.newFunction("output", MandatoryOutput);
     function.setAgentOutput(agent);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -664,7 +664,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithAgentFunctionCondit
     function.setInitialState("a");
     function.setEndState("b");
     function.setAgentOutput(agent, "b");
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -728,7 +728,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithAgentFunctionConditi
     function.setInitialState("a");
     function.setEndState("b");
     function.setAgentOutput(agent, "b");
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -787,7 +787,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithAgentFunctionC
     function.setInitialState("a");
     function.setEndState("c");
     function.setAgentOutput(agent, "b");
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -848,7 +848,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithAgentFunctionCo
     function.setInitialState("a");
     function.setEndState("c");
     function.setAgentOutput(agent, "b");
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -897,7 +897,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath_WithAgentFunc
     function.setFunctionCondition(EvenThreadsOnlyCdn);
     function.setAgentOutput(agent);
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -950,7 +950,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath_WithAgentFunct
     function.setFunctionCondition(EvenThreadsOnlyCdn);
     function.setAgentOutput(agent);
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -1011,7 +1011,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath_WithAgen
     function.setEndState("a");
     function.setAgentOutput(agent, "b");
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -1057,7 +1057,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath_WithAgent
     function.setEndState("a");
     function.setAgentOutput(agent, "b");
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -1228,12 +1228,12 @@ TEST(DeviceAgentCreationTest, AgentID_MultipleStatesUniqueIDs) {
     af_b.setEndState("b");
 
 
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addAgentFunction(af1_a);
-    auto& layer_b = model.newLayer();
+    auto layer_b = model.newLayer();
     layer_b.addAgentFunction(af1_b);
 
-    auto& layer2 = model.newLayer();
+    auto layer2 = model.newLayer();
     layer2.addAgentFunction(af_a);
     layer2.addAgentFunction(af_b);
 
@@ -1308,7 +1308,7 @@ TEST(DeviceAgentCreationTest, AgentID_DeviceBirth_MultipleAgents) {
     auto af1_a = agentA.newFunction("birth", DeviceBirth);
     af1_a.setAgentOutput(agentB);
 
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addAgentFunction(af1_a);
 
     AgentVector pop_inA(agentA, 100);
@@ -1369,12 +1369,12 @@ FLAMEGPU_AGENT_FUNCTION(DeviceBirth, flamegpu::MessageNone, flamegpu::MessageNon
     af_b.setEndState("b");
 
 
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addAgentFunction(af1_a);
-    auto& layer_b = model.newLayer();
+    auto layer_b = model.newLayer();
     layer_b.addAgentFunction(af1_b);
 
-    auto& layer2 = model.newLayer();
+    auto layer2 = model.newLayer();
     layer2.addAgentFunction(af_a);
     layer2.addAgentFunction(af_b);
 
@@ -1448,7 +1448,7 @@ TEST(DeviceAgentCreationTest, Output_Array) {
     agent.newVariable<unsigned int>("id");
     AgentFunctionDescription function = agent.newFunction("output", MandatoryOutputArray);
     function.setAgentOutput(agent);
-    LayerDescription& layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -1530,7 +1530,7 @@ TEST(DeviceAgentCreationTest, Output_Array_glm) {
     agent.newVariable<unsigned int>("id");
     AgentFunctionDescription function = agent.newFunction("output", MandatoryOutputArray_glm);
     function.setAgentOutput(agent);
-    LayerDescription& layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -1577,7 +1577,7 @@ TEST(DeviceRTCAgentCreationTest, Output_Array_glm) {
     agent.newVariable<unsigned int>("id");
     AgentFunctionDescription function = agent.newRTCFunction("output", rtc_MandatoryOutputArray_glm);
     function.setAgentOutput(agent);
-    LayerDescription& layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);

@@ -70,11 +70,11 @@ TEST(ModelDescriptionTest, Layer) {
     EXPECT_FALSE(m.hasLayer(0));
     EXPECT_FALSE(m.hasLayer(1));
     EXPECT_EQ(m.getLayersCount(), 0u);
-    LayerDescription &a = m.newLayer(test_model::AGENT_NAME1);
+    LayerDescription a = m.newLayer(test_model::AGENT_NAME1);
     EXPECT_EQ(m.getLayersCount(), 1u);
     EXPECT_TRUE(m.hasLayer(0));
     EXPECT_TRUE(m.hasLayer(test_model::AGENT_NAME1));
-    LayerDescription &b = m.newLayer(test_model::AGENT_NAME2);
+    LayerDescription b = m.newLayer(test_model::AGENT_NAME2);
     EXPECT_EQ(m.getLayersCount(), 2u);
     // Cannot create layer with same name
     EXPECT_THROW(m.newLayer(test_model::AGENT_NAME1), exception::InvalidFuncLayerIndx);

@@ -490,9 +490,9 @@ TEST(DeviceRTCAPITest, AgentFunction_message_bruteforce) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    LayerDescription& lo = m.newLayer("output_layer");
+    LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer("input_layer");
+    LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
