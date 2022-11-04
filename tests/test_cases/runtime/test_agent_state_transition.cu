@@ -74,7 +74,7 @@ TEST(TestAgentStateTransitions, Src_0_Dest_10) {
     a.setInitialState(START_STATE);
     a.newVariable<int>("x");
     a.newVariable<int, 4>("y");
-    AgentFunctionDescription &af1 = a.newFunction(FUNCTION_NAME1, AgentGood);
+    AgentFunctionDescription af1 = a.newFunction(FUNCTION_NAME1, AgentGood);
     af1.setInitialState(START_STATE);
     af1.setEndState(END_STATE);
     LayerDescription &lo1 = m.newLayer(LAYER_NAME1);
@@ -124,10 +124,10 @@ TEST(TestAgentStateTransitions, Src_10_Dest_0) {
     a.setInitialState(START_STATE);
     a.newVariable<int>("x");
     a.newVariable<int, 4>("y");
-    AgentFunctionDescription &af1 = a.newFunction(FUNCTION_NAME1, AgentGood);
+    AgentFunctionDescription af1 = a.newFunction(FUNCTION_NAME1, AgentGood);
     af1.setInitialState(START_STATE);
     af1.setEndState(END_STATE);
-    AgentFunctionDescription &af2 = a.newFunction(FUNCTION_NAME2, AgentBad);
+    AgentFunctionDescription af2 = a.newFunction(FUNCTION_NAME2, AgentBad);
     af2.setInitialState(END_STATE);
     af2.setEndState(END_STATE2);
     LayerDescription &lo1 = m.newLayer(LAYER_NAME1);
@@ -187,11 +187,11 @@ TEST(TestAgentStateTransitions, Src_10_Dest_10) {
     a.newVariable<unsigned int>("x");
     a.newVariable<unsigned int>("y");
     a.newVariable<int, 4>("z");
-    AgentFunctionDescription &af1 = a.newFunction(FUNCTION_NAME1, AgentDecrement);
+    AgentFunctionDescription af1 = a.newFunction(FUNCTION_NAME1, AgentDecrement);
     af1.setInitialState(START_STATE);
     af1.setEndState(START_STATE);
     // Does nothing, just serves to demonstrate conditional state transition
-    AgentFunctionDescription &af2 = a.newFunction(FUNCTION_NAME2, AgentNull);
+    AgentFunctionDescription af2 = a.newFunction(FUNCTION_NAME2, AgentNull);
     af2.setInitialState(START_STATE);
     af2.setEndState(END_STATE);
     af2.setFunctionCondition(Zero_X);

@@ -31,7 +31,7 @@ TEST(AutomaticSpatialAgentSort, SortingDisabled) {
     locationMessage.setMin(-5, -5, -5);
     locationMessage.setMax(5, 5, 5);
     locationMessage.setRadius(0.2f);
-    AgentFunctionDescription& dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
+    AgentFunctionDescription dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
     dummyFunc.setMessageInput("location");
     LayerDescription& layer = model.newLayer();
     layer.addAgentFunction(dummyFunc);
@@ -76,7 +76,7 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep) {
     locationMessage.setMin(-5, -5, -5);
     locationMessage.setMax(5, 5, 5);
     locationMessage.setRadius(0.2f);
-    AgentFunctionDescription& dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
+    AgentFunctionDescription dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
     dummyFunc.setMessageInput("location");
     LayerDescription& layer = model.newLayer();
     layer.addAgentFunction(dummyFunc);
@@ -123,7 +123,7 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep_no_default) {
     locationMessage.setMin(-5, -5, -5);
     locationMessage.setMax(5, 5, 5);
     locationMessage.setRadius(0.2f);
-    AgentFunctionDescription& dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
+    AgentFunctionDescription dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
     dummyFunc.setMessageInput("location");
     LayerDescription& layer = model.newLayer();
     layer.addAgentFunction(dummyFunc);
@@ -166,7 +166,7 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep_vec2) {
     locationMessage.setMin(-5, -5);
     locationMessage.setMax(5, 5);
     locationMessage.setRadius(0.2f);
-    AgentFunctionDescription& dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_2D);
+    AgentFunctionDescription dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_2D);
     dummyFunc.setMessageInput("location");
     LayerDescription& layer = model.newLayer();
     layer.addAgentFunction(dummyFunc);
@@ -205,7 +205,7 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep_vec3) {
     locationMessage.setMin(-5, -5, -5);
     locationMessage.setMax(5, 5, 5);
     locationMessage.setRadius(0.2f);
-    AgentFunctionDescription& dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
+    AgentFunctionDescription dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
     dummyFunc.setMessageInput("location");
     LayerDescription& layer = model.newLayer();
     layer.addAgentFunction(dummyFunc);

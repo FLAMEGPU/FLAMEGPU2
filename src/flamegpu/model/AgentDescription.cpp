@@ -64,10 +64,10 @@ flamegpu::size_type CAgentDescription::getVariablesCount() const {
     // Downcast, will never have more than UINT_MAX VARS
     return static_cast<flamegpu::size_type>(agent->variables.size());
 }
-const AgentFunctionDescription& CAgentDescription::getFunction(const std::string& function_name) const {
+CAgentFunctionDescription CAgentDescription::getFunction(const std::string& function_name) const {
     auto f = agent->functions.find(function_name);
     if (f != agent->functions.end()) {
-        return *f->second->description;
+        return CAgentFunctionDescription(f->second);
     }
     THROW exception::InvalidAgentFunc("Agent ('%s') does not contain function '%s', "
         "in AgentDescription::getFunction().",
@@ -154,10 +154,10 @@ void AgentDescription::setInitialState(const std::string &init_state) {
         agent->name.c_str(), init_state.c_str());
 }
 
-AgentFunctionDescription &AgentDescription::Function(const std::string &function_name) {
+AgentFunctionDescription AgentDescription::Function(const std::string &function_name) {
     auto f = agent->functions.find(function_name);
     if (f != agent->functions.end()) {
-        return *f->second->description;
+        return AgentFunctionDescription(f->second);
     }
     THROW exception::InvalidAgentFunc("Agent ('%s') does not contain function '%s', "
         "in AgentDescription::Function().",

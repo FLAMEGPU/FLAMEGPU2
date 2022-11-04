@@ -15,7 +15,6 @@ AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const s
     , has_agent_death(false)
     , condition(nullptr)
     , parent(_parent)
-    , description(new AgentFunctionDescription(_parent->model.lock(), this))
     , name(function_name)
     , message_in_type(in_type)
     , message_out_type(out_type) { }
@@ -29,7 +28,6 @@ AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const s
     , has_agent_death(false)
     , condition(nullptr)
     , parent(_parent)
-    , description(new AgentFunctionDescription(_parent->model.lock(), this))
     , name(function_name)
     , message_in_type(in_type)
     , message_out_type(out_type) { }
@@ -47,7 +45,6 @@ AgentFunctionData::AgentFunctionData(const std::shared_ptr<const ModelData> &mod
     , rtc_condition_source(other.rtc_condition_source)
     , rtc_func_condition_name(other.rtc_func_condition_name)
     , parent(_parent)
-    , description(model ? new AgentFunctionDescription(model, this) : nullptr)
     , name(other.name)
     , message_in_type(other.message_in_type)
     , message_out_type(other.message_out_type) {
@@ -169,6 +166,9 @@ bool AgentFunctionData::operator==(const AgentFunctionData &rhs) const {
         return true;
     }
     return false;
+}
+bool AgentFunctionData::operator==(const CAgentFunctionDescription& rhs) const {
+    return *this == *rhs.function;
 }
 bool AgentFunctionData::operator!=(const AgentFunctionData &rhs) const {
     return !operator==(rhs);

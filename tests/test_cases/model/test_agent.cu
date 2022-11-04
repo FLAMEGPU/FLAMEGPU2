@@ -36,9 +36,9 @@ TEST(AgentDescriptionTest, functions) {
     EXPECT_FALSE(a.hasFunction(FUNCTION_NAME1));
     EXPECT_FALSE(a.hasFunction(FUNCTION_NAME2));
     EXPECT_EQ(a.getFunctionsCount(), 0u);
-    AgentFunctionDescription &f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
     EXPECT_EQ(a.getFunctionsCount(), 1u);
-    AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
+    AgentFunctionDescription f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
     EXPECT_EQ(a.getFunctionsCount(), 2u);
     // Cannot create function with same name
     EXPECT_THROW(a.newFunction(FUNCTION_NAME1, agent_fn1), exception::InvalidAgentFunc);
@@ -191,8 +191,8 @@ TEST(AgentDescriptionTest, agent_outputs) {
     AgentDescription a = m.newAgent(AGENT_NAME1);
     AgentDescription b = m.newAgent(AGENT_NAME2);
     EXPECT_EQ(a.getAgentOutputsCount(), 0u);
-    AgentFunctionDescription &f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
-    AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
+    AgentFunctionDescription f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
     // Count increases as we set values
     f1.setAgentOutput(a);
     EXPECT_EQ(a.getAgentOutputsCount(), 1u);

@@ -17,6 +17,7 @@
 
 namespace flamegpu {
 
+class CAgentFunctionDescription;
 class AgentFunctionDescription;
 class AgentDescription;
 namespace visualiser {
@@ -113,7 +114,7 @@ class CAgentDescription {
      * @throws exception::InvalidAgentFunc If a function with the name does not exist within the agent
      * @see AgentDescription::Function(const std::string &) for the mutable version
      */
-    const AgentFunctionDescription& getFunction(const std::string& function_name) const;
+    CAgentFunctionDescription getFunction(const std::string& function_name) const;
     /**
      * Get the total number of functions this agent has
      * @return The total number of functions within the agent
@@ -191,11 +192,13 @@ class AgentDescription : public CAgentDescription {
      * Creates a new interface to the same AgentData/ModelData
      */
     AgentDescription(const AgentDescription& other_agent) = default;
+    AgentDescription(AgentDescription&& other_agent) = default;
     /**
      * Assignment operator
      * Assigns this interface to the same AgentData/ModelData
      */
     AgentDescription& operator=(const AgentDescription& other_agent) = default;
+    AgentDescription& operator=(AgentDescription&& other_agent) = default;
     /**
      * Equality operator, checks whether AgentDescription hierarchies are functionally the same
      * @param rhs right hand side
@@ -283,7 +286,7 @@ class AgentDescription : public CAgentDescription {
      * @note The same agent function can be passed to the same agent twice
      */
     template<typename AgentFunction>
-    AgentFunctionDescription &newFunction(const std::string &function_name, AgentFunction a = AgentFunction());
+    AgentFunctionDescription newFunction(const std::string &function_name, AgentFunction a = AgentFunction());
     /**
      * Adds a new runtime (device) function to the agent from a string containing the source code
      * @param function_name Name of the functions
@@ -293,7 +296,7 @@ class AgentDescription : public CAgentDescription {
      * @throws exception::InvalidAgentFunc If a variable already exists within the agent with the same name
      * @note The same agent function can be passed to the same agent twice
      */
-    AgentFunctionDescription& newRTCFunction(const std::string& function_name, const std::string& func_src);
+    AgentFunctionDescription newRTCFunction(const std::string& function_name, const std::string& func_src);
     /**
      * Adds a new runtime (device) function to the agent from a file containing the source code
      * @param function_name Name of the functions
@@ -304,7 +307,7 @@ class AgentDescription : public CAgentDescription {
      * @throws exception::InvalidAgentFunc If a variable already exists within the agent with the same name
      * @note The same agent function can be passed to the same agent twice
      */
-    AgentFunctionDescription& newRTCFunctionFile(const std::string& function_name, const std::string& file_path);
+    AgentFunctionDescription newRTCFunctionFile(const std::string& function_name, const std::string& file_path);
     /**
      * Returns a mutable reference to the named agent function, which can be used to configure the function
      * @param function_name Name used to refer to the desired agent function
@@ -312,7 +315,7 @@ class AgentDescription : public CAgentDescription {
      * @throws exception::InvalidAgentFunc If a functions with the name does not exist within the agent
      * @see AgentDescription::getFunction(const std::string &) for the immutable version
      */
-    AgentFunctionDescription &Function(const std::string &function_name);
+    AgentFunctionDescription Function(const std::string &function_name);
 
     /**
      * Set how often this agent is sorted. Default value is 1.

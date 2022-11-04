@@ -350,8 +350,8 @@ TEST(TestCUDASimulation, SharedAgentFunction) {
     agent2.newVariable<int>("i", -1);
     agent2.newVariable<int>("j", 1);
 
-    auto &a1f = agent1.newFunction("add", add_fn);
-    auto &a2f = agent2.newFunction("add", add_fn);
+    auto a1f = agent1.newFunction("add", add_fn);
+    auto a2f = agent2.newFunction("add", add_fn);
 
     auto &layer = model.newLayer();
     layer.addAgentFunction(a1f);
@@ -568,7 +568,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MessageNone, MessageNone) {
     a.newVariable<unsigned int>("x");
 
     // add RTC agent function
-    AgentFunctionDescription &rtcFunc = a.newRTCFunction("rtc_test_func", rtc_empty_agent_func);
+    AgentFunctionDescription rtcFunc = a.newRTCFunction("rtc_test_func", rtc_empty_agent_func);
     m.newLayer().addAgentFunction(rtcFunc);
     // Init pop
     for (unsigned int i = 0u; i < AGENT_COUNT; i++) {
@@ -597,7 +597,7 @@ TEST(TestCUDASimulation, RTCElapsedTime) {
     ModelDescription m("m");
     AgentDescription agent = m.newAgent(AGENT_NAME);
     // add RTC agent function
-    AgentFunctionDescription &func = agent.newRTCFunction("rtc_test_func", rtc_empty_agent_func);
+    AgentFunctionDescription func = agent.newRTCFunction("rtc_test_func", rtc_empty_agent_func);
     func.setAllowAgentDeath(true);
     m.newLayer().addAgentFunction(func);
     // Init pop
@@ -641,10 +641,10 @@ TEST(TestCUDASimulation, AgentID_MultipleStatesUniqueIDs) {
     agent.newVariable<id_t>("id_copy");
     agent.newState("a");
     agent.newState("b");
-    auto& af_a = agent.newFunction("copy_id", CopyID);
+    auto af_a = agent.newFunction("copy_id", CopyID);
     af_a.setInitialState("a");
     af_a.setEndState("a");
-    auto& af_b = agent.newFunction("copy_id2", CopyID);
+    auto af_b = agent.newFunction("copy_id2", CopyID);
     af_b.setInitialState("b");
     af_b.setEndState("b");
 

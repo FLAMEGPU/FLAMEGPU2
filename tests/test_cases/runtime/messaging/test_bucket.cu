@@ -177,7 +177,7 @@ TEST(BucketMessageTest, Optional) {
         agent.newVariable<unsigned int>("count1", 0);  // Number of messages iterated
         agent.newVariable<unsigned int>("count2", 0);  // Size of bucket as returned by size()
         agent.newVariable<unsigned int>("sum", 0);  // Sums of IDs in bucket
-        auto &af = agent.newFunction("out", out_optional);
+        auto af = agent.newFunction("out", out_optional);
         af.setMessageOutput("bucket");
         af.setMessageOutputOptional(true);
         agent.newFunction("in", in).setMessageInput("bucket");
@@ -250,7 +250,7 @@ TEST(BucketMessageTest, OptionalNone) {
         agent.newVariable<unsigned int>("count1", 0);  // Number of messages iterated
         agent.newVariable<unsigned int>("count2", 0);  // Size of bucket as returned by size()
         agent.newVariable<unsigned int>("sum", 0);  // Sums of IDs in bucket
-        auto &af = agent.newFunction("out", out_optionalNone);
+        auto af = agent.newFunction("out", out_optionalNone);
         af.setMessageOutput("bucket");
         af.setMessageOutputOptional(true);
         agent.newFunction("in", in).setMessageInput("bucket");
@@ -521,9 +521,9 @@ TEST(TestMessage_Bucket, ArrayVariable) {
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
     fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -578,9 +578,9 @@ TEST(TestRTCMessage_Bucket, ArrayVariable) {
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
-    AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
+    AgentFunctionDescription fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
+    AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
     fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -630,9 +630,9 @@ TEST(TestMessage_Bucket, ArrayVariable_glm) {
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
     fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -684,9 +684,9 @@ TEST(TestRTCMessage_Bucket, ArrayVariable_glm) {
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
-    AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
+    AgentFunctionDescription fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
+    AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
     fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);

@@ -115,7 +115,7 @@ TEST(GPUTest, GPUSimulationTest) {
     circle_agent.newVariable<double>("x");
 
 
-    AgentFunctionDescription &add_data = circle_agent.newFunction("add", add_func);
+    AgentFunctionDescription add_data = circle_agent.newFunction("add", add_func);
 
     AgentVector population(circle_agent, 10);
     for (int i = 0; i< 10; i++) {
@@ -170,8 +170,8 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
     circle2_agent.newVariable<double>("x");
     circle2_agent.newVariable<double>("y");
 
-    AgentFunctionDescription &add_data = circle1_agent.newFunction("add", add_func);
-    AgentFunctionDescription &subtract_data = circle2_agent.newFunction("subtract", subtract_func);
+    AgentFunctionDescription add_data = circle1_agent.newFunction("add", add_func);
+    AgentFunctionDescription subtract_data = circle2_agent.newFunction("subtract", subtract_func);
 
 
     #define SIZE 10

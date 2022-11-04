@@ -263,21 +263,21 @@ int main(int argc, const char ** argv) {
          */
         {
             flamegpu::AgentDescription  agent = makeCoreAgent(submodel);
-            auto &fn_output_cell_status = agent.newFunction("output_cell_status", output_cell_status);
+            auto fn_output_cell_status = agent.newFunction("output_cell_status", output_cell_status);
             {
                 fn_output_cell_status.setMessageOutput("cell_status");
             }
-            auto &fn_movement_request = agent.newFunction("movement_request", movement_request);
+            auto fn_movement_request = agent.newFunction("movement_request", movement_request);
             {
                 fn_movement_request.setMessageInput("cell_status");
                 fn_movement_request.setMessageOutput("movement_request");
             }
-            auto &fn_movement_response = agent.newFunction("movement_response", movement_response);
+            auto fn_movement_response = agent.newFunction("movement_response", movement_response);
             {
                 fn_movement_response.setMessageInput("movement_request");
                 fn_movement_response.setMessageOutput("movement_response");
             }
-            auto &fn_movement_transaction = agent.newFunction("movement_transaction", movement_transaction);
+            auto fn_movement_transaction = agent.newFunction("movement_transaction", movement_transaction);
             {
                 fn_movement_transaction.setMessageInput("movement_response");
             }

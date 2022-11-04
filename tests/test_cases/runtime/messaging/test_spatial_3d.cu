@@ -230,7 +230,7 @@ TEST(Spatial3DMessageTest, Optional) {
         agent.newVariable<unsigned int>("myBin");  // This will be presumed bin index of the agent, might not use this
         agent.newVariable<unsigned int>("count");  // Store the distance moved here, for validation
         agent.newVariable<unsigned int>("badCount");  // Store how many messages are out of range
-        auto &af = agent.newFunction("out", out_optional3D);  // NEW!
+        auto af = agent.newFunction("out", out_optional3D);  // NEW!
         af.setMessageOutput("location");
         af.setMessageOutputOptional(true);  // NEW!
         agent.newFunction("in", in3D).setMessageInput("location");
@@ -379,7 +379,7 @@ TEST(Spatial3DMessageTest, OptionalNone) {
         agent.newVariable<unsigned int>("myBin");  // This will be presumed bin index of the agent, might not use this
         agent.newVariable<unsigned int>("count");  // Store the distance moved here, for validation
         agent.newVariable<unsigned int>("badCount");  // Store how many messages are out of range
-        auto &af = agent.newFunction("out", out_optional3DNone);  // NEW!
+        auto af = agent.newFunction("out", out_optional3DNone);  // NEW!
         af.setMessageOutput("location");
         af.setMessageOutputOptional(true);  // NEW!
         agent.newFunction("in", in3D).setMessageInput("location");
@@ -583,9 +583,9 @@ TEST(Spatial3DMessageTest, ArrayVariable) {
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 3>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
     fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -663,9 +663,9 @@ TEST(RTCSpatial3DMessageTest, ArrayVariable) {
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 3>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
-    AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
+    AgentFunctionDescription fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
+    AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
     fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -738,9 +738,9 @@ TEST(Spatial3DMessageTest, ArrayVariable_glm) {
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 3>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
     fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -815,9 +815,9 @@ TEST(RTCSpatial3DMessageTest, ArrayVariable_glm) {
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 3>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
-    AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
+    AgentFunctionDescription fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
+    AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
     fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);

@@ -69,9 +69,9 @@ TEST(TestMessage_Array3D, Mandatory) {
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -114,10 +114,10 @@ TEST(TestMessage_Array3D, Optional) {
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutOptionalFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutOptionalFunction);
     fo.setMessageOutput(message);
     fo.setMessageOutputOptional(true);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -162,10 +162,10 @@ TEST(TestMessage_Array3D, OptionalNone) {
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutOptionalNoneFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutOptionalNoneFunction);
     fo.setMessageOutput(message);
     fo.setMessageOutputOptional(true);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -265,9 +265,9 @@ TEST(TestMessage_Array3D, Moore1W) {
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutSimple);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutSimple);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, MooreTest1W);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, MooreTest1W);
     fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -298,9 +298,9 @@ TEST(TestMessage_Array3D, Moore2W) {
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutSimple);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutSimple);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, MooreTest2W);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, MooreTest2W);
     fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -337,9 +337,9 @@ TEST(TestMessage_Array3D, DISABLED_DuplicateOutputException) {
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutBad);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutBad);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -441,9 +441,9 @@ TEST(TestMessage_Array3D, DISABLED_MooreWrap_InitOutOfBoundsX) {
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWrapOutOfBoundsX);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreWrapOutOfBoundsX);
     fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -481,9 +481,9 @@ TEST(TestMessage_Array3D, DISABLED_MooreWrap_InitOutOfBoundsY) {
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWrapOutOfBoundsY);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreWrapOutOfBoundsY);
     fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -521,9 +521,9 @@ TEST(TestMessage_Array3D, DISABLED_MooreWrap_InitOutOfBoundsZ) {
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWrapOutOfBoundsZ);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreWrapOutOfBoundsZ);
     fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -561,9 +561,9 @@ TEST(TestMessage_Array3D, DISABLED_MooreWrap_BadRadius1) {
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWrapBadRadius1);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreWrapBadRadius1);
     fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -601,9 +601,9 @@ TEST(TestMessage_Array3D, DISABLED_MooreWrap_BadRadius2) {
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWrapBadRadius2);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreWrapBadRadius2);
     fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -641,9 +641,9 @@ TEST(TestMessage_Array3D, DISABLED_Moore_InitOutOfBoundsX) {
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreOutOfBoundsX);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreOutOfBoundsX);
     fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -681,9 +681,9 @@ TEST(TestMessage_Array3D, DISABLED_Moore_InitOutOfBoundsY) {
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreOutOfBoundsY);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreOutOfBoundsY);
     fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -721,9 +721,9 @@ TEST(TestMessage_Array3D, DISABLED_Moore_InitOutOfBoundsZ) {
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreOutOfBoundsZ);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreOutOfBoundsZ);
     fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -761,9 +761,9 @@ TEST(TestMessage_Array3D, DISABLED_Moore_BadRadius) {
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreBadRadius);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreBadRadius);
     fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -855,9 +855,9 @@ void test_moore_wrapped_comradius(
     agent.newVariable<unsigned int>("message_read", UINT_MAX);
     agent.newVariable<unsigned int>("value_success", 0);
     // Define the function and layers.
-    AgentFunctionDescription &outputFunction = agent.newFunction("OutSimpleXYZ", OutSimpleXYZ);
+    AgentFunctionDescription outputFunction = agent.newFunction("OutSimpleXYZ", OutSimpleXYZ);
     outputFunction.setMessageOutput(message);
-    AgentFunctionDescription &inputFunction = agent.newFunction("MooreWrapTestXYZC", MooreWrapTestXYZC);
+    AgentFunctionDescription inputFunction = agent.newFunction("MooreWrapTestXYZC", MooreWrapTestXYZC);
     inputFunction.setMessageInput(message);
     model.newLayer().addAgentFunction(outputFunction);
     LayerDescription &li = model.newLayer();
@@ -997,9 +997,9 @@ void test_mooore_comradius(
     agent.newVariable<unsigned int>("message_read", UINT_MAX);
     agent.newVariable<unsigned int>("value_success", 0);
     // Define the function and layers.
-    AgentFunctionDescription& outputFunction = agent.newFunction("OutSimpleXYZ", OutSimpleXYZ);
+    AgentFunctionDescription outputFunction = agent.newFunction("OutSimpleXYZ", OutSimpleXYZ);
     outputFunction.setMessageOutput(message);
-    AgentFunctionDescription& inputFunction = agent.newFunction("MooreTestXYZC", MooreTestXYZC);
+    AgentFunctionDescription inputFunction = agent.newFunction("MooreTestXYZC", MooreTestXYZC);
     inputFunction.setMessageInput(message);
     model.newLayer().addAgentFunction(outputFunction);
     LayerDescription& li = model.newLayer();
@@ -1114,9 +1114,9 @@ TEST(TestMessage_Array3D, ArrayVariable) {
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 3>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
     fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -1179,9 +1179,9 @@ TEST(TestRTCMessage_Array3D, ArrayVariable) {
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 3>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
-    AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
+    AgentFunctionDescription fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
+    AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
     fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -1239,9 +1239,9 @@ TEST(TestMessage_Array3D, ArrayVariable_glm) {
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 3>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
     fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -1301,9 +1301,9 @@ TEST(TestRTCMessage_Array3D, ArrayVariable_glm) {
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 3>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
-    AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
+    AgentFunctionDescription fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
+    AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
     fi.setMessageInput(message);
     LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -1450,13 +1450,13 @@ void test_arrayMessageReorderError(
     agent.newVariable<unsigned int>("message_read", UINT_MAX);
 
     // Define the functions
-    AgentFunctionDescription &outputAFunction = agent.newFunction("OutputA", OutputA);
+    AgentFunctionDescription outputAFunction = agent.newFunction("OutputA", OutputA);
     outputAFunction.setMessageOutput(messageA);
-    AgentFunctionDescription &iterateAFunction = agent.newFunction("IterateA", IterateA);
+    AgentFunctionDescription iterateAFunction = agent.newFunction("IterateA", IterateA);
     iterateAFunction.setMessageInput(messageA);
-    AgentFunctionDescription &outputABFunction = agent.newFunction("OutputAB", OutputAB);
+    AgentFunctionDescription outputABFunction = agent.newFunction("OutputAB", OutputAB);
     outputABFunction.setMessageOutput(messageAB);
-    AgentFunctionDescription &iterateABFunction = agent.newFunction("IterateAB", IterateAB);
+    AgentFunctionDescription iterateABFunction = agent.newFunction("IterateAB", IterateAB);
     iterateABFunction.setMessageInput(messageAB);
 
     // Add the functions to layers. The mesasge list with fewer variables should be output/input prior to the larger list(s)
@@ -1614,9 +1614,9 @@ TEST(TestMessage_Array3D, VonNeumann_r1) {
     a.newVariable<unsigned int, 3>("index");
     a.newVariable<unsigned int>("success", 0);
     a.newVariable<unsigned int>("value_success", 0);
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_r1);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_r1);
     fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -1656,9 +1656,9 @@ TEST(TestMessage_Array3D, VonNeumann_r2) {
     a.newVariable<unsigned int, 3>("index");
     a.newVariable<unsigned int>("success", 0);
     a.newVariable<unsigned int>("value_success", 0);
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_r2);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_r2);
     fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -1760,9 +1760,9 @@ TEST(TestMessage_Array3D, VonNeumann_wrap_r1) {
     a.newVariable<unsigned int, 3>("index");
     a.newVariable<unsigned int>("success", 0);
     a.newVariable<unsigned int>("value_success", 0);
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_wrap_r1);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_wrap_r1);
     fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
@@ -1802,9 +1802,9 @@ TEST(TestMessage_Array3D, VonNeumann_wrap_r2) {
     a.newVariable<unsigned int, 3>("index");
     a.newVariable<unsigned int>("success", 0);
     a.newVariable<unsigned int>("value_success", 0);
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_wrap_r2);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_wrap_r2);
     fi.setMessageInput(message);
     LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);

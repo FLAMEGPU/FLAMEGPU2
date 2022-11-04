@@ -409,7 +409,7 @@ void CUDASimulation::spatialSortAgent_async(const std::string& funcName, const s
         return;
 
     const CAgentDescription cudaAgentData(cuda_agent.getAgentDescription());
-    auto& funcData = cudaAgentData.getFunction(funcName);
+    auto funcData = cudaAgentData.getFunction(funcName);
     if (!funcData.hasMessageInput()) {
         THROW exception::InvalidAgentFunc("Function %s registered for auto-spatial sorting but input message type not found!\n", funcName.c_str());
     }

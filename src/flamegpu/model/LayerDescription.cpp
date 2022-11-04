@@ -17,12 +17,12 @@ bool LayerDescription::operator!=(const LayerDescription& rhs) const {
 }
 
 void LayerDescription::addAgentFunction(const AgentFunctionDescription &afd) {
-    if (afd.model.lock() == model.lock()) {
+    if (afd.function->model.lock() == model.lock()) {
         auto m = model.lock();
         // Find the same afd in the model hierarchy
         for (auto &agt : m->agents) {
             for (auto &fn : agt.second->functions) {
-                if (fn.second->description.get() == &afd) {
+                if (*fn.second == afd) {
                     addAgentFunction(agt.first, fn.first);
                     return;
                 }
@@ -206,12 +206,12 @@ flamegpu::size_type LayerDescription::getHostFunctionsCount() const {
     return static_cast<flamegpu::size_type>(layer->host_functions.size());
 }
 
-const AgentFunctionDescription &LayerDescription::getAgentFunction(unsigned int index) const {
+CAgentFunctionDescription LayerDescription::getAgentFunction(unsigned int index) const {
     if (index < layer->agent_functions.size()) {
         auto it = layer->agent_functions.begin();
         for (unsigned int i = 0; i < index; ++i)
             ++it;
-        return *((*it)->description);
+        return CAgentFunctionDescription(*it);
     }
     THROW exception::OutOfBoundsException("Index %d is out of bounds (only %d items exist) "
         "in LayerDescription.getAgentFunction().",

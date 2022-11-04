@@ -12,7 +12,7 @@
 
 namespace flamegpu {
 
-class AgentFunctionDescription;
+class CAgentFunctionDescription;
 class AgentDescription;
 
 /**
@@ -26,6 +26,10 @@ struct AgentFunctionData {
      */
     friend std::shared_ptr<const AgentData> AgentData::clone() const;
     friend struct ModelData;
+    /**
+     * Parent model
+     */
+    std::weak_ptr<const ModelData> model;
 
     /**
      * The cuda kernel entry point for executing the agent function
@@ -91,10 +95,6 @@ struct AgentFunctionData {
      */
     std::weak_ptr<AgentData> parent;
     /**
-     * Description class which provides convenient accessors
-     */
-    std::unique_ptr<AgentFunctionDescription> description;
-    /**
      * Name of the agent function, used to refer to the agent function in many functions
      */
     std::string name;
@@ -104,6 +104,7 @@ struct AgentFunctionData {
      * @note Instead compare pointers if you wish to check that they are the same instance
      */
     bool operator==(const AgentFunctionData &rhs) const;
+    bool operator==(const CAgentFunctionDescription &rhs) const;
     /**
      * Equality operator, checks whether AgentFunctionData hierarchies are functionally different
      * @returns True when agent functions are not the same

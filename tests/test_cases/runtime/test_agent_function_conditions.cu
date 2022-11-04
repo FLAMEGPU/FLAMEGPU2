@@ -56,11 +56,11 @@ namespace test_agent_function_conditions {
         a.newState(STATE1);
         a.newState(STATE2);
         a.newState(STATE3);
-        AgentFunctionDescription &af1 = a.newFunction(FUNCTION_NAME1, NullFn1);
+        AgentFunctionDescription af1 = a.newFunction(FUNCTION_NAME1, NullFn1);
         af1.setInitialState(STATE1);
         af1.setEndState(STATE2);
         af1.setFunctionCondition(Condition1);
-        AgentFunctionDescription &af2 = a.newFunction(FUNCTION_NAME2, NullFn2);
+        AgentFunctionDescription af2 = a.newFunction(FUNCTION_NAME2, NullFn2);
         af2.setInitialState(STATE1);
         af2.setEndState(STATE3);
         af2.setFunctionCondition(Condition2);
@@ -112,9 +112,9 @@ namespace test_agent_function_conditions {
         AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<int>("x");
         a.newVariable<int, 4>("y");
-        AgentFunctionDescription &af1 = a.newFunction(FUNCTION_NAME1, NullFn1);
+        AgentFunctionDescription af1 = a.newFunction(FUNCTION_NAME1, NullFn1);
         af1.setFunctionCondition(AllFail);
-        AgentFunctionDescription &af2 = a.newFunction(FUNCTION_NAME2, NullFn2);
+        AgentFunctionDescription af2 = a.newFunction(FUNCTION_NAME2, NullFn2);
         LayerDescription &l1 = m.newLayer();
         l1.addAgentFunction(af1);
         LayerDescription &l2 = m.newLayer();

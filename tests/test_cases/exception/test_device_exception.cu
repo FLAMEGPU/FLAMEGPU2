@@ -60,13 +60,13 @@ class MiniSim {
     }
     template<typename T, typename C>
     void addFuncCdn(T func, C cdn) {
-        auto &fn = agent.newFunction("name", func);
+        auto fn = agent.newFunction("name", func);
         fn.setFunctionCondition(cdn);
         model.newLayer().addAgentFunction(fn);
     }
     template<typename T>
     void addAgentOutFunc(T func) {
-        auto &fn = agent.newFunction("name", func);
+        auto fn = agent.newFunction("name", func);
         fn.setAgentOutput("agent");
         model.newLayer().addAgentFunction(func);
     }
@@ -74,7 +74,7 @@ class MiniSim {
     void addMessageOutFunc(T func) {
         typename Message::Description &message = model.newMessage<Message>("message");
         message.template newVariable<int>("int");
-        auto &fn = agent.newFunction("name", func);
+        auto fn = agent.newFunction("name", func);
         fn.setMessageOutput("message");
         model.newLayer().addAgentFunction(func);
     }
@@ -85,7 +85,7 @@ class MiniSim {
         message.setMax(1, 1);
         message.setRadius(1);
         message.newVariable<int>("int");
-        auto &fn = agent.newFunction("name", func);
+        auto fn = agent.newFunction("name", func);
         fn.setMessageOutput("message");
         model.newLayer().addAgentFunction(func);
     }
@@ -96,7 +96,7 @@ class MiniSim {
         message.setMax(1, 1, 1);
         message.setRadius(1);
         message.newVariable<int>("int");
-        auto &fn = agent.newFunction("name", func);
+        auto fn = agent.newFunction("name", func);
         fn.setMessageOutput("message");
         model.newLayer().addAgentFunction(func);
     }
@@ -105,7 +105,7 @@ class MiniSim {
         MessageArray::Description &message = model.newMessage<MessageArray>("message");
         message.setLength(10);
         message.newVariable<int>("int");
-        auto &fn = agent.newFunction("name", func);
+        auto fn = agent.newFunction("name", func);
         fn.setMessageOutput("message");
         model.newLayer().addAgentFunction(func);
     }
@@ -114,7 +114,7 @@ class MiniSim {
         MessageArray2D::Description &message = model.newMessage<MessageArray2D>("message");
         message.setDimensions(10, 10);
         message.newVariable<int>("int");
-        auto &fn = agent.newFunction("name", func);
+        auto fn = agent.newFunction("name", func);
         fn.setMessageOutput("message");
         model.newLayer().addAgentFunction(func);
     }
@@ -123,7 +123,7 @@ class MiniSim {
         MessageArray3D::Description &message = model.newMessage<MessageArray3D>("message");
         message.setDimensions(10, 10, 10);
         message.newVariable<int>("int");
-        auto &fn = agent.newFunction("name", func);
+        auto fn = agent.newFunction("name", func);
         fn.setMessageOutput("message");
         model.newLayer().addAgentFunction(func);
     }
@@ -132,7 +132,7 @@ class MiniSim {
         MessageBucket::Description &message = model.newMessage<MessageBucket>("message");
         message.setBounds(0, 1023);
         message.newVariable<int>("int");
-        auto &fn = agent.newFunction("name", func);
+        auto fn = agent.newFunction("name", func);
         fn.setMessageOutput("message");
         model.newLayer().addAgentFunction(func);
     }
@@ -142,12 +142,12 @@ class MiniSim {
         auto &message = model.newMessage<Message>("message");
         message.template newVariable<int>("int");
         {
-            auto &fn = agent.newFunction("out_name", out_func);
+            auto fn = agent.newFunction("out_name", out_func);
             fn.setMessageOutput("message");
             model.newLayer().addAgentFunction(out_func);
         }
         {
-            auto &fn = agent.newFunction("in_name", in_func);
+            auto fn = agent.newFunction("in_name", in_func);
             fn.setMessageInput("message");
             model.newLayer().addAgentFunction(in_func);
         }
@@ -160,12 +160,12 @@ class MiniSim {
         message.setRadius(1);
         message.template newVariable<int>("int");
         {
-            auto &fn = agent.newFunction("out_name", out_func);
+            auto fn = agent.newFunction("out_name", out_func);
             fn.setMessageOutput("message");
             model.newLayer().addAgentFunction(out_func);
         }
         {
-            auto &fn = agent.newFunction("in_name", in_func);
+            auto fn = agent.newFunction("in_name", in_func);
             fn.setMessageInput("message");
             model.newLayer().addAgentFunction(in_func);
         }
@@ -178,12 +178,12 @@ class MiniSim {
         message.setRadius(1);
         message.template newVariable<int>("int");
         {
-            auto &fn = agent.newFunction("out_name", out_func);
+            auto fn = agent.newFunction("out_name", out_func);
             fn.setMessageOutput("message");
             model.newLayer().addAgentFunction(out_func);
         }
         {
-            auto &fn = agent.newFunction("in_name", in_func);
+            auto fn = agent.newFunction("in_name", in_func);
             fn.setMessageInput("message");
             model.newLayer().addAgentFunction(in_func);
         }
@@ -194,12 +194,12 @@ class MiniSim {
         message.setLength(10);
         message.template newVariable<int>("int");
         {
-            auto &fn = agent.newFunction("out_name", out_func);
+            auto fn = agent.newFunction("out_name", out_func);
             fn.setMessageOutput("message");
             model.newLayer().addAgentFunction(out_func);
         }
         {
-            auto &fn = agent.newFunction("in_name", in_func);
+            auto fn = agent.newFunction("in_name", in_func);
             fn.setMessageInput("message");
             model.newLayer().addAgentFunction(in_func);
         }
@@ -210,12 +210,12 @@ class MiniSim {
         message.setDimensions(10, 10);
         message.template newVariable<int>("int");
         {
-            auto &fn = agent.newFunction("out_name", out_func);
+            auto fn = agent.newFunction("out_name", out_func);
             fn.setMessageOutput("message");
             model.newLayer().addAgentFunction(out_func);
         }
         {
-            auto &fn = agent.newFunction("in_name", in_func);
+            auto fn = agent.newFunction("in_name", in_func);
             fn.setMessageInput("message");
             model.newLayer().addAgentFunction(in_func);
         }
@@ -226,12 +226,12 @@ class MiniSim {
         message.setDimensions(10, 10, 10);
         message.template newVariable<int>("int");
         {
-            auto &fn = agent.newFunction("out_name", out_func);
+            auto fn = agent.newFunction("out_name", out_func);
             fn.setMessageOutput("message");
             model.newLayer().addAgentFunction(out_func);
         }
         {
-            auto &fn = agent.newFunction("in_name", in_func);
+            auto fn = agent.newFunction("in_name", in_func);
             fn.setMessageInput("message");
             model.newLayer().addAgentFunction(in_func);
         }
@@ -242,12 +242,12 @@ class MiniSim {
         message.setBounds(0, 1023);
         message.template newVariable<int>("int");
         {
-            auto &fn = agent.newFunction("out_name", out_func);
+            auto fn = agent.newFunction("out_name", out_func);
             fn.setMessageOutput("message");
             model.newLayer().addAgentFunction(out_func);
         }
         {
-            auto &fn = agent.newFunction("in_name", in_func);
+            auto fn = agent.newFunction("in_name", in_func);
             fn.setMessageInput("message");
             model.newLayer().addAgentFunction(in_func);
         }

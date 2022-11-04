@@ -329,9 +329,9 @@ int main(int argc, const char ** argv) {
     agent.newVariable<float>("fx");
     agent.newVariable<float>("fy");
     agent.newVariable<float>("fz");
-    flamegpu::AgentFunctionDescription& outputdataDescription = agent.newFunction("outputdata", outputdata);
+    flamegpu::AgentFunctionDescription outputdataDescription = agent.newFunction("outputdata", outputdata);
     outputdataDescription.setMessageOutput("location");
-    flamegpu::AgentFunctionDescription& inputdataDescription = agent.newFunction("inputdata", inputdata);
+    flamegpu::AgentFunctionDescription inputdataDescription = agent.newFunction("inputdata", inputdata);
     inputdataDescription.setMessageInput("location");
 
     // Dependency specification

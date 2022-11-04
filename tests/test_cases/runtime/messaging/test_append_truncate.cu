@@ -75,9 +75,9 @@ namespace test_message_AppendTruncate {
         message.newVariable<int>("x");
         AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count");
-        AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, Out_AppendTruncate);
+        AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, Out_AppendTruncate);
         fo.setMessageOutput(message);
-        AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate);
+        AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate);
         fi.setMessageInput(message);
 
         AgentVector pop(a, (unsigned int)AGENT_COUNT);
@@ -110,11 +110,11 @@ namespace test_message_AppendTruncate {
         AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count0");
         a.newVariable<unsigned int>("count1");
-        AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, Out_AppendTruncate);
+        AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, Out_AppendTruncate);
         fo.setMessageOutput(message);
-        AgentFunctionDescription &fo2 = a.newFunction(OUT_FUNCTION_NAME2, Out_AppendTruncate2);
+        AgentFunctionDescription fo2 = a.newFunction(OUT_FUNCTION_NAME2, Out_AppendTruncate2);
         fo2.setMessageOutput(message);
-        AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate2);
+        AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate2);
         fi.setMessageInput(message);
 
         AgentVector pop(a, (unsigned int)AGENT_COUNT);
@@ -152,10 +152,10 @@ namespace test_message_AppendTruncate {
         AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count");
         a.newVariable<unsigned int>("do_out");
-        AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OptionalOut_AppendTruncate);
+        AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OptionalOut_AppendTruncate);
         fo.setMessageOutputOptional(true);
         fo.setMessageOutput(message);
-        AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate);
+        AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate);
         fi.setMessageInput(message);
         std::mt19937_64 rng;
         std::uniform_real_distribution<double> dist(0.0, 1.0);
@@ -197,13 +197,13 @@ namespace test_message_AppendTruncate {
         a.newVariable<unsigned int>("count0");
         a.newVariable<unsigned int>("count1");
         a.newVariable<unsigned int>("do_out");
-        AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OptionalOut_AppendTruncate);
+        AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OptionalOut_AppendTruncate);
         fo.setMessageOutputOptional(true);
         fo.setMessageOutput(message);
-        AgentFunctionDescription &fo2 = a.newFunction(OUT_FUNCTION_NAME2, OptionalOut_AppendTruncate2);
+        AgentFunctionDescription fo2 = a.newFunction(OUT_FUNCTION_NAME2, OptionalOut_AppendTruncate2);
         fo2.setMessageOutputOptional(true);
         fo2.setMessageOutput(message);
-        AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate2);
+        AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate2);
         fi.setMessageInput(message);
         std::mt19937_64 rng;
         std::uniform_real_distribution<double> dist(0.0, 1.0);

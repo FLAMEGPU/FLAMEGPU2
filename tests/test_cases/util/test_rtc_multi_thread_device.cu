@@ -117,8 +117,8 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Message) {
     MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
     a.newVariable<int>("x", 0);
-    auto &fn1 = a.newRTCFunction(FUNCTION_NAME1, rtc_FastFnMessage);
-    auto &fn2 = a.newRTCFunction(FUNCTION_NAME2, rtc_SlowFnMessage);
+    auto fn1 = a.newRTCFunction(FUNCTION_NAME1, rtc_FastFnMessage);
+    auto fn2 = a.newRTCFunction(FUNCTION_NAME2, rtc_SlowFnMessage);
     fn1.setMessageOutput(message);
     fn2.setMessageInput(message);
     m.newLayer().addAgentFunction(fn1);
@@ -182,8 +182,8 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Environment) {
     ModelDescription m(MODEL_NAME);
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x", 0);
-    auto &fn1 = a.newRTCFunction(FUNCTION_NAME1, rtc_SlowFn2);
-    auto &fn2 = a.newRTCFunction(FUNCTION_NAME2, rtc_FastFn2);
+    auto fn1 = a.newRTCFunction(FUNCTION_NAME1, rtc_SlowFn2);
+    auto fn2 = a.newRTCFunction(FUNCTION_NAME2, rtc_FastFn2);
     m.newLayer().addAgentFunction(fn1);
     m.newLayer().addAgentFunction(fn2);
 
@@ -277,8 +277,8 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
     ModelDescription m(MODEL_NAME);
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x", 0);
-    auto &fn1 = a.newRTCFunction(FUNCTION_NAME1, rtc_SlowFn3);
-    auto &fn2 = a.newRTCFunction(FUNCTION_NAME2, rtc_FastFn);
+    auto fn1 = a.newRTCFunction(FUNCTION_NAME1, rtc_SlowFn3);
+    auto fn2 = a.newRTCFunction(FUNCTION_NAME2, rtc_FastFn);
     fn1.setAgentOutput(a);
     m.newLayer().addAgentFunction(fn1);
     m.newLayer().addAgentFunction(fn2);
@@ -353,8 +353,8 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
     ModelDescription m(MODEL_NAME);
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x", 0);
-    auto &fn1 = a.newRTCFunction(FUNCTION_NAME1, rtc_SlowFn);
-    auto &fn2 = a.newRTCFunction(FUNCTION_NAME2, rtc_FastFn);
+    auto fn1 = a.newRTCFunction(FUNCTION_NAME1, rtc_SlowFn);
+    auto fn2 = a.newRTCFunction(FUNCTION_NAME2, rtc_FastFn);
     fn1.setRTCFunctionCondition(rtc_AllowEvenOnly);
     m.newLayer().addAgentFunction(fn1);
     m.newLayer().addAgentFunction(fn2);

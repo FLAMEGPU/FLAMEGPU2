@@ -53,7 +53,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState) {
     AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutput);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutput);
     function.setAgentOutput(agent);
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
@@ -93,7 +93,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState) {
     AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutput);
+    AgentFunctionDescription function = agent.newFunction("output", OptionalOutput);
     function.setAgentOutput(agent);
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
@@ -135,7 +135,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState) {
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutput);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutput);
     function.setInitialState("a");
     function.setEndState("a");
     function.setAgentOutput(agent, "b");
@@ -177,7 +177,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState) {
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutput);
+    AgentFunctionDescription function = agent.newFunction("output", OptionalOutput);
     function.setInitialState("a");
     function.setEndState("a");
     function.setAgentOutput(agent, "b");
@@ -217,7 +217,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath) {
     AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutputWithDeath);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutputWithDeath);
     function.setAgentOutput(agent);
     function.setAllowAgentDeath(true);
     LayerDescription &layer1 = model.newLayer();
@@ -258,7 +258,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath) {
     AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutputWithDeath);
+    AgentFunctionDescription function = agent.newFunction("output", OptionalOutputWithDeath);
     function.setAgentOutput(agent);
     function.setAllowAgentDeath(true);
     LayerDescription &layer1 = model.newLayer();
@@ -301,7 +301,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath) {
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutputWithDeath);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutputWithDeath);
     function.setInitialState("a");
     function.setEndState("a");
     function.setAgentOutput(agent, "b");
@@ -341,7 +341,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath) {
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutputWithDeath);
+    AgentFunctionDescription function = agent.newFunction("output", OptionalOutputWithDeath);
     function.setInitialState("a");
     function.setEndState("a");
     function.setAgentOutput(agent, "b");
@@ -388,7 +388,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent) {
     agent.newVariable<unsigned int>("id");
     agent2.newVariable<float>("x");
     agent2.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent2.newFunction("output", MandatoryOutput);
+    AgentFunctionDescription function = agent2.newFunction("output", MandatoryOutput);
     function.setAgentOutput(agent, "b");
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
@@ -448,7 +448,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent) {
     agent.newVariable<unsigned int>("id");
     agent2.newVariable<float>("x");
     agent2.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent2.newFunction("output", OptionalOutput);
+    AgentFunctionDescription function = agent2.newFunction("output", OptionalOutput);
     function.setAgentOutput(agent, "b");
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
@@ -503,7 +503,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent_WithDeath) {
     agent.newVariable<unsigned int>("id");
     agent2.newVariable<float>("x");
     agent2.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent2.newFunction("output", MandatoryOutputWithDeath);
+    AgentFunctionDescription function = agent2.newFunction("output", MandatoryOutputWithDeath);
     function.setAgentOutput(agent, "b");
     function.setAllowAgentDeath(true);
     LayerDescription &layer1 = model.newLayer();
@@ -562,7 +562,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent_WithDeath) {
     agent.newVariable<unsigned int>("id");
     agent2.newVariable<float>("x");
     agent2.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent2.newFunction("output", OptionalOutputWithDeath);
+    AgentFunctionDescription function = agent2.newFunction("output", OptionalOutputWithDeath);
     function.setAgentOutput(agent, "b");
     function.setAllowAgentDeath(true);
     LayerDescription &layer1 = model.newLayer();
@@ -608,7 +608,7 @@ TEST(DeviceAgentCreationTest, DefaultVariableValue) {
     agent.newVariable<unsigned int>("id");
     agent2.newVariable<float>("x");
     agent2.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent2.newFunction("output", MandatoryOutput);
+    AgentFunctionDescription function = agent2.newFunction("output", MandatoryOutput);
     function.setAgentOutput(agent);
     LayerDescription &layer1 = model.newLayer();
     layer1.addAgentFunction(function);
@@ -659,7 +659,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithAgentFunctionCondit
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutput);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutput);
     function.setFunctionCondition(EvenThreadsOnlyCdn);
     function.setInitialState("a");
     function.setEndState("b");
@@ -723,7 +723,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithAgentFunctionConditi
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutput);
+    AgentFunctionDescription function = agent.newFunction("output", OptionalOutput);
     function.setFunctionCondition(EvenThreadsOnlyCdn);
     function.setInitialState("a");
     function.setEndState("b");
@@ -782,7 +782,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithAgentFunctionC
     agent.newState("c");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutput);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutput);
     function.setFunctionCondition(EvenThreadsOnlyCdn);
     function.setInitialState("a");
     function.setEndState("c");
@@ -843,7 +843,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithAgentFunctionCo
     agent.newState("c");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutput);
+    AgentFunctionDescription function = agent.newFunction("output", OptionalOutput);
     function.setFunctionCondition(EvenThreadsOnlyCdn);
     function.setInitialState("a");
     function.setEndState("c");
@@ -893,7 +893,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath_WithAgentFunc
     AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutputWithDeath);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutputWithDeath);
     function.setFunctionCondition(EvenThreadsOnlyCdn);
     function.setAgentOutput(agent);
     function.setAllowAgentDeath(true);
@@ -946,7 +946,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath_WithAgentFunct
     AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutputWithDeath);
+    AgentFunctionDescription function = agent.newFunction("output", OptionalOutputWithDeath);
     function.setFunctionCondition(EvenThreadsOnlyCdn);
     function.setAgentOutput(agent);
     function.setAllowAgentDeath(true);
@@ -1005,7 +1005,7 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath_WithAgen
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutputWithDeath);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutputWithDeath);
     function.setFunctionCondition(EvenThreadsOnlyCdn);
     function.setInitialState("a");
     function.setEndState("a");
@@ -1051,7 +1051,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath_WithAgent
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutputWithDeath);
+    AgentFunctionDescription function = agent.newFunction("output", OptionalOutputWithDeath);
     function.setFunctionCondition(EvenThreadsOnlyCdn);
     function.setInitialState("a");
     function.setEndState("a");
@@ -1130,7 +1130,7 @@ TEST(DeviceAgentCreationTest, DeviceAgentBirth_ArraySet) {
     agent.newVariable<unsigned int>("id", UINT_MAX);
     agent.newVariable<int, 4>("array_var");
     agent.newVariable<float>("y");
-    auto &fn = agent.newFunction("out", ArrayVarDeviceBirth);
+    auto fn = agent.newFunction("out", ArrayVarDeviceBirth);
     fn.setAllowAgentDeath(true);
     fn.setAgentOutput(agent);
     model.newLayer().addAgentFunction(fn);
@@ -1165,7 +1165,7 @@ TEST(DeviceAgentCreationTest, DeviceAgentBirth_DefaultWorks) {
     agent.newVariable<unsigned int>("id", UINT_MAX);
     agent.newVariable<int, 4>("array_var", TEST_REFERENCE);
     agent.newVariable<float>("y", 14.0f);
-    auto &fn = agent.newFunction("out", ArrayVarDeviceBirth_DefaultWorks);
+    auto fn = agent.newFunction("out", ArrayVarDeviceBirth_DefaultWorks);
     fn.setAllowAgentDeath(true);
     fn.setAgentOutput(agent);
     model.newLayer().addAgentFunction(fn);
@@ -1212,18 +1212,18 @@ TEST(DeviceAgentCreationTest, AgentID_MultipleStatesUniqueIDs) {
     agent.newVariable<id_t>("id_other", ID_NOT_SET);
     agent.newState("a");
     agent.newState("b");
-    auto& af1_a = agent.newFunction("birth", DeviceBirth);
+    auto af1_a = agent.newFunction("birth", DeviceBirth);
     af1_a.setAgentOutput(agent, "a");
     af1_a.setInitialState("a");
     af1_a.setEndState("a");
-    auto& af1_b = agent.newFunction("birth2", DeviceBirth);
+    auto af1_b = agent.newFunction("birth2", DeviceBirth);
     af1_b.setAgentOutput(agent, "b");
     af1_b.setInitialState("b");
     af1_b.setEndState("b");
-    auto& af_a = agent.newFunction("copy_id", CopyID);
+    auto af_a = agent.newFunction("copy_id", CopyID);
     af_a.setInitialState("a");
     af_a.setEndState("a");
-    auto& af_b = agent.newFunction("copy_id2", CopyID);
+    auto af_b = agent.newFunction("copy_id2", CopyID);
     af_b.setInitialState("b");
     af_b.setEndState("b");
 
@@ -1305,7 +1305,7 @@ TEST(DeviceAgentCreationTest, AgentID_DeviceBirth_MultipleAgents) {
     agentA.newVariable<id_t>("id_other", ID_NOT_SET);  // Not required for test
     AgentDescription agentB = model.newAgent("agentB");
     agentB.newVariable<id_t>("id_other", ID_NOT_SET);  // Not required for test
-    auto& af1_a = agentA.newFunction("birth", DeviceBirth);
+    auto af1_a = agentA.newFunction("birth", DeviceBirth);
     af1_a.setAgentOutput(agentB);
 
     auto& layer_a = model.newLayer();
@@ -1353,18 +1353,18 @@ FLAMEGPU_AGENT_FUNCTION(DeviceBirth, flamegpu::MessageNone, flamegpu::MessageNon
     return flamegpu::ALIVE;
 }
     )###";
-    auto& af1_a = agent.newRTCFunction("birth", RTC_DeviceBirth);
+    auto af1_a = agent.newRTCFunction("birth", RTC_DeviceBirth);
     af1_a.setAgentOutput(agent, "a");
     af1_a.setInitialState("a");
     af1_a.setEndState("a");
-    auto& af1_b = agent.newRTCFunction("birth2", RTC_DeviceBirth);
+    auto af1_b = agent.newRTCFunction("birth2", RTC_DeviceBirth);
     af1_b.setAgentOutput(agent, "b");
     af1_b.setInitialState("b");
     af1_b.setEndState("b");
-    auto& af_a = agent.newFunction("copy_id", CopyID);
+    auto af_a = agent.newFunction("copy_id", CopyID);
     af_a.setInitialState("a");
     af_a.setEndState("a");
-    auto& af_b = agent.newFunction("copy_id2", CopyID);
+    auto af_b = agent.newFunction("copy_id2", CopyID);
     af_b.setInitialState("b");
     af_b.setEndState("b");
 
@@ -1446,7 +1446,7 @@ TEST(DeviceAgentCreationTest, Output_Array) {
     AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float, 2>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription& function = agent.newFunction("output", MandatoryOutputArray);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutputArray);
     function.setAgentOutput(agent);
     LayerDescription& layer1 = model.newLayer();
     layer1.addAgentFunction(function);
@@ -1492,7 +1492,7 @@ TEST(DeviceAgentCreationTest, DeviceAgentBirth_DefaultWorks_glm) {
     agent.newVariable<unsigned int>("id", UINT_MAX);
     agent.newVariable<glm::ivec4>("array_var", TEST_REFERENCE);
     agent.newVariable<float>("y", 14.0f);
-    auto& fn = agent.newFunction("out", ArrayVarDeviceBirth_DefaultWorks_glm);
+    auto fn = agent.newFunction("out", ArrayVarDeviceBirth_DefaultWorks_glm);
     fn.setAllowAgentDeath(true);
     fn.setAgentOutput(agent);
     model.newLayer().addAgentFunction(fn);
@@ -1528,7 +1528,7 @@ TEST(DeviceAgentCreationTest, Output_Array_glm) {
     AgentDescription agent = model.newAgent("agent");
     agent.newVariable<glm::vec2>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription& function = agent.newFunction("output", MandatoryOutputArray_glm);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutputArray_glm);
     function.setAgentOutput(agent);
     LayerDescription& layer1 = model.newLayer();
     layer1.addAgentFunction(function);
@@ -1575,7 +1575,7 @@ TEST(DeviceRTCAgentCreationTest, Output_Array_glm) {
     AgentDescription agent = model.newAgent("agent");
     agent.newVariable<glm::vec2>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription& function = agent.newRTCFunction("output", rtc_MandatoryOutputArray_glm);
+    AgentFunctionDescription function = agent.newRTCFunction("output", rtc_MandatoryOutputArray_glm);
     function.setAgentOutput(agent);
     LayerDescription& layer1 = model.newLayer();
     layer1.addAgentFunction(function);

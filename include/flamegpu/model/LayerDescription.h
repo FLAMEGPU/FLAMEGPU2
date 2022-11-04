@@ -186,7 +186,7 @@ class LayerDescription {
      * @see LayerDescription::getAgentFunctionsCount()
      * @note Functions are stored in a set, so order may change as new functions are added
      */
-    const AgentFunctionDescription &getAgentFunction(unsigned int index) const;
+    CAgentFunctionDescription getAgentFunction(unsigned int index) const;
     /**
      * @param index Index of the function to return
      * @return A function pointer to the host function at the provided index

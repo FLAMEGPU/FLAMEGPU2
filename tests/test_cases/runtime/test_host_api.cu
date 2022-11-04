@@ -80,7 +80,7 @@ TEST(hostAPITest, resizeTempMemory) {
     AgentDescription agent = model.newAgent("foo");
     agent.newVariable<float>("bar");
 
-    auto& afn = agent.newFunction("birth_agent", birth_agent);
+    auto afn = agent.newFunction("birth_agent", birth_agent);
     afn.setAgentOutput(agent);
 
     model.newLayer().addAgentFunction(afn);

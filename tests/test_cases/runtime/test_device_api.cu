@@ -20,7 +20,7 @@ TEST(DeviceAPITest, AgentDeath_array) {
     agent.newVariable<float>("y");
     agent.newVariable<int>("id");
     // Do nothing, but ensure variables are made available on device
-    AgentFunctionDescription &func = agent.newFunction("some_function", agent_fn_ad_array);
+    AgentFunctionDescription func = agent.newFunction("some_function", agent_fn_ad_array);
     func.setAllowAgentDeath(true);
     model.newLayer().addAgentFunction(func);
     // Init pop
@@ -83,7 +83,7 @@ TEST(DeviceAPITest, ArraySet) {
     agent.newVariable<float>("y");
     agent.newVariable<int>("id");
     // Do nothing, but ensure variables are made available on device
-    AgentFunctionDescription &func = agent.newFunction("some_function", agent_fn_da_set);
+    AgentFunctionDescription func = agent.newFunction("some_function", agent_fn_da_set);
     model.newLayer().addAgentFunction(func);
     // Init pop
     AgentVector init_population(agent, AGENT_COUNT);
@@ -130,7 +130,7 @@ TEST(DeviceAPITest, ArrayGet) {
     agent.newVariable<int>("a3");
     agent.newVariable<int>("a4");
     // Do nothing, but ensure variables are made available on device
-    AgentFunctionDescription &func = agent.newFunction("some_function", agent_fn_da_get);
+    AgentFunctionDescription func = agent.newFunction("some_function", agent_fn_da_get);
     model.newLayer().addAgentFunction(func);
     // Init pop
     AgentVector init_population(agent, AGENT_COUNT);
@@ -191,7 +191,7 @@ TEST(DeviceAPITest, ArraySet_glm) {
     agent.newVariable<float>("y");
     agent.newVariable<int>("id");
     // Do nothing, but ensure variables are made available on device
-    AgentFunctionDescription& func = agent.newFunction("some_function", agent_fn_da_set_glm);
+    AgentFunctionDescription func = agent.newFunction("some_function", agent_fn_da_set_glm);
     model.newLayer().addAgentFunction(func);
     // Init pop
     AgentVector init_population(agent, AGENT_COUNT);
@@ -238,7 +238,7 @@ TEST(DeviceAPITest, ArrayGet_glm) {
     agent.newVariable<int>("a3");
     agent.newVariable<int>("a4");
     // Do nothing, but ensure variables are made available on device
-    AgentFunctionDescription& func = agent.newFunction("some_function", agent_fn_da_get_glm);
+    AgentFunctionDescription func = agent.newFunction("some_function", agent_fn_da_get_glm);
     model.newLayer().addAgentFunction(func);
     // Init pop
     AgentVector init_population(agent, AGENT_COUNT);
@@ -289,7 +289,7 @@ TEST(DeviceAPITest, getStepCounter) {
     AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("step");
     // Do nothing, but ensure variables are made available on device
-    AgentFunctionDescription &func = agent.newFunction("some_function", agent_testGetStepCounter);
+    AgentFunctionDescription func = agent.newFunction("some_function", agent_testGetStepCounter);
     model.newLayer().addAgentFunction(func);
     // Init pop
     const unsigned int agentCount = 1;
@@ -332,7 +332,7 @@ TEST(DeviceAPITest, getStepCounterFunctionCondition) {
     AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("count");
     // Do nothing, but ensure variables are made available on device
-    AgentFunctionDescription &func = agent.newFunction("some_function", condition_testGetStepCounterFunction);
+    AgentFunctionDescription func = agent.newFunction("some_function", condition_testGetStepCounterFunction);
     func.setFunctionCondition(condition_testGetStepCounter);
     model.newLayer().addAgentFunction(func);
     // Init pop

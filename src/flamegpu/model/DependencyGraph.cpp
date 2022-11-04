@@ -263,8 +263,8 @@ void DependencyGraph::checkForUnattachedFunctions() {
     std::set<AgentFunctionData*> graphFunctions;
     std::function<void(DependencyNode*)> captureFunctions;
     captureFunctions = [&captureFunctions, &graphFunctions] (DependencyNode* node) {
-        if (AgentFunctionDescription* afd = dynamic_cast<AgentFunctionDescription*>(node)) {
-            graphFunctions.insert(afd->function);
+        if (CAgentFunctionDescription* afd = dynamic_cast<CAgentFunctionDescription*>(node)) {
+            graphFunctions.insert(afd->function.get());
         }
         for (const auto& child : node->getDependents()) {
             captureFunctions(child);

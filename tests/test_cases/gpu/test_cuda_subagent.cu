@@ -1283,7 +1283,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_BeforeSubModel) {
         ma.newState(UNMAPPED_STATE1);
         ma.newState(UNMAPPED_STATE2);
         ma.newState(MAPPED_STATE1);
-        auto &unmapped_fn = ma.newFunction("", AddTen);
+        auto unmapped_fn = ma.newFunction("", AddTen);
         unmapped_fn.setInitialState(UNMAPPED_STATE1);
         unmapped_fn.setEndState(UNMAPPED_STATE2);
         auto &smd = m.newSubModel("sub", sm);
@@ -1337,7 +1337,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToMap_BeforeSubModel) {
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("", AddOne2);
+        auto af = a.newFunction("", AddOne2);
         af.setInitialState(MAPPED_STATE2);
         af.setEndState(MAPPED_STATE2);
         sm.newLayer().addAgentFunction(AddOne2);
@@ -1352,7 +1352,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToMap_BeforeSubModel) {
         ma.newVariable<unsigned int>("id");
         ma.newState(MAPPED_STATE1);
         ma.newState(MAPPED_STATE2);
-        auto &unmapped_fn = ma.newFunction("", AddTen);
+        auto unmapped_fn = ma.newFunction("", AddTen);
         unmapped_fn.setInitialState(MAPPED_STATE1);
         unmapped_fn.setEndState(MAPPED_STATE2);
         auto &smd = m.newSubModel("sub", sm);
@@ -1396,7 +1396,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmap_BeforeSubModel) {
         auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("", AddOne2);
+        auto af = a.newFunction("", AddOne2);
         af.setInitialState(MAPPED_STATE2);
         af.setEndState(MAPPED_STATE2);
         sm.newLayer().addAgentFunction(AddOne2);
@@ -1411,7 +1411,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmap_BeforeSubModel) {
         ma.newVariable<unsigned int>("id");
         ma.newState(MAPPED_STATE2);
         ma.newState(UNMAPPED_STATE1);
-        auto &unmapped_fn = ma.newFunction("", AddTen);
+        auto unmapped_fn = ma.newFunction("", AddTen);
         unmapped_fn.setInitialState(MAPPED_STATE2);
         unmapped_fn.setEndState(UNMAPPED_STATE1);
         auto &smd = m.newSubModel("sub", sm);
@@ -1455,7 +1455,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_BeforeSubModel) {
         auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("", AddOne2);
+        auto af = a.newFunction("", AddOne2);
         af.setInitialState(MAPPED_STATE2);
         af.setEndState(MAPPED_STATE2);
         sm.newLayer().addAgentFunction(AddOne2);
@@ -1470,7 +1470,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_BeforeSubModel) {
         ma.newVariable<unsigned int>("id");
         ma.newState(UNMAPPED_STATE1);
         ma.newState(MAPPED_STATE2);
-        auto &unmapped_fn = ma.newFunction("", AddTen);
+        auto unmapped_fn = ma.newFunction("", AddTen);
         unmapped_fn.setInitialState(UNMAPPED_STATE1);
         unmapped_fn.setEndState(MAPPED_STATE2);
         auto &smd = m.newSubModel("sub", sm);
@@ -1521,10 +1521,10 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_InSubModel) {
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(UNMAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(MAPPED_STATE2);
         af.setEndState(MAPPED_STATE2);
-        auto &af2 = a.newFunction("a2", AddOne2);
+        auto af2 = a.newFunction("a2", AddOne2);
         af2.setInitialState(UNMAPPED_STATE1);
         af2.setEndState(UNMAPPED_STATE1);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
@@ -1540,7 +1540,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_InSubModel) {
         ma.newVariable<unsigned int>(AGENT_VAR2_NAME);
         ma.newVariable<unsigned int>("id");
         ma.newState(MAPPED_STATE2);
-        auto &unmapped_fn = ma.newFunction("", AddTen);
+        auto unmapped_fn = ma.newFunction("", AddTen);
         unmapped_fn.setInitialState(MAPPED_STATE2);
         unmapped_fn.setEndState(MAPPED_STATE2);
         auto &smd = m.newSubModel("sub", sm);
@@ -1582,7 +1582,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToMap_InSubModel) {
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(MAPPED_STATE1);
         af.setEndState(MAPPED_STATE2);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
@@ -1635,7 +1635,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmap_InSubModel) {
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE1);
         a.newState(UNMAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(MAPPED_STATE1);
         af.setEndState(UNMAPPED_STATE2);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
@@ -1679,7 +1679,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_InSubModel) {
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(UNMAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(UNMAPPED_STATE1);
         af.setEndState(MAPPED_STATE2);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
@@ -1694,7 +1694,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_InSubModel) {
         ma.newVariable<unsigned int>(AGENT_VAR2_NAME, 13);
         ma.newVariable<unsigned int>("id", UINT_MAX/2);
         ma.newState(MAPPED_STATE2);
-        auto &af = ma.newFunction("a1", AddTen);
+        auto af = ma.newFunction("a1", AddTen);
         af.setInitialState(MAPPED_STATE2);
         af.setEndState(MAPPED_STATE2);
         auto &smd = m.newSubModel("sub", sm);
@@ -1749,10 +1749,10 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmapToMap_InSubModel) {
         a.newState(MAPPED_STATE1);
         a.newState(UNMAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(MAPPED_STATE1);
         af.setEndState(MAPPED_STATE1);
-        auto &af2 = a.newFunction("a2", AddOne2);
+        auto af2 = a.newFunction("a2", AddOne2);
         af2.setInitialState(MAPPED_STATE1);
         af2.setEndState(MAPPED_STATE2);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
@@ -1809,10 +1809,10 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_InNestedSubModel) {
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(UNMAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(MAPPED_STATE2);
         af.setEndState(MAPPED_STATE2);
-        auto &af2 = a.newFunction("a2", AddOne2);
+        auto af2 = a.newFunction("a2", AddOne2);
         af2.setInitialState(UNMAPPED_STATE1);
         af2.setEndState(UNMAPPED_STATE1);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
@@ -1839,7 +1839,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_InNestedSubModel) {
         ma.newVariable<unsigned int>(AGENT_VAR2_NAME);
         ma.newVariable<unsigned int>("id");
         ma.newState(MAPPED_STATE2);
-        auto &unmapped_fn = ma.newFunction("", AddTen);
+        auto unmapped_fn = ma.newFunction("", AddTen);
         unmapped_fn.setInitialState(MAPPED_STATE2);
         unmapped_fn.setEndState(MAPPED_STATE2);
         auto &smd = m.newSubModel("sub", proxy);
@@ -1881,7 +1881,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToMap_InNestedSubModel) {
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(MAPPED_STATE1);
         af.setEndState(MAPPED_STATE2);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
@@ -1946,7 +1946,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmap_InNestedSubModel) {
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE1);
         a.newState(UNMAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(MAPPED_STATE1);
         af.setEndState(UNMAPPED_STATE2);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
@@ -2002,7 +2002,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_InNestedSubModel) {
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(UNMAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(UNMAPPED_STATE1);
         af.setEndState(MAPPED_STATE2);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
@@ -2028,7 +2028,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_InNestedSubModel) {
         ma.newVariable<unsigned int>(AGENT_VAR2_NAME, 13);
         ma.newVariable<unsigned int>("id", UINT_MAX/2);
         ma.newState(MAPPED_STATE2);
-        auto &af = ma.newFunction("a1", AddTen);
+        auto af = ma.newFunction("a1", AddTen);
         af.setInitialState(MAPPED_STATE2);
         af.setEndState(MAPPED_STATE2);
         auto &smd = m.newSubModel("sub", proxy);
@@ -2083,10 +2083,10 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmapToMap_InNestedSubModel) {
         a.newState(MAPPED_STATE1);
         a.newState(UNMAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(MAPPED_STATE1);
         af.setEndState(MAPPED_STATE1);
-        auto &af2 = a.newFunction("a2", AddOne2);
+        auto af2 = a.newFunction("a2", AddOne2);
         af2.setInitialState(MAPPED_STATE1);
         af2.setEndState(MAPPED_STATE2);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
@@ -2156,10 +2156,10 @@ TEST(TestCUDASubAgent, UnmappedAgentStatesDontPersistBetweenSubmodelRuns) {
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(UNMAPPED_STATE1);
         a.newState(MAPPED_STATE1);
-        auto &af1 = a.newFunction("a1", AddOne2);
+        auto af1 = a.newFunction("a1", AddOne2);
         af1.setInitialState(UNMAPPED_STATE1);
         af1.setEndState(MAPPED_STATE1);
-        auto &af2 = a.newFunction("a2", AddOne2);
+        auto af2 = a.newFunction("a2", AddOne2);
         af2.setInitialState(MAPPED_STATE1);
         af2.setEndState(UNMAPPED_STATE1);
         sm.newLayer().addAgentFunction(af1);
@@ -2269,7 +2269,7 @@ TEST(TestCUDASubAgent, AgentID_BindsID) {
     ModelDescription submodel("subm");
     AgentDescription agent1 = submodel.newAgent("agent");
     agent1.newVariable<id_t>("id_copy");
-    AgentFunctionDescription& af1 = agent1.newFunction("copy_id", CopyID);
+    AgentFunctionDescription af1 = agent1.newFunction("copy_id", CopyID);
     submodel.newLayer().addAgentFunction(af1);
     submodel.addExitCondition(AlwaysExit);
 
@@ -2307,7 +2307,7 @@ TEST(TestCUDASubAgent, AgentID_ResetsOunboundAgentID) {
     AgentDescription baby = submodel.newAgent("baby");
     AgentDescription agent1 = submodel.newAgent("agent");
     agent1.newVariable<id_t>("id_copy");
-    AgentFunctionDescription& af1 = agent1.newFunction("birth_and_copy_id", BirthAndCopyID);
+    AgentFunctionDescription af1 = agent1.newFunction("birth_and_copy_id", BirthAndCopyID);
     af1.setAgentOutput(baby);
     submodel.newLayer().addAgentFunction(af1);
     submodel.addExitCondition(AlwaysExit);

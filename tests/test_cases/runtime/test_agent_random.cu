@@ -37,7 +37,7 @@ TEST(AgentRandomTest, AgentRandomCheck) {
     agent.newVariable<float>("b");
     agent.newVariable<float>("c");
 
-    AgentFunctionDescription &af = agent.newFunction("random1", random1_func);
+    AgentFunctionDescription af = agent.newFunction("random1", random1_func);
 
     AgentVector init_population(agent, AGENT_COUNT);
     AgentVector population(agent, AGENT_COUNT);
@@ -218,7 +218,7 @@ TEST(AgentRandomTest, AgentRandomFunctionsNoExcept) {
     agent.newVariable<uint64_t>("uniform_u_longlong");
 
     // do_random.setFunction(&random1);
-    AgentFunctionDescription &do_random = agent.newFunction("random2", random2_func);
+    AgentFunctionDescription do_random = agent.newFunction("random2", random2_func);
 
     AgentVector population(agent, AGENT_COUNT);
 
