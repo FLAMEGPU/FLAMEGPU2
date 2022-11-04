@@ -106,7 +106,7 @@ void SimRunner::start() {
             }
             log_export_queue_cdn.notify_one();
             // Print progress to console
-            if (verbosity == VERBOSE) {
+            if (verbosity >= DEFAULT) {
                 const int progress = static_cast<int>(next_run.load()) - static_cast<int>(total_runners) + 1;
                 fprintf(stdout, "\rCUDAEnsemble progress: %d/%u", progress < 1 ? 1 : progress, static_cast<unsigned int>(plans.size()));
                 fflush(stdout);
@@ -128,7 +128,7 @@ void SimRunner::start() {
                 return;
             } else {
                 // Progress flush
-                if (verbosity == VERBOSE) {
+                if (verbosity >= DEFAULT) {
                     fprintf(stdout, "\n");
                     fflush(stdout);
                 }

@@ -44,7 +44,7 @@ class SimRunner {
      * @param _exit_log_config The config of which data should be logged at run exit
      * @param _device_id The GPU that all runs should execute on
      * @param _runner_id A unique index assigned to the runner
-     * @param _verbose If true more information will be written to stdout
+     * @param _verbosity Verbosity level (QUIET, DEFAULT, VERBOSE)
      * @param _fail_fast If true, the SimRunner will kill other runners and throw an exception on error
      * @param run_logs Reference to the vector to store generate run logs
      * @param log_export_queue The queue of logs to exported to disk
