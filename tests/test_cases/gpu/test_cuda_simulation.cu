@@ -867,12 +867,12 @@ TEST(TestCUDASimulation, simulationVerbosity) {
         // Get stderr and stdout
         std::string output = testing::internal::GetCapturedStdout();
         std::string errors = testing::internal::GetCapturedStderr();
-        // Expect no warnings (stderr) but ...
-        EXPECT_TRUE(output.find("Init Function Processing time"));
-        EXPECT_TRUE(output.find("Processing Simulation Step 1"));
-        EXPECT_TRUE(output.find("Step 1 Processing time"));
-        EXPECT_TRUE(output.find("Exit Function Processing time"));
-        EXPECT_TRUE(output.find("Total Processing time"));
+        // Expect no warnings (stderr) but updates on progress and timing
+        EXPECT_TRUE(output.find("Init Function Processing time") != std::string::npos);
+        EXPECT_TRUE(output.find("Processing Simulation Step 0") != std::string::npos);
+        EXPECT_TRUE(output.find("Step 0 Processing time") != std::string::npos);
+        EXPECT_TRUE(output.find("Exit Function Processing time") != std::string::npos);
+        EXPECT_TRUE(output.find("Total Processing time") != std::string::npos);
         EXPECT_TRUE(errors.empty());
     }
 }

@@ -316,8 +316,8 @@ TEST(TestCUDAEnsemble, verbosity) {
         std::string errors = testing::internal::GetCapturedStderr();
         // Expect no warnings (stderr) but an output reporing the number of completed simulation runs
         std::ostringstream  expect_output;
-        EXPECT_TRUE(output.find("CUDAEnsemble progress") == std::string::npos);   // E.g. CUDAEnsemble progress: 1/2
-        EXPECT_TRUE(output.find("CUDAEnsemble completed"));                       // E.g. CUDAEnsemble completed 2 runs successfully!
+        EXPECT_TRUE(output.find("CUDAEnsemble progress") != std::string::npos);   // E.g. CUDAEnsemble progress: 1/2
+        EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
         EXPECT_TRUE(output.find("Ensemble time elapsed") == std::string::npos);   // E.g. Ensemble time elapsed: 0.006000s
         EXPECT_TRUE(errors.empty());
     }
@@ -334,9 +334,9 @@ TEST(TestCUDAEnsemble, verbosity) {
         std::string output = testing::internal::GetCapturedStdout();
         std::string errors = testing::internal::GetCapturedStderr();
         // Expect no warnings (stderr) but outputs on progress and timing
-        EXPECT_TRUE(output.find("CUDAEnsemble progress"));   // E.g. CUDAEnsemble progress: 1/2
-        EXPECT_TRUE(output.find("CUDAEnsemble completed"));  // E.g. CUDAEnsemble completed 2 runs successfully!
-        EXPECT_TRUE(output.find("Ensemble time elapsed"));   // E.g. Ensemble time elapsed: 0.006000s
+        EXPECT_TRUE(output.find("CUDAEnsemble progress") != std::string::npos);   // E.g. CUDAEnsemble progress: 1/2
+        EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
+        EXPECT_TRUE(output.find("Ensemble time elapsed") != std::string::npos);   // E.g. Ensemble time elapsed: 0.006000s
         EXPECT_TRUE(errors.empty());
     }
 }
