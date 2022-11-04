@@ -105,7 +105,8 @@ void Simulation::applyConfig() {
     }
     // If verbose, output the flamegpu version and seed.
     if (config.verbosity == VERBOSE) {
-        fprintf(stdout, "FLAME GPU %s Simulation configuration\n", flamegpu::VERSION_FULL);
+        fprintf(stdout, "FLAME GPU %s\n", flamegpu::VERSION_FULL);
+        fprintf(stdout, "Simulation configuration:\n");
         fprintf(stdout, "\tRandom Seed: %" PRIu64 "\n", config.random_seed);
         fprintf(stdout, "\tSteps: %u\n", config.steps);
     }
@@ -306,7 +307,8 @@ void Simulation::printHelp(const char* executable) {
     printf(line_fmt, "    --out-log <file.xml/file.json>", "Common log file (XML or JSON)");
     printf(line_fmt, "-s, --steps <steps>", "Number of simulation iterations");
     printf(line_fmt, "-r, --random <seed>", "RandomManager seed");
-    printf(line_fmt, "-v, --verbose", "Verbose FLAME GPU output");
+    printf(line_fmt, "-q, --quiet", "Do not print progress information to console");
+    printf(line_fmt, "-v, --verbose", "Print config, progress and timing (-t) information to console.");
     printf(line_fmt, "-t, --timing", "Output timing information to stdout");
 #ifdef VISUALISATION
     printf(line_fmt, "-c, --console", "Console mode, disable the visualisation");
