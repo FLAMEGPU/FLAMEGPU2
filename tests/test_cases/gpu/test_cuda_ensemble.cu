@@ -131,6 +131,17 @@ TEST(TestCUDAEnsemble, initialise_quiet) {
     ensemble.initialise(sizeof(argv) / sizeof(char*), argv);
     EXPECT_EQ(ensemble.getConfig().verbosity, Verbosity::Quiet);
 }
+TEST(TestCUDAEnsemble, initialise_default) {
+    // Create a model
+    flamegpu::ModelDescription model("test");
+    // Create an ensemble
+    flamegpu::CUDAEnsemble ensemble(model);
+    // Call initialise with differnt cli arguments, which will mutate values. Check they have the new value.
+    EXPECT_EQ(ensemble.getConfig().verbosity, Verbosity::Default);
+    const char* argv[1] = { "prog.exe" };
+    ensemble.initialise(sizeof(argv) / sizeof(char*), argv);
+    EXPECT_EQ(ensemble.getConfig().verbosity, Verbosity::Default);
+}
 TEST(TestCUDAEnsemble, initialise_verbose) {
     // Create a model
     flamegpu::ModelDescription model("test");

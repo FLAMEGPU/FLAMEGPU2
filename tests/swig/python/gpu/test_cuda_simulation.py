@@ -170,6 +170,29 @@ class TestSimulation(TestCase):
             assert e.value.type() == "InvalidCUDAdevice"
         assert c.CUDAConfig().device_id == 1200
 
+    def test_initialise_quiet(self):
+        m = pyflamegpu.ModelDescription("test_initialise_quiet")
+        c = pyflamegpu.CUDASimulation(m)
+        assert c.SimulationConfig().verbosity == pyflamegpu.Verbosity_Default
+        argv = [ "prog.exe", "--quiet"]
+        c.initialise(argv)
+        assert c.SimulationConfig().verbosity == pyflamegpu.Verbosity_Quiet
+
+    def test_initialise_default(self):
+        m = pyflamegpu.ModelDescription("test_initialise_default")
+        c = pyflamegpu.CUDASimulation(m)
+        assert c.SimulationConfig().verbosity == pyflamegpu.Verbosity_Default
+        argv = [ "prog.exe"]
+        c.initialise(argv)
+        assert c.SimulationConfig().verbosity == pyflamegpu.Verbosity_Default
+
+    def test_initialise_verbose(self):
+        m = pyflamegpu.ModelDescription("test_initialise_verbose")
+        c = pyflamegpu.CUDASimulation(m)
+        assert c.SimulationConfig().verbosity == pyflamegpu.Verbosity_Default
+        argv = [ "prog.exe", "--verbose"]
+        c.initialise(argv)
+        assert c.SimulationConfig().verbosity == pyflamegpu.Verbosity_Verbose
 
     SetGetFn = """
     FLAMEGPU_AGENT_FUNCTION(SetGetFn, flamegpu::MessageNone, flamegpu::MessageNone) {
@@ -516,4 +539,71 @@ class TestSimulation(TestCase):
         assert e.value.type() == "InvalidEnvPropertyType"
         # Run sim
         s.simulate();
+
+
+class TestSimulationVerbosity(TestCase):
+    """
+    Tests to check the verbosity levels prodicue the expected outputs.
+    Currently all disabled as SWIG does not pipe output via pythons sys.stdout/sys.stderr
+    See issue #966 
+    """
+
+    @pytest.mark.skip(reason="SWIG outputs not correctly captured")
+    def test_verbosity_quiet(self):
+        # Test that step does a single step
+        m = pyflamegpu.ModelDescription("test_verbosity_quiet")
+        a = m.newAgent("Agent")
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
+        c = pyflamegpu.CUDASimulation(m)
+        c.setPopulationData(pop)
+        c.SimulationConfig().steps = 1
+        # Verbosity QUIET
+        c.SimulationConfig().verbosity = pyflamegpu.Verbosity_Quiet
+        c.simulate()
+        captured = self.capsys.readouterr()
+        assert captured.out == ""
+        assert captured.err == ""
+
+    @pytest.mark.skip(reason="SWIG outputs not correctly captured")
+    def test_verbosity_default(self):
+        # Test that step does a single step
+        m = pyflamegpu.ModelDescription("test_verbosity_default")
+        a = m.newAgent("Agent")
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
+        c = pyflamegpu.CUDASimulation(m)
+        c.setPopulationData(pop)
+        c.SimulationConfig().steps = 1
+        # Verbosity QUIET
+        c.SimulationConfig().verbosity = pyflamegpu.Verbosity_Default
+        c.simulate()
+        captured = self.capsys.readouterr()
+        assert captured.out == ""
+        assert captured.err == ""
+
+    @pytest.mark.skip(reason="SWIG outputs not correctly captured")
+    def test_verbosity_verbose(self):
+        # Test that step does a single step
+        m = pyflamegpu.ModelDescription("test_verbosity_default")
+        a = m.newAgent("Agent")
+        pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
+        c = pyflamegpu.CUDASimulation(m)
+        c.setPopulationData(pop)
+        c.SimulationConfig().steps = 1
+        # Verbosity QUIET
+        c.SimulationConfig().verbosity = pyflamegpu.Verbosity_Verbose
+        c.simulate()
+        captured = self.capsys.readouterr()
+        assert "Init Function Processing time" in captured.out
+        assert "Processing Simulation Step 0" in captured.out
+        assert "Step 0 Processing time" in captured.out
+        assert "Exit Function Processing time" in captured.out
+        assert "Total Processing time" in captured.out
+        assert captured.err == ""
+
+    @pytest.fixture(autouse=True)
+    def capsys(self, capsys):
+        # Method of applying fixture to TestCases
+        # Function will run prior to any test case in the class.
+        # The capsys fixture is for capturing Pythons sys.stderr and sys.stdout
+        self.capsys = capsys
         

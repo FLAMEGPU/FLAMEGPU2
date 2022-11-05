@@ -180,6 +180,30 @@ TEST(TestCUDASimulation, ArgParse_device_short) {
     EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
     ASSERT_EQ(cudaGetLastError(), cudaSuccess);
 }
+TEST(TestSimulation, initialise_quiet) {
+    ModelDescription m(MODEL_NAME);
+    CUDASimulation c(m);
+    EXPECT_EQ(c.getSimulationConfig().verbosity, Verbosity::Default);
+    const char* argv[2] = { "prog.exe", "--quiet" };
+    c.initialise(sizeof(argv) / sizeof(char*), argv);
+    EXPECT_EQ(c.getSimulationConfig().verbosity, Verbosity::Quiet);
+}
+TEST(TestSimulation, initialise_default) {
+    ModelDescription m(MODEL_NAME);
+    CUDASimulation c(m);
+    EXPECT_EQ(c.getSimulationConfig().verbosity, Verbosity::Default);
+    const char* argv[1] = { "prog.exe" };
+    c.initialise(sizeof(argv) / sizeof(char*), argv);
+    EXPECT_EQ(c.getSimulationConfig().verbosity, Verbosity::Default);
+}
+TEST(TestSimulation, initialise_verbose) {
+    ModelDescription m(MODEL_NAME);
+    CUDASimulation c(m);
+    EXPECT_EQ(c.getSimulationConfig().verbosity, Verbosity::Default);
+    const char* argv[2] = { "prog.exe", "--verbose" };
+    c.initialise(sizeof(argv) / sizeof(char*), argv);
+    EXPECT_EQ(c.getSimulationConfig().verbosity, Verbosity::Verbose);
+}
 FLAMEGPU_AGENT_FUNCTION(SetGetFn, MessageNone, MessageNone) {
     int i = FLAMEGPU->getVariable<int>(dVARIABLE_NAME);
     FLAMEGPU->setVariable<int>(dVARIABLE_NAME, i * dMULTIPLIER);
