@@ -19,11 +19,6 @@ namespace flamegpu {
  */
 class MessageArray2D {
  public:
-    /**
-     * Common size type
-     */
-    typedef MessageNone::size_type size_type;
-
     // Host
     struct Data;        // Forward declare inner classes
     class Description;  // Forward declare inner classes

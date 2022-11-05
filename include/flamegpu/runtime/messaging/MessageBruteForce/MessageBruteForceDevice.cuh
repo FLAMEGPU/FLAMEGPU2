@@ -124,7 +124,7 @@ class MessageBruteForce::In {
          * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
          * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
          */
-        template<typename T, MessageNone::size_type N, unsigned int M> __device__
+        template<typename T, flamegpu::size_type N, unsigned int M> __device__
         T getVariable(const char(&variable_name)[M], unsigned int index) const;
     };
 
@@ -236,7 +236,7 @@ __device__ T MessageBruteForce::In::Message::getVariable(const char(&variable_na
 #endif
     return value;
 }
-template<typename T, MessageNone::size_type N, unsigned int M> __device__
+template<typename T, flamegpu::size_type N, unsigned int M> __device__
 T MessageBruteForce::In::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
     // simple indexing assumes index is the thread number (this may change later)
     const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;

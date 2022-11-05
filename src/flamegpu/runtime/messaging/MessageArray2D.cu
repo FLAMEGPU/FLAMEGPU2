@@ -132,13 +132,13 @@ void MessageArray2D::Description::setDimensions(const std::array<size_type, 2> &
     }
     reinterpret_cast<Data *>(message)->dimensions = dims;
 }
-std::array<MessageArray2D::size_type, 2> MessageArray2D::Description::getDimensions() const {
+std::array<flamegpu::size_type, 2> MessageArray2D::Description::getDimensions() const {
     return reinterpret_cast<Data *>(message)->dimensions;
 }
-MessageArray2D::size_type MessageArray2D::Description::getDimX() const {
+flamegpu::size_type MessageArray2D::Description::getDimX() const {
     return reinterpret_cast<Data *>(message)->dimensions[0];
 }
-MessageArray2D::size_type MessageArray2D::Description::getDimY() const {
+flamegpu::size_type MessageArray2D::Description::getDimY() const {
     return reinterpret_cast<Data *>(message)->dimensions[1];
 }
 

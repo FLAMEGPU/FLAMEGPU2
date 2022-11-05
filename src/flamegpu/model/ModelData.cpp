@@ -180,10 +180,10 @@ bool ModelData::hasSubModelRecursive(const std::shared_ptr<const ModelData> &sub
     return false;
 }
 
-ModelData::size_type ModelData::getMaxLayerWidth() const {
+flamegpu::size_type ModelData::getMaxLayerWidth() const {
     unsigned int maxWidth = 0u;
     for (auto &layer : layers) {
-        maxWidth = (std::max)(maxWidth, static_cast<ModelData::size_type>(layer->agent_functions.size()));
+        maxWidth = (std::max)(maxWidth, static_cast<flamegpu::size_type>(layer->agent_functions.size()));
     }
     return maxWidth;
 }

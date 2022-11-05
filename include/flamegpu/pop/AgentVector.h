@@ -6,6 +6,7 @@
 #include <memory>
 #include <map>
 
+#include "flamegpu/defines.h"
 #include "flamegpu/pop/detail/MemoryVector.h"
 #include "flamegpu/model/AgentData.h"
 
@@ -37,7 +38,6 @@ class AgentVector {
     friend class AgentVector_Agent;
 
  public:
-    typedef unsigned int size_type;
     /**
      * View into the AgentVector to provide mutable access to a specific Agent's data
      */

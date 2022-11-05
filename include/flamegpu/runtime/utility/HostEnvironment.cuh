@@ -67,7 +67,7 @@ class HostEnvironment {
      * @tparam N Length of the environment property array
      * @throws exception::InvalidEnvProperty If a property array of the name does not exist
      */
-    template<typename T, EnvironmentManager::size_type N>
+    template<typename T, flamegpu::size_type N>
     std::array<T, N> getProperty(const std::string &name) const;
     /**
      * Gets an element of an environment property array
@@ -79,8 +79,8 @@ class HostEnvironment {
      * @throws std::out_of_range
      * @see get(const std::string &)
      */
-    template<typename T, EnvironmentManager::size_type N = 0>
-    T getProperty(const std::string &name, EnvironmentManager::size_type index) const;
+    template<typename T, flamegpu::size_type N = 0>
+    T getProperty(const std::string &name, flamegpu::size_type index) const;
 #ifdef SWIG
     /**
      * Gets an environment property array
@@ -112,7 +112,7 @@ class HostEnvironment {
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws exception::ReadOnlyEnvProperty If the named property is marked as const
      */
-    template<typename T, EnvironmentManager::size_type N>
+    template<typename T, flamegpu::size_type N>
     std::array<T, N> setProperty(const std::string &name, const std::array<T, N> &value) const;
     /**
      * Sets an element of an environment property array
@@ -126,8 +126,8 @@ class HostEnvironment {
      * @throws std::out_of_range
      * @see get(const std::string &)
      */
-    template<typename T, EnvironmentManager::size_type N = 0>
-    T setProperty(const std::string &name, EnvironmentManager::size_type index, T value) const;
+    template<typename T, flamegpu::size_type N = 0>
+    T setProperty(const std::string &name, flamegpu::size_type index, T value) const;
 #ifdef SWIG
     /**
      * Sets an environment property array
@@ -168,7 +168,7 @@ T HostEnvironment::setProperty(const std::string &name, const T value) const {
     }
     return env_mgr->setProperty<T>(name, value);
 }
-template<typename T, EnvironmentManager::size_type N>
+template<typename T, flamegpu::size_type N>
 std::array<T, N> HostEnvironment::setProperty(const std::string &name, const std::array<T, N> &value) const {
     if (!name.empty() && name[0] == '_') {
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
@@ -176,8 +176,8 @@ std::array<T, N> HostEnvironment::setProperty(const std::string &name, const std
     }
     return env_mgr->setProperty<T, N>(name, value);
 }
-template<typename T, EnvironmentManager::size_type N>
-T HostEnvironment::setProperty(const std::string &name, EnvironmentManager::size_type index, const T value) const {
+template<typename T, flamegpu::size_type N>
+T HostEnvironment::setProperty(const std::string &name, flamegpu::size_type index, const T value) const {
     if (!name.empty() && name[0] == '_') {
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in HostEnvironment::set().");
@@ -202,12 +202,12 @@ template<typename T>
 T HostEnvironment::getProperty(const std::string &name) const  {
     return env_mgr->getProperty<T>(name);
 }
-template<typename T, EnvironmentManager::size_type N>
+template<typename T, flamegpu::size_type N>
 std::array<T, N> HostEnvironment::getProperty(const std::string &name) const  {
     return env_mgr->getProperty<T, N>(name);
 }
-template<typename T, EnvironmentManager::size_type N>
-T HostEnvironment::getProperty(const std::string &name, const EnvironmentManager::size_type index) const  {
+template<typename T, flamegpu::size_type N>
+T HostEnvironment::getProperty(const std::string &name, const flamegpu::size_type index) const  {
     return env_mgr->getProperty<T, N>(name, index);
 }
 #ifdef SWIG

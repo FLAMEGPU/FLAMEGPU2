@@ -123,7 +123,7 @@ size_t MessageBruteForce::Description::getVariableSize(const std::string &variab
         "in MessageDescription::getVariableSize().",
         message->name.c_str(), variable_name.c_str());
 }
-MessageBruteForce::size_type MessageBruteForce::Description::getVariableLength(const std::string &variable_name) const {
+flamegpu::size_type MessageBruteForce::Description::getVariableLength(const std::string &variable_name) const {
     auto f = message->variables.find(variable_name);
     if (f != message->variables.end()) {
         return f->second.elements;
@@ -132,9 +132,9 @@ MessageBruteForce::size_type MessageBruteForce::Description::getVariableLength(c
         "in MessageBruteForce::getVariableLength().",
         message->name.c_str(), variable_name.c_str());
 }
-MessageBruteForce::size_type MessageBruteForce::Description::getVariablesCount() const {
+flamegpu::size_type MessageBruteForce::Description::getVariablesCount() const {
     // Downcast, will never have more than UINT_MAX variables
-    return static_cast<MessageBruteForce::size_type>(message->variables.size());
+    return static_cast<flamegpu::size_type>(message->variables.size());
 }
 bool MessageBruteForce::Description::hasVariable(const std::string &variable_name) const {
     return message->variables.find(variable_name) != message->variables.end();

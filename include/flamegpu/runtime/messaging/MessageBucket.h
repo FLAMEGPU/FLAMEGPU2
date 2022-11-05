@@ -24,11 +24,6 @@ typedef int IntT;
  */
 class MessageBucket {
  public:
-    /**
-     * Common size type
-     */
-    typedef MessageNone::size_type size_type;
-
     // Host
     struct Data;
     class Description;

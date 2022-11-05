@@ -82,7 +82,7 @@ class MessageArray::In {
          * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
          * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
          */
-        template<typename T, MessageNone::size_type N, unsigned int M>
+        template<typename T, flamegpu::size_type N, unsigned int M>
         __device__ T getVariable(const char(&variable_name)[M], unsigned int index) const;
     };
     /**
@@ -181,7 +181,7 @@ class MessageArray::In {
              * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
              * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
              */
-            template<typename T, MessageNone::size_type N, unsigned int M> __device__
+            template<typename T, flamegpu::size_type N, unsigned int M> __device__
             T getVariable(const char(&variable_name)[M], unsigned int index) const;
         };
         /**
@@ -380,7 +380,7 @@ class MessageArray::In {
              * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
              * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
              */
-            template<typename T, MessageNone::size_type N, unsigned int M>
+            template<typename T, flamegpu::size_type N, unsigned int M>
             __device__ T getVariable(const char(&variable_name)[M], unsigned int index) const;
         };
         /**
@@ -646,7 +646,7 @@ __device__ T MessageArray::In::Message::getVariable(const char(&variable_name)[N
     // get the value from curve using the message index.
     return detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, index);
 }
-template<typename T, MessageNone::size_type N, unsigned int M> __device__
+template<typename T, flamegpu::size_type N, unsigned int M> __device__
 T MessageArray::In::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
     // simple indexing assumes index is the thread number (this may change later)
 #if !defined(SEATBELTS) || SEATBELTS
@@ -672,7 +672,7 @@ __device__ T MessageArray::In::WrapFilter::Message::getVariable(const char(&vari
     // get the value from curve using the message index.
     return detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, index_1d);
 }
-template<typename T, MessageNone::size_type N, unsigned int M> __device__
+template<typename T, flamegpu::size_type N, unsigned int M> __device__
 T MessageArray::In::WrapFilter::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
     // simple indexing assumes index is the thread number (this may change later)
 #if !defined(SEATBELTS) || SEATBELTS
@@ -698,7 +698,7 @@ __device__ T MessageArray::In::Filter::Message::getVariable(const char(&variable
     // get the value from curve using the message index.
     return detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, index_1d);
 }
-template<typename T, MessageNone::size_type N, unsigned int M> __device__
+template<typename T, flamegpu::size_type N, unsigned int M> __device__
 T MessageArray::In::Filter::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
     // simple indexing assumes index is the thread number (this may change later)
 #if !defined(SEATBELTS) || SEATBELTS

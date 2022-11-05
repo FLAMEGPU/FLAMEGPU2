@@ -1,6 +1,8 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_MESSAGENONE_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_MESSAGENONE_H_
 
+#include "flamegpu/defines.h"
+
 namespace flamegpu {
 
 /**
@@ -9,10 +11,6 @@ namespace flamegpu {
  */
 class MessageNone {
  public:
-    /**
-     * Common size type
-     */
-    typedef unsigned int size_type;
     // Host (Data and Description not required for None)
     class CUDAModelHandler;
     // Device

@@ -5,6 +5,7 @@
 #include <random>
 #include <string>
 
+#include "flamegpu/defines.h"
 #include "flamegpu/util/detail/curand.cuh"
 #include "flamegpu/sim/Simulation.h"
 
@@ -35,10 +36,6 @@ class RandomManager {
      */
     friend class CUDASimulation;  // bool CUDASimulation::step(const Simulation&)
  public:
-    /**
-     * Inherit size_type from include-public partner class
-     */
-    typedef unsigned int size_type;
     /**
      * Creates the random manager and calls reseed() with the return value from seedFromTime()
      */

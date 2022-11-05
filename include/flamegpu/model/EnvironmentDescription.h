@@ -140,7 +140,7 @@ class EnvironmentDescription {
      * @tparam N Length of the environmental property array to be created
      * @throws exception::DuplicateEnvProperty If a property of the same name already exists
      */
-    template<typename T, EnvironmentManager::size_type N>
+    template<typename T, flamegpu::size_type N>
     void newProperty(const std::string &name, const std::array<T, N> &value, bool isConst = false);
 #ifdef SWIG
     /**
@@ -167,7 +167,7 @@ class EnvironmentDescription {
      * @tparam K Length of the third dimension of the macro property, default 1
      * @tparam W Length of the fourth dimension of the macro property, default 1
      */
-    template<typename T, EnvironmentManager::size_type I = 1, EnvironmentManager::size_type J = 1, EnvironmentManager::size_type K = 1, EnvironmentManager::size_type W = 1>
+    template<typename T, flamegpu::size_type I = 1, flamegpu::size_type J = 1, flamegpu::size_type K = 1, flamegpu::size_type W = 1>
     void newMacroProperty(const std::string& name);
 #ifdef SWIG
     /**
@@ -184,7 +184,7 @@ class EnvironmentDescription {
      * @tparam T Type of the macro property
      */
     template<typename T>
-    void newMacroProperty_swig(const std::string& name, EnvironmentManager::size_type I = 1, EnvironmentManager::size_type J = 1, EnvironmentManager::size_type K = 1, EnvironmentManager::size_type W = 1);
+    void newMacroProperty_swig(const std::string& name, flamegpu::size_type I = 1, flamegpu::size_type J = 1, flamegpu::size_type K = 1, flamegpu::size_type W = 1);
 #endif
     /**
      * Gets an environment property
@@ -201,7 +201,7 @@ class EnvironmentDescription {
      * @tparam N Length of the array to be returned
      * @throws exception::InvalidEnvProperty If a property array of the name does not exist
      */
-    template<typename T, EnvironmentManager::size_type N>
+    template<typename T, flamegpu::size_type N>
     std::array<T, N> getProperty(const std::string &name) const;
     /**
      * Gets an element of an environment property array
@@ -212,7 +212,7 @@ class EnvironmentDescription {
      * @throws std::out_of_range
      */
     template<typename T>
-    T getProperty(const std::string &name, EnvironmentManager::size_type index) const;
+    T getProperty(const std::string &name, flamegpu::size_type index) const;
 #ifdef SWIG
     /**
      * Gets an environment property array
@@ -249,7 +249,7 @@ class EnvironmentDescription {
      * @return Returns the previous value
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      */
-    template<typename T, EnvironmentManager::size_type N>
+    template<typename T, flamegpu::size_type N>
     std::array<T, N> setProperty(const std::string &name, const std::array<T, N> &value);
     /**
      * Sets an element of an environment property array
@@ -263,7 +263,7 @@ class EnvironmentDescription {
      * @see set(const std::string &, T value)
      */
     template<typename T>
-    T setProperty(const std::string &name, EnvironmentManager::size_type index, T value);
+    T setProperty(const std::string &name, flamegpu::size_type index, T value);
 #ifdef SWIG
     /**
      * Sets an environment property array
@@ -290,7 +290,7 @@ class EnvironmentDescription {
      * @param elements How many elements does the property have (1 if it's not an array)
      * @param type value returned by typeid()
      */
-    void newProperty(const std::string &name, const char *ptr, size_t len, bool isConst, EnvironmentManager::size_type elements, const std::type_index &type);
+    void newProperty(const std::string &name, const char *ptr, size_t len, bool isConst, flamegpu::size_type elements, const std::type_index &type);
     /**
      * Main storage of all properties
      */
@@ -322,7 +322,7 @@ void EnvironmentDescription::newProperty(const std::string &name, T value, bool 
     }
     newProperty(name, reinterpret_cast<const char*>(&value), sizeof(T), isConst, type_decode<T>::len_t, typeid(typename type_decode<T>::type_t));
 }
-template<typename T, EnvironmentManager::size_type N>
+template<typename T, flamegpu::size_type N>
 void EnvironmentDescription::newProperty(const std::string &name, const std::array<T, N> &value, bool isConst) {
     if (!name.empty() && name[0] == '_') {
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
@@ -390,7 +390,7 @@ T EnvironmentDescription::getProperty(const std::string &name) const {
         "in EnvironmentDescription::getProperty().",
         name.c_str());
 }
-template<typename T, EnvironmentManager::size_type N>
+template<typename T, flamegpu::size_type N>
 std::array<T, N> EnvironmentDescription::getProperty(const std::string &name) const {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
@@ -418,7 +418,7 @@ std::array<T, N> EnvironmentDescription::getProperty(const std::string &name) co
         name.c_str());
 }
 template<typename T>
-T EnvironmentDescription::getProperty(const std::string &name, EnvironmentManager::size_type index) const {
+T EnvironmentDescription::getProperty(const std::string &name, flamegpu::size_type index) const {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
@@ -513,7 +513,7 @@ T EnvironmentDescription::setProperty(const std::string &name, T value) {
         "in EnvironmentDescription::setProperty().",
         name.c_str());
 }
-template<typename T, EnvironmentManager::size_type N>
+template<typename T, flamegpu::size_type N>
 std::array<T, N> EnvironmentDescription::setProperty(const std::string &name, const std::array<T, N> &value) {
     if (!name.empty() && name[0] == '_') {
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
@@ -547,7 +547,7 @@ std::array<T, N> EnvironmentDescription::setProperty(const std::string &name, co
         name.c_str());
 }
 template<typename T>
-T EnvironmentDescription::setProperty(const std::string &name, EnvironmentManager::size_type index, T value) {
+T EnvironmentDescription::setProperty(const std::string &name, flamegpu::size_type index, T value) {
     if (!name.empty() && name[0] == '_') {
         THROW exception::ReservedName("Environment property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::setProperty().");
@@ -624,7 +624,7 @@ std::vector<T> EnvironmentDescription::setPropertyArray(const std::string& name,
         name.c_str());
 }
 #endif
-template<typename T, EnvironmentManager::size_type I, EnvironmentManager::size_type J, EnvironmentManager::size_type K, EnvironmentManager::size_type W>
+template<typename T, flamegpu::size_type I, flamegpu::size_type J, flamegpu::size_type K, flamegpu::size_type W>
 void EnvironmentDescription::newMacroProperty(const std::string& name) {
     if (!name.empty() && name[0] == '_') {
         THROW exception::ReservedName("Environment macro property names cannot begin with '_', this is reserved for internal usage, "
@@ -647,7 +647,7 @@ void EnvironmentDescription::newMacroProperty(const std::string& name) {
 }
 #ifdef SWIG
 template<typename T>
-void EnvironmentDescription::newMacroProperty_swig(const std::string& name, EnvironmentManager::size_type I, EnvironmentManager::size_type J, EnvironmentManager::size_type K, EnvironmentManager::size_type W) {
+void EnvironmentDescription::newMacroProperty_swig(const std::string& name, flamegpu::size_type I, flamegpu::size_type J, flamegpu::size_type K, flamegpu::size_type W) {
     if (!name.empty() && name[0] == '_') {
         THROW exception::ReservedName("Environment macro property names cannot begin with '_', this is reserved for internal usage, "
             "in EnvironmentDescription::newMacroProperty().");

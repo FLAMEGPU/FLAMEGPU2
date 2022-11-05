@@ -56,7 +56,7 @@ struct LayerData {
      * Index of the layer in the stack
      * (Eventually this will be replaced when we move to a more durable mode of layers, e.g. dependency analysis)
      */
-    ModelData::size_type index;
+    flamegpu::size_type index;
     /**
      * Equality operator, checks whether LayerData hierarchies are functionally the same
      * @returns True when layers are the same
@@ -84,7 +84,7 @@ struct LayerData {
     /**
      * Normal constructor, only to be called by ModelDescription
      */
-    LayerData(const std::shared_ptr<const ModelData> &model, const std::string &name, const ModelData::size_type &index);
+    LayerData(const std::shared_ptr<const ModelData> &model, const std::string &name, const flamegpu::size_type &index);
 };
 
 }  // namespace flamegpu

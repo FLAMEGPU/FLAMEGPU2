@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 
+#include "flamegpu/defines.h"
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/runtime/HostAPI_macros.h"
 #include "flamegpu/runtime/messaging/MessageBruteForce.h"
@@ -36,10 +37,6 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      * Description needs full access
      */
     friend class ModelDescription;
-    /**
-     * Common size type used in the definition of models
-     */
-    typedef unsigned int size_type;
     /**
      * Map of name:agent definition
      * map<string, AgentData>
@@ -161,7 +158,7 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
     /**
      * @return The maximum layer width within the model's hierarchy
      */
-    ModelData::size_type getMaxLayerWidth() const;
+    flamegpu::size_type getMaxLayerWidth() const;
 
  protected:
     friend SubModelData;  // Uses private copy constructor

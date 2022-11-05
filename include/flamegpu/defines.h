@@ -18,6 +18,8 @@ constexpr const char* ID_VARIABLE_NAME = "_id";
  */
 constexpr id_t ID_NOT_SET = 0;
 
+typedef unsigned int size_type;
+
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_DEFINES_H_

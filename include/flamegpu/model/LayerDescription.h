@@ -154,20 +154,20 @@ class LayerDescription {
     /**
      * @return The index of the layer within the model's execution
      */
-    ModelData::size_type getIndex() const;
+    flamegpu::size_type getIndex() const;
     /**
      * @return The total number of agent functions within the layer
      */
-    ModelData::size_type getAgentFunctionsCount() const;
+    flamegpu::size_type getAgentFunctionsCount() const;
     /**
      * @return The total number of host functions within the layer
      */
-    ModelData::size_type getHostFunctionsCount() const;
+    flamegpu::size_type getHostFunctionsCount() const;
 #ifdef SWIG
     /**
      * @return The total number of host function callbacks within the layer
      */
-    inline ModelData::size_type getHostFunctionCallbackCount() const;
+    inline flamegpu::size_type getHostFunctionCallbackCount() const;
     /**
      * Adds a host function to this layer, similar to addHostFunction
      * however the runnable function is encapsulated within an object which permits cross language support in swig.
@@ -322,9 +322,9 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
 void LayerDescription::addHostFunctionCallback(HostFunctionCallback* func_callback) {
     this->_addHostFunctionCallback(func_callback);
 }
-ModelData::size_type LayerDescription::getHostFunctionCallbackCount() const {
+flamegpu::size_type LayerDescription::getHostFunctionCallbackCount() const {
     // Safe down-cast
-    return static_cast<ModelData::size_type>(layer->host_functions_callbacks.size());
+    return static_cast<flamegpu::size_type>(layer->host_functions_callbacks.size());
 }
 HostFunctionCallback* LayerDescription::getHostFunctionCallback(unsigned int index) const {
     if (index < layer->host_functions_callbacks.size()) {

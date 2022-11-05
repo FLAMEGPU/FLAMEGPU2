@@ -80,7 +80,7 @@ class RunPlan {
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length to N
      */
-    template<typename T, EnvironmentManager::size_type N>
+    template<typename T, flamegpu::size_type N>
     void setProperty(const std::string &name, const std::array<T, N> &value);
     /**
      * Set the environment property override for this run of the model
@@ -94,8 +94,8 @@ class RunPlan {
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
      * @throws exception::OutOfBoundsException If index is not in range of the length of the property array
      */
-    template<typename T, EnvironmentManager::size_type N = 0>
-    void setProperty(const std::string &name, EnvironmentManager::size_type index, T value);
+    template<typename T, flamegpu::size_type N = 0>
+    void setProperty(const std::string &name, flamegpu::size_type index, T value);
 #ifdef SWIG
     /**
      * Set the environment property override for this run of the model
@@ -142,7 +142,7 @@ class RunPlan {
      * @throws exception::InvalidEnvProperty If a property array of the name does not exist
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
      */
-    template<typename T, EnvironmentManager::size_type N>
+    template<typename T, flamegpu::size_type N>
     std::array<T, N> getProperty(const std::string &name) const;
     /**
      * Gets an element of the currently configured environment property array
@@ -154,8 +154,8 @@ class RunPlan {
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
      * @throws exception::OutOfBoundsException If index is not in range of the length of the property array
      */
-    template<typename T, EnvironmentManager::size_type N = 0>
-    T getProperty(const std::string &name, EnvironmentManager::size_type index) const;
+    template<typename T, flamegpu::size_type N = 0>
+    T getProperty(const std::string &name, flamegpu::size_type index) const;
 #ifdef SWIG
     /**
      * Gets the currently configured environment property array value
@@ -215,7 +215,7 @@ void RunPlan::setProperty(const std::string &name, T value) {
     property_overrides.erase(name);
     property_overrides.emplace(name, util::Any(&value, sizeof(T), typeid(typename type_decode<T>::type_t), type_decode<T>::len_t));
 }
-template<typename T, EnvironmentManager::size_type N>
+template<typename T, flamegpu::size_type N>
 void RunPlan::setProperty(const std::string &name, const std::array<T, N> &value) {
     // Validation
     const auto it = environment->find(name);
@@ -238,8 +238,8 @@ void RunPlan::setProperty(const std::string &name, const std::array<T, N> &value
     property_overrides.erase(name);
     property_overrides.emplace(name, util::Any(value.data(), sizeof(T) * N, typeid(typename type_decode<T>::type_t), type_decode<T>::len_t * N));
 }
-template<typename T, EnvironmentManager::size_type N>
-void RunPlan::setProperty(const std::string &name, const EnvironmentManager::size_type index, T value) {
+template<typename T, flamegpu::size_type N>
+void RunPlan::setProperty(const std::string &name, const flamegpu::size_type index, T value) {
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {
@@ -326,7 +326,7 @@ T RunPlan::getProperty(const std::string &name) const {
         return *static_cast<T *>(it->second.data.ptr);
     }
 }
-template<typename T, EnvironmentManager::size_type N>
+template<typename T, flamegpu::size_type N>
 std::array<T, N> RunPlan::getProperty(const std::string &name) const {
     // Validation
     const auto it = environment->find(name);
@@ -357,8 +357,8 @@ std::array<T, N> RunPlan::getProperty(const std::string &name) const {
     }
     return rtn;
 }
-template<typename T, EnvironmentManager::size_type N>
-T RunPlan::getProperty(const std::string &name, const EnvironmentManager::size_type index) const {
+template<typename T, flamegpu::size_type N>
+T RunPlan::getProperty(const std::string &name, const flamegpu::size_type index) const {
     // Validation
     const auto it = environment->find(name);
     if (it == environment->end()) {

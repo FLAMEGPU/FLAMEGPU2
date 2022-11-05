@@ -619,7 +619,7 @@ class ModelVis;
             return $self->operator[](index);
         return $self->operator[]($self->size() + index);
     }
-    void flamegpu::AgentVector::__setitem__(const flamegpu::AgentVector::size_type &index, const flamegpu::AgentVector::Agent &value) {
+    void flamegpu::AgentVector::__setitem__(const flamegpu::size_type &index, const flamegpu::AgentVector::Agent &value) {
         $self->operator[](index).setData(value);
     }
 }
@@ -998,7 +998,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
             return $self->operator[]($self->size() + index);
         }
         // Palettes are currently immutable
-        //void Palette::__setitem__(const AgentVector::size_type &index, const Color &value) {
+        //void Palette::__setitem__(const flamegpu::size_type &index, const Color &value) {
         //     $self->operator[](index) = value;
         //}
     }

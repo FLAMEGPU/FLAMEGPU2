@@ -88,10 +88,10 @@ util::detail::curandState *RandomManager::resize(size_type _length, cudaStream_t
     auto t_length = length;
     if (length) {
         while (t_length < _length) {
-            t_length = static_cast<RandomManager::size_type>(t_length * growthModifier);
+            t_length = static_cast<flamegpu::size_type>(t_length * growthModifier);
             if (shrinkModifier < 1.0f) {
                 while (t_length * shrinkModifier > _length) {
-                    t_length = static_cast<RandomManager::size_type>(t_length * shrinkModifier);
+                    t_length = static_cast<flamegpu::size_type>(t_length * shrinkModifier);
                 }
             }
         }
@@ -104,7 +104,7 @@ util::detail::curandState *RandomManager::resize(size_type _length, cudaStream_t
         resizeDeviceArray(t_length, stream);
     return d_random_state;
 }
-__global__ void init_curand(util::detail::curandState *d_random_state, unsigned int threadCount, uint64_t seed, RandomManager::size_type offset) {
+__global__ void init_curand(util::detail::curandState *d_random_state, unsigned int threadCount, uint64_t seed, flamegpu::size_type offset) {
     int id = blockIdx.x * blockDim.x + threadIdx.x;
     if (id < threadCount)
         curand_init(seed, offset + id, 0, &d_random_state[offset + id]);
@@ -190,7 +190,7 @@ void RandomManager::setShrinkModifier(float _shrinkModifier) {
 float RandomManager::getShrinkModifier() {
     return RandomManager::shrinkModifier;
 }
-RandomManager::size_type RandomManager::size() {
+flamegpu::size_type RandomManager::size() {
     return length;
 }
 uint64_t RandomManager::seed() {

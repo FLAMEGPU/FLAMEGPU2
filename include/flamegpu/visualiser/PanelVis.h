@@ -65,8 +65,8 @@ class PanelVis {
      * @tparam N Optional, length of the named environment property. 0 can be provided to ignore this check
      * @note Environment property arrays cannot be added as a whole, each element must be specified individually
      */
-    template<typename T, EnvironmentManager::size_type N = 0>
-    void newEnvironmentPropertySlider(const std::string& property_name, EnvironmentManager::size_type index, T min, T max);
+    template<typename T, flamegpu::size_type N = 0>
+    void newEnvironmentPropertySlider(const std::string& property_name, flamegpu::size_type index, T min, T max);
     /**
      * Add a drag element which displays the named environment property (or environment property array element) and allows it's value to be updated by
      * clicking and dragging the mouse left/right. Double click can also be used to enter a new value via typing.
@@ -85,8 +85,8 @@ class PanelVis {
      * @tparam N Optional, length of the named environment property. 0 can be provided to ignore this check
      * @note Environment property arrays cannot be added as a whole, each element must be specified individually
      */
-    template<typename T, EnvironmentManager::size_type N = 0>
-    void newEnvironmentPropertyDrag(const std::string& property_name, EnvironmentManager::size_type index, T min, T max, float speed);
+    template<typename T, flamegpu::size_type N = 0>
+    void newEnvironmentPropertyDrag(const std::string& property_name, flamegpu::size_type index, T min, T max, float speed);
     /**
      * Add a input box (with +/- step buttons) which displays the named environment property (or environment property array element) and allows it's value to be updated by
      * clicking and dragging the mouse left/right. Double click can also be used to enter a new value via typing.
@@ -104,8 +104,8 @@ class PanelVis {
      * @tparam N Optional, length of the named environment property. 0 can be provided to ignore this check
      * @note Environment property arrays cannot be added as a whole, each element must be specified individually
      */
-    template<typename T, EnvironmentManager::size_type N = 0>
-    void newEnvironmentPropertyInput(const std::string& property_name, EnvironmentManager::size_type index, T step, T step_fast);
+    template<typename T, flamegpu::size_type N = 0>
+    void newEnvironmentPropertyInput(const std::string& property_name, flamegpu::size_type index, T step, T step_fast);
     /**
      * Add a checkbox element which displays the named environment property (or environment property array element) and allows it's value to be toggled
      * between 0 and 1 by clicking.
@@ -122,8 +122,8 @@ class PanelVis {
      * @tparam N Optional, length of the named environment property. 0 can be provided to ignore this check
      * @note Environment property arrays cannot be added as a whole, each element must be specified individually
      */
-    template<typename T, EnvironmentManager::size_type N = 0>
-    void newEnvironmentPropertyToggle(const std::string& property_name, EnvironmentManager::size_type index);
+    template<typename T, flamegpu::size_type N = 0>
+    void newEnvironmentPropertyToggle(const std::string& property_name, flamegpu::size_type index);
 
  private:
     /**
@@ -138,10 +138,10 @@ class PanelVis {
      * Each property can only be added to a specific panel once
      * ImGui appears to use their names to classify input, so dupes cause odd behaviour
      */
-    std::set<std::pair<std::string, EnvironmentManager::size_type>> added_properties;
+    std::set<std::pair<std::string, flamegpu::size_type>> added_properties;
 };
-template<typename T, EnvironmentManager::size_type N>
-void PanelVis::newEnvironmentPropertySlider(const std::string& property_name, EnvironmentManager::size_type index, T min, T max) {
+template<typename T, flamegpu::size_type N>
+void PanelVis::newEnvironmentPropertySlider(const std::string& property_name, flamegpu::size_type index, T min, T max) {
     {  // Validate name/type/length
         const auto it = env_properties.find(property_name);
         if (it == env_properties.end()) {
@@ -178,8 +178,8 @@ template<typename T>
 void PanelVis::newEnvironmentPropertySlider(const std::string& property_name, T min, T max) {
     newEnvironmentPropertySlider<T, 0>(property_name, 0, min, max);
 }
-template<typename T, EnvironmentManager::size_type N>
-void PanelVis::newEnvironmentPropertyDrag(const std::string& property_name, EnvironmentManager::size_type index, T min, T max, float speed) {
+template<typename T, flamegpu::size_type N>
+void PanelVis::newEnvironmentPropertyDrag(const std::string& property_name, flamegpu::size_type index, T min, T max, float speed) {
     {  // Validate name/type/length
         const auto it = env_properties.find(property_name);
         if (it == env_properties.end()) {
@@ -216,8 +216,8 @@ template<typename T>
 void PanelVis::newEnvironmentPropertyDrag(const std::string& property_name, T min, T max, float speed) {
     newEnvironmentPropertyDrag<T, 0>(property_name, 0, min, max, speed);
 }
-template<typename T, EnvironmentManager::size_type N>
-void PanelVis::newEnvironmentPropertyInput(const std::string& property_name, EnvironmentManager::size_type index, T step, T step_fast) {
+template<typename T, flamegpu::size_type N>
+void PanelVis::newEnvironmentPropertyInput(const std::string& property_name, flamegpu::size_type index, T step, T step_fast) {
     {  // Validate name/type/length
         const auto it = env_properties.find(property_name);
         if (it == env_properties.end()) {
@@ -250,8 +250,8 @@ template<typename T>
 void PanelVis::newEnvironmentPropertyInput(const std::string& property_name, T step, T step_fast) {
     newEnvironmentPropertyInput<T, 0>(property_name, 0, step, step_fast);
 }
-template<typename T, EnvironmentManager::size_type N>
-void PanelVis::newEnvironmentPropertyToggle(const std::string& property_name, EnvironmentManager::size_type index) {
+template<typename T, flamegpu::size_type N>
+void PanelVis::newEnvironmentPropertyToggle(const std::string& property_name, flamegpu::size_type index) {
     static_assert(std::is_integral<T>::value, "PanelVis::newEnvironmentPropertyToggle() only supports integer type properties.");
     {  // Validate name/type/length
         const auto it = env_properties.find(property_name);

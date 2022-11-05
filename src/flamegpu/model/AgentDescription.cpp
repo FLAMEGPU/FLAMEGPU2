@@ -79,9 +79,9 @@ std::string AgentDescription::getName() const {
     return agent->name;
 }
 
-ModelData::size_type AgentDescription::getStatesCount() const {
+flamegpu::size_type AgentDescription::getStatesCount() const {
     // Downcast, will never have more than UINT_MAX VARS
-    return static_cast<ModelData::size_type>(agent->states.size());
+    return static_cast<flamegpu::size_type>(agent->states.size());
 }
 std::string AgentDescription::getInitialState() const {
     return agent->initial_state;
@@ -104,7 +104,7 @@ size_t AgentDescription::getVariableSize(const std::string &variable_name) const
         "in AgentDescription::getVariableSize().",
         agent->name.c_str(), variable_name.c_str());
 }
-ModelData::size_type AgentDescription::getVariableLength(const std::string &variable_name) const {
+flamegpu::size_type AgentDescription::getVariableLength(const std::string &variable_name) const {
     auto f = agent->variables.find(variable_name);
     if (f != agent->variables.end()) {
         return f->second.elements;
@@ -113,9 +113,9 @@ ModelData::size_type AgentDescription::getVariableLength(const std::string &vari
         "in AgentDescription::getVariableLength().",
         agent->name.c_str(), variable_name.c_str());
 }
-ModelData::size_type AgentDescription::getVariablesCount() const {
+flamegpu::size_type AgentDescription::getVariablesCount() const {
     // Downcast, will never have more than UINT_MAX VARS
-    return static_cast<ModelData::size_type>(agent->variables.size());
+    return static_cast<flamegpu::size_type>(agent->variables.size());
 }
 const AgentFunctionDescription& AgentDescription::getFunction(const std::string &function_name) const {
     auto f = agent->functions.find(function_name);
@@ -126,12 +126,12 @@ const AgentFunctionDescription& AgentDescription::getFunction(const std::string 
         "in AgentDescription::getFunction().",
         agent->name.c_str(), function_name.c_str());
 }
-ModelData::size_type AgentDescription::getFunctionsCount() const {
+flamegpu::size_type AgentDescription::getFunctionsCount() const {
     // Downcast, will never have more than UINT_MAX VARS
-    return static_cast<ModelData::size_type>(agent->functions.size());
+    return static_cast<flamegpu::size_type>(agent->functions.size());
 }
 
-ModelData::size_type AgentDescription::getAgentOutputsCount() const {
+flamegpu::size_type AgentDescription::getAgentOutputsCount() const {
     return agent->agent_outputs;
 }
 
