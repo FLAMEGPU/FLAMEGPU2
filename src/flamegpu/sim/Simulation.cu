@@ -288,9 +288,7 @@ int Simulation::checkArgs(int argc, const char** argv) {
         if (checkArgs_derived(argc, argv, i)) {
             continue;
         }
-        fprintf(stderr, "Unexpected argument: %s\n", arg.c_str());
-        printHelp(argv[0]);
-        return false;
+        fprintf(stderr, "Warning: Unknown argument '%s' passed to Simulation will be ignored\n", arg.c_str());
     }
     return true;
 }

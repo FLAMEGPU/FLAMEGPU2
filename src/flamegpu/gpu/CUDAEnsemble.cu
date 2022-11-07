@@ -338,9 +338,7 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
 #endif
             continue;
         }
-        fprintf(stderr, "Unexpected argument: %s\n", arg.c_str());
-        printHelp(argv[0]);
-        return false;
+        fprintf(stderr, "Warning: Unknown argument '%s' passed to Ensemble will be ignored\n", arg.c_str());
     }
     return true;
 }

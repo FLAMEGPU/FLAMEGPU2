@@ -120,6 +120,19 @@ TEST(TestCUDAEnsemble, initialise_devices_wrong) {
     // Sim with out of bounds device ID, get exception
     EXPECT_THROW(ensemble.simulate(plan), exception::InvalidCUDAdevice);
 }
+TEST(TestCUDAEnsemble, initialise_unknown_arg) {
+    // Create a model
+    flamegpu::ModelDescription model("test");
+    // Create an ensemble
+    flamegpu::CUDAEnsemble ensemble(model);
+    // Call initialise with differnt cli arguments, which will mutate values. Check they have the new value.
+    EXPECT_EQ(ensemble.getConfig().devices, std::set<int>({}));
+    const char* argv[2] = { "prog.exe", "--unknown" };
+    testing::internal::CaptureStderr();
+    EXPECT_NO_THROW(ensemble.initialise(sizeof(argv) / sizeof(char*), argv));  //  No exception but warning shoudl be raised
+    std::string errors = testing::internal::GetCapturedStderr();
+    EXPECT_TRUE(errors.find("Warning: Unknown argument") != std::string::npos);
+}
 TEST(TestCUDAEnsemble, initialise_quiet) {
     // Create a model
     flamegpu::ModelDescription model("test");

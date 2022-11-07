@@ -180,6 +180,16 @@ TEST(TestCUDASimulation, ArgParse_device_short) {
     EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
     ASSERT_EQ(cudaGetLastError(), cudaSuccess);
 }
+TEST(TestSimulation, ArgParse_unknown) {
+    ModelDescription m(MODEL_NAME);
+    CUDASimulation c(m);
+    const char* argv[2] = { "prog.exe", "--unknown" };
+    EXPECT_EQ(c.getSimulationConfig().input_file, "");
+    testing::internal::CaptureStderr();
+    c.initialise(sizeof(argv) / sizeof(char*), argv);
+    std::string errors = testing::internal::GetCapturedStderr();
+    EXPECT_TRUE(errors.find("Warning: Unknown argument") != std::string::npos);
+}
 TEST(TestSimulation, initialise_quiet) {
     ModelDescription m(MODEL_NAME);
     CUDASimulation c(m);
