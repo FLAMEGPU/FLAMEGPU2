@@ -326,7 +326,7 @@ int main(int argc, const char ** argv) {
     /**
      * Submodels
      */
-    flamegpu::SubModelDescription &movement_sub = model.newSubModel("movement_conflict_resolution_model", submodel);
+    flamegpu::SubModelDescription movement_sub = model.newSubModel("movement_conflict_resolution_model", submodel);
     {
         movement_sub.bindAgent("agent", "agent", true, true);
     }

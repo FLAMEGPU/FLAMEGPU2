@@ -6,12 +6,27 @@
 #include "flamegpu/model/SubAgentData.h"
 
 namespace flamegpu {
+SubModelData::SubModelData(std::shared_ptr<ModelData> _model, const SubModelData& other)
+    : model(std::move(_model))
+    , submodel(other.submodel->clone())
+    , max_steps(other.max_steps)
+    , name(other.name) {
+    // Note, this does not init subagents!
+    // Note, this does not init subenvironment!
+}
+SubModelData::SubModelData(std::shared_ptr<ModelData> _model, const std::string& submodel_name, const std::shared_ptr<ModelData>& _submodel)
+    : model(std::move(_model))
+    , submodel(_submodel)
+    , max_steps(0)
+    , name(submodel_name) { }
 
 bool SubModelData::operator==(const SubModelData& rhs) const {
     if (this == &rhs)  // They point to same object
         return true;
     // Compare members
-    if (subagents.size() == rhs.subagents.size()
+    if (name == rhs.name
+        //  && model.lock() == rhs.model.lock()  // Don't check weak pointers
+        && subagents.size() == rhs.subagents.size()
         && (submodel == rhs.submodel || *submodel == *rhs.submodel)
         && max_steps == rhs.max_steps) {
         // Compare subagents map
@@ -31,18 +46,5 @@ bool SubModelData::operator==(const SubModelData& rhs) const {
 bool SubModelData::operator!=(const SubModelData& rhs) const {
     return !(*this == rhs);
 }
-SubModelData::SubModelData(const std::shared_ptr<ModelData> &model, const SubModelData &other)
-    : submodel(other.submodel->clone())
-    , max_steps(other.max_steps)
-    , name(other.name)
-    , description(model ? new SubModelDescription(model, this) : nullptr) {
-    // Note, this does not init subagents!
-    // Note, this does not init subenvironment!
-}
-SubModelData::SubModelData(const std::shared_ptr<ModelData> &model, const std::string &submodel_name, const std::shared_ptr<ModelData> &_submodel)
-    : submodel(_submodel)
-    , max_steps(0)
-    , name(submodel_name)
-    , description(new SubModelDescription(model, this))  { }
 
 }  // namespace flamegpu

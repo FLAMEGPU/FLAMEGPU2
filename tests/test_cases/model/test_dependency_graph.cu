@@ -193,7 +193,7 @@ TEST(DependencyGraphTest, AddSubmodelAsDependent) {
     ModelDescription _sm(SUBMODEL_NAME);
     _sm.newAgent(SUBAGENT_NAME);
     _sm.addExitCondition(ExitAlways);
-    SubModelDescription& _smd = _m.newSubModel("sub", _sm);
+    SubModelDescription _smd = _m.newSubModel("sub", _sm);
 
     _smd.dependsOn(f);
     _m.addExecutionRoot(f);
@@ -208,7 +208,7 @@ TEST(DependencyGraphTest, AddSubmodelAsDependency) {
     ModelDescription _sm(SUBMODEL_NAME);
     _sm.newAgent(SUBAGENT_NAME);
     _sm.addExitCondition(ExitAlways);
-    SubModelDescription& _smd = _m.newSubModel("sub", _sm);
+    SubModelDescription _smd = _m.newSubModel("sub", _sm);
 
     f.dependsOn(_smd);
     _m.addExecutionRoot(_smd);
@@ -369,7 +369,7 @@ TEST(DependencyGraphTest, DOTDiagramAllDependencies) {
     ModelDescription _sm(SUBMODEL_NAME);
     _sm.newAgent(SUBAGENT_NAME);
     _sm.addExitCondition(ExitAlways);
-    SubModelDescription& _smd = _m.newSubModel("sub", _sm);
+    SubModelDescription _smd = _m.newSubModel("sub", _sm);
     f2.dependsOn(f);
     f3.dependsOn(hf);
     f4.dependsOn(f2);
@@ -419,7 +419,7 @@ TEST(DependencyGraphTest, CorrectLayersAllDependencies) {
     ModelDescription _sm(SUBMODEL_NAME);
     _sm.newAgent(SUBAGENT_NAME);
     _sm.addExitCondition(ExitAlways);
-    SubModelDescription& _smd = _m.newSubModel("sub", _sm);
+    SubModelDescription _smd = _m.newSubModel("sub", _sm);
     f2.dependsOn(f);
     f3.dependsOn(hf);
     f4.dependsOn(f2, hf);

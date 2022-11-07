@@ -18,6 +18,7 @@ class AgentDescription;
 class CAgentDescription;
 class CLayerDescription;
 class LayerDescription;
+class CSubModelDescription;
 class SubModelDescription;
 class DependencyNode;
 struct ModelData;
@@ -140,7 +141,7 @@ class ModelDescription {
      * @param submodel_name The name used to refer to the submodel (e.g. when adding it to the layer)
      * @param submodel_description The actual definition of the submodel
      */
-    SubModelDescription &newSubModel(const std::string &submodel_name, const ModelDescription &submodel_description);
+    SubModelDescription newSubModel(const std::string &submodel_name, const ModelDescription &submodel_description);
     /**
      * Returns a mutable reference to the named submodel
      * @param submodel_name Name which can be used to the refer to the desired submodel within the model description hierarchy
@@ -148,7 +149,7 @@ class ModelDescription {
      * @throws exception::InvalidSubModelName If a submodel with the name does not exist within the model description hierarchy
      * @see ModelDescription::getSubModel(const std::string &) for the immutable version
      */
-    SubModelDescription &SubModel(const std::string &submodel_name);
+    SubModelDescription SubModel(const std::string &submodel_name);
 
     /**
      * Creates a new layer with the specified name
@@ -320,7 +321,7 @@ class ModelDescription {
      * @throws exception::InvalidSubModelName If a submodel with the name does not exist within the model description hierarchy
      * @see ModelDescription::SubModel(const std::string &) for the mutable version
      */
-    const SubModelDescription& getSubModel(const std::string &submodel_name) const;
+    CSubModelDescription getSubModel(const std::string &submodel_name) const;
     /**
      * Returns a mutable reference to the environment description for the model description hierarchy
      * This can be used to configure environment properties

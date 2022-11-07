@@ -24,7 +24,7 @@ TEST(SubEnvironmentDescriptionTest, InvalidNames) {
         m.Environment().newProperty<float>("b", 0);
         m.Environment().newProperty<float, 2>("b2", {});
     }
-    auto &sm = m.newSubModel("sub", m2);
+    auto sm = m.newSubModel("sub", m2);
     auto &senv = sm.SubEnvironment();
     EXPECT_THROW(senv.mapProperty("c", "b"), exception::InvalidEnvProperty);
     EXPECT_THROW(senv.mapProperty("c", "b2"), exception::InvalidEnvProperty);
@@ -47,7 +47,7 @@ TEST(SubEnvironmentDescriptionTest, TypesDoNotMatch) {
         m.Environment().newProperty<unsigned int>("b", 0);
         m.Environment().newProperty<float, 2>("b2", {});
     }
-    auto &sm = m.newSubModel("sub", m2);
+    auto sm = m.newSubModel("sub", m2);
     auto &senv = sm.SubEnvironment();
     EXPECT_THROW(senv.mapProperty("a", "b"), exception::InvalidEnvProperty);
     EXPECT_THROW(senv.mapProperty("a2", "b2"), exception::InvalidEnvProperty);
@@ -66,7 +66,7 @@ TEST(SubEnvironmentDescriptionTest, ElementsDoNotMatch) {
         m.Environment().newProperty<float>("b", 0);
         m.Environment().newProperty<float, 2>("b2", {});
     }
-    auto &sm = m.newSubModel("sub", m2);
+    auto sm = m.newSubModel("sub", m2);
     auto &senv = sm.SubEnvironment();
     EXPECT_THROW(senv.mapProperty("a", "b2"), exception::InvalidEnvProperty);
     EXPECT_THROW(senv.mapProperty("a2", "b"), exception::InvalidEnvProperty);
@@ -87,7 +87,7 @@ TEST(SubEnvironmentDescriptionTest, IsConstWrong) {
         m.Environment().newProperty<float>("b", 0, true);
         m.Environment().newProperty<float, 2>("b2", {}, true);
     }
-    auto &sm = m.newSubModel("sub", m2);
+    auto sm = m.newSubModel("sub", m2);
     auto &senv = sm.SubEnvironment();
     EXPECT_THROW(senv.mapProperty("a", "b"), exception::InvalidEnvProperty);
     EXPECT_THROW(senv.mapProperty("a2", "b2"), exception::InvalidEnvProperty);
@@ -111,7 +111,7 @@ TEST(SubEnvironmentDescriptionTest, AlreadyBound) {
         m.Environment().newProperty<float, 2>("b2_", {});
     }
     // Missing exit condition
-    auto &sm = m.newSubModel("sub", m2);
+    auto sm = m.newSubModel("sub", m2);
     auto &senv = sm.SubEnvironment();
     EXPECT_NO_THROW(senv.mapProperty("a", "b"));
     EXPECT_NO_THROW(senv.mapProperty("a2", "b2"));
@@ -134,7 +134,7 @@ TEST(SubEnvironmentDescriptionTest, Macro_InvalidNames) {
         m.Environment().newMacroProperty<float>("b");
         m.Environment().newMacroProperty<float, 2, 3, 4, 5>("b2");
     }
-    auto& sm = m.newSubModel("sub", m2);
+    auto sm = m.newSubModel("sub", m2);
     auto& senv = sm.SubEnvironment();
     EXPECT_THROW(senv.mapMacroProperty("c", "b"), exception::InvalidEnvProperty);
     EXPECT_THROW(senv.mapMacroProperty("c", "b2"), exception::InvalidEnvProperty);
@@ -157,7 +157,7 @@ TEST(SubEnvironmentDescriptionTest, Macro_TypesDoNotMatch) {
         m.Environment().newMacroProperty<unsigned int>("b");
         m.Environment().newMacroProperty<float, 2, 3, 4>("b2");
     }
-    auto& sm = m.newSubModel("sub", m2);
+    auto sm = m.newSubModel("sub", m2);
     auto& senv = sm.SubEnvironment();
     EXPECT_THROW(senv.mapMacroProperty("a", "b"), exception::InvalidEnvProperty);
     EXPECT_THROW(senv.mapMacroProperty("a2", "b2"), exception::InvalidEnvProperty);
@@ -179,7 +179,7 @@ TEST(SubEnvironmentDescriptionTest, Macro_DimensionsDoNotMatch) {
         m.Environment().newMacroProperty<float, 4, 3, 2, 1>("b");
         m.Environment().newMacroProperty<float, 1, 2, 3, 4>("b2");
     }
-    auto& sm = m.newSubModel("sub", m2);
+    auto sm = m.newSubModel("sub", m2);
     auto& senv = sm.SubEnvironment();
     EXPECT_THROW(senv.mapMacroProperty("a", "b2"), exception::InvalidEnvProperty);
     EXPECT_THROW(senv.mapMacroProperty("a", "b3"), exception::InvalidEnvProperty);
@@ -211,7 +211,7 @@ TEST(SubEnvironmentDescriptionTest, Macro_AlreadyBound) {
         m.Environment().newMacroProperty<float, 2>("b2_");
     }
     // Missing exit condition
-    auto& sm = m.newSubModel("sub", m2);
+    auto sm = m.newSubModel("sub", m2);
     auto& senv = sm.SubEnvironment();
     EXPECT_NO_THROW(senv.mapMacroProperty("a", "b"));
     EXPECT_NO_THROW(senv.mapMacroProperty("a2", "b2"));

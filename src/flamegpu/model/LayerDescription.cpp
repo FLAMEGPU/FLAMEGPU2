@@ -227,15 +227,15 @@ void LayerDescription::addSubModel(const std::string &name) {
         "in LayerDescription::addSubModel()\n",
         name.c_str(), mdl->name.c_str());
 }
-void LayerDescription::addSubModel(const SubModelDescription &submodel) {
+void LayerDescription::addSubModel(const CSubModelDescription &submodel) {
     auto mdl = layer->model.lock();
     if (!mdl) {
         THROW exception::ExpiredWeakPtr();
     }
-    if (submodel.model.lock() == mdl) {
+    if (submodel.submodel->model.lock() == mdl) {
         // Find the correct submodel shared ptr
         for (auto &sm : mdl->submodels) {
-            if (sm.second.get() == submodel.data) {
+            if (sm.second.get() == submodel.submodel.get()) {
                 addSubModel(sm.first);
                 return;
             }
@@ -243,7 +243,7 @@ void LayerDescription::addSubModel(const SubModelDescription &submodel) {
     }
     THROW exception::InvalidSubModel("SubModel '%s' does not belong to Model '%s', "
         "in LayerDescription::addSubModel()\n",
-        submodel.data->submodel->name.c_str(), mdl->name.c_str());
+        submodel.submodel->name.c_str(), mdl->name.c_str());
 }
 
 void LayerDescription::_addHostFunctionCallback(HostFunctionCallback* func_callback) {

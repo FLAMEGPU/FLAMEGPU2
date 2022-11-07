@@ -453,8 +453,8 @@ TEST_F(DeviceEnvironmentTest, Get_array_shorthand) {
     // This test is better ran with SEATBELTS=ON, to catch the seatbelts checking
     // Setup agent fn
     ms->agent.newVariable<float, 3>("k");
-    AgentFunctionDescription& deviceFn = ms->agent.newFunction("device_function", get_array_shorthand);
-    LayerDescription& devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_array_shorthand);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     const std::array<float, 3> t_in = { 12.0f, -12.5f, 13.0f };

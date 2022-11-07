@@ -213,7 +213,7 @@ class LayerDescription : public CLayerDescription {
      * @param name Name of the submodel (passed to ModelDescription::newSubModel() was called)
      * @throw exception::InvalidLayerMember If the layer already contains any agent functions or host functions
      * @throw exception::InvalidSubModel If the layer already contains a submodel
-     * @see addSubModel(const SubModelDescription &)
+     * @see addSubModel(const CSubModelDescription &)
      */
     void addSubModel(const std::string &name);
     /**
@@ -224,7 +224,7 @@ class LayerDescription : public CLayerDescription {
      * @throw exception::InvalidSubModel If the layer already contains a submodel
      * @see addSubModel(const std::string &)
      */
-    void addSubModel(const SubModelDescription &submodel);
+    void addSubModel(const CSubModelDescription &submodel);
     /**
      * Adds a host function to this layer, similar to addHostFunction
      * however the runnable function is encapsulated within an object which permits cross language support in swig.

@@ -56,7 +56,7 @@ EnvironmentDescription& ModelDescription::Environment() {
     return *model->environment;
 }
 
-SubModelDescription& ModelDescription::newSubModel(const std::string &submodel_name, const ModelDescription &submodel_description) {
+SubModelDescription ModelDescription::newSubModel(const std::string &submodel_name, const ModelDescription &submodel_description) {
     // Submodel is not self
     if (submodel_description.model == this->model) {
         THROW exception::InvalidSubModel("A model cannot be a submodel of itself, that would create infinite recursion, "
@@ -78,20 +78,21 @@ SubModelDescription& ModelDescription::newSubModel(const std::string &submodel_n
     // Submodel name is not in use
     if (!hasSubModel(submodel_name)) {
         auto rtn = std::shared_ptr<SubModelData>(new SubModelData(model, submodel_name, submodel_description.model));
+        model->submodels.emplace(submodel_name, rtn);
         // This will actually generate the environment mapping (cant do it in constructor, due to shared_from_this)
         // Not the end of the world if it isn't init (we should be able to catch it down the line), but safer this way
-        rtn->description->SubEnvironment(false);
-        model->submodels.emplace(submodel_name, rtn);
-        return *rtn->description;
+        SubModelDescription rtn2(rtn);
+        rtn2.SubEnvironment(false);
+        return rtn2;
     }
     THROW exception::InvalidSubModelName("SubModel with name '%s' already exists, "
         "in ModelDescription::newSubModel().",
         submodel_name.c_str());
 }
-SubModelDescription &ModelDescription::SubModel(const std::string &submodel_name) {
+SubModelDescription ModelDescription::SubModel(const std::string &submodel_name) {
     auto rtn = model->submodels.find(submodel_name);
     if (rtn != model->submodels.end())
-        return *rtn->second->description;
+        return SubModelDescription(rtn->second);
     THROW exception::InvalidSubModelName("SubModel ('%s') was not found, "
         "in ModelDescription::SubModel().",
         submodel_name.c_str());
@@ -198,10 +199,10 @@ CAgentDescription ModelDescription::getAgent(const std::string& agent_name) cons
 const MessageBruteForce::Description& ModelDescription::getMessage(const std::string &message_name) const {
     return getMessage<MessageBruteForce>(message_name);
 }
-const SubModelDescription &ModelDescription::getSubModel(const std::string &submodel_name) const {
+CSubModelDescription ModelDescription::getSubModel(const std::string &submodel_name) const {
     const auto rtn = model->submodels.find(submodel_name);
     if (rtn != model->submodels.end())
-        return *rtn->second->description;
+        return CSubModelDescription(rtn->second);
     THROW exception::InvalidSubModelName("SubModel ('%s') was not found, "
         "in ModelDescription::getSubModel().",
         submodel_name.c_str());

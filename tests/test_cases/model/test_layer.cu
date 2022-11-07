@@ -386,8 +386,8 @@ TEST(LayerDescriptionTest, SubModelAndHostOrAgentFunction) {
     ModelDescription m3("model2");
     m3.addExitCondition(exit_cdn);
     ModelDescription m(MODEL_NAME);
-    auto &sm = m.newSubModel("sm", m2);
-    auto &sm2 = m.newSubModel("sm2", m3);
+    auto sm = m.newSubModel("sm", m2);
+    auto sm2 = m.newSubModel("sm2", m3);
     AgentDescription a = m.newAgent(AGENT_NAME);
     AgentDescription a2 = m.newAgent(AGENT_NAME2);
 

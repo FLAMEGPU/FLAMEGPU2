@@ -228,7 +228,7 @@ TEST(DeviceAgentVectorTest, SubmodelResize) {
     master_agent.newVariable<int>("int", 0);
     master_agent.newVariable<unsigned int>("uint", 12u);
     master_agent.newFunction("MasterIncrement", MasterIncrement);
-    SubModelDescription &sub_desc = master_model.newSubModel(SUBMODEL_NAME, sub_model);
+    SubModelDescription sub_desc = master_model.newSubModel(SUBMODEL_NAME, sub_model);
     sub_desc.bindAgent(AGENT_NAME, AGENT_NAME, true);
     master_model.newLayer().addAgentFunction(MasterIncrement);
     master_model.newLayer().addSubModel(sub_desc);
@@ -301,7 +301,7 @@ TEST(DeviceAgentVectorTest, SubmodelInsert) {
     master_agent.newVariable<int>("int", 0);
     master_agent.newVariable<unsigned int>("uint", 12u);
     master_agent.newFunction("MasterIncrement", MasterIncrement);
-    SubModelDescription& sub_desc = master_model.newSubModel(SUBMODEL_NAME, sub_model);
+    SubModelDescription sub_desc = master_model.newSubModel(SUBMODEL_NAME, sub_model);
     sub_desc.bindAgent(AGENT_NAME, AGENT_NAME, true);
     master_model.newLayer().addAgentFunction(MasterIncrement);
     master_model.newLayer().addSubModel(sub_desc);
@@ -364,7 +364,7 @@ TEST(DeviceAgentVectorTest, SubmodelErase) {
     AgentDescription master_agent = master_model.newAgent(AGENT_NAME);
     master_agent.newVariable<int>("int", -1);
     master_agent.newVariable<float>("float", 12.0f);
-    SubModelDescription& sub_desc = master_model.newSubModel(SUBMODEL_NAME, sub_model);
+    SubModelDescription sub_desc = master_model.newSubModel(SUBMODEL_NAME, sub_model);
     sub_desc.bindAgent(AGENT_NAME, AGENT_NAME, true);
     master_model.newLayer().addSubModel(sub_desc);
 
