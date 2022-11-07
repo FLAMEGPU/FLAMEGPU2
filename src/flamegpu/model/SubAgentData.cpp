@@ -26,7 +26,10 @@ bool SubAgentData::operator==(const SubAgentData &rhs) const {
         return true;
     // Compare members
     if (variables == rhs.variables
-        && states ==  rhs.states) {
+        && states ==  rhs.states
+        // && model.lock() == rhs.model.lock()  // Don't check weak pointers
+        // && masterAgent.lock() == rhs.masterAgent.lock() // Skipping any equality here feels unsafe
+        ) {
         // Compare variables map
         return true;
     }

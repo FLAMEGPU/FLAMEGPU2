@@ -133,7 +133,7 @@ CSubAgentDescription SubModelDescription::getSubAgent(const std::string &sub_age
 }
 
 
-SubEnvironmentDescription &SubModelDescription::SubEnvironment(bool auto_map) {
+SubEnvironmentDescription SubModelDescription::SubEnvironment(bool auto_map) {
     if (!submodel->subenvironment) {
         auto mdl = submodel->model.lock();
         if (!mdl) {
@@ -141,13 +141,14 @@ SubEnvironmentDescription &SubModelDescription::SubEnvironment(bool auto_map) {
         }
         submodel->subenvironment = std::shared_ptr<SubEnvironmentData>(new SubEnvironmentData(mdl, submodel->shared_from_this(), submodel->submodel->environment));
     }
+    SubEnvironmentDescription rtn(submodel->subenvironment);
     if (auto_map) {
-        submodel->subenvironment->description->autoMapProperties();
-        submodel->subenvironment->description->autoMapMacroProperties();
+        rtn.autoMapProperties();
+        rtn.autoMapMacroProperties();
     }
-    return *submodel->subenvironment->description;
+    return rtn;
 }
-const SubEnvironmentDescription &SubModelDescription::getSubEnvironment(bool auto_map) const {
+CSubEnvironmentDescription SubModelDescription::getSubEnvironment() const {
     if (!submodel->subenvironment) {
         auto mdl = submodel->model.lock();
         if (!mdl) {
@@ -155,11 +156,7 @@ const SubEnvironmentDescription &SubModelDescription::getSubEnvironment(bool aut
         }
         submodel->subenvironment = std::shared_ptr<SubEnvironmentData>(new SubEnvironmentData(mdl, submodel->shared_from_this(), submodel->submodel->environment));
     }
-    if (auto_map) {
-        submodel->subenvironment->description->autoMapProperties();
-        submodel->subenvironment->description->autoMapMacroProperties();
-    }
-    return *submodel->subenvironment->description;
+    return CSubEnvironmentDescription(submodel->subenvironment);
 }
 
 void SubModelDescription::setMaxSteps(const unsigned int max_steps) {

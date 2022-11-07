@@ -44,7 +44,7 @@ bool AgentData::operator==(const AgentData &rhs) const {
     if (this == &rhs)  // They point to same object
         return true;
     if (name == rhs.name
-        //  && model.lock() == rhs.model.lock()  // Don't check weak pointers
+        // && model.lock() == rhs.model.lock()  // Don't check weak pointers
         && initial_state == rhs.initial_state
         && agent_outputs == rhs.agent_outputs
         && keepDefaultState == rhs.keepDefaultState

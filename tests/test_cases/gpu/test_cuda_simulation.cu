@@ -868,7 +868,7 @@ TEST(TestCUDASimulation, SimulationWithExistingCUDAMalloc) {
 TEST(TestCUDASimulation, simulationVerbosity) {
     // Define a simple model - doesn't need to do anything other than take some time.
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addStepFunction(IncrementCounterSlow);
     // Create a simulation (verbosity not set until simulate so no config outputs expected)

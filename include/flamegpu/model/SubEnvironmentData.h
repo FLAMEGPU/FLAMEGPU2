@@ -30,6 +30,10 @@ struct SubEnvironmentData : std::enable_shared_from_this<SubEnvironmentData> {
      */
     friend struct ModelData;
     /**
+     * Parent model
+     */
+    std::weak_ptr<const ModelData> model;
+    /**
      * The sub environment which is bound
      */
     std::weak_ptr<EnvironmentDescription> subEnvironment;
@@ -55,11 +59,6 @@ struct SubEnvironmentData : std::enable_shared_from_this<SubEnvironmentData> {
      */
     std::weak_ptr<SubModelData> parent;
     /**
-    * Description class which provides convenient accessors
-    * This may be null if the instance has been cloned
-    */
-    std::shared_ptr<SubEnvironmentDescription> description;
-    /**
     * Equality operator, checks whether SubAgentData hierarchies are functionally the same
     * @returns True when models are the same
     * @note Instead compare pointers if you wish to check that they are the same instance
@@ -81,12 +80,12 @@ struct SubEnvironmentData : std::enable_shared_from_this<SubEnvironmentData> {
     * Copy constructor
     * This should only be called via clone();
     */
-    explicit SubEnvironmentData(const std::shared_ptr<const ModelData> &model, const std::shared_ptr<SubModelData> &parent, const SubEnvironmentData &other);
+    explicit SubEnvironmentData(std::shared_ptr<const ModelData> model, const std::shared_ptr<SubModelData> &parent, const SubEnvironmentData &other);
     /**
     * Normal constructor
     * This should only be called by SubModelDescription
     */
-    explicit SubEnvironmentData(const std::shared_ptr<const ModelData> &model, const std::shared_ptr<SubModelData> &_parent, const std::shared_ptr<EnvironmentDescription> &subEnv);
+    explicit SubEnvironmentData(std::shared_ptr<const ModelData> model, const std::shared_ptr<SubModelData> &_parent, const std::shared_ptr<EnvironmentDescription> &subEnv);
 };
 
 }  // namespace flamegpu

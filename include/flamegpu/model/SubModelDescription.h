@@ -10,6 +10,7 @@ namespace flamegpu {
 
 class CSubAgentDescription;
 class SubAgentDescription;
+class CSubEnvironmentDescription;
 class SubEnvironmentDescription;
 struct ModelData;
 struct SubModelData;
@@ -149,12 +150,11 @@ class SubModelDescription : public CSubModelDescription {
      * Returns an interface for configuring mapped environment properties
      * @param auto_map If true is passed, all properties and macro properties with matching name, type and length between models will be mapped
      */
-    SubEnvironmentDescription &SubEnvironment(bool auto_map = false);
+    SubEnvironmentDescription SubEnvironment(bool auto_map = false);
     /**
      * Returns an immutable interface for viewing the configuration of mapped environment properties
-     * @param auto_map If true is passed, all properties and macro properties with matching name, type and length between models will be mapped
      */
-    const SubEnvironmentDescription &getSubEnvironment(bool auto_map = false) const;
+    CSubEnvironmentDescription getSubEnvironment() const;
     /**
      * Set the maximum number of steps per execution of the submodel
      * If 0 (default), unlimited however an exit condition is required

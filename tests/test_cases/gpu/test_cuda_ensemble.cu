@@ -318,7 +318,7 @@ TEST(TestCUDAEnsemble, verbosity) {
     // Environmental constant for initial population
     model.Environment().newProperty<uint32_t>("POPULATION_TO_GENERATE", populationSize, true);
     // Agent(s)
-    flamegpu::AgentDescription& agent = model.newAgent("Agent");
+    flamegpu::AgentDescription agent = model.newAgent("Agent");
     agent.newVariable<uint32_t>("counter", 0);
     agent.newFunction("simulateAgentFn", simulateAgentFn);
     // Control flow

@@ -551,7 +551,7 @@ TEST(SubEnvironmentManagerTest, CantMapReserved) {
     }
     // Setup submodel bindings
     auto sm = m.newSubModel("sub", m2);
-    auto &se = sm.SubEnvironment(false);
+    auto se = sm.SubEnvironment(false);
     EXPECT_THROW(se.mapProperty("_stepCount", "stepCount"), flamegpu::exception::ReservedName);
     EXPECT_THROW(se.mapProperty("stepCount", "_stepCount"), flamegpu::exception::ReservedName);
     // This doesn't actually exist, but should be caught regardless

@@ -7,6 +7,7 @@
 #include "flamegpu/runtime/messaging/MessageBruteForce.h"
 #include "flamegpu/model/SubModelData.h"
 #include "flamegpu/model/SubModelDescription.h"
+#include "flamegpu/model/SubEnvironmentDescription.h"
 
 namespace flamegpu {
 
