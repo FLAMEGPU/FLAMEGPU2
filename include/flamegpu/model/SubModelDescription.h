@@ -8,6 +8,7 @@
 
 namespace flamegpu {
 
+class CSubAgentDescription;
 class SubAgentDescription;
 class SubEnvironmentDescription;
 struct ModelData;
@@ -127,7 +128,7 @@ class SubModelDescription : public CSubModelDescription {
      * @throws exception::InvalidSubAgentName If the sub agent name does not map to a valid agent
      * @throws exception::InvalidAgentName If the master agent has already been bound
      */
-    SubAgentDescription &bindAgent(const std::string &sub_agent_name, const std::string &master_agent_name, bool auto_map_vars = false, bool auto_map_states = true);
+    SubAgentDescription bindAgent(const std::string &sub_agent_name, const std::string &master_agent_name, bool auto_map_vars = false, bool auto_map_states = true);
     /**
      * Returns a mutable reference to the named SubAgent description if it has already been bound to a master agent
      * @param sub_agent_name Name of the sub agent, who's description to return
@@ -135,7 +136,7 @@ class SubModelDescription : public CSubModelDescription {
      * @throws exception::InvalidSubAgentName If the sub_agent_name does not exist within the sub_model and/or has not been bound yet
      * @see SubModelDescription::getSubAgent(const std::string &) for the immutable version
      */
-    SubAgentDescription &SubAgent(const std::string &sub_agent_name);
+    SubAgentDescription SubAgent(const std::string &sub_agent_name);
     /**
      * Returns an immutable reference to the named SubAgent description if it has already been bound to a master agent
      * @param sub_agent_name Name of the sub agent, who's description to return
@@ -143,7 +144,7 @@ class SubModelDescription : public CSubModelDescription {
      * @throws exception::InvalidSubAgentName If the sub_agent_name does not exist within the sub_model and/or has not been bound yet
      * @see SubModelDescription::SubAgent(const std::string &) for the mutable version
      */
-    const SubAgentDescription &getSubAgent(const std::string &sub_agent_name) const;
+    CSubAgentDescription getSubAgent(const std::string &sub_agent_name) const;
     /**
      * Returns an interface for configuring mapped environment properties
      * @param auto_map If true is passed, all properties and macro properties with matching name, type and length between models will be mapped

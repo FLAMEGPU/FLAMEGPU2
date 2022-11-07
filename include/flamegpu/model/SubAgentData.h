@@ -19,75 +19,74 @@ class SubAgentDescription;
  */
 struct SubAgentData : std::enable_shared_from_this<SubAgentData> {
     /**
-    * Description needs full access
-    */
+     * Description needs full access
+     */
     friend class SubAgentDescription;
     /**
-    * SubModelDescription needs access to private constructor
-    */
+     * SubModelDescription needs access to private constructor
+     */
     friend class SubModelDescription;
     /**
-    * SubModelData needs access to private copy constructor
-    */
+     * SubModelData needs access to private copy constructor
+     */
     friend struct ModelData;
     /**
-    * The sub agent which is bound
-    */
+     * Parent model
+     */
+    std::weak_ptr<const ModelData> model;
+    /**
+     * The sub agent which is bound
+     */
     std::weak_ptr<AgentData> subAgent;
     /**
-    * The master agent which is bound
-    */
+     * The master agent which is bound
+     */
     std::weak_ptr<AgentData> masterAgent;
     /**
-    * Map of submodel item name:parent model item name
-    * map<string, string>
-    */
+     * Map of submodel item name:parent model item name
+     * map<string, string>
+     */
     typedef std::unordered_map<std::string, std::string> Mapping;
     /**
-    * Holds all of the agent's variable mappings
-    */
-    Mapping variables;
+     * Holds all of the agent's variable mappings
+     */
+    Mapping variables = {};
     /**
-    * Holds all of the agent's state mappings
-    */
-    Mapping states;
+     * Holds all of the agent's state mappings
+     */
+    Mapping states = {};
     /**
-    * The model which this agent is a member of
-    */
+     * The model which this agent is a member of
+     */
     std::weak_ptr<SubModelData> parent;
     /**
-    * Description class which provides convenient accessors
-    * This may be null if the instance has been cloned
-    */
-    std::shared_ptr<SubAgentDescription> description;
-    /**
-    * Equality operator, checks whether SubAgentData hierarchies are functionally the same
-    * @returns True when models are the same
-    * @note Instead compare pointers if you wish to check that they are the same instance
-    */
+     * Equality operator, checks whether SubAgentData hierarchies are functionally the same
+     * @returns True when models are the same
+     * @note Instead compare pointers if you wish to check that they are the same instance
+     */
     bool operator==(const SubAgentData& rhs) const;
     /**
-    * Equality operator, checks whether SubAgentData hierarchies are functionally different
-    * @returns True when models are not the same
-    * @note Instead compare pointers if you wish to check that they are not the same instance
-    */
+     * Equality operator, checks whether SubAgentData hierarchies are functionally different
+     * @returns True when models are not the same
+     * @note Instead compare pointers if you wish to check that they are not the same instance
+     */
     bool operator!=(const SubAgentData& rhs) const;
     /**
-    * Default copy constructor, not implemented
-    */
+     * Default copy constructor, not implemented
+     */
     SubAgentData(const SubAgentData &other) = delete;
 
  protected:
     /**
-    * Copy constructor
-    * This should only be called via clone();
-    */
-    explicit SubAgentData(const std::shared_ptr<const ModelData> &model, const std::shared_ptr<SubModelData> &parent, const SubAgentData &other);
+     * Copy constructor
+     * This should only be called via clone();
+     */
+    explicit SubAgentData(std::shared_ptr<const ModelData> model, const std::shared_ptr<SubModelData> &parent, const SubAgentData &other);
     /**
-    * Normal constructor
-    * This should only be called by SubModelDescription
-    */
-    explicit SubAgentData(const std::shared_ptr<const ModelData> &model, const std::shared_ptr<SubModelData> &_parent, const std::shared_ptr<AgentData> &subAgent, const std::shared_ptr<AgentData> &masterAgent);
+     * Normal constructor
+     * This should only be called by SubModelDescription
+     */
+    explicit SubAgentData(std::shared_ptr<const ModelData> model, const std::shared_ptr<SubModelData> &_parent, const std::shared_ptr<AgentData> &subAgent, const std::shared_ptr<AgentData> &masterAgent);
 };
 
 }  // namespace flamegpu

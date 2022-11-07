@@ -69,7 +69,7 @@ TEST(SubAgentDescriptionTest, InvalidAgentState) {
         ma.newState("b2");
     }
     auto smd = m.newSubModel("sub", sm);
-    auto &agent_map = smd.bindAgent("a", "b", false, false);
+    auto agent_map = smd.bindAgent("a", "b", false, false);
     // Invalid name
     EXPECT_THROW(agent_map.mapState("c", "b"), exception::InvalidAgentState);
     EXPECT_THROW(agent_map.mapState("a", "c"), exception::InvalidAgentState);
@@ -104,7 +104,7 @@ TEST(SubAgentDescriptionTest, InvalidAgentVariable) {
         ma.newState("b");
     }
     auto smd = m.newSubModel("sub", sm);
-    auto &agent_map = smd.bindAgent("a", "b", false, false);
+    auto agent_map = smd.bindAgent("a", "b", false, false);
     // Bad name
     EXPECT_THROW(agent_map.mapVariable("c", "b_float"), exception::InvalidAgentVar);
     EXPECT_THROW(agent_map.mapVariable("a_float", "c"), exception::InvalidAgentVar);
