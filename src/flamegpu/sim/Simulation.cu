@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cinttypes>  // For PRIu64
 
 #include "flamegpu/version.h"
 #include "flamegpu/model/ModelData.h"
@@ -102,9 +103,12 @@ void Simulation::applyConfig() {
             THROW exception::InvalidArgument("Failed to create common log file directory: '%s': %s\n", t_path.c_str(), e.what());
         }
     }
-    // If verbose, output the flamegpu version.
-    if (config.verbose) {
+    // If verbose, output the flamegpu version and seed.
+    if (config.verbosity == Verbosity::Verbose) {
         fprintf(stdout, "FLAME GPU %s\n", flamegpu::VERSION_FULL);
+        fprintf(stdout, "Simulation configuration:\n");
+        fprintf(stdout, "\tRandom Seed: %" PRIu64 "\n", config.random_seed);
+        fprintf(stdout, "\tSteps: %u\n", config.steps);
     }
     // Call derived class config stuff first
     applyConfig_derived();
@@ -148,6 +152,7 @@ int Simulation::checkArgs(int argc, const char** argv) {
 
     // First pass only looks for and handles input files
     // Remaining arguments can override args passed via input file
+    // Any errors to stderr have return false and are expected to raise an exception
     int i = 1;
     for (; i < argc; i++) {
         // Get arg as lowercase
@@ -232,7 +237,12 @@ int Simulation::checkArgs(int argc, const char** argv) {
         }
         // -v/--verbose, Verbose FLAME GPU output.
         if (arg.compare("--verbose") == 0 || arg.compare("-v") == 0) {
-            config.verbose = true;
+            config.verbosity = Verbosity::Verbose;
+            continue;
+        }
+        // -q/--quiet, Verbose level quiet FLAME GPU output.
+        if (arg.compare("--quiet") == 0 || arg.compare("-q") == 0) {
+            config.verbosity = Verbosity::Quiet;
             continue;
         }
         // -t/--timing, Output timing information to stdout
@@ -297,7 +307,8 @@ void Simulation::printHelp(const char* executable) {
     printf(line_fmt, "    --out-log <file.xml/file.json>", "Common log file (XML or JSON)");
     printf(line_fmt, "-s, --steps <steps>", "Number of simulation iterations");
     printf(line_fmt, "-r, --random <seed>", "RandomManager seed");
-    printf(line_fmt, "-v, --verbose", "Verbose FLAME GPU output");
+    printf(line_fmt, "-q, --quiet", "Do not print progress information to console");
+    printf(line_fmt, "-v, --verbose", "Print config, progress and timing (-t) information to console.");
     printf(line_fmt, "-t, --timing", "Output timing information to stdout");
 #ifdef VISUALISATION
     printf(line_fmt, "-c, --console", "Console mode, disable the visualisation");

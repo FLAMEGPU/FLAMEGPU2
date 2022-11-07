@@ -422,7 +422,7 @@ TEST(LoggingTest, CUDAEnsembleSimulate) {
     // Run model
     CUDAEnsemble sim(m);
     sim.Config().concurrent_runs = 5;
-    sim.Config().quiet = true;
+    sim.Config().verbosity = Verbosity::Quiet;
     sim.Config().timing = false;
     // sim.Config().out_directory = "ensemble_out";
     // sim.Config().out_format = "json";
@@ -828,7 +828,7 @@ TEST(TestLogging, Ensemble_ToFile_Step) {
     // Run model
     CUDAEnsemble sim(m);
     sim.Config().concurrent_runs = 5;
-    sim.Config().quiet = true;
+    sim.Config().verbosity = Verbosity::Quiet;
     sim.Config().timing = false;
     sim.Config().out_directory = "out";
     sim.Config().out_format = "json";
@@ -889,7 +889,7 @@ TEST(TestLogging, Ensemble_ToFile_Exit) {
     // Run model
     CUDAEnsemble sim(m);
     sim.Config().concurrent_runs = 5;
-    sim.Config().quiet = true;
+    sim.Config().verbosity = Verbosity::Quiet;
     sim.Config().timing = false;
     sim.Config().out_directory = "out";
     sim.Config().out_format = "json";
@@ -956,7 +956,7 @@ TEST(TestLogging, Ensemble_ToFile_All) {
     // Run model
     CUDAEnsemble sim(m);
     sim.Config().concurrent_runs = 5;
-    sim.Config().quiet = true;
+    sim.Config().verbosity = Verbosity::Quiet;
     sim.Config().timing = false;
     sim.Config().out_directory = "out";
     sim.Config().out_format = "json";

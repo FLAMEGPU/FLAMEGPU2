@@ -2,7 +2,7 @@ import pytest
 from unittest import TestCase
 from pyflamegpu import *
 from random import randint
-import time
+import time, sys
 
 
 # Global vars needed in several classes
@@ -103,21 +103,21 @@ class TestCUDAEnsemble(TestCase):
         assert mutableConfig.out_format == "json"
         assert mutableConfig.concurrent_runs == 4
         # assert mutableConfig.devices == std::set<int>()  # @todo - this will need to change
-        assert mutableConfig.quiet == False
+        assert mutableConfig.verbosity == pyflamegpu.Verbosity_Default
         assert mutableConfig.timing == False
         # Mutate the configuration
         mutableConfig.out_directory = "test"
         mutableConfig.out_format = "xml"
         mutableConfig.concurrent_runs = 1
         # mutableConfig.devices = std::set<int>({0}) # @todo - this will need to change.
-        mutableConfig.quiet = True
+        mutableConfig.verbosity = pyflamegpu.Verbosity_Verbose
         mutableConfig.timing = True
         # Check via the const ref, this should show the same value as config was a reference, not a copy.
         assert mutableConfig.out_directory == "test"
         assert mutableConfig.out_format == "xml"
         assert mutableConfig.concurrent_runs == 1
         # assert mutableConfig.devices == std::set<int>({0})  # @todo - this will need to change
-        assert mutableConfig.quiet == True
+        assert mutableConfig.verbosity == pyflamegpu.Verbosity_Verbose
         assert mutableConfig.timing == True
 
     @pytest.mark.skip(reason="--help cannot be tested due to exit()")
@@ -172,10 +172,29 @@ class TestCUDAEnsemble(TestCase):
         # Create an ensemble
         ensemble = pyflamegpu.CUDAEnsemble(model)
         # Call initialise with differnt cli arguments, which will mutate values. Check they have the new value.
-        assert ensemble.Config().quiet == False
+        assert ensemble.Config().verbosity == pyflamegpu.Verbosity_Default
         argv = ["ensemble.exe", "--quiet"]
         ensemble.initialise(argv)
-        assert ensemble.Config().quiet == True
+        assert ensemble.Config().verbosity == pyflamegpu.Verbosity_Quiet
+    
+    def test_initialise_default(self):
+        # Create a model
+        model = pyflamegpu.ModelDescription("test")
+        # Create an ensemble
+        ensemble = pyflamegpu.CUDAEnsemble(model)
+        # Call initialise with differnt cli arguments, which will mutate values. Check they have the new value.
+        assert ensemble.Config().verbosity == pyflamegpu.Verbosity_Default
+
+    def test_initialise_verbose(self):
+        # Create a model
+        model = pyflamegpu.ModelDescription("test")
+        # Create an ensemble
+        ensemble = pyflamegpu.CUDAEnsemble(model)
+        # Call initialise with differnt cli arguments, which will mutate values. Check they have the new value.
+        assert ensemble.Config().verbosity == pyflamegpu.Verbosity_Default
+        argv = ["ensemble.exe", "--verbose"]
+        ensemble.initialise(argv)
+        assert ensemble.Config().verbosity == pyflamegpu.Verbosity_Verbose
 
     def test_initialise_timing(self):
         # Create a model
@@ -251,8 +270,7 @@ class TestCUDAEnsemble(TestCase):
         # Create an ensemble
         ensemble = pyflamegpu.CUDAEnsemble(model)
         # Make it quiet to avoid outputting during the test suite
-        ensemble.Config().quiet = True
-        ensemble.Config().out_format = ""  # Suppress warning
+        ensemble.Config().verbosity = pyflamegpu.Verbosity_Quiet
         # Simulate the ensemble,
         ensemble.simulate(plans)
 
@@ -517,3 +535,115 @@ class TestCUDAEnsemble(TestCase):
         # The first run does not throw
         assert tracked_runs_ct == 2
     
+class TestEnsembleVerbosity(TestCase):
+    """
+    Tests to check the verbosity levels produce the expected outputs.
+    Currently all disabled as SWIG does not pipe output via pythons sys.stdout/sys.stderr
+    See issue #966 
+    """
+
+    # Agent function used to check the ensemble runs.
+    simulateAgentFn = """
+    FLAMEGPU_AGENT_FUNCTION(simulateAgentFn, flamegpu::MessageNone, flamegpu::MessageNone) {
+        // Increment agent's counter by 1.
+        FLAMEGPU->setVariable<int>("counter", FLAMEGPU->getVariable<int>("counter") + 1);
+        return flamegpu::ALIVE;
+    }
+    """
+    @pytest.mark.skip(reason="SWIG outputs not correctly captured")
+    def test_ensemble_verbosity_quiet(self):
+        # Number of simulations to run.
+        planCount = 2
+        populationSize = 32
+        # Create a model containing at least one agent type and function.
+        model = pyflamegpu.ModelDescription("test")
+        # Environmental constant for initial population
+        model.Environment().newPropertyUInt("POPULATION_TO_GENERATE", populationSize, True)
+        # Agent(s)
+        agent = model.newAgent("Agent")
+        agent.newVariableUInt("counter", 0)
+        afn = agent.newRTCFunction("simulateAgentFn", self.simulateAgentFn)
+        # Control flow
+        model.newLayer().addAgentFunction(afn)
+        # Crete a small runplan, using a different number of steps per sim.
+        plans = pyflamegpu.RunPlanVector(model, planCount)
+        for idx in range(plans.size()):
+            plan = plans[idx]
+            plan.setSteps(idx + 1)  # Can't have 0 steps without exit condition
+        # Create an ensemble
+        ensemble = pyflamegpu.CUDAEnsemble(model)
+        # Verbosity QUIET
+        ensemble.Config().verbosity = pyflamegpu.Verbosity_Quiet
+        ensemble.simulate(plans)
+        captured = self.capsys.readouterr()
+        assert captured.out == ""
+        assert captured.err == ""
+
+    @pytest.mark.skip(reason="SWIG outputs not correctly captured")
+    def test_ensemble_verbosity_default(self):
+        # Number of simulations to run.
+        planCount = 2
+        populationSize = 32
+        # Create a model containing at least one agent type and function.
+        model = pyflamegpu.ModelDescription("test")
+        # Environmental constant for initial population
+        model.Environment().newPropertyUInt("POPULATION_TO_GENERATE", populationSize, True)
+        # Agent(s)
+        agent = model.newAgent("Agent")
+        agent.newVariableUInt("counter", 0)
+        afn = agent.newRTCFunction("simulateAgentFn", self.simulateAgentFn)
+        # Control flow
+        model.newLayer().addAgentFunction(afn)
+        # Crete a small runplan, using a different number of steps per sim.
+        plans = pyflamegpu.RunPlanVector(model, planCount)
+        for idx in range(plans.size()):
+            plan = plans[idx]
+            plan.setSteps(idx + 1)  # Can't have 0 steps without exit condition
+        # Create an ensemble
+        ensemble = pyflamegpu.CUDAEnsemble(model)
+        # Verbosity QUIET
+        ensemble.Config().verbosity = pyflamegpu.Verbosity_Default
+        ensemble.simulate(plans)
+        captured = self.capsys.readouterr()
+        assert "CUDAEnsemble progress" in captured.out
+        assert "CUDAEnsemble completed" in captured.out
+        assert captured.err == ""
+
+    @pytest.mark.skip(reason="SWIG outputs not correctly captured")
+    def test_ensemble_verbosity_verbose(self):
+        # Number of simulations to run.
+        planCount = 2
+        populationSize = 32
+        # Create a model containing atleast one agent type and function.
+        model = pyflamegpu.ModelDescription("test")
+        # Environmental constant for initial population
+        model.Environment().newPropertyUInt("POPULATION_TO_GENERATE", populationSize, True)
+        # Agent(s)
+        agent = model.newAgent("Agent")
+        agent.newVariableUInt("counter", 0)
+        afn = agent.newRTCFunction("simulateAgentFn", self.simulateAgentFn)
+        # Control flow
+        model.newLayer().addAgentFunction(afn)
+        # Crete a small runplan, using a different number of steps per sim.
+        plans = pyflamegpu.RunPlanVector(model, planCount)
+        for idx in range(plans.size()):
+            plan = plans[idx]
+            plan.setSteps(idx + 1)  # Can't have 0 steps without exit condition
+        # Create an ensemble
+        ensemble = pyflamegpu.CUDAEnsemble(model)
+        # Verbosity QUIET
+        ensemble.Config().verbosity = pyflamegpu.Verbosity_Verbose
+        ensemble.simulate(plans)
+        captured = self.capsys.readouterr()
+        assert "CUDAEnsemble progress" in captured.out
+        assert "CUDAEnsemble completed" in captured.out
+        assert "Ensemble time elapsed" in captured.out
+        assert captured.err == ""
+
+    @pytest.fixture(autouse=True)
+    def capsys(self, capsys):
+        # Method of applying fixture to TestCases
+        # Function will run prior to any test case in the class.
+        # The capsys fixture is for capturing Pythons sys.stderr and sys.stdout
+        self.capsys = capsys
+        

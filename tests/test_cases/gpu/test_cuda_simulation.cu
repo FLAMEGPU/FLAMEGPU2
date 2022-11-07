@@ -180,6 +180,30 @@ TEST(TestCUDASimulation, ArgParse_device_short) {
     EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
     ASSERT_EQ(cudaGetLastError(), cudaSuccess);
 }
+TEST(TestSimulation, initialise_quiet) {
+    ModelDescription m(MODEL_NAME);
+    CUDASimulation c(m);
+    EXPECT_EQ(c.getSimulationConfig().verbosity, Verbosity::Default);
+    const char* argv[2] = { "prog.exe", "--quiet" };
+    c.initialise(sizeof(argv) / sizeof(char*), argv);
+    EXPECT_EQ(c.getSimulationConfig().verbosity, Verbosity::Quiet);
+}
+TEST(TestSimulation, initialise_default) {
+    ModelDescription m(MODEL_NAME);
+    CUDASimulation c(m);
+    EXPECT_EQ(c.getSimulationConfig().verbosity, Verbosity::Default);
+    const char* argv[1] = { "prog.exe" };
+    c.initialise(sizeof(argv) / sizeof(char*), argv);
+    EXPECT_EQ(c.getSimulationConfig().verbosity, Verbosity::Default);
+}
+TEST(TestSimulation, initialise_verbose) {
+    ModelDescription m(MODEL_NAME);
+    CUDASimulation c(m);
+    EXPECT_EQ(c.getSimulationConfig().verbosity, Verbosity::Default);
+    const char* argv[2] = { "prog.exe", "--verbose" };
+    c.initialise(sizeof(argv) / sizeof(char*), argv);
+    EXPECT_EQ(c.getSimulationConfig().verbosity, Verbosity::Verbose);
+}
 FLAMEGPU_AGENT_FUNCTION(SetGetFn, MessageNone, MessageNone) {
     int i = FLAMEGPU->getVariable<int>(dVARIABLE_NAME);
     FLAMEGPU->setVariable<int>(dVARIABLE_NAME, i * dMULTIPLIER);
@@ -809,6 +833,72 @@ TEST(TestCUDASimulation, SimulationWithExistingCUDAMalloc) {
         gpuErrchk(cudaFree(d_int));
     }
     d_int = nullptr;
+}
+// Test the verbosity levels to ensure correct levels of output
+TEST(TestCUDASimulation, simulationVerbosity) {
+    // Define a simple model - doesn't need to do anything other than take some time.
+    ModelDescription m(MODEL_NAME);
+    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
+    m.addStepFunction(IncrementCounterSlow);
+    // Create a simulation (verbosity not set until simulate so no config outputs expected)
+    CUDASimulation c(m);
+    c.setPopulationData(pop);
+    c.SimulationConfig().steps = 1;
+    // Verbosity::Quiet
+    {
+        // Capture stderr and stdout
+        testing::internal::CaptureStdout();
+        testing::internal::CaptureStderr();
+        // Set verbosity level
+        c.SimulationConfig().verbosity = Verbosity::Quiet;
+        // Simulate
+        EXPECT_NO_THROW(c.simulate());
+        // Get stderr and stdout
+        std::string output = testing::internal::GetCapturedStdout();
+        std::string errors = testing::internal::GetCapturedStderr();
+        // Expect no warnings (stderr) or outputs in Quiet mode
+        EXPECT_TRUE(output.empty());
+        EXPECT_TRUE(errors.empty());
+    }
+    // DEFAULT
+    {
+        // Capture stderr and stdout
+        testing::internal::CaptureStdout();
+        testing::internal::CaptureStderr();
+        // Set verbosity level
+        c.SimulationConfig().verbosity = Verbosity::Default;
+        // Simulate
+        c.resetStepCounter();
+        EXPECT_NO_THROW(c.simulate());
+        // Get stderr and stdout
+        std::string output = testing::internal::GetCapturedStdout();
+        std::string errors = testing::internal::GetCapturedStderr();
+        // Expect no warnings (stderr) and no output
+        EXPECT_TRUE(output.empty());
+        EXPECT_TRUE(errors.empty());
+    }
+    // Verbosity::Verbose
+    {
+        // Capture stderr and stdout
+        testing::internal::CaptureStdout();
+        testing::internal::CaptureStderr();
+        // Set verbosity level
+        c.SimulationConfig().verbosity = Verbosity::Verbose;
+        // Simulate
+        c.resetStepCounter();
+        EXPECT_NO_THROW(c.simulate());
+        // Get stderr and stdout
+        std::string output = testing::internal::GetCapturedStdout();
+        std::string errors = testing::internal::GetCapturedStderr();
+        // Expect no warnings (stderr) but updates on progress and timing
+        EXPECT_TRUE(output.find("Init Function Processing time") != std::string::npos);
+        EXPECT_TRUE(output.find("Processing Simulation Step 0") != std::string::npos);
+        EXPECT_TRUE(output.find("Step 0 Processing time") != std::string::npos);
+        EXPECT_TRUE(output.find("Exit Function Processing time") != std::string::npos);
+        EXPECT_TRUE(output.find("Total Processing time") != std::string::npos);
+        EXPECT_TRUE(errors.empty());
+    }
 }
 
 

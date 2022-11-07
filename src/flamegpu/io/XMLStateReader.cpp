@@ -105,7 +105,8 @@ int XMLStateReader::parse() {
                 std::string val = simCfgElement->GetText() ? simCfgElement->GetText() : "";
                 if (key == "input_file") {
                     if (inputFile != val && !val.empty())
-                        printf("Warning: Input file '%s' refers to second input file '%s', this will not be loaded.\n", inputFile.c_str(), val.c_str());
+                        if (sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet)
+                            fprintf(stderr, "Warning: Input file '%s' refers to second input file '%s', this will not be loaded.\n", inputFile.c_str(), val.c_str());
                     // sim_instance->SimulationConfig().input_file = val;
                 } else if (key == "step_log_file") {
                     sim_instance->SimulationConfig().step_log_file = val;
@@ -127,16 +128,8 @@ int XMLStateReader::parse() {
                     sim_instance->SimulationConfig().random_seed = static_cast<uint64_t>(stoull(val));
                 } else if (key == "steps") {
                     sim_instance->SimulationConfig().steps = static_cast<unsigned int>(stoull(val));
-                } else if (key == "verbose") {
-                    for (auto& c : val)
-                        c = static_cast<char>(::tolower(c));
-                    if (val == "true") {
-                        sim_instance->SimulationConfig().verbose = true;
-                    } else if (val == "false") {
-                        sim_instance->SimulationConfig().verbose = false;
-                    } else {
-                        sim_instance->SimulationConfig().verbose = static_cast<bool>(stoll(val));
-                    }
+                } else if (key == "verbosity") {
+                    sim_instance->SimulationConfig().verbosity = static_cast<flamegpu::Verbosity>(stoull(val));
                 } else if (key == "timing") {
                     for (auto& c : val)
                         c = static_cast<char>(::tolower(c));
@@ -160,10 +153,11 @@ int XMLStateReader::parse() {
                     }
 #else
                     if (val == "false") {
-                        fprintf(stderr, "Warning: Cannot disable 'console_mode' with input file '%s', FLAMEGPU2 library has not been built with visualisation support enabled.\n", inputFile.c_str());
+                        if (sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet)
+                            fprintf(stderr, "Warning: Cannot disable 'console_mode' with input file '%s', FLAMEGPU2 library has not been built with visualisation support enabled.\n", inputFile.c_str());
                     }
 #endif
-                }  else {
+                }  else if (sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet) {
                     fprintf(stderr, "Warning: Input file '%s' contains unexpected simulation config property '%s'.\n", inputFile.c_str(), key.c_str());
                 }
             }
@@ -187,7 +181,7 @@ int XMLStateReader::parse() {
                     } else {
                         cudamodel_instance->CUDAConfig().inLayerConcurrency = static_cast<bool>(stoll(val));
                     }
-                } else {
+                } else if (sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet) {
                     fprintf(stderr, "Warning: Input file '%s' contains unexpected cuda config property '%s'.\n", inputFile.c_str(), key.c_str());
                 }
             }
@@ -247,12 +241,12 @@ int XMLStateReader::parse() {
                         "in XMLStateReader::parse()\n", key, val_type.name());
                 }
             }
-            if (el != elements) {
+            if (el != elements && sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet) {
                 fprintf(stderr, "Warning: Environment array property '%s' expects '%u' elements, input file '%s' contains '%u' elements.\n",
                     key, elements, inputFile.c_str(), el);
             }
         }
-    } else {
+    } else if (sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet) {
         fprintf(stderr, "Warning: Input file '%s' does not contain environment node.\n", inputFile.c_str());
     }
 
@@ -341,12 +335,12 @@ int XMLStateReader::parse() {
                     }
                 }
                 // Warn if var is wrong length
-                if (el != var_data.elements && !hasWarnedElements) {
+                if (el != var_data.elements && !hasWarnedElements && sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet) {
                     fprintf(stderr, "Warning: Agent '%s' variable '%s' expects '%u' elements, input file '%s' contains '%u' elements.\n",
                         agentName, variable_name.c_str(), var_data.elements, inputFile.c_str(), el);
                     hasWarnedElements = true;
                 }
-            } else if (!hasWarnedMissingVar && variable_name.find('_', 0) != 0) {
+            } else if (!hasWarnedMissingVar && variable_name.find('_', 0) != 0 && sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet) {
                 fprintf(stderr, "Warning: Agent '%s' variable '%s' is missing from, input file '%s'.\n",
                     agentName, variable_name.c_str(), inputFile.c_str());
                 hasWarnedMissingVar = true;
