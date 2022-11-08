@@ -35,7 +35,7 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_explicit, flamegpu::MessageBruteForce, f
 
 TEST(RTCNamespaceTest, AgentFunctionsExplicit) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
     AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
@@ -98,7 +98,7 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_declaration, MessageBruteForce, MessageN
 
 TEST(RTCNamespaceTest, AgentFunctionsDeclaration) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
     AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
@@ -157,7 +157,7 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_directive, MessageBruteForce, MessageNon
 
 TEST(RTCNamespaceTest, AgentFunctionsDirective) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
     AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
@@ -225,7 +225,7 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_named, MessageBruteForce, MessageNone) {
 
 TEST(RTCNamespaceTest, AgentFunctionsNamed) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
     AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
@@ -285,7 +285,7 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_alias, fgpu::MessageBruteForce, fgpu::Me
 
 TEST(RTCNamespaceTest, AgentFunctionsAlias) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
     AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
@@ -344,7 +344,7 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_alias_mixed, flamegpu::MessageBruteForce
 
 TEST(RTCNamespaceTest, AgentFunctionsAliasMixed) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
     AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");

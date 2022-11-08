@@ -29,7 +29,7 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_explicit, flamegpu::MessageBruteForce, f
 }
 TEST(CXXNamespaceTest, AgentFunctionsExplicit) {
     flamegpu::ModelDescription m("model");
-    flamegpu::MessageBruteForce::Description& message = m.newMessage("message_x");
+    flamegpu::MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
     flamegpu::AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
@@ -97,7 +97,7 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_declaration, MessageBruteForce, MessageN
 }
 TEST(CXXNamespaceTest, AgentFunctionsDeclaration) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
     AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
@@ -156,7 +156,7 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_directive, MessageBruteForce, MessageNon
 
 TEST(CXXNamespaceTest, AgentFunctionsDirective) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
     AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
@@ -212,7 +212,7 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_named, MessageBruteForce, MessageNone) {
 }
 TEST(CXXNamespaceTest, AgentFunctionsNamed) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
     AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
@@ -269,7 +269,7 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_alias, fgpu::MessageBruteForce, fgpu::Me
 }
 TEST(CXXNamespaceTest, AgentFunctionsAlias) {
     fgpu::ModelDescription m("model");
-    fgpu::MessageBruteForce::Description& message = m.newMessage("message_x");
+    fgpu::MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
     fgpu::AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
@@ -324,7 +324,7 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_alias_mixed, flamegpu::MessageBruteForce
 }
 TEST(CXXNamespaceTest, AgentFunctionsAliasMixed) {
     fgpu::ModelDescription m("model");
-    flamegpu::MessageBruteForce::Description& message = m.newMessage("message_x");
+    flamegpu::MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
     fgpu::AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");

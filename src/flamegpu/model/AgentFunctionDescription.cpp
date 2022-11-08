@@ -36,15 +36,15 @@ std::string CAgentFunctionDescription::getInitialState() const {
 std::string CAgentFunctionDescription::getEndState() const {
     return function->end_state;
 }
-const MessageBruteForce::Description& CAgentFunctionDescription::getMessageInput() const {
+MessageBruteForce::CDescription CAgentFunctionDescription::getMessageInput() const {
     if (auto m = function->message_input.lock())
-        return *m->description;
+        return MessageBruteForce::CDescription(m);
     THROW exception::OutOfBoundsException("Message input has not been set, "
         "in AgentFunctionDescription::getMessageInput().");
 }
-const MessageBruteForce::Description& CAgentFunctionDescription::getMessageOutput() const {
+MessageBruteForce::CDescription CAgentFunctionDescription::getMessageOutput() const {
     if (auto m = function->message_output.lock())
-        return *m->description;
+        return MessageBruteForce::CDescription(m);
     THROW exception::OutOfBoundsException("Message output has not been set, "
         "in AgentFunctionDescription::getMessageOutput().");
 }
@@ -229,8 +229,8 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
             mdl->name.c_str(), message_name.c_str());
     }
 }
-void AgentFunctionDescription::setMessageInput(MessageBruteForce::Description &message) {
-    if (message.model.lock() != function->model.lock()) {
+void AgentFunctionDescription::setMessageInput(MessageBruteForce::CDescription message) {
+    if (message.message->model.lock() != function->model.lock()) {
         THROW exception::DifferentModel("Attempted to use agent description from a different model, "
             "in AgentFunctionDescription::setAgentOutput().");
     }
@@ -248,7 +248,7 @@ void AgentFunctionDescription::setMessageInput(MessageBruteForce::Description &m
     }
     auto a = mdl->messages.find(message.getName());
     if (a != mdl->messages.end()) {
-        if (a->second->description.get() == &message) {
+        if (a->second == message.message) {
             // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
             auto message_in_classname = util::detail::cxxname::getUnqualifiedName(this->function->message_in_type);
             auto demangledClassName = util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
@@ -310,8 +310,8 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
             mdl->name.c_str(), message_name.c_str());
     }
 }
-void AgentFunctionDescription::setMessageOutput(MessageBruteForce::Description &message) {
-    if (message.model.lock() != function->model.lock()) {
+void AgentFunctionDescription::setMessageOutput(MessageBruteForce::CDescription message) {
+    if (message.message->model.lock() != function->model.lock()) {
         THROW exception::DifferentModel("Attempted to use agent description from a different model, "
             "in AgentFunctionDescription::setAgentOutput().");
     }
@@ -335,7 +335,7 @@ void AgentFunctionDescription::setMessageOutput(MessageBruteForce::Description &
     }
     auto a = mdl->messages.find(message.getName());
     if (a != mdl->messages.end()) {
-        if (a->second->description.get() == &message) {
+        if (a->second == message.message) {
             // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
             auto message_out_classname = util::detail::cxxname::getUnqualifiedName(this->function->message_out_type);
             auto demangledClassName = util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
@@ -498,15 +498,15 @@ void AgentFunctionDescription::setRTCFunctionConditionFile(const std::string& fi
         file_path.c_str());
 }
 
-MessageBruteForce::Description &AgentFunctionDescription::MessageInput() {
+MessageBruteForce::Description AgentFunctionDescription::MessageInput() {
     if (auto m = function->message_input.lock())
-        return *m->description;
+        return MessageBruteForce::Description(m);
     THROW exception::OutOfBoundsException("Message input has not been set, "
         "in AgentFunctionDescription::MessageInput().");
 }
-MessageBruteForce::Description &AgentFunctionDescription::MessageOutput() {
+MessageBruteForce::Description AgentFunctionDescription::MessageOutput() {
     if (auto m = function->message_output.lock())
-        return *m->description;
+        return MessageBruteForce::Description(m);
     THROW exception::OutOfBoundsException("Message output has not been set, "
         "in AgentFunctionDescription::MessageOutput().");
 }

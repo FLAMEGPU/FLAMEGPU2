@@ -72,7 +72,7 @@ class MiniSim {
     }
     template<typename Message, typename T>
     void addMessageOutFunc(T func) {
-        typename Message::Description &message = model.newMessage<Message>("message");
+        typename Message::Description message = model.newMessage<Message>("message");
         message.template newVariable<int>("int");
         auto fn = agent.newFunction("name", func);
         fn.setMessageOutput("message");
@@ -80,7 +80,7 @@ class MiniSim {
     }
     template<typename T>
     void addMessageS2DOutFunc(T func) {
-        MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("message");
+        MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("message");
         message.setMin(-1, -1);
         message.setMax(1, 1);
         message.setRadius(1);
@@ -91,7 +91,7 @@ class MiniSim {
     }
     template<typename T>
     void addMessageS3DOutFunc(T func) {
-        MessageSpatial3D::Description &message = model.newMessage<MessageSpatial3D>("message");
+        MessageSpatial3D::Description message = model.newMessage<MessageSpatial3D>("message");
         message.setMin(-1, -1, -2);
         message.setMax(1, 1, 1);
         message.setRadius(1);
@@ -102,7 +102,7 @@ class MiniSim {
     }
     template<typename T>
     void addMessageA1DOutFunc(T func) {
-        MessageArray::Description &message = model.newMessage<MessageArray>("message");
+        MessageArray::Description message = model.newMessage<MessageArray>("message");
         message.setLength(10);
         message.newVariable<int>("int");
         auto fn = agent.newFunction("name", func);
@@ -111,7 +111,7 @@ class MiniSim {
     }
     template<typename T>
     void addMessageA2DOutFunc(T func) {
-        MessageArray2D::Description &message = model.newMessage<MessageArray2D>("message");
+        MessageArray2D::Description message = model.newMessage<MessageArray2D>("message");
         message.setDimensions(10, 10);
         message.newVariable<int>("int");
         auto fn = agent.newFunction("name", func);
@@ -120,7 +120,7 @@ class MiniSim {
     }
     template<typename T>
     void addMessageA3DOutFunc(T func) {
-        MessageArray3D::Description &message = model.newMessage<MessageArray3D>("message");
+        MessageArray3D::Description message = model.newMessage<MessageArray3D>("message");
         message.setDimensions(10, 10, 10);
         message.newVariable<int>("int");
         auto fn = agent.newFunction("name", func);
@@ -129,7 +129,7 @@ class MiniSim {
     }
     template<typename T>
     void addMessageBucketOutFunc(T func) {
-        MessageBucket::Description &message = model.newMessage<MessageBucket>("message");
+        MessageBucket::Description message = model.newMessage<MessageBucket>("message");
         message.setBounds(0, 1023);
         message.newVariable<int>("int");
         auto fn = agent.newFunction("name", func);
@@ -139,7 +139,7 @@ class MiniSim {
 
     template<typename Message, typename T1, typename T2>
     void addMessageInFunc(T1 out_func, T2 in_func) {
-        auto &message = model.newMessage<Message>("message");
+        auto message = model.newMessage<Message>("message");
         message.template newVariable<int>("int");
         {
             auto fn = agent.newFunction("out_name", out_func);
@@ -154,7 +154,7 @@ class MiniSim {
     }
     template<typename T1, typename T2>
     void addMessageS2DInFunc(T1 out_func, T2 in_func) {
-        MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("message");
+        MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("message");
         message.setMin(-1, -1);
         message.setMax(1, 1);
         message.setRadius(1);
@@ -172,7 +172,7 @@ class MiniSim {
     }
     template<typename T1, typename T2>
     void addMessageS3DInFunc(T1 out_func, T2 in_func) {
-        MessageSpatial3D::Description &message = model.newMessage<MessageSpatial3D>("message");
+        MessageSpatial3D::Description message = model.newMessage<MessageSpatial3D>("message");
         message.setMin(-1, -1, -1);
         message.setMax(1, 1, 1);
         message.setRadius(1);
@@ -190,7 +190,7 @@ class MiniSim {
     }
     template<typename T1, typename T2>
     void addMessageA1DInFunc(T1 out_func, T2 in_func) {
-        MessageArray::Description &message = model.newMessage<MessageArray>("message");
+        MessageArray::Description message = model.newMessage<MessageArray>("message");
         message.setLength(10);
         message.template newVariable<int>("int");
         {
@@ -206,7 +206,7 @@ class MiniSim {
     }
     template<typename T1, typename T2>
     void addMessageA2DInFunc(T1 out_func, T2 in_func) {
-        MessageArray2D::Description &message = model.newMessage<MessageArray2D>("message");
+        MessageArray2D::Description message = model.newMessage<MessageArray2D>("message");
         message.setDimensions(10, 10);
         message.template newVariable<int>("int");
         {
@@ -222,7 +222,7 @@ class MiniSim {
     }
     template<typename T1, typename T2>
     void addMessageA3DInFunc(T1 out_func, T2 in_func) {
-        MessageArray3D::Description &message = model.newMessage<MessageArray3D>("message");
+        MessageArray3D::Description message = model.newMessage<MessageArray3D>("message");
         message.setDimensions(10, 10, 10);
         message.template newVariable<int>("int");
         {
@@ -238,7 +238,7 @@ class MiniSim {
     }
     template<typename T1, typename T2>
     void addMessageBucketInFunc(T1 out_func, T2 in_func) {
-        MessageBucket::Description &message = model.newMessage<MessageBucket>("message");
+        MessageBucket::Description message = model.newMessage<MessageBucket>("message");
         message.setBounds(0, 1023);
         message.template newVariable<int>("int");
         {

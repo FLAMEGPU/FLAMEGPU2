@@ -384,7 +384,7 @@ int main(int argc, const char ** argv) {
     }
 
     {   // Location message
-        flamegpu::MessageSpatial3D::Description &message = model.newMessage<flamegpu::MessageSpatial3D>("location");
+        flamegpu::MessageSpatial3D::Description message = model.newMessage<flamegpu::MessageSpatial3D>("location");
         // Set the range and bounds.
         message.setRadius(env.getProperty<float>("INTERACTION_RADIUS"));
         message.setMin(env.getProperty<float>("MIN_POSITION"), env.getProperty<float>("MIN_POSITION"), env.getProperty<float>("MIN_POSITION"));

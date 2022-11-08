@@ -49,7 +49,7 @@ int main(int argc, const char ** argv) {
     flamegpu::ModelDescription model("Heat Equation");
 
     {   // Message
-        flamegpu::MessageArray2D::Description &message = model.newMessage<flamegpu::MessageArray2D>("temperature");
+        flamegpu::MessageArray2D::Description message = model.newMessage<flamegpu::MessageArray2D>("temperature");
         message.newVariable<float>("value");
         message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     }

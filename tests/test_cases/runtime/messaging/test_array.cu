@@ -48,7 +48,7 @@ FLAMEGPU_AGENT_FUNCTION(InFunction, MessageArray, MessageNone) {
 }
 TEST(TestMessage_Array, Mandatory) {
     ModelDescription m(MODEL_NAME);
-    MessageArray::Description &message = m.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -93,7 +93,7 @@ TEST(TestMessage_Array, Mandatory) {
 }
 TEST(TestMessage_Array, Optional) {
     ModelDescription m(MODEL_NAME);
-    MessageArray::Description &message = m.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -142,7 +142,7 @@ TEST(TestMessage_Array, Optional) {
 // Test optional message output, wehre no messages are output.
 TEST(TestMessage_Array, OptionalNone) {
     ModelDescription m(MODEL_NAME);
-    MessageArray::Description &message = m.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -226,7 +226,7 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest2W, MessageArray, MessageNone) {
 }
 TEST(TestMessage_Array, Moore1W) {
     ModelDescription m(MODEL_NAME);
-    MessageArray::Description &message = m.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
@@ -259,7 +259,7 @@ TEST(TestMessage_Array, Moore1W) {
 }
 TEST(TestMessage_Array, Moore2W) {
     ModelDescription m(MODEL_NAME);
-    MessageArray::Description &message = m.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
@@ -297,7 +297,7 @@ TEST(TestMessage_Array, DuplicateOutputException) {
 TEST(TestMessage_Array, DISABLED_DuplicateOutputException) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray::Description &message = m.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -331,7 +331,7 @@ TEST(TestMessage_Array, DISABLED_DuplicateOutputException) {
 }
 TEST(TestMessage_Array, ArrayLenZeroException) {
     ModelDescription m(MODEL_NAME);
-    MessageArray::Description &message = m.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     EXPECT_THROW(message.setLength(0), exception::InvalidArgument);
 }
 TEST(TestMessage_Array, UnsetLength) {
@@ -342,7 +342,7 @@ TEST(TestMessage_Array, UnsetLength) {
 }
 TEST(TestMessage_Array, reserved_name) {
     ModelDescription model(MODEL_NAME);
-    MessageArray::Description &message = model.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = model.newMessage<MessageArray>(MESSAGE_NAME);
     EXPECT_THROW(message.newVariable<int>("_"), exception::ReservedName);
 }
 FLAMEGPU_AGENT_FUNCTION(countArray, MessageArray, MessageNone) {
@@ -354,7 +354,7 @@ TEST(TestMessage_Array, ReadEmpty) {
 // What happens if we read a message list before it has been output?
     ModelDescription model("Model");
     {   // Location message
-        MessageArray::Description &message = model.newMessage<MessageArray>("location");
+        MessageArray::Description message = model.newMessage<MessageArray>("location");
         message.setLength(2);
         message.newVariable<int>("id");  // unused by current test
         message.newVariable<unsigned int>("value");
@@ -394,7 +394,7 @@ TEST(TestMessage_Array, MooreWrap_InitOutOfBoundsX) {
 TEST(TestMessage_Array, DISABLED_MooreWrap_InitOutOfBoundsX) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray::Description& message = m.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -434,7 +434,7 @@ TEST(TestMessage_Array, MooreWrap_BadRadius1) {
 TEST(TestMessage_Array, DISABLED_MooreWrap_BadRadius1) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray::Description& message = m.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -474,7 +474,7 @@ TEST(TestMessage_Array, MooreWrap_BadRadius2) {
 TEST(TestMessage_Array, DISABLED_MooreWrap_BadRadius2) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray::Description& message = m.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -514,7 +514,7 @@ TEST(TestMessage_Array, Moore_InitOutOfBoundsX) {
 TEST(TestMessage_Array, DISABLED_Moore_InitOutOfBoundsX) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray::Description& message = m.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -554,7 +554,7 @@ TEST(TestMessage_Array, Moore_BadRadius) {
 TEST(TestMessage_Array, DISABLED_Moore_BadRadius) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray::Description& message = m.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -623,7 +623,7 @@ void test_moore_wrap_comradius(
     env.newProperty<unsigned int>("COMRADIUS", COMRADIUS);
 
     // Define the message
-    MessageArray::Description &message = model.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = model.newMessage<MessageArray>(MESSAGE_NAME);
     message.newVariable<unsigned int>("index");
     message.setLength(GRID_WIDTH);
     AgentDescription agent = model.newAgent(AGENT_NAME);
@@ -718,7 +718,7 @@ void test_mooore_comradius(
     env.newProperty<unsigned int>("COMRADIUS", COMRADIUS);
 
     // Define the message
-    MessageArray::Description &message = model.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = model.newMessage<MessageArray>(MESSAGE_NAME);
     message.newVariable<unsigned int>("index");
     message.setLength(GRID_WIDTH);
     AgentDescription agent = model.newAgent(AGENT_NAME);
@@ -798,7 +798,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, MessageArray, MessageNone) {
 }
 TEST(TestMessage_Array, ArrayVariable) {
     ModelDescription m(MODEL_NAME);
-    MessageArray::Description &message = m.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -854,7 +854,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageArray, flamegpu::MessageNone) 
 )###";
 TEST(TestRTCMessage_Array, ArrayVariable) {
     ModelDescription m(MODEL_NAME);
-    MessageArray::Description& message = m.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -905,7 +905,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn_glm, MessageArray, MessageNone) {
 }
 TEST(TestMessage_Array, ArrayVariable_glm) {
     ModelDescription m(MODEL_NAME);
-    MessageArray::Description& message = m.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -958,7 +958,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageArray, flamegpu::MessageNone) 
 )###";
 TEST(TestRTCMessage_Array, ArrayVariable_glm) {
     ModelDescription m(MODEL_NAME);
-    MessageArray::Description& message = m.newMessage<MessageArray>(MESSAGE_NAME);
+    MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -1080,11 +1080,11 @@ void test_arrayMessageReorderError(
     constexpr char MESSAGE_NAME_TWOVAR[] = "AB";
 
     // Define the message list with different numbers of variables.
-    MessageArray::Description &messageA = model.newMessage<MessageArray>(MESSAGE_NAME_ONEVAR);
+    MessageArray::Description messageA = model.newMessage<MessageArray>(MESSAGE_NAME_ONEVAR);
     messageA.newVariable<unsigned int>("a");
     messageA.setLength(GRID_WIDTH);
     // DEfine the message list with two non coordinate values
-    MessageArray::Description &messageAB = model.newMessage<MessageArray>(MESSAGE_NAME_TWOVAR);
+    MessageArray::Description messageAB = model.newMessage<MessageArray>(MESSAGE_NAME_TWOVAR);
     messageAB.newVariable<unsigned int>("a");
     messageAB.newVariable<unsigned int>("b");
     messageAB.setLength(GRID_WIDTH);

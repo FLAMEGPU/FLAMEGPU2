@@ -13,8 +13,6 @@
 
 
 namespace flamegpu {
-
-
 MessageSpatial3D::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
   : MessageSpecialisationHandler()
   , sim_message(a) {
@@ -149,19 +147,112 @@ void MessageSpatial3D::CUDAModelHandler::resizeKeysVals(const unsigned int newSi
         gpuErrchk(cudaMalloc(&d_vals, d_keys_vals_storage_bytes));
     }
 }
+/// <summary>
+/// CDescription
+/// </summary>
+MessageSpatial3D::CDescription::CDescription(std::shared_ptr<Data> data)
+    : MessageSpatial2D::Description(std::move(data)) { }
+MessageSpatial3D::CDescription::CDescription(std::shared_ptr<const Data> data)
+    : MessageSpatial2D::Description(std::move(std::const_pointer_cast<Data>(data))) { }
 
-MessageSpatial3D::Data::Data(const std::shared_ptr<const ModelData> &model, const std::string &message_name)
+bool MessageSpatial3D::CDescription::operator==(const CDescription& rhs) const {
+    return *this->message == *rhs.message;  // Compare content is functionally the same
+}
+bool MessageSpatial3D::CDescription::operator!=(const CDescription& rhs) const {
+    return !(*this == rhs);
+}
+#ifndef __CUDACC__
+MessageSpatial3D::CDescription::operator MessageBruteForce::CDescription() const {
+    return *this;
+}
+#endif
+/**
+ * Const accessors
+ */
+float MessageSpatial3D::CDescription::getMinZ() const {
+    return std::static_pointer_cast<Data>(message)->minZ;
+}
+float MessageSpatial3D::CDescription::getMaxZ() const {
+    return std::static_pointer_cast<Data>(message)->maxZ;
+}
+
+/// <summary>
+/// Description
+/// </summary>
+MessageSpatial3D::Description::Description(std::shared_ptr<Data> data)
+    : CDescription(data) { }
+bool MessageSpatial3D::Description::operator==(const CDescription& rhs) const {
+    return rhs == *this;  // Forward to superclass's equality
+}
+bool MessageSpatial3D::Description::operator!=(const CDescription& rhs) const {
+    return !(*this == rhs);
+}
+/**
+ * Accessors
+ */
+void MessageSpatial3D::Description::setMinZ(const float z) {
+    if (!isnan(std::static_pointer_cast<Data>(message)->maxZ) &&
+        z >= std::static_pointer_cast<Data>(message)->maxZ) {
+        THROW exception::InvalidArgument("Spatial messaging min z bound must be lower than max bound, %f !< %f", z, std::static_pointer_cast<Data>(message)->maxZ);
+    }
+    std::static_pointer_cast<Data>(message)->minZ = z;
+}
+void MessageSpatial3D::Description::setMin(const float x, const float y, const float z) {
+    if (!isnan(std::static_pointer_cast<Data>(message)->maxX) &&
+        x >= std::static_pointer_cast<Data>(message)->maxX) {
+        THROW exception::InvalidArgument("Spatial messaging min x bound must be lower than max bound, %f !< %f", x, std::static_pointer_cast<Data>(message)->maxX);
+    }
+    if (!isnan(std::static_pointer_cast<Data>(message)->maxY) &&
+        y >= std::static_pointer_cast<Data>(message)->maxY) {
+        THROW exception::InvalidArgument("Spatial messaging min y bound must be lower than max bound, %f !< %f", y, std::static_pointer_cast<Data>(message)->maxY);
+    }
+    if (!isnan(std::static_pointer_cast<Data>(message)->maxZ) &&
+        z >= std::static_pointer_cast<Data>(message)->maxZ) {
+        THROW exception::InvalidArgument("Spatial messaging min z bound must be lower than max bound, %f !< %f", z, std::static_pointer_cast<Data>(message)->maxZ);
+    }
+    std::static_pointer_cast<Data>(message)->minX = x;
+    std::static_pointer_cast<Data>(message)->minY = y;
+    std::static_pointer_cast<Data>(message)->minZ = z;
+}
+void MessageSpatial3D::Description::setMaxZ(const float z) {
+    if (!isnan(std::static_pointer_cast<Data>(message)->minZ) &&
+        z <= std::static_pointer_cast<Data>(message)->minZ) {
+        THROW exception::InvalidArgument("Spatial messaging max z bound must be greater than min bound, %f !> %f", z, std::static_pointer_cast<Data>(message)->minZ);
+    }
+    std::static_pointer_cast<Data>(message)->maxZ = z;
+}
+void MessageSpatial3D::Description::setMax(const float x, const float y, const float z) {
+    if (!isnan(std::static_pointer_cast<Data>(message)->minX) &&
+        x <= std::static_pointer_cast<Data>(message)->minX) {
+        THROW exception::InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f", x, std::static_pointer_cast<Data>(message)->minX);
+    }
+    if (!isnan(std::static_pointer_cast<Data>(message)->minY) &&
+        y <= std::static_pointer_cast<Data>(message)->minY) {
+        THROW exception::InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f", y, std::static_pointer_cast<Data>(message)->minY);
+    }
+    if (!isnan(std::static_pointer_cast<Data>(message)->minZ) &&
+        z <= std::static_pointer_cast<Data>(message)->minZ) {
+        THROW exception::InvalidArgument("Spatial messaging max z bound must be greater than min bound, %f !> %f", z, std::static_pointer_cast<Data>(message)->minZ);
+    }
+    std::static_pointer_cast<Data>(message)->maxX = x;
+    std::static_pointer_cast<Data>(message)->maxY = y;
+    std::static_pointer_cast<Data>(message)->maxZ = z;
+}
+
+/// <summary>
+/// Data
+/// </summary>
+MessageSpatial3D::Data::Data(std::shared_ptr<const ModelData> model, const std::string &message_name)
     : MessageSpatial2D::Data(model, message_name)
     , minZ(NAN)
     , maxZ(NAN) {
-    description = std::unique_ptr<Description>(new Description(model, this));
-    description->newVariable<float>("z");
+    // MessageSpatial3D has x/y/z variables by default (x/y are inherited)
+    variables.emplace("z", Variable(std::array<typename type_decode<float>::type_t, 1>{}));
 }
-MessageSpatial3D::Data::Data(const std::shared_ptr<const ModelData> &model, const Data &other)
+MessageSpatial3D::Data::Data(std::shared_ptr<const ModelData> model, const Data &other)
     : MessageSpatial2D::Data(model, other)
     , minZ(other.minZ)
     , maxZ(other.maxZ) {
-    description = std::unique_ptr<Description>(model ? new Description(model, this) : nullptr);
     if (isnan(minZ)) {
         THROW exception::InvalidMessage("Environment minimum z bound has not been set in spatial message '%s'\n", other.name.c_str());
     }
@@ -179,114 +270,6 @@ std::type_index MessageSpatial3D::Data::getType() const { return std::type_index
 
 flamegpu::MessageSortingType MessageSpatial3D::Data::getSortingType() const {
     return flamegpu::MessageSortingType::spatial3D;
-}
-
-MessageSpatial3D::Description::Description(const std::shared_ptr<const ModelData> &_model, Data *const data)
-    : MessageBruteForce::Description(_model, data) { }
-
-void MessageSpatial3D::Description::setRadius(const float r) {
-    if (r <= 0) {
-        THROW exception::InvalidArgument("Spatial messaging radius must be a positive value, %f is not valid.", r);
-    }
-    reinterpret_cast<Data *>(message)->radius = r;
-}
-void MessageSpatial3D::Description::setMinX(const float x) {
-    if (!isnan(reinterpret_cast<Data *>(message)->maxX) &&
-        x >= reinterpret_cast<Data *>(message)->maxX) {
-        THROW exception::InvalidArgument("Spatial messaging min x bound must be lower than max bound, %f !< %f", x, reinterpret_cast<Data *>(message)->maxX);
-    }
-    reinterpret_cast<Data *>(message)->minX = x;
-}
-void MessageSpatial3D::Description::setMinY(const float y) {
-    if (!isnan(reinterpret_cast<Data *>(message)->maxY) &&
-        y >= reinterpret_cast<Data *>(message)->maxY) {
-        THROW exception::InvalidArgument("Spatial messaging min bound must be lower than max bound, %f !< %f", y, reinterpret_cast<Data *>(message)->maxY);
-    }
-    reinterpret_cast<Data *>(message)->minY = y;
-}
-void MessageSpatial3D::Description::setMinZ(const float z) {
-    if (!isnan(reinterpret_cast<Data *>(message)->maxZ) &&
-        z >= reinterpret_cast<Data *>(message)->maxZ) {
-        THROW exception::InvalidArgument("Spatial messaging min z bound must be lower than max bound, %f !< %f", z, reinterpret_cast<Data *>(message)->maxZ);
-    }
-    reinterpret_cast<Data *>(message)->minZ = z;
-}
-void MessageSpatial3D::Description::setMin(const float x, const float y, const float z) {
-    if (!isnan(reinterpret_cast<Data *>(message)->maxX) &&
-        x >= reinterpret_cast<Data *>(message)->maxX) {
-        THROW exception::InvalidArgument("Spatial messaging min x bound must be lower than max bound, %f !< %f", x, reinterpret_cast<Data *>(message)->maxX);
-    }
-    if (!isnan(reinterpret_cast<Data *>(message)->maxY) &&
-        y >= reinterpret_cast<Data *>(message)->maxY) {
-        THROW exception::InvalidArgument("Spatial messaging min y bound must be lower than max bound, %f !< %f", y, reinterpret_cast<Data *>(message)->maxY);
-    }
-    if (!isnan(reinterpret_cast<Data *>(message)->maxZ) &&
-        z >= reinterpret_cast<Data *>(message)->maxZ) {
-        THROW exception::InvalidArgument("Spatial messaging min z bound must be lower than max bound, %f !< %f", z, reinterpret_cast<Data *>(message)->maxZ);
-    }
-    reinterpret_cast<Data *>(message)->minX = x;
-    reinterpret_cast<Data *>(message)->minY = y;
-    reinterpret_cast<Data *>(message)->minZ = z;
-}
-void MessageSpatial3D::Description::setMaxX(const float x) {
-    if (!isnan(reinterpret_cast<Data *>(message)->minX) &&
-        x <= reinterpret_cast<Data *>(message)->minX) {
-        THROW exception::InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f", x, reinterpret_cast<Data *>(message)->minX);
-    }
-    reinterpret_cast<Data *>(message)->maxX = x;
-}
-void MessageSpatial3D::Description::setMaxY(const float y) {
-    if (!isnan(reinterpret_cast<Data *>(message)->minY) &&
-        y <= reinterpret_cast<Data *>(message)->minY) {
-        THROW exception::InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f", y, reinterpret_cast<Data *>(message)->minY);
-    }
-    reinterpret_cast<Data *>(message)->maxY = y;
-}
-void MessageSpatial3D::Description::setMaxZ(const float z) {
-    if (!isnan(reinterpret_cast<Data *>(message)->minZ) &&
-        z <= reinterpret_cast<Data *>(message)->minZ) {
-        THROW exception::InvalidArgument("Spatial messaging max z bound must be greater than min bound, %f !> %f", z, reinterpret_cast<Data *>(message)->minZ);
-    }
-    reinterpret_cast<Data *>(message)->maxZ = z;
-}
-void MessageSpatial3D::Description::setMax(const float x, const float y, const float z) {
-    if (!isnan(reinterpret_cast<Data *>(message)->minX) &&
-        x <= reinterpret_cast<Data *>(message)->minX) {
-        THROW exception::InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f", x, reinterpret_cast<Data *>(message)->minX);
-    }
-    if (!isnan(reinterpret_cast<Data *>(message)->minY) &&
-        y <= reinterpret_cast<Data *>(message)->minY) {
-        THROW exception::InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f", y, reinterpret_cast<Data *>(message)->minY);
-    }
-    if (!isnan(reinterpret_cast<Data *>(message)->minZ) &&
-        z <= reinterpret_cast<Data *>(message)->minZ) {
-        THROW exception::InvalidArgument("Spatial messaging max z bound must be greater than min bound, %f !> %f", z, reinterpret_cast<Data *>(message)->minZ);
-    }
-    reinterpret_cast<Data *>(message)->maxX = x;
-    reinterpret_cast<Data *>(message)->maxY = y;
-    reinterpret_cast<Data *>(message)->maxZ = z;
-}
-
-float MessageSpatial3D::Description::getRadius() const {
-    return reinterpret_cast<Data *>(message)->radius;
-}
-float MessageSpatial3D::Description::getMinX() const {
-    return reinterpret_cast<Data *>(message)->minX;
-}
-float MessageSpatial3D::Description::getMinY() const {
-    return reinterpret_cast<Data *>(message)->minY;
-}
-float MessageSpatial3D::Description::getMinZ() const {
-    return reinterpret_cast<Data *>(message)->minZ;
-}
-float MessageSpatial3D::Description::getMaxX() const {
-    return reinterpret_cast<Data *>(message)->maxX;
-}
-float MessageSpatial3D::Description::getMaxY() const {
-    return reinterpret_cast<Data *>(message)->maxY;
-}
-float MessageSpatial3D::Description::getMaxZ() const {
-    return reinterpret_cast<Data *>(message)->maxZ;
 }
 
 }  // namespace flamegpu

@@ -137,7 +137,7 @@ TEST(MultiThreadDeviceTest, SameModelSeperateThread_Message) {
     // Success of this test does not mean there isn't a problem
     ModelDescription m(MODEL_NAME);
     AgentDescription a = m.newAgent(AGENT_NAME);
-    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
     a.newVariable<int>("x", 0);
     a.newFunction(FUNCTION_NAME1, FastFnMessage).setMessageOutput(message);
@@ -560,7 +560,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Message) {
 
     ModelDescription m(MODEL_NAME);
     AgentDescription a = m.newAgent(AGENT_NAME);
-    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
     a.newVariable<int>("x", 0);
     a.newFunction(FUNCTION_NAME1, FastFnMessage).setMessageOutput(message);

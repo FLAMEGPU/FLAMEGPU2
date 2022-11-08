@@ -5,7 +5,6 @@
 #include "flamegpu/util/detail/cuda.cuh"
 
 namespace flamegpu {
-
 void MessageBruteForce::CUDAModelHandler::init(CUDAScatter &, unsigned int, cudaStream_t stream) {
     allocateMetaDataDevicePtr(stream);
     // Allocate messages
@@ -36,14 +35,16 @@ void MessageBruteForce::CUDAModelHandler::buildIndex(CUDAScatter &, unsigned int
     }
 }
 
-MessageBruteForce::Data::Data(const std::shared_ptr<const ModelData> &model, const std::string &message_name)
-    : description(new Description(model, this))
+/// <summary>
+///  Data
+/// </summary>
+MessageBruteForce::Data::Data(std::shared_ptr<const ModelData> _model, const std::string &message_name)
+    : model(_model)
     , name(message_name)
     , optional_outputs(0) { }
-MessageBruteForce::Data::~Data() {}
-MessageBruteForce::Data::Data(const std::shared_ptr<const ModelData> &model, const MessageBruteForce::Data &other)
-    : variables(other.variables)
-    , description(model ? new Description(model, this) : nullptr)
+MessageBruteForce::Data::Data(std::shared_ptr<const ModelData> _model, const MessageBruteForce::Data &other)
+    : model(_model)
+    , variables(other.variables)
     , name(other.name)
     , optional_outputs(other.optional_outputs) { }
 MessageBruteForce::Data *MessageBruteForce::Data::clone(const std::shared_ptr<const ModelData> &newParent) {
@@ -53,6 +54,7 @@ bool MessageBruteForce::Data::operator==(const MessageBruteForce::Data& rhs) con
     if (this == &rhs)  // They point to same object
         return true;
     if (name == rhs.name
+        // && model.lock() == rhs.model.lock()  // Don't check weak pointers
         && variables.size() == rhs.variables.size()) {
             {  // Compare variables
                 for (auto &v : variables) {
@@ -85,28 +87,29 @@ flamegpu::MessageSortingType flamegpu::MessageBruteForce::Data::getSortingType()
 std::type_index MessageBruteForce::Data::getType() const { return std::type_index(typeid(MessageBruteForce)); }
 
 
-/**
-* Constructors
-*/
-MessageBruteForce::Description::Description(const std::shared_ptr<const ModelData> &_model, Data *const description)
-    : model(_model)
-    , message(description) { }
+/// <summary>
+///  CDescription
+/// </summary>
+MessageBruteForce::CDescription::CDescription(std::shared_ptr<Data> data)
+    : message(std::move(data)) { }
+MessageBruteForce::CDescription::CDescription(std::shared_ptr<const Data> data)
+    : message(std::move(std::const_pointer_cast<Data>(data))) { }
 
-bool MessageBruteForce::Description::operator==(const MessageBruteForce::Description& rhs) const {
+bool MessageBruteForce::CDescription::operator==(const CDescription& rhs) const {
     return *this->message == *rhs.message;  // Compare content is functionally the same
 }
-bool MessageBruteForce::Description::operator!=(const MessageBruteForce::Description& rhs) const {
+bool MessageBruteForce::CDescription::operator!=(const CDescription& rhs) const {
     return !(*this == rhs);
 }
 
 /**
-* Const Accessors
-*/
-std::string MessageBruteForce::Description::getName() const {
+ * Const Accessors
+ */
+std::string MessageBruteForce::CDescription::getName() const {
     return message->name;
 }
 
-const std::type_index& MessageBruteForce::Description::getVariableType(const std::string &variable_name) const {
+const std::type_index& MessageBruteForce::CDescription::getVariableType(const std::string& variable_name) const {
     auto f = message->variables.find(variable_name);
     if (f != message->variables.end()) {
         return f->second.type;
@@ -115,7 +118,7 @@ const std::type_index& MessageBruteForce::Description::getVariableType(const std
         "in MessageDescription::getVariableType().",
         message->name.c_str(), variable_name.c_str());
 }
-size_t MessageBruteForce::Description::getVariableSize(const std::string &variable_name) const {
+size_t MessageBruteForce::CDescription::getVariableSize(const std::string& variable_name) const {
     auto f = message->variables.find(variable_name);
     if (f != message->variables.end()) {
         return f->second.type_size;
@@ -124,7 +127,7 @@ size_t MessageBruteForce::Description::getVariableSize(const std::string &variab
         "in MessageDescription::getVariableSize().",
         message->name.c_str(), variable_name.c_str());
 }
-flamegpu::size_type MessageBruteForce::Description::getVariableLength(const std::string &variable_name) const {
+flamegpu::size_type MessageBruteForce::CDescription::getVariableLength(const std::string& variable_name) const {
     auto f = message->variables.find(variable_name);
     if (f != message->variables.end()) {
         return f->second.elements;
@@ -133,12 +136,24 @@ flamegpu::size_type MessageBruteForce::Description::getVariableLength(const std:
         "in MessageBruteForce::getVariableLength().",
         message->name.c_str(), variable_name.c_str());
 }
-flamegpu::size_type MessageBruteForce::Description::getVariablesCount() const {
+flamegpu::size_type MessageBruteForce::CDescription::getVariablesCount() const {
     // Downcast, will never have more than UINT_MAX variables
     return static_cast<flamegpu::size_type>(message->variables.size());
 }
-bool MessageBruteForce::Description::hasVariable(const std::string &variable_name) const {
+bool MessageBruteForce::CDescription::hasVariable(const std::string& variable_name) const {
     return message->variables.find(variable_name) != message->variables.end();
+}
+
+/// <summary>
+///  Description
+/// </summary>
+MessageBruteForce::Description::Description(std::shared_ptr<Data> data)
+    : CDescription(std::move(data)) { }
+bool MessageBruteForce::Description::operator==(const CDescription& rhs) const {
+    return rhs == *this;  // Forward to superclass's equality
+}
+bool MessageBruteForce::Description::operator!=(const CDescription& rhs) const {
+    return !(*this == rhs);
 }
 
 }  // namespace flamegpu

@@ -22,6 +22,7 @@ class MessageArray {
  public:
     // Host
     struct Data;        // Forward declare inner classes
+    class CDescription;  // Forward declare inner classes
     class Description;  // Forward declare inner classes
     class CUDAModelHandler;
 

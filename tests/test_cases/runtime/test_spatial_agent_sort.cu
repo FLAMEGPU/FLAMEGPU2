@@ -27,7 +27,7 @@ TEST(AutomaticSpatialAgentSort, SortingDisabled) {
     agent.newVariable<float>("y");
     agent.newVariable<float>("z");
     agent.setSortPeriod(0);
-    MessageSpatial3D::Description &locationMessage = model.newMessage<MessageSpatial3D>("location");
+    MessageSpatial3D::Description locationMessage = model.newMessage<MessageSpatial3D>("location");
     locationMessage.setMin(-5, -5, -5);
     locationMessage.setMax(5, 5, 5);
     locationMessage.setRadius(0.2f);
@@ -72,7 +72,7 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep) {
     agent.newVariable<float>("x");
     agent.newVariable<float>("y");
     agent.newVariable<float>("z");
-    MessageSpatial3D::Description &locationMessage = model.newMessage<MessageSpatial3D>("location");
+    MessageSpatial3D::Description locationMessage = model.newMessage<MessageSpatial3D>("location");
     locationMessage.setMin(-5, -5, -5);
     locationMessage.setMax(5, 5, 5);
     locationMessage.setRadius(0.2f);
@@ -119,7 +119,7 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep_no_default) {
     agent.newVariable<float>("x");
     agent.newVariable<float>("y");
     agent.newVariable<float>("z");
-    MessageSpatial3D::Description& locationMessage = model.newMessage<MessageSpatial3D>("location");
+    MessageSpatial3D::Description locationMessage = model.newMessage<MessageSpatial3D>("location");
     locationMessage.setMin(-5, -5, -5);
     locationMessage.setMax(5, 5, 5);
     locationMessage.setRadius(0.2f);
@@ -162,7 +162,7 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep_vec2) {
     AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("initial_order");
     agent.newVariable<float, 2>("xy");
-    MessageSpatial2D::Description& locationMessage = model.newMessage<MessageSpatial2D>("location");
+    MessageSpatial2D::Description locationMessage = model.newMessage<MessageSpatial2D>("location");
     locationMessage.setMin(-5, -5);
     locationMessage.setMax(5, 5);
     locationMessage.setRadius(0.2f);
@@ -201,7 +201,7 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep_vec3) {
     AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("initial_order");
     agent.newVariable<float, 3>("xyz");
-    MessageSpatial3D::Description& locationMessage = model.newMessage<MessageSpatial3D>("location");
+    MessageSpatial3D::Description locationMessage = model.newMessage<MessageSpatial3D>("location");
     locationMessage.setMin(-5, -5, -5);
     locationMessage.setMax(5, 5, 5);
     locationMessage.setRadius(0.2f);

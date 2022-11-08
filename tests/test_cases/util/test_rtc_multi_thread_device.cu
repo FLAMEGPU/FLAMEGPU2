@@ -114,7 +114,7 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Message) {
 
     ModelDescription m(MODEL_NAME);
     AgentDescription a = m.newAgent(AGENT_NAME);
-    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
     a.newVariable<int>("x", 0);
     auto fn1 = a.newRTCFunction(FUNCTION_NAME1, rtc_FastFnMessage);

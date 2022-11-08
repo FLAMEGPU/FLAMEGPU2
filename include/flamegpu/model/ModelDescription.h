@@ -95,17 +95,17 @@ class ModelDescription {
      * @throws exception::InvalidMessageName If a message with the same name already exists within the model description hierarchy
      */
     template<typename MessageType>
-    typename MessageType::Description& newMessage(const std::string &message_name) {
+    typename MessageType::Description newMessage(const std::string &message_name) {
         if (!hasMessage<MessageType>(message_name)) {
             auto rtn = std::shared_ptr<typename MessageType::Data>(new typename MessageType::Data(model, message_name));
             model->messages.emplace(message_name, rtn);
-            return *reinterpret_cast<typename MessageType::Description*>(rtn->description.get());
+            return typename MessageType::Description(rtn);
         }
         THROW exception::InvalidMessageName("Message with name '%s' already exists, "
             "in ModelDescription::newMessage().",
             message_name.c_str());
     }
-    MessageBruteForce::Description& newMessage(const std::string &message_name);
+    MessageBruteForce::Description newMessage(const std::string &message_name);
     /**
      * Returns a mutable reference to the named message, which can be used to configure the message
      * @param message_name Name used to refer to the desired message within the model description hierarchy
@@ -114,11 +114,11 @@ class ModelDescription {
      * @see ModelDescription::getMessage(const std::string &) for the immutable version
      */
     template<typename MessageType>
-    typename MessageType::Description& Message(const std::string &message_name) {
+    typename MessageType::Description Message(const std::string &message_name) {
         auto rtn = model->messages.find(message_name);
         if (rtn != model->messages.end()) {
             if (auto r = std::dynamic_pointer_cast<typename MessageType::Data>(rtn->second)) {
-                return *reinterpret_cast<typename MessageType::Description*>(r->description.get());
+                return typename MessageType::Description(r);
             }
             THROW exception::InvalidMessageName("Message ('%s') is not of correct type, "
                 "in ModelDescription::Message().",
@@ -128,7 +128,7 @@ class ModelDescription {
             "in ModelDescription::Message().",
             message_name.c_str());
     }
-    MessageBruteForce::Description& Message(const std::string &message_name);
+    MessageBruteForce::Description Message(const std::string &message_name);
     /**
      * Returns a mutable reference to the environment description for the model description hierarchy
      * This can be used to configure environment properties
@@ -299,11 +299,11 @@ class ModelDescription {
      * @see ModelDescription::Message(const std::string &) for the mutable version
      */
     template<typename MessageType>
-    const typename MessageType::Description& getMessage(const std::string &message_name) const {
+    typename MessageType::CDescription getMessage(const std::string &message_name) const {
         auto rtn = model->messages.find(message_name);
         if (rtn != model->messages.end()) {
             if (auto r = std::dynamic_pointer_cast<typename MessageType::Data>(rtn->second)) {
-                return *reinterpret_cast<typename MessageType::Description*>(r->description.get());
+                return MessageType::CDescription(r);
             }
             THROW exception::InvalidMessageType("Message ('%s') is not of correct type, "
                 "in ModelDescription::getMessage().",
@@ -313,7 +313,7 @@ class ModelDescription {
             "in ModelDescription::getMessage().",
             message_name.c_str());
     }
-    const MessageBruteForce::Description& getMessage(const std::string &message_name) const;
+    MessageBruteForce::CDescription getMessage(const std::string &message_name) const;
     /**
      * Returns an immutable reference to the specified submodel, which can be used to view the submodel's configuration
      * @param submodel_name Name which can be used to the refer to the desired submodel within the model description hierarchy

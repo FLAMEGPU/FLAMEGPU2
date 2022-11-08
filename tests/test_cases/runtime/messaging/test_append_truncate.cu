@@ -71,7 +71,7 @@ namespace test_message_AppendTruncate {
     */
     TEST(TestMessage_AppendTruncate, Truncate) {
         ModelDescription m(MODEL_NAME);
-        MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+        MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
         message.newVariable<int>("x");
         AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count");
@@ -105,7 +105,7 @@ namespace test_message_AppendTruncate {
     }
     TEST(TestMessage_AppendTruncate, Append_KeepData) {
         ModelDescription m(MODEL_NAME);
-        MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+        MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
         message.newVariable<int>("x");
         AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count0");
@@ -147,7 +147,7 @@ namespace test_message_AppendTruncate {
     }
     TEST(TestMessage_AppendTruncate, OptionalTruncate) {
         ModelDescription m(MODEL_NAME);
-        MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+        MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
         message.newVariable<int>("x");
         AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count");
@@ -191,7 +191,7 @@ namespace test_message_AppendTruncate {
     }
     TEST(TestMessage_AppendTruncate, OptionalAppend_KeepData) {
         ModelDescription m(MODEL_NAME);
-        MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+        MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
         message.newVariable<int>("x");
         AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count0");
@@ -274,7 +274,7 @@ namespace test_message_AppendTruncate {
         // Resizing is performed automatically, but by having the 2nd agent population to output messages
         // twice the size of the initial agent population, automatic resize should be forced
         ModelDescription m(MODEL_NAME);
-        MessageBruteForce::Description& message = m.newMessage(MESSAGE_NAME);
+        MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
         message.newVariable<int>("x");
         AgentDescription a = m.newAgent("a");
         a.newFunction("Out_1", Out_1).setMessageOutput(message);

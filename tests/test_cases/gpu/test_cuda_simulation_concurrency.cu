@@ -501,7 +501,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutput) {
         std::string message_name(agent_name + "_messages");
         AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        MessageBruteForce::Description &message = m.newMessage(message_name);
+        MessageBruteForce::Description message = m.newMessage(message_name);
         message.newVariable<float>("v");
 
         auto f = a.newFunction(agent_function, SlowMessageOutputAgentFunction);
@@ -550,7 +550,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInput) {
         std::string message_name(agent_name + "_messages");
         AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        MessageBruteForce::Description &message = m.newMessage(message_name);
+        MessageBruteForce::Description message = m.newMessage(message_name);
         message.newVariable<float>("v");
 
         auto f_out = a.newFunction(agent_function_out, SlowMessageOutputAgentFunction);
@@ -606,10 +606,10 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSam
         std::string message_name(agent_name + "_messages");
         AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        MessageBruteForce::Description &message = m.newMessage(message_name);
+        MessageBruteForce::Description message = m.newMessage(message_name);
         message.newVariable<float>("v");
 
-        MessageBruteForce::Description &message_in = m.Message(message_in_name);
+        MessageBruteForce::Description message_in = m.Message(message_in_name);
 
         auto f_out = a.newFunction(agent_function_out, SlowMessageOutputAgentFunction);
         f_out.setMessageOutput(message);
@@ -664,10 +664,10 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentOptionalMessageOutput
         AgentDescription a = m.newAgent(agent_name);
         a.newVariable<unsigned int>("id");
         a.newVariable<float>("v");
-        MessageBruteForce::Description &message = m.newMessage(message_name);
+        MessageBruteForce::Description message = m.newMessage(message_name);
         message.newVariable<float>("v");
 
-        MessageBruteForce::Description &message_in = m.Message(message_in_name);
+        MessageBruteForce::Description message_in = m.Message(message_in_name);
 
         auto f_out = a.newFunction(agent_function_out, SlowOptionalMessageOutputAgentFunction);
         f_out.setMessageOutputOptional(true);
@@ -684,6 +684,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentOptionalMessageOutput
         AgentVector* a_pop = new AgentVector(a, POPULATION_SIZES);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
             auto agent = a_pop->at(j);
+            agent.setVariable<unsigned int>("id", j);
             agent.setVariable<unsigned int>("id", j);
             agent.setVariable<float>("v", static_cast<float>(j));
         }
@@ -729,7 +730,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
         a.newVariable<float>("x");
         a.newVariable<float>("y");
 
-        MessageSpatial2D::Description &message = m.newMessage<MessageSpatial2D>(message_name);
+        MessageSpatial2D::Description message = m.newMessage<MessageSpatial2D>(message_name);
         message.newVariable<float>("v");
         // message.newVariable<float>("x");
         // message.newVariable<float>("y");
@@ -800,7 +801,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
         a.newVariable<float>("y");
         a.newVariable<float>("z");
 
-        MessageSpatial3D::Description &message = m.newMessage<MessageSpatial3D>(message_name);
+        MessageSpatial3D::Description message = m.newMessage<MessageSpatial3D>(message_name);
         message.newVariable<float>("v");
         // message.newVariable<float>("x");
         // message.newVariable<float>("y");

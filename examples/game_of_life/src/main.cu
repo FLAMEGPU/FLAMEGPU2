@@ -38,7 +38,7 @@ int main(int argc, const char ** argv) {
     flamegpu::ModelDescription model("Game of Life");
 
     {   // Location message
-        flamegpu::MessageArray2D::Description &message = model.newMessage<flamegpu::MessageArray2D>("is_alive_message");
+        flamegpu::MessageArray2D::Description message = model.newMessage<flamegpu::MessageArray2D>("is_alive_message");
         message.newVariable<char>("is_alive");
         message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     }

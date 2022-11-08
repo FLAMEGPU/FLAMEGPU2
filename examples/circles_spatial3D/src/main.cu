@@ -72,7 +72,7 @@ int main(int argc, const char ** argv) {
     const float ENV_MAX = static_cast<float>(floor(cbrt(AGENT_COUNT)));
     const float RADIUS = 2.0f;
     {   // Location message
-        flamegpu::MessageSpatial3D::Description &message = model.newMessage<flamegpu::MessageSpatial3D>("location");
+        flamegpu::MessageSpatial3D::Description message = model.newMessage<flamegpu::MessageSpatial3D>("location");
         message.newVariable<flamegpu::id_t>("id");
         message.setRadius(RADIUS);
         message.setMin(0, 0, 0);

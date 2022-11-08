@@ -58,7 +58,7 @@ FLAMEGPU_AGENT_FUNCTION(InFunction, MessageArray2D, MessageNone) {
 }
 TEST(TestMessage_Array2D, Mandatory) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -103,7 +103,7 @@ TEST(TestMessage_Array2D, Mandatory) {
 }
 TEST(TestMessage_Array2D, Optional) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -152,7 +152,7 @@ TEST(TestMessage_Array2D, Optional) {
 // Test optional message output, wehre no messages are output.
 TEST(TestMessage_Array2D, OptionalNone) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -248,7 +248,7 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest2W, MessageArray2D, MessageNone) {
 }
 TEST(TestMessage_Array2D, Moore1W) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
@@ -281,7 +281,7 @@ TEST(TestMessage_Array2D, Moore1W) {
 }
 TEST(TestMessage_Array2D, Moore2W) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
@@ -320,7 +320,7 @@ TEST(TestMessage_Array2D, DuplicateOutputException) {
 TEST(TestMessage_Array2D, DISABLED_DuplicateOutputException) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -354,7 +354,7 @@ TEST(TestMessage_Array2D, DISABLED_DuplicateOutputException) {
 }
 TEST(TestMessage_Array2D, ArrayLenZeroException) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     EXPECT_THROW(message.setDimensions(0, SQRT_AGENT_COUNT), exception::InvalidArgument);
     EXPECT_THROW(message.setDimensions({ 0, SQRT_AGENT_COUNT }), exception::InvalidArgument);
     EXPECT_THROW(message.setDimensions(SQRT_AGENT_COUNT, 0), exception::InvalidArgument);
@@ -368,7 +368,7 @@ TEST(TestMessage_Array2D, UnsetDimensions) {
 }
 TEST(TestMessage_Array2D, reserved_name) {
     ModelDescription model(MODEL_NAME);
-    MessageArray2D::Description &message = model.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = model.newMessage<MessageArray2D>(MESSAGE_NAME);
     EXPECT_THROW(message.newVariable<int>("_"), exception::ReservedName);
 }
 FLAMEGPU_AGENT_FUNCTION(countArray2D, MessageArray2D, MessageNone) {
@@ -380,7 +380,7 @@ TEST(TestMessage_Array2D, ReadEmpty) {
 // What happens if we read a message list before it has been output?
     ModelDescription model("Model");
     {   // Location message
-        MessageArray2D::Description &message = model.newMessage<MessageArray2D>("location");
+        MessageArray2D::Description message = model.newMessage<MessageArray2D>("location");
         message.setDimensions(2, 2);
         message.newVariable<int>("id");  // unused by current test
         message.newVariable<unsigned int>("value");  // unused by current test
@@ -420,7 +420,7 @@ TEST(TestMessage_Array2D, MooreW_InitOutOfBoundsX) {
 TEST(TestMessage_Array2D, DISABLED_MooreW_InitOutOfBoundsX) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -460,7 +460,7 @@ TEST(TestMessage_Array2D, MooreW_InitOutOfBoundsY) {
 TEST(TestMessage_Array2D, DISABLED_MooreW_InitOutOfBoundsY) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -500,7 +500,7 @@ TEST(TestMessage_Array2D, MooreW_BadRadius1) {
 TEST(TestMessage_Array2D, DISABLED_MooreW_BadRadius1) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -540,7 +540,7 @@ TEST(TestMessage_Array2D, MooreW_BadRadius2) {
 TEST(TestMessage_Array2D, DISABLED_MooreW_BadRadius2) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -580,7 +580,7 @@ TEST(TestMessage_Array2D, Moore_InitOutOfBoundsX) {
 TEST(TestMessage_Array2D, DISABLED_Moore_InitOutOfBoundsX) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -620,7 +620,7 @@ TEST(TestMessage_Array2D, Moore_InitOutOfBoundsY) {
 TEST(TestMessage_Array2D, DISABLED_Moore_InitOutOfBoundsY) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -660,7 +660,7 @@ TEST(TestMessage_Array2D, Moore_BadRadius) {
 TEST(TestMessage_Array2D, DISABLED_Moore_BadRadius) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -745,7 +745,7 @@ void test_moore_wrap_comradius(
     env.newProperty<unsigned int>("COMRADIUS", COMRADIUS);
 
     // Define the message
-    MessageArray2D::Description &message = model.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = model.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.newVariable<unsigned int>("index");
     message.newVariable<unsigned int>("v");
     message.newVariable<unsigned int, 3>("v2");
@@ -874,7 +874,7 @@ void test_mooore_comradius(
     env.newProperty<unsigned int>("COMRADIUS", COMRADIUS);
 
     // Define the message
-    MessageArray2D::Description &message = model.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = model.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.newVariable<unsigned int>("index");
     message.newVariable<unsigned int>("v");
     message.newVariable<unsigned int, 3>("v2");
@@ -982,7 +982,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, MessageArray2D, MessageNone) {
 }
 TEST(TestMessage_Array2D, ArrayVariable) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("v2");
@@ -1044,7 +1044,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageArray2D, flamegpu::MessageNone
 )###";
 TEST(TestRTCMessage_Array2D, ArrayVariable) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -1100,7 +1100,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn_glm, MessageArray2D, MessageNone) {
 }
 TEST(TestMessage_Array2D, ArrayVariable_glm) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -1158,7 +1158,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageArray2D, flamegpu::MessageNone
 )###";
 TEST(TestRTCMessage_Array2D, ArrayVariable_glm) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("v2");
@@ -1288,11 +1288,11 @@ void test_arrayMessageReorderError(
     constexpr char MESSAGE_NAME_TWOVAR[] = "AB";
 
     // Define the message list with different numbers of variables.
-    MessageArray2D::Description &messageA = model.newMessage<MessageArray2D>(MESSAGE_NAME_ONEVAR);
+    MessageArray2D::Description messageA = model.newMessage<MessageArray2D>(MESSAGE_NAME_ONEVAR);
     messageA.newVariable<unsigned int>("a");
     messageA.setDimensions(GRID_WIDTH, GRID_HEIGHT);
     // DEfine the message list with two non coordinate values
-    MessageArray2D::Description &messageAB = model.newMessage<MessageArray2D>(MESSAGE_NAME_TWOVAR);
+    MessageArray2D::Description messageAB = model.newMessage<MessageArray2D>(MESSAGE_NAME_TWOVAR);
     messageAB.newVariable<unsigned int>("a");
     messageAB.newVariable<unsigned int>("b");
     messageAB.setDimensions(GRID_WIDTH, GRID_HEIGHT);
@@ -1451,7 +1451,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn_vn_r2, MessageArray2D, MessageNone) {
 }
 TEST(TestMessage_Array2D, VonNeumann_r1) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("v2");
@@ -1491,7 +1491,7 @@ TEST(TestMessage_Array2D, VonNeumann_r1) {
 }
 TEST(TestMessage_Array2D, VonNeumann_r2) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("v2");
@@ -1589,7 +1589,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn_vn_wrap_r2, MessageArray2D, MessageNone) {
 }
 TEST(TestMessage_Array2D, VonNeumann_wrap_r1) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("v2");
@@ -1629,7 +1629,7 @@ TEST(TestMessage_Array2D, VonNeumann_wrap_r1) {
 }
 TEST(TestMessage_Array2D, VonNeumann_wrap_r2) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("v2");

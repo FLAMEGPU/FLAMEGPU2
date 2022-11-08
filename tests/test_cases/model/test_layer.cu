@@ -254,7 +254,7 @@ TEST(LayerDescriptionTest, SameMessageListOutOut) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription a1 = _m.newAgent(AGENT_NAME);
     AgentDescription a2 = _m.newAgent(AGENT_NAME2);
-    MessageSpatial3D::Description& message = _m.newMessage<MessageSpatial3D>(MESSAGE_NAME);
+    MessageSpatial3D::Description message = _m.newMessage<MessageSpatial3D>(MESSAGE_NAME);
     AgentFunctionDescription f1 = a1.newFunction(FUNCTION_NAME1, agent_fn_messageout1);
     AgentFunctionDescription f2 = a2.newFunction(FUNCTION_NAME1, agent_fn_messageout2);
     f1.setMessageOutput(message);
@@ -270,7 +270,7 @@ TEST(LayerDescriptionTest, SameMessageListOutIn) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription a1 = _m.newAgent(AGENT_NAME);
     AgentDescription a2 = _m.newAgent(AGENT_NAME2);
-    MessageSpatial3D::Description& message = _m.newMessage<MessageSpatial3D>(MESSAGE_NAME);
+    MessageSpatial3D::Description message = _m.newMessage<MessageSpatial3D>(MESSAGE_NAME);
     AgentFunctionDescription f1 = a1.newFunction(FUNCTION_NAME1, agent_fn_messageout1);
     AgentFunctionDescription f2 = a2.newFunction(FUNCTION_NAME1, agent_fn_messagein2);
     f1.setMessageOutput(message);
@@ -286,7 +286,7 @@ TEST(LayerDescriptionTest, SameMessageListInOut) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription a1 = _m.newAgent(AGENT_NAME);
     AgentDescription a2 = _m.newAgent(AGENT_NAME2);
-    MessageSpatial3D::Description& message = _m.newMessage<MessageSpatial3D>(MESSAGE_NAME);
+    MessageSpatial3D::Description message = _m.newMessage<MessageSpatial3D>(MESSAGE_NAME);
     AgentFunctionDescription f1 = a1.newFunction(FUNCTION_NAME1, agent_fn_messagein1);
     AgentFunctionDescription f2 = a2.newFunction(FUNCTION_NAME1, agent_fn_messageout2);
     f1.setMessageInput(message);

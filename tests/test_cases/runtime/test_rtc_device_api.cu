@@ -471,7 +471,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_message_in_func, flamegpu::MessageBruteForce, flameg
  */
 TEST(DeviceRTCAPITest, AgentFunction_message_bruteforce) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
     AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");

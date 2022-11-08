@@ -14,7 +14,7 @@ namespace test_message {
 
 TEST(MessageDescriptionTest, variables) {
     ModelDescription _m(MODEL_NAME);
-    MessageBruteForce::Description &m = _m.newMessage(MESSAGE_NAME1);
+    MessageBruteForce::Description m = _m.newMessage(MESSAGE_NAME1);
     EXPECT_FALSE(m.hasVariable(VARIABLE_NAME1));
     EXPECT_FALSE(m.hasVariable(VARIABLE_NAME2));
     EXPECT_EQ(m.getVariablesCount(), 0u);
@@ -49,7 +49,7 @@ TEST(MessageDescriptionTest, variables) {
 }
 TEST(MessageDescriptionTest, variables_array) {
     ModelDescription _m(MODEL_NAME);
-    MessageBruteForce::Description &m = _m.newMessage(MESSAGE_NAME1);
+    MessageBruteForce::Description m = _m.newMessage(MESSAGE_NAME1);
     EXPECT_FALSE(m.hasVariable(VARIABLE_NAME1));
     EXPECT_FALSE(m.hasVariable(VARIABLE_NAME2));
     EXPECT_EQ(m.getVariablesCount(), 0u);
@@ -115,7 +115,7 @@ TEST(MessageDescriptionTest, CorrectMessageTypeBound3) {
     ModelDescription m(MODEL_NAME);
     AgentDescription a = m.newAgent("foo");
     AgentFunctionDescription fo = a.newFunction("bar", NoInput);
-    MessageBruteForce::Description &md = m.newMessage<MessageBruteForce>("foo2");
+    MessageBruteForce::Description md = m.newMessage<MessageBruteForce>("foo2");
     EXPECT_THROW(fo.setMessageOutput(md), exception::InvalidMessageType);
     EXPECT_THROW(fo.setMessageInput(md), exception::InvalidMessageType);
 }
@@ -123,7 +123,7 @@ TEST(MessageDescriptionTest, CorrectMessageTypeBound4) {
     ModelDescription m(MODEL_NAME);
     AgentDescription a = m.newAgent("foo");
     AgentFunctionDescription fo = a.newFunction("bar", NoOutput);
-    MessageBruteForce::Description &md = m.newMessage<MessageBruteForce>("foo2");
+    MessageBruteForce::Description md = m.newMessage<MessageBruteForce>("foo2");
     EXPECT_THROW(fo.setMessageOutput(md), exception::InvalidMessageType);
     EXPECT_THROW(fo.setMessageInput(md), exception::InvalidMessageType);
 }

@@ -68,7 +68,7 @@ TEST(Spatial2DMessageTest, Mandatory) {
     // Construct model
     ModelDescription model("Spatial2DMessageTestModel");
     {   // Location message
-        MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+        MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
         message.setMin(0, 0);
         message.setMax(11, 11);
         message.setRadius(1);
@@ -193,7 +193,7 @@ TEST(Spatial2DMessageTest, Optional) {
     // Construct model
     ModelDescription model("Spatial2DMessageTestModel");
     {   // Location message
-        MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+        MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
         message.setMin(0, 0);
         message.setMax(11, 11);
         message.setRadius(1);
@@ -327,7 +327,7 @@ TEST(Spatial2DMessageTest, OptionalNone) {
     // Construct model
     ModelDescription model("Spatial2DMessageTestModel");
     {   // Location message
-        MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+        MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
         message.setMin(0, 0);
         message.setMax(11, 11);
         message.setRadius(1);
@@ -409,13 +409,13 @@ TEST(Spatial2DMessageTest, OptionalNone) {
 
 TEST(Spatial2DMessageTest, BadRadius) {
     ModelDescription model("Spatial2DMessageTestModel");
-    MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+    MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
     EXPECT_THROW(message.setRadius(0), exception::InvalidArgument);
     EXPECT_THROW(message.setRadius(-10), exception::InvalidArgument);
 }
 TEST(Spatial2DMessageTest, BadMin) {
     ModelDescription model("Spatial2DMessageTestModel");
-    MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+    MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
     message.setMax(5, 5);
     EXPECT_THROW(message.setMin(5, 0), exception::InvalidArgument);
     EXPECT_THROW(message.setMin(0, 5), exception::InvalidArgument);
@@ -424,7 +424,7 @@ TEST(Spatial2DMessageTest, BadMin) {
 }
 TEST(Spatial2DMessageTest, BadMax) {
     ModelDescription model("Spatial2DMessageTestModel");
-    MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+    MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
     message.setMin(5, 5);
     EXPECT_THROW(message.setMax(5, 0), exception::InvalidArgument);
     EXPECT_THROW(message.setMax(0, 5), exception::InvalidArgument);
@@ -433,19 +433,19 @@ TEST(Spatial2DMessageTest, BadMax) {
 }
 TEST(Spatial2DMessageTest, UnsetMax) {
     ModelDescription model("Spatial2DMessageTestModel");
-    MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+    MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
     message.setMin(5, 5);
     EXPECT_THROW(CUDASimulation m(model), exception::InvalidMessage);
 }
 TEST(Spatial2DMessageTest, UnsetMin) {
     ModelDescription model("Spatial2DMessageTestModel");
-    MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+    MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
     message.setMin(5, 5);
     EXPECT_THROW(CUDASimulation m(model), exception::InvalidMessage);
 }
 TEST(Spatial2DMessageTest, reserved_name) {
     ModelDescription model("Spatial2DMessageTestModel");
-    MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+    MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
     EXPECT_THROW(message.newVariable<int>("_"), exception::ReservedName);
 }
 
@@ -463,7 +463,7 @@ TEST(Spatial2DMessageTest, ReadEmpty) {
 // What happens if we read a message list before it has been output?
     ModelDescription model("Model");
     {   // Location message
-        MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+        MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
         message.setMin(-3, -3);
         message.setMax(3, 3);
         message.setRadius(2);
@@ -525,7 +525,7 @@ TEST(Spatial2DMessageTest, ArrayVariable) {
     const char* OUT_LAYER_NAME = "OutLayer";
     const unsigned int SQRT_AGENT_COUNT = 64;
     ModelDescription m(MODEL_NAME);
-    MessageSpatial2D::Description &message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
+    MessageSpatial2D::Description message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
     message.setMin(0, 0);
     message.setMax(static_cast<float>(SQRT_AGENT_COUNT), static_cast<float>(SQRT_AGENT_COUNT));
     message.setRadius(1);
@@ -600,7 +600,7 @@ TEST(RTCSpatial2DMessageTest, ArrayVariable) {
     const char* OUT_LAYER_NAME = "OutLayer";
     const unsigned int SQRT_AGENT_COUNT = 64;
     ModelDescription m(MODEL_NAME);
-    MessageSpatial2D::Description& message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
+    MessageSpatial2D::Description message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
     message.setMin(0, 0);
     message.setMax(static_cast<float>(SQRT_AGENT_COUNT), static_cast<float>(SQRT_AGENT_COUNT));
     message.setRadius(1);
@@ -670,7 +670,7 @@ TEST(Spatial2DMessageTest, ArrayVariable_glm) {
     const char* OUT_LAYER_NAME = "OutLayer";
     const unsigned int SQRT_AGENT_COUNT = 64;
     ModelDescription m(MODEL_NAME);
-    MessageSpatial2D::Description &message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
+    MessageSpatial2D::Description message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
     message.setMin(0, 0);
     message.setMax(static_cast<float>(SQRT_AGENT_COUNT), static_cast<float>(SQRT_AGENT_COUNT));
     message.setRadius(1);
@@ -742,7 +742,7 @@ TEST(RTCSpatial2DMessageTest, ArrayVariable_glm) {
     const char* OUT_LAYER_NAME = "OutLayer";
     const unsigned int SQRT_AGENT_COUNT = 64;
     ModelDescription m(MODEL_NAME);
-    MessageSpatial2D::Description& message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
+    MessageSpatial2D::Description message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
     message.setMin(0, 0);
     message.setMax(static_cast<float>(SQRT_AGENT_COUNT), static_cast<float>(SQRT_AGENT_COUNT));
     message.setRadius(1);
@@ -826,7 +826,7 @@ void wrapped_2d_test(const float x_offset, const float y_offset, const float out
     // Construct model
     ModelDescription model("Spatial2DMessageTestModel");
     {   // Location message
-        MessageSpatial2D::Description& message = model.newMessage<MessageSpatial2D>("location");
+        MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
         message.setMin(0 + x_offset, 0 + y_offset);
         message.setMax(30 + x_offset, 30 + y_offset);
         message.setRadius(3);  // With a grid of agents spaced 2 units apart, this configuration should give each agent 8 neighbours (assuming my basic maths guessing works out)

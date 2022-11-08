@@ -104,8 +104,8 @@ TEST(AgentFunctionDescriptionTest, EndState) {
 TEST(AgentFunctionDescriptionTest, MessageInput) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription a = _m.newAgent(AGENT_NAME);
-    MessageBruteForce::Description &m = _m.newMessage(MESSAGE_NAME1);
-    MessageBruteForce::Description &m2 = _m.newMessage(MESSAGE_NAME2);
+    MessageBruteForce::Description m = _m.newMessage(MESSAGE_NAME1);
+    MessageBruteForce::Description m2 = _m.newMessage(MESSAGE_NAME2);
     AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Begins empty
     EXPECT_FALSE(f.hasMessageInput());
@@ -124,8 +124,8 @@ TEST(AgentFunctionDescriptionTest, MessageInput) {
 TEST(AgentFunctionDescriptionTest, MessageOutput) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription a = _m.newAgent(AGENT_NAME);
-    MessageBruteForce::Description &m = _m.newMessage(MESSAGE_NAME1);
-    MessageBruteForce::Description &m2 = _m.newMessage(MESSAGE_NAME2);
+    MessageBruteForce::Description m = _m.newMessage(MESSAGE_NAME1);
+    MessageBruteForce::Description m2 = _m.newMessage(MESSAGE_NAME2);
     AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Begins empty
     EXPECT_FALSE(f.hasMessageOutput());
@@ -225,8 +225,8 @@ TEST(AgentFunctionDescriptionTest, MessageInput_WrongModel) {
     ModelDescription _m(MODEL_NAME);
     ModelDescription _m2(WRONG_MODEL_NAME);
     AgentDescription a = _m.newAgent(AGENT_NAME);
-    MessageBruteForce::Description &m1 = _m.newMessage(MESSAGE_NAME1);
-    MessageBruteForce::Description &m2 = _m2.newMessage(MESSAGE_NAME2);
+    MessageBruteForce::Description m1 = _m.newMessage(MESSAGE_NAME1);
+    MessageBruteForce::Description m2 = _m2.newMessage(MESSAGE_NAME2);
     AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
 
     EXPECT_THROW(f.setMessageInput(m2), exception::DifferentModel);
@@ -236,8 +236,8 @@ TEST(AgentFunctionDescriptionTest, MessageOutput_WrongModel) {
     ModelDescription _m(MODEL_NAME);
     ModelDescription _m2(WRONG_MODEL_NAME);
     AgentDescription a = _m.newAgent(AGENT_NAME);
-    MessageBruteForce::Description &m1 = _m.newMessage(MESSAGE_NAME1);
-    MessageBruteForce::Description &m2 = _m2.newMessage(MESSAGE_NAME2);
+    MessageBruteForce::Description m1 = _m.newMessage(MESSAGE_NAME1);
+    MessageBruteForce::Description m2 = _m2.newMessage(MESSAGE_NAME2);
     AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
 
     EXPECT_THROW(f.setMessageOutput(m2), exception::DifferentModel);
@@ -256,8 +256,8 @@ TEST(AgentFunctionDescriptionTest, AgentOutput_WrongModel) {
 TEST(AgentFunctionDescriptionTest, MessageInputOutput) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription a = _m.newAgent(AGENT_NAME);
-    MessageBruteForce::Description &m = _m.newMessage(MESSAGE_NAME1);
-    MessageBruteForce::Description &m2 = _m.newMessage(MESSAGE_NAME2);
+    MessageBruteForce::Description m = _m.newMessage(MESSAGE_NAME1);
+    MessageBruteForce::Description m2 = _m.newMessage(MESSAGE_NAME2);
     AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Cannot bind same message to input and output
     EXPECT_NO_THROW(f.setMessageInput(m));
@@ -267,8 +267,8 @@ TEST(AgentFunctionDescriptionTest, MessageInputOutput) {
 TEST(AgentFunctionDescriptionTest, MessageOutputInput) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription a = _m.newAgent(AGENT_NAME);
-    MessageBruteForce::Description &m = _m.newMessage(MESSAGE_NAME1);
-    MessageBruteForce::Description &m2 = _m.newMessage(MESSAGE_NAME2);
+    MessageBruteForce::Description m = _m.newMessage(MESSAGE_NAME1);
+    MessageBruteForce::Description m2 = _m.newMessage(MESSAGE_NAME2);
     AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Cannot bind same message to output and input
     EXPECT_NO_THROW(f.setMessageOutput(m));

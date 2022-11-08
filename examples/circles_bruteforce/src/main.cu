@@ -72,7 +72,7 @@ int main(int argc, const char ** argv) {
     const unsigned int AGENT_COUNT = 16384;
     const float ENV_MAX = static_cast<float>(floor(cbrt(AGENT_COUNT)));
     {   // Location message
-        flamegpu::MessageBruteForce::Description &message = model.newMessage("location");
+        flamegpu::MessageBruteForce::Description message = model.newMessage("location");
         message.newVariable<flamegpu::id_t>("id");
         message.newVariable<float>("x");
         message.newVariable<float>("y");

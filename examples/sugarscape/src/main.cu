@@ -238,14 +238,14 @@ int main(int argc, const char ** argv) {
          * Messages
          */
         {   // cell_status message
-            flamegpu::MessageArray2D::Description &message = submodel.newMessage<flamegpu::MessageArray2D>("cell_status");
+            flamegpu::MessageArray2D::Description message = submodel.newMessage<flamegpu::MessageArray2D>("cell_status");
             message.newVariable<flamegpu::id_t>("location_id");
             message.newVariable<int>("status");
             message.newVariable<int>("env_sugar_level");
             message.setDimensions(GRID_WIDTH, GRID_HEIGHT);
         }
         {   // movement_request message
-            flamegpu::MessageArray2D::Description &message = submodel.newMessage<flamegpu::MessageArray2D>("movement_request");
+            flamegpu::MessageArray2D::Description message = submodel.newMessage<flamegpu::MessageArray2D>("movement_request");
             message.newVariable<int>("agent_id");
             message.newVariable<flamegpu::id_t>("location_id");
             message.newVariable<int>("sugar_level");
@@ -253,7 +253,7 @@ int main(int argc, const char ** argv) {
             message.setDimensions(GRID_WIDTH, GRID_HEIGHT);
         }
         {   // movement_response message
-            flamegpu::MessageArray2D::Description &message = submodel.newMessage<flamegpu::MessageArray2D>("movement_response");
+            flamegpu::MessageArray2D::Description message = submodel.newMessage<flamegpu::MessageArray2D>("movement_response");
             message.newVariable<flamegpu::id_t>("location_id");
             message.newVariable<int>("agent_id");
             message.setDimensions(GRID_WIDTH, GRID_HEIGHT);

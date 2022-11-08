@@ -37,7 +37,7 @@ TEST(TestMessage, NoAgents) {
     // This test confirms that it nolonger exists
 
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");

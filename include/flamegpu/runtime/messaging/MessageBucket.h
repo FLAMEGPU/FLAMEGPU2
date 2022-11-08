@@ -26,6 +26,7 @@ class MessageBucket {
  public:
     // Host
     struct Data;
+    class CDescription;
     class Description;
     class CUDAModelHandler;
 

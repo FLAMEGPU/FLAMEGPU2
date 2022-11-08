@@ -72,7 +72,7 @@ FLAMEGPU_AGENT_FUNCTION(InFunctionNone, MessageBruteForce, MessageNone) {
  */
 TEST(TestMessage_BruteForce, Mandatory1) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
@@ -118,7 +118,7 @@ TEST(TestMessage_BruteForce, Mandatory1) {
  */
 TEST(TestMessage_BruteForce, Mandatory2) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
@@ -173,7 +173,7 @@ TEST(TestMessage_BruteForce, Mandatory2) {
  */
 TEST(TestMessage_BruteForce, Optional1) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
@@ -219,7 +219,7 @@ TEST(TestMessage_BruteForce, Optional1) {
 }
 TEST(TestMessage_BruteForce, Optional2) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
@@ -276,7 +276,7 @@ TEST(TestMessage_BruteForce, Optional2) {
 // Test optional message output, wehre no messages are output.
 TEST(TestMessage_BruteForce, OptionalNone) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
     message.newVariable<unsigned int>("index_times_3");
     AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
@@ -315,7 +315,7 @@ TEST(TestMessage_BruteForce, OptionalNone) {
 
 TEST(TestMessage_BruteForce, reserved_name) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
     EXPECT_THROW(message.newVariable<int>("_"), exception::ReservedName);
 }
 
@@ -333,7 +333,7 @@ TEST(TestMessage_BruteForce, ReadEmpty) {
 // What happens if we read a message list before it has been output?
     ModelDescription model("Model");
     {   // Location message
-        MessageBruteForce::Description &message = model.newMessage<MessageBruteForce>("location");
+        MessageBruteForce::Description message = model.newMessage<MessageBruteForce>("location");
         message.newVariable<int>("id");  // unused by current test
     }
     {   // Circle agent
@@ -382,7 +382,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, MessageBruteForce, MessageNone) {
 }
 TEST(TestMessage_BruteForce, ArrayVariable) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description &message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("index");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -442,7 +442,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageBruteForce, flamegpu::MessageN
 )###";
 TEST(TestRTCMessage_BruteForce, ArrayVariable) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description& message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("index");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -497,7 +497,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn_glm, MessageBruteForce, MessageNone) {
 }
 TEST(TestMessage_BruteForce, ArrayVariable_glm) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description &message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("index");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -554,7 +554,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageBruteForce, flamegpu::MessageN
 )###";
 TEST(TestRTCMessage_BruteForce, ArrayVariable_glm) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description& message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("index");
     AgentDescription a = m.newAgent(AGENT_NAME);

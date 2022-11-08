@@ -23,7 +23,7 @@ namespace test_message_bucket {
 TEST(BucketMessageTest, DescriptionValidation) {
     ModelDescription model("BucketMessageTest");
     // Test description accessors
-    MessageBucket::Description &message = model.newMessage<MessageBucket>("buckets");
+    MessageBucket::Description message = model.newMessage<MessageBucket>("buckets");
     EXPECT_THROW(message.setUpperBound(0), exception::InvalidArgument);  // Min should default to 0, this would mean no buckets
     EXPECT_NO_THROW(message.setLowerBound(10));
     EXPECT_NO_THROW(message.setUpperBound(11));
@@ -38,7 +38,7 @@ TEST(BucketMessageTest, DescriptionValidation) {
 TEST(BucketMessageTest, DataValidation) {
     ModelDescription model("BucketMessageTest");
     // Test Data copy constructor knows when bounds have not been init
-    MessageBucket::Description &message = model.newMessage<MessageBucket>("buckets");
+    MessageBucket::Description message = model.newMessage<MessageBucket>("buckets");
     EXPECT_THROW(CUDASimulation c(model), exception::InvalidMessage);  // Max not set
     message.setLowerBound(1);  // It should default to 0
     EXPECT_THROW(CUDASimulation c(model), exception::InvalidMessage);  // Max not set
@@ -47,7 +47,7 @@ TEST(BucketMessageTest, DataValidation) {
 }
 TEST(BucketMessageTest, reserved_name) {
     ModelDescription model("BucketMessageTest");
-    MessageBucket::Description &message = model.newMessage<MessageBucket>("buckets");
+    MessageBucket::Description message = model.newMessage<MessageBucket>("buckets");
     EXPECT_THROW(message.newVariable<int>("_"), exception::ReservedName);
 }
 
@@ -102,7 +102,7 @@ TEST(BucketMessageTest, Mandatory) {
     // Construct model
     ModelDescription model("BucketMessageTest");
     {   // MessageBucket::Description
-        MessageBucket::Description &message = model.newMessage<MessageBucket>("bucket");
+        MessageBucket::Description message = model.newMessage<MessageBucket>("bucket");
         message.setBounds(12, 12 +(AGENT_COUNT/2));  // None zero lowerBound, to check that's working
         message.newVariable<int>("id");
     }
@@ -166,7 +166,7 @@ TEST(BucketMessageTest, Optional) {
     // Construct model
     ModelDescription model("BucketMessageTest");
     {   // MessageBucket::Description
-        MessageBucket::Description &message = model.newMessage<MessageBucket>("bucket");
+        MessageBucket::Description message = model.newMessage<MessageBucket>("bucket");
         message.setBounds(12, 12 +(AGENT_COUNT/2));  // None zero lowerBound, to check that's working
         message.newVariable<int>("id");
     }
@@ -240,7 +240,7 @@ TEST(BucketMessageTest, OptionalNone) {
     // Construct model
     ModelDescription model("BucketMessageTest");
     {   // MessageBucket::Description
-        MessageBucket::Description &message = model.newMessage<MessageBucket>("bucket");
+        MessageBucket::Description message = model.newMessage<MessageBucket>("bucket");
         message.setBounds(12, 12 +(AGENT_COUNT/2));  // None zero lowerBound, to check that's working
         message.newVariable<int>("id");
     }
@@ -431,7 +431,7 @@ TEST(BucketMessageTest, Mandatory_Range) {
     // Construct model
     ModelDescription model("BucketMessageTest");
     {   // MessageBucket::Description
-        MessageBucket::Description &message = model.newMessage<MessageBucket>("bucket");
+        MessageBucket::Description message = model.newMessage<MessageBucket>("bucket");
         message.setBounds(12, 12 +(AGENT_COUNT/2));  // None zero lowerBound, to check that's working
         message.newVariable<int>("id");
     }
@@ -515,7 +515,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, MessageBucket, MessageNone) {
 }
 TEST(TestMessage_Bucket, ArrayVariable) {
     ModelDescription m(MODEL_NAME);
-    MessageBucket::Description &message = m.newMessage<MessageBucket>(MESSAGE_NAME);
+    MessageBucket::Description message = m.newMessage<MessageBucket>(MESSAGE_NAME);
     message.setBounds(0, AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -572,7 +572,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageBucket, flamegpu::MessageNone)
 )###";
 TEST(TestRTCMessage_Bucket, ArrayVariable) {
     ModelDescription m(MODEL_NAME);
-    MessageBucket::Description& message = m.newMessage<MessageBucket>(MESSAGE_NAME);
+    MessageBucket::Description message = m.newMessage<MessageBucket>(MESSAGE_NAME);
     message.setBounds(0, AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -624,7 +624,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn_glm, MessageBucket, MessageNone) {
 }
 TEST(TestMessage_Bucket, ArrayVariable_glm) {
     ModelDescription m(MODEL_NAME);
-    MessageBucket::Description &message = m.newMessage<MessageBucket>(MESSAGE_NAME);
+    MessageBucket::Description message = m.newMessage<MessageBucket>(MESSAGE_NAME);
     message.setBounds(0, AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     AgentDescription a = m.newAgent(AGENT_NAME);
@@ -678,7 +678,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageBucket, flamegpu::MessageNone)
 )###";
 TEST(TestRTCMessage_Bucket, ArrayVariable_glm) {
     ModelDescription m(MODEL_NAME);
-    MessageBucket::Description& message = m.newMessage<MessageBucket>(MESSAGE_NAME);
+    MessageBucket::Description message = m.newMessage<MessageBucket>(MESSAGE_NAME);
     message.setBounds(0, AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     AgentDescription a = m.newAgent(AGENT_NAME);

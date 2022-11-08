@@ -46,10 +46,10 @@ AgentDescription ModelDescription::Agent(const std::string &agent_name) {
         agent_name.c_str());
 }
 
-MessageBruteForce::Description& ModelDescription::newMessage(const std::string &message_name) {
+MessageBruteForce::Description ModelDescription::newMessage(const std::string &message_name) {
     return newMessage<MessageBruteForce>(message_name);
 }
-MessageBruteForce::Description& ModelDescription::Message(const std::string &message_name) {
+MessageBruteForce::Description ModelDescription::Message(const std::string &message_name) {
     return Message<MessageBruteForce>(message_name);
 }
 
@@ -197,7 +197,7 @@ CAgentDescription ModelDescription::getAgent(const std::string& agent_name) cons
         "in ModelDescription::getAgent().",
         agent_name.c_str());
 }
-const MessageBruteForce::Description& ModelDescription::getMessage(const std::string &message_name) const {
+MessageBruteForce::CDescription ModelDescription::getMessage(const std::string &message_name) const {
     return getMessage<MessageBruteForce>(message_name);
 }
 CSubModelDescription ModelDescription::getSubModel(const std::string &submodel_name) const {
