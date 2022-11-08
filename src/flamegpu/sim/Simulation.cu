@@ -250,6 +250,11 @@ int Simulation::checkArgs(int argc, const char** argv) {
             config.timing = true;
             continue;
         }
+        // -u/--silence-unknown-args, Silence unknown args
+        if (arg.compare("--silence-unknown-args") == 0 || arg.compare("-u") == 0) {
+            config.silence_unknown_args = true;
+            continue;
+        }
         // --out-step <file.xml/file.json>, Step log file path
         if (arg.compare("--out-step") == 0) {
             if (i + 1 >= argc) {
@@ -288,7 +293,9 @@ int Simulation::checkArgs(int argc, const char** argv) {
         if (checkArgs_derived(argc, argv, i)) {
             continue;
         }
-        fprintf(stderr, "Warning: Unknown argument '%s' passed to Simulation will be ignored\n", arg.c_str());
+        // Warning if not in QUIET verbosity or if silnce-unknown-args is set
+        if (!(config.verbosity == flamegpu::Verbosity::Quiet || config.silence_unknown_args))
+            fprintf(stderr, "Warning: Unknown argument '%s' passed to Simulation will be ignored\n", arg.c_str());
     }
     return true;
 }
@@ -308,6 +315,7 @@ void Simulation::printHelp(const char* executable) {
     printf(line_fmt, "-q, --quiet", "Do not print progress information to console");
     printf(line_fmt, "-v, --verbose", "Print config, progress and timing (-t) information to console.");
     printf(line_fmt, "-t, --timing", "Output timing information to stdout");
+    printf(line_fmt, "-u, --silence-unknown-args", "Silence warnings for unknown arguments passed after this flag.");
 #ifdef VISUALISATION
     printf(line_fmt, "-c, --console", "Console mode, disable the visualisation");
 #endif

@@ -310,6 +310,11 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
             config.timing = true;
             continue;
         }
+        // -u/--silence-unknown-args, Silence warning for unknown arguments
+        if (arg.compare("--silence-unknown-args") == 0 || arg.compare("-u") == 0) {
+            config.silence_unknown_args = true;
+            continue;
+        }
         // -e/--error, Specify the error level
         if (arg.compare("--error") == 0 || arg.compare("-e") == 0) {
             if (i + 1 >= argc) {
@@ -338,7 +343,9 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
 #endif
             continue;
         }
-        fprintf(stderr, "Warning: Unknown argument '%s' passed to Ensemble will be ignored\n", arg.c_str());
+        // Warning if not in QUIET verbosity or if silnce-unknown-args is set
+        if (!(config.verbosity == flamegpu::Verbosity::Quiet || config.silence_unknown_args))
+            fprintf(stderr, "Warning: Unknown argument '%s' passed to Ensemble will be ignored\n", arg.c_str());
     }
     return true;
 }
@@ -357,6 +364,7 @@ void CUDAEnsemble::printHelp(const char *executable) {
     printf(line_fmt, "-v, --verbose", "Print config, progress and timing (-t) information to console");
     printf(line_fmt, "-t, --timing", "Output timing information to stdout");
     printf(line_fmt, "-e, --error <error level>", "The error level 0, 1, 2, off, slow or fast");
+    printf(line_fmt, "-u, --silence-unknown-args", "Silence warnings for unknown arguments passed after this flag.");
 #ifdef _MSC_VER
     printf(line_fmt, "    --standby", "Allow the machine to enter standby during execution");
 #endif
