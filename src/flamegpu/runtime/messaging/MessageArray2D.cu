@@ -111,11 +111,6 @@ bool MessageArray2D::CDescription::operator==(const CDescription& rhs) const {
 bool MessageArray2D::CDescription::operator!=(const CDescription& rhs) const {
     return !(*this == rhs);
 }
-#ifndef __CUDACC__
-MessageArray2D::CDescription::operator MessageBruteForce::CDescription() const {
-    return *this;
-}
-#endif
 /**
  * Const accessors
  */

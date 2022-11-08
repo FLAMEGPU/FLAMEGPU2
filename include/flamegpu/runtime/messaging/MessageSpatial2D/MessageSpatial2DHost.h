@@ -203,13 +203,6 @@ class MessageSpatial2D::CDescription : protected MessageBruteForce::Description 
     float getMinY() const;
     float getMaxX() const;
     float getMaxY() const;
-
-#ifndef __CUDACC__
-    /**
-     * Allow conversion to the immutable MessageBruteForce description
-     */
-    operator MessageBruteForce::CDescription() const;
-#endif
 };
 /**
  * User accessible interface to Spatial2D messages within mode description hierarchy

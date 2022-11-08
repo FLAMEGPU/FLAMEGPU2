@@ -206,13 +206,6 @@ class MessageBucket::CDescription : protected MessageBruteForce::Description {
     * Return the currently set (inclusive) upper bound, this is the last valid key
     */
     IntT getUpperBound() const;
-
-#ifndef __CUDACC__
-    /**
-     * Allow conversion to the immutable MessageBruteForce description
-     */
-    operator MessageBruteForce::CDescription() const;
-#endif
 };
 /**
 * User accessible interface to Bucket messages within mode description hierarchy

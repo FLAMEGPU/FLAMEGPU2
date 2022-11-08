@@ -155,11 +155,6 @@ bool MessageBucket::CDescription::operator==(const CDescription& rhs) const {
 bool MessageBucket::CDescription::operator!=(const CDescription& rhs) const {
     return !(*this == rhs);
 }
-#ifndef __CUDACC__
-MessageBucket::CDescription::operator MessageBruteForce::CDescription() const {
-    return *this;
-}
-#endif
 /**
  * Const accessors
  */

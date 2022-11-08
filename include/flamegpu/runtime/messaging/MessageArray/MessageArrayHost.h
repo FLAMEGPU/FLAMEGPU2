@@ -160,13 +160,6 @@ class MessageArray::CDescription : protected MessageBruteForce::Description {
     using MessageBruteForce::Description::hasVariable;
 
     size_type getLength() const;
-
-#ifndef __CUDACC__
-    /**
-     * Allow conversion to the immutable MessageBruteForce description
-     */
-    operator MessageBruteForce::CDescription() const;
-#endif
 };
 /**
  * User accessible interface to Array messages within mode description hierarchy

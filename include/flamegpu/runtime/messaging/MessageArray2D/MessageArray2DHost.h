@@ -163,13 +163,6 @@ class MessageArray2D::CDescription : protected MessageBruteForce::Description {
     std::array<size_type, 2> getDimensions() const;
     size_type getDimX() const;
     size_type getDimY() const;
-
-#ifndef __CUDACC__
-    /**
-     * Allow conversion to the immutable MessageBruteForce description
-     */
-    operator MessageBruteForce::CDescription() const;
-#endif
 };
 /**
  * User accessible interface to Array messages within mode description hierarchy

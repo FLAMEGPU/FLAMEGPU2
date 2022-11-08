@@ -161,11 +161,6 @@ bool MessageSpatial3D::CDescription::operator==(const CDescription& rhs) const {
 bool MessageSpatial3D::CDescription::operator!=(const CDescription& rhs) const {
     return !(*this == rhs);
 }
-#ifndef __CUDACC__
-MessageSpatial3D::CDescription::operator MessageBruteForce::CDescription() const {
-    return *this;
-}
-#endif
 /**
  * Const accessors
  */

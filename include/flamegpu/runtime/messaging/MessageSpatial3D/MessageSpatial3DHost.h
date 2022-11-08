@@ -204,13 +204,6 @@ class MessageSpatial3D::CDescription : protected MessageSpatial2D::Description {
 
     float getMinZ() const;
     float getMaxZ() const;
-
-#ifndef __CUDACC__
-    /**
-     * Allow conversion to the immutable MessageBruteForce description
-     */
-    operator MessageBruteForce::CDescription() const;
-#endif
 };
 /**
  * User accessible interface to Spatial3D messages within mode description hierarchy
