@@ -152,9 +152,9 @@ void MessageSpatial2D::CUDAModelHandler::resizeKeysVals(const unsigned int newSi
 /// CDescription
 /// </summary>
 MessageSpatial2D::CDescription::CDescription(std::shared_ptr<Data> data)
-    : MessageBruteForce::Description(std::move(data)) { }
+    : MessageBruteForce::CDescription(std::move(std::static_pointer_cast<MessageBruteForce::Data>(data))) { }
 MessageSpatial2D::CDescription::CDescription(std::shared_ptr<const Data> data)
-    : MessageBruteForce::Description(std::move(std::const_pointer_cast<Data>(data))) { }
+    : CDescription(std::move(std::const_pointer_cast<Data>(data))) { }
 
 bool MessageSpatial2D::CDescription::operator==(const CDescription& rhs) const {
     return *this->message == *rhs.message;  // Compare content is functionally the same
@@ -195,27 +195,27 @@ bool MessageSpatial2D::Description::operator!=(const CDescription& rhs) const {
 /**
  * Accessors
  */
-void MessageSpatial2D::Description::setRadius(const float r) {
+void MessageSpatial2D::CDescription::setRadius(const float r) {
     if (r <= 0) {
         THROW exception::InvalidArgument("Spatial messaging radius must be a positive value, %f is not valid.", r);
     }
     std::static_pointer_cast<Data>(message)->radius = r;
 }
-void MessageSpatial2D::Description::setMinX(const float x) {
+void MessageSpatial2D::CDescription::setMinX(const float x) {
     if (!isnan(std::static_pointer_cast<Data>(message)->maxX) &&
         x >= std::static_pointer_cast<Data>(message)->maxX) {
         THROW exception::InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f.", x, std::static_pointer_cast<Data>(message)->maxX);
     }
     std::static_pointer_cast<Data>(message)->minX = x;
 }
-void MessageSpatial2D::Description::setMinY(const float y) {
+void MessageSpatial2D::CDescription::setMinY(const float y) {
     if (!isnan(std::static_pointer_cast<Data>(message)->maxY) &&
         y >= std::static_pointer_cast<Data>(message)->maxY) {
         THROW exception::InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f.", y, std::static_pointer_cast<Data>(message)->maxY);
     }
     std::static_pointer_cast<Data>(message)->minY = y;
 }
-void MessageSpatial2D::Description::setMin(const float x, const float y) {
+void MessageSpatial2D::CDescription::setMin(const float x, const float y) {
     if (!isnan(std::static_pointer_cast<Data>(message)->maxX) &&
         x >= std::static_pointer_cast<Data>(message)->maxX) {
         THROW exception::InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f.", x, std::static_pointer_cast<Data>(message)->maxX);
@@ -227,21 +227,21 @@ void MessageSpatial2D::Description::setMin(const float x, const float y) {
     std::static_pointer_cast<Data>(message)->minX = x;
     std::static_pointer_cast<Data>(message)->minY = y;
 }
-void MessageSpatial2D::Description::setMaxX(const float x) {
+void MessageSpatial2D::CDescription::setMaxX(const float x) {
     if (!isnan(std::static_pointer_cast<Data>(message)->minX) &&
         x <= std::static_pointer_cast<Data>(message)->minX) {
         THROW exception::InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f.", x, std::static_pointer_cast<Data>(message)->minX);
     }
     std::static_pointer_cast<Data>(message)->maxX = x;
 }
-void MessageSpatial2D::Description::setMaxY(const float y) {
+void MessageSpatial2D::CDescription::setMaxY(const float y) {
     if (!isnan(std::static_pointer_cast<Data>(message)->minY) &&
         y <= std::static_pointer_cast<Data>(message)->minY) {
         THROW exception::InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f.", y, std::static_pointer_cast<Data>(message)->minY);
     }
     std::static_pointer_cast<Data>(message)->maxY = y;
 }
-void MessageSpatial2D::Description::setMax(const float x, const float y) {
+void MessageSpatial2D::CDescription::setMax(const float x, const float y) {
     if (!isnan(std::static_pointer_cast<Data>(message)->minX) &&
         x <= std::static_pointer_cast<Data>(message)->minX) {
         THROW exception::InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f.", x, std::static_pointer_cast<Data>(message)->minX);

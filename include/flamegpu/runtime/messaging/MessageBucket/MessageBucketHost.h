@@ -152,7 +152,7 @@ struct MessageBucket::Data : public MessageBruteForce::Data {
 };
 
 
-class MessageBucket::CDescription : protected MessageBruteForce::Description {
+class MessageBucket::CDescription : public MessageBruteForce::CDescription {
     /**
     * Data store class for this description, constructs instances of this class
     */
@@ -192,12 +192,6 @@ class MessageBucket::CDescription : protected MessageBruteForce::Description {
      */
     bool operator!=(const CDescription& rhs) const;
 
-    using MessageBruteForce::Description::getName;
-    using MessageBruteForce::Description::getVariableType;
-    using MessageBruteForce::Description::getVariableSize;
-    using MessageBruteForce::Description::getVariableLength;
-    using MessageBruteForce::Description::getVariablesCount;
-    using MessageBruteForce::Description::hasVariable;
     /**
     * Return the currently set (inclusive) lower bound, this is the first valid key
     */
@@ -245,9 +239,9 @@ class MessageBucket::Description : public CDescription {
      */
     bool operator!=(const CDescription & rhs) const;
 
-    using MessageBruteForce::Description::newVariable;
+    using MessageBruteForce::CDescription::newVariable;
 #ifdef SWIG
-    using MessageBruteForce::Description::newVariableArray;
+    using MessageBruteForce::CDescription::newVariableArray;
 #endif
 
     /**

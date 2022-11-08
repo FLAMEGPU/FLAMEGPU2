@@ -226,6 +226,41 @@ class MessageBruteForce::CDescription {
     bool hasVariable(const std::string& variable_name) const;
 
  protected:
+    ///
+    /// These mutable accessors will only be available via mutable subclasses
+    /// This solves a multiple inheritance issue
+    ///
+    /**
+     * Adds a new variable to the message
+     * @param variable_name Name of the variable
+     * @tparam T Type of the message variable, this must be an arithmetic type
+     * @throws exception::InvalidMessageVar If a variable already exists within the message with the same name
+     */
+    template<typename T>
+    void newVariable(const std::string& variable_name);
+    /**
+     * Adds a new variable array to the message
+     * @param variable_name Name of the variable array
+     * @tparam T Type of the message variable, this must be an arithmetic type
+     * @tparam N The length of the variable array (1 if not an array, must be greater than 0)
+     * @throws exception::InvalidMessageVar If a variable already exists within the message with the same name
+     * @throws exception::InvalidMessageVar If N is <= 0
+     */
+    template<typename T, flamegpu::size_type N>
+    void newVariable(const std::string& variable_name);
+#ifdef SWIG
+    /**
+     * Adds a new variable array to the message
+     * @param variable_name Name of the variable array
+     * @param length The length of the variable array (1 if not an array, must be greater than 0)
+     * @tparam T Type of the agent variable, this must be an arithmetic type
+     * @throws exception::InvalidMessageVar If a variable already exists within the message with the same name
+     * @throws exception::InvalidMessageVar If length is <= 0
+     */
+    template<typename T>
+    void newVariableArray(const std::string& variable_name, size_type length);
+#endif
+
     /**
      * The class which stores all of the message's data.
      */
@@ -274,46 +309,20 @@ class MessageBruteForce::Description : public CDescription {
      */
     bool operator!=(const CDescription & rhs) const;
 
-    /**
-     * Adds a new variable to the message
-     * @param variable_name Name of the variable
-     * @tparam T Type of the message variable, this must be an arithmetic type
-     * @throws exception::InvalidMessageVar If a variable already exists within the message with the same name
-     */
-    template<typename T>
-    void newVariable(const std::string &variable_name);
-    /**
-     * Adds a new variable array to the message
-     * @param variable_name Name of the variable array
-     * @tparam T Type of the message variable, this must be an arithmetic type
-     * @tparam N The length of the variable array (1 if not an array, must be greater than 0)
-     * @throws exception::InvalidMessageVar If a variable already exists within the message with the same name
-     * @throws exception::InvalidMessageVar If N is <= 0
-     */
-    template<typename T, flamegpu::size_type N>
-    void newVariable(const std::string& variable_name);
+    using MessageBruteForce::CDescription::newVariable;
 #ifdef SWIG
-    /**
-     * Adds a new variable array to the message
-     * @param variable_name Name of the variable array
-     * @param length The length of the variable array (1 if not an array, must be greater than 0)
-     * @tparam T Type of the agent variable, this must be an arithmetic type
-     * @throws exception::InvalidMessageVar If a variable already exists within the message with the same name
-     * @throws exception::InvalidMessageVar If length is <= 0
-     */
-    template<typename T>
-    void newVariableArray(const std::string& variable_name, size_type length);
+    using MessageBruteForce::CDescription::newVariableArray;
 #endif
 };
 /**
  * Template implementation
  */
 template<typename T>
-void MessageBruteForce::Description::newVariable(const std::string &variable_name) {
+void MessageBruteForce::CDescription::newVariable(const std::string &variable_name) {
     newVariable<T, 1>(variable_name);
 }
 template<typename T, flamegpu::size_type N>
-void MessageBruteForce::Description::newVariable(const std::string& variable_name) {
+void MessageBruteForce::CDescription::newVariable(const std::string& variable_name) {
     if (!variable_name.empty() && variable_name[0] == '_') {
         THROW exception::ReservedName("Message variable names cannot begin with '_', this is reserved for internal usage, "
             "in MessageDescription::newVariable().");
@@ -330,7 +339,7 @@ void MessageBruteForce::Description::newVariable(const std::string& variable_nam
 }
 #ifdef SWIG
 template<typename T>
-void MessageBruteForce::Description::newVariableArray(const std::string& variable_name, const size_type length) {
+void MessageBruteForce::CDescription::newVariableArray(const std::string& variable_name, const size_type length) {
     if (!variable_name.empty() && variable_name[0] == '_') {
         THROW exception::ReservedName("Message variable names cannot begin with '_', this is reserved for internal usage, "
             "in MessageDescription::newVariable().");

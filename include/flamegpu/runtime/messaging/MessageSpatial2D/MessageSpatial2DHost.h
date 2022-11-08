@@ -151,7 +151,7 @@ struct MessageSpatial2D::Data : public MessageBruteForce::Data {
     Data(std::shared_ptr<const ModelData> model, const std::string &message_name);
 };
 
-class MessageSpatial2D::CDescription : protected MessageBruteForce::Description {
+class MessageSpatial2D::CDescription : public MessageBruteForce::CDescription {
     /**
      * Data store class for this description, constructs instances of this class
      */
@@ -191,18 +191,20 @@ class MessageSpatial2D::CDescription : protected MessageBruteForce::Description 
      */
     bool operator!=(const CDescription& rhs) const;
 
-    using MessageBruteForce::Description::getName;
-    using MessageBruteForce::Description::getVariableType;
-    using MessageBruteForce::Description::getVariableSize;
-    using MessageBruteForce::Description::getVariableLength;
-    using MessageBruteForce::Description::getVariablesCount;
-    using MessageBruteForce::Description::hasVariable;
-
     float getRadius() const;
     float getMinX() const;
     float getMinY() const;
     float getMaxX() const;
     float getMaxY() const;
+
+ protected:
+    void setRadius(float r);
+    void setMinX(float x);
+    void setMinY(float y);
+    void setMin(float x, float y);
+    void setMaxX(float x);
+    void setMaxY(float y);
+    void setMax(float x, float y);
 };
 /**
  * User accessible interface to Spatial2D messages within mode description hierarchy
@@ -242,18 +244,18 @@ class MessageSpatial2D::Description : public CDescription {
      */
     bool operator!=(const CDescription & rhs) const;
 
-    using MessageBruteForce::Description::newVariable;
+    using MessageBruteForce::CDescription::newVariable;
 #ifdef SWIG
-    using MessageBruteForce::Description::newVariableArray;
+    using MessageBruteForce::CDescription::newVariableArray;
 #endif
 
-    void setRadius(float r);
-    void setMinX(float x);
-    void setMinY(float y);
-    void setMin(float x, float y);
-    void setMaxX(float x);
-    void setMaxY(float y);
-    void setMax(float x, float y);
+    using MessageSpatial2D::CDescription::setRadius;
+    using MessageSpatial2D::CDescription::setMinX;
+    using MessageSpatial2D::CDescription::setMinY;
+    using MessageSpatial2D::CDescription::setMin;
+    using MessageSpatial2D::CDescription::setMaxX;
+    using MessageSpatial2D::CDescription::setMaxY;
+    using MessageSpatial2D::CDescription::setMax;
 };
 
 }  // namespace flamegpu

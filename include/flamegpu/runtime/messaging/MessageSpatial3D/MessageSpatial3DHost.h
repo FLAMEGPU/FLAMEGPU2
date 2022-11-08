@@ -149,7 +149,7 @@ struct MessageSpatial3D::Data : public MessageSpatial2D::Data {
     Data(std::shared_ptr<const ModelData>, const std::string &message_name);
 };
 
-class MessageSpatial3D::CDescription : protected MessageSpatial2D::Description {
+class MessageSpatial3D::CDescription : public MessageSpatial2D::CDescription {
     /**
     * Data store class for this description, constructs instances of this class
     */
@@ -188,19 +188,6 @@ class MessageSpatial3D::CDescription : protected MessageSpatial2D::Description {
      * @note Instead compare pointers if you wish to check that they are not the same instance
      */
     bool operator!=(const CDescription& rhs) const;
-
-    using MessageBruteForce::Description::getName;
-    using MessageBruteForce::Description::getVariableType;
-    using MessageBruteForce::Description::getVariableSize;
-    using MessageBruteForce::Description::getVariableLength;
-    using MessageBruteForce::Description::getVariablesCount;
-    using MessageBruteForce::Description::hasVariable;
-
-    using MessageSpatial2D::Description::getRadius;
-    using MessageSpatial2D::Description::getMinX;
-    using MessageSpatial2D::Description::getMinY;
-    using MessageSpatial2D::Description::getMaxX;
-    using MessageSpatial2D::Description::getMaxY;
 
     float getMinZ() const;
     float getMaxZ() const;
@@ -243,16 +230,18 @@ class MessageSpatial3D::Description : public CDescription {
      */
     bool operator!=(const CDescription & rhs) const;
 
-    using MessageBruteForce::Description::newVariable;
+    using MessageBruteForce::CDescription::newVariable;
 #ifdef SWIG
-    using MessageBruteForce::Description::newVariableArray;
+    using MessageBruteForce::CDescription::newVariableArray;
 #endif
 
-    using MessageSpatial2D::Description::setRadius;
-    using MessageSpatial2D::Description::setMinX;
-    using MessageSpatial2D::Description::setMinY;
-    using MessageSpatial2D::Description::setMaxX;
-    using MessageSpatial2D::Description::setMaxY;
+    using MessageSpatial2D::CDescription::setRadius;
+    using MessageSpatial2D::CDescription::setMinX;
+    using MessageSpatial2D::CDescription::setMinY;
+    using MessageSpatial2D::CDescription::setMin;
+    using MessageSpatial2D::CDescription::setMaxX;
+    using MessageSpatial2D::CDescription::setMaxY;
+    using MessageSpatial2D::CDescription::setMax;
 
     void setMinZ(float z);
     void setMaxZ(float z);

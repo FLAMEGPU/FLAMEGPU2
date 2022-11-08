@@ -113,7 +113,7 @@ struct MessageArray2D::Data : public MessageBruteForce::Data {
     Data(std::shared_ptr<const ModelData> model, const std::string &message_name);
 };
 
-class MessageArray2D::CDescription : protected MessageBruteForce::Description {
+class MessageArray2D::CDescription : public MessageBruteForce::CDescription {
     /**
     * Data store class for this description, constructs instances of this class
     */
@@ -152,13 +152,6 @@ class MessageArray2D::CDescription : protected MessageBruteForce::Description {
      * @note Instead compare pointers if you wish to check that they are not the same instance
      */
     bool operator!=(const CDescription& rhs) const;
-
-    using MessageBruteForce::Description::getName;
-    using MessageBruteForce::Description::getVariableType;
-    using MessageBruteForce::Description::getVariableSize;
-    using MessageBruteForce::Description::getVariableLength;
-    using MessageBruteForce::Description::getVariablesCount;
-    using MessageBruteForce::Description::hasVariable;
 
     std::array<size_type, 2> getDimensions() const;
     size_type getDimX() const;
@@ -202,9 +195,9 @@ class MessageArray2D::Description : public CDescription {
      */
     bool operator!=(const CDescription& rhs) const;
 
-    using MessageBruteForce::Description::newVariable;
+    using MessageBruteForce::CDescription::newVariable;
 #ifdef SWIG
-    using MessageBruteForce::Description::newVariableArray;
+    using MessageBruteForce::CDescription::newVariableArray;
 #endif
      void setDimensions(size_type len_x, size_type len_y);
      void setDimensions(const std::array<size_type, 2> &dims);
