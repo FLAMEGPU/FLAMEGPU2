@@ -37,13 +37,6 @@ const std::string CSubModelDescription::getName() const {
 SubModelDescription::SubModelDescription(std::shared_ptr<SubModelData> data)
     : CSubModelDescription(std::move(data)) { }
 
-bool SubModelDescription::operator==(const CSubModelDescription& rhs) const {
-    return rhs == *this;  // Forward to superclass's equality
-}
-bool SubModelDescription::operator!=(const CSubModelDescription& rhs) const {
-    return !(*this == rhs);
-}
-
 /**
  * Accessors
  */

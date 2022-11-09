@@ -199,20 +199,6 @@ class AgentDescription : public CAgentDescription {
      */
     AgentDescription& operator=(const AgentDescription& other_agent) = default;
     AgentDescription& operator=(AgentDescription&& other_agent) = default;
-    /**
-     * Equality operator, checks whether AgentDescription hierarchies are functionally the same
-     * @param rhs right hand side
-     * @returns True when agents are the same
-     * @note Instead compare pointers if you wish to check that they are the same instance
-     */
-    bool operator==(const CAgentDescription& rhs) const;
-    /**
-     * Equality operator, checks whether AgentDescription hierarchies are functionally different
-     * @param rhs right hand side
-     * @returns True when agents are not the same
-     * @note Instead compare pointers if you wish to check that they are not the same instance
-     */
-    bool operator!=(const CAgentDescription& rhs) const;
 
     /**
      * Adds a new state to the possible states this agent can enter

@@ -94,13 +94,6 @@ bool CAgentFunctionDescription::isRTC() const {
 AgentFunctionDescription::AgentFunctionDescription(std::shared_ptr<AgentFunctionData> data)
     : CAgentFunctionDescription(std::move(data)) { }
 
-bool AgentFunctionDescription::operator==(const CAgentFunctionDescription& rhs) const {
-    return rhs == *this;  // Forward to superclass's equality
-}
-bool AgentFunctionDescription::operator!=(const CAgentFunctionDescription& rhs) const {
-    return !(*this == rhs);
-}
-
 /**
  * Accessors
  */

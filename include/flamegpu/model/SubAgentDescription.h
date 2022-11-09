@@ -96,20 +96,6 @@ class SubAgentDescription : public CSubAgentDescription {
      */
     SubAgentDescription& operator=(const SubAgentDescription& other_agent) = default;
     SubAgentDescription& operator=(SubAgentDescription&& other_agent) = default;
-    /**
-     * Equality operator, checks whether SubAgentDescription hierarchies are functionally the same
-     * @param rhs right hand side
-     * @returns True when subagents are the same
-     * @note Instead compare pointers if you wish to check that they are the same instance
-     */
-    bool operator==(const CSubAgentDescription& rhs) const;
-    /**
-     * Equality operator, checks whether SubAgentDescription hierarchies are functionally different
-     * @param rhs right hand side
-     * @returns True when subagents are not the same
-     * @note Instead compare pointers if you wish to check that they are not the same instance
-     */
-    bool operator!=(const CSubAgentDescription& rhs) const;
 
     /**
      * Links the named states between the master and sub agent

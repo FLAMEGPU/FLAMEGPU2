@@ -136,20 +136,6 @@ class EnvironmentDescription : public CEnvironmentDescription {
     EnvironmentDescription& operator=(const EnvironmentDescription& other_env) = default;
     EnvironmentDescription& operator=(EnvironmentDescription&& other_env) = default;
     /**
-     * Equality operator, checks whether EnvironmentDescription hierarchies are functionally the same
-     * @param rhs right hand side
-     * @returns True when environments are the same
-     * @note Instead compare pointers if you wish to check that they are the same instance
-     */
-    bool operator==(const CEnvironmentDescription& rhs) const;
-    /**
-     * Equality operator, checks whether EnvironmentDescription hierarchies are functionally different
-     * @param rhs right hand side
-     * @returns True when environments are not the same
-     * @note Instead compare pointers if you wish to check that they are not the same instance
-     */
-    bool operator!=(const CEnvironmentDescription& rhs) const;
-    /**
      * Adds a new environment property
      * @param name name used for accessing the property
      * @param value stored value of the property

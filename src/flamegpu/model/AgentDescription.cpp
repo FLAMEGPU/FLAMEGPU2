@@ -105,14 +105,6 @@ bool CAgentDescription::isOutputOnDevice() const {
 AgentDescription::AgentDescription(std::shared_ptr<AgentData> data)
     : CAgentDescription(std::move(data)) { }
 
-bool AgentDescription::operator==(const CAgentDescription& rhs) const {
-    return rhs == *this;  // Forward to superclass's equality
-}
-bool AgentDescription::operator!=(const CAgentDescription& rhs) const {
-    return !(*this == rhs);
-}
-
-
 /**
  * Accessors
  */

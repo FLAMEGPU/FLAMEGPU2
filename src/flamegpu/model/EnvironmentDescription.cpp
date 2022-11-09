@@ -34,13 +34,6 @@ bool CEnvironmentDescription::getConst(const std::string& name) const {
 EnvironmentDescription::EnvironmentDescription(std::shared_ptr<EnvironmentData> data)
     : CEnvironmentDescription(std::move(data)) { }
 
-bool EnvironmentDescription::operator==(const CEnvironmentDescription& rhs) const {
-    return rhs == *this;  // Forward to superclass's equality
-}
-bool EnvironmentDescription::operator!=(const CEnvironmentDescription& rhs) const {
-    return !(*this == rhs);
-}
-
 /**
  * Accessors
  */

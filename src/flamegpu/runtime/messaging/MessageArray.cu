@@ -122,12 +122,6 @@ flamegpu::size_type MessageArray::CDescription::getLength() const {
 /// </summary>
 MessageArray::Description::Description(std::shared_ptr<Data> data)
     : CDescription(data) { }
-bool MessageArray::Description::operator==(const CDescription& rhs) const {
-    return rhs == *this;  // Forward to superclass's equality
-}
-bool MessageArray::Description::operator!=(const CDescription& rhs) const {
-    return !(*this == rhs);
-}
 /**
  * Accessors
  */

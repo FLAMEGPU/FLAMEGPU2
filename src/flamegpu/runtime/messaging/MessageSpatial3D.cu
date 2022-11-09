@@ -176,12 +176,6 @@ float MessageSpatial3D::CDescription::getMaxZ() const {
 /// </summary>
 MessageSpatial3D::Description::Description(std::shared_ptr<Data> data)
     : CDescription(data) { }
-bool MessageSpatial3D::Description::operator==(const CDescription& rhs) const {
-    return rhs == *this;  // Forward to superclass's equality
-}
-bool MessageSpatial3D::Description::operator!=(const CDescription& rhs) const {
-    return !(*this == rhs);
-}
 /**
  * Accessors
  */

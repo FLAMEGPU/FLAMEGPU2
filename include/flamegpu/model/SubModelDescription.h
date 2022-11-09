@@ -98,20 +98,6 @@ class SubModelDescription : public CSubModelDescription {
      */
     SubModelDescription& operator=(const SubModelDescription& other_agent) = default;
     SubModelDescription& operator=(SubModelDescription&& other_agent) = default;
-    /**
-     * Equality operator, checks whether SubModelDescription hierarchies are functionally the same
-     * @param rhs right hand side
-     * @returns True when submodels are the same
-     * @note Instead compare pointers if you wish to check that they are the same instance
-     */
-    bool operator==(const CSubModelDescription& rhs) const;
-    /**
-     * Equality operator, checks whether SubModelDescription hierarchies are functionally different
-     * @param rhs right hand side
-     * @returns True when submodels are not the same
-     * @note Instead compare pointers if you wish to check that they are not the same instance
-     */
-    bool operator!=(const CSubModelDescription& rhs) const;
 
     /**
      * Defines which agent from the parent/master model will be mapped to which agent in the submodel

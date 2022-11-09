@@ -229,20 +229,6 @@ class MessageSpatial2D::Description : public CDescription {
      */
     Description& operator=(const Description & other_message) = default;
     Description& operator=(Description && other_message) = default;
-    /**
-     * Equality operator, checks whether message Description hierarchies are functionally the same
-     * @param rhs right hand side
-     * @returns True when messages are the same
-     * @note Instead compare pointers if you wish to check that they are the same instance
-     */
-    bool operator==(const CDescription & rhs) const;
-    /**
-     * Equality operator, checks whether message Description hierarchies are functionally different
-     * @param rhs right hand side
-     * @returns True when messages are not the same
-     * @note Instead compare pointers if you wish to check that they are not the same instance
-     */
-    bool operator!=(const CDescription & rhs) const;
 
     using MessageBruteForce::CDescription::newVariable;
 #ifdef SWIG

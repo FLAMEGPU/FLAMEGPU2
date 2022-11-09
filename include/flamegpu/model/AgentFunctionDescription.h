@@ -182,18 +182,6 @@ class AgentFunctionDescription : public CAgentFunctionDescription {
      */
     AgentFunctionDescription& operator=(const AgentFunctionDescription &other_function) = default;
     AgentFunctionDescription& operator=(AgentFunctionDescription &&other_function) = default;
-    /**
-     * Equality operator, checks whether AgentFunctionDescription hierarchies are functionally the same
-     * @returns True when agent functions are the same
-     * @note Instead compare pointers if you wish to check that they are the same instance
-     */
-    bool operator==(const CAgentFunctionDescription& rhs) const;
-    /**
-     * Equality operator, checks whether AgentFunctionDescription hierarchies are functionally different
-     * @returns True when agent functions are not the same
-     * @note Instead compare pointers if you wish to check that they are not the same instance
-     */
-    bool operator!=(const CAgentFunctionDescription& rhs) const;
 
     /**
      * Sets the initial state which agents must be in to execute this function

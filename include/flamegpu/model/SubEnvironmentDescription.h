@@ -92,20 +92,6 @@ class SubEnvironmentDescription : public CSubEnvironmentDescription {
      */
     SubEnvironmentDescription& operator=(const SubEnvironmentDescription& other_agent) = default;
     SubEnvironmentDescription& operator=(SubEnvironmentDescription&& other_agent) = default;
-    /**
-     * Equality operator, checks whether SubEnvironmentDescription hierarchies are functionally the same
-     * @param rhs right hand side
-     * @returns True when subenvironments are the same
-     * @note Instead compare pointers if you wish to check that they are the same instance
-     */
-    bool operator==(const CSubEnvironmentDescription& rhs) const;
-    /**
-     * Equality operator, checks whether SubEnvironmentDescription hierarchies are functionally different
-     * @param rhs right hand side
-     * @returns True when subenvironments are not the same
-     * @note Instead compare pointers if you wish to check that they are not the same instance
-     */
-    bool operator!=(const CSubEnvironmentDescription& rhs) const;
 
     /**
      * Automatically map all compatible properties and macro properties

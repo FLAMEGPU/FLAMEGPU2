@@ -42,13 +42,6 @@ std::string CSubEnvironmentDescription::getMacroPropertyMapping(const std::strin
 SubEnvironmentDescription::SubEnvironmentDescription(std::shared_ptr<SubEnvironmentData> data)
     : CSubEnvironmentDescription(std::move(data)) { }
 
-bool SubEnvironmentDescription::operator==(const CSubEnvironmentDescription& rhs) const {
-    return rhs == *this;  // Forward to superclass's equality
-}
-bool SubEnvironmentDescription::operator!=(const CSubEnvironmentDescription& rhs) const {
-    return !(*this == rhs);
-}
-
 void SubEnvironmentDescription::mapProperty(const std::string &sub_property_name, const std::string &master_property_name) {
     // Neither are reserved properties
     if (!sub_property_name.empty() && sub_property_name[0] == '_') {

@@ -149,11 +149,5 @@ bool MessageBruteForce::CDescription::hasVariable(const std::string& variable_na
 /// </summary>
 MessageBruteForce::Description::Description(std::shared_ptr<Data> data)
     : CDescription(std::move(data)) { }
-bool MessageBruteForce::Description::operator==(const CDescription& rhs) const {
-    return rhs == *this;  // Forward to superclass's equality
-}
-bool MessageBruteForce::Description::operator!=(const CDescription& rhs) const {
-    return !(*this == rhs);
-}
 
 }  // namespace flamegpu

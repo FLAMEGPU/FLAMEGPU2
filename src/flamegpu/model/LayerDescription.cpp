@@ -64,13 +64,6 @@ FLAMEGPU_HOST_FUNCTION_POINTER CLayerDescription::getHostFunction(unsigned int i
 LayerDescription::LayerDescription(std::shared_ptr<LayerData> data)
     : CLayerDescription(std::move(data)) { }
 
-bool LayerDescription::operator==(const CLayerDescription& rhs) const {
-    return rhs == *this;  // Forward to superclass's equality
-}
-bool LayerDescription::operator!=(const CLayerDescription& rhs) const {
-    return !(*this == rhs);
-}
-
 /**
  * Accessors
  */

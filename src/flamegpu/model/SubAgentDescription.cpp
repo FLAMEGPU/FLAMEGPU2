@@ -41,13 +41,6 @@ std::string CSubAgentDescription::getVariableMapping(const std::string& sub_vari
 SubAgentDescription::SubAgentDescription(std::shared_ptr<SubAgentData> data)
     : CSubAgentDescription(std::move(data)) { }
 
-bool SubAgentDescription::operator==(const CSubAgentDescription& rhs) const {
-    return rhs == *this;  // Forward to superclass's equality
-}
-bool SubAgentDescription::operator!=(const CSubAgentDescription& rhs) const {
-    return !(*this == rhs);
-}
-
 void SubAgentDescription::mapState(const std::string &sub_state_name, const std::string &master_state_name) {
     // Sub state exists
     auto subAgent = subagent->subAgent.lock();

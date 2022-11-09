@@ -133,20 +133,6 @@ class LayerDescription : public CLayerDescription {
      */
     LayerDescription& operator=(const LayerDescription& other_layer) = default;
     LayerDescription& operator=(LayerDescription&& other_layer) = default;
-    /**
-     * Equality operator, checks whether LayerDescription hierarchies are functionally the same
-     * @param rhs right hand side
-     * @returns True when layers are the same
-     * @note Instead compare pointers if you wish to check that they are the same instance
-     */
-    bool operator==(const CLayerDescription& rhs) const;
-    /**
-     * Equality operator, checks whether LayerDescription hierarchies are functionally different
-     * @param rhs right hand side
-     * @returns True when layers are not the same
-     * @note Instead compare pointers if you wish to check that they are not the same instance
-     */
-    bool operator!=(const CLayerDescription& rhs) const;
 
     /**
      * Adds an agent function to this layer

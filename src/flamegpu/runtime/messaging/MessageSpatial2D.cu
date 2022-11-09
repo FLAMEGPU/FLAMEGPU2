@@ -186,12 +186,6 @@ float MessageSpatial2D::CDescription::getMaxY() const {
 /// </summary>
 MessageSpatial2D::Description::Description(std::shared_ptr<Data> data)
     : CDescription(data) { }
-bool MessageSpatial2D::Description::operator==(const CDescription& rhs) const {
-    return rhs == *this;  // Forward to superclass's equality
-}
-bool MessageSpatial2D::Description::operator!=(const CDescription& rhs) const {
-    return !(*this == rhs);
-}
 /**
  * Accessors
  */

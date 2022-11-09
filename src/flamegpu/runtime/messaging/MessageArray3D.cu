@@ -132,12 +132,6 @@ flamegpu::size_type MessageArray3D::CDescription::getDimZ() const {
 /// </summary>
 MessageArray3D::Description::Description(std::shared_ptr<Data> data)
     : CDescription(data) { }
-bool MessageArray3D::Description::operator==(const CDescription& rhs) const {
-    return rhs == *this;  // Forward to superclass's equality
-}
-bool MessageArray3D::Description::operator!=(const CDescription& rhs) const {
-    return !(*this == rhs);
-}
 /**
  * Accessors
  */
