@@ -1,6 +1,5 @@
 #include "flamegpu/model/AgentData.h"
 
-#include "flamegpu/model/AgentFunctionData.cuh"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
 

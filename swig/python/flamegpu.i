@@ -346,9 +346,9 @@ class FLAMEGPURuntimeException : public std::exception {
 
 // Disable non RTC function and function condition set methods
 %ignore flamegpu::AgentDescription::newFunction;
-%ignore flamegpu::AgentFunctionDescription::getFunctionPtr;
+%ignore flamegpu::CAgentFunctionDescription::getFunctionPtr;
 %ignore flamegpu::AgentFunctionDescription::setFunctionCondition;
-%ignore flamegpu::AgentFunctionDescription::getConditionPtr;
+%ignore flamegpu::CAgentFunctionDescription::getConditionPtr;
 
 // Ignore function which returns something not currently wrapped.
 %ignore flamegpu::AgentInterface::getAgentDescription;

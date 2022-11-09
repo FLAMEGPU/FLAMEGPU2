@@ -4,6 +4,7 @@
 #include "flamegpu/runtime/detail/SharedBlock.h"
 #include "flamegpu/runtime/detail/curve/Curve.cuh"
 #include "flamegpu/exception/FLAMEGPUDeviceException_device.cuh"
+#include "flamegpu/util/type_decode.h"
 
 #ifdef USE_GLM
 #ifdef __CUDACC__

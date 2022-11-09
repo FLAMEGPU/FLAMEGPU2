@@ -2,6 +2,7 @@
 #define INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTIONCONDITION_CUH_
 
 #include <cuda_runtime.h>
+#include <device_launch_parameters.h>
 
 #include "flamegpu/runtime/DeviceAPI.cuh"
 #include "flamegpu/runtime/AgentFunctionCondition_shim.cuh"
