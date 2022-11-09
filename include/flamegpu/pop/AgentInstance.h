@@ -9,6 +9,7 @@
 
 #include "flamegpu/model/AgentData.h"
 #include "flamegpu/pop/AgentVector.h"
+#include "flamegpu/util/Any.h"
 
 namespace flamegpu {
 

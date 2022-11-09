@@ -27,7 +27,7 @@ class CurveRTCHost;
 
 struct SubEnvironmentData;
 struct AgentFunctionData;
-class EnvironmentDescription;
+struct EnvironmentData;
 class CUDASimulation;
 
 /**
@@ -81,7 +81,7 @@ class CUDAMacroEnvironment {
      * @param description Agent description of the agent
      * @param _cudaSimulation Parent CUDASimulation of the agent
      */
-    CUDAMacroEnvironment(const EnvironmentDescription& description, const CUDASimulation& _cudaSimulation);
+    CUDAMacroEnvironment(const EnvironmentData& description, const CUDASimulation& _cudaSimulation);
     CUDAMacroEnvironment(CUDAMacroEnvironment&) = delete;
     CUDAMacroEnvironment(CUDAMacroEnvironment&&) = delete;
     /**

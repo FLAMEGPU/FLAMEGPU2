@@ -11,6 +11,7 @@
 #include "flamegpu/sim/RunPlan.h"
 #include "flamegpu/util/detail/StaticAssert.h"
 #include "flamegpu/util/type_decode.h"
+#include "flamegpu/model/EnvironmentData.h"
 
 
 namespace flamegpu {
@@ -291,7 +292,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
     RunPlanVector operator*(unsigned int rhs) const;
 
  private:
-    RunPlanVector(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> &environment, bool allow_0_steps);
+    RunPlanVector(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentData::PropData>> &environment, bool allow_0_steps);
     /**
      * Seed used for the current `rand` instance, which is only valid for elements generated since the last call to setRandomPropertySeed
      */
@@ -301,7 +302,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * Initially set to a random seed with std::random_device (which is a platform specific source of random integers)
      */
     std::mt19937_64 rand;
-    std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> environment;
+    std::shared_ptr<const std::unordered_map<std::string, EnvironmentData::PropData>> environment;
     const bool allow_0_steps;
 };
 

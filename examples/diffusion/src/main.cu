@@ -70,7 +70,7 @@ int main(int argc, const char ** argv) {
      * GLOBALS
      */
     {
-        flamegpu::EnvironmentDescription  &env = model.Environment();
+        flamegpu::EnvironmentDescription  env = model.Environment();
         // Diffusion constant
         const float a = 0.5f;
         env.newProperty<float>("a", a);

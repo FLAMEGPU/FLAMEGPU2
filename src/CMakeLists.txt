@@ -101,18 +101,25 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUException.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUDeviceException.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUDeviceException_device.cuh
-    ${FLAMEGPU_ROOT}/include/flamegpu/model/LayerDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/ModelData.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/ModelDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentData.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionData.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/DependencyNode.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/DependencyGraph.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/LayerData.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentFunctionDescription.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/model/HostFunctionDescription.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/LayerDescription.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/EnvironmentData.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/EnvironmentDescription.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/model/AgentDescription.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/model/ModelDescription.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubModelData.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubModelDescription.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubAgentData.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubAgentDescription.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubEnvironmentData.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubEnvironmentDescription.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/model/HostFunctionDescription.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/Variable.h
     ${FLAMEGPU_ROOT}/include/flamegpu/pop/detail/MemoryVector.h
     ${FLAMEGPU_ROOT}/include/flamegpu/pop/detail/GenericMemoryVector.h
@@ -212,28 +219,29 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/SteadyClockTimer.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/Timer.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/detail/JitifyCache.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubModelData.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubAgentData.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubEnvironmentData.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubModelDescription.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubAgentDescription.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/model/SubEnvironmentDescription.h
 )
 SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/exception/FLAMEGPUException.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/exception/FLAMEGPUDeviceException.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/LayerDescription.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/ModelDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/ModelData.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentData.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentFunctionData.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/LayerData.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/ModelDescription.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/EnvironmentDescription.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentDescription.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentFunctionData.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/AgentFunctionDescription.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/HostFunctionDescription.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/LayerData.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/LayerDescription.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/EnvironmentData.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/EnvironmentDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/DependencyNode.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/DependencyGraph.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubModelData.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubModelDescription.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubAgentData.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubAgentDescription.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubEnvironmentData.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubEnvironmentDescription.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/model/HostFunctionDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentVector.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentVector_Agent.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/pop/AgentInstance.cpp
@@ -284,12 +292,6 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/util/detail/compute_capability.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/detail/wddm.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/detail/JitifyCache.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubModelData.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubAgentData.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubEnvironmentData.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubModelDescription.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubAgentDescription.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/model/SubEnvironmentDescription.cpp
 )
 SET(SRC_DYNAMIC
     ${DYNAMIC_VERSION_SRC_DEST}

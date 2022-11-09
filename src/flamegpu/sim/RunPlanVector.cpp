@@ -7,12 +7,12 @@ RunPlanVector::RunPlanVector(const ModelDescription &model, unsigned int initial
     : std::vector<RunPlan>(initial_length, RunPlan(model))
     , randomPropertySeed(std::random_device()())
     , rand(randomPropertySeed)
-    , environment(std::make_shared<std::unordered_map<std::string, EnvironmentDescription::PropData> const>(model.model->environment->getPropertiesMap()))
+    , environment(std::make_shared<std::unordered_map<std::string, EnvironmentData::PropData> const>(model.model->environment->properties))
     , allow_0_steps(model.model->exitConditions.size() + model.model->exitConditionCallbacks.size() > 0) {
     this->resize(initial_length, RunPlan(environment, allow_0_steps));
 }
 
-RunPlanVector::RunPlanVector(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> &_environment, const bool _allow_0_steps)
+RunPlanVector::RunPlanVector(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentData::PropData>> &_environment, const bool _allow_0_steps)
     : std::vector<RunPlan>()
     , randomPropertySeed(std::random_device()())
     , rand(randomPropertySeed)

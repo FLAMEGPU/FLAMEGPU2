@@ -85,7 +85,7 @@ class MiniSim {
     ModelDescription model;
     AgentDescription agent;
     AgentVector*population;
-    EnvironmentDescription &ed;
+    EnvironmentDescription ed;
 };
 
 FLAMEGPU_STEP_FUNCTION(get_set_float) {

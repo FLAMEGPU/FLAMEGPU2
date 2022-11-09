@@ -9,7 +9,7 @@ namespace flamegpu {
 
 struct ModelData;
 struct SubModelData;
-class EnvironmentDescription;
+struct EnvironmentData;
 class SubEnvironmentDescription;
 
 /**
@@ -36,11 +36,11 @@ struct SubEnvironmentData : std::enable_shared_from_this<SubEnvironmentData> {
     /**
      * The sub environment which is bound
      */
-    std::weak_ptr<EnvironmentDescription> subEnvironment;
+    std::weak_ptr<EnvironmentData> subEnvironment;
     /**
     * The master environment which is bound
     */
-    std::weak_ptr<EnvironmentDescription> masterEnvironment;
+    std::weak_ptr<EnvironmentData> masterEnvironment;
     /**
     * Map of submodel item name:parent model item name
     * map<string, string>
@@ -85,7 +85,7 @@ struct SubEnvironmentData : std::enable_shared_from_this<SubEnvironmentData> {
     * Normal constructor
     * This should only be called by SubModelDescription
     */
-    explicit SubEnvironmentData(std::shared_ptr<const ModelData> model, const std::shared_ptr<SubModelData> &_parent, const std::shared_ptr<EnvironmentDescription> &subEnv);
+    explicit SubEnvironmentData(std::shared_ptr<const ModelData> model, const std::shared_ptr<SubModelData> &_parent, const std::shared_ptr<EnvironmentData> &subEnv);
 };
 
 }  // namespace flamegpu

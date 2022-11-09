@@ -4,6 +4,7 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/exception/FLAMEGPUException.h"
+#include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/runtime/messaging/MessageBruteForce.h"
 #include "flamegpu/model/SubModelData.h"
 #include "flamegpu/model/SubModelDescription.h"
@@ -15,7 +16,9 @@ namespace flamegpu {
 * Constructors
 */
 ModelDescription::ModelDescription(const std::string &model_name)
-    : model(new ModelData(model_name)) { }
+    : model(new ModelData(model_name)) {
+    model->environment = std::shared_ptr<EnvironmentData>(new EnvironmentData(model));
+}
 
 bool ModelDescription::operator==(const ModelDescription& rhs) const {
     return *this->model == *rhs.model;  // Compare content is functionally the same
@@ -53,8 +56,8 @@ MessageBruteForce::Description ModelDescription::Message(const std::string &mess
     return Message<MessageBruteForce>(message_name);
 }
 
-EnvironmentDescription& ModelDescription::Environment() {
-    return *model->environment;
+EnvironmentDescription ModelDescription::Environment() {
+    return EnvironmentDescription(model->environment);
 }
 
 SubModelDescription ModelDescription::newSubModel(const std::string &submodel_name, const ModelDescription &submodel_description) {
@@ -208,8 +211,8 @@ CSubModelDescription ModelDescription::getSubModel(const std::string &submodel_n
         "in ModelDescription::getSubModel().",
         submodel_name.c_str());
 }
-const EnvironmentDescription& ModelDescription::getEnvironment() const {
-    return *model->environment;
+CEnvironmentDescription ModelDescription::getEnvironment() const {
+    return CEnvironmentDescription(model->environment);
 }
 CLayerDescription ModelDescription::getLayer(const std::string &name) const {
     if (!name.empty()) {  // Can't search for no name, multiple layers might be nameless

@@ -132,7 +132,7 @@ class MiniSim {
             b.newVariable<uint8_t, 3>("uint8_t");
         }
         {
-            EnvironmentDescription &e = model.Environment();
+            EnvironmentDescription e = model.Environment();
             e.newProperty<float>("float", 12.0f);
             e.newProperty<double>("double", 13.0);
             e.newProperty<int64_t>("int64_t", 14);

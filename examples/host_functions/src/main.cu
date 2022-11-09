@@ -79,7 +79,7 @@ int main(int argc, const char ** argv) {
      * GLOBALS
      */
     {
-        flamegpu::EnvironmentDescription  &envProperties = model.Environment();
+        flamegpu::EnvironmentDescription  envProperties = model.Environment();
         envProperties.newProperty<float>("float", 12.0f);
         envProperties.newProperty<int16_t>("int16_t", 0);
         envProperties.newProperty<uint64_t, 3>("uint64_t", {11llu, 12llu, 13llu});

@@ -27,7 +27,8 @@ const int ARRAY_TEST_LEN = 5;
  */
 template<typename T>
 void AddGet_SetGet_test() {
-    EnvironmentDescription ed;
+    ModelDescription model("test");
+    EnvironmentDescription ed = model.Environment();
     T b = static_cast<T>(1);
     T c = static_cast<T>(2);
     ed.newProperty<T>("a", b);
@@ -38,7 +39,8 @@ void AddGet_SetGet_test() {
 #ifdef USE_GLM
 template<typename T>
 void AddGet_SetGet_vec_test() {
-    EnvironmentDescription ed;
+    ModelDescription model("test");
+    EnvironmentDescription ed = model.Environment();
     T b = T(1);
     T c = T(2);
     ed.newProperty<T>("a", b);
@@ -55,7 +57,8 @@ void AddGet_SetGet_vec_test() {
  */
 template<typename T>
 void AddGet_SetGet_array_test() {
-    EnvironmentDescription ed;
+    ModelDescription model("test");
+    EnvironmentDescription ed = model.Environment();
     std::array<T, ARRAY_TEST_LEN> b;
     std::array<T, ARRAY_TEST_LEN> c;
     for (int i = 0; i < ARRAY_TEST_LEN; ++i) {
@@ -80,7 +83,8 @@ void AddGet_SetGet_array_test() {
 #ifdef USE_GLM
 template<typename T>
 void AddGet_SetGet_array_vec_test() {
-    EnvironmentDescription ed;
+    ModelDescription model("test");
+    EnvironmentDescription ed = model.Environment();
     std::array<T, ARRAY_TEST_LEN> b;
     std::array<T, ARRAY_TEST_LEN> c;
     for (int i = 0; i < ARRAY_TEST_LEN; ++i) {
@@ -111,7 +115,8 @@ void AddGet_SetGet_array_vec_test() {
  */
 template<typename T>
 void AddGet_SetGet_array_element_test() {
-    EnvironmentDescription ed;
+    ModelDescription model("test");
+    EnvironmentDescription ed = model.Environment();
     std::array<T, ARRAY_TEST_LEN> b;
     std::array<T, ARRAY_TEST_LEN> c;
     for (int i = 0; i < ARRAY_TEST_LEN; ++i) {
@@ -130,7 +135,8 @@ void AddGet_SetGet_array_element_test() {
 #ifdef USE_GLM
 template<typename T>
 void AddGet_SetGet_array_element_vec_test() {
-    EnvironmentDescription ed;
+    ModelDescription model("test");
+    EnvironmentDescription ed = model.Environment();
     std::array<T, ARRAY_TEST_LEN> b;
     std::array<T, ARRAY_TEST_LEN> c;
     for (int i = 0; i < ARRAY_TEST_LEN; ++i) {
@@ -150,7 +156,8 @@ void AddGet_SetGet_array_element_vec_test() {
 
 template<typename T, typename _T>
 void ExceptionPropertyType_test() {
-    EnvironmentDescription ed;
+    ModelDescription model("test");
+    EnvironmentDescription ed = model.Environment();
     /**
     * It is necessary to use function pointers for any functions that are templated with 2 args and overloaded
     * They don't build on Travis with implied template args
@@ -175,7 +182,8 @@ void ExceptionPropertyType_test() {
 
 template<typename T>
 void ExceptionPropertyLength_test() {
-    EnvironmentDescription ed;
+    ModelDescription model("test");
+    EnvironmentDescription ed = model.Environment();
     std::array<T, ARRAY_TEST_LEN> b;
     std::array<T, 1> _b1 = {};
     std::array<T, ARRAY_TEST_LEN + 1> _b2;
@@ -192,7 +200,8 @@ void ExceptionPropertyLength_test() {
 template<typename T>
 void ExceptionPropertyRange_test() {
     std::array<T, ARRAY_TEST_LEN> b;
-    EnvironmentDescription ed;
+    ModelDescription model("test");
+    EnvironmentDescription ed = model.Environment();
     ed.newProperty<T, ARRAY_TEST_LEN>("a", b);
     T c = static_cast<T>(12);
 
@@ -461,7 +470,8 @@ TEST(EnvironmentDescriptionTest, Exception_array_glm) {
 #endif
 
 TEST(EnvironmentDescriptionTest, ExceptionPropertyDoesntExist) {
-    EnvironmentDescription ed;
+    ModelDescription model("test");
+    EnvironmentDescription ed = model.Environment();
     float a = static_cast<float>(12);
     EXPECT_THROW(ed.getProperty<float>("a"), exception::InvalidEnvProperty);
     ed.newProperty<float>("a", a);
@@ -481,7 +491,8 @@ TEST(EnvironmentDescriptionTest, ExceptionPropertyDoesntExist) {
 }
 
 TEST(EnvironmentDescriptionTest, reserved_name) {
-    EnvironmentDescription ed;
+    ModelDescription model("test");
+    EnvironmentDescription ed = model.Environment();
     EXPECT_THROW(ed.newProperty<int>("_", 1), exception::ReservedName);
     EXPECT_THROW(ed.setProperty<int>("_", 1), exception::ReservedName);
     auto add = &EnvironmentDescription::newProperty<int, 2>;

@@ -17,7 +17,7 @@ SubEnvironmentData::SubEnvironmentData(std::shared_ptr<const ModelData> _model, 
 SubEnvironmentData::SubEnvironmentData(
     std::shared_ptr<const ModelData> _model,
     const std::shared_ptr<SubModelData> &_parent,
-    const std::shared_ptr<EnvironmentDescription> &_subEnvironment)
+    const std::shared_ptr<EnvironmentData> &_subEnvironment)
     : model(std::move(_model))
     , subEnvironment(_parent->submodel->environment)
     , masterEnvironment(_model->environment)

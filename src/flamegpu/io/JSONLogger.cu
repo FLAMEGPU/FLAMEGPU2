@@ -197,7 +197,7 @@ void JSONLogger::logConfig(T &writer, const RunPlan &plan) const {
         writer.StartObject();
         {
             for (const auto &prop : plan.property_overrides) {
-                const EnvironmentDescription::PropData &env_prop = plan.environment->at(prop.first);
+                const EnvironmentData::PropData &env_prop = plan.environment->at(prop.first);
                 writer.Key(prop.first.c_str());
                 writeAny(writer, prop.second, env_prop.data.elements);
             }

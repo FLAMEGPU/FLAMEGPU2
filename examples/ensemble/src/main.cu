@@ -28,7 +28,7 @@ int main(int argc, const char ** argv) {
      * GLOBALS
      */
      {
-        flamegpu::EnvironmentDescription  &env = model.Environment();
+        flamegpu::EnvironmentDescription  env = model.Environment();
 
         env.newProperty<unsigned int>("POPULATION_TO_GENERATE", POPULATION_TO_GENERATE, true);
 

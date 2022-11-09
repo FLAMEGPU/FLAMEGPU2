@@ -20,6 +20,8 @@ class CLayerDescription;
 class LayerDescription;
 class CSubModelDescription;
 class SubModelDescription;
+class CEnvironmentDescription;
+class EnvironmentDescription;
 class DependencyNode;
 struct ModelData;
 
@@ -134,7 +136,7 @@ class ModelDescription {
      * This can be used to configure environment properties
      * @see ModelDescription::getEnvironment() for the immutable version
      */
-    EnvironmentDescription& Environment();
+    EnvironmentDescription Environment();
     /**
      * Add a submodel to the Model Description hierarchy
      * The return value can be used to map agent variables
@@ -327,7 +329,7 @@ class ModelDescription {
      * This can be used to configure environment properties
      * @see ModelDescription::Environment() for the mutable version
      */
-    const EnvironmentDescription& getEnvironment() const;
+    CEnvironmentDescription getEnvironment() const;
     /**
      * Returns a mutable reference to the named layer, which can be used to configure the layer
      * @param name Name used to refer to the desired layer within the model description hierarchy

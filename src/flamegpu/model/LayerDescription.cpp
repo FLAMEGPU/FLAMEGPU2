@@ -8,7 +8,7 @@ namespace flamegpu {
 CLayerDescription::CLayerDescription(std::shared_ptr<LayerData> data)
     : layer(std::move(data)) { }
 CLayerDescription::CLayerDescription(std::shared_ptr<const LayerData> data)
-    : layer(std::move(std::const_pointer_cast<LayerData>(data))) { }
+    : layer(std::const_pointer_cast<LayerData>(data)) { }
 
 bool CLayerDescription::operator==(const CLayerDescription& rhs) const {
     return *this->layer == *rhs.layer;  // Compare content is functionally the same

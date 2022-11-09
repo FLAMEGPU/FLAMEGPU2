@@ -287,7 +287,7 @@ int main(int argc, const char ** argv) {
          * Globals
          */
         {
-            // flamegpu::EnvironmentDescription  &env = model.Environment();
+            // flamegpu::EnvironmentDescription  env = model.Environment();
         }
 
         /**
@@ -335,7 +335,7 @@ int main(int argc, const char ** argv) {
      * Globals
      */
     {
-        // flamegpu::EnvironmentDescription  &env = model.Environment();
+        // flamegpu::EnvironmentDescription  env = model.Environment();
     }
 
     /**

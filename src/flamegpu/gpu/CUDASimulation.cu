@@ -1236,7 +1236,7 @@ void CUDASimulation::simulate() {
 void CUDASimulation::simulate(const RunPlan& plan) {
     // Validate that RunPlan is for same ModelDesc
     // RunPlan only holds a copy of env, so we must compare those
-    if (*plan.environment != model->environment->getPropertiesMap()) {
+    if (*plan.environment != model->environment->properties) {
         THROW exception::InvalidArgument("RunPlan's associated environment does not match the ModelDescription's environment, "
         "in CUDASimulation::simulate(RunPlan)\n");
     }

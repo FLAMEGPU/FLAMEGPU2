@@ -137,7 +137,7 @@ class MiniSim {
     ModelDescription model;
     AgentDescription agent;
     AgentVector *population;
-    EnvironmentDescription &env;
+    EnvironmentDescription env;
     CUDASimulation *cudaSimulation;
 
     template <typename T>

@@ -9,7 +9,6 @@
 #include <string>
 
 #include "flamegpu/defines.h"
-#include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/runtime/HostAPI_macros.h"
 #include "flamegpu/runtime/messaging/MessageBruteForce.h"
 
@@ -17,8 +16,8 @@ namespace flamegpu {
 
 class HostFunctionCallback;
 class HostFunctionConditionCallback;
-class EnvironmentDescription;
 class DependencyGraph;
+struct EnvironmentData;
 struct AgentData;
 struct LayerData;
 struct SubModelData;
@@ -28,7 +27,7 @@ struct SubModelData;
  * Users should only access that data stored within via an instance of ModelDescription
  */
 struct ModelData : std::enable_shared_from_this<ModelData>{
-    virtual ~ModelData();
+    virtual ~ModelData() = default;
     /**
      * Default state, all agents and agent functions begin in/with this state
      */
@@ -127,7 +126,7 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
     /**
      * Holds all of the model's environment property definitions
      */
-    std::shared_ptr<EnvironmentDescription> environment;  // TODO: Move this to same Data:Description format
+    std::shared_ptr<EnvironmentData> environment;
     /**
      * The name of the model
      * This must be unique among Simulation (e.g. CUDASimulation) instances

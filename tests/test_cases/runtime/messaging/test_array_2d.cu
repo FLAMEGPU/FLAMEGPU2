@@ -741,7 +741,7 @@ void test_moore_wrap_comradius(
     ModelDescription model("MooreXRC");
 
     // Use an env var for the communication radius to use, rather than a __device__ or a #define.
-    EnvironmentDescription &env = model.Environment();
+    EnvironmentDescription env = model.Environment();
     env.newProperty<unsigned int>("COMRADIUS", COMRADIUS);
 
     // Define the message
@@ -870,7 +870,7 @@ void test_mooore_comradius(
     ModelDescription model("MooreXRC");
 
     // Use an env var for the communication radius to use, rather than a __device__ or a #define.
-    EnvironmentDescription &env = model.Environment();
+    EnvironmentDescription env = model.Environment();
     env.newProperty<unsigned int>("COMRADIUS", COMRADIUS);
 
     // Define the message

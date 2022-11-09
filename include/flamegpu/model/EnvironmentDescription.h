@@ -1,21 +1,113 @@
 #ifndef INCLUDE_FLAMEGPU_MODEL_ENVIRONMENTDESCRIPTION_H_
 #define INCLUDE_FLAMEGPU_MODEL_ENVIRONMENTDESCRIPTION_H_
 
-#include <unordered_map>
 #include <string>
 #include <typeinfo>
 #include <typeindex>
-#include <array>
-#include <vector>
 #include <utility>
+#include <vector>
+#include <memory>
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/runtime/utility/HostEnvironment.cuh"
 #include "flamegpu/util/Any.h"
+#include "flamegpu/model/EnvironmentData.h"
 #include "flamegpu/util/type_decode.h"
 #include "flamegpu/gpu/CUDAEnsemble.h"
 
 namespace flamegpu {
+
+class CEnvironmentDescription {
+    /**
+     * Data store class for this description, constructs instances of this class
+     */
+    friend struct EnvironmentData;
+
+ public:
+    /**
+     * Constructor, creates an interface to the EnvironmentData
+     * @param data Data store of this environment's data
+     */
+    explicit CEnvironmentDescription(std::shared_ptr<EnvironmentData> data);
+    explicit CEnvironmentDescription(std::shared_ptr<const EnvironmentData> data);
+    /**
+     * Copy constructor
+     * Creates a new interface to the same EnvironmentData/ModelData
+     */
+    CEnvironmentDescription(const CEnvironmentDescription& other_agent) = default;
+    CEnvironmentDescription(CEnvironmentDescription&& other_agent) = default;
+    /**
+     * Assignment operator
+     * Assigns this interface to the same EnvironmentData/ModelData
+     */
+    CEnvironmentDescription& operator=(const CEnvironmentDescription& other_agent) = default;
+    CEnvironmentDescription& operator=(CEnvironmentDescription&& other_agent) = default;
+    /**
+     * Equality operator, checks whether EnvironmentDescription hierarchies are functionally the same
+     * @param rhs right hand side
+     * @returns True when environments are the same
+     * @note Instead compare pointers if you wish to check that they are the same instance
+     */
+    bool operator==(const CEnvironmentDescription& rhs) const;
+    /**
+     * Equality operator, checks whether EnvironmentDescription hierarchies are functionally different
+     * @param rhs right hand side
+     * @returns True when environments are not the same
+     * @note Instead compare pointers if you wish to check that they are not the same instance
+     */
+    bool operator!=(const CEnvironmentDescription& rhs) const;
+
+    /**
+     * Gets an environment property
+     * @param name name used for accessing the property
+     * @tparam T Type of the value to be returned
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     */
+    template<typename T>
+    T getProperty(const std::string &name) const;
+    /**
+     * Gets an environment property array
+     * @param name name used for accessing the property
+     * @tparam T Type of the value to be returned
+     * @tparam N Length of the array to be returned
+     * @throws exception::InvalidEnvProperty If a property array of the name does not exist
+     */
+    template<typename T, flamegpu::size_type N>
+    std::array<T, N> getProperty(const std::string &name) const;
+    /**
+     * Gets an element of an environment property array
+     * @param name name used for accessing the property
+     * @param index element from the environment property array to return
+     * @tparam T Type of the value to be returned
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws std::out_of_range
+     */
+    template<typename T>
+    T getProperty(const std::string &name, flamegpu::size_type index) const;
+#ifdef SWIG
+    /**
+     * Gets an environment property array
+     * @param name name used for accessing the property
+     * @tparam T Type of the value to be returned
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws std::out_of_range
+     */
+    template<typename T>
+    std::vector<T> getPropertyArray(const std::string &name) const;
+#endif
+    /**
+     * Returns whether an environment property is marked as const
+     * @param name name used for accessing the property
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     */
+    bool getConst(const std::string &name) const;
+
+ protected:
+    /**
+     * The class which stores all of the environment's data.
+     */
+    std::shared_ptr<EnvironmentData> environment;
+};
 
 /**
  * @brief Description class for environment properties
@@ -24,103 +116,39 @@ namespace flamegpu {
  * Properties can be any arithmetic or enum type.
  * Properties marked as const within the EnvironmentDescription cannot be changed during the simulation
  */
-class EnvironmentDescription {
-    /**
-     * EnvironmentManager needs access to our internal members
-     * @see EnvironmentManager::init(const std::string &, const EnvironmentDescription &)
-     */
-    friend class EnvironmentManager;
-    /**
-     * This directly accesses properties map, to build mappings
-     * Not required if this class is changed into description/data format like others
-     */
-    friend class SubEnvironmentDescription;
-    /**
-     * Constructor has access to privately add reserved items
-     * Might be a cleaner way to do this
-     */
-    friend class CUDASimulation;
-
-    friend class SimRunner;
-    friend unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans);
-
+class EnvironmentDescription : public CEnvironmentDescription {
  public:
     /**
-     * Holds all of the properties required to add a value to EnvironmentManager
+     * Constructor, creates an interface to the EnvironmentData
+     * @param data Data store of this environment's data
      */
-    struct PropData {
-        /**
-         * @param _is_const Is the property constant
-         * @param _data The data to initially fill the property with
-         */
-        PropData(bool _is_const, const util::Any &_data)
-            : isConst(_is_const)
-            , data(_data) { }
-        bool isConst;
-        const util::Any data;
-        bool operator==(const PropData &rhs) const {
-            if (this == &rhs)
-                return true;
-            if (this->isConst != rhs.isConst
-               || this->data.elements != rhs.data.elements
-               || this->data.length != rhs.data.length
-               || this->data.type != rhs.data.type)
-                return false;
-            if (this->data.ptr == rhs.data.ptr)
-                return true;
-            for (size_t i = 0; i < this->data.length; ++i) {
-                if (static_cast<const char *>(this->data.ptr)[i] != static_cast<const char *>(rhs.data.ptr)[i])
-                    return false;
-            }
-            return true;
-        }
-        bool operator!=(const PropData& rhs) const {
-            return !operator==(rhs);
-        }
-    };
+    explicit EnvironmentDescription(std::shared_ptr<EnvironmentData> data);
     /**
-     * Holds all of the properties required to add a value to EnvironmentManager
+     * Copy constructor
+     * Creates a new interface to the same EnvironmentData/ModelData
      */
-    struct MacroPropData {
-        /**
-         * @param _type The type index of the base type (e.g. typeid(float))
-         * @param _type_size The size of the base type (e.g. sizeof(float))
-         * @param _elements Number of elements in each dimension
-         */
-        MacroPropData(const std::type_index &_type, const size_t _type_size, const std::array<unsigned int, 4> &_elements)
-            : type(_type)
-            , type_size(_type_size)
-            , elements(_elements) { }
-        std::type_index type;
-        size_t type_size;
-        std::array<unsigned int, 4> elements;
-        bool operator==(const MacroPropData& rhs) const {
-            if (this == &rhs)
-                return true;
-            if (this->type != rhs.type
-                || this->type_size != rhs.type_size
-                || this->elements[0] != rhs.elements[0]
-                || this->elements[1] != rhs.elements[1]
-                || this->elements[2] != rhs.elements[2]
-                || this->elements[3] != rhs.elements[3])
-                return false;
-            for (size_t i = 0; i < this->elements.size(); ++i) {
-                if (this->elements[i] != rhs.elements[i])
-                    return false;
-            }
-            return true;
-        }
-        bool operator!=(const MacroPropData& rhs) const {
-            return !operator==(rhs);
-        }
-    };
+    EnvironmentDescription(const EnvironmentDescription& other_env) = default;
+    EnvironmentDescription(EnvironmentDescription&& other_env) = default;
     /**
-     * Default destruction
+     * Assignment operator
+     * Assigns this interface to the same EnvironmentData/ModelData
      */
-    EnvironmentDescription();
-
-    bool operator==(const EnvironmentDescription& rhs) const;
-    bool operator!=(const EnvironmentDescription& rhs) const;
+    EnvironmentDescription& operator=(const EnvironmentDescription& other_env) = default;
+    EnvironmentDescription& operator=(EnvironmentDescription&& other_env) = default;
+    /**
+     * Equality operator, checks whether EnvironmentDescription hierarchies are functionally the same
+     * @param rhs right hand side
+     * @returns True when environments are the same
+     * @note Instead compare pointers if you wish to check that they are the same instance
+     */
+    bool operator==(const CEnvironmentDescription& rhs) const;
+    /**
+     * Equality operator, checks whether EnvironmentDescription hierarchies are functionally different
+     * @param rhs right hand side
+     * @returns True when environments are not the same
+     * @note Instead compare pointers if you wish to check that they are not the same instance
+     */
+    bool operator!=(const CEnvironmentDescription& rhs) const;
     /**
      * Adds a new environment property
      * @param name name used for accessing the property
@@ -187,50 +215,6 @@ class EnvironmentDescription {
     void newMacroProperty_swig(const std::string& name, flamegpu::size_type I = 1, flamegpu::size_type J = 1, flamegpu::size_type K = 1, flamegpu::size_type W = 1);
 #endif
     /**
-     * Gets an environment property
-     * @param name name used for accessing the property
-     * @tparam T Type of the value to be returned
-     * @throws exception::InvalidEnvProperty If a property of the name does not exist
-     */
-    template<typename T>
-    T getProperty(const std::string &name) const;
-    /**
-     * Gets an environment property array
-     * @param name name used for accessing the property
-     * @tparam T Type of the value to be returned
-     * @tparam N Length of the array to be returned
-     * @throws exception::InvalidEnvProperty If a property array of the name does not exist
-     */
-    template<typename T, flamegpu::size_type N>
-    std::array<T, N> getProperty(const std::string &name) const;
-    /**
-     * Gets an element of an environment property array
-     * @param name name used for accessing the property
-     * @param index element from the environment property array to return
-     * @tparam T Type of the value to be returned
-     * @throws exception::InvalidEnvProperty If a property of the name does not exist
-     * @throws std::out_of_range
-     */
-    template<typename T>
-    T getProperty(const std::string &name, flamegpu::size_type index) const;
-#ifdef SWIG
-    /**
-     * Gets an environment property array
-     * @param name name used for accessing the property
-     * @tparam T Type of the value to be returned
-     * @throws exception::InvalidEnvProperty If a property of the name does not exist
-     * @throws std::out_of_range
-     */
-    template<typename T>
-    std::vector<T> getPropertyArray(const std::string &name) const;
-#endif
-    /**
-     * Returns whether an environment property is marked as const
-     * @param name name used for accessing the property
-     * @throws exception::InvalidEnvProperty If a property of the name does not exist
-     */
-    bool getConst(const std::string &name);
-    /**
      * Sets an environment property
      * @param name name used for accessing the property
      * @param value value to set the property
@@ -277,28 +261,17 @@ class EnvironmentDescription {
     std::vector<T> setPropertyArray(const std::string &name, const std::vector<T> &value);
 #endif
 
-    const std::unordered_map<std::string, PropData> getPropertiesMap() const;
-    const std::unordered_map<std::string, MacroPropData> getMacroPropertiesMap() const;
-
  private:
     /**
      * Internal common add method, actually performs the heavy lifting of changing properties
      * @param name Name used for accessing the property
      * @param ptr Pointer to data to initially fill property with
-     * @param len Length of data pointed to by ptr
+     * @param length Length of data pointed to by ptr
      * @param isConst If set to true, it is not possible to change the value during the simulation
      * @param elements How many elements does the property have (1 if it's not an array)
      * @param type value returned by typeid()
      */
-    void newProperty(const std::string &name, const char *ptr, size_t len, bool isConst, flamegpu::size_type elements, const std::type_index &type);
-    /**
-     * Main storage of all properties
-     */
-    std::unordered_map<std::string, PropData> properties{};
-    /**
-     * Main storage of all macroproperties
-     */
-    std::unordered_map<std::string, MacroPropData> macro_properties{};
+    void newProperty(const std::string &name, const char *ptr, size_t length, bool isConst, flamegpu::size_type elements, const std::type_index &type);
 };
 
 
@@ -315,7 +288,7 @@ void EnvironmentDescription::newProperty(const std::string &name, T value, bool 
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
-    if (properties.find(name) != properties.end()) {
+    if (environment->properties.find(name) != environment->properties.end()) {
         THROW exception::DuplicateEnvProperty("Environmental property with name '%s' already exists, "
             "in EnvironmentDescription::newProperty().",
             name.c_str());
@@ -333,7 +306,7 @@ void EnvironmentDescription::newProperty(const std::string &name, const std::arr
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
-    if (properties.find(name) != properties.end()) {
+    if (environment->properties.find(name) != environment->properties.end()) {
         THROW exception::DuplicateEnvProperty("Environmental property with name '%s' already exists, "
             "in EnvironmentDescription::newProperty().",
             name.c_str());
@@ -355,7 +328,7 @@ void EnvironmentDescription::newPropertyArray(const std::string &name, const std
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
-    if (properties.find(name) != properties.end()) {
+    if (environment->properties.find(name) != environment->properties.end()) {
         THROW exception::DuplicateEnvProperty("Environmental property with name '%s' already exists, "
             "in EnvironmentDescription::newPropertyArray().",
             name.c_str());
@@ -367,13 +340,13 @@ void EnvironmentDescription::newPropertyArray(const std::string &name, const std
  * Getters
  */
 template<typename T>
-T EnvironmentDescription::getProperty(const std::string &name) const {
+T CEnvironmentDescription::getProperty(const std::string &name) const {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
-    auto &&i = properties.find(name);
-    if (i != properties.end()) {
+    auto &&i = environment->properties.find(name);
+    if (i != environment->properties.end()) {
         if (i->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
             THROW exception::InvalidEnvPropertyType("Environmental property ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::getProperty().",
@@ -391,13 +364,13 @@ T EnvironmentDescription::getProperty(const std::string &name) const {
         name.c_str());
 }
 template<typename T, flamegpu::size_type N>
-std::array<T, N> EnvironmentDescription::getProperty(const std::string &name) const {
+std::array<T, N> CEnvironmentDescription::getProperty(const std::string &name) const {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
-    auto &&i = properties.find(name);
-    if (i != properties.end()) {
+    auto &&i = environment->properties.find(name);
+    if (i != environment->properties.end()) {
         if (i->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
             THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::getProperty().",
@@ -418,13 +391,13 @@ std::array<T, N> EnvironmentDescription::getProperty(const std::string &name) co
         name.c_str());
 }
 template<typename T>
-T EnvironmentDescription::getProperty(const std::string &name, flamegpu::size_type index) const {
+T CEnvironmentDescription::getProperty(const std::string &name, flamegpu::size_type index) const {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
-    auto &&i = properties.find(name);
-    if (i != properties.end()) {
+    auto &&i = environment->properties.find(name);
+    if (i != environment->properties.end()) {
         if (i->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
             THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::getProperty().",
@@ -450,13 +423,13 @@ T EnvironmentDescription::getProperty(const std::string &name, flamegpu::size_ty
 }
 #ifdef SWIG
 template<typename T>
-std::vector<T> EnvironmentDescription::getPropertyArray(const std::string& name) const {
+std::vector<T> CEnvironmentDescription::getPropertyArray(const std::string& name) const {
     // Limited to Arithmetic types
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
-    auto &&i = properties.find(name);
-    if (i != properties.end()) {
+    auto &&i = environment->properties.find(name);
+    if (i != environment->properties.end()) {
         if (i->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
             THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::getPropertyArray().",
@@ -491,8 +464,8 @@ T EnvironmentDescription::setProperty(const std::string &name, T value) {
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
-    auto &&i = properties.find(name);
-    if (i != properties.end()) {
+    auto &&i = environment->properties.find(name);
+    if (i != environment->properties.end()) {
         if (i->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
             THROW exception::InvalidEnvPropertyType("Environmental property ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::setProperty().",
@@ -523,8 +496,8 @@ std::array<T, N> EnvironmentDescription::setProperty(const std::string &name, co
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
-    auto &&i = properties.find(name);
-    if (i != properties.end()) {
+    auto &&i = environment->properties.find(name);
+    if (i != environment->properties.end()) {
         if (i->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
             THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::setProperty().",
@@ -556,8 +529,8 @@ T EnvironmentDescription::setProperty(const std::string &name, flamegpu::size_ty
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
-    auto &&i = properties.find(name);
-    if (i != properties.end()) {
+    auto &&i = environment->properties.find(name);
+    if (i != environment->properties.end()) {
         if (i->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
             THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::setProperty().",
@@ -595,8 +568,8 @@ std::vector<T> EnvironmentDescription::setPropertyArray(const std::string& name,
     // Compound types would allow host pointers inside structs to be passed
     static_assert(std::is_arithmetic<typename type_decode<T>::type_t>::value || std::is_enum<typename type_decode<T>::type_t>::value,
         "Only arithmetic types can be used as environmental properties");
-    auto &&i = properties.find(name);
-    if (i != properties.end()) {
+    auto &&i = environment->properties.find(name);
+    if (i != environment->properties.end()) {
         if (i->second.data.type != std::type_index(typeid(typename type_decode<T>::type_t))) {
             THROW exception::InvalidEnvPropertyType("Environmental property array ('%s') type (%s) does not match template argument T (%s), "
                 "in EnvironmentDescription::setPropertyArray().",
@@ -638,12 +611,12 @@ void EnvironmentDescription::newMacroProperty(const std::string& name) {
     static_assert(J > 0, "Environment macro properties must have a length greater than 0 in the second axis.");
     static_assert(K > 0, "Environment macro properties must have a length greater than 0 in the third axis.");
     static_assert(W > 0, "Environment macro properties must have a length greater than 0 in the fourth axis.");
-    if (macro_properties.find(name) != macro_properties.end()) {
+    if (environment->macro_properties.find(name) != environment->macro_properties.end()) {
         THROW exception::DuplicateEnvProperty("Environmental macro property with name '%s' already exists, "
             "in EnvironmentDescription::newMacroProperty().",
             name.c_str());
     }
-    macro_properties.emplace(name, MacroPropData(typeid(T), sizeof(T), { I, J, K, W }));
+    environment->macro_properties.emplace(name, EnvironmentData::MacroPropData(typeid(T), sizeof(T), { I, J, K, W }));
 }
 #ifdef SWIG
 template<typename T>
@@ -672,12 +645,12 @@ void EnvironmentDescription::newMacroProperty_swig(const std::string& name, flam
         THROW exception::DuplicateEnvProperty("Environmental macro property with name '%s' must have a length greater than 0 in the fourth axis, "
             "in EnvironmentDescription::newMacroProperty().",
             name.c_str());
-    } else if (macro_properties.find(name) != macro_properties.end()) {
+    } else if (environment->macro_properties.find(name) != environment->macro_properties.end()) {
         THROW exception::DuplicateEnvProperty("Environmental macro property with name '%s' already exists, "
             "in EnvironmentDescription::newMacroProperty().",
             name.c_str());
     }
-    macro_properties.emplace(name, MacroPropData(typeid(T), sizeof(T), { I, J, K, W }));
+    environment->macro_properties.emplace(name, EnvironmentData::MacroPropData(typeid(T), sizeof(T), { I, J, K, W }));
 }
 #endif
 }  // namespace flamegpu

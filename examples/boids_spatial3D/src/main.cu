@@ -315,7 +315,7 @@ int main(int argc, const char ** argv) {
      * GLOBALS
      */
      {
-        flamegpu::EnvironmentDescription &env = model.Environment();
+        flamegpu::EnvironmentDescription env = model.Environment();
 
         // Population size to generate, if no agents are loaded from disk
         env.newProperty("POPULATION_TO_GENERATE", 4000u);
@@ -344,7 +344,7 @@ int main(int argc, const char ** argv) {
 
 
     {   // Location message
-        flamegpu::EnvironmentDescription &env = model.Environment();
+        flamegpu::EnvironmentDescription env = model.Environment();
         flamegpu::MessageSpatial3D::Description message = model.newMessage<flamegpu::MessageSpatial3D>("location");
         // Set the range and bounds.
         message.setRadius(env.getProperty<float>("INTERACTION_RADIUS"));
@@ -396,7 +396,7 @@ int main(int argc, const char ** argv) {
 #ifdef VISUALISATION
     flamegpu::visualiser::ModelVis &visualisation = cudaSimulation.getVisualisation();
     {
-        flamegpu::EnvironmentDescription &env = model.Environment();
+        flamegpu::EnvironmentDescription env = model.Environment();
         float envWidth = env.getProperty<float>("MAX_POSITION") - env.getProperty<float>("MIN_POSITION");
         const float INIT_CAM = env.getProperty<float>("MAX_POSITION") * 1.25f;
         visualisation.setInitialCameraLocation(INIT_CAM, INIT_CAM, INIT_CAM);
@@ -430,7 +430,7 @@ int main(int argc, const char ** argv) {
 
     // If no xml model file was is provided, generate a population.
     if (cudaSimulation.getSimulationConfig().input_file.empty()) {
-        flamegpu::EnvironmentDescription &env = model.Environment();
+        flamegpu::EnvironmentDescription env = model.Environment();
         // Uniformly distribute agents within space, with uniformly distributed initial velocity.
         // c++ random number generator engine
         std::mt19937_64 rngEngine(cudaSimulation.getSimulationConfig().random_seed);

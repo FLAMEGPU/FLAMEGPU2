@@ -9,6 +9,7 @@
 
 #include "flamegpu/defines.h"
 #include "flamegpu/sim/AgentInterface.h"
+#include "flamegpu/util/Any.h"
 
 
 namespace flamegpu {
@@ -18,6 +19,8 @@ class HostAPI;
 class ModelDescription;
 struct ModelData;
 struct RunLog;
+class CUDASimulation;
+class EnvironmentManager;
 
 
 /**

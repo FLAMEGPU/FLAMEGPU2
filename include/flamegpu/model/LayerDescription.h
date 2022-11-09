@@ -116,37 +116,37 @@ class CLayerDescription {
  */
 class LayerDescription : public CLayerDescription {
  public:
-     /**
-      * Constructor, creates an interface to the AgentData
-      * @param data Data store of this agent's data
-      */
-     explicit LayerDescription(std::shared_ptr<LayerData> data);
-     /**
-      * Copy constructor
-      * Creates a new interface to the same AgentData/ModelData
-      */
-     LayerDescription(const LayerDescription& other_layer) = default;
-     LayerDescription(LayerDescription&& other_layer) = default;
-     /**
-      * Assignment operator
-      * Assigns this interface to the same AgentData/ModelData
-      */
-     LayerDescription& operator=(const LayerDescription& other_layer) = default;
-     LayerDescription& operator=(LayerDescription&& other_layer) = default;
-     /**
-      * Equality operator, checks whether AgentDescription hierarchies are functionally the same
-      * @param rhs right hand side
-      * @returns True when agents are the same
-      * @note Instead compare pointers if you wish to check that they are the same instance
-      */
-     bool operator==(const CLayerDescription& rhs) const;
-     /**
-      * Equality operator, checks whether AgentDescription hierarchies are functionally different
-      * @param rhs right hand side
-      * @returns True when agents are not the same
-      * @note Instead compare pointers if you wish to check that they are not the same instance
-      */
-     bool operator!=(const CLayerDescription& rhs) const;
+    /**
+     * Constructor, creates an interface to the LayerData
+     * @param data Data store of this environment's data
+     */
+    explicit LayerDescription(std::shared_ptr<LayerData> data);
+    /**
+     * Copy constructor
+     * Creates a new interface to the same LayerData/ModelData
+     */
+    LayerDescription(const LayerDescription& other_layer) = default;
+    LayerDescription(LayerDescription&& other_layer) = default;
+    /**
+     * Assignment operator
+     * Assigns this interface to the same LayerData/ModelData
+     */
+    LayerDescription& operator=(const LayerDescription& other_layer) = default;
+    LayerDescription& operator=(LayerDescription&& other_layer) = default;
+    /**
+     * Equality operator, checks whether LayerDescription hierarchies are functionally the same
+     * @param rhs right hand side
+     * @returns True when layers are the same
+     * @note Instead compare pointers if you wish to check that they are the same instance
+     */
+    bool operator==(const CLayerDescription& rhs) const;
+    /**
+     * Equality operator, checks whether LayerDescription hierarchies are functionally different
+     * @param rhs right hand side
+     * @returns True when layers are not the same
+     * @note Instead compare pointers if you wish to check that they are not the same instance
+     */
+    bool operator!=(const CLayerDescription& rhs) const;
 
     /**
      * Adds an agent function to this layer

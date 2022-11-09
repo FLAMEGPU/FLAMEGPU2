@@ -20,7 +20,7 @@
 
 namespace flamegpu {
 struct SubEnvironmentData;
-class EnvironmentDescription;
+struct EnvironmentData;
 class CUDASimulation;
 
 /**
@@ -131,7 +131,7 @@ class EnvironmentManager : public std::enable_shared_from_this<EnvironmentManage
      * Initialises a model's environment property cache
      * @param desc environment properties description to use
     */
-     [[nodiscard]] static std::shared_ptr<EnvironmentManager> create(const EnvironmentDescription& desc) {
+     [[nodiscard]] static std::shared_ptr<EnvironmentManager> create(const EnvironmentData& desc) {
         std::shared_ptr<EnvironmentManager> rtn(new EnvironmentManager());  // Can't use make_shared with private constructor!
         rtn->init(desc);
         return rtn;
@@ -143,7 +143,7 @@ class EnvironmentManager : public std::enable_shared_from_this<EnvironmentManage
      * @param parent_environment EnvironmentManager of the parent of the submodel, used to initialise mappings
      * @param mapping Metadata for which environment properties are mapped between master and submodels
      */
-     [[nodiscard]] static std::shared_ptr<EnvironmentManager> create(const EnvironmentDescription& desc, const std::shared_ptr<EnvironmentManager>& parent_environment, const SubEnvironmentData& mapping) {
+     [[nodiscard]] static std::shared_ptr<EnvironmentManager> create(const EnvironmentData& desc, const std::shared_ptr<EnvironmentManager>& parent_environment, const SubEnvironmentData& mapping) {
         std::shared_ptr<EnvironmentManager> rtn(new EnvironmentManager());  // Can't use make_shared with private constructor!
         rtn->init(desc, parent_environment, mapping);
         return rtn;
@@ -246,7 +246,7 @@ class EnvironmentManager : public std::enable_shared_from_this<EnvironmentManage
      * @param desc The environment description (this is where the defaults are pulled from)
      * @todo This is not a particularly efficient implementation, as it updates them all individually.
      */
-    void resetModel(const EnvironmentDescription& desc);
+    void resetModel(const EnvironmentData& desc);
     /**
      * Copies the environment property cache to a device buffer
      * @param stream Cuda stream to perform memcpys on
@@ -281,11 +281,11 @@ class EnvironmentManager : public std::enable_shared_from_this<EnvironmentManage
     /**
      * static EnvironmentDescription::create(const EnvironmentDescription&)
      */
-    void init(const EnvironmentDescription& desc);
+    void init(const EnvironmentData& desc);
     /**
      * static EnvironmentDescription::create(const EnvironmentDescription&, const std::shared_ptr<EnvironmentManager>&, const SubEnvironmentData&)
      */
-    void init(const EnvironmentDescription& desc, const std::shared_ptr<EnvironmentManager>& parent_environment, const SubEnvironmentData& mapping);
+    void init(const EnvironmentData& desc, const std::shared_ptr<EnvironmentManager>& parent_environment, const SubEnvironmentData& mapping);
     /**
      * Called by the submodel variant of init() to notify the parent model of properties which are mapped
      * @param parent_name Name of the property in the callees environment

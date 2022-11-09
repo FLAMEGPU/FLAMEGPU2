@@ -31,7 +31,7 @@ class JSONStateReader : public StateReader {
      */
     JSONStateReader(
         const std::string &model_name,
-        const std::unordered_map<std::string, EnvironmentDescription::PropData> &env_desc,
+        const std::unordered_map<std::string, EnvironmentData::PropData> &env_desc,
         std::unordered_map<std::string, util::Any>&env_init,
         util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
         const std::string &input_file,

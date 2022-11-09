@@ -618,7 +618,7 @@ TEST(DeviceRTCAPITest, AgentFunction_env) {
     std::array<int, 32> zero_array;
     zero_array.fill(0);
     // create some environment variables
-    EnvironmentDescription& env = model.Environment();
+    EnvironmentDescription env = model.Environment();
     env.newProperty<int>("e1", 100);
     env.newProperty<int>("e2", 200);
     env.newProperty<int, 32>("e_array_1", zero_array);

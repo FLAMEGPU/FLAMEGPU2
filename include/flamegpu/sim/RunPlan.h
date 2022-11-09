@@ -176,7 +176,7 @@ class RunPlan {
     RunPlanVector operator*(unsigned int rhs) const;
 
  private:
-    explicit RunPlan(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> &environment, bool allow_0);
+    explicit RunPlan(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentData::PropData>> &environment, bool allow_0);
     uint64_t random_seed;
     unsigned int steps;
     std::string output_subdirectory;
@@ -185,7 +185,7 @@ class RunPlan {
      * Reference to model environment data, for validation
      */
     // This needs to be shared_ptr, reference goes out of scope, otherwise have a copy of the map per RunPlan
-    std::shared_ptr<const std::unordered_map<std::string, EnvironmentDescription::PropData>> environment;
+    std::shared_ptr<const std::unordered_map<std::string, EnvironmentData::PropData>> environment;
     /**
      * This flag denotes whether 0 steps are permitted
      */

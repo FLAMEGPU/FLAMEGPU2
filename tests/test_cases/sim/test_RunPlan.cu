@@ -73,7 +73,7 @@ TEST(TestRunPlan, setProperty) {
     // Create a model
     flamegpu::ModelDescription model("test");
     // Add some properties to the model, using a range of types.
-    auto &environment = model.Environment();
+    auto environment = model.Environment();
     environment.newProperty<float>("f", 1.0f);
     environment.newProperty<int32_t>("i", -1);
     environment.newProperty<uint32_t>("u", 1u);
@@ -243,7 +243,7 @@ TEST(TestRunPlan, getProperty) {
     // Create a model
     flamegpu::ModelDescription model("test");
     // Add some properties to the model, using a range of types.
-    auto &environment = model.Environment();
+    auto environment = model.Environment();
     environment.newProperty<float>("f", 1.0f);
     environment.newProperty<int32_t>("i", -1);
     environment.newProperty<uint32_t>("u", 1u);

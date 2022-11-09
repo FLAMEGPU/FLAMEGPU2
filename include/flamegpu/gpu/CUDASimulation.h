@@ -16,6 +16,7 @@
 #include "flamegpu/runtime/utility/RandomManager.cuh"
 #include "flamegpu/runtime/HostNewAgentAPI.h"
 #include "flamegpu/gpu/CUDAMacroEnvironment.h"
+#include "flamegpu/runtime/utility/EnvironmentManager.cuh"
 
 #ifdef VISUALISATION
 #include "flamegpu/visualiser/ModelVis.h"
