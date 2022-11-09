@@ -7,8 +7,6 @@
 
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/runtime/AgentFunction.cuh"
-#include "flamegpu/runtime/AgentFunctionCondition.cuh"
 #include "flamegpu/model/DependencyNode.h"
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/model/LayerDescription.h"
