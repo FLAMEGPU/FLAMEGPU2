@@ -1,4 +1,4 @@
-from setuptools import find_packages, setup
+from setuptools import find_namespace_packages, setup
 from setuptools.dist import Distribution
 
 class BinaryDistribution(Distribution):
@@ -21,11 +21,11 @@ setup(
   url='https://github.com/FLAMEGPU/FLAMEGPU2',
   distclass=BinaryDistribution,
   cmdclass={'install': InstallPlatlib},
-  packages=find_packages(),
+  packages=find_namespace_packages(),
   include_package_data=True,
   classifiers=[
   'Development Status :: 3 - Alpha',
-  'Environment :: GPU :: NVIDIA CUDA :: @CUDAToolkit_VERSION_MAJOR@.@CUDAToolkit_VERSION_MINOR@'
+  'Environment :: GPU :: NVIDIA CUDA :: @CUDAToolkit_VERSION_MAJOR@.@CUDAToolkit_VERSION_MINOR@',
   'Intended Audience :: Developers',
   'License :: OSI Approved :: MIT License',
   'Operating System :: POSIX :: Linux',
