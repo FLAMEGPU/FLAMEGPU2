@@ -42,6 +42,7 @@ class Simulation {
             steps = other.steps;
             verbosity = other.verbosity;
             timing = other.timing;
+            silence_unknown_args = other.silence_unknown_args;
 #ifdef VISUALISATION
             console_mode = other.console_mode;
 #endif
@@ -55,6 +56,7 @@ class Simulation {
         unsigned int steps = 1;
         flamegpu::Verbosity verbosity = Verbosity::Default;
         bool timing = false;
+        bool silence_unknown_args = false;
 #ifdef VISUALISATION
         bool console_mode = false;
 #else

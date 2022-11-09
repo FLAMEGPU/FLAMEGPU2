@@ -54,6 +54,11 @@ class CUDAEnsemble {
          */
         flamegpu::Verbosity verbosity = Verbosity::Default;
         /**
+         * Suppresses warning for unknown arguments passed to the CUDAEnsemble during initialisation. Useful for when arguments are passed to user defined models but should
+         * not be considered by the FLAME GPU API.
+         */
+        bool silence_unknown_args = false;
+        /**
          * If true, the total runtime for the ensemble will be printed to stdout at completion
          * This is independent of the EnsembleConfig::quiet
          * Defaults to false
