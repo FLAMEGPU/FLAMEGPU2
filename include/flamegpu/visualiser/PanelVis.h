@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <set>
 
+#include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/model/EnvironmentData.h"
 #include "flamegpu/visualiser/config/ModelConfig.h"
 
