@@ -305,7 +305,7 @@ class ModelDescription {
         auto rtn = model->messages.find(message_name);
         if (rtn != model->messages.end()) {
             if (auto r = std::dynamic_pointer_cast<typename MessageType::Data>(rtn->second)) {
-                return MessageType::CDescription(r);
+                return typename MessageType::CDescription(r);
             }
             THROW exception::InvalidMessageType("Message ('%s') is not of correct type, "
                 "in ModelDescription::getMessage().",
