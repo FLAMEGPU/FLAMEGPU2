@@ -298,6 +298,132 @@ TEST(BucketMessageTest, OptionalNone) {
         EXPECT_EQ(0u, sum);
     }
 }
+// Initialise a population for the 0-bin simple persistnce testing
+FLAMEGPU_INIT_FUNCTION(InitPopulationEvenOutputOnly) {
+    // Initialise a population in an init function
+    auto agent = FLAMEGPU->agent(AGENT_NAME);
+    for (uint32_t i = 0; i < AGENT_COUNT; ++i) {
+        auto instance = agent.newAgent();
+        instance.setVariable<int>("id", i);
+        instance.setVariable<unsigned int>("count", 0u);
+        instance.setVariable<unsigned int>("sum", 0u);
+    }
+}
+// Host function to forward a parent models step counter into a submodel via env var
+FLAMEGPU_HOST_FUNCTION(ForwardParentStepCounter) {
+    FLAMEGPU->environment.setProperty<unsigned int>("parentStepCounter", FLAMEGPU->getStepCounter());
+}
+// Fn condition to only run on even iteraitons
+FLAMEGPU_AGENT_FUNCTION_CONDITION(ParentEvenOnlyCondition) {
+    return FLAMEGPU->environment.getProperty<unsigned int>("parentStepCounter") % 2 == 0;
+}
+// Simple versionm of the output function, using just a single bin for simplicity
+FLAMEGPU_AGENT_FUNCTION(out_simple, MessageNone, MessageBucket) {
+    int id = FLAMEGPU->getVariable<int>("id");
+    FLAMEGPU->message_out.setVariable<int>("id", id);
+    FLAMEGPU->message_out.setKey(0);
+    return ALIVE;
+}
+// Agent function which iterates read in mesasges and sums the ID, from a single bin.
+FLAMEGPU_AGENT_FUNCTION(in_simple, MessageBucket, MessageNone) {
+    const int id = FLAMEGPU->getVariable<int>("id");
+    unsigned int count = 0;
+    unsigned int sum = 0;
+    for (auto &m : FLAMEGPU->message_in(0)) {
+        count++;
+        sum += m.getVariable<int>("id");
+    }
+    FLAMEGPU->setVariable<unsigned int>("count", count);
+    FLAMEGPU->setVariable<unsigned int>("sum", sum);
+    return ALIVE;
+}
+// Exit conditon that exits after the 2 steps have executed
+FLAMEGPU_EXIT_CONDITION(ExitAfter2) {
+    return FLAMEGPU->getStepCounter() >= 2 ? flamegpu::EXIT: flamegpu::CONTINUE;
+}
+// Step function to assert that the correct number of messsages have been read, ensuring that the PBM has been reset between calls to the same submodel.
+FLAMEGPU_STEP_FUNCTION(AssertParentEvenOutputOnly) {
+    HostAgentAPI agent = FLAMEGPU->agent(AGENT_NAME);
+    // Get the population data
+    DeviceAgentVector av = agent.getPopulationData();
+    // Iterate the population, ensuring that each agent read the correct number of messages and got the correct sum of messages.
+    // These values expect only a single bin is used, in the interest of simplicitly.
+    const unsigned int exepctedCountEven = agent.count();
+    const unsigned int expectedCountOdd = 0u;
+    for (const auto& a : av) {
+        if (FLAMEGPU->environment.getProperty<unsigned int>("parentStepCounter") % 2 == 0) {
+            // Even iterations expect the count to match the number of agents, and sum to be non zero.
+            ASSERT_EQ(a.getVariable<unsigned int>("count"), exepctedCountEven);
+            ASSERT_NE(a.getVariable<unsigned int>("sum"), 0u);
+        } else {
+            // Odd iters expect 0 count and 0 sum
+            ASSERT_EQ(a.getVariable<unsigned int>("count"), expectedCountOdd);
+            ASSERT_EQ(a.getVariable<unsigned int>("sum"), 0u);
+        }
+    }
+}
+// Test that message list PBM is correcttly reset for subsequent steps of the outer model.
+// This was a bug encountered during schelling model implemetnation.
+TEST(BucketMessageTest, SubmodelPBMPersistence) {
+    // Construct submodel
+    ModelDescription submodel("submodel");
+    {   // MessageBucket::Description
+        MessageBucket::Description &message = submodel.newMessage<MessageBucket>("bucket");
+        message.setBounds(0, AGENT_COUNT);
+        message.newVariable<int>("id");
+    }
+    {   // AgentDescription
+        AgentDescription &agent = submodel.newAgent(AGENT_NAME);
+        agent.newVariable<int>("id");
+        agent.newVariable<unsigned int>("count", 0);  // Number of messages iterated
+        agent.newVariable<unsigned int>("sum", 0);  // Sums of IDs in bucket
+        auto &af = agent.newFunction("out", out_simple);
+        af.setMessageOutput("bucket");
+        af.setMessageOutputOptional(true);
+        af.setFunctionCondition(ParentEvenOnlyCondition);
+        agent.newFunction("in", in_simple).setMessageInput("bucket");
+    }
+    {   // Layer #1
+        LayerDescription &layer = submodel.newLayer();
+        layer.addAgentFunction(out_simple);
+    }
+    {   // Layer #2
+        LayerDescription &layer = submodel.newLayer();
+        layer.addAgentFunction(in_simple);
+    }
+    // Add an enviornment variable access the parent model iteration number in the submodel
+    submodel.Environment().newProperty<unsigned int>("parentStepCounter", 0u);
+    // Add a step function which validates the correct number of messages was read
+    submodel.addStepFunction(AssertParentEvenOutputOnly);
+    // Add the required exit condition, which exits after 2 iters of the submodel]
+    submodel.addExitCondition(ExitAfter2);
+    // Construct the parent model
+    ModelDescription model("model");
+    auto &smd = model.newSubModel("sub", submodel);
+    {
+        AgentDescription &agent = model.newAgent(AGENT_NAME);
+        agent.newVariable<int>("id");
+        agent.newVariable<unsigned int>("count", 0);  // Number of messages iterated
+        agent.newVariable<unsigned int>("sum", 0);  // Sums of IDs in bucket
+        smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
+    }
+    // Add an enviornment variable access the parent model iteration number in the submodel
+    model.Environment().newProperty<unsigned int>("parentStepCounter", 0u);
+    // Bind the env var to the sub env var
+    smd.SubEnvironment().mapProperty("parentStepCounter", "parentStepCounter");
+    // Add an init function to generate a population
+    model.addInitFunction(InitPopulationEvenOutputOnly);
+    // Adda  layer containing a host function which updatest the counter
+    model.newLayer().addHostFunction(ForwardParentStepCounter);
+    // Add the submodel to the outer model control flow
+    model.newLayer().addSubModel("sub");
+    // Construct the cuda simulation
+    CUDASimulation cudaSimulation(model);
+    // Run for 2 steps, to trigger an odd and an even step.
+    cudaSimulation.SimulationConfig().steps = 2;
+    EXPECT_NO_THROW(cudaSimulation.simulate());
+}
+
 TEST(BucketMessageTest, Mandatory_Range) {
     // Agent count must be multiple of 4
     std::unordered_map<int, unsigned int> bucket_count;
