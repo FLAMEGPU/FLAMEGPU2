@@ -75,17 +75,17 @@ TEST(DependencyGraphTest, ValidateEmptyGraph) {
     AgentDescription a = _m.newAgent(AGENT_NAME);
     a.newFunction(FUNCTION_NAME1, agent_fn1);
     ModelDescription model(MODEL_NAME);
-    const DependencyGraph& graph = model.getDependencyGraph();
-    EXPECT_THROW(graph.validateDependencyGraph(), exception::InvalidDependencyGraph);
+    // This triggers validate dependency graph internally
+    EXPECT_THROW(_m.generateLayers(), exception::InvalidDependencyGraph);
 }
 
 TEST(DependencyGraphTest, ValidateSingleNode) {
     ModelDescription _m(MODEL_NAME);
     AgentDescription a = _m.newAgent(AGENT_NAME);
     AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
-    const DependencyGraph& graph = _m.getDependencyGraph();
     _m.addExecutionRoot(f);
-    EXPECT_TRUE(graph.validateDependencyGraph());
+    // This triggers validate dependency graph internally
+    EXPECT_NO_THROW(_m.generateLayers());
 }
 
 TEST(DependencyGraphTest, ValidateSingleChain) {
@@ -96,9 +96,9 @@ TEST(DependencyGraphTest, ValidateSingleChain) {
     AgentFunctionDescription f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
     f2.dependsOn(f);
     f3.dependsOn(f2);
-    const DependencyGraph& graph = _m.getDependencyGraph();
     _m.addExecutionRoot(f);
-    EXPECT_TRUE(graph.validateDependencyGraph());
+    // This triggers validate dependency graph internally
+    EXPECT_NO_THROW(_m.generateLayers());
 }
 
 TEST(DependencyGraphTest, ValidateBranch) {
@@ -109,9 +109,9 @@ TEST(DependencyGraphTest, ValidateBranch) {
     AgentFunctionDescription f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
     f2.dependsOn(f);
     f3.dependsOn(f);
-    const DependencyGraph& graph = _m.getDependencyGraph();
     _m.addExecutionRoot(f);
-    EXPECT_TRUE(graph.validateDependencyGraph());
+    // This triggers validate dependency graph internally
+    EXPECT_NO_THROW(_m.generateLayers());
 }
 
 TEST(DependencyGraphTest, ValidateCycle) {
@@ -123,9 +123,9 @@ TEST(DependencyGraphTest, ValidateCycle) {
     f2.dependsOn(f);
     f2.dependsOn(f3);
     f3.dependsOn(f2);
-    const DependencyGraph& graph = _m.getDependencyGraph();
     _m.addExecutionRoot(f);
-    EXPECT_THROW(graph.validateDependencyGraph(), exception::InvalidDependencyGraph);
+    // This triggers validate dependency graph internally
+    EXPECT_THROW(_m.generateLayers(), exception::InvalidDependencyGraph);
 }
 
 TEST(DependencyGraphTest, ValidateRootWithDependencies) {
@@ -136,9 +136,9 @@ TEST(DependencyGraphTest, ValidateRootWithDependencies) {
     AgentFunctionDescription f3 = a.newFunction(FUNCTION_NAME3, agent_fn3);
     f2.dependsOn(f);
     f3.dependsOn(f2);
-    const DependencyGraph& graph = _m.getDependencyGraph();
     _m.addExecutionRoot(f2);
-    EXPECT_THROW(graph.validateDependencyGraph(), exception::InvalidDependencyGraph);
+    // This triggers validate dependency graph internally
+    EXPECT_THROW(_m.generateLayers(), exception::InvalidDependencyGraph);
 }
 
 TEST(DependencyGraphTest, ConstructLayersSingleChain) {

@@ -179,13 +179,6 @@ void ModelDescription::generateLayers() {
 }
 
 /**
- * Accessors
- */
-const DependencyGraph& ModelDescription::getDependencyGraph() const {
-    return *(model->dependencyGraph);
-}
-
-/**
 * Const Accessors
 */
 std::string ModelDescription::getName() const {

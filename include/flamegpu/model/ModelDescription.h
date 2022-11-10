@@ -263,10 +263,6 @@ class ModelDescription {
      */
     std::string getName() const;
     /**
-     * @return A reference to the this model's DependencyGraph
-     */
-    const DependencyGraph& getDependencyGraph() const;
-    /**
      * Sets root as an execution root of the model. Multiple roots can be used which represent independent chains of dependencies.
      * @param root The DependencyNode which will be used as an execution root
      */
