@@ -229,11 +229,11 @@ void JSONStateWriter::doWrite(T &writer) {
 int JSONStateWriter::writeStates(bool prettyPrint) {
     rapidjson::StringBuffer s;
     if (prettyPrint) {
-        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer = rapidjson::PrettyWriter<rapidjson::StringBuffer>(s);
+        auto writer = rapidjson::PrettyWriter<rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::UTF8<>, rapidjson::CrtAllocator, rapidjson::kWriteNanAndInfFlag>(s);
         writer.SetIndent('\t', 1);
         doWrite(writer);
     } else {
-        rapidjson::Writer<rapidjson::StringBuffer> writer = rapidjson::Writer<rapidjson::StringBuffer>(s);
+        auto writer = rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::UTF8<>, rapidjson::CrtAllocator, rapidjson::kWriteNanAndInfFlag>(s);
         doWrite(writer);
     }
 

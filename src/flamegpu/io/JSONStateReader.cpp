@@ -442,7 +442,7 @@ int JSONStateReader::parse() {
     rapidjson::StringStream filess(filestring.c_str());
     rapidjson::Reader reader;
     // First parse the file and simply count the size of agent list
-    rapidjson::ParseResult pr1 = reader.Parse(filess, agentcounter);
+    rapidjson::ParseResult pr1 = reader.Parse<rapidjson::kParseNanAndInfFlag, rapidjson::StringStream, flamegpu::io::JSONStateReader_agentsize_counter>(filess, agentcounter);
     if (pr1.Code() != rapidjson::ParseErrorCode::kParseErrorNone) {
         THROW exception::RapidJSONError("Whilst parsing input file '%s', RapidJSON returned error: %s\n", inputFile.c_str(), rapidjson::GetParseError_En(pr1.Code()));
     }
@@ -456,7 +456,7 @@ int JSONStateReader::parse() {
     // Reset the string stream
     filess = rapidjson::StringStream(filestring.c_str());
     // Read in the file data
-    rapidjson::ParseResult pr2 = reader.Parse(filess, handler);
+    rapidjson::ParseResult pr2 = reader.Parse<rapidjson::kParseNanAndInfFlag, rapidjson::StringStream, flamegpu::io::JSONStateReader_impl>(filess, handler);
     if (pr2.Code() != rapidjson::ParseErrorCode::kParseErrorNone) {
         THROW exception::RapidJSONError("Whilst parsing input file '%s', RapidJSON returned error: %s\n", inputFile.c_str(), rapidjson::GetParseError_En(pr1.Code()));
     }

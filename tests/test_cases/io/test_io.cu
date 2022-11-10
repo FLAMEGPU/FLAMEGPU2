@@ -44,6 +44,15 @@ FLAMEGPU_STEP_FUNCTION(VALIDATE_ENV) {
     const bool uint8_t_array_eq = FLAMEGPU->environment.getProperty<uint8_t, 3>("uint8_t_a") == std::array<uint8_t, 3>{ 21u, 0u, 1u };
     EXPECT_TRUE(uint8_t_array_eq);
     validate_has_run = true;
+    // Limits
+    EXPECT_TRUE(std::isnan(FLAMEGPU->environment.getProperty<float>("float_qnan")));
+    EXPECT_TRUE(std::isnan(FLAMEGPU->environment.getProperty<float>("float_snan")));
+    EXPECT_EQ(FLAMEGPU->environment.getProperty<float>("float_inf"), std::numeric_limits<float>::infinity());
+    EXPECT_EQ(FLAMEGPU->environment.getProperty<float>("float_inf_neg"), -std::numeric_limits<float>::infinity());
+    EXPECT_TRUE(std::isnan(FLAMEGPU->environment.getProperty<double>("double_qnan")));
+    EXPECT_TRUE(std::isnan(FLAMEGPU->environment.getProperty<double>("double_snan")));
+    EXPECT_EQ(FLAMEGPU->environment.getProperty<double>("double_inf"), std::numeric_limits<double>::infinity());
+    EXPECT_EQ(FLAMEGPU->environment.getProperty<double>("double_inf_neg"), -std::numeric_limits<double>::infinity());
 }
 FLAMEGPU_STEP_FUNCTION(RESET_ENV) {
     FLAMEGPU->environment.setProperty<float>("float", {});
@@ -66,11 +75,25 @@ FLAMEGPU_STEP_FUNCTION(RESET_ENV) {
     FLAMEGPU->environment.setProperty<uint16_t, 3>("uint16_t_a", {});
     FLAMEGPU->environment.setProperty<int8_t, 3>("int8_t_a", {});
     FLAMEGPU->environment.setProperty<uint8_t, 3>("uint8_t_a", {});
+    FLAMEGPU->environment.setProperty<float>("float_qnan", {});
+    FLAMEGPU->environment.setProperty<float>("float_snan", {});
+    FLAMEGPU->environment.setProperty<float>("float_inf", {});
+    FLAMEGPU->environment.setProperty<float>("float_inf_neg", {});
+    FLAMEGPU->environment.setProperty<double>("double_qnan", {});
+    FLAMEGPU->environment.setProperty<double>("double_snan", {});
+    FLAMEGPU->environment.setProperty<double>("double_inf", {});
+    FLAMEGPU->environment.setProperty<double>("double_inf_neg", {});
 }
 
 class MiniSim {
  public:
     void run(const std::string &test_file_name) {
+        // Assertions for limits
+        ASSERT_TRUE(std::numeric_limits<float>::has_quiet_NaN);
+        ASSERT_TRUE(std::numeric_limits<float>::has_signaling_NaN);
+        ASSERT_TRUE(std::numeric_limits<double>::has_quiet_NaN);
+        ASSERT_TRUE(std::numeric_limits<double>::has_signaling_NaN);
+        // Model description
         ModelDescription model("test_model");
         AgentDescription &a = model.newAgent("a");
         {
@@ -84,6 +107,14 @@ class MiniSim {
             a.newVariable<uint16_t>("uint16_t");
             a.newVariable<int8_t>("int8_t");
             a.newVariable<uint8_t>("uint8_t");
+            a.newVariable<float>("float_qnan");
+            a.newVariable<float>("float_snan");
+            a.newVariable<float>("float_inf");
+            a.newVariable<float>("float_inf_neg");
+            a.newVariable<double>("double_qnan");
+            a.newVariable<double>("double_snan");
+            a.newVariable<double>("double_inf");
+            a.newVariable<double>("double_inf_neg");
         }
         AgentDescription &b = model.newAgent("b");
         b.newState("1");
@@ -122,6 +153,15 @@ class MiniSim {
             e.newProperty<uint16_t, 3>("uint16_t_a", { 19u, 0u, 1u });
             e.newProperty<int8_t, 3>("int8_t_a", { 20, 0, 1 });
             e.newProperty<uint8_t, 3>("uint8_t_a", {21u, 0u, 1u});
+            // Limit values
+            e.newProperty<float>("float_qnan", std::numeric_limits<float>::quiet_NaN());
+            e.newProperty<float>("float_snan", std::numeric_limits<float>::signaling_NaN());
+            e.newProperty<float>("float_inf", std::numeric_limits<float>::infinity());
+            e.newProperty<float>("float_inf_neg", -std::numeric_limits<float>::infinity());
+            e.newProperty<double>("double_qnan", std::numeric_limits<double>::quiet_NaN());
+            e.newProperty<double>("double_snan", std::numeric_limits<double>::quiet_NaN());
+            e.newProperty<double>("double_inf", std::numeric_limits<double>::infinity());
+            e.newProperty<double>("double_inf_neg", -std::numeric_limits<double>::infinity());
         }
         AgentVector pop_a_out(a, 5);
         for (unsigned int i = 0; i < 5; ++i) {
@@ -136,6 +176,15 @@ class MiniSim {
             agent.setVariable<uint16_t>("uint16_t", static_cast<uint16_t>(8u + i));
             agent.setVariable<int8_t>("int8_t", static_cast<int8_t>(9 + i));
             agent.setVariable<uint8_t>("uint8_t", static_cast<uint8_t>(10u + i));
+            // Limit values
+            agent.setVariable<float>("float_qnan", std::numeric_limits<float>::quiet_NaN());
+            agent.setVariable<float>("float_snan", std::numeric_limits<float>::signaling_NaN());
+            agent.setVariable<float>("float_inf", std::numeric_limits<float>::infinity());
+            agent.setVariable<float>("float_inf_neg", -std::numeric_limits<float>::infinity());
+            agent.setVariable<double>("double_qnan", std::numeric_limits<double>::quiet_NaN());
+            agent.setVariable<double>("double_snan", std::numeric_limits<double>::signaling_NaN());
+            agent.setVariable<double>("double_inf", std::numeric_limits<double>::infinity());
+            agent.setVariable<double>("double_inf_neg", -std::numeric_limits<double>::infinity());
         }
         AgentVector pop_b_out(b, 5);
         for (unsigned int i = 0; i < 5; ++i) {
@@ -174,9 +223,9 @@ class MiniSim {
             am.CUDAConfig().inLayerConcurrency = false;
             am.exportData(test_file_name);
         }
-        {  // Run Import
+        {   // Run Import
             CUDASimulation am(model);
-            // Ensure config doesn;t match
+            // Ensure config doesnt match
             am.SimulationConfig().step_log_file = "";
             am.SimulationConfig().exit_log_file = "";
             am.SimulationConfig().common_log_file = "";
@@ -208,6 +257,7 @@ class MiniSim {
 #endif
             EXPECT_EQ(am.getCUDAConfig().device_id, 0);
             EXPECT_EQ(am.getCUDAConfig().inLayerConcurrency, false);
+            // Check population data
             AgentVector pop_a_in(a, 5);
             AgentVector pop_b_in(b, 5);
             am.getPopulationData(pop_a_in);
@@ -227,6 +277,15 @@ class MiniSim {
                 EXPECT_EQ(agent_in.getVariable<uint16_t>("uint16_t"), agent_out.getVariable<uint16_t>("uint16_t"));
                 EXPECT_EQ(agent_in.getVariable<int8_t>("int8_t"), agent_out.getVariable<int8_t>("int8_t"));
                 EXPECT_EQ(agent_in.getVariable<uint8_t>("uint8_t"), agent_out.getVariable<uint8_t>("uint8_t"));
+                // Limit values
+                EXPECT_TRUE(std::isnan(agent_in.getVariable<float>("float_qnan")));
+                EXPECT_TRUE(std::isnan(agent_in.getVariable<float>("float_snan")));
+                EXPECT_EQ(agent_in.getVariable<float>("float_inf"), std::numeric_limits<float>::infinity());
+                EXPECT_EQ(agent_in.getVariable<float>("float_inf_neg"), -std::numeric_limits<float>::infinity());
+                EXPECT_TRUE(std::isnan(agent_in.getVariable<double>("double_qnan")));
+                EXPECT_TRUE(std::isnan(agent_in.getVariable<double>("double_snan")));
+                EXPECT_EQ(agent_in.getVariable<double>("double_inf"), std::numeric_limits<double>::infinity());
+                EXPECT_EQ(agent_in.getVariable<double>("double_inf_neg"), -std::numeric_limits<double>::infinity());
             }
             // Valid agent array vars
             ASSERT_EQ(pop_b_in.size(), pop_b_out.size());
