@@ -277,12 +277,12 @@ void JSONLogger::logCommon(const RunLog &log, const RunPlan *plan, bool doLogCon
     rapidjson::StringBuffer s;
     if (prettyPrint) {
         // rapidjson::Writer doesn't have virtual methods, so can't pass rapidjson::PrettyWriter around as ptr to rapidjson::writer
-        rapidjson::PrettyWriter<rapidjson::StringBuffer>* writer = new rapidjson::PrettyWriter<rapidjson::StringBuffer>(s);
+        auto writer = new rapidjson::PrettyWriter<rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::UTF8<>, rapidjson::CrtAllocator, rapidjson::kWriteNanAndInfFlag>(s);
         writer->SetIndent('\t', 1);
         logCommon(writer, log, plan, doLogConfig, doLogSteps, doLogExit, doLogStepTime, doLogExitTime);
         delete writer;
     } else {
-        rapidjson::Writer<rapidjson::StringBuffer> *writer = new rapidjson::Writer<rapidjson::StringBuffer>(s);
+        auto *writer = new rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::UTF8<>, rapidjson::CrtAllocator, rapidjson::kWriteNanAndInfFlag>(s);
         logCommon(writer, log, plan, doLogConfig, doLogSteps, doLogExit, doLogStepTime, doLogExitTime);
         delete writer;
     }
