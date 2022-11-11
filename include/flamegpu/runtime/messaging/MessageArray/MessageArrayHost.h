@@ -178,6 +178,7 @@ class MessageArray::Description : public CDescription {
     Description& operator=(const Description& other_message) = default;
     Description& operator=(Description&& other_message) = default;
 
+    using MessageBruteForce::CDescription::setPersistent;
     using MessageBruteForce::CDescription::newVariable;
 #ifdef SWIG
     using MessageBruteForce::CDescription::newVariableArray;

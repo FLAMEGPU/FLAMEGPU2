@@ -314,6 +314,10 @@ FLAMEGPU_HOST_FUNCTION(ForwardParentStepCounter) {
     FLAMEGPU->environment.setProperty<unsigned int>("parentStepCounter", FLAMEGPU->getStepCounter());
 }
 // Fn condition to only run on even iteraitons
+FLAMEGPU_AGENT_FUNCTION_CONDITION(EvenOnlyCondition) {
+    return FLAMEGPU->getStepCounter() % 2 == 0;
+}
+// Fn condition to only run on even iteraitons
 FLAMEGPU_AGENT_FUNCTION_CONDITION(ParentEvenOnlyCondition) {
     return FLAMEGPU->environment.getProperty<unsigned int>("parentStepCounter") % 2 == 0;
 }
@@ -341,6 +345,44 @@ FLAMEGPU_AGENT_FUNCTION(in_simple, MessageBucket, MessageNone) {
 FLAMEGPU_EXIT_CONDITION(ExitAfter2) {
     return FLAMEGPU->getStepCounter() >= 2 ? flamegpu::EXIT: flamegpu::CONTINUE;
 }
+// Step function to assert that the correct number of messages have been read, when checking that messages should not persist.
+FLAMEGPU_STEP_FUNCTION(AssertEvenOutputOnly) {
+    HostAgentAPI agent = FLAMEGPU->agent(AGENT_NAME);
+    // Get the population data
+    DeviceAgentVector av = agent.getPopulationData();
+    // Iterate the population, ensuring that each agent read the correct number of messages and got the correct sum of messages.
+    // These values expect only a single bin is used, in the interest of simplicitly.
+    const unsigned int exepctedCountEven = agent.count();
+    const unsigned int expectedCountOdd = 0u;
+
+    for (const auto& a : av) {
+        if (FLAMEGPU->getStepCounter() % 2 == 0) {
+            // Even iterations expect the count to match the number of agents, and sum to be non zero.
+            ASSERT_EQ(a.getVariable<unsigned int>("count"), exepctedCountEven);
+            ASSERT_NE(a.getVariable<unsigned int>("sum"), 0u);
+        } else {
+            // Odd iters expect 0 count and 0 sum
+            ASSERT_EQ(a.getVariable<unsigned int>("count"), expectedCountOdd);
+            ASSERT_EQ(a.getVariable<unsigned int>("sum"), 0u);
+        }
+    }
+}
+// Step function to assert that the correct number of messages have been read, when checking that messages should persist iterations.
+FLAMEGPU_STEP_FUNCTION(AssertPersistent) {
+    HostAgentAPI agent = FLAMEGPU->agent(AGENT_NAME);
+    // Get the population data
+    DeviceAgentVector av = agent.getPopulationData();
+    // Iterate the population, ensuring that each agent read the correct number of messages and got the correct sum of messages.
+    // These values expect only a single bin is used, in the interest of simplicitly.
+    const unsigned int exepctedCountEven = agent.count();
+
+    // When messages are meant to persist, there should always be a lot of messages
+    for (const auto& a : av) {
+        // Even iterations expect the count to match the number of agents, and sum to be non zero.
+        ASSERT_EQ(a.getVariable<unsigned int>("count"), exepctedCountEven);
+        ASSERT_NE(a.getVariable<unsigned int>("sum"), 0u);
+    }
+}
 // Step function to assert that the correct number of messsages have been read, ensuring that the PBM has been reset between calls to the same submodel.
 FLAMEGPU_STEP_FUNCTION(AssertParentEvenOutputOnly) {
     HostAgentAPI agent = FLAMEGPU->agent(AGENT_NAME);
@@ -361,6 +403,149 @@ FLAMEGPU_STEP_FUNCTION(AssertParentEvenOutputOnly) {
             ASSERT_EQ(a.getVariable<unsigned int>("sum"), 0u);
         }
     }
+}
+// Test that message list data does not persist iterations, by outputting on even iterations, but not outputting on odd iterations.
+TEST(BucketMessageTest, PersistenceOff) {
+    // Construct model
+    ModelDescription model("BucketMessageTest");
+    {   // MessageBucket::Description
+        MessageBucket::Description message = model.newMessage<MessageBucket>("bucket");
+        message.setBounds(0, AGENT_COUNT);
+        message.newVariable<int>("id");
+    }
+    {   // AgentDescription
+        AgentDescription agent = model.newAgent(AGENT_NAME);
+        agent.newVariable<int>("id");
+        agent.newVariable<unsigned int>("count", 0);  // Number of messages iterated
+        agent.newVariable<unsigned int>("sum", 0);  // Sums of IDs in bucket
+        auto af = agent.newFunction("out", out_simple);
+        af.setMessageOutput("bucket");
+        af.setMessageOutputOptional(true);
+        af.setFunctionCondition(EvenOnlyCondition);
+
+        agent.newFunction("in", in_simple).setMessageInput("bucket");
+    }
+    {   // Layer #1
+        LayerDescription layer = model.newLayer();
+        layer.addAgentFunction(out_simple);
+    }
+    {   // Layer #2
+        LayerDescription layer = model.newLayer();
+        layer.addAgentFunction(in_simple);
+    }
+
+    // Add an init function to generate a population
+    model.addInitFunction(InitPopulationEvenOutputOnly);
+
+    // Add a step function which validates the correct number of messages was read
+    model.addStepFunction(AssertEvenOutputOnly);
+
+    CUDASimulation cudaSimulation(model);
+
+    // Run for 2 steps, to trigger an odd and an even step.
+    cudaSimulation.SimulationConfig().steps = 2;
+
+    EXPECT_NO_THROW(cudaSimulation.simulate());
+}
+
+// Test that message list data does not persist iterations, by outputting on even iterations, but not outputting on odd iterations.
+TEST(BucketMessageTest, PersistenceOn) {
+    // Construct model
+    ModelDescription model("BucketMessageTest");
+    {   // MessageBucket::Description
+        MessageBucket::Description message = model.newMessage<MessageBucket>("bucket");
+        message.setBounds(0, AGENT_COUNT);
+        message.newVariable<int>("id");
+        // Mark that this should be a persistent mesasge list
+        message.setPersistent(true);
+    }
+    {   // AgentDescription
+        AgentDescription agent = model.newAgent(AGENT_NAME);
+        agent.newVariable<int>("id");
+        agent.newVariable<unsigned int>("count", 0);  // Number of messages iterated
+        agent.newVariable<unsigned int>("sum", 0);  // Sums of IDs in bucket
+        auto af = agent.newFunction("out", out_simple);
+        af.setMessageOutput("bucket");
+        af.setMessageOutputOptional(true);
+        af.setFunctionCondition(EvenOnlyCondition);
+
+        agent.newFunction("in", in_simple).setMessageInput("bucket");
+    }
+    {   // Layer #1
+        LayerDescription layer = model.newLayer();
+        layer.addAgentFunction(out_simple);
+    }
+    {   // Layer #2
+        LayerDescription layer = model.newLayer();
+        layer.addAgentFunction(in_simple);
+    }
+
+    // Add an init function to generate a population
+    model.addInitFunction(InitPopulationEvenOutputOnly);
+
+    // Add a step function which validates the correct number of messages was read, i.e. always reads non zero messages
+    model.addStepFunction(AssertPersistent);
+
+    CUDASimulation cudaSimulation(model);
+
+    // Run for 2 steps, to trigger an odd and an even step.
+    cudaSimulation.SimulationConfig().steps = 2;
+
+    EXPECT_NO_THROW(cudaSimulation.simulate());
+}
+
+// Test that messages lists do not persist between iterations *within* a submodel
+TEST(BucketMessageTest, SubmodelPersistence) {
+    // Construct submodel
+    ModelDescription submodel("submodel");
+    {   // MessageBucket::Description
+        MessageBucket::Description message = submodel.newMessage<MessageBucket>("bucket");
+        message.setBounds(0, AGENT_COUNT);
+        message.newVariable<int>("id");
+    }
+    {   // AgentDescription
+        AgentDescription agent = submodel.newAgent(AGENT_NAME);
+        agent.newVariable<int>("id");
+        agent.newVariable<unsigned int>("count", 0);  // Number of messages iterated
+        agent.newVariable<unsigned int>("sum", 0);  // Sums of IDs in bucket
+        auto af = agent.newFunction("out", out_simple);
+        af.setMessageOutput("bucket");
+        af.setMessageOutputOptional(true);
+        af.setFunctionCondition(EvenOnlyCondition);
+
+        agent.newFunction("in", in_simple).setMessageInput("bucket");
+    }
+    {   // Layer #1
+        LayerDescription layer = submodel.newLayer();
+        layer.addAgentFunction(out_simple);
+    }
+    {   // Layer #2
+        LayerDescription layer = submodel.newLayer();
+        layer.addAgentFunction(in_simple);
+    }
+    // Add a step function which validates the correct number of messages was read
+    submodel.addStepFunction(AssertEvenOutputOnly);
+    // Add the required exit condition, which exits after 2 iters of the submodel]
+    submodel.addExitCondition(ExitAfter2);
+    // Construct the parent model
+    ModelDescription model("model");
+    {
+        AgentDescription agent = model.newAgent(AGENT_NAME);
+        agent.newVariable<int>("id");
+        agent.newVariable<unsigned int>("count", 0);  // Number of messages iterated
+        agent.newVariable<unsigned int>("sum", 0);  // Sums of IDs in bucket
+        auto smd = model.newSubModel("sub", submodel);
+        smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
+    }
+    // Add an init function to generate a population
+    model.addInitFunction(InitPopulationEvenOutputOnly);
+    // Add the submodel to the outer model control flow
+    model.newLayer().addSubModel("sub");
+    // Construct the cuda simulation
+    CUDASimulation cudaSimulation(model);
+    // Run for 2 steps, to trigger an odd and an even step.
+    cudaSimulation.SimulationConfig().steps = 2;
+    EXPECT_NO_THROW(cudaSimulation.simulate());
 }
 // Test that message list PBM is correcttly reset for subsequent steps of the outer model.
 // This was a bug encountered during schelling model implemetnation.
