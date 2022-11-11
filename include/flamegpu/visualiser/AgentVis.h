@@ -25,29 +25,81 @@ class ColorFunction;
 struct Color;
 class AutoPalette;
 
-/**
- * This provides an interface for managing the render options for all agents of a specific type
- * State() can be called to specialise options for agents within a specific state
- * TODO: Block everything non-const from being called whilst VIS is active
- */
-class AgentVis {
-    friend class ModelVis;
-    friend class AgentStateVis;
-
- public:
+struct AgentVisData {
     /**
      * @param agent The CUDAAgent this class is configuring the visualisation for
      * @param autopalette Automatic source of colors for individual agent states
      * @note Agent states only receive colors from the autopalette when AgentVis::State() is called for each state
      * @note By default, all states share the same color from the autopalette
      */
-    explicit AgentVis(CUDAAgent &agent, const std::shared_ptr<AutoPalette> &autopalette = nullptr);
+    explicit AgentVisData(CUDAAgent& agent, const std::shared_ptr<AutoPalette>& autopalette = nullptr);
+    /**
+     * Link to the currently active auto_palette
+     */
+    std::weak_ptr<AutoPalette> auto_palette;
+    /**
+     * If setAutoPalette() is called, the created AutoPalette is stored here
+     */
+    std::shared_ptr<AutoPalette> owned_auto_palette;
+    /**
+     * This is the default configuration options for states of this agent
+     * These values will be used for any state configuration options which have not been set independently
+     */
+    AgentStateConfig defaultConfig;
+    /**
+     * Map of configurations for individual agent states
+     */
+    std::unordered_map<std::string, std::shared_ptr<AgentStateVisData>> states;
+    /**
+     * CUDAAgent being rendered
+     */
+    CUDAAgent& agent;
+    /**
+     * Agent description hierarchy being rendered
+     */
+    std::shared_ptr<const AgentData> agentData;
+    /**
+     * Holds information on core agent-wide texture buffers
+     * e.g. location/direction
+     */
+    std::map<TexBufferConfig::Function, TexBufferConfig> core_tex_buffers;
+
+    /**
+     * Pass vis configs for each agent state to visualiser
+     */
+    void initBindings(std::unique_ptr<FLAMEGPU_Visualisation>& vis);
+    /**
+     * This requests that the visualisation resizes buffers
+     * @param vis The affected visualisation
+     * @param force When true is passed, vis will delay closing the splash screen until this update has been processed
+     * Used when agent population has grown
+     * @return Returns true if a non-0 buffer was requested
+     */
+    bool requestBufferResizes(std::unique_ptr<FLAMEGPU_Visualisation>& vis, bool force);
+    /**
+     * This passes the correct device pointers to the visualisation and forces it to update the data used for rendering
+     * @param vis The affected visualisation
+     * @note This should only be called when visualisation muted is held
+     */
+    void updateBuffers(std::unique_ptr<FLAMEGPU_Visualisation>& vis);
+};
+
+/**
+ * This provides an interface for managing the render options for all agents of a specific type
+ * State() can be called to specialise options for agents within a specific state
+ * TODO: Block everything non-const from being called whilst VIS is active
+ */
+class AgentVis {
+    friend class AgentStateVis;
+
+ public:
+    explicit AgentVis(std::shared_ptr<AgentVisData> data);
     /**
      * Returns the configuration handler for the named state
      * On first use for each state this will assign the state a color from the AutoPalette if available
      * Clear the autopalette first if you wish for it to use the default color
      */
-    AgentStateVis &State(const std::string &state_name);
+    AgentStateVis State(const std::string &state_name);
 
     /**
      * Set the name of the variable representing the agents x/y/z location coordinates
@@ -534,53 +586,9 @@ class AgentVis {
 
  private:
     /**
-     * Pass vis configs for each agent state to visualiser
+     * Pointer to data struct
      */
-    void initBindings(std::unique_ptr<FLAMEGPU_Visualisation> &vis);
-    /**
-     * This requests that the visualisation resizes buffers
-     * @param vis The affected visualisation
-     * @param force When true is passed, vis will delay closing the splash screen until this update has been processed
-     * Used when agent population has grown
-     * @return Returns true if a non-0 buffer was requested
-     */
-    bool requestBufferResizes(std::unique_ptr<FLAMEGPU_Visualisation> &vis, bool force);
-    /**
-     * This passes the correct device pointers to the visualisation and forces it to update the data used for rendering
-     * @param vis The affected visualisation
-     * @note This should only be called when visualisation muted is held
-     */
-    void updateBuffers(std::unique_ptr<FLAMEGPU_Visualisation> &vis);
-    /**
-     * Link to the currently active auto_palette
-     */
-    std::weak_ptr<AutoPalette> auto_palette;
-    /**
-     * If setAutoPalette() is called, the created AutoPalette is stored here
-     */
-    std::shared_ptr<AutoPalette> owned_auto_palette;
-    /**
-     * This is the default configuration options for states of this agent
-     * These values will be used for any state configuration options which have not been set independently
-     */
-    AgentStateConfig defaultConfig;
-    /**
-     * Map of configurations for individual agent states
-     */
-    std::unordered_map<std::string, AgentStateVis> states;
-    /**
-     * CUDAAgent being rendered
-     */
-    CUDAAgent &agent;
-    /**
-     * Agent description hierarchy being rendered
-     */
-    const AgentData &agentData;
-    /**
-     * Holds information on core agent-wide texture buffers
-     * e.g. location/direction
-     */
-    std::map<TexBufferConfig::Function, TexBufferConfig> core_tex_buffers;
+    std::shared_ptr<AgentVisData> data;
 };
 
 }  // namespace visualiser

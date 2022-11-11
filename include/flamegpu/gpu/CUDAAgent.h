@@ -30,7 +30,7 @@ class HostAPI;
  */
 class CUDAAgent : public AgentInterface {
 #ifdef VISUALISATION
-    friend class visualiser::AgentVis;
+    friend struct visualiser::AgentVisData;
 #endif  // VISUALISATION
 
  public:

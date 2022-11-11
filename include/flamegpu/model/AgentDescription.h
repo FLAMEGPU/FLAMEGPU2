@@ -21,7 +21,7 @@ class CAgentFunctionDescription;
 class AgentFunctionDescription;
 class AgentDescription;
 namespace visualiser {
-class AgentVis;
+struct AgentVisData;
 }
 
 class CAgentDescription {
@@ -35,7 +35,7 @@ class CAgentDescription {
     /**
      * Needs internal access to variables
      */
-    friend class visualiser::AgentVis;
+    friend struct visualiser::AgentVisData;
 
  public:
     /**

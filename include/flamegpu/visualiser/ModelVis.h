@@ -58,12 +58,12 @@ class ModelVis {
      * @see Agent(const std::string&)
      * @todo Block this from being called whilst visualiser is allocated
      */
-    AgentVis &addAgent(const std::string &agent_name);
+    AgentVis addAgent(const std::string &agent_name);
     /**
      * Returns the configuration handler if the agent has been marked for visualisation
      * @see addAgent(const std::string&)
      */
-    AgentVis &Agent(const std::string &agent_name);
+    AgentVis Agent(const std::string &agent_name);
     /**
      * Set the title for the visualisation window
      * This value defaults to the model's name
@@ -241,7 +241,7 @@ class ModelVis {
     /**
      * Per agent, visualisation configuration options
      */
-    std::unordered_map<std::string, AgentVis> agents;
+    std::unordered_map<std::string, std::shared_ptr<AgentVisData>> agents;
     /**
      * Reference back to the model to be visualised
      */

@@ -25,30 +25,30 @@ void ModelVis::setAutoPalette(const Palette& palette) {
 void ModelVis::clearAutoPalette() {
     autoPalette = nullptr;
 }
-AgentVis &ModelVis::addAgent(const std::string &agent_name) {
+AgentVis ModelVis::addAgent(const std::string &agent_name) {
     // If agent exists
     if (modelData.agents.find(agent_name) != modelData.agents.end()) {
         // If agent is not already in vis map
         auto visAgent = agents.find(agent_name);
         if (visAgent == agents.end()) {
             // Create new vis agent
-            return agents.emplace(agent_name, AgentVis(model.getCUDAAgent(agent_name), autoPalette)).first->second;
+            return AgentVis(agents.emplace(agent_name, std::make_shared<AgentVisData>(model.getCUDAAgent(agent_name), autoPalette)).first->second);
         }
-        return visAgent->second;
+        return AgentVis(visAgent->second);
     }
     THROW exception::InvalidAgentName("Agent name '%s' was not found within the model description hierarchy, "
         "in ModelVis::addAgent()\n",
         agent_name.c_str());
 }
 
-AgentVis &ModelVis::Agent(const std::string &agent_name) {
+AgentVis ModelVis::Agent(const std::string &agent_name) {
     // If agent exists
     if (modelData.agents.find(agent_name) != modelData.agents.end()) {
         // If agent is not already in vis map
         auto visAgent = agents.find(agent_name);
         if (visAgent != agents.end()) {
             // Create new vis agent
-            return visAgent->second;
+            return AgentVis(visAgent->second);
         }
         THROW exception::InvalidAgentName("Agent name '%s' has not been marked for visualisation, ModelVis::addAgent() must be called first, "
             "in ModelVis::Agent()\n",
@@ -68,16 +68,16 @@ void ModelVis::_activate() {
         visualiser->setRandomSeed(model.getSimulationConfig().random_seed);
         for (auto &agent : agents) {
             // If x and y aren't set, throw exception
-            if (agent.second.core_tex_buffers.find(TexBufferConfig::Position_x) == agent.second.core_tex_buffers.end() &&
-                agent.second.core_tex_buffers.find(TexBufferConfig::Position_y) == agent.second.core_tex_buffers.end() &&
-                agent.second.core_tex_buffers.find(TexBufferConfig::Position_z) == agent.second.core_tex_buffers.end() &&
-                agent.second.core_tex_buffers.find(TexBufferConfig::Position_xy) == agent.second.core_tex_buffers.end() &&
-                agent.second.core_tex_buffers.find(TexBufferConfig::Position_xyz) == agent.second.core_tex_buffers.end()) {
+            if (agent.second->core_tex_buffers.find(TexBufferConfig::Position_x) == agent.second->core_tex_buffers.end() &&
+                agent.second->core_tex_buffers.find(TexBufferConfig::Position_y) == agent.second->core_tex_buffers.end() &&
+                agent.second->core_tex_buffers.find(TexBufferConfig::Position_z) == agent.second->core_tex_buffers.end() &&
+                agent.second->core_tex_buffers.find(TexBufferConfig::Position_xy) == agent.second->core_tex_buffers.end() &&
+                agent.second->core_tex_buffers.find(TexBufferConfig::Position_xyz) == agent.second->core_tex_buffers.end()) {
                 THROW exception::VisualisationException("Agent '%s' has not had x, y or z variables set, agent requires location to render, "
                     "in ModelVis::activate()\n",
-                    agent.second.agentData.name.c_str());
+                    agent.second->agentData->name.c_str());
             }
-            agent.second.initBindings(visualiser);
+            agent.second->initBindings(visualiser);
         }
         env_registered = false;
         registerEnvProperties();
@@ -121,7 +121,7 @@ void ModelVis::updateBuffers(const unsigned int &sc) {
     if (visualiser) {
         bool has_agents = false;
         for (auto &a : agents) {
-            has_agents = a.second.requestBufferResizes(visualiser, sc == 0 || sc == UINT_MAX) || has_agents;
+            has_agents = a.second->requestBufferResizes(visualiser, sc == 0 || sc == UINT_MAX) || has_agents;
         }
         // Block the sim when we first get agents, until vis has resized buffers, incase vis is being slow to init
         if (has_agents && (sc == 0 || sc == UINT_MAX)) {
@@ -137,7 +137,7 @@ void ModelVis::updateBuffers(const unsigned int &sc) {
             visualiser->setStepCount(sc);
         }
         for (auto &a : agents) {
-            a.second.updateBuffers(visualiser);
+            a.second->updateBuffers(visualiser);
         }
         visualiser->releaseMutex();
     }
