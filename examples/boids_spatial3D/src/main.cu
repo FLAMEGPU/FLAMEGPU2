@@ -394,7 +394,7 @@ int main(int argc, const char ** argv) {
      * Create visualisation
      */
 #ifdef VISUALISATION
-    flamegpu::visualiser::ModelVis &visualisation = cudaSimulation.getVisualisation();
+    flamegpu::visualiser::ModelVis visualisation = cudaSimulation.getVisualisation();
     {
         flamegpu::EnvironmentDescription env = model.Environment();
         float envWidth = env.getProperty<float>("MAX_POSITION") - env.getProperty<float>("MIN_POSITION");
@@ -402,7 +402,7 @@ int main(int argc, const char ** argv) {
         visualisation.setInitialCameraLocation(INIT_CAM, INIT_CAM, INIT_CAM);
         visualisation.setCameraSpeed(0.001f * envWidth);
         visualisation.setViewClips(0.00001f, 50);
-        auto &circ_agt = visualisation.addAgent("Boid");
+        auto circ_agt = visualisation.addAgent("Boid");
         // Position vars are named x, y, z; so they are used by default
         circ_agt.setForwardXVariable("fx");
         circ_agt.setForwardYVariable("fy");

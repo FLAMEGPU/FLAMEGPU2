@@ -121,12 +121,12 @@ int main(int argc, const char ** argv) {
      * Create visualisation
      */
 #ifdef VISUALISATION
-    flamegpu::visualiser::ModelVis &m_vis = cudaSimulation.getVisualisation();
+    flamegpu::visualiser::ModelVis m_vis = cudaSimulation.getVisualisation();
     {
         const float INIT_CAM = ENV_MAX * 1.25F;
         m_vis.setInitialCameraLocation(INIT_CAM, INIT_CAM, INIT_CAM);
         m_vis.setCameraSpeed(0.01f);
-        auto &circ_agt = m_vis.addAgent("Circle");
+        auto circ_agt = m_vis.addAgent("Circle");
         // Position vars are named x, y, z; so they are used by default
         circ_agt.setModel(flamegpu::visualiser::Stock::Models::ICOSPHERE);
         circ_agt.setModelScale(1/10.0f);

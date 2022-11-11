@@ -198,7 +198,7 @@ CUDASimulation::~CUDASimulation() {
     host_api.reset();
     macro_env.free();
 #ifdef VISUALISATION
-    visualisation.reset();
+    visualisation.reset();  // Might want to force destruct this, as user could hold a ModelVis that has shared ptr
 #endif
 
     // Destroy streams, potentially unsafe in a destructor as it will invoke cuda commands.
@@ -1185,6 +1185,7 @@ void CUDASimulation::simulate() {
     if (visualisation) {
         visualisation->updateBuffers();
     }
+    visualiser::ModelVis mv(visualisation);
     #endif
 
     // Run the required number of simulation steps.
@@ -1195,10 +1196,11 @@ void CUDASimulation::simulate() {
             break;
         }
         #ifdef VISUALISATION
+
         // Special case, if steps == 0 and visualisation has been closed
         if (getSimulationConfig().steps == 0 &&
-            visualisation && !visualisation->isRunning()) {
-            visualisation->join();  // Vis exists in separate thread, make sure it has actually exited
+            visualisation && !mv.isRunning()) {
+            mv.join();  // Vis exists in separate thread, make sure it has actually exited
             break;
         }
         #endif
@@ -1420,8 +1422,9 @@ void CUDASimulation::applyConfig_derived() {
     // Handle console_mode
 #ifdef VISUALISATION
     if (visualisation) {
+        visualiser::ModelVis mv(visualisation);
         if (getSimulationConfig().console_mode) {
-            visualisation->deactivate();
+            mv.deactivate();
         } else {
             visualisation->updateRandomSeed();
         }
@@ -1612,10 +1615,10 @@ const CUDASimulation::Config &CUDASimulation::getCUDAConfig() const {
     return config;
 }
 #ifdef VISUALISATION
-visualiser::ModelVis &CUDASimulation::getVisualisation() {
+visualiser::ModelVis CUDASimulation::getVisualisation() {
     if (!visualisation)
-        visualisation = std::make_unique<visualiser::ModelVis>(*this);
-    return *visualisation.get();
+        visualisation = std::make_shared<visualiser::ModelVisData>(*this);
+    return visualiser::ModelVis(visualisation);
 }
 #endif
 

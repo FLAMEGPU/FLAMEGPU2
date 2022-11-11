@@ -140,7 +140,7 @@ int main(int argc, const char ** argv) {
      * @note FLAMEGPU2 doesn't currently have proper support for discrete/2d visualisations
      */
 #ifdef VISUALISATION
-    flamegpu::visualiser::ModelVis & visualisation = cudaSimulation.getVisualisation();
+    flamegpu::visualiser::ModelVis visualisation = cudaSimulation.getVisualisation();
     {
         visualisation.setBeginPaused(true);
         visualisation.setSimulationSpeed(5);
@@ -149,7 +149,7 @@ int main(int argc, const char ** argv) {
         visualisation.setCameraSpeed(0.001f * SQRT_AGENT_COUNT);
         visualisation.setViewClips(0.01f, 2500);
         visualisation.setClearColor(0.0f, 0.0f, 0.0f);
-        auto& agt = visualisation.addAgent("cell");
+        auto agt = visualisation.addAgent("cell");
         // Position vars are named x, y, z; so they are used by default
         agt.setModel(flamegpu::visualiser::Stock::Models::CUBE);  // 5 unwanted faces!
         agt.setModelScale(1.0f);

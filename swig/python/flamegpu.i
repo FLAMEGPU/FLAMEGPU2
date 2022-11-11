@@ -945,6 +945,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
     // Ignore directives. These go before any %includes. 
     // -----------------
     // Disable internal vis structs
+    %ignore flamegpu::visualiser::ModelVisData;
     %ignore flamegpu::visualiser::AgentVisData;
     %ignore flamegpu::visualiser::AgentStateVisData;
     // Disable functions which return std::type_index

@@ -24,11 +24,7 @@ class FLAMEGPU_Visualisation;
 
 namespace visualiser {
 
-/**
- * This provides an interface for managing the render options for a specific CUDASimulation
- */
-class ModelVis {
- public:
+struct ModelVisData {
     /**
      * This class is constructed by/with a CUDASimulation
      * Constructor will be clarified later, once requirements are clearer
@@ -36,12 +32,62 @@ class ModelVis {
      * > texturise agent variable pointers
      * > On resize, also update textures
      */
-    explicit ModelVis(const flamegpu::CUDASimulation &model/*TBD*/);
+    explicit ModelVisData(const CUDASimulation& model/*TBD*/);
+    /**
+     * Main struct of visualisation configuration options for the model
+     */
+    ModelConfig modelCfg;
+    /**
+     * Autopalette which provides default colors to all agents
+     * By default this uses Stock::Palettes:DARK2
+     */
+    std::shared_ptr<AutoPalette> autoPalette;
+    /**
+     * Per agent, visualisation configuration options
+     */
+    std::unordered_map<std::string, std::shared_ptr<AgentVisData>> agents;
+    /**
+     * Reference back to the model to be visualised
+     */
+    const CUDASimulation& model;
+    /**
+     * Reference back to the model description hierarchy to be visualised
+     */
+    const ModelData& modelData;
+    /**
+     * Pointer to the visualisation
+     */
+    std::unique_ptr<FLAMEGPU_Visualisation> visualiser;
+    /**
+     * Only need to register env properties once
+     */
+    bool env_registered = false;
+    /**
+     * Updates all agent renders from corresponding
+     * @param sc Step count, the step count value shown in visualisation HUD
+     */
+    void updateBuffers(const unsigned int& sc = UINT_MAX);
+    /**
+     * Singletons have init, so env props are ready to grab
+     */
+    void registerEnvProperties();
+    /**
+     * Random seed has changed
+     */
+    void updateRandomSeed();
+};
+
+/**
+ * This provides an interface for managing the render options for a specific CUDASimulation
+ */
+class ModelVis {
+ public:
+    explicit ModelVis(std::shared_ptr<ModelVisData> data);
     /**
      * Default destructor behaviour
      * Defined explicitly, so that header include does not require including FLAMEGPU_Visualisation for std::unique_ptr destruction.
      */
-    ~ModelVis();
+    ~ModelVis() = default;
     /**
      * Sets the palette to automatically give color to agent added to the model
      * This can be overriden at an agent level or disabled
@@ -190,7 +236,7 @@ class ModelVis {
      */
     void activate() {
 #ifdef SWIG
-        modelCfg.isPython = true;
+        data->modelCfg.isPython = true;
 #endif
         _activate();
     }
@@ -209,19 +255,6 @@ class ModelVis {
      * Returns whether the background thread is active or not
      */
     bool isRunning() const;
-    /**
-     * Random seed has changed
-     */
-    void updateRandomSeed();
-    /**
-     * Updates all agent renders from corresponding
-     * @param sc Step count, the step count value shown in visualisation HUD
-     */
-    void updateBuffers(const unsigned int &sc = UINT_MAX);
-    /**
-     * Singletons have init, so env props are ready to grab
-     */
-    void registerEnvProperties();
 
  private:
     /**
@@ -229,35 +262,8 @@ class ModelVis {
      * Public version is defined inline so swig can get a different version
      */
     void _activate();
-    /**
-     * Main struct of visualisation configuration options for the model
-     */
-    ModelConfig modelCfg;
-    /**
-     * Autopalette which provides default colors to all agents
-     * By default this uses Stock::Palettes:DARK2
-     */
-    std::shared_ptr<AutoPalette> autoPalette;
-    /**
-     * Per agent, visualisation configuration options
-     */
-    std::unordered_map<std::string, std::shared_ptr<AgentVisData>> agents;
-    /**
-     * Reference back to the model to be visualised
-     */
-    const CUDASimulation &model;
-    /**
-     * Reference back to the model description hierarchy to be visualised
-     */
-    const ModelData &modelData;
-    /**
-     * Pointer to the visualisation
-     */
-    std::unique_ptr<FLAMEGPU_Visualisation> visualiser;
-    /**
-     * Only need to register env properties once
-     */
-    bool env_registered = false;
+
+    std::shared_ptr<ModelVisData> data;
 };
 
 }  // namespace visualiser
