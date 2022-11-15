@@ -473,7 +473,7 @@ class TestSimulation(TestCase):
         m.Environment().newPropertyInt("int", 2);
         m.Environment().newPropertyArrayInt("int2", [ 12, 13 ]);
         m.Environment().newPropertyArrayInt("int3", [ 56, 57, 58 ]);
-        m.newLayer().addHostFunctionCallback(Check_setEnvironmentProperty().__disown__());
+        m.newLayer().addHostFunctionCallback(Check_setEnvironmentProperty());
         s = pyflamegpu.CUDASimulation(m);
         s.SimulationConfig().steps = 1;
         # Test the getters work

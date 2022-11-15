@@ -439,7 +439,7 @@ class HostMacroPropertyTest(TestCase):
         agent.newVariableUInt("a");
         t = agent.newRTCFunction("agentwrite", AgentWrite);
         model.newLayer().addAgentFunction(t);
-        model.newLayer().addHostFunctionCallback(HostRead().__disown__());
+        model.newLayer().addHostFunctionCallback(HostRead());
         total_agents = TEST_DIMS[0] * TEST_DIMS[1] * TEST_DIMS[2] * TEST_DIMS[3];
         population = pyflamegpu.AgentVector(agent, total_agents);
         a = 0;
@@ -476,7 +476,7 @@ class HostMacroPropertyTest(TestCase):
         agent.newVariableUInt("w");
         agent.newVariableUInt("a");
         t = agent.newRTCFunction("agentread", AgentRead);
-        model.newLayer().addHostFunctionCallback(HostWrite().__disown__());
+        model.newLayer().addHostFunctionCallback(HostWrite());
         model.newLayer().addAgentFunction(t);
         total_agents = TEST_DIMS[0] * TEST_DIMS[1] * TEST_DIMS[2] * TEST_DIMS[3];
         population = pyflamegpu.AgentVector(agent, total_agents);
@@ -523,7 +523,7 @@ class HostMacroPropertyTest(TestCase):
         t1 = agent.newRTCFunction("agentwrite", AgentWrite);
         t2 = agent.newRTCFunction("agentread", AgentReadZero);
         model.newLayer().addAgentFunction(t1);
-        model.newLayer().addHostFunctionCallback(HostZero().__disown__());
+        model.newLayer().addHostFunctionCallback(HostZero());
         model.newLayer().addAgentFunction(t2);
         total_agents = TEST_DIMS[0] * TEST_DIMS[1] * TEST_DIMS[2] * TEST_DIMS[3];
         population = pyflamegpu.AgentVector(agent, total_agents);
@@ -569,8 +569,8 @@ class HostMacroPropertyTest(TestCase):
         model.Environment().newMacroPropertyDouble("double");
         # Setup agent fn
         model.newAgent("agent");
-        model.newLayer().addHostFunctionCallback(HostArithmeticInit().__disown__());
-        model.newLayer().addHostFunctionCallback(HostArithmetic().__disown__());
+        model.newLayer().addHostFunctionCallback(HostArithmeticInit());
+        model.newLayer().addHostFunctionCallback(HostArithmetic());
         # Do Sim
         cudaSimulation = pyflamegpu.CUDASimulation(model);
         cudaSimulation.SimulationConfig().steps = 1;
