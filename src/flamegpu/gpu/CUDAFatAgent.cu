@@ -73,9 +73,6 @@ void CUDAFatAgent::addSubAgent(
             states.emplace(sub_state, cloned_state);
             states_unique.insert(cloned_state);
         }
-        // allocate memory for each state list by creating a new Agent State List
-        AgentState state = {mappedAgentCount, s};
-        states.emplace(state, std::make_shared<CUDAFatAgentStateList>(description));
     }
     // Handle agent variables
     for (auto &state : states_unique) {
