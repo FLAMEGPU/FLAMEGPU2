@@ -69,7 +69,7 @@ int main(int argc, const char ** argv) {
     flamegpu::ModelDescription model("host_functions_example");
 
     {  // agent
-        flamegpu::AgentDescription  &agent = model.newAgent("agent");
+        flamegpu::AgentDescription  agent = model.newAgent("agent");
         agent.newVariable<float>("x");
         agent.newVariable<int>("a");
         agent.newFunction("device_function", device_function);
@@ -79,7 +79,7 @@ int main(int argc, const char ** argv) {
      * GLOBALS
      */
     {
-        flamegpu::EnvironmentDescription  &envProperties = model.Environment();
+        flamegpu::EnvironmentDescription  envProperties = model.Environment();
         envProperties.newProperty<float>("float", 12.0f);
         envProperties.newProperty<int16_t>("int16_t", 0);
         envProperties.newProperty<uint64_t, 3>("uint64_t", {11llu, 12llu, 13llu});
@@ -95,12 +95,12 @@ int main(int argc, const char ** argv) {
      }
 
      {
-        flamegpu::LayerDescription  &devicefn_layer = model.newLayer("devicefn_layer");
+        flamegpu::LayerDescription devicefn_layer = model.newLayer("devicefn_layer");
         devicefn_layer.addAgentFunction(device_function);
      }
 
      {
-        flamegpu::LayerDescription  &hostfn_layer = model.newLayer("hostfn_layer");
+        flamegpu::LayerDescription hostfn_layer = model.newLayer("hostfn_layer");
         hostfn_layer.addHostFunction(host_function);
      }
 

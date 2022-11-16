@@ -12,7 +12,7 @@
 
 namespace flamegpu {
 
-class AgentDescription;
+class CAgentDescription;
 struct AgentFunctionData;
 
 /**
@@ -28,7 +28,10 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
      * map<string, AgentFunctionData>
      */
     typedef std::unordered_map<std::string, std::shared_ptr<AgentFunctionData>> FunctionMap;
-
+    /**
+     * Parent model
+     */
+    std::weak_ptr<const ModelData> model;
     /**
      * Holds all of the agent's function definitions
      */
@@ -52,11 +55,6 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
      */
     unsigned int agent_outputs;
     /**
-     * Description class which provides convenient accessors
-     * This may be null if the instance has been cloned
-     */
-    std::shared_ptr<AgentDescription> description;
-    /**
      * Name of the agent, used to refer to the agent in many functions
      */
     std::string name;
@@ -74,12 +72,18 @@ struct AgentData : std::enable_shared_from_this<AgentData> {
      */
     bool isOutputOnDevice() const;
     /**
-     * Equality operator, checks whether AgentData hierarchies are functionally the same
+     * Equality operator
      * @param rhs Right hand side
      * @returns True when agents are the same
      * @note Instead compare pointers if you wish to check that they are the same instance
      */
     bool operator==(const AgentData &rhs) const;
+    /**
+     * Equality operator
+     * @param rhs Right hand side
+     * @returns True when agents are the same
+     */
+    bool operator==(const CAgentDescription& rhs) const;
     /**
      * Equality operator, checks whether AgentData hierarchies are functionally different
      * @param rhs Right hand side

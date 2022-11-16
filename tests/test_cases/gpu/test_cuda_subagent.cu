@@ -162,7 +162,7 @@ TEST(TestCUDASubAgent, Simple) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME, 0);
         a.newVariable<unsigned int>(AGENT_VAR_t, 1);
         a.newVariable<unsigned int>(SUB_VAR1_NAME, 12);
@@ -173,13 +173,13 @@ TEST(TestCUDASubAgent, Simple) {
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define bModel
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME, 1);
         ma.newVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max());
         ma.newFunction("", AddTen);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(AddTen);
         m.newLayer().addSubModel("sub");
@@ -221,7 +221,7 @@ TEST(TestCUDASubAgent, AgentDeath_BeforeSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME, 0);
         a.newVariable<unsigned int>(SUB_VAR1_NAME, 12);
         a.newFunction("", AddOne);
@@ -229,7 +229,7 @@ TEST(TestCUDASubAgent, AgentDeath_BeforeSubModel) {
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define bModel
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME, 1);
@@ -237,7 +237,7 @@ TEST(TestCUDASubAgent, AgentDeath_BeforeSubModel) {
         ma.newVariable<unsigned int>(AGENT_VAR_i);
         ma.newFunction("1", KillEven).setAllowAgentDeath(true);
         ma.newFunction("2", AddTen);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(KillEven);
         m.newLayer().addAgentFunction(AddTen);
@@ -297,7 +297,7 @@ TEST(TestCUDASubAgent, AgentDeath_InSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME, 0);
         a.newVariable<unsigned int>(AGENT_VAR2_NAME, 0);
         a.newVariable<unsigned int>(AGENT_VAR_i, 0);
@@ -306,7 +306,7 @@ TEST(TestCUDASubAgent, AgentDeath_InSubModel) {
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define bModel
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME, 1);
@@ -314,7 +314,7 @@ TEST(TestCUDASubAgent, AgentDeath_InSubModel) {
         ma.newVariable<unsigned int>(AGENT_VAR_i);
         ma.newFunction("", AddOne2);
         ma.newFunction("2", AddTen);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(AddOne2);
         m.newLayer().addSubModel("sub");
@@ -373,7 +373,7 @@ TEST(TestCUDASubAgent, AgentDeath_InNestedSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME, 0);
         a.newVariable<unsigned int>(AGENT_VAR2_NAME, 0);
         a.newVariable<unsigned int>(AGENT_VAR_i, 0);
@@ -384,17 +384,17 @@ TEST(TestCUDASubAgent, AgentDeath_InNestedSubModel) {
     ModelDescription psm(PROXY_SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = psm.newAgent(AGENT_NAME);
+        auto a = psm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME, 0);
         a.newVariable<unsigned int>(AGENT_VAR2_NAME, 0);
         a.newVariable<unsigned int>(AGENT_VAR_i, 0);
-        auto &smd = psm.newSubModel("sub", sm);
+        auto smd = psm.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         psm.newLayer().addSubModel("sub");
         psm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define bModel
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME, 1);
@@ -402,7 +402,7 @@ TEST(TestCUDASubAgent, AgentDeath_InNestedSubModel) {
         ma.newVariable<unsigned int>(AGENT_VAR_i);
         ma.newFunction("", AddOne2);
         ma.newFunction("2", AddTen);
-        auto &smd = m.newSubModel("proxysub", psm);
+        auto smd = m.newSubModel("proxysub", psm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(AddOne2);
         m.newLayer().addSubModel("proxysub");
@@ -462,7 +462,7 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_BeforeSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME, 0);
         a.newVariable<unsigned int>(SUB_VAR1_NAME, 12);
         a.newFunction("", AddOne);
@@ -470,7 +470,7 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_BeforeSubModel) {
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME, 1);
@@ -478,7 +478,7 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_BeforeSubModel) {
         ma.newVariable<unsigned int>(AGENT_VAR_i);
         ma.newFunction("1", BirthEven).setAgentOutput(ma);
         ma.newFunction("2", AddTen);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(AddTen);
         m.newLayer().addAgentFunction(BirthEven);
@@ -563,7 +563,7 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_InSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME, 1);
         a.newVariable<unsigned int>(AGENT_VAR2_NAME, 12);
         a.newVariable<unsigned int>(SUB_VAR1_NAME, 12);
@@ -575,7 +575,7 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_InSubModel) {
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>("default_main_agent_var", 25);
@@ -583,7 +583,7 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_InSubModel) {
         ma.newVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max());
         ma.newVariable<unsigned int>(AGENT_VAR_i);
         ma.newFunction("2", AddTen);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(AddTen);
         m.newLayer().addSubModel("sub");
@@ -668,7 +668,7 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_InNestedSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME, 1);
         a.newVariable<unsigned int>(AGENT_VAR2_NAME, 12);
         a.newVariable<unsigned int>(SUB_VAR1_NAME, 12);
@@ -682,18 +682,18 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_InNestedSubModel) {
     ModelDescription psm(PROXY_SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = psm.newAgent(AGENT_NAME);
+        auto a = psm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME, 599);
         a.newVariable<unsigned int>(AGENT_VAR2_NAME, 599);
         a.newVariable<unsigned int>(SUB_VAR1_NAME, 599);
         a.newVariable<unsigned int>(AGENT_VAR_i);
-        auto &smd = psm.newSubModel("sub", sm);
+        auto smd = psm.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         psm.newLayer().addSubModel("sub");
         psm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>("default_main_agent_var", 25);
@@ -701,7 +701,7 @@ TEST(TestCUDASubAgent, DeviceAgentBirth_InNestedSubModel) {
         ma.newVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max());
         ma.newVariable<unsigned int>(AGENT_VAR_i);
         ma.newFunction("2", AddTen);
-        auto &smd = m.newSubModel("proxysub", psm);
+        auto smd = m.newSubModel("proxysub", psm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(AddTen);
         m.newLayer().addSubModel("proxysub");
@@ -787,19 +787,19 @@ TEST(TestCUDASubAgent, HostAgentBirth_BeforeSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME, 0);
         a.newFunction("", HostBirthUpdate);
         sm.newLayer().addAgentFunction(HostBirthUpdate);
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME, 1);
         ma.newVariable<unsigned int>(AGENT_VAR2_NAME, 2);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addHostFunction(HostBirth);
         m.newLayer().addSubModel("sub");
@@ -833,18 +833,18 @@ TEST(TestCUDASubAgent, HostAgentBirth_InSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME, 0);
         sm.newLayer().addHostFunction(HostBirth2);
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME, 1);
         ma.newVariable<unsigned int>(AGENT_VAR2_NAME, 2);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addSubModel("sub");
     }
@@ -877,7 +877,7 @@ TEST(TestCUDASubAgent, HostAgentBirth_InNestedSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME, 0);
         sm.newLayer().addHostFunction(HostBirth2);
         sm.addExitCondition(ExitAlways);
@@ -885,20 +885,20 @@ TEST(TestCUDASubAgent, HostAgentBirth_InNestedSubModel) {
     ModelDescription psm(PROXY_SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = psm.newAgent(AGENT_NAME);
+        auto a = psm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME, 0);
-        auto &smd = psm.newSubModel("sub", sm);
+        auto smd = psm.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         psm.newLayer().addSubModel("sub");
         psm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME, 1);
         ma.newVariable<unsigned int>(AGENT_VAR2_NAME, 2);
-        auto &smd = m.newSubModel("proxysub", psm);
+        auto smd = m.newSubModel("proxysub", psm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addSubModel("proxysub");
     }
@@ -932,7 +932,7 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_BeforeSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME, 0);
         a.newVariable<unsigned int>(SUB_VAR1_NAME, 12);
         a.newFunction("", AddOne);
@@ -940,7 +940,7 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_BeforeSubModel) {
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME, 1);
@@ -948,7 +948,7 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_BeforeSubModel) {
         ma.newVariable<unsigned int>(AGENT_VAR_i);
         ma.newFunction("1", UpdateId100).setFunctionCondition(AllowEven);
         ma.newFunction("2", AddTen);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(AddTen);
         m.newLayer().addAgentFunction(UpdateId100);
@@ -1038,7 +1038,7 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR_i);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME, 0);
         a.newVariable<unsigned int>(SUB_VAR1_NAME, 12);
@@ -1049,14 +1049,14 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InSubModel) {
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME, 1);
         ma.newVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max());
         ma.newVariable<unsigned int>(AGENT_VAR_i);
         ma.newFunction("2", AddTen);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(AddTen);
         m.newLayer().addSubModel("sub");
@@ -1145,7 +1145,7 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InNestedSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR_i);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME, 0);
         a.newVariable<unsigned int>(SUB_VAR1_NAME, 12);
@@ -1158,24 +1158,24 @@ TEST(TestCUDASubAgent, AgentFunctionCondition_InNestedSubModel) {
     ModelDescription psm(PROXY_SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = psm.newAgent(AGENT_NAME);
+        auto a = psm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR_i);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME, 0);
         a.newVariable<unsigned int>(SUB_VAR1_NAME, 12);
-        auto &smd = psm.newSubModel("sub", sm);
+        auto smd = psm.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         psm.newLayer().addSubModel("sub");
         psm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME, 1);
         ma.newVariable<unsigned int>(AGENT_VAR2_NAME, std::numeric_limits<unsigned int>::max());
         ma.newVariable<unsigned int>(AGENT_VAR_i);
         ma.newFunction("2", AddTen);
-        auto &smd = m.newSubModel("proxysub", psm);
+        auto smd = m.newSubModel("proxysub", psm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(AddTen);
         m.newLayer().addSubModel("proxysub");
@@ -1266,7 +1266,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_BeforeSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE1);
         a.newFunction("", AddOne2);
@@ -1274,7 +1274,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_BeforeSubModel) {
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME);
@@ -1283,10 +1283,10 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_BeforeSubModel) {
         ma.newState(UNMAPPED_STATE1);
         ma.newState(UNMAPPED_STATE2);
         ma.newState(MAPPED_STATE1);
-        auto &unmapped_fn = ma.newFunction("", AddTen);
+        auto unmapped_fn = ma.newFunction("", AddTen);
         unmapped_fn.setInitialState(UNMAPPED_STATE1);
         unmapped_fn.setEndState(UNMAPPED_STATE2);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(AddTen);
         m.newLayer().addSubModel("sub");
@@ -1333,18 +1333,18 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToMap_BeforeSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("", AddOne2);
+        auto af = a.newFunction("", AddOne2);
         af.setInitialState(MAPPED_STATE2);
         af.setEndState(MAPPED_STATE2);
         sm.newLayer().addAgentFunction(AddOne2);
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME);
@@ -1352,10 +1352,10 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToMap_BeforeSubModel) {
         ma.newVariable<unsigned int>("id");
         ma.newState(MAPPED_STATE1);
         ma.newState(MAPPED_STATE2);
-        auto &unmapped_fn = ma.newFunction("", AddTen);
+        auto unmapped_fn = ma.newFunction("", AddTen);
         unmapped_fn.setInitialState(MAPPED_STATE1);
         unmapped_fn.setEndState(MAPPED_STATE2);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(AddTen);
         m.newLayer().addSubModel("sub");
@@ -1393,17 +1393,17 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmap_BeforeSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("", AddOne2);
+        auto af = a.newFunction("", AddOne2);
         af.setInitialState(MAPPED_STATE2);
         af.setEndState(MAPPED_STATE2);
         sm.newLayer().addAgentFunction(AddOne2);
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME);
@@ -1411,10 +1411,10 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmap_BeforeSubModel) {
         ma.newVariable<unsigned int>("id");
         ma.newState(MAPPED_STATE2);
         ma.newState(UNMAPPED_STATE1);
-        auto &unmapped_fn = ma.newFunction("", AddTen);
+        auto unmapped_fn = ma.newFunction("", AddTen);
         unmapped_fn.setInitialState(MAPPED_STATE2);
         unmapped_fn.setEndState(UNMAPPED_STATE1);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(AddTen);
         m.newLayer().addSubModel("sub");
@@ -1452,17 +1452,17 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_BeforeSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("", AddOne2);
+        auto af = a.newFunction("", AddOne2);
         af.setInitialState(MAPPED_STATE2);
         af.setEndState(MAPPED_STATE2);
         sm.newLayer().addAgentFunction(AddOne2);
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME);
@@ -1470,10 +1470,10 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_BeforeSubModel) {
         ma.newVariable<unsigned int>("id");
         ma.newState(UNMAPPED_STATE1);
         ma.newState(MAPPED_STATE2);
-        auto &unmapped_fn = ma.newFunction("", AddTen);
+        auto unmapped_fn = ma.newFunction("", AddTen);
         unmapped_fn.setInitialState(UNMAPPED_STATE1);
         unmapped_fn.setEndState(MAPPED_STATE2);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(AddTen);
         m.newLayer().addSubModel("sub");
@@ -1517,14 +1517,14 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_InSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(UNMAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(MAPPED_STATE2);
         af.setEndState(MAPPED_STATE2);
-        auto &af2 = a.newFunction("a2", AddOne2);
+        auto af2 = a.newFunction("a2", AddOne2);
         af2.setInitialState(UNMAPPED_STATE1);
         af2.setEndState(UNMAPPED_STATE1);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
@@ -1533,17 +1533,17 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_InSubModel) {
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME);
         ma.newVariable<unsigned int>(AGENT_VAR2_NAME);
         ma.newVariable<unsigned int>("id");
         ma.newState(MAPPED_STATE2);
-        auto &unmapped_fn = ma.newFunction("", AddTen);
+        auto unmapped_fn = ma.newFunction("", AddTen);
         unmapped_fn.setInitialState(MAPPED_STATE2);
         unmapped_fn.setEndState(MAPPED_STATE2);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(AddTen);
         m.newLayer().addSubModel("sub");
@@ -1578,25 +1578,25 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToMap_InSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(MAPPED_STATE1);
         af.setEndState(MAPPED_STATE2);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME);
         ma.newVariable<unsigned int>("id");
         ma.newState(MAPPED_STATE1);
         ma.newState(MAPPED_STATE2);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addSubModel("sub");
     }
@@ -1631,24 +1631,24 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmap_InSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE1);
         a.newState(UNMAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(MAPPED_STATE1);
         af.setEndState(UNMAPPED_STATE2);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME);
         ma.newVariable<unsigned int>("id");
         ma.newState(MAPPED_STATE1);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addSubModel("sub");
     }
@@ -1675,11 +1675,11 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_InSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(UNMAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(UNMAPPED_STATE1);
         af.setEndState(MAPPED_STATE2);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
@@ -1687,17 +1687,17 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_InSubModel) {
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME, 12);
         ma.newVariable<unsigned int>(AGENT_VAR2_NAME, 13);
         ma.newVariable<unsigned int>("id", UINT_MAX/2);
         ma.newState(MAPPED_STATE2);
-        auto &af = ma.newFunction("a1", AddTen);
+        auto af = ma.newFunction("a1", AddTen);
         af.setInitialState(MAPPED_STATE2);
         af.setEndState(MAPPED_STATE2);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(af);
         m.newLayer().addSubModel("sub");
@@ -1744,15 +1744,15 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmapToMap_InSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE1);
         a.newState(UNMAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(MAPPED_STATE1);
         af.setEndState(MAPPED_STATE1);
-        auto &af2 = a.newFunction("a2", AddOne2);
+        auto af2 = a.newFunction("a2", AddOne2);
         af2.setInitialState(MAPPED_STATE1);
         af2.setEndState(MAPPED_STATE2);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
@@ -1760,7 +1760,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmapToMap_InSubModel) {
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME);
@@ -1768,7 +1768,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmapToMap_InSubModel) {
         ma.newVariable<unsigned int>("id");
         ma.newState(MAPPED_STATE1);
         ma.newState(MAPPED_STATE2);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addSubModel("sub");
     }
@@ -1805,14 +1805,14 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_InNestedSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(UNMAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(MAPPED_STATE2);
         af.setEndState(MAPPED_STATE2);
-        auto &af2 = a.newFunction("a2", AddOne2);
+        auto af2 = a.newFunction("a2", AddOne2);
         af2.setInitialState(UNMAPPED_STATE1);
         af2.setEndState(UNMAPPED_STATE1);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
@@ -1823,26 +1823,26 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToUnmap_InNestedSubModel) {
     ModelDescription proxy(PROXY_SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = proxy.newAgent(AGENT_NAME);
+        auto a = proxy.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE2);
-        auto &smd = proxy.newSubModel("proxy", sm);
+        auto smd = proxy.newSubModel("proxy", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         proxy.newLayer().addSubModel(smd);
         proxy.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME);
         ma.newVariable<unsigned int>(AGENT_VAR2_NAME);
         ma.newVariable<unsigned int>("id");
         ma.newState(MAPPED_STATE2);
-        auto &unmapped_fn = ma.newFunction("", AddTen);
+        auto unmapped_fn = ma.newFunction("", AddTen);
         unmapped_fn.setInitialState(MAPPED_STATE2);
         unmapped_fn.setEndState(MAPPED_STATE2);
-        auto &smd = m.newSubModel("sub", proxy);
+        auto smd = m.newSubModel("sub", proxy);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(AddTen);
         m.newLayer().addSubModel("sub");
@@ -1877,11 +1877,11 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToMap_InNestedSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(MAPPED_STATE1);
         af.setEndState(MAPPED_STATE2);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
@@ -1890,24 +1890,24 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToMap_InNestedSubModel) {
     ModelDescription proxy(PROXY_SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = proxy.newAgent(AGENT_NAME);
+        auto a = proxy.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &smd = proxy.newSubModel("proxy", sm);
+        auto smd = proxy.newSubModel("proxy", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         proxy.newLayer().addSubModel(smd);
         proxy.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME);
         ma.newVariable<unsigned int>("id");
         ma.newState(MAPPED_STATE1);
         ma.newState(MAPPED_STATE2);
-        auto &smd = m.newSubModel("sub", proxy);
+        auto smd = m.newSubModel("sub", proxy);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addSubModel("sub");
     }
@@ -1942,11 +1942,11 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmap_InNestedSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE1);
         a.newState(UNMAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(MAPPED_STATE1);
         af.setEndState(UNMAPPED_STATE2);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
@@ -1955,23 +1955,23 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmap_InNestedSubModel) {
     ModelDescription proxy(PROXY_SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = proxy.newAgent(AGENT_NAME);
+        auto a = proxy.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &smd = proxy.newSubModel("proxy", sm);
+        auto smd = proxy.newSubModel("proxy", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         proxy.newLayer().addSubModel(smd);
         proxy.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME);
         ma.newVariable<unsigned int>("id");
         ma.newState(MAPPED_STATE1);
-        auto &smd = m.newSubModel("sub", proxy);
+        auto smd = m.newSubModel("sub", proxy);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addSubModel("sub");
     }
@@ -1998,11 +1998,11 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_InNestedSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(UNMAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(UNMAPPED_STATE1);
         af.setEndState(MAPPED_STATE2);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
@@ -2012,26 +2012,26 @@ TEST(TestCUDASubAgent, AgentStateTransition_UnmapToMap_InNestedSubModel) {
     ModelDescription proxy(PROXY_SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = proxy.newAgent(AGENT_NAME);
+        auto a = proxy.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE2);
-        auto &smd = proxy.newSubModel("proxy", sm);
+        auto smd = proxy.newSubModel("proxy", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         proxy.newLayer().addSubModel(smd);
         proxy.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME, 12);
         ma.newVariable<unsigned int>(AGENT_VAR2_NAME, 13);
         ma.newVariable<unsigned int>("id", UINT_MAX/2);
         ma.newState(MAPPED_STATE2);
-        auto &af = ma.newFunction("a1", AddTen);
+        auto af = ma.newFunction("a1", AddTen);
         af.setInitialState(MAPPED_STATE2);
         af.setEndState(MAPPED_STATE2);
-        auto &smd = m.newSubModel("sub", proxy);
+        auto smd = m.newSubModel("sub", proxy);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addAgentFunction(af);
         m.newLayer().addSubModel("sub");
@@ -2078,15 +2078,15 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmapToMap_InNestedSubModel) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE1);
         a.newState(UNMAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &af = a.newFunction("a1", AddOne2);
+        auto af = a.newFunction("a1", AddOne2);
         af.setInitialState(MAPPED_STATE1);
         af.setEndState(MAPPED_STATE1);
-        auto &af2 = a.newFunction("a2", AddOne2);
+        auto af2 = a.newFunction("a2", AddOne2);
         af2.setInitialState(MAPPED_STATE1);
         af2.setEndState(MAPPED_STATE2);
         sm.newLayer().addAgentFunction(AGENT_NAME, "a1");
@@ -2096,17 +2096,17 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmapToMap_InNestedSubModel) {
     ModelDescription proxy(PROXY_SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = proxy.newAgent(AGENT_NAME);
+        auto a = proxy.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(MAPPED_STATE1);
         a.newState(MAPPED_STATE2);
-        auto &smd = proxy.newSubModel("proxy", sm);
+        auto smd = proxy.newSubModel("proxy", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         proxy.newLayer().addSubModel(smd);
         proxy.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME);
@@ -2114,7 +2114,7 @@ TEST(TestCUDASubAgent, AgentStateTransition_MapToUnmapToMap_InNestedSubModel) {
         ma.newVariable<unsigned int>("id");
         ma.newState(MAPPED_STATE1);
         ma.newState(MAPPED_STATE2);
-        auto &smd = m.newSubModel("sub", proxy);
+        auto smd = m.newSubModel("sub", proxy);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addSubModel("sub");
     }
@@ -2152,14 +2152,14 @@ TEST(TestCUDASubAgent, UnmappedAgentStatesDontPersistBetweenSubmodelRuns) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newState(UNMAPPED_STATE1);
         a.newState(MAPPED_STATE1);
-        auto &af1 = a.newFunction("a1", AddOne2);
+        auto af1 = a.newFunction("a1", AddOne2);
         af1.setInitialState(UNMAPPED_STATE1);
         af1.setEndState(MAPPED_STATE1);
-        auto &af2 = a.newFunction("a2", AddOne2);
+        auto af2 = a.newFunction("a2", AddOne2);
         af2.setInitialState(MAPPED_STATE1);
         af2.setEndState(UNMAPPED_STATE1);
         sm.newLayer().addAgentFunction(af1);
@@ -2167,13 +2167,13 @@ TEST(TestCUDASubAgent, UnmappedAgentStatesDontPersistBetweenSubmodelRuns) {
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME);
         ma.newVariable<unsigned int>("id");
         ma.newState(MAPPED_STATE1);
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addSubModel("sub");
     }
@@ -2206,7 +2206,7 @@ TEST(TestCUDASubAgent, UnmappedVariablesResetToDefaultBetweenSubmodelRuns) {
     ModelDescription sm(SUB_MODEL_NAME);
     {
         // Define SubModel
-        auto &a = sm.newAgent(AGENT_NAME);
+        auto a = sm.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>(SUB_VAR1_NAME, 1);
         a.newVariable<unsigned int>(AGENT_VAR1_NAME);
         a.newFunction("", AddSubVar);
@@ -2214,12 +2214,12 @@ TEST(TestCUDASubAgent, UnmappedVariablesResetToDefaultBetweenSubmodelRuns) {
         sm.addExitCondition(ExitAlways);
     }
     ModelDescription m(MODEL_NAME);
-    auto &ma = m.newAgent(AGENT_NAME);
+    auto ma = m.newAgent(AGENT_NAME);
     {
         // Define Model
         ma.newVariable<unsigned int>(AGENT_VAR1_NAME);
         ma.newVariable<unsigned int>("id");
-        auto &smd = m.newSubModel("sub", sm);
+        auto smd = m.newSubModel("sub", sm);
         smd.bindAgent(AGENT_NAME, AGENT_NAME, true, true);  // auto map vars and states
         m.newLayer().addSubModel("sub");
     }
@@ -2267,16 +2267,16 @@ TEST(TestCUDASubAgent, AgentID_BindsID) {
     // Step model
     // Get agent pop and check agent var value matches ID
     ModelDescription submodel("subm");
-    AgentDescription& agent1 = submodel.newAgent("agent");
+    AgentDescription agent1 = submodel.newAgent("agent");
     agent1.newVariable<id_t>("id_copy");
-    AgentFunctionDescription& af1 = agent1.newFunction("copy_id", CopyID);
+    AgentFunctionDescription af1 = agent1.newFunction("copy_id", CopyID);
     submodel.newLayer().addAgentFunction(af1);
     submodel.addExitCondition(AlwaysExit);
 
     ModelDescription model("subm");
-    AgentDescription& agent2 = model.newAgent("agent");
+    AgentDescription agent2 = model.newAgent("agent");
     agent2.newVariable<id_t>("id_copy");
-    SubModelDescription& smd = model.newSubModel("sm", submodel);
+    SubModelDescription smd = model.newSubModel("sm", submodel);
     smd.bindAgent("agent", "agent", true);
     model.newLayer().addSubModel(smd);
 
@@ -2304,18 +2304,18 @@ TEST(TestCUDASubAgent, AgentID_ResetsOunboundAgentID) {
     // Step model
     // Get agent pop and check set of copied IDs match the first pop's ids
     ModelDescription submodel("subm");
-    AgentDescription& baby = submodel.newAgent("baby");
-    AgentDescription& agent1 = submodel.newAgent("agent");
+    AgentDescription baby = submodel.newAgent("baby");
+    AgentDescription agent1 = submodel.newAgent("agent");
     agent1.newVariable<id_t>("id_copy");
-    AgentFunctionDescription& af1 = agent1.newFunction("birth_and_copy_id", BirthAndCopyID);
+    AgentFunctionDescription af1 = agent1.newFunction("birth_and_copy_id", BirthAndCopyID);
     af1.setAgentOutput(baby);
     submodel.newLayer().addAgentFunction(af1);
     submodel.addExitCondition(AlwaysExit);
 
     ModelDescription model("subm");
-    AgentDescription& agent2 = model.newAgent("agent");
+    AgentDescription agent2 = model.newAgent("agent");
     agent2.newVariable<id_t>("id_copy");
-    SubModelDescription& smd = model.newSubModel("sm", submodel);
+    SubModelDescription smd = model.newSubModel("sm", submodel);
     smd.bindAgent("agent", "agent", true);
     model.newLayer().addSubModel(smd);
 

@@ -14,6 +14,7 @@
 #include <memory>
 
 #include "flamegpu/pop/AgentVector.h"
+#include "flamegpu/util/type_decode.h"
 
 namespace flamegpu {
 

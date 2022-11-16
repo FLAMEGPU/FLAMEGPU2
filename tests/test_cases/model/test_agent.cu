@@ -32,13 +32,13 @@ FLAMEGPU_AGENT_FUNCTION(agent_fn2, MessageNone, MessageNone) {
 
 TEST(AgentDescriptionTest, functions) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     EXPECT_FALSE(a.hasFunction(FUNCTION_NAME1));
     EXPECT_FALSE(a.hasFunction(FUNCTION_NAME2));
     EXPECT_EQ(a.getFunctionsCount(), 0u);
-    AgentFunctionDescription &f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
     EXPECT_EQ(a.getFunctionsCount(), 1u);
-    AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
+    AgentFunctionDescription f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
     EXPECT_EQ(a.getFunctionsCount(), 2u);
     // Cannot create function with same name
     EXPECT_THROW(a.newFunction(FUNCTION_NAME1, agent_fn1), exception::InvalidAgentFunc);
@@ -63,7 +63,7 @@ TEST(AgentDescriptionTest, functions) {
 }
 TEST(AgentDescriptionTest, variables) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     EXPECT_FALSE(a.hasVariable(VARIABLE_NAME1));
     EXPECT_FALSE(a.hasVariable(VARIABLE_NAME2));
     // When created, agent has 1 internal variable _id
@@ -101,7 +101,7 @@ TEST(AgentDescriptionTest, variables) {
 }
 TEST(AgentDescriptionTest, variables_array) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     EXPECT_FALSE(a.hasVariable(VARIABLE_NAME1));
     EXPECT_FALSE(a.hasVariable(VARIABLE_NAME2));
     // When created, agent has 1 internal variable _id
@@ -145,7 +145,7 @@ TEST(AgentDescriptionTest, variables_array) {
 }
 TEST(AgentDescriptionTest, states) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     EXPECT_FALSE(a.hasState(STATE_NAME1));
     EXPECT_FALSE(a.hasState(STATE_NAME2));
     EXPECT_EQ(a.getStatesCount(), 1u);  // Initially just default state
@@ -162,7 +162,7 @@ TEST(AgentDescriptionTest, states) {
 }
 TEST(AgentDescriptionTest, initial_state1) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     // Initial state starts out default
     EXPECT_EQ(a.getInitialState(), ModelData::DEFAULT_STATE);
     // Initial state changes when first state added
@@ -174,7 +174,7 @@ TEST(AgentDescriptionTest, initial_state1) {
 }
 TEST(AgentDescriptionTest, initial_state2) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     // Initial state starts out default
     EXPECT_EQ(a.getInitialState(), ModelData::DEFAULT_STATE);
     // Initial state changes when first state added
@@ -188,11 +188,11 @@ TEST(AgentDescriptionTest, initial_state2) {
 }
 TEST(AgentDescriptionTest, agent_outputs) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME1);
-    AgentDescription &b = m.newAgent(AGENT_NAME2);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
+    AgentDescription b = m.newAgent(AGENT_NAME2);
     EXPECT_EQ(a.getAgentOutputsCount(), 0u);
-    AgentFunctionDescription &f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
-    AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
+    AgentFunctionDescription f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription f2 = a.newFunction(FUNCTION_NAME2, agent_fn2);
     // Count increases as we set values
     f1.setAgentOutput(a);
     EXPECT_EQ(a.getAgentOutputsCount(), 1u);
@@ -206,7 +206,7 @@ TEST(AgentDescriptionTest, agent_outputs) {
 }
 TEST(AgentDescriptionTest, reserved_name) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     EXPECT_THROW(a.newVariable<int>("_"), exception::ReservedName);
     EXPECT_THROW(a.newVariable<int>("name"), exception::ReservedName);
     EXPECT_THROW(a.newVariable<int>("state"), exception::ReservedName);
@@ -234,7 +234,7 @@ TEST(AgentDescriptionTest, rtc_function_from_file) {
     out.close();
     // Add it to a model
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<int>("x");
     EXPECT_NO_THROW(a.newRTCFunctionFile("rtc_test_filefunc", test_file_name));
     m.newLayer().addAgentFunction(AGENT_NAME1, "rtc_test_filefunc");
@@ -259,7 +259,7 @@ TEST(AgentDescriptionTest, rtc_function_from_file_missing) {
     const std::string test_file_name = "test_rtcfunc_file2";
     // Add it to a model
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<int>("x");
     EXPECT_THROW(a.newRTCFunctionFile("test_rtcfunc_file2", test_file_name), exception::InvalidFilePath);
 }

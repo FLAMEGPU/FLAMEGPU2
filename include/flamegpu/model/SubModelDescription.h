@@ -8,15 +8,14 @@
 
 namespace flamegpu {
 
+class CSubAgentDescription;
 class SubAgentDescription;
+class CSubEnvironmentDescription;
 class SubEnvironmentDescription;
 struct ModelData;
 struct SubModelData;
 
-/**
- * This class provides an interface to a mapping between the parent and sub-model
- */
-class SubModelDescription : public DependencyNode {
+class CSubModelDescription : public DependencyNode {
     /**
      * Data store class for this description, constructs instances of this class
      */
@@ -24,31 +23,82 @@ class SubModelDescription : public DependencyNode {
     /**
      * Accesses internals to validate function description before adding to layer
      */
-    friend void LayerDescription::addSubModel(const SubModelDescription &);
-    /**
-     * Constructor, this should only be called by AgentData
-     * @param _model Model at root of model hierarchy
-     * @param _submodel Model at root of submodel hierarchy
-     */
-    SubModelDescription(const std::shared_ptr<const ModelData> &_model, SubModelData *const _submodel);
-    /**
-     * Default copy constructor, not implemented
-     */
-    SubModelDescription(const SubModelDescription &other_agent) = delete;
-    /**
-     * Default move constructor, not implemented
-     */
-    SubModelDescription(SubModelDescription &&other_agent) noexcept = delete;
-    /**
-     * Default copy assignment, not implemented
-     */
-    SubModelDescription& operator=(const SubModelDescription &other_agent) = delete;
-    /**
-     * Default move assignment, not implemented
-     */
-    SubModelDescription& operator=(SubModelDescription &&other_agent) noexcept = delete;
+    friend void LayerDescription::addSubModel(const CSubModelDescription&);
 
  public:
+    /**
+     * Constructor, creates an interface to the SubModelData
+     * @param data Data store of this submodel's data
+     */
+    explicit CSubModelDescription(std::shared_ptr<SubModelData> data);
+    explicit CSubModelDescription(std::shared_ptr<const SubModelData> data);
+    /**
+     * Copy constructor
+     * Creates a new interface to the same SubModelData/ModelData
+     */
+    CSubModelDescription(const CSubModelDescription& other_agent) = default;
+    CSubModelDescription(CSubModelDescription&& other_agent) = default;
+    /**
+     * Assignment operator
+     * Assigns this interface to the same SubModelData/ModelData
+     */
+    CSubModelDescription& operator=(const CSubModelDescription& other_agent) = default;
+    CSubModelDescription& operator=(CSubModelDescription&& other_agent) = default;
+    /**
+     * Equality operator, checks whether SubModelDescription hierarchies are functionally the same
+     * @param rhs right hand side
+     * @returns True when submodels are the same
+     * @note Instead compare pointers if you wish to check that they are the same instance
+     */
+    bool operator==(const CSubModelDescription& rhs) const;
+    /**
+     * Equality operator, checks whether SubModelDescription hierarchies are functionally different
+     * @param rhs right hand side
+     * @returns True when submodels are not the same
+     * @note Instead compare pointers if you wish to check that they are not the same instance
+     */
+    bool operator!=(const CSubModelDescription& rhs) const;
+    /**
+     * Return the current value of max steps, defaults to 0
+     * This is the maximum number of steps per call of the submodel
+     * 0 is unlimited, however requires the model to have an exit condition
+     */
+    unsigned int getMaxSteps() const;
+    /**
+     * Return the name assigned to the submodel
+     * @note This may differ from the name of the ModelDescription for the submodel
+     */
+    const std::string getName() const;
+
+ protected:
+    /**
+     * The class which stores all of the submodel's data.
+     */
+    std::shared_ptr<SubModelData> submodel;
+};
+/**
+ * This class provides an interface to a mapping between the parent and sub-model
+ */
+class SubModelDescription : public CSubModelDescription {
+ public:
+    /**
+     * Constructor, creates an interface to the SubModelData
+     * @param data Data store of this agent's data
+     */
+    explicit SubModelDescription(std::shared_ptr<SubModelData> data);
+    /**
+     * Copy constructor
+     * Creates a new interface to the same SubModelData/ModelData
+     */
+    SubModelDescription(const SubModelDescription& other_agent) = default;
+    SubModelDescription(SubModelDescription&& other_agent) = default;
+    /**
+     * Assignment operator
+     * Assigns this interface to the same SubModelData/ModelData
+     */
+    SubModelDescription& operator=(const SubModelDescription& other_agent) = default;
+    SubModelDescription& operator=(SubModelDescription&& other_agent) = default;
+
     /**
      * Defines which agent from the parent/master model will be mapped to which agent in the submodel
      * Only 1 master agent can be bound to each sub agent, however the same master agent can be bound to many sub agents
@@ -65,7 +115,7 @@ class SubModelDescription : public DependencyNode {
      * @throws exception::InvalidSubAgentName If the sub agent name does not map to a valid agent
      * @throws exception::InvalidAgentName If the master agent has already been bound
      */
-    SubAgentDescription &bindAgent(const std::string &sub_agent_name, const std::string &master_agent_name, bool auto_map_vars = false, bool auto_map_states = true);
+    SubAgentDescription bindAgent(const std::string &sub_agent_name, const std::string &master_agent_name, bool auto_map_vars = false, bool auto_map_states = true);
     /**
      * Returns a mutable reference to the named SubAgent description if it has already been bound to a master agent
      * @param sub_agent_name Name of the sub agent, who's description to return
@@ -73,7 +123,7 @@ class SubModelDescription : public DependencyNode {
      * @throws exception::InvalidSubAgentName If the sub_agent_name does not exist within the sub_model and/or has not been bound yet
      * @see SubModelDescription::getSubAgent(const std::string &) for the immutable version
      */
-    SubAgentDescription &SubAgent(const std::string &sub_agent_name);
+    SubAgentDescription SubAgent(const std::string &sub_agent_name);
     /**
      * Returns an immutable reference to the named SubAgent description if it has already been bound to a master agent
      * @param sub_agent_name Name of the sub agent, who's description to return
@@ -81,39 +131,21 @@ class SubModelDescription : public DependencyNode {
      * @throws exception::InvalidSubAgentName If the sub_agent_name does not exist within the sub_model and/or has not been bound yet
      * @see SubModelDescription::SubAgent(const std::string &) for the mutable version
      */
-    const SubAgentDescription &getSubAgent(const std::string &sub_agent_name) const;
+    CSubAgentDescription getSubAgent(const std::string &sub_agent_name) const;
     /**
      * Returns an interface for configuring mapped environment properties
      * @param auto_map If true is passed, all properties and macro properties with matching name, type and length between models will be mapped
      */
-    SubEnvironmentDescription &SubEnvironment(bool auto_map = false);
+    SubEnvironmentDescription SubEnvironment(bool auto_map = false);
     /**
      * Returns an immutable interface for viewing the configuration of mapped environment properties
-     * @param auto_map If true is passed, all properties and macro properties with matching name, type and length between models will be mapped
      */
-    const SubEnvironmentDescription &getSubEnvironment(bool auto_map = false) const;
+    CSubEnvironmentDescription getSubEnvironment() const;
     /**
      * Set the maximum number of steps per execution of the submodel
      * If 0 (default), unlimited however an exit condition is required
      */
     void setMaxSteps(unsigned int max_steps);
-    /**
-     * Return the current value of max steps, defaults to 0
-     * This is the maximum number of steps per call of the submodel
-     * 0 is unlimited, however requires the model to have an exit condition
-     */
-    unsigned int getMaxSteps() const;
-    const std::string getName();
-
- private:
-    /**
-     * Root of the model hierarchy
-     */
-    const std::weak_ptr<const ModelData> model;
-    /**
-     * Root of the submodel hierarchy
-     */
-    SubModelData *const data;
 };
 
 }  // namespace flamegpu

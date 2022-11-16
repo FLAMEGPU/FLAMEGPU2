@@ -241,7 +241,7 @@ FLAMEGPU_AGENT_FUNCTION(SetGetFn, MessageNone, MessageNone) {
 }
 TEST(TestCUDASimulation, SetGetPopulationData) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     m.newLayer(LAYER_NAME).addAgentFunction(a.newFunction(FUNCTION_NAME, SetGetFn));
     a.newVariable<int>(VARIABLE_NAME);
     AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
@@ -271,9 +271,9 @@ TEST(TestCUDASimulation, SetGetPopulationData) {
 }
 TEST(TestCUDASimulation, SetGetPopulationData_InvalidAgent) {
     ModelDescription m2(MODEL_NAME2);
-    AgentDescription &a2 = m2.newAgent(AGENT_NAME2);
+    AgentDescription a2 = m2.newAgent(AGENT_NAME2);
     ModelDescription m(MODEL_NAME);
-    // AgentDescription &a = m.newAgent(AGENT_NAME);
+    // AgentDescription a = m.newAgent(AGENT_NAME);
 
     AgentVector pop(a2, static_cast<unsigned int>(AGENT_COUNT));
 
@@ -283,7 +283,7 @@ TEST(TestCUDASimulation, SetGetPopulationData_InvalidAgent) {
 }
 TEST(TestCUDASimulation, GetAgent) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     m.newLayer(LAYER_NAME).addAgentFunction(a.newFunction(FUNCTION_NAME, SetGetFn));
     a.newVariable<int>(VARIABLE_NAME);
     AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
@@ -315,7 +315,7 @@ TEST(TestCUDASimulation, GetAgent) {
 TEST(TestCUDASimulation, Step) {
     // Test that step does a single step
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addStepFunction(IncrementCounter);
     CUDASimulation c(m);
@@ -342,18 +342,18 @@ TEST(TestCUDASimulation, SharedAgentFunction) {
     // Test that two different agents can share an agent function name/implementation
     ModelDescription model("test");
 
-    auto &agent1 = model.newAgent("a1");
-    auto &agent2 = model.newAgent("a2");
+    auto agent1 = model.newAgent("a1");
+    auto agent2 = model.newAgent("a2");
 
     agent1.newVariable<int>("i", 1);
     agent1.newVariable<int>("j", -1);
     agent2.newVariable<int>("i", -1);
     agent2.newVariable<int>("j", 1);
 
-    auto &a1f = agent1.newFunction("add", add_fn);
-    auto &a2f = agent2.newFunction("add", add_fn);
+    auto a1f = agent1.newFunction("add", add_fn);
+    auto a2f = agent2.newFunction("add", add_fn);
 
-    auto &layer = model.newLayer();
+    auto layer = model.newLayer();
     layer.addAgentFunction(a1f);
     layer.addAgentFunction(a2f);
 
@@ -389,7 +389,7 @@ TEST(TestSimulation, Simulate) {
     // Depends on CUDASimulation::step()
     // Test that step does a single step
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addStepFunction(IncrementCounter);
     CUDASimulation c(m);
@@ -415,7 +415,7 @@ TEST(TestCUDASimulation, AgentDeath) {
     std::uniform_int_distribution<unsigned int> distribution(0, 12);
     // Test that step does a single step
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("x");
     a.newFunction("DeathFunc", DeathTestFunc).setAllowAgentDeath(true);
     m.newLayer().addAgentFunction(DeathTestFunc);
@@ -443,7 +443,7 @@ TEST(TestCUDASimulation, AgentDeath) {
 TEST(TestCUDASimulation, randomseedTypes) {
     // Define a simple model - doesn't need to do anything other than take some time.
     ModelDescription model(MODEL_NAME);
-    AgentDescription &a = model.newAgent(AGENT_NAME);
+    AgentDescription a = model.newAgent(AGENT_NAME);
     AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
 
     CUDASimulation simulation(model);
@@ -474,7 +474,7 @@ TEST(TestCUDASimulation, randomseedTypes) {
 TEST(TestCUDASimulation, simulationElapsedTime) {
     // Define a simple model - doesn't need to do anything other than take some time.
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addStepFunction(IncrementCounterSlow);
 
@@ -502,7 +502,7 @@ TEST(TestCUDASimulation, simulationElapsedTime) {
 TEST(TestCUDASimulation, initExitElapsedTime) {
     // Define a simple model - doesn't need to do anything other than take some time.
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addInitFunction(InitIncrementCounterSlow);
     m.addStepFunction(IncrementCounterSlow);
@@ -528,7 +528,7 @@ TEST(TestCUDASimulation, initExitElapsedTime) {
 TEST(TestCUDASimulation, stepElapsedTime) {
     // Define a simple model - doesn't need to do anything other than take some time.
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addStepFunction(IncrementCounterSlow);
 
@@ -563,12 +563,12 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, MessageNone, MessageNone) {
 */
 /* TEST(TestCUDASimulation, RTCElapsedTime) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     AgentVector p(a, static_cast<unsigned int>(AGENT_COUNT));
     a.newVariable<unsigned int>("x");
 
     // add RTC agent function
-    AgentFunctionDescription &rtcFunc = a.newRTCFunction("rtc_test_func", rtc_empty_agent_func);
+    AgentFunctionDescription rtcFunc = a.newRTCFunction("rtc_test_func", rtc_empty_agent_func);
     m.newLayer().addAgentFunction(rtcFunc);
     // Init pop
     for (unsigned int i = 0u; i < AGENT_COUNT; i++) {
@@ -595,9 +595,9 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
  */
 TEST(TestCUDASimulation, RTCElapsedTime) {
     ModelDescription m("m");
-    AgentDescription &agent = m.newAgent(AGENT_NAME);
+    AgentDescription agent = m.newAgent(AGENT_NAME);
     // add RTC agent function
-    AgentFunctionDescription &func = agent.newRTCFunction("rtc_test_func", rtc_empty_agent_func);
+    AgentFunctionDescription func = agent.newRTCFunction("rtc_test_func", rtc_empty_agent_func);
     func.setAllowAgentDeath(true);
     m.newLayer().addAgentFunction(func);
     // Init pop
@@ -616,7 +616,7 @@ TEST(TestCUDASimulation, RTCElapsedTime) {
 TEST(TestCUDASimulation, MultipleInstances) {
     // Define a simple model - doesn't need to do anything other than take some time.
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addStepFunction(IncrementCounter);
 
@@ -637,19 +637,19 @@ TEST(TestCUDASimulation, AgentID_MultipleStatesUniqueIDs) {
     // Also check that the id's copied during model match those at export
 
     ModelDescription model("test_agentid");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<id_t>("id_copy");
     agent.newState("a");
     agent.newState("b");
-    auto& af_a = agent.newFunction("copy_id", CopyID);
+    auto af_a = agent.newFunction("copy_id", CopyID);
     af_a.setInitialState("a");
     af_a.setEndState("a");
-    auto& af_b = agent.newFunction("copy_id2", CopyID);
+    auto af_b = agent.newFunction("copy_id2", CopyID);
     af_b.setInitialState("b");
     af_b.setEndState("b");
 
 
-    auto& layer = model.newLayer();
+    auto layer = model.newLayer();
     layer.addAgentFunction(af_a);
     layer.addAgentFunction(af_b);
 
@@ -843,7 +843,7 @@ TEST(TestCUDASimulation, SimulationWithExistingCUDAMalloc) {
     // Add extra layer of scope, so the ensemble get's dtor'd incase the dtor triggers a reset
     {
         ModelDescription m(MODEL_NAME);
-        AgentDescription &a = m.newAgent(AGENT_NAME);
+        AgentDescription a = m.newAgent(AGENT_NAME);
         AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
         m.addStepFunction(IncrementCounter);
         // Instanciate a CUDASimulation of the model
@@ -868,7 +868,7 @@ TEST(TestCUDASimulation, SimulationWithExistingCUDAMalloc) {
 TEST(TestCUDASimulation, simulationVerbosity) {
     // Define a simple model - doesn't need to do anything other than take some time.
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
     m.addStepFunction(IncrementCounterSlow);
     // Create a simulation (verbosity not set until simulate so no config outputs expected)

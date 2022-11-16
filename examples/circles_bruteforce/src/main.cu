@@ -72,14 +72,14 @@ int main(int argc, const char ** argv) {
     const unsigned int AGENT_COUNT = 16384;
     const float ENV_MAX = static_cast<float>(floor(cbrt(AGENT_COUNT)));
     {   // Location message
-        flamegpu::MessageBruteForce::Description &message = model.newMessage("location");
+        flamegpu::MessageBruteForce::Description message = model.newMessage("location");
         message.newVariable<flamegpu::id_t>("id");
         message.newVariable<float>("x");
         message.newVariable<float>("y");
         message.newVariable<float>("z");
     }
     {   // Circle agent
-        flamegpu::AgentDescription  &agent = model.newAgent("Circle");
+        flamegpu::AgentDescription agent = model.newAgent("Circle");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
@@ -93,7 +93,7 @@ int main(int argc, const char ** argv) {
      * GLOBALS
      */
     {
-        flamegpu::EnvironmentDescription  &env = model.Environment();
+        flamegpu::EnvironmentDescription env = model.Environment();
         env.newProperty("repulse", 0.05f);
         env.newProperty("radius", 2.0f);
     }
@@ -106,11 +106,11 @@ int main(int argc, const char ** argv) {
     }
 
     {   // Layer #1
-        flamegpu::LayerDescription  &layer = model.newLayer();
+        flamegpu::LayerDescription layer = model.newLayer();
         layer.addAgentFunction(output_message);
     }
     {   // Layer #2
-        flamegpu::LayerDescription  &layer = model.newLayer();
+        flamegpu::LayerDescription layer = model.newLayer();
         layer.addAgentFunction(move);
     }
 
@@ -127,12 +127,12 @@ int main(int argc, const char ** argv) {
      * Create visualisation
      */
 #ifdef VISUALISATION
-    flamegpu::visualiser::ModelVis  &m_vis = cudaSimulation.getVisualisation();
+    flamegpu::visualiser::ModelVis  m_vis = cudaSimulation.getVisualisation();
     {
         const float INIT_CAM = ENV_MAX * 1.25F;
         m_vis.setInitialCameraLocation(INIT_CAM, INIT_CAM, INIT_CAM);
         m_vis.setCameraSpeed(0.02f);
-        auto &circ_agt = m_vis.addAgent("Circle");
+        auto circ_agt = m_vis.addAgent("Circle");
         // Position vars are named x, y, z; so they are used by default
         circ_agt.setModel(flamegpu::visualiser::Stock::Models::ICOSPHERE);
         circ_agt.setModelScale(1/10.0f);

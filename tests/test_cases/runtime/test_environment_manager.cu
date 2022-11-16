@@ -71,9 +71,9 @@ class MiniSim {
         ASSERT_NO_THROW(cudaSimulation.getPopulationData(*population));
     }
     ModelDescription model;
-    AgentDescription &agent;
+    AgentDescription agent;
     AgentVector *population;
-    EnvironmentDescription &env;
+    EnvironmentDescription env;
 };
 /**
 * This defines a common fixture used as a base for all test cases in the file

@@ -68,16 +68,16 @@ TEST(TestAgentStateTransitions, Src_0_Dest_10) {
     const std::array<int, 4> ARRAY_REFERENCE = { 13, 14, 15, 16 };
     const std::array<int, 4> ARRAY_REFERENCE2 = { 23, 24, 25, 26 };
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newState(START_STATE);
     a.newState(END_STATE);
     a.setInitialState(START_STATE);
     a.newVariable<int>("x");
     a.newVariable<int, 4>("y");
-    AgentFunctionDescription &af1 = a.newFunction(FUNCTION_NAME1, AgentGood);
+    AgentFunctionDescription af1 = a.newFunction(FUNCTION_NAME1, AgentGood);
     af1.setInitialState(START_STATE);
     af1.setEndState(END_STATE);
-    LayerDescription &lo1 = m.newLayer(LAYER_NAME1);
+    LayerDescription lo1 = m.newLayer(LAYER_NAME1);
     lo1.addAgentFunction(af1);
     AgentVector pop(a, AGENT_COUNT);
     for (AgentVector::Agent ai : pop) {
@@ -117,21 +117,21 @@ TEST(TestAgentStateTransitions, Src_10_Dest_0) {
     const std::array<int, 4> ARRAY_REFERENCE2 = { 23, 24, 25, 26 };
     const std::array<int, 4> ARRAY_REFERENCE3 = { 3, 4, 5, 6 };
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newState(START_STATE);
     a.newState(END_STATE);
     a.newState(END_STATE2);
     a.setInitialState(START_STATE);
     a.newVariable<int>("x");
     a.newVariable<int, 4>("y");
-    AgentFunctionDescription &af1 = a.newFunction(FUNCTION_NAME1, AgentGood);
+    AgentFunctionDescription af1 = a.newFunction(FUNCTION_NAME1, AgentGood);
     af1.setInitialState(START_STATE);
     af1.setEndState(END_STATE);
-    AgentFunctionDescription &af2 = a.newFunction(FUNCTION_NAME2, AgentBad);
+    AgentFunctionDescription af2 = a.newFunction(FUNCTION_NAME2, AgentBad);
     af2.setInitialState(END_STATE);
     af2.setEndState(END_STATE2);
-    LayerDescription &lo1 = m.newLayer(LAYER_NAME1);
-    LayerDescription &lo2 = m.newLayer(LAYER_NAME2);
+    LayerDescription lo1 = m.newLayer(LAYER_NAME1);
+    LayerDescription lo2 = m.newLayer(LAYER_NAME2);
     lo1.addAgentFunction(af2);
     lo2.addAgentFunction(af1);
     AgentVector pop(a, AGENT_COUNT);
@@ -180,23 +180,23 @@ TEST(TestAgentStateTransitions, Src_10_Dest_10) {
     // Each round 10 agents move from start to end state
     // Confirm why values are as expected
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newState(START_STATE);
     a.newState(END_STATE);
     a.setInitialState(START_STATE);
     a.newVariable<unsigned int>("x");
     a.newVariable<unsigned int>("y");
     a.newVariable<int, 4>("z");
-    AgentFunctionDescription &af1 = a.newFunction(FUNCTION_NAME1, AgentDecrement);
+    AgentFunctionDescription af1 = a.newFunction(FUNCTION_NAME1, AgentDecrement);
     af1.setInitialState(START_STATE);
     af1.setEndState(START_STATE);
     // Does nothing, just serves to demonstrate conditional state transition
-    AgentFunctionDescription &af2 = a.newFunction(FUNCTION_NAME2, AgentNull);
+    AgentFunctionDescription af2 = a.newFunction(FUNCTION_NAME2, AgentNull);
     af2.setInitialState(START_STATE);
     af2.setEndState(END_STATE);
     af2.setFunctionCondition(Zero_X);
-    LayerDescription &lo1 = m.newLayer(LAYER_NAME1);
-    LayerDescription &lo2 = m.newLayer(LAYER_NAME2);
+    LayerDescription lo1 = m.newLayer(LAYER_NAME1);
+    LayerDescription lo2 = m.newLayer(LAYER_NAME2);
     lo1.addAgentFunction(af1);
     lo2.addAgentFunction(af2);
     // Init pop

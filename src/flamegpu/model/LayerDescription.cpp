@@ -5,24 +5,75 @@
 
 namespace flamegpu {
 
-LayerDescription::LayerDescription(const std::shared_ptr<const ModelData> &_model, LayerData *const data)
-    : model(_model)
-    , layer(data) { }
+CLayerDescription::CLayerDescription(std::shared_ptr<LayerData> data)
+    : layer(std::move(data)) { }
+CLayerDescription::CLayerDescription(std::shared_ptr<const LayerData> data)
+    : layer(std::const_pointer_cast<LayerData>(data)) { }
 
-bool LayerDescription::operator==(const LayerDescription& rhs) const {
+bool CLayerDescription::operator==(const CLayerDescription& rhs) const {
     return *this->layer == *rhs.layer;  // Compare content is functionally the same
 }
-bool LayerDescription::operator!=(const LayerDescription& rhs) const {
+bool CLayerDescription::operator!=(const CLayerDescription& rhs) const {
     return !(*this == rhs);
 }
 
+/**
+ * Const Accessors
+ */
+std::string CLayerDescription::getName() const {
+    return layer->name;
+}
+
+flamegpu::size_type CLayerDescription::getIndex() const {
+    return layer->index;
+}
+flamegpu::size_type CLayerDescription::getAgentFunctionsCount() const {
+    // Safe down-cast
+    return static_cast<flamegpu::size_type>(layer->agent_functions.size());
+}
+flamegpu::size_type CLayerDescription::getHostFunctionsCount() const {
+    // Safe down-cast
+    return static_cast<flamegpu::size_type>(layer->host_functions.size());
+}
+CAgentFunctionDescription CLayerDescription::getAgentFunction(unsigned int index) const {
+    if (index < layer->agent_functions.size()) {
+        auto it = layer->agent_functions.begin();
+        for (unsigned int i = 0; i < index; ++i)
+            ++it;
+        return CAgentFunctionDescription(*it);
+    }
+    THROW exception::OutOfBoundsException("Index %d is out of bounds (only %d items exist) "
+        "in LayerDescription.getAgentFunction().",
+        index, layer->agent_functions.size());
+}
+FLAMEGPU_HOST_FUNCTION_POINTER CLayerDescription::getHostFunction(unsigned int index) const {
+    if (index < layer->host_functions.size()) {
+        auto it = layer->host_functions.begin();
+        for (unsigned int i = 0; i < index; ++i)
+            ++it;
+        return *it;
+    }
+    THROW exception::OutOfBoundsException("Index %d is out of bounds (only %d items exist) "
+        "in LayerDescription.getHostFunction().",
+        index, layer->host_functions.size());
+}
+
+/**
+ * Constructors
+ */
+LayerDescription::LayerDescription(std::shared_ptr<LayerData> data)
+    : CLayerDescription(std::move(data)) { }
+
+/**
+ * Accessors
+ */
 void LayerDescription::addAgentFunction(const AgentFunctionDescription &afd) {
-    if (afd.model.lock() == model.lock()) {
-        auto m = model.lock();
+    if (afd.function->model.lock() == layer->model.lock()) {
+        auto m = layer->model.lock();
         // Find the same afd in the model hierarchy
         for (auto &agt : m->agents) {
             for (auto &fn : agt.second->functions) {
-                if (fn.second->description.get() == &afd) {
+                if (*fn.second == afd) {
                     addAgentFunction(agt.first, fn.first);
                     return;
                 }
@@ -46,7 +97,7 @@ void LayerDescription::addAgentFunction(const std::string &agentName, const std:
             "in LayerDescription::addAgentFunction()\n");
     }
     // Locate the matching agent function in the model hierarchy
-    auto mdl = model.lock();
+    auto mdl = layer->model.lock();
     if (!mdl) {
         THROW exception::ExpiredWeakPtr();
     }
@@ -155,7 +206,7 @@ void LayerDescription::addSubModel(const std::string &name) {
             "in LayerDescription::addSubModel()\n");
     }
     // Find the correct submodel shared ptr
-    auto mdl = model.lock();
+    auto mdl = layer->model.lock();
     if (!mdl) {
         THROW exception::ExpiredWeakPtr();
     }
@@ -169,15 +220,15 @@ void LayerDescription::addSubModel(const std::string &name) {
         "in LayerDescription::addSubModel()\n",
         name.c_str(), mdl->name.c_str());
 }
-void LayerDescription::addSubModel(const SubModelDescription &submodel) {
-    auto mdl = model.lock();
+void LayerDescription::addSubModel(const CSubModelDescription &submodel) {
+    auto mdl = layer->model.lock();
     if (!mdl) {
         THROW exception::ExpiredWeakPtr();
     }
-    if (submodel.model.lock() == mdl) {
+    if (submodel.submodel->model.lock() == mdl) {
         // Find the correct submodel shared ptr
         for (auto &sm : mdl->submodels) {
-            if (sm.second.get() == submodel.data) {
+            if (sm.second.get() == submodel.submodel.get()) {
                 addSubModel(sm.first);
                 return;
             }
@@ -185,48 +236,7 @@ void LayerDescription::addSubModel(const SubModelDescription &submodel) {
     }
     THROW exception::InvalidSubModel("SubModel '%s' does not belong to Model '%s', "
         "in LayerDescription::addSubModel()\n",
-        submodel.data->submodel->name.c_str(), mdl->name.c_str());
-}
-
-std::string LayerDescription::getName() const {
-    return layer->name;
-}
-
-flamegpu::size_type LayerDescription::getIndex() const {
-    return layer->index;
-}
-
-
-flamegpu::size_type LayerDescription::getAgentFunctionsCount() const {
-    // Safe down-cast
-    return static_cast<flamegpu::size_type>(layer->agent_functions.size());
-}
-flamegpu::size_type LayerDescription::getHostFunctionsCount() const {
-    // Safe down-cast
-    return static_cast<flamegpu::size_type>(layer->host_functions.size());
-}
-
-const AgentFunctionDescription &LayerDescription::getAgentFunction(unsigned int index) const {
-    if (index < layer->agent_functions.size()) {
-        auto it = layer->agent_functions.begin();
-        for (unsigned int i = 0; i < index; ++i)
-            ++it;
-        return *((*it)->description);
-    }
-    THROW exception::OutOfBoundsException("Index %d is out of bounds (only %d items exist) "
-        "in LayerDescription.getAgentFunction().",
-    index, layer->agent_functions.size());
-}
-FLAMEGPU_HOST_FUNCTION_POINTER LayerDescription::getHostFunction(unsigned int index) const {
-    if (index < layer->host_functions.size()) {
-        auto it = layer->host_functions.begin();
-        for (unsigned int i = 0; i < index; ++i)
-            ++it;
-        return *it;
-    }
-    THROW exception::OutOfBoundsException("Index %d is out of bounds (only %d items exist) "
-        "in LayerDescription.getHostFunction().",
-        index, layer->host_functions.size());
+        submodel.submodel->name.c_str(), mdl->name.c_str());
 }
 
 void LayerDescription::_addHostFunctionCallback(HostFunctionCallback* func_callback) {

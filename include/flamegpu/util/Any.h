@@ -1,6 +1,8 @@
 #ifndef INCLUDE_FLAMEGPU_UTIL_ANY_H_
 #define INCLUDE_FLAMEGPU_UTIL_ANY_H_
 
+#include <cstring>
+
 namespace flamegpu {
 namespace util {
 

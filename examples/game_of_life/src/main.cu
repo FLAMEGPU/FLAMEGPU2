@@ -38,12 +38,12 @@ int main(int argc, const char ** argv) {
     flamegpu::ModelDescription model("Game of Life");
 
     {   // Location message
-        flamegpu::MessageArray2D::Description &message = model.newMessage<flamegpu::MessageArray2D>("is_alive_message");
+        flamegpu::MessageArray2D::Description message = model.newMessage<flamegpu::MessageArray2D>("is_alive_message");
         message.newVariable<char>("is_alive");
         message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     }
     {   // Cell agent
-        flamegpu::AgentDescription  &agent = model.newAgent("cell");
+        flamegpu::AgentDescription  agent = model.newAgent("cell");
         agent.newVariable<unsigned int, 2>("pos");
         agent.newVariable<unsigned int>("is_alive");
 #ifdef VISUALISATION
@@ -59,7 +59,7 @@ int main(int argc, const char ** argv) {
      * GLOBALS
      */
     {
-        flamegpu::EnvironmentDescription  &env = model.Environment();
+        flamegpu::EnvironmentDescription  env = model.Environment();
         env.newProperty("repulse", 0.05f);
         env.newProperty("radius", 1.0f);
     }
@@ -68,11 +68,11 @@ int main(int argc, const char ** argv) {
      * Control flow
      */
     {   // Layer #1
-        flamegpu::LayerDescription  &layer = model.newLayer();
+        flamegpu::LayerDescription layer = model.newLayer();
         layer.addAgentFunction(output);
     }
     {   // Layer #2
-        flamegpu::LayerDescription  &layer = model.newLayer();
+        flamegpu::LayerDescription layer = model.newLayer();
         layer.addAgentFunction(update);
     }
     NVTX_POP();
@@ -115,7 +115,7 @@ int main(int argc, const char ** argv) {
      * @note FLAMEGPU2 doesn't currently have proper support for discrete/2d visualisations
      */
 #ifdef VISUALISATION
-    flamegpu::visualiser::ModelVis & visualisation = cudaSimulation.getVisualisation();
+    flamegpu::visualiser::ModelVis visualisation = cudaSimulation.getVisualisation();
     {
         visualisation.setBeginPaused(true);
         visualisation.setSimulationSpeed(5);
@@ -124,7 +124,7 @@ int main(int argc, const char ** argv) {
         visualisation.setCameraSpeed(0.001f * SQRT_AGENT_COUNT);
         visualisation.setViewClips(0.01f, 2500);
         visualisation.setClearColor(0.6f, 0.6f, 0.6f);
-        auto& agt = visualisation.addAgent("cell");
+        auto agt = visualisation.addAgent("cell");
         // Position vars are named x, y, z; so they are used by default
         agt.setModel(flamegpu::visualiser::Stock::Models::CUBE);  // 5 unwanted faces!
         agt.setModelScale(1.0f);

@@ -23,7 +23,7 @@ namespace test_message_bucket {
 TEST(BucketMessageTest, DescriptionValidation) {
     ModelDescription model("BucketMessageTest");
     // Test description accessors
-    MessageBucket::Description &message = model.newMessage<MessageBucket>("buckets");
+    MessageBucket::Description message = model.newMessage<MessageBucket>("buckets");
     EXPECT_THROW(message.setUpperBound(0), exception::InvalidArgument);  // Min should default to 0, this would mean no buckets
     EXPECT_NO_THROW(message.setLowerBound(10));
     EXPECT_NO_THROW(message.setUpperBound(11));
@@ -38,7 +38,7 @@ TEST(BucketMessageTest, DescriptionValidation) {
 TEST(BucketMessageTest, DataValidation) {
     ModelDescription model("BucketMessageTest");
     // Test Data copy constructor knows when bounds have not been init
-    MessageBucket::Description &message = model.newMessage<MessageBucket>("buckets");
+    MessageBucket::Description message = model.newMessage<MessageBucket>("buckets");
     EXPECT_THROW(CUDASimulation c(model), exception::InvalidMessage);  // Max not set
     message.setLowerBound(1);  // It should default to 0
     EXPECT_THROW(CUDASimulation c(model), exception::InvalidMessage);  // Max not set
@@ -47,7 +47,7 @@ TEST(BucketMessageTest, DataValidation) {
 }
 TEST(BucketMessageTest, reserved_name) {
     ModelDescription model("BucketMessageTest");
-    MessageBucket::Description &message = model.newMessage<MessageBucket>("buckets");
+    MessageBucket::Description message = model.newMessage<MessageBucket>("buckets");
     EXPECT_THROW(message.newVariable<int>("_"), exception::ReservedName);
 }
 
@@ -102,12 +102,12 @@ TEST(BucketMessageTest, Mandatory) {
     // Construct model
     ModelDescription model("BucketMessageTest");
     {   // MessageBucket::Description
-        MessageBucket::Description &message = model.newMessage<MessageBucket>("bucket");
+        MessageBucket::Description message = model.newMessage<MessageBucket>("bucket");
         message.setBounds(12, 12 +(AGENT_COUNT/2));  // None zero lowerBound, to check that's working
         message.newVariable<int>("id");
     }
     {   // AgentDescription
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<int>("id");
         agent.newVariable<unsigned int>("count1", 0);  // Number of messages iterated
         agent.newVariable<unsigned int>("count2", 0);  // Size of bucket as returned by size()
@@ -116,11 +116,11 @@ TEST(BucketMessageTest, Mandatory) {
         agent.newFunction("in", in).setMessageInput("bucket");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(out_mandatory);
     }
     {   // Layer #2
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(in);
     }
     CUDASimulation cudaSimulation(model);
@@ -166,28 +166,28 @@ TEST(BucketMessageTest, Optional) {
     // Construct model
     ModelDescription model("BucketMessageTest");
     {   // MessageBucket::Description
-        MessageBucket::Description &message = model.newMessage<MessageBucket>("bucket");
+        MessageBucket::Description message = model.newMessage<MessageBucket>("bucket");
         message.setBounds(12, 12 +(AGENT_COUNT/2));  // None zero lowerBound, to check that's working
         message.newVariable<int>("id");
     }
     {   // AgentDescription
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<int>("id");
         agent.newVariable<int>("do_output");
         agent.newVariable<unsigned int>("count1", 0);  // Number of messages iterated
         agent.newVariable<unsigned int>("count2", 0);  // Size of bucket as returned by size()
         agent.newVariable<unsigned int>("sum", 0);  // Sums of IDs in bucket
-        auto &af = agent.newFunction("out", out_optional);
+        auto af = agent.newFunction("out", out_optional);
         af.setMessageOutput("bucket");
         af.setMessageOutputOptional(true);
         agent.newFunction("in", in).setMessageInput("bucket");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(out_optional);
     }
     {   // Layer #2
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(in);
     }
     CUDASimulation cudaSimulation(model);
@@ -240,27 +240,27 @@ TEST(BucketMessageTest, OptionalNone) {
     // Construct model
     ModelDescription model("BucketMessageTest");
     {   // MessageBucket::Description
-        MessageBucket::Description &message = model.newMessage<MessageBucket>("bucket");
+        MessageBucket::Description message = model.newMessage<MessageBucket>("bucket");
         message.setBounds(12, 12 +(AGENT_COUNT/2));  // None zero lowerBound, to check that's working
         message.newVariable<int>("id");
     }
     {   // AgentDescription
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<int>("id");
         agent.newVariable<unsigned int>("count1", 0);  // Number of messages iterated
         agent.newVariable<unsigned int>("count2", 0);  // Size of bucket as returned by size()
         agent.newVariable<unsigned int>("sum", 0);  // Sums of IDs in bucket
-        auto &af = agent.newFunction("out", out_optionalNone);
+        auto af = agent.newFunction("out", out_optionalNone);
         af.setMessageOutput("bucket");
         af.setMessageOutputOptional(true);
         agent.newFunction("in", in).setMessageInput("bucket");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(out_optionalNone);
     }
     {   // Layer #2
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(in);
     }
     CUDASimulation cudaSimulation(model);
@@ -431,12 +431,12 @@ TEST(BucketMessageTest, Mandatory_Range) {
     // Construct model
     ModelDescription model("BucketMessageTest");
     {   // MessageBucket::Description
-        MessageBucket::Description &message = model.newMessage<MessageBucket>("bucket");
+        MessageBucket::Description message = model.newMessage<MessageBucket>("bucket");
         message.setBounds(12, 12 +(AGENT_COUNT/2));  // None zero lowerBound, to check that's working
         message.newVariable<int>("id");
     }
     {   // AgentDescription
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<int>("id");
         agent.newVariable<unsigned int>("count1", 0);  // Number of messages iterated
         agent.newVariable<unsigned int>("count2", 0);  // Size of id bucket as returned by size()
@@ -445,11 +445,11 @@ TEST(BucketMessageTest, Mandatory_Range) {
         agent.newFunction("in", in_range).setMessageInput("bucket");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(out_mandatory);
     }
     {   // Layer #2
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(in_range);
     }
     CUDASimulation cudaSimulation(model);
@@ -515,19 +515,19 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, MessageBucket, MessageNone) {
 }
 TEST(TestMessage_Bucket, ArrayVariable) {
     ModelDescription m(MODEL_NAME);
-    MessageBucket::Description &message = m.newMessage<MessageBucket>(MESSAGE_NAME);
+    MessageBucket::Description message = m.newMessage<MessageBucket>(MESSAGE_NAME);
     message.setBounds(0, AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -572,19 +572,19 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageBucket, flamegpu::MessageNone)
 )###";
 TEST(TestRTCMessage_Bucket, ArrayVariable) {
     ModelDescription m(MODEL_NAME);
-    MessageBucket::Description& message = m.newMessage<MessageBucket>(MESSAGE_NAME);
+    MessageBucket::Description message = m.newMessage<MessageBucket>(MESSAGE_NAME);
     message.setBounds(0, AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
-    AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
+    AgentFunctionDescription fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
+    AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -624,19 +624,19 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn_glm, MessageBucket, MessageNone) {
 }
 TEST(TestMessage_Bucket, ArrayVariable_glm) {
     ModelDescription m(MODEL_NAME);
-    MessageBucket::Description &message = m.newMessage<MessageBucket>(MESSAGE_NAME);
+    MessageBucket::Description message = m.newMessage<MessageBucket>(MESSAGE_NAME);
     message.setBounds(0, AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -678,19 +678,19 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageBucket, flamegpu::MessageNone)
 )###";
 TEST(TestRTCMessage_Bucket, ArrayVariable_glm) {
     ModelDescription m(MODEL_NAME);
-    MessageBucket::Description& message = m.newMessage<MessageBucket>(MESSAGE_NAME);
+    MessageBucket::Description message = m.newMessage<MessageBucket>(MESSAGE_NAME);
     message.setBounds(0, AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
-    AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
+    AgentFunctionDescription fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
+    AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);

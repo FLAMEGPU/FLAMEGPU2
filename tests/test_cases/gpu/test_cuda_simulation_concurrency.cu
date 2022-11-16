@@ -406,7 +406,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, LayerConcurrency) {
     ModelDescription m("concurrency_test");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -415,9 +415,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, LayerConcurrency) {
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_slowAgentFunction");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        auto &f = a.newFunction(agent_function, SlowAgentFunction);
+        auto f = a.newFunction(agent_function, SlowAgentFunction);
         layer.addAgentFunction(f);
 
         // Generate an iniital population.
@@ -448,7 +448,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastLayerConcurrency) 
     ModelDescription m("concurrency_test");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -457,9 +457,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastLayerConcurrency) 
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_fastAgentFunction");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        auto &f = a.newFunction(agent_function, FastAgentFunction);
+        auto f = a.newFunction(agent_function, FastAgentFunction);
         layer.addAgentFunction(f);
 
         // Generate an iniital population.
@@ -489,7 +489,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutput) {
     ModelDescription m("ConcurrentMessageOutput");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -499,12 +499,12 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutput) {
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_SlowMessageOutputAgentFunction");
         std::string message_name(agent_name + "_messages");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        MessageBruteForce::Description &message = m.newMessage(message_name);
+        MessageBruteForce::Description message = m.newMessage(message_name);
         message.newVariable<float>("v");
 
-        auto &f = a.newFunction(agent_function, SlowMessageOutputAgentFunction);
+        auto f = a.newFunction(agent_function, SlowMessageOutputAgentFunction);
         f.setMessageOutput(message);
 
         layer.addAgentFunction(f);
@@ -536,8 +536,8 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInput) {
     ModelDescription m("ConcurrentMessageOutputInput");
 
     // Create two layers.
-    LayerDescription &layer0  = m.newLayer();
-    LayerDescription &layer1  = m.newLayer();
+    LayerDescription layer0  = m.newLayer();
+    LayerDescription layer1  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -548,17 +548,17 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInput) {
         std::string agent_function_out(agent_name + "_SlowMessageOutputAgentFunction");
         std::string agent_function_in(agent_name + "_SlowMessageInputAgentFunction");
         std::string message_name(agent_name + "_messages");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        MessageBruteForce::Description &message = m.newMessage(message_name);
+        MessageBruteForce::Description message = m.newMessage(message_name);
         message.newVariable<float>("v");
 
-        auto &f_out = a.newFunction(agent_function_out, SlowMessageOutputAgentFunction);
+        auto f_out = a.newFunction(agent_function_out, SlowMessageOutputAgentFunction);
         f_out.setMessageOutput(message);
 
         layer0.addAgentFunction(f_out);
 
-        auto &f_in = a.newFunction(agent_function_in, SlowMessageInputAgentFunction);
+        auto f_in = a.newFunction(agent_function_in, SlowMessageInputAgentFunction);
         f_in.setMessageInput(message);
 
         layer1.addAgentFunction(f_in);
@@ -590,8 +590,8 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSam
     ModelDescription m("ConcurrentMessageOutputInputSameList");
 
     // Create two layers.
-    LayerDescription &layer0  = m.newLayer();
-    LayerDescription &layer1  = m.newLayer();
+    LayerDescription layer0  = m.newLayer();
+    LayerDescription layer1  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -604,19 +604,19 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSam
         std::string agent_function_out(agent_name + "_SlowMessageOutputAgentFunction");
         std::string agent_function_in(agent_name + "_SlowMessageInputAgentFunction");
         std::string message_name(agent_name + "_messages");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        MessageBruteForce::Description &message = m.newMessage(message_name);
+        MessageBruteForce::Description message = m.newMessage(message_name);
         message.newVariable<float>("v");
 
-        MessageBruteForce::Description &message_in = m.Message(message_in_name);
+        MessageBruteForce::Description message_in = m.Message(message_in_name);
 
-        auto &f_out = a.newFunction(agent_function_out, SlowMessageOutputAgentFunction);
+        auto f_out = a.newFunction(agent_function_out, SlowMessageOutputAgentFunction);
         f_out.setMessageOutput(message);
 
         layer0.addAgentFunction(f_out);
 
-        auto &f_in = a.newFunction(agent_function_in, SlowMessageInputAgentFunction);
+        auto f_in = a.newFunction(agent_function_in, SlowMessageInputAgentFunction);
         f_in.setMessageInput(message_in);
 
         layer1.addAgentFunction(f_in);
@@ -647,8 +647,8 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentOptionalMessageOutput
     ModelDescription m("ConcurrentMessageOutputInputSameList");
 
     // Create two layers.
-    LayerDescription &layer0  = m.newLayer();
-    LayerDescription &layer1  = m.newLayer();
+    LayerDescription layer0  = m.newLayer();
+    LayerDescription layer1  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -661,21 +661,21 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentOptionalMessageOutput
         std::string agent_function_out(agent_name + "_SlowOptionalMessageOutputAgentFunction");
         std::string agent_function_in(agent_name + "_SlowOptionalMessageInputAgentFunction");
         std::string message_name(agent_name + "_messages");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<unsigned int>("id");
         a.newVariable<float>("v");
-        MessageBruteForce::Description &message = m.newMessage(message_name);
+        MessageBruteForce::Description message = m.newMessage(message_name);
         message.newVariable<float>("v");
 
-        MessageBruteForce::Description &message_in = m.Message(message_in_name);
+        MessageBruteForce::Description message_in = m.Message(message_in_name);
 
-        auto &f_out = a.newFunction(agent_function_out, SlowOptionalMessageOutputAgentFunction);
+        auto f_out = a.newFunction(agent_function_out, SlowOptionalMessageOutputAgentFunction);
         f_out.setMessageOutputOptional(true);
         f_out.setMessageOutput(message);
 
         layer0.addAgentFunction(f_out);
 
-        auto &f_in = a.newFunction(agent_function_in, SlowOptionalMessageInputAgentFunction);
+        auto f_in = a.newFunction(agent_function_in, SlowOptionalMessageInputAgentFunction);
         f_in.setMessageInput(message_in);
 
         layer1.addAgentFunction(f_in);
@@ -684,6 +684,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentOptionalMessageOutput
         AgentVector* a_pop = new AgentVector(a, POPULATION_SIZES);
         for (unsigned int j = 0; j < POPULATION_SIZES; ++j) {
             auto agent = a_pop->at(j);
+            agent.setVariable<unsigned int>("id", j);
             agent.setVariable<unsigned int>("id", j);
             agent.setVariable<float>("v", static_cast<float>(j));
         }
@@ -712,8 +713,8 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
     ModelDescription m("ConcurrentMessageOutputInputSpatial2D");
 
     // Create two layers.
-    LayerDescription &layer0  = m.newLayer();
-    LayerDescription &layer1  = m.newLayer();
+    LayerDescription layer0  = m.newLayer();
+    LayerDescription layer1  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -724,12 +725,12 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
         std::string agent_function_out(agent_name + "_SlowMessageOutputAgentFunctionSpatial2D");
         std::string agent_function_in(agent_name + "_SlowMessageInputAgentFunctionSpatial2D");
         std::string message_name(agent_name + "_messages");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
         a.newVariable<float>("x");
         a.newVariable<float>("y");
 
-        MessageSpatial2D::Description &message = m.newMessage<MessageSpatial2D>(message_name);
+        MessageSpatial2D::Description message = m.newMessage<MessageSpatial2D>(message_name);
         message.newVariable<float>("v");
         // message.newVariable<float>("x");
         // message.newVariable<float>("y");
@@ -737,12 +738,12 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
         message.setMax(MESSAGE_BOUNDS_MAX, MESSAGE_BOUNDS_MAX);
         message.setRadius(MESSAGE_BOUNDS_RADIUS);
 
-        auto &f_out = a.newFunction(agent_function_out, SlowMessageOutputAgentFunctionSpatial2D);
+        auto f_out = a.newFunction(agent_function_out, SlowMessageOutputAgentFunctionSpatial2D);
         f_out.setMessageOutput(message);
 
         layer0.addAgentFunction(f_out);
 
-        auto &f_in = a.newFunction(agent_function_in, SlowMessageInputAgentFunctionSpatial2D);
+        auto f_in = a.newFunction(agent_function_in, SlowMessageInputAgentFunctionSpatial2D);
         f_in.setMessageInput(message);
 
         layer1.addAgentFunction(f_in);
@@ -782,8 +783,8 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
     ModelDescription m("ConcurrentMessageOutputInputSpatial3D");
 
     // Create two layers.
-    LayerDescription &layer0  = m.newLayer();
-    LayerDescription &layer1  = m.newLayer();
+    LayerDescription layer0  = m.newLayer();
+    LayerDescription layer1  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -794,13 +795,13 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
         std::string agent_function_out(agent_name + "_SlowMessageOutputAgentFunctionSpatial3D");
         std::string agent_function_in(agent_name + "_SlowMessageInputAgentFunctionSpatial3D");
         std::string message_name(agent_name + "_messages");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
         a.newVariable<float>("x");
         a.newVariable<float>("y");
         a.newVariable<float>("z");
 
-        MessageSpatial3D::Description &message = m.newMessage<MessageSpatial3D>(message_name);
+        MessageSpatial3D::Description message = m.newMessage<MessageSpatial3D>(message_name);
         message.newVariable<float>("v");
         // message.newVariable<float>("x");
         // message.newVariable<float>("y");
@@ -809,12 +810,12 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConcurrentMessageOutputInputSpa
         message.setMax(MESSAGE_BOUNDS_MAX, MESSAGE_BOUNDS_MAX, MESSAGE_BOUNDS_MAX);
         message.setRadius(MESSAGE_BOUNDS_RADIUS);
 
-        auto &f_out = a.newFunction(agent_function_out, SlowMessageOutputAgentFunctionSpatial3D);
+        auto f_out = a.newFunction(agent_function_out, SlowMessageOutputAgentFunctionSpatial3D);
         f_out.setMessageOutput(message);
 
         layer0.addAgentFunction(f_out);
 
-        auto &f_in = a.newFunction(agent_function_in, SlowMessageInputAgentFunctionSpatial3D);
+        auto f_in = a.newFunction(agent_function_in, SlowMessageInputAgentFunctionSpatial3D);
         f_in.setMessageInput(message);
 
         layer1.addAgentFunction(f_in);
@@ -853,7 +854,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_LayerConcurrencyBirth)
     ModelDescription m("LayerConcurrencyBirth");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
@@ -862,9 +863,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_LayerConcurrencyBirth)
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_SlowAgentFunctionBirth");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        auto &f = a.newFunction(agent_function, SlowAgentFunctionBirth);
+        auto f = a.newFunction(agent_function, SlowAgentFunctionBirth);
         f.setAgentOutput(a);
         layer.addAgentFunction(f);
 
@@ -894,7 +895,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, LayerConcurrencyDeath) {
     ModelDescription m("LayerConcurrencyDeath");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
@@ -903,9 +904,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, LayerConcurrencyDeath) {
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_SlowAgentFunctionDeath");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        auto &f = a.newFunction(agent_function, SlowAgentFunctionDeath);
+        auto f = a.newFunction(agent_function, SlowAgentFunctionDeath);
         f.setAllowAgentDeath(true);
         layer.addAgentFunction(f);
 
@@ -935,7 +936,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConditionConcurrencyAllDisabled
     ModelDescription m("ConditionConcurrencyAllDisabled");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
@@ -944,9 +945,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConditionConcurrencyAllDisabled
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_SlowAgentFunction");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        auto &f = a.newFunction(agent_function, SlowAgentFunction);
+        auto f = a.newFunction(agent_function, SlowAgentFunction);
         f.setFunctionCondition(SlowConditionAllFalse);
         layer.addAgentFunction(f);
 
@@ -976,7 +977,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConditionConcurrencyAllEnabled)
     ModelDescription m("ConditionConcurrencyAllEnabled");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
@@ -985,9 +986,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConditionConcurrencyAllEnabled)
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_SlowAgentFunction");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        auto &f = a.newFunction(agent_function, SlowAgentFunction);
+        auto f = a.newFunction(agent_function, SlowAgentFunction);
         f.setFunctionCondition(SlowConditionAllTrue);
         layer.addAgentFunction(f);
 
@@ -1018,7 +1019,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConditionConcurrency5050) {
     ModelDescription m("ConditionConcurrency5050");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
@@ -1027,9 +1028,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, ConditionConcurrency5050) {
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_SlowAgentFunction");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        auto &f = a.newFunction(agent_function, SlowAgentFunction);
+        auto f = a.newFunction(agent_function, SlowAgentFunction);
         f.setFunctionCondition(SlowCondition5050);
         layer.addAgentFunction(f);
 
@@ -1060,7 +1061,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditiRELEASE_ONL
     ModelDescription m("FastConditionConcurrencyAllDisabled");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
@@ -1069,9 +1070,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditiRELEASE_ONL
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_FastAgentFunction");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        auto &f = a.newFunction(agent_function, FastAgentFunction);
+        auto f = a.newFunction(agent_function, FastAgentFunction);
         f.setFunctionCondition(FastConditionAllFalse);
         layer.addAgentFunction(f);
 
@@ -1102,7 +1103,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditionConcurren
     ModelDescription m("FastConditionConcurrencyAllEnabled");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
@@ -1111,9 +1112,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditionConcurren
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_FastAgentFunction");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        auto &f = a.newFunction(agent_function, FastAgentFunction);
+        auto f = a.newFunction(agent_function, FastAgentFunction);
         f.setFunctionCondition(FastConditionAllTrue);
         layer.addAgentFunction(f);
 
@@ -1144,7 +1145,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditionConcurren
     ModelDescription m("FastConditionConcurrency5050");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector *> populations = std::vector<AgentVector *>();
 
@@ -1153,9 +1154,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditionConcurren
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_FastAgentFunction");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        auto &f = a.newFunction(agent_function, FastAgentFunction);
+        auto f = a.newFunction(agent_function, FastAgentFunction);
         f.setFunctionCondition(FastCondition5050);
         layer.addAgentFunction(f);
 
@@ -1185,7 +1186,7 @@ RELEASE_ONLY_SEATBELTS_TEST(TestCUDASimulationConcurrency, LayerConcurrencyDevic
     ModelDescription m("LayerConcurrencyDeviceException");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -1194,9 +1195,9 @@ RELEASE_ONLY_SEATBELTS_TEST(TestCUDASimulationConcurrency, LayerConcurrencyDevic
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_SlowAgentFunctionWithDeviceException");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
-        auto &f = a.newFunction(agent_function, SlowAgentFunctionWithDeviceException);
+        auto f = a.newFunction(agent_function, SlowAgentFunctionWithDeviceException);
         layer.addAgentFunction(f);
 
         // Generate an iniital population.
@@ -1254,7 +1255,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, RTCLayerConcurrency) {
     ModelDescription m("rtc_concurrency_test");
 
     // Create a layer, which contains one function for each agent type - with no dependencies this is allowed.
-    LayerDescription &layer  = m.newLayer();
+    LayerDescription layer  = m.newLayer();
 
     std::vector<AgentVector*> populations = std::vector<AgentVector*>();
 
@@ -1263,11 +1264,11 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, RTCLayerConcurrency) {
         // Generate the agent type
         std::string agent_name("agent_" + std::to_string(i));
         std::string agent_function(agent_name + "_slowAgentFunction");
-        AgentDescription &a = m.newAgent(agent_name);
+        AgentDescription a = m.newAgent(agent_name);
         a.newVariable<float>("v");
 
         // @bug - first argument as the same string for many agent types leads to not all functions executing. Issue #378
-        auto &f = a.newRTCFunction(agent_function.c_str(), rtc_slowAgentFunction);
+        auto f = a.newRTCFunction(agent_function.c_str(), rtc_slowAgentFunction);
         layer.addAgentFunction(f);
 
         // Generate an iniital population.

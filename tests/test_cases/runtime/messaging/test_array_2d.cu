@@ -58,20 +58,20 @@ FLAMEGPU_AGENT_FUNCTION(InFunction, MessageArray2D, MessageNone) {
 }
 TEST(TestMessage_Array2D, Mandatory) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Create a list of numbers
     std::array<unsigned int, AGENT_COUNT> numbers;
@@ -103,21 +103,21 @@ TEST(TestMessage_Array2D, Mandatory) {
 }
 TEST(TestMessage_Array2D, Optional) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutOptionalFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutOptionalFunction);
     fo.setMessageOutput(message);
     fo.setMessageOutputOptional(true);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Create a list of numbers
     std::array<unsigned int, AGENT_COUNT> numbers;
@@ -152,21 +152,21 @@ TEST(TestMessage_Array2D, Optional) {
 // Test optional message output, wehre no messages are output.
 TEST(TestMessage_Array2D, OptionalNone) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutOptionalNoneFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutOptionalNoneFunction);
     fo.setMessageOutput(message);
     fo.setMessageOutputOptional(true);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
 
     // Generate an arbitrary population.
@@ -248,18 +248,18 @@ FLAMEGPU_AGENT_FUNCTION(MooreTest2W, MessageArray2D, MessageNone) {
 }
 TEST(TestMessage_Array2D, Moore1W) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutSimple);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutSimple);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, MooreTest1W);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, MooreTest1W);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -281,18 +281,18 @@ TEST(TestMessage_Array2D, Moore1W) {
 }
 TEST(TestMessage_Array2D, Moore2W) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutSimple);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutSimple);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, MooreTest2W);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, MooreTest2W);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -320,18 +320,18 @@ TEST(TestMessage_Array2D, DuplicateOutputException) {
 TEST(TestMessage_Array2D, DISABLED_DuplicateOutputException) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutBad);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutBad);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Create a list of numbers
     std::array<unsigned int, AGENT_COUNT> numbers;
@@ -354,7 +354,7 @@ TEST(TestMessage_Array2D, DISABLED_DuplicateOutputException) {
 }
 TEST(TestMessage_Array2D, ArrayLenZeroException) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     EXPECT_THROW(message.setDimensions(0, SQRT_AGENT_COUNT), exception::InvalidArgument);
     EXPECT_THROW(message.setDimensions({ 0, SQRT_AGENT_COUNT }), exception::InvalidArgument);
     EXPECT_THROW(message.setDimensions(SQRT_AGENT_COUNT, 0), exception::InvalidArgument);
@@ -368,7 +368,7 @@ TEST(TestMessage_Array2D, UnsetDimensions) {
 }
 TEST(TestMessage_Array2D, reserved_name) {
     ModelDescription model(MODEL_NAME);
-    MessageArray2D::Description &message = model.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = model.newMessage<MessageArray2D>(MESSAGE_NAME);
     EXPECT_THROW(message.newVariable<int>("_"), exception::ReservedName);
 }
 FLAMEGPU_AGENT_FUNCTION(countArray2D, MessageArray2D, MessageNone) {
@@ -380,18 +380,18 @@ TEST(TestMessage_Array2D, ReadEmpty) {
 // What happens if we read a message list before it has been output?
     ModelDescription model("Model");
     {   // Location message
-        MessageArray2D::Description &message = model.newMessage<MessageArray2D>("location");
+        MessageArray2D::Description message = model.newMessage<MessageArray2D>("location");
         message.setDimensions(2, 2);
         message.newVariable<int>("id");  // unused by current test
         message.newVariable<unsigned int>("value");  // unused by current test
     }
     {   // Circle agent
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<unsigned int>("value", 32323);  // Count the number of messages read
         agent.newFunction("in", countArray2D).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(countArray2D);
     }
     // Create 1 agent
@@ -420,20 +420,20 @@ TEST(TestMessage_Array2D, MooreW_InitOutOfBoundsX) {
 TEST(TestMessage_Array2D, DISABLED_MooreW_InitOutOfBoundsX) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWOutOfBoundsX);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreWOutOfBoundsX);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -460,20 +460,20 @@ TEST(TestMessage_Array2D, MooreW_InitOutOfBoundsY) {
 TEST(TestMessage_Array2D, DISABLED_MooreW_InitOutOfBoundsY) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWOutOfBoundsY);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreWOutOfBoundsY);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -500,20 +500,20 @@ TEST(TestMessage_Array2D, MooreW_BadRadius1) {
 TEST(TestMessage_Array2D, DISABLED_MooreW_BadRadius1) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWBadRadius1);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreWBadRadius1);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -540,20 +540,20 @@ TEST(TestMessage_Array2D, MooreW_BadRadius2) {
 TEST(TestMessage_Array2D, DISABLED_MooreW_BadRadius2) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreWBadRadius2);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreWBadRadius2);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -580,20 +580,20 @@ TEST(TestMessage_Array2D, Moore_InitOutOfBoundsX) {
 TEST(TestMessage_Array2D, DISABLED_Moore_InitOutOfBoundsX) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreOutOfBoundsX);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreOutOfBoundsX);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -620,20 +620,20 @@ TEST(TestMessage_Array2D, Moore_InitOutOfBoundsY) {
 TEST(TestMessage_Array2D, DISABLED_Moore_InitOutOfBoundsY) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreOutOfBoundsY);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreOutOfBoundsY);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -660,20 +660,20 @@ TEST(TestMessage_Array2D, Moore_BadRadius) {
 TEST(TestMessage_Array2D, DISABLED_Moore_BadRadius) {
 #endif
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT + 1);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
     a.newVariable<unsigned int>("message_write");
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, InMooreBadRadius);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InMooreBadRadius);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -741,28 +741,28 @@ void test_moore_wrap_comradius(
     ModelDescription model("MooreXRC");
 
     // Use an env var for the communication radius to use, rather than a __device__ or a #define.
-    EnvironmentDescription &env = model.Environment();
+    EnvironmentDescription env = model.Environment();
     env.newProperty<unsigned int>("COMRADIUS", COMRADIUS);
 
     // Define the message
-    MessageArray2D::Description &message = model.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = model.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.newVariable<unsigned int>("index");
     message.newVariable<unsigned int>("v");
     message.newVariable<unsigned int, 3>("v2");
     message.setDimensions(GRID_WIDTH, GRID_HEIGHT);
-    AgentDescription &agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<unsigned int>("index");
     agent.newVariable<unsigned int>("x");
     agent.newVariable<unsigned int>("y");
     agent.newVariable<unsigned int>("message_read", UINT_MAX);
     agent.newVariable<unsigned int>("value_success", 0);
     // Define the function and layers.
-    AgentFunctionDescription &outputFunction = agent.newFunction("OutSimpleXY", OutSimpleXY);
+    AgentFunctionDescription outputFunction = agent.newFunction("OutSimpleXY", OutSimpleXY);
     outputFunction.setMessageOutput(message);
-    AgentFunctionDescription &inputFunction = agent.newFunction("MooreWTestXYC", MooreWTestXYC);
+    AgentFunctionDescription inputFunction = agent.newFunction("MooreWTestXYC", MooreWTestXYC);
     inputFunction.setMessageInput(message);
     model.newLayer().addAgentFunction(outputFunction);
-    LayerDescription &li = model.newLayer();
+    LayerDescription li = model.newLayer();
     li.addAgentFunction(inputFunction);
     // Assign the numbers in shuffled order to agents
     AgentVector population(agent, agentCount);
@@ -870,28 +870,28 @@ void test_mooore_comradius(
     ModelDescription model("MooreXRC");
 
     // Use an env var for the communication radius to use, rather than a __device__ or a #define.
-    EnvironmentDescription &env = model.Environment();
+    EnvironmentDescription env = model.Environment();
     env.newProperty<unsigned int>("COMRADIUS", COMRADIUS);
 
     // Define the message
-    MessageArray2D::Description &message = model.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = model.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.newVariable<unsigned int>("index");
     message.newVariable<unsigned int>("v");
     message.newVariable<unsigned int, 3>("v2");
     message.setDimensions(GRID_WIDTH, GRID_HEIGHT);
-    AgentDescription &agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<unsigned int>("index");
     agent.newVariable<unsigned int>("x");
     agent.newVariable<unsigned int>("y");
     agent.newVariable<unsigned int>("message_read", UINT_MAX);
     agent.newVariable<unsigned int>("value_success", 0);
     // Define the function and layers.
-    AgentFunctionDescription &outputFunction = agent.newFunction("OutSimpleXY", OutSimpleXY);
+    AgentFunctionDescription outputFunction = agent.newFunction("OutSimpleXY", OutSimpleXY);
     outputFunction.setMessageOutput(message);
-    AgentFunctionDescription &inputFunction = agent.newFunction("MooreTestXYC", MooreTestXYC);
+    AgentFunctionDescription inputFunction = agent.newFunction("MooreTestXYC", MooreTestXYC);
     inputFunction.setMessageInput(message);
     model.newLayer().addAgentFunction(outputFunction);
-    LayerDescription &li = model.newLayer();
+    LayerDescription li = model.newLayer();
     li.addAgentFunction(inputFunction);
     // Assign the numbers in shuffled order to agents
     AgentVector population(agent, agentCount);
@@ -982,20 +982,20 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, MessageArray2D, MessageNone) {
 }
 TEST(TestMessage_Array2D, ArrayVariable) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("v2");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
@@ -1044,19 +1044,19 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageArray2D, flamegpu::MessageNone
 )###";
 TEST(TestRTCMessage_Array2D, ArrayVariable) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
-    AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
+    AgentFunctionDescription fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
+    AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
@@ -1100,19 +1100,19 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn_glm, MessageArray2D, MessageNone) {
 }
 TEST(TestMessage_Array2D, ArrayVariable_glm) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
@@ -1158,20 +1158,20 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageArray2D, flamegpu::MessageNone
 )###";
 TEST(TestRTCMessage_Array2D, ArrayVariable_glm) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("v2");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
-    AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
+    AgentFunctionDescription fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
+    AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
@@ -1288,17 +1288,17 @@ void test_arrayMessageReorderError(
     constexpr char MESSAGE_NAME_TWOVAR[] = "AB";
 
     // Define the message list with different numbers of variables.
-    MessageArray2D::Description &messageA = model.newMessage<MessageArray2D>(MESSAGE_NAME_ONEVAR);
+    MessageArray2D::Description messageA = model.newMessage<MessageArray2D>(MESSAGE_NAME_ONEVAR);
     messageA.newVariable<unsigned int>("a");
     messageA.setDimensions(GRID_WIDTH, GRID_HEIGHT);
     // DEfine the message list with two non coordinate values
-    MessageArray2D::Description &messageAB = model.newMessage<MessageArray2D>(MESSAGE_NAME_TWOVAR);
+    MessageArray2D::Description messageAB = model.newMessage<MessageArray2D>(MESSAGE_NAME_TWOVAR);
     messageAB.newVariable<unsigned int>("a");
     messageAB.newVariable<unsigned int>("b");
     messageAB.setDimensions(GRID_WIDTH, GRID_HEIGHT);
 
     // Define the agents
-    AgentDescription &agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<unsigned int>("x");
@@ -1306,13 +1306,13 @@ void test_arrayMessageReorderError(
     agent.newVariable<unsigned int>("message_read", UINT_MAX);
 
     // Define the functions
-    AgentFunctionDescription &outputAFunction = agent.newFunction("OutputA", OutputA);
+    AgentFunctionDescription outputAFunction = agent.newFunction("OutputA", OutputA);
     outputAFunction.setMessageOutput(messageA);
-    AgentFunctionDescription &iterateABFunction = agent.newFunction("IterateAB", IterateAB);
+    AgentFunctionDescription iterateABFunction = agent.newFunction("IterateAB", IterateAB);
     iterateABFunction.setMessageInput(messageAB);
-    AgentFunctionDescription &outputABFunction = agent.newFunction("OutputAB", OutputAB);
+    AgentFunctionDescription outputABFunction = agent.newFunction("OutputAB", OutputAB);
     outputABFunction.setMessageOutput(messageAB);
-    AgentFunctionDescription &iterateAFunction = agent.newFunction("IterateA", IterateA);
+    AgentFunctionDescription iterateAFunction = agent.newFunction("IterateA", IterateA);
     iterateAFunction.setMessageInput(messageA);
 
     // Add the functions to layers. The mesasge list with fewer variables should be output/input prior to the larger list(s)
@@ -1451,21 +1451,21 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn_vn_r2, MessageArray2D, MessageNone) {
 }
 TEST(TestMessage_Array2D, VonNeumann_r1) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("v2");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int>("success", 0);
     a.newVariable<unsigned int>("value_success", 0);
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_r1);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_r1);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
@@ -1491,21 +1491,21 @@ TEST(TestMessage_Array2D, VonNeumann_r1) {
 }
 TEST(TestMessage_Array2D, VonNeumann_r2) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("v2");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int>("success", 0);
     a.newVariable<unsigned int>("value_success", 0);
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_r2);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_r2);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
@@ -1589,21 +1589,21 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn_vn_wrap_r2, MessageArray2D, MessageNone) {
 }
 TEST(TestMessage_Array2D, VonNeumann_wrap_r1) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description &message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("v2");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int>("success", 0);
     a.newVariable<unsigned int>("value_success", 0);
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_wrap_r1);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_wrap_r1);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
@@ -1629,21 +1629,21 @@ TEST(TestMessage_Array2D, VonNeumann_wrap_r1) {
 }
 TEST(TestMessage_Array2D, VonNeumann_wrap_r2) {
     ModelDescription m(MODEL_NAME);
-    MessageArray2D::Description& message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
+    MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("v2");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int>("success", 0);
     a.newVariable<unsigned int>("value_success", 0);
-    AgentFunctionDescription& fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_wrap_r2);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_vn_wrap_r2);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);

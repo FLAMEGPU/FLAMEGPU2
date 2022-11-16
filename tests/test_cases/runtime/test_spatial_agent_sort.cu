@@ -21,19 +21,19 @@ FLAMEGPU_AGENT_FUNCTION(dummySpatialFunc_2D, MessageSpatial2D, MessageNone) {
 TEST(AutomaticSpatialAgentSort, SortingDisabled) {
     // Define model
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("initial_order");
     agent.newVariable<float>("x");
     agent.newVariable<float>("y");
     agent.newVariable<float>("z");
     agent.setSortPeriod(0);
-    MessageSpatial3D::Description &locationMessage = model.newMessage<MessageSpatial3D>("location");
+    MessageSpatial3D::Description locationMessage = model.newMessage<MessageSpatial3D>("location");
     locationMessage.setMin(-5, -5, -5);
     locationMessage.setMax(5, 5, 5);
     locationMessage.setRadius(0.2f);
-    AgentFunctionDescription& dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
+    AgentFunctionDescription dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
     dummyFunc.setMessageInput("location");
-    LayerDescription& layer = model.newLayer();
+    LayerDescription layer = model.newLayer();
     layer.addAgentFunction(dummyFunc);
 
     // Init pop - arranged in reverse order
@@ -67,18 +67,18 @@ TEST(AutomaticSpatialAgentSort, SortingDisabled) {
 TEST(AutomaticSpatialAgentSort, SortEveryStep) {
     // Define model
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("initial_order");
     agent.newVariable<float>("x");
     agent.newVariable<float>("y");
     agent.newVariable<float>("z");
-    MessageSpatial3D::Description &locationMessage = model.newMessage<MessageSpatial3D>("location");
+    MessageSpatial3D::Description locationMessage = model.newMessage<MessageSpatial3D>("location");
     locationMessage.setMin(-5, -5, -5);
     locationMessage.setMax(5, 5, 5);
     locationMessage.setRadius(0.2f);
-    AgentFunctionDescription& dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
+    AgentFunctionDescription dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
     dummyFunc.setMessageInput("location");
-    LayerDescription& layer = model.newLayer();
+    LayerDescription layer = model.newLayer();
     layer.addAgentFunction(dummyFunc);
 
     // Init pop
@@ -113,19 +113,19 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep) {
 TEST(AutomaticSpatialAgentSort, SortEveryStep_no_default) {
     // Define model
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("initial_order");
     agent.newState("foobar");
     agent.newVariable<float>("x");
     agent.newVariable<float>("y");
     agent.newVariable<float>("z");
-    MessageSpatial3D::Description& locationMessage = model.newMessage<MessageSpatial3D>("location");
+    MessageSpatial3D::Description locationMessage = model.newMessage<MessageSpatial3D>("location");
     locationMessage.setMin(-5, -5, -5);
     locationMessage.setMax(5, 5, 5);
     locationMessage.setRadius(0.2f);
-    AgentFunctionDescription& dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
+    AgentFunctionDescription dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
     dummyFunc.setMessageInput("location");
-    LayerDescription& layer = model.newLayer();
+    LayerDescription layer = model.newLayer();
     layer.addAgentFunction(dummyFunc);
 
     // Init pop
@@ -159,16 +159,16 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep_no_default) {
 TEST(AutomaticSpatialAgentSort, SortEveryStep_vec2) {
     // Define model
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("initial_order");
     agent.newVariable<float, 2>("xy");
-    MessageSpatial2D::Description& locationMessage = model.newMessage<MessageSpatial2D>("location");
+    MessageSpatial2D::Description locationMessage = model.newMessage<MessageSpatial2D>("location");
     locationMessage.setMin(-5, -5);
     locationMessage.setMax(5, 5);
     locationMessage.setRadius(0.2f);
-    AgentFunctionDescription& dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_2D);
+    AgentFunctionDescription dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_2D);
     dummyFunc.setMessageInput("location");
-    LayerDescription& layer = model.newLayer();
+    LayerDescription layer = model.newLayer();
     layer.addAgentFunction(dummyFunc);
 
     // Init pop
@@ -198,16 +198,16 @@ TEST(AutomaticSpatialAgentSort, SortEveryStep_vec2) {
 TEST(AutomaticSpatialAgentSort, SortEveryStep_vec3) {
     // Define model
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("initial_order");
     agent.newVariable<float, 3>("xyz");
-    MessageSpatial3D::Description& locationMessage = model.newMessage<MessageSpatial3D>("location");
+    MessageSpatial3D::Description locationMessage = model.newMessage<MessageSpatial3D>("location");
     locationMessage.setMin(-5, -5, -5);
     locationMessage.setMax(5, 5, 5);
     locationMessage.setRadius(0.2f);
-    AgentFunctionDescription& dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
+    AgentFunctionDescription dummyFunc = agent.newFunction("dummySpatialFunc", dummySpatialFunc_3D);
     dummyFunc.setMessageInput("location");
-    LayerDescription& layer = model.newLayer();
+    LayerDescription layer = model.newLayer();
     layer.addAgentFunction(dummyFunc);
 
     // Init pop

@@ -10,7 +10,7 @@ TEST(AgentVectorTest, constructor) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector constructors, size(), array operator
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("int", 1);
     agent.newVariable<unsigned int>("uint", 2u);
     agent.newVariable<float>("float", 3.0f);
@@ -41,7 +41,7 @@ TEST(AgentVectorTest, copy_constructor) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector copy constructors, size(), array operator
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("int", 1);
     agent.newVariable<unsigned int>("uint", 2u);
     agent.newVariable<float>("float", 3.0f);
@@ -74,7 +74,7 @@ TEST(AgentVectorTest, move_constructor) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector move constructors, size(), array operator
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("int", 1);
     agent.newVariable<unsigned int>("uint", 2u);
     agent.newVariable<float>("float", 3.0f);
@@ -107,7 +107,7 @@ TEST(AgentVectorTest, copy_assignment_operator) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector copy assignment, size(), array operator
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("int", 1);
     agent.newVariable<unsigned int>("uint", 2u);
     agent.newVariable<float>("float", 3.0f);
@@ -141,7 +141,7 @@ TEST(AgentVectorTest, move_assignment_operator) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector move assignment, size(), array operator
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("int", 1);
     agent.newVariable<unsigned int>("uint", 2u);
     agent.newVariable<float>("float", 3.0f);
@@ -175,7 +175,7 @@ TEST(AgentVectorTest, at) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector at(), synonymous with array operator
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("int", 1);
     agent.newVariable<unsigned int>("uint", 2u);
     agent.newVariable<float>("float", 3.0f);
@@ -222,7 +222,7 @@ TEST(AgentVectorTest, array_operator) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector array operator (operator[]()), synonymous with at()
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("int", 1);
     agent.newVariable<unsigned int>("uint", 2u);
     agent.newVariable<float>("float", 3.0f);
@@ -260,7 +260,7 @@ TEST(AgentVectorTest, front) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector front(), synonymous with at(0)
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("int", 1);
 
     // Create vector with 10 agents, all default init
@@ -282,7 +282,7 @@ TEST(AgentVectorTest, back) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector back(), synonymous with at(size()-1)
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("int", 1);
 
     // Create vector with 10 agents, all default init
@@ -304,7 +304,7 @@ TEST(AgentVectorTest, data) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector data()
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int>("int", 1);
 
     // Create vector with 10 agents, init to their index
@@ -346,7 +346,7 @@ TEST(AgentVectorTest, iterator) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector array iterator, and the member functions for creating them.
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint");
 
     // Create vector with 10 agents, init to their index
@@ -376,7 +376,7 @@ TEST(AgentVectorTest, iterator_GLM) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector array iterator, and the member functions for creating them.
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<glm::uvec3>("uvec3");
 
     // Create vector with 10 agents, init to their index
@@ -410,7 +410,7 @@ TEST(AgentVectorTest, const_iterator) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector const_iterator
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint");
 
     // Create vector with 10 agents, init to their index
@@ -456,7 +456,7 @@ TEST(AgentVectorTest, reverse_iterator) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector reverse_iterator, and the member functions for creating them.
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint");
 
     // Create vector with 10 agents, init to their index
@@ -486,7 +486,7 @@ TEST(AgentVectorTest, const_reverse_iterator) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector const_reverse_iterator, and the member functions for creating them.
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint");
 
     // Create vector with 10 agents, init to their index
@@ -533,7 +533,7 @@ TEST(AgentVectorTest, empty) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector empty
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint");
 
     // Create vector with 10 agents, init to their index
@@ -546,7 +546,7 @@ TEST(AgentVectorTest, size) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector size
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint");
 
     // Create vector with 10 agents, init to their index
@@ -560,7 +560,7 @@ TEST(AgentVectorTest, reserve) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector reserve
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint");
 
     // Create vector with 10 agents, init to their index
@@ -595,7 +595,7 @@ TEST(AgentVectorTest, shrink_to_fit) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector shrink_to_fit
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint");
 
     // Create vector with 10 agents, init to their index
@@ -630,7 +630,7 @@ TEST(AgentVectorTest, clear) {
     const unsigned int DEFAULT_VALUE = 12;
     // Test correctness of AgentVector array operator (operator[]()), synonymous with at()
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint", DEFAULT_VALUE);
 
     // Create vector with 10 agents, init to non-default value
@@ -659,7 +659,7 @@ TEST(AgentVectorTest, insert) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector insert
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint");
     // AgentVector to insert
     AgentVector insert_av(agent, POP_SIZE);
@@ -902,7 +902,7 @@ TEST(AgentVectorTest, insert) {
     }
 
     // Wrong agents for exceptions
-    AgentDescription& agent2 = model.newAgent("agent2");
+    AgentDescription agent2 = model.newAgent("agent2");
     agent2.newVariable<float>("float");
     AgentVector pop(agent, POP_SIZE);
     auto it = pop.begin();
@@ -929,7 +929,7 @@ TEST(AgentVectorTest, erase_single) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector erase (on single items)
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint", POP_SIZE + 2);
 
     {
@@ -993,7 +993,7 @@ TEST(AgentVectorTest, erase_range) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector erase (on single items)
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint");
 
     {
@@ -1058,7 +1058,7 @@ TEST(AgentVectorTest, push_back) {
     // Test correctness of AgentVector push_back, and whether created item is default init
     // The impact on erase/clear/pop_back/etc functions on default init, is tested by their respective tests
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint", 2u);
     AgentVector pop(agent, POP_SIZE);
     ASSERT_EQ(pop.size(), POP_SIZE);
@@ -1073,7 +1073,7 @@ TEST(AgentVectorTest, push_back) {
     ASSERT_EQ(pop.size(), POP_SIZE + 2);
     ASSERT_EQ(pop.back().getVariable<unsigned int>("uint"), 22u);
     // Diff agent fail
-    AgentDescription& agent2 = model.newAgent("agent2");
+    AgentDescription agent2 = model.newAgent("agent2");
     agent2.newVariable<float>("float", 2.0f);
     AgentInstance ai2(agent2);
     EXPECT_THROW(pop.push_back(ai2), exception::InvalidAgent);
@@ -1082,7 +1082,7 @@ TEST(AgentVectorTest, pop_back) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector pop_back
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint", 2u);
     AgentVector pop(agent, POP_SIZE);
     ASSERT_EQ(pop.size(), POP_SIZE);
@@ -1109,7 +1109,7 @@ TEST(AgentVectorTest, resize) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector resize
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint", 2u);
     AgentVector pop(agent, POP_SIZE);
     ASSERT_EQ(pop.size(), POP_SIZE);
@@ -1142,7 +1142,7 @@ TEST(AgentVectorTest, swap) {
     // This can be applied to agents of different types, but not testing that
     // Should work effectively the same
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint", 2u);
     AgentVector pop_default(agent,  2 * POP_SIZE);
     AgentVector pop(agent, POP_SIZE);
@@ -1172,22 +1172,22 @@ TEST(AgentVectorTest, equality_operator) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector operator==
     ModelDescription model("model");
-    AgentDescription& agent1 = model.newAgent("agent");
+    AgentDescription agent1 = model.newAgent("agent");
     agent1.newVariable<unsigned int>("uint", 2u);
     ModelDescription model2("model2");
-    AgentDescription& agent2 = model2.newAgent("agent");
+    AgentDescription agent2 = model2.newAgent("agent");
     agent2.newVariable<unsigned int>("uint", 2u);
     ModelDescription model3("model3");
-    AgentDescription& agent3 = model3.newAgent("agent");
+    AgentDescription agent3 = model3.newAgent("agent");
     agent3.newVariable<unsigned int>("uint", 2u);
     agent3.newVariable<float>("float", 3u);
     ModelDescription model4("model4");
-    AgentDescription& agent4 = model4.newAgent("agent");
+    AgentDescription agent4 = model4.newAgent("agent");
     agent4.newVariable<int>("int", 2);
     ModelDescription model5("model5");
-    AgentDescription& agent5 = model5.newAgent("agent");
+    AgentDescription agent5 = model5.newAgent("agent");
     agent5.newVariable<int>("uint", 2);
-    AgentDescription& agent6 = model.newAgent("agent2");
+    AgentDescription agent6 = model.newAgent("agent2");
     agent6.newVariable<unsigned int>("uint", 2u);
     AgentVector pop(agent1, POP_SIZE);
     // Copy of the list is equal
@@ -1227,22 +1227,22 @@ TEST(AgentVectorTest, inequality_operator) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector operator!=
     ModelDescription model("model");
-    AgentDescription& agent1 = model.newAgent("agent");
+    AgentDescription agent1 = model.newAgent("agent");
     agent1.newVariable<unsigned int>("uint", 2u);
     ModelDescription model2("model2");
-    AgentDescription& agent2 = model2.newAgent("agent");
+    AgentDescription agent2 = model2.newAgent("agent");
     agent2.newVariable<unsigned int>("uint", 2u);
     ModelDescription model3("model3");
-    AgentDescription& agent3 = model3.newAgent("agent");
+    AgentDescription agent3 = model3.newAgent("agent");
     agent3.newVariable<unsigned int>("uint", 2u);
     agent3.newVariable<float>("float", 3u);
     ModelDescription model4("model4");
-    AgentDescription& agent4 = model4.newAgent("agent");
+    AgentDescription agent4 = model4.newAgent("agent");
     agent4.newVariable<int>("int", 2);
     ModelDescription model5("model5");
-    AgentDescription& agent5 = model5.newAgent("agent");
+    AgentDescription agent5 = model5.newAgent("agent");
     agent5.newVariable<int>("uint", 2);
-    AgentDescription& agent6 = model.newAgent("agent2");
+    AgentDescription agent6 = model.newAgent("agent2");
     agent6.newVariable<unsigned int>("uint", 2u);
     AgentVector pop(agent1, POP_SIZE);
     // Copy of the list is equal
@@ -1282,9 +1282,9 @@ TEST(AgentVectorTest, getAgentName) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector getAgentName
     ModelDescription model("model");
-    AgentDescription& agent1 = model.newAgent("agent");
+    AgentDescription agent1 = model.newAgent("agent");
     agent1.newVariable<unsigned int>("uint", 2u);
-    AgentDescription& agent2 = model.newAgent("testtest");
+    AgentDescription agent2 = model.newAgent("testtest");
     agent2.newVariable<unsigned int>("uint", 2u);
     AgentVector pop(agent1, POP_SIZE);
     EXPECT_EQ(pop.getAgentName(), "agent");
@@ -1295,9 +1295,9 @@ TEST(AgentVectorTest, matchesAgentType) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector::matchesAgentType(AgentDescription)
     ModelDescription model("model");
-    AgentDescription& agent1 = model.newAgent("agent");
+    AgentDescription agent1 = model.newAgent("agent");
     agent1.newVariable<unsigned int>("uint", 2u);
-    AgentDescription& agent2 = model.newAgent("testtest");
+    AgentDescription agent2 = model.newAgent("testtest");
     agent2.newVariable<int>("int", 2u);
     AgentVector pop(agent1, POP_SIZE);
     AgentVector pop1(agent1);
@@ -1313,7 +1313,7 @@ TEST(AgentVectorTest, getVariableType) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector getVariableType
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint");
     agent.newVariable<int>("int");
     AgentVector pop(agent, POP_SIZE);
@@ -1326,14 +1326,14 @@ TEST(AgentVectorTest, getInitialState) {
     // Test correctness of AgentVector getInitialState
     // Though this is moreso testing how iniital state works
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint");
-    AgentDescription& agent2 = model.newAgent("agent2");
+    AgentDescription agent2 = model.newAgent("agent2");
     agent2.newState("test");
-    AgentDescription& agent3 = model.newAgent("agent3");
+    AgentDescription agent3 = model.newAgent("agent3");
     agent3.newState("test");
     agent3.newState("test2");
-    AgentDescription& agent4 = model.newAgent("agent4");
+    AgentDescription agent4 = model.newAgent("agent4");
     agent4.newState("test");
     agent4.newState("test2");
     agent4.setInitialState("test2");
@@ -1351,7 +1351,7 @@ TEST(AgentVectorTest, AgentVector_Agent) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector getVariableType
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("uint", 12u);
     agent.newVariable<int, 3>("int3", {2, 3, 4});
     agent.newVariable<int, 2>("int2", { 5, 6 });

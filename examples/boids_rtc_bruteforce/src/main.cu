@@ -354,7 +354,7 @@ int main(int argc, const char ** argv) {
     flamegpu::ModelDescription model("Boids BruteForce (RTC)");
 
     {   // Location message
-        flamegpu::MessageBruteForce::Description &message = model.newMessage("location");
+        flamegpu::MessageBruteForce::Description message = model.newMessage("location");
         // A message to hold the location of an agent.
         message.newVariable<flamegpu::id_t>("id");
         message.newVariable<float>("x");
@@ -365,7 +365,7 @@ int main(int argc, const char ** argv) {
         message.newVariable<float>("fz");
     }
     {   // Boid agent
-        flamegpu::AgentDescription &agent = model.newAgent("Boid");
+        flamegpu::AgentDescription agent = model.newAgent("Boid");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<float>("z");
@@ -381,7 +381,7 @@ int main(int argc, const char ** argv) {
      * GLOBALS
      */
     {
-        flamegpu::EnvironmentDescription &env = model.Environment();
+        flamegpu::EnvironmentDescription env = model.Environment();
 
         // Population size to generate, if no agents are loaded from disk
         env.newProperty("POPULATION_TO_GENERATE", 4000u);
@@ -412,11 +412,11 @@ int main(int argc, const char ** argv) {
      * Control flow
      */     
     {   // Layer #1
-        flamegpu::LayerDescription &layer = model.newLayer();
+        flamegpu::LayerDescription layer = model.newLayer();
         layer.addAgentFunction("Boid", "outputdata");
     }
     {   // Layer #2
-        flamegpu::LayerDescription &layer = model.newLayer();
+        flamegpu::LayerDescription layer = model.newLayer();
         layer.addAgentFunction("Boid", "inputdata");
     }
 
@@ -430,15 +430,15 @@ int main(int argc, const char ** argv) {
      * Create visualisation
      */
 #ifdef VISUALISATION
-    flamegpu::visualiser::ModelVis &visualisation = cudaSimulation.getVisualisation();
+    flamegpu::visualiser::ModelVis visualisation = cudaSimulation.getVisualisation();
     {
-        flamegpu::EnvironmentDescription &env = model.Environment();
+        flamegpu::EnvironmentDescription env = model.Environment();
         float envWidth = env.getProperty<float>("MAX_POSITION") - env.getProperty<float>("MIN_POSITION");
         const float INIT_CAM = env.getProperty<float>("MAX_POSITION") * 1.25f;
         visualisation.setInitialCameraLocation(INIT_CAM, INIT_CAM, INIT_CAM);
         visualisation.setCameraSpeed(0.001f * envWidth);
         visualisation.setViewClips(0.00001f, 50);
-        auto &circ_agt = visualisation.addAgent("Boid");
+        auto circ_agt = visualisation.addAgent("Boid");
         // Position vars are named x, y, z; so they are used by default
         circ_agt.setForwardXVariable("fx");
         circ_agt.setForwardYVariable("fy");
@@ -466,7 +466,7 @@ int main(int argc, const char ** argv) {
 
     // If no xml model file was is provided, generate a population.
     if (cudaSimulation.getSimulationConfig().input_file.empty()) {
-        flamegpu::EnvironmentDescription &env = model.Environment();
+        flamegpu::EnvironmentDescription env = model.Environment();
         // Uniformly distribute agents within space, with uniformly distributed initial velocity.
         std::mt19937_64 rngEngine(cudaSimulation.getSimulationConfig().random_seed);
         std::uniform_real_distribution<float> position_distribution(env.getProperty<float>("MIN_POSITION"), env.getProperty<float>("MAX_POSITION"));

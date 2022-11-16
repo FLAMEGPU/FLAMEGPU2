@@ -65,7 +65,7 @@ FLAMEGPU_STEP_FUNCTION(GetBadVarType) {
 TEST(HostAgentCreationTest, FromInit) {
     // Define model
     ModelDescription model("TestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     model.addInitFunction(BasicOutput);
     // Init agent pop
@@ -99,7 +99,7 @@ TEST(HostAgentCreationTest, FromInit) {
 TEST(HostAgentCreationTest, FromStep) {
     // Define model
     ModelDescription model("TestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     model.addStepFunction(BasicOutput);
     // Init agent pop
@@ -133,7 +133,7 @@ TEST(HostAgentCreationTest, FromStep) {
 TEST(HostAgentCreationTest, FromHostLayer) {
     // Define model
     ModelDescription model("TestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     model.newLayer().addHostFunction(BasicOutput);
     // Init agent pop
@@ -167,7 +167,7 @@ TEST(HostAgentCreationTest, FromHostLayer) {
 TEST(HostAgentCreationTest, FromExitCondition) {
     // Define model
     ModelDescription model("TestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     model.addExitCondition(BasicOutputCdn);
     // Init agent pop
@@ -201,7 +201,7 @@ TEST(HostAgentCreationTest, FromExitCondition) {
 TEST(HostAgentCreationTest, FromStepEmptyPop) {
     // Define model
     ModelDescription model("TestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     model.addStepFunction(BasicOutput);
     // Init agent pop
@@ -226,7 +226,7 @@ TEST(HostAgentCreationTest, FromStepEmptyPop) {
 TEST(HostAgentCreationTest, FromStepMultiState) {
     // Define model
     ModelDescription model("TestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
@@ -261,11 +261,11 @@ TEST(HostAgentCreationTest, FromStepMultiState) {
 TEST(HostAgentCreationTest, FromStepMultiAgent) {
     // Define model
     ModelDescription model("TestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
-    AgentDescription &agent2 = model.newAgent("agent2");
+    AgentDescription agent2 = model.newAgent("agent2");
     agent2.newVariable<float>("y");
     model.addStepFunction(OutputMultiAgent);
     // Init agent pop
@@ -304,7 +304,7 @@ TEST(HostAgentCreationTest, FromStepMultiAgent) {
 TEST(HostAgentCreationTest, DefaultVariableValue) {
     // Define model
     ModelDescription model("TestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<float>("default", 15.0f);
     model.addStepFunction(BasicOutput);
@@ -330,7 +330,7 @@ TEST(HostAgentCreationTest, DefaultVariableValue) {
 TEST(HostAgentCreationTest, BadVarName) {
     // Define model
     ModelDescription model("TestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     model.addStepFunction(BadVarName);
     // Init agent pop
@@ -341,7 +341,7 @@ TEST(HostAgentCreationTest, BadVarName) {
 TEST(HostAgentCreationTest, BadVarType) {
     // Define model
     ModelDescription model("TestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     model.addStepFunction(BadVarType);
     // Init agent pop
@@ -352,7 +352,7 @@ TEST(HostAgentCreationTest, BadVarType) {
 TEST(HostAgentCreationTest, GetterWorks) {
     // Define model
     ModelDescription model("TestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<float>("default", 15.0f);
     model.addStepFunction(Getter);
@@ -379,7 +379,7 @@ TEST(HostAgentCreationTest, GetterWorks) {
 TEST(HostAgentCreationTest, GetterBadVarName) {
     // Define model
     ModelDescription model("TestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     model.addStepFunction(GetBadVarName);
     // Init agent pop
@@ -390,7 +390,7 @@ TEST(HostAgentCreationTest, GetterBadVarName) {
 TEST(HostAgentCreationTest, GetterBadVarType) {
     // Define model
     ModelDescription model("TestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     model.addStepFunction(GetBadVarType);
     // Init agent pop
@@ -469,7 +469,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArraySet) {
     const std::array<int, 4> TEST_REFERENCE = { 2, 4, 8, 16 };
     const std::array<int, 4> TEST_REFERENCE2 = { 3, 5, 9, 17 };
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<unsigned int>("id", UINT_MAX);
     agent.newVariable<int, 4>("array_var");
     agent.newVariable<int, 4>("array_var2");
@@ -500,7 +500,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArraySetGet) {
     const std::array<int, 4> TEST_REFERENCE = { 2, 4, 8, 16 };
     const std::array<int, 4> TEST_REFERENCE2 = { 3, 5, 9, 17 };
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<unsigned int>("id", UINT_MAX);
     agent.newVariable<int, 4>("array_var");
     agent.newVariable<int, 4>("array_var2");
@@ -531,7 +531,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayDefaultWorks) {
     const std::array<int, 4> TEST_REFERENCE = { 2, 4, 8, 16 };
     const std::array<int, 4> TEST_REFERENCE2 = { 3, 5, 9, 17 };
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<unsigned int>("id", UINT_MAX);
     agent.newVariable<int, 4>("array_var", TEST_REFERENCE);
     agent.newVariable<int, 4>("array_var2", TEST_REFERENCE2);
@@ -556,7 +556,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayDefaultWorks) {
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_LenWrong);
@@ -565,7 +565,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong) {
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong2) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_LenWrong2);
@@ -574,7 +574,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong2) {
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong3) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_LenWrong);
@@ -583,7 +583,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong3) {
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong4) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_LenWrong2);
@@ -592,7 +592,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong4) {
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayTypeWrong) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_TypeWrong);
@@ -601,7 +601,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayTypeWrong) {
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayTypeWrong2) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_TypeWrong2);
@@ -610,7 +610,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayTypeWrong2) {
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayNameWrong) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_NameWrong);
@@ -619,7 +619,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayNameWrong) {
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayNameWrong2) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_NameWrong);
@@ -628,7 +628,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayNameWrong2) {
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayNotSuitableSet) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_ArrayNotSuitableSet);
@@ -637,7 +637,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayNotSuitableSet) {
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayNotSuitableGet) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_ArrayNotSuitableGet);
@@ -687,12 +687,12 @@ TEST(HostAgentCreationTest, AgentID_HostNewAgent_MultipleStatesUniqueIDs) {
     // Also check that the id's copied during model match those at export
 
     ModelDescription model("test_agentid");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<id_t>("id_copy", ID_NOT_SET);
     agent.newState("a");
     agent.newState("b");
 
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addHostFunction(AgentID_HostNewAgentBirth);
 
     AgentVector pop_in(agent, POP_SIZE);
@@ -747,12 +747,12 @@ TEST(HostAgentCreationTest, AgentID_MultipleAgents) {
     // Also check that the id's copied during model match those at export
 
     ModelDescription model("test_agentid");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<id_t>("id_copy", ID_NOT_SET);
-    AgentDescription& agent2 = model.newAgent("agent2");
+    AgentDescription agent2 = model.newAgent("agent2");
     agent2.newVariable<id_t>("id_copy", ID_NOT_SET);
 
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addHostFunction(AgentID_HostNewAgentBirth2);
 
     AgentVector pop_in_a(agent, POP_SIZE);
@@ -835,7 +835,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArraySetGet_glm) {
     const glm::ivec4 TEST_REFERENCE = { 2, 4, 8, 16 };
     const glm::ivec4 TEST_REFERENCE2 = { 3, 5, 9, 17 };
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<unsigned int>("id", UINT_MAX);
     agent.newVariable<glm::ivec4>("array_var");
     agent.newVariable<glm::ivec4>("array_var2");
@@ -866,7 +866,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArraySetGet_glm2) {
     const std::array<glm::ivec4, 4> TEST_REFERENCE = { glm::ivec4{2, 3, 4, 5}, glm::ivec4{4, 5, 6, 7}, glm::ivec4{8, 9, 10, 11}, glm::ivec4{16, 17, 18, 19} };
     const std::array<glm::ivec4, 4> TEST_REFERENCE2 = { glm::ivec4{3, 4, 5, 6}, glm::ivec4{5, 6, 7, 8}, glm::ivec4{9, 10, 11, 12}, glm::ivec4{17, 18, 19, 20} };
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<unsigned int>("id", UINT_MAX);
     agent.newVariable<glm::ivec4, 4>("array_var");
     agent.newVariable<glm::ivec4, 4>("array_var2");
@@ -897,7 +897,7 @@ TEST(HostAgentCreationTest, HostAgentBirth_ArrayDefaultWorks_glm) {
     const glm::ivec4 TEST_REFERENCE = { 2, 4, 8, 16 };
     const glm::ivec4 TEST_REFERENCE2 = { 3, 5, 9, 17 };
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<unsigned int>("id", UINT_MAX);
     agent.newVariable<glm::ivec4>("array_var", TEST_REFERENCE);
     agent.newVariable<glm::ivec4>("array_var2", TEST_REFERENCE2);
@@ -926,7 +926,7 @@ FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirth_ArrayLenWrong_glm) {
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayLenWrong_glm) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<glm::ivec4, 4>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_LenWrong);
@@ -938,7 +938,7 @@ FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirth_ArrayOutOfBounds_glm) {
 }
 TEST(HostAgentCreationTest, HostAgentBirth_ArrayOutOfBounds_glm) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<glm::ivec4, 4>("array_var");
     // Run the init function
     model.addStepFunction(ArrayVarHostBirth_ArrayOutOfBounds_glm);

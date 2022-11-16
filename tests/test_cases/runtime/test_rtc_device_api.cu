@@ -18,10 +18,10 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
  */
 TEST(DeviceRTCAPITest, AgentFunction_empty) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
     // add RTC agent function
-    AgentFunctionDescription &func = agent.newRTCFunction("rtc_test_func", rtc_empty_agent_func);
+    AgentFunctionDescription func = agent.newRTCFunction("rtc_test_func", rtc_empty_agent_func);
     func.setAllowAgentDeath(true);
     model.newLayer().addAgentFunction(func);
     // Init pop
@@ -42,10 +42,10 @@ TEST(DeviceRTCAPITest, AgentFunction_empty) {
  */
 TEST(DeviceRTCAPITest, AgentFunction_differentName) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
     // add RTC agent function
-    AgentFunctionDescription &func = agent.newRTCFunction("other_name", rtc_empty_agent_func);
+    AgentFunctionDescription func = agent.newRTCFunction("other_name", rtc_empty_agent_func);
     func.setAllowAgentDeath(true);
     model.newLayer().addAgentFunction(func);
     // Init pop
@@ -74,9 +74,9 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 /*
 TEST(DeviceRTCAPITest, AgentFunction_compile_error) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
-    AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_error_agent_func);
+    AgentFunctionDescription func = agent.newRTCFunction("rtc_test_func", rtc_error_agent_func);
     func.setAllowAgentDeath(true);
     model.newLayer().addAgentFunction(func);
     // Init pop
@@ -108,10 +108,10 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
  */
 TEST(DeviceRTCAPITest, AgentFunction_death) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     // add RTC agent function
-    AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_death_agent_func);
+    AgentFunctionDescription func = agent.newRTCFunction("rtc_test_func", rtc_death_agent_func);
     func.setAllowAgentDeath(true);
     model.newLayer().addAgentFunction(func);
     // Init pop
@@ -146,10 +146,10 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
  */
 TEST(DeviceRTCAPITest, AgentFunction_get) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     // add RTC agent function
-    AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_get_agent_func);
+    AgentFunctionDescription func = agent.newRTCFunction("rtc_test_func", rtc_get_agent_func);
     func.setAllowAgentDeath(true);
     model.newLayer().addAgentFunction(func);
     // Init pop
@@ -182,11 +182,11 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
  */
 TEST(DeviceRTCAPITest, AgentFunction_getset) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     agent.newVariable<int>("id_out");
     // add RTC agent function
-    AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_getset_agent_func);
+    AgentFunctionDescription func = agent.newRTCFunction("rtc_test_func", rtc_getset_agent_func);
     model.newLayer().addAgentFunction(func);
     // Init pop
     AgentVector init_population(agent, AGENT_COUNT);
@@ -227,7 +227,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
  */
 TEST(DeviceRTCAPITest, AgentFunction_array_get) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     agent.newVariable<int, 4>("array_var");
     agent.newVariable<int>("a1");
@@ -235,7 +235,7 @@ TEST(DeviceRTCAPITest, AgentFunction_array_get) {
     agent.newVariable<int>("a3");
     agent.newVariable<int>("a4");
     // add RTC agent function
-    AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_array_get_agent_func);
+    AgentFunctionDescription func = agent.newRTCFunction("rtc_test_func", rtc_array_get_agent_func);
     model.newLayer().addAgentFunction(func);
     // Init pop
     AgentVector init_population(agent, AGENT_COUNT);
@@ -285,7 +285,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
  */
 TEST(DeviceRTCAPITest, AgentFunction_array_set) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     agent.newVariable<int, 5>("array_var");
     agent.newVariable<int>("a0");
@@ -293,7 +293,7 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set) {
     agent.newVariable<int>("a2");
     agent.newVariable<int>("a3");
     agent.newVariable<int>("a4");
-    AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_array_set_agent_func);
+    AgentFunctionDescription func = agent.newRTCFunction("rtc_test_func", rtc_array_set_agent_func);
     model.newLayer().addAgentFunction(func);
     // Init pop
     AgentVector init_population(agent, AGENT_COUNT);
@@ -348,7 +348,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
  */
 TEST(DeviceRTCAPITest, AgentFunction_array_get_glm) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     agent.newVariable<int, 4>("array_var");
     agent.newVariable<int>("a1");
@@ -356,7 +356,7 @@ TEST(DeviceRTCAPITest, AgentFunction_array_get_glm) {
     agent.newVariable<int>("a3");
     agent.newVariable<int>("a4");
     // add RTC agent function
-    AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_array_get_agent_func_glm);
+    AgentFunctionDescription func = agent.newRTCFunction("rtc_test_func", rtc_array_get_agent_func_glm);
     model.newLayer().addAgentFunction(func);
     // Init pop
     AgentVector init_population(agent, AGENT_COUNT);
@@ -398,7 +398,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
  */
 TEST(DeviceRTCAPITest, AgentFunction_array_set_glm) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     agent.newVariable<int, 4>("array_var");
     agent.newVariable<int>("a0");
@@ -406,7 +406,7 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set_glm) {
     agent.newVariable<int>("a2");
     agent.newVariable<int>("a3");
     agent.newVariable<int>("a4");
-    AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_array_set_agent_func_glm);
+    AgentFunctionDescription func = agent.newRTCFunction("rtc_test_func", rtc_array_set_agent_func_glm);
     model.newLayer().addAgentFunction(func);
     // Init pop
     AgentVector init_population(agent, AGENT_COUNT);
@@ -471,15 +471,15 @@ FLAMEGPU_AGENT_FUNCTION(rtc_message_in_func, flamegpu::MessageBruteForce, flameg
  */
 TEST(DeviceRTCAPITest, AgentFunction_message_bruteforce) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription& fo = a.newRTCFunction("rtc_message_out_func", rtc_message_out_func);
+    AgentFunctionDescription fo = a.newRTCFunction("rtc_message_out_func", rtc_message_out_func);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction("rtc_message_in_func", rtc_message_in_func);
+    AgentFunctionDescription fi = a.newRTCFunction("rtc_message_in_func", rtc_message_in_func);
     fi.setMessageInput(message);
     std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
@@ -490,9 +490,9 @@ TEST(DeviceRTCAPITest, AgentFunction_message_bruteforce) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    LayerDescription& lo = m.newLayer("output_layer");
+    LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer("input_layer");
+    LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -518,12 +518,12 @@ FLAMEGPU_AGENT_FUNCTION(rtc_rand_func, flamegpu::MessageNone, flamegpu::MessageN
  */
 TEST(DeviceRTCAPITest, AgentFunction_random) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<float>("a");
     agent.newVariable<float>("b");
     agent.newVariable<float>("c");
     // add RTC agent function
-    AgentFunctionDescription& func = agent.newRTCFunction("rtc_rand_func", rtc_rand_func);
+    AgentFunctionDescription func = agent.newRTCFunction("rtc_rand_func", rtc_rand_func);
     model.newLayer().addAgentFunction(func);
     // Init pop with 0 values for variables
     AgentVector init_population(agent, AGENT_COUNT);
@@ -607,18 +607,18 @@ FLAMEGPU_STEP_FUNCTION(etc_env_step) {
  */
 TEST(DeviceRTCAPITest, AgentFunction_env) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("e1_out");
     agent.newVariable<int>("e2_out");
     agent.newVariable<int, 32>("e_array_out_1");
     agent.newVariable<int, 32>("e_array_out_2");
-    AgentFunctionDescription& func = agent.newRTCFunction("rtc_env_func", rtc_env_func);
+    AgentFunctionDescription func = agent.newRTCFunction("rtc_env_func", rtc_env_func);
     model.newLayer().addAgentFunction(func);
     // empty array
     std::array<int, 32> zero_array;
     zero_array.fill(0);
     // create some environment variables
-    EnvironmentDescription& env = model.Environment();
+    EnvironmentDescription env = model.Environment();
     env.newProperty<int>("e1", 100);
     env.newProperty<int>("e2", 200);
     env.newProperty<int, 32>("e_array_1", zero_array);
@@ -678,11 +678,11 @@ FLAMEGPU_AGENT_FUNCTION(rtc_agent_output_func, flamegpu::MessageNone, flamegpu::
  */
 TEST(DeviceRTCAPITest, AgentFunction_agent_output) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<unsigned int>("x");
     agent.newVariable<unsigned int>("id");
     // add RTC agent function with an agent output
-    AgentFunctionDescription& func = agent.newRTCFunction("rtc_agent_output_func", rtc_agent_output_func);
+    AgentFunctionDescription func = agent.newRTCFunction("rtc_agent_output_func", rtc_agent_output_func);
     func.setAllowAgentDeath(true);
     func.setAgentOutput(agent);
     model.newLayer().addAgentFunction(func);
@@ -732,14 +732,14 @@ FLAMEGPU_AGENT_FUNCTION_CONDITION(odd_only) {
  */
 TEST(DeviceRTCAPITest, AgentFunction_cond_non_rtc) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     agent.newVariable<int>("id_out");
     // add a new state for condition
     agent.newState("default");
     agent.newState("odd_state");
     // add RTC agent function
-    AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_func_cond_non_rtc_func);
+    AgentFunctionDescription func = agent.newRTCFunction("rtc_test_func", rtc_func_cond_non_rtc_func);
     // set output state (input state is default)
     func.setInitialState("default");
     func.setEndState("odd_state");
@@ -797,14 +797,14 @@ FLAMEGPU_AGENT_FUNCTION_CONDITION(odd_only) {
  */
 TEST(DeviceRTCAPITest, AgentFunction_cond_rtc) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
     agent.newVariable<int>("id_out");
     // add a new state for condition
     agent.newState("default");
     agent.newState("odd_state");
     // add RTC agent function
-    AgentFunctionDescription& func = agent.newRTCFunction("rtc_test_func", rtc_func_cond_func);
+    AgentFunctionDescription func = agent.newRTCFunction("rtc_test_func", rtc_func_cond_func);
     // set output state (input state is default)
     func.setInitialState("default");
     func.setEndState("odd_state");
@@ -857,10 +857,10 @@ FLAMEGPU_AGENT_FUNCTION(rtc_testGetStepCounter, flamegpu::MessageNone, flamegpu:
 )###";
 TEST(DeviceRTCAPITest, getStepCounter) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("step");
     // Do nothing, but ensure variables are made available on device
-    AgentFunctionDescription& func = agent.newRTCFunction("rtc_testGetStepCounter", rtc_testGetStepCounter);
+    AgentFunctionDescription func = agent.newRTCFunction("rtc_testGetStepCounter", rtc_testGetStepCounter);
     model.newLayer().addAgentFunction(func);
     // Init pop
     const unsigned int agentCount = 1;

@@ -4,6 +4,7 @@
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/AgentData.h"
+#include "flamegpu/model/EnvironmentData.h"
 
 namespace flamegpu {
 
@@ -40,7 +41,7 @@ AgentLoggingConfig LoggingConfig::agent(const std::string &agent_name, const std
 
 void LoggingConfig::logEnvironment(const std::string &property_name) {
     // Validate the environment property exists
-    auto env_map = model->environment->getPropertiesMap();
+    const auto &env_map = model->environment->properties;
     if (env_map.find(property_name) == env_map.end()) {
         THROW exception::InvalidEnvProperty("Environment property '%s' was not found in the model description, "
             "in LoggingConfig::logEnvironment()\n",

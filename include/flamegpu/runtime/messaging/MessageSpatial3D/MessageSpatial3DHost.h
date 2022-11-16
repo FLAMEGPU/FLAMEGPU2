@@ -142,63 +142,97 @@ struct MessageSpatial3D::Data : public MessageSpatial2D::Data {
     * Copy constructor
     * This is unsafe, should only be used internally, use clone() instead
     */
-    Data(const std::shared_ptr<const ModelData> &, const Data &other);
+    Data(std::shared_ptr<const ModelData>, const Data &other);
     /**
     * Normal constructor, only to be called by ModelDescription
     */
-    Data(const std::shared_ptr<const ModelData> &, const std::string &message_name);
+    Data(std::shared_ptr<const ModelData>, const std::string &message_name);
 };
 
-/**
- * User accessible interface to Spatial3D messages within mode description hierarchy
- * @see Data
- */
-class MessageSpatial3D::Description : public MessageBruteForce::Description {
+class MessageSpatial3D::CDescription : public MessageSpatial2D::CDescription {
     /**
     * Data store class for this description, constructs instances of this class
     */
     friend struct Data;
 
- protected:
-    /**
-    * Constructors
-    */
-    Description(const std::shared_ptr<const ModelData> &_model, Data *const data);
-    /**
-    * Default copy constructor, not implemented
-    */
-    Description(const Description &other_message) = delete;
-    /**
-    * Default move constructor, not implemented
-    */
-    Description(Description &&other_message) noexcept = delete;
-    /**
-    * Default copy assignment, not implemented
-    */
-    Description& operator=(const Description &other_message) = delete;
-    /**
-    * Default move assignment, not implemented
-    */
-    Description& operator=(Description &&other_message) noexcept = delete;
-
  public:
-    void setRadius(float r);
-    void setMinX(float x);
-    void setMinY(float y);
-    void setMinZ(float z);
-    void setMin(float x, float y, float z);
-    void setMaxX(float x);
-    void setMaxY(float y);
-    void setMaxZ(float z);
-    void setMax(float x, float y, float z);
+    /**
+     * Constructor, creates an interface to the MessageData
+     * @param data Data store of this message's data
+     */
+    explicit CDescription(std::shared_ptr<Data> data);
+    explicit CDescription(std::shared_ptr<const Data> data);
+    /**
+     * Copy constructor
+     * Creates a new interface to the same MessageData/ModelData
+     */
+    CDescription(const CDescription& other_agent) = default;
+    CDescription(CDescription&& other_agent) = default;
+    /**
+     * Assignment operator
+     * Assigns this interface to the same MessageData/ModelData
+     */
+    CDescription& operator=(const CDescription& other_agent) = default;
+    CDescription& operator=(CDescription&& other_agent) = default;
+    /**
+     * Equality operator, checks whether message Description hierarchies are functionally the same
+     * @param rhs right hand side
+     * @returns True when messages are the same
+     * @note Instead compare pointers if you wish to check that they are the same instance
+     */
+    bool operator==(const CDescription& rhs) const;
+    /**
+     * Equality operator, checks whether message Description hierarchies are functionally different
+     * @param rhs right hand side
+     * @returns True when messages are not the same
+     * @note Instead compare pointers if you wish to check that they are not the same instance
+     */
+    bool operator!=(const CDescription& rhs) const;
 
-    float getRadius() const;
-    float getMinX() const;
-    float getMinY() const;
     float getMinZ() const;
-    float getMaxX() const;
-    float getMaxY() const;
     float getMaxZ() const;
+};
+/**
+ * User accessible interface to Spatial3D messages within mode description hierarchy
+ * @see Data
+ */
+class MessageSpatial3D::Description : public CDescription {
+ public:
+    /**
+     * Constructor, creates an interface to the MessageData
+     * @param data Data store of this agent's data
+     */
+    explicit Description(std::shared_ptr<Data> data);
+    /**
+     * Copy constructor
+     * Creates a new interface to the same MessageData/ModelData
+     */
+    Description(const Description& other_message) = default;
+    Description(Description&& other_message) = default;
+    /**
+     * Assignment operator
+     * Assigns this interface to the same MessageData/ModelData
+     */
+    Description& operator=(const Description& other_message) = default;
+    Description& operator=(Description&& other_message) = default;
+
+    using MessageBruteForce::CDescription::newVariable;
+#ifdef SWIG
+    using MessageBruteForce::CDescription::newVariableArray;
+#endif
+
+    using MessageSpatial2D::CDescription::setRadius;
+    using MessageSpatial2D::CDescription::setMinX;
+    using MessageSpatial2D::CDescription::setMinY;
+    using MessageSpatial2D::CDescription::setMin;
+    using MessageSpatial2D::CDescription::setMaxX;
+    using MessageSpatial2D::CDescription::setMaxY;
+    using MessageSpatial2D::CDescription::setMax;
+
+    void setMinZ(float z);
+    void setMaxZ(float z);
+    void setMin(float x, float y, float z);
+    void setMax(float x, float y, float z);
 };
 
 }  // namespace flamegpu

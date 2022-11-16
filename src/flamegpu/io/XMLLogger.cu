@@ -123,7 +123,7 @@ tinyxml2::XMLNode *XMLLogger::logConfig(tinyxml2::XMLDocument &doc, const RunPla
         tinyxml2::XMLElement *pEnvElement = doc.NewElement("environment");
         {
             for (const auto &prop : plan.property_overrides) {
-                const EnvironmentDescription::PropData &env_prop = plan.environment->at(prop.first);
+                const EnvironmentData::PropData &env_prop = plan.environment->at(prop.first);
                 pListElement = doc.NewElement(prop.first.c_str());
                 writeAny(pListElement, prop.second, env_prop.data.elements);
                 pEnvElement->InsertEndChild(pListElement);

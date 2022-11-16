@@ -9,6 +9,7 @@
 
 #include "flamegpu/model/AgentData.h"
 #include "flamegpu/pop/AgentVector.h"
+#include "flamegpu/util/Any.h"
 
 namespace flamegpu {
 
@@ -27,7 +28,7 @@ class AgentInstance {
     /**
      * Initialises the agent variables with their default values
      */
-    explicit AgentInstance(const AgentDescription &agent_desc);
+    explicit AgentInstance(const CAgentDescription &agent_desc);
 
     /**
      * Copy constructors

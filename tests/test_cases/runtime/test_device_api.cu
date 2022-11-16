@@ -14,13 +14,13 @@ FLAMEGPU_AGENT_FUNCTION(agent_fn_ad_array, MessageNone, MessageNone) {
 }
 TEST(DeviceAPITest, AgentDeath_array) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
     agent.newVariable<int, 4>("array_var");
     agent.newVariable<float>("y");
     agent.newVariable<int>("id");
     // Do nothing, but ensure variables are made available on device
-    AgentFunctionDescription &func = agent.newFunction("some_function", agent_fn_ad_array);
+    AgentFunctionDescription func = agent.newFunction("some_function", agent_fn_ad_array);
     func.setAllowAgentDeath(true);
     model.newLayer().addAgentFunction(func);
     // Init pop
@@ -77,13 +77,13 @@ FLAMEGPU_AGENT_FUNCTION(agent_fn_da_get, MessageNone, MessageNone) {
 }
 TEST(DeviceAPITest, ArraySet) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
     agent.newVariable<int, 4>("array_var");
     agent.newVariable<float>("y");
     agent.newVariable<int>("id");
     // Do nothing, but ensure variables are made available on device
-    AgentFunctionDescription &func = agent.newFunction("some_function", agent_fn_da_set);
+    AgentFunctionDescription func = agent.newFunction("some_function", agent_fn_da_set);
     model.newLayer().addAgentFunction(func);
     // Init pop
     AgentVector init_population(agent, AGENT_COUNT);
@@ -120,7 +120,7 @@ TEST(DeviceAPITest, ArraySet) {
 }
 TEST(DeviceAPITest, ArrayGet) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
     agent.newVariable<int, 4>("array_var");
     agent.newVariable<float>("y");
@@ -130,7 +130,7 @@ TEST(DeviceAPITest, ArrayGet) {
     agent.newVariable<int>("a3");
     agent.newVariable<int>("a4");
     // Do nothing, but ensure variables are made available on device
-    AgentFunctionDescription &func = agent.newFunction("some_function", agent_fn_da_get);
+    AgentFunctionDescription func = agent.newFunction("some_function", agent_fn_da_get);
     model.newLayer().addAgentFunction(func);
     // Init pop
     AgentVector init_population(agent, AGENT_COUNT);
@@ -185,13 +185,13 @@ FLAMEGPU_AGENT_FUNCTION(agent_fn_da_get_glm, MessageNone, MessageNone) {
 }
 TEST(DeviceAPITest, ArraySet_glm) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
     agent.newVariable<glm::ivec4>("array_var");
     agent.newVariable<float>("y");
     agent.newVariable<int>("id");
     // Do nothing, but ensure variables are made available on device
-    AgentFunctionDescription& func = agent.newFunction("some_function", agent_fn_da_set_glm);
+    AgentFunctionDescription func = agent.newFunction("some_function", agent_fn_da_set_glm);
     model.newLayer().addAgentFunction(func);
     // Init pop
     AgentVector init_population(agent, AGENT_COUNT);
@@ -228,7 +228,7 @@ TEST(DeviceAPITest, ArraySet_glm) {
 }
 TEST(DeviceAPITest, ArrayGet_glm) {
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
     agent.newVariable<glm::ivec4>("array_var");
     agent.newVariable<float>("y");
@@ -238,7 +238,7 @@ TEST(DeviceAPITest, ArrayGet_glm) {
     agent.newVariable<int>("a3");
     agent.newVariable<int>("a4");
     // Do nothing, but ensure variables are made available on device
-    AgentFunctionDescription& func = agent.newFunction("some_function", agent_fn_da_get_glm);
+    AgentFunctionDescription func = agent.newFunction("some_function", agent_fn_da_get_glm);
     model.newLayer().addAgentFunction(func);
     // Init pop
     AgentVector init_population(agent, AGENT_COUNT);
@@ -286,10 +286,10 @@ FLAMEGPU_AGENT_FUNCTION(agent_testGetStepCounter, MessageNone, MessageNone) {
 }
 TEST(DeviceAPITest, getStepCounter) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("step");
     // Do nothing, but ensure variables are made available on device
-    AgentFunctionDescription &func = agent.newFunction("some_function", agent_testGetStepCounter);
+    AgentFunctionDescription func = agent.newFunction("some_function", agent_testGetStepCounter);
     model.newLayer().addAgentFunction(func);
     // Init pop
     const unsigned int agentCount = 1;
@@ -329,10 +329,10 @@ FLAMEGPU_AGENT_FUNCTION(condition_testGetStepCounterFunction, MessageNone, Messa
 }
 TEST(DeviceAPITest, getStepCounterFunctionCondition) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("count");
     // Do nothing, but ensure variables are made available on device
-    AgentFunctionDescription &func = agent.newFunction("some_function", condition_testGetStepCounterFunction);
+    AgentFunctionDescription func = agent.newFunction("some_function", condition_testGetStepCounterFunction);
     func.setFunctionCondition(condition_testGetStepCounter);
     model.newLayer().addAgentFunction(func);
     // Init pop

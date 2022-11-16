@@ -16,6 +16,7 @@
 #include "flamegpu/runtime/utility/RandomManager.cuh"
 #include "flamegpu/runtime/HostNewAgentAPI.h"
 #include "flamegpu/gpu/CUDAMacroEnvironment.h"
+#include "flamegpu/runtime/utility/EnvironmentManager.cuh"
 
 #ifdef VISUALISATION
 #include "flamegpu/visualiser/ModelVis.h"
@@ -52,7 +53,7 @@ class CUDASimulation : public Simulation {
     friend class SimRunner;
     friend class CUDAEnsemble;
 #ifdef VISUALISATION
-    friend class visualiser::ModelVis;
+    friend struct visualiser::ModelVisData;
 #endif
     /**
      * Map of a number of CUDA agents by name.
@@ -294,7 +295,7 @@ class CUDASimulation : public Simulation {
     /**
      * Creates (on first call) and returns the visualisation configuration options for this model instance
      */
-    visualiser::ModelVis &getVisualisation();
+    visualiser::ModelVis getVisualisation();
 #endif
    /**
      * Get the duration of the last time RTC was iniitliased 
@@ -601,7 +602,7 @@ class CUDASimulation : public Simulation {
     /**
      * Empty if getVisualisation() hasn't been called
      */
-    std::unique_ptr<visualiser::ModelVis> visualisation;
+    std::shared_ptr<visualiser::ModelVisData> visualisation;
 #endif
     /**
      * Returns false if any agent functions or agent function conditions are not RTC

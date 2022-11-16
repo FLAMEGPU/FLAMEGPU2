@@ -28,7 +28,7 @@ int main(int argc, const char ** argv) {
      * GLOBALS
      */
      {
-        flamegpu::EnvironmentDescription  &env = model.Environment();
+        flamegpu::EnvironmentDescription  env = model.Environment();
 
         env.newProperty<unsigned int>("POPULATION_TO_GENERATE", POPULATION_TO_GENERATE, true);
 
@@ -37,7 +37,7 @@ int main(int argc, const char ** argv) {
         env.newProperty<int>("offset", 1);
     }
     {   // Agent
-        flamegpu::AgentDescription  &agent = model.newAgent("Agent");
+        flamegpu::AgentDescription  agent = model.newAgent("Agent");
         agent.newVariable<int>("x");
         agent.newFunction("AddOffset", AddOffset);
     }
@@ -46,7 +46,7 @@ int main(int argc, const char ** argv) {
      * Control flow
      */     
     {   // Layer #1
-        flamegpu::LayerDescription  &layer = model.newLayer();
+        flamegpu::LayerDescription layer = model.newLayer();
         layer.addAgentFunction(AddOffset);
 
         model.addInitFunction(Init);

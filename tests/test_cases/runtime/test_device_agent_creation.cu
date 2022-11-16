@@ -50,12 +50,12 @@ FLAMEGPU_AGENT_FUNCTION(OptionalOutputWithDeath, MessageNone, MessageNone) {
 TEST(DeviceAgentCreationTest, Mandatory_Output_SameState) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutput);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutput);
     function.setAgentOutput(agent);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -90,12 +90,12 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState) {
 TEST(DeviceAgentCreationTest, Optional_Output_SameState) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutput);
+    AgentFunctionDescription function = agent.newFunction("output", OptionalOutput);
     function.setAgentOutput(agent);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -130,16 +130,16 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState) {
 TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutput);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutput);
     function.setInitialState("a");
     function.setEndState("a");
     function.setAgentOutput(agent, "b");
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -172,16 +172,16 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState) {
 TEST(DeviceAgentCreationTest, Optional_Output_DifferentState) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutput);
+    AgentFunctionDescription function = agent.newFunction("output", OptionalOutput);
     function.setInitialState("a");
     function.setEndState("a");
     function.setAgentOutput(agent, "b");
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -214,13 +214,13 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState) {
 TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutputWithDeath);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutputWithDeath);
     function.setAgentOutput(agent);
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -255,13 +255,13 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath) {
 TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutputWithDeath);
+    AgentFunctionDescription function = agent.newFunction("output", OptionalOutputWithDeath);
     function.setAgentOutput(agent);
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -296,17 +296,17 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath) {
 TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutputWithDeath);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutputWithDeath);
     function.setInitialState("a");
     function.setEndState("a");
     function.setAgentOutput(agent, "b");
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -336,17 +336,17 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath) {
 TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutputWithDeath);
+    AgentFunctionDescription function = agent.newFunction("output", OptionalOutputWithDeath);
     function.setInitialState("a");
     function.setEndState("a");
     function.setAgentOutput(agent, "b");
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -380,17 +380,17 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath) {
 TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
-    AgentDescription &agent2 = model.newAgent("agent2");
+    AgentDescription agent = model.newAgent("agent");
+    AgentDescription agent2 = model.newAgent("agent2");
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
     agent2.newVariable<float>("x");
     agent2.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent2.newFunction("output", MandatoryOutput);
+    AgentFunctionDescription function = agent2.newFunction("output", MandatoryOutput);
     function.setAgentOutput(agent, "b");
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -440,17 +440,17 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent) {
 TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
-    AgentDescription &agent2 = model.newAgent("agent2");
+    AgentDescription agent = model.newAgent("agent");
+    AgentDescription agent2 = model.newAgent("agent2");
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
     agent2.newVariable<float>("x");
     agent2.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent2.newFunction("output", OptionalOutput);
+    AgentFunctionDescription function = agent2.newFunction("output", OptionalOutput);
     function.setAgentOutput(agent, "b");
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -495,18 +495,18 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent_WithDeath) {
 
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
-    AgentDescription &agent2 = model.newAgent("agent2");
+    AgentDescription agent = model.newAgent("agent");
+    AgentDescription agent2 = model.newAgent("agent2");
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
     agent2.newVariable<float>("x");
     agent2.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent2.newFunction("output", MandatoryOutputWithDeath);
+    AgentFunctionDescription function = agent2.newFunction("output", MandatoryOutputWithDeath);
     function.setAgentOutput(agent, "b");
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -554,18 +554,18 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentAgent_WithDeath) {
 TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent_WithDeath) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
-    AgentDescription &agent2 = model.newAgent("agent2");
+    AgentDescription agent = model.newAgent("agent");
+    AgentDescription agent2 = model.newAgent("agent2");
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
     agent2.newVariable<float>("x");
     agent2.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent2.newFunction("output", OptionalOutputWithDeath);
+    AgentFunctionDescription function = agent2.newFunction("output", OptionalOutputWithDeath);
     function.setAgentOutput(agent, "b");
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -601,16 +601,16 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentAgent_WithDeath) {
 TEST(DeviceAgentCreationTest, DefaultVariableValue) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
-    AgentDescription &agent2 = model.newAgent("agent2");
+    AgentDescription agent = model.newAgent("agent");
+    AgentDescription agent2 = model.newAgent("agent2");
     agent.newVariable<float>("x");
     agent.newVariable<float>("default", 15.0f);
     agent.newVariable<unsigned int>("id");
     agent2.newVariable<float>("x");
     agent2.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent2.newFunction("output", MandatoryOutput);
+    AgentFunctionDescription function = agent2.newFunction("output", MandatoryOutput);
     function.setAgentOutput(agent);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -654,17 +654,17 @@ FLAMEGPU_AGENT_FUNCTION_CONDITION(EvenThreadsOnlyCdn) {
 TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithAgentFunctionCondition) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutput);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutput);
     function.setFunctionCondition(EvenThreadsOnlyCdn);
     function.setInitialState("a");
     function.setEndState("b");
     function.setAgentOutput(agent, "b");
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -718,17 +718,17 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithAgentFunctionCondit
 TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithAgentFunctionCondition) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutput);
+    AgentFunctionDescription function = agent.newFunction("output", OptionalOutput);
     function.setFunctionCondition(EvenThreadsOnlyCdn);
     function.setInitialState("a");
     function.setEndState("b");
     function.setAgentOutput(agent, "b");
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -776,18 +776,18 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithAgentFunctionConditi
 TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithAgentFunctionCondition) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
     agent.newState("c");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutput);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutput);
     function.setFunctionCondition(EvenThreadsOnlyCdn);
     function.setInitialState("a");
     function.setEndState("c");
     function.setAgentOutput(agent, "b");
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -837,18 +837,18 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithAgentFunctionC
 TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithAgentFunctionCondition) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
     agent.newState("c");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutput);
+    AgentFunctionDescription function = agent.newFunction("output", OptionalOutput);
     function.setFunctionCondition(EvenThreadsOnlyCdn);
     function.setInitialState("a");
     function.setEndState("c");
     function.setAgentOutput(agent, "b");
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -890,14 +890,14 @@ TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithAgentFunctionCo
 TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath_WithAgentFunctionCondition) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutputWithDeath);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutputWithDeath);
     function.setFunctionCondition(EvenThreadsOnlyCdn);
     function.setAgentOutput(agent);
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -943,14 +943,14 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_SameState_WithDeath_WithAgentFunc
 TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath_WithAgentFunctionCondition) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutputWithDeath);
+    AgentFunctionDescription function = agent.newFunction("output", OptionalOutputWithDeath);
     function.setFunctionCondition(EvenThreadsOnlyCdn);
     function.setAgentOutput(agent);
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -1000,18 +1000,18 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithDeath_WithAgentFunct
 TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath_WithAgentFunctionCondition) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", MandatoryOutputWithDeath);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutputWithDeath);
     function.setFunctionCondition(EvenThreadsOnlyCdn);
     function.setInitialState("a");
     function.setEndState("a");
     function.setAgentOutput(agent, "b");
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -1046,18 +1046,18 @@ TEST(DeviceAgentCreationTest, Mandatory_Output_DifferentState_WithDeath_WithAgen
 TEST(DeviceAgentCreationTest, Optional_Output_DifferentState_WithDeath_WithAgentFunctionCondition) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newState("a");
     agent.newState("b");
     agent.newVariable<float>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription &function = agent.newFunction("output", OptionalOutputWithDeath);
+    AgentFunctionDescription function = agent.newFunction("output", OptionalOutputWithDeath);
     function.setFunctionCondition(EvenThreadsOnlyCdn);
     function.setInitialState("a");
     function.setEndState("a");
     function.setAgentOutput(agent, "b");
     function.setAllowAgentDeath(true);
-    LayerDescription &layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -1126,11 +1126,11 @@ FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth_ArrayUnsuitable, MessageNone, Messag
 TEST(DeviceAgentCreationTest, DeviceAgentBirth_ArraySet) {
     const std::array<int, 4> TEST_REFERENCE = { 3, 5, 9, 17 };
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<unsigned int>("id", UINT_MAX);
     agent.newVariable<int, 4>("array_var");
     agent.newVariable<float>("y");
-    auto &fn = agent.newFunction("out", ArrayVarDeviceBirth);
+    auto fn = agent.newFunction("out", ArrayVarDeviceBirth);
     fn.setAllowAgentDeath(true);
     fn.setAgentOutput(agent);
     model.newLayer().addAgentFunction(fn);
@@ -1161,11 +1161,11 @@ TEST(DeviceAgentCreationTest, DeviceAgentBirth_ArraySet) {
 TEST(DeviceAgentCreationTest, DeviceAgentBirth_DefaultWorks) {
     const std::array<int, 4> TEST_REFERENCE = { 3, 5, 9, 17 };
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<unsigned int>("id", UINT_MAX);
     agent.newVariable<int, 4>("array_var", TEST_REFERENCE);
     agent.newVariable<float>("y", 14.0f);
-    auto &fn = agent.newFunction("out", ArrayVarDeviceBirth_DefaultWorks);
+    auto fn = agent.newFunction("out", ArrayVarDeviceBirth_DefaultWorks);
     fn.setAllowAgentDeath(true);
     fn.setAgentOutput(agent);
     model.newLayer().addAgentFunction(fn);
@@ -1207,33 +1207,33 @@ TEST(DeviceAgentCreationTest, AgentID_MultipleStatesUniqueIDs) {
     // Also check that the id's copied during model match those at export
 
     ModelDescription model("test_agentid");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<id_t>("id_copy", ID_NOT_SET);
     agent.newVariable<id_t>("id_other", ID_NOT_SET);
     agent.newState("a");
     agent.newState("b");
-    auto& af1_a = agent.newFunction("birth", DeviceBirth);
+    auto af1_a = agent.newFunction("birth", DeviceBirth);
     af1_a.setAgentOutput(agent, "a");
     af1_a.setInitialState("a");
     af1_a.setEndState("a");
-    auto& af1_b = agent.newFunction("birth2", DeviceBirth);
+    auto af1_b = agent.newFunction("birth2", DeviceBirth);
     af1_b.setAgentOutput(agent, "b");
     af1_b.setInitialState("b");
     af1_b.setEndState("b");
-    auto& af_a = agent.newFunction("copy_id", CopyID);
+    auto af_a = agent.newFunction("copy_id", CopyID);
     af_a.setInitialState("a");
     af_a.setEndState("a");
-    auto& af_b = agent.newFunction("copy_id2", CopyID);
+    auto af_b = agent.newFunction("copy_id2", CopyID);
     af_b.setInitialState("b");
     af_b.setEndState("b");
 
 
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addAgentFunction(af1_a);
-    auto& layer_b = model.newLayer();
+    auto layer_b = model.newLayer();
     layer_b.addAgentFunction(af1_b);
 
-    auto& layer2 = model.newLayer();
+    auto layer2 = model.newLayer();
     layer2.addAgentFunction(af_a);
     layer2.addAgentFunction(af_b);
 
@@ -1301,14 +1301,14 @@ TEST(DeviceAgentCreationTest, AgentID_DeviceBirth_MultipleAgents) {
     // so if a birthed agent is given ID from the parent agent rather than it's own type, a collision should occur
 
     ModelDescription model("test_agentid");
-    AgentDescription& agentA = model.newAgent("agentA");
+    AgentDescription agentA = model.newAgent("agentA");
     agentA.newVariable<id_t>("id_other", ID_NOT_SET);  // Not required for test
-    AgentDescription& agentB = model.newAgent("agentB");
+    AgentDescription agentB = model.newAgent("agentB");
     agentB.newVariable<id_t>("id_other", ID_NOT_SET);  // Not required for test
-    auto& af1_a = agentA.newFunction("birth", DeviceBirth);
+    auto af1_a = agentA.newFunction("birth", DeviceBirth);
     af1_a.setAgentOutput(agentB);
 
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addAgentFunction(af1_a);
 
     AgentVector pop_inA(agentA, 100);
@@ -1341,7 +1341,7 @@ TEST(DeviceAgentCreationTest, AgentID_RTC_MultipleStatesUniqueIDs) {
     // Also check that the id's copied during model match those at export
 
     ModelDescription model("test_agentid");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<id_t>("id_copy", ID_NOT_SET);
     agent.newVariable<id_t>("id_other", ID_NOT_SET);
     agent.newState("a");
@@ -1353,28 +1353,28 @@ FLAMEGPU_AGENT_FUNCTION(DeviceBirth, flamegpu::MessageNone, flamegpu::MessageNon
     return flamegpu::ALIVE;
 }
     )###";
-    auto& af1_a = agent.newRTCFunction("birth", RTC_DeviceBirth);
+    auto af1_a = agent.newRTCFunction("birth", RTC_DeviceBirth);
     af1_a.setAgentOutput(agent, "a");
     af1_a.setInitialState("a");
     af1_a.setEndState("a");
-    auto& af1_b = agent.newRTCFunction("birth2", RTC_DeviceBirth);
+    auto af1_b = agent.newRTCFunction("birth2", RTC_DeviceBirth);
     af1_b.setAgentOutput(agent, "b");
     af1_b.setInitialState("b");
     af1_b.setEndState("b");
-    auto& af_a = agent.newFunction("copy_id", CopyID);
+    auto af_a = agent.newFunction("copy_id", CopyID);
     af_a.setInitialState("a");
     af_a.setEndState("a");
-    auto& af_b = agent.newFunction("copy_id2", CopyID);
+    auto af_b = agent.newFunction("copy_id2", CopyID);
     af_b.setInitialState("b");
     af_b.setEndState("b");
 
 
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addAgentFunction(af1_a);
-    auto& layer_b = model.newLayer();
+    auto layer_b = model.newLayer();
     layer_b.addAgentFunction(af1_b);
 
-    auto& layer2 = model.newLayer();
+    auto layer2 = model.newLayer();
     layer2.addAgentFunction(af_a);
     layer2.addAgentFunction(af_b);
 
@@ -1443,12 +1443,12 @@ FLAMEGPU_AGENT_FUNCTION(MandatoryOutputArray, MessageNone, MessageNone) {
 TEST(DeviceAgentCreationTest, Output_Array) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float, 2>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription& function = agent.newFunction("output", MandatoryOutputArray);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutputArray);
     function.setAgentOutput(agent);
-    LayerDescription& layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -1488,11 +1488,11 @@ FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth_DefaultWorks_glm, MessageNone, Messa
 TEST(DeviceAgentCreationTest, DeviceAgentBirth_DefaultWorks_glm) {
     const glm::ivec4 TEST_REFERENCE = { 3, 5, 9, 17 };
     ModelDescription model("model");
-    AgentDescription& agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<unsigned int>("id", UINT_MAX);
     agent.newVariable<glm::ivec4>("array_var", TEST_REFERENCE);
     agent.newVariable<float>("y", 14.0f);
-    auto& fn = agent.newFunction("out", ArrayVarDeviceBirth_DefaultWorks_glm);
+    auto fn = agent.newFunction("out", ArrayVarDeviceBirth_DefaultWorks_glm);
     fn.setAllowAgentDeath(true);
     fn.setAgentOutput(agent);
     model.newLayer().addAgentFunction(fn);
@@ -1525,12 +1525,12 @@ FLAMEGPU_AGENT_FUNCTION(MandatoryOutputArray_glm, MessageNone, MessageNone) {
 TEST(DeviceAgentCreationTest, Output_Array_glm) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<glm::vec2>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription& function = agent.newFunction("output", MandatoryOutputArray_glm);
+    AgentFunctionDescription function = agent.newFunction("output", MandatoryOutputArray_glm);
     function.setAgentOutput(agent);
-    LayerDescription& layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);
@@ -1572,12 +1572,12 @@ FLAMEGPU_AGENT_FUNCTION(MandatoryOutputArray_glm, flamegpu::MessageNone, flamegp
 TEST(DeviceRTCAgentCreationTest, Output_Array_glm) {
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<glm::vec2>("x");
     agent.newVariable<unsigned int>("id");
-    AgentFunctionDescription& function = agent.newRTCFunction("output", rtc_MandatoryOutputArray_glm);
+    AgentFunctionDescription function = agent.newRTCFunction("output", rtc_MandatoryOutputArray_glm);
     function.setAgentOutput(agent);
-    LayerDescription& layer1 = model.newLayer();
+    LayerDescription layer1 = model.newLayer();
     layer1.addAgentFunction(function);
     // Init agent pop
     CUDASimulation cudaSimulation(model);

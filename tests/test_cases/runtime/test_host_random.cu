@@ -175,7 +175,7 @@ class MiniSim {
 
     const unsigned int AGENT_COUNT = 5;
     ModelDescription model;
-    AgentDescription &agent;
+    AgentDescription agent;
     AgentVector population;
     CUDASimulation *simulation;
 };

@@ -78,7 +78,7 @@ class MiniSim {
         ASSERT_NO_THROW(cudaSimulation.getPopulationData(*population));
     }
     ModelDescription model;
-    AgentDescription &agent;
+    AgentDescription agent;
     AgentVector*population;
 };
 /**

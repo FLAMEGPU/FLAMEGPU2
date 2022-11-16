@@ -9,9 +9,9 @@
 
 namespace flamegpu {
 
-CUDAMacroEnvironment::CUDAMacroEnvironment(const EnvironmentDescription& description, const CUDASimulation& _cudaSimulation)
+CUDAMacroEnvironment::CUDAMacroEnvironment(const EnvironmentData& description, const CUDASimulation& _cudaSimulation)
     : cudaSimulation(_cudaSimulation) {
-    for (const auto &p : description.getMacroPropertiesMap()) {
+    for (const auto &p : description.macro_properties) {
         properties.emplace(p.first, MacroEnvProp(p.second.type, p.second.type_size, p.second.elements));
     }
 }

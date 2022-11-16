@@ -72,15 +72,15 @@ FLAMEGPU_AGENT_FUNCTION(InFunctionNone, MessageBruteForce, MessageNone) {
  */
 TEST(TestMessage_BruteForce, Mandatory1) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(message);
 
     std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
@@ -98,9 +98,9 @@ TEST(TestMessage_BruteForce, Mandatory1) {
         ai.setVariable<int>("sum", 0);
         ai.setVariable<int>("product", 1);
     }
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -118,15 +118,15 @@ TEST(TestMessage_BruteForce, Mandatory1) {
  */
 TEST(TestMessage_BruteForce, Mandatory2) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction2);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunction2);
     fi.setMessageInput(message);
 
     std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
@@ -151,9 +151,9 @@ TEST(TestMessage_BruteForce, Mandatory2) {
         product = product > 1000000 ? 1 : product;
         product = product < -1000000 ? -1 : product;
     }
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 2;
@@ -173,16 +173,16 @@ TEST(TestMessage_BruteForce, Mandatory2) {
  */
 TEST(TestMessage_BruteForce, Optional1) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction_Optional);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction_Optional);
     fo.setMessageOutputOptional(true);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(message);
 
     std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
@@ -202,9 +202,9 @@ TEST(TestMessage_BruteForce, Optional1) {
         ai.setVariable<int>("sum", 0);
         ai.setVariable<int>("product", 1);
     }
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -219,16 +219,16 @@ TEST(TestMessage_BruteForce, Optional1) {
 }
 TEST(TestMessage_BruteForce, Optional2) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction_Optional);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction_Optional);
     fo.setMessageOutputOptional(true);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction2);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunction2);
     fi.setMessageInput(message);
 
     std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
@@ -258,9 +258,9 @@ TEST(TestMessage_BruteForce, Optional2) {
             product = product < -1000000 ? -1 : product;
         }
     }
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 2;
@@ -276,19 +276,19 @@ TEST(TestMessage_BruteForce, Optional2) {
 // Test optional message output, wehre no messages are output.
 TEST(TestMessage_BruteForce, OptionalNone) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
     message.newVariable<unsigned int>("index_times_3");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int>("message_read", UINT_MAX);
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction_OptionalNone);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction_OptionalNone);
     fo.setMessageOutputOptional(true);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunctionNone);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunctionNone);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
 
     // Generate an arbitrary population.
@@ -315,7 +315,7 @@ TEST(TestMessage_BruteForce, OptionalNone) {
 
 TEST(TestMessage_BruteForce, reserved_name) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
     EXPECT_THROW(message.newVariable<int>("_"), exception::ReservedName);
 }
 
@@ -333,16 +333,16 @@ TEST(TestMessage_BruteForce, ReadEmpty) {
 // What happens if we read a message list before it has been output?
     ModelDescription model("Model");
     {   // Location message
-        MessageBruteForce::Description &message = model.newMessage<MessageBruteForce>("location");
+        MessageBruteForce::Description message = model.newMessage<MessageBruteForce>("location");
         message.newVariable<int>("id");  // unused by current test
     }
     {   // Circle agent
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<unsigned int>("count", 0);  // Count the number of messages read
         agent.newFunction("in", countBF).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(countBF);
     }
     // Create 1 agent
@@ -382,19 +382,19 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, MessageBruteForce, MessageNone) {
 }
 TEST(TestMessage_BruteForce, ArrayVariable) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description &message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("index");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -442,19 +442,19 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageBruteForce, flamegpu::MessageN
 )###";
 TEST(TestRTCMessage_BruteForce, ArrayVariable) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description& message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("index");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
-    AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
+    AgentFunctionDescription fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
+    AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -497,19 +497,19 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn_glm, MessageBruteForce, MessageNone) {
 }
 TEST(TestMessage_BruteForce, ArrayVariable_glm) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description &message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("index");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);
@@ -554,19 +554,19 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageBruteForce, flamegpu::MessageN
 )###";
 TEST(TestRTCMessage_BruteForce, ArrayVariable_glm) {
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description& message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
     message.newVariable<unsigned int, 3>("v");
     message.newVariable<unsigned int>("index");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
-    AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
+    AgentFunctionDescription fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
+    AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     // Assign the numbers in shuffled order to agents
     AgentVector pop(a, AGENT_COUNT);

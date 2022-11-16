@@ -15,6 +15,7 @@
 #include "flamegpu/pop/AgentVector.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/util/nvtx.h"
+#include "flamegpu/model/EnvironmentData.h"
 
 
 namespace flamegpu {
@@ -51,13 +52,12 @@ void Simulation::applyConfig() {
         util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> pops;
         for (auto &agent : model->agents) {
             for (const auto &state : agent.second->states) {
-                pops.emplace(util::StringPair{ agent.first, state }, std::make_shared<AgentVector>(*agent.second->description));
+                pops.emplace(util::StringPair{ agent.first, state }, std::make_shared<AgentVector>(*agent.second));
             }
         }
 
         env_init.clear();
-        const auto env_desc = model->environment->getPropertiesMap();  // For some reason this method returns a copy, not a reference
-        io::StateReader *read__ = io::StateReaderFactory::createReader(model->name, env_desc, env_init, pops, config.input_file.c_str(), this);
+        io::StateReader *read__ = io::StateReaderFactory::createReader(model->name, model->environment->properties, env_init, pops, config.input_file.c_str(), this);
         if (read__) {
             read__->parse();
             for (auto &agent : pops) {
@@ -127,7 +127,7 @@ void Simulation::exportData(const std::string &path, bool prettyPrint) {
     util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> pops;
     for (auto &agent : model->agents) {
         for (auto &state : agent.second->states) {
-            auto a = std::make_shared<AgentVector>(*agent.second->description);
+            auto a = std::make_shared<AgentVector>(*agent.second);
             getPopulationData(*a, state);
             pops.emplace(util::StringPair{agent.first, state}, a);
         }
@@ -172,11 +172,11 @@ int Simulation::checkArgs(int argc, const char** argv) {
                 util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> pops;
                 for (auto &agent : model->agents) {
                     for (auto& state : agent.second->states) {
-                        pops.emplace(util::StringPair{ agent.first, state }, std::make_shared<AgentVector>(*agent.second->description));
+                        pops.emplace(util::StringPair{ agent.first, state }, std::make_shared<AgentVector>(*agent.second));
                     }
                 }
                 env_init.clear();
-                const auto env_desc = model->environment->getPropertiesMap();  // For some reason this method returns a copy, not a reference
+                const auto &env_desc = model->environment->properties;  // For some reason this method returns a copy, not a reference
                 io::StateReader *read__ = io::StateReaderFactory::createReader(model->name, env_desc, env_init, pops, config.input_file.c_str(), this);
                 if (read__) {
                     try {

@@ -6,7 +6,8 @@
 #include <unordered_map>
 #include <set>
 
-#include "flamegpu/model/EnvironmentDescription.h"
+#include "flamegpu/exception/FLAMEGPUException.h"
+#include "flamegpu/model/EnvironmentData.h"
 #include "flamegpu/visualiser/config/ModelConfig.h"
 
 namespace flamegpu {
@@ -24,7 +25,7 @@ class PanelVis {
      * @note This should only be constructed by ModelVis
      * @see ModelVis::newUIPanel()
      */
-    PanelVis(std::shared_ptr<PanelConfig> _m, std::shared_ptr<EnvironmentDescription> _environment);
+    PanelVis(std::shared_ptr<PanelConfig> _m, std::shared_ptr<EnvironmentData> _environment);
     /**
      * Add a header to begin a collapsible group of elements
      *
@@ -129,7 +130,7 @@ class PanelVis {
     /**
      * The model description to validate requests against
      */
-    const std::unordered_map<std::string, EnvironmentDescription::PropData> env_properties;
+    const std::unordered_map<std::string, EnvironmentData::PropData> env_properties;
     /**
      * The panel data which this class acts as an interface for managing
      */

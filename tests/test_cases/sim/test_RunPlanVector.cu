@@ -92,7 +92,7 @@ TEST(TestRunPlanVector, setProperty) {
     // Define the simple model to use
     flamegpu::ModelDescription model("test");
     // Add a few environment properties to the model.
-    auto &environment = model.Environment();
+    auto environment = model.Environment();
     const float fOriginal = 1.0f;
     const int32_t iOriginal = 1;
     const std::array<uint32_t, 3> u3Original = {{0, 1, 2}};
@@ -186,7 +186,7 @@ TEST(TestRunPlanVector, setPropertyUniformDistribution) {
     // Define the simple model to use
     flamegpu::ModelDescription model("test");
     // Add a few environment properties to the model.
-    auto &environment = model.Environment();
+    auto environment = model.Environment();
     const float fOriginal = 0.0f;
     const int32_t iOriginal = 0;
     const std::array<uint32_t, 3> u3Original = {{0, 0, 0}};
@@ -264,7 +264,7 @@ TEST(TestRunPlanVector, setPropertyUniformRandom) {
     // Define the simple model to use
     flamegpu::ModelDescription model("test");
     // Add a few environment properties to the model.
-    auto &environment = model.Environment();
+    auto environment = model.Environment();
     const float fOriginal = 1.0f;
     const int32_t iOriginal = 1;
     const std::array<uint32_t, 3> u3Original = {{0, 1, 2}};
@@ -319,7 +319,7 @@ TEST(TestRunPlanVector, setPropertyNormalRandom) {
     // Define the simple model to use
     flamegpu::ModelDescription model("test");
     // Add a few environment properties to the model.
-    auto &environment = model.Environment();
+    auto environment = model.Environment();
     const float fOriginal = 1.0f;
     const std::array<double, 3> d3Original = {{0., 1., 2.}};
     environment.newProperty<float>("f", fOriginal);
@@ -375,7 +375,7 @@ TEST(TestRunPlanVector, setPropertyLogNormalRandom) {
     // Define the simple model to use
     flamegpu::ModelDescription model("test");
     // Add a few environment properties to the model.
-    auto &environment = model.Environment();
+    auto environment = model.Environment();
     const float fOriginal = 1.0f;
     const std::array<double, 3> d3Original = {{0., 1., 2.}};
     environment.newProperty<float>("f", fOriginal);
@@ -430,7 +430,7 @@ TEST(TestRunPlanVector, setPropertyRandom) {
     // Define the simple model to use
     flamegpu::ModelDescription model("test");
     // Add a few environment properties to the model.
-    auto &environment = model.Environment();
+    auto environment = model.Environment();
     const float fOriginal = 1.0f;
     const std::array<double, 3> d3Original = {{0., 1., 2.}};
     environment.newProperty<float>("f", fOriginal);

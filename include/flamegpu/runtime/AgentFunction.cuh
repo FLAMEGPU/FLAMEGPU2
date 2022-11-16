@@ -1,6 +1,9 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTION_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTION_CUH_
 
+#include <cuda_runtime.h>
+#include <device_launch_parameters.h>
+
 #include "flamegpu/util/detail/curand.cuh"
 #include "flamegpu/runtime/detail/SharedBlock.h"
 #include "flamegpu/defines.h"

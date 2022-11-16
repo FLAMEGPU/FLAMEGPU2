@@ -90,16 +90,15 @@ struct MessageBruteForce::Data {
     friend class ModelDescription;
     friend struct ModelData;
 
-    virtual ~Data();
-
+    virtual ~Data() = default;
+    /**
+     * Parent model
+     */
+    std::weak_ptr<const ModelData> model;
     /**
      * Holds all of the message's variable definitions
      */
     VariableMap variables;
-    /**
-     * Description class which provides convenient accessors
-     */
-    std::unique_ptr<Description> description;
     /**
      * Name of the message, used to refer to the message in many functions
      */
@@ -144,22 +143,14 @@ struct MessageBruteForce::Data {
      * Copy constructor
      * This is unsafe, should only be used internally, use clone() instead
      */
-    Data(const std::shared_ptr<const ModelData> &, const Data &other);
+    Data(std::shared_ptr<const ModelData> model, const Data &other);
     /**
      * Normal constructor, only to be called by ModelDescription
      */
-    Data(const std::shared_ptr<const ModelData> &, const std::string &message_name);
+    Data(std::shared_ptr<const ModelData> model, const std::string &message_name);
 };
 
-/**
- * Within the model hierarchy, this class represents the definition of an message for a FLAMEGPU model
- * This class is used to configure external elements of messages, such as variables
- * Base-class, represents brute-force messages
- * Can be extended by more advanced message descriptors
- * @see MessageData The internal data store for this class
- * @see ModelDescription::newMessage(const std::string&) For creating instances of this class
- */
-class MessageBruteForce::Description {
+class MessageBruteForce::CDescription {
     /**
      * Data store class for this description, constructs instances of this class
      */
@@ -168,42 +159,77 @@ class MessageBruteForce::Description {
     // friend void AgentFunctionDescription::setMessageOutput(MessageBruteForce::Description&);
     // friend void AgentFunctionDescription::setMessageInput(MessageBruteForce::Description&);
 
- protected:
-    /**
-     * Constructors
-     */
-    Description(const std::shared_ptr<const ModelData> &_model, Data *const data);
-    /**
-     * Default copy constructor, not implemented
-     */
-    Description(const Description &other_message) = delete;
-    /**
-     * Default move constructor, not implemented
-     */
-    Description(Description &&other_message) noexcept = delete;
-    /**
-     * Default copy assignment, not implemented
-     */
-    Description& operator=(const Description &other_message) = delete;
-    /**
-     * Default move assignment, not implemented
-     */
-    Description& operator=(Description &&other_message) noexcept = delete;
-
  public:
     /**
-     * Equality operator, checks whether MessageDescription hierarchies are functionally the same
+     * Constructor, creates an interface to the MessageData
+     * @param data Data store of this message's data
+     */
+    explicit CDescription(std::shared_ptr<Data> data);
+    explicit CDescription(std::shared_ptr<const Data> data);
+    /**
+     * Copy constructor
+     * Creates a new interface to the same MessageData/ModelData
+     */
+    CDescription(const CDescription& other_agent) = default;
+    CDescription(CDescription&& other_agent) = default;
+    /**
+     * Assignment operator
+     * Assigns this interface to the same MessageData/ModelData
+     */
+    CDescription& operator=(const CDescription& other_agent) = default;
+    CDescription& operator=(CDescription&& other_agent) = default;
+    /**
+     * Equality operator, checks whether message Description hierarchies are functionally the same
+     * @param rhs right hand side
      * @returns True when messages are the same
      * @note Instead compare pointers if you wish to check that they are the same instance
      */
-    bool operator==(const Description& rhs) const;
+    bool operator==(const CDescription& rhs) const;
     /**
-     * Equality operator, checks whether MessageDescription hierarchies are functionally different
+     * Equality operator, checks whether message Description hierarchies are functionally different
+     * @param rhs right hand side
      * @returns True when messages are not the same
      * @note Instead compare pointers if you wish to check that they are not the same instance
      */
-    bool operator!=(const Description& rhs) const;
+    bool operator!=(const CDescription& rhs) const;
 
+    /**
+     * @return The message's name
+     */
+    std::string getName() const;
+    /**
+     * @param variable_name Name used to refer to the desired variable
+     * @return The type of the named variable
+     * @throws exception::InvalidMessageVar If a variable with the name does not exist within the message
+     */
+    const std::type_index& getVariableType(const std::string& variable_name) const;
+    /**
+     * @param variable_name Name used to refer to the desired variable
+     * @return The size of the named variable's type
+     * @throws exception::InvalidMessageVar If a variable with the name does not exist within the message
+     */
+    size_t getVariableSize(const std::string& variable_name) const;
+    /**
+     * @param variable_name Name used to refer to the desired variable
+     * @return The number of elements in the name variable (1 if it isn't an array)
+     * @throws exception::InvalidMessageVar If a variable with the name does not exist within the agent
+     */
+    size_type getVariableLength(const std::string& variable_name) const;
+    /**
+     * @return The total number of variables within the message
+     */
+    size_type getVariablesCount() const;
+    /**
+     * @param variable_name Name of the variable to check
+     * @return True when a variable with the specified name exists within the message
+     */
+    bool hasVariable(const std::string& variable_name) const;
+
+ protected:
+    ///
+    /// These mutable accessors will only be available via mutable subclasses
+    /// This solves a multiple inheritance issue
+    ///
     /**
      * Adds a new variable to the message
      * @param variable_name Name of the variable
@@ -211,7 +237,7 @@ class MessageBruteForce::Description {
      * @throws exception::InvalidMessageVar If a variable already exists within the message with the same name
      */
     template<typename T>
-    void newVariable(const std::string &variable_name);
+    void newVariable(const std::string& variable_name);
     /**
      * Adds a new variable array to the message
      * @param variable_name Name of the variable array
@@ -234,57 +260,55 @@ class MessageBruteForce::Description {
     template<typename T>
     void newVariableArray(const std::string& variable_name, size_type length);
 #endif
-    /**
-     * @return The message's name
-     */
-    std::string getName() const;
-    /**
-     * @param variable_name Name used to refer to the desired variable
-     * @return The type of the named variable
-     * @throws exception::InvalidMessageVar If a variable with the name does not exist within the message
-     */
-    const std::type_index& getVariableType(const std::string &variable_name) const;
-    /**
-     * @param variable_name Name used to refer to the desired variable
-     * @return The size of the named variable's type
-     * @throws exception::InvalidMessageVar If a variable with the name does not exist within the message
-     */
-    size_t getVariableSize(const std::string &variable_name) const;
-    /**
-     * @param variable_name Name used to refer to the desired variable
-     * @return The number of elements in the name variable (1 if it isn't an array)
-     * @throws exception::InvalidMessageVar If a variable with the name does not exist within the agent
-     */
-    size_type getVariableLength(const std::string &variable_name) const;
-    /**
-     * @return The total number of variables within the message
-     */
-    size_type getVariablesCount() const;
-    /**
-     * @param variable_name Name of the variable to check
-     * @return True when a variable with the specified name exists within the message
-     */
-    bool hasVariable(const std::string &variable_name) const;
 
- protected:
-    /**
-     * Root of the model hierarchy
-     */
-    const std::weak_ptr<const ModelData> model;
     /**
      * The class which stores all of the message's data.
      */
-    Data *const message;
+    std::shared_ptr<Data> message;
+};
+
+/**
+ * Within the model hierarchy, this class represents the definition of an message for a FLAMEGPU model
+ * This class is used to configure external elements of messages, such as variables
+ * Base-class, represents brute-force messages
+ * Can be extended by more advanced message descriptors
+ * @see MessageData The internal data store for this class
+ * @see ModelDescription::newMessage(const std::string&) For creating instances of this class
+ */
+class MessageBruteForce::Description : public CDescription {
+ public:
+    /**
+     * Constructor, creates an interface to the MessageData
+     * @param data Data store of this message's data
+     */
+    explicit Description(std::shared_ptr<Data> data);
+    /**
+     * Copy constructor
+     * Creates a new interface to the same MessageData/ModelData
+     */
+    Description(const Description& other_message) = default;
+    Description(Description&& other_message) = default;
+    /**
+     * Assignment operator
+     * Assigns this interface to the same MessageData/ModelData
+     */
+    Description& operator=(const Description& other_message) = default;
+    Description& operator=(Description&& other_message) = default;
+
+    using MessageBruteForce::CDescription::newVariable;
+#ifdef SWIG
+    using MessageBruteForce::CDescription::newVariableArray;
+#endif
 };
 /**
  * Template implementation
  */
 template<typename T>
-void MessageBruteForce::Description::newVariable(const std::string &variable_name) {
+void MessageBruteForce::CDescription::newVariable(const std::string &variable_name) {
     newVariable<T, 1>(variable_name);
 }
 template<typename T, flamegpu::size_type N>
-void MessageBruteForce::Description::newVariable(const std::string& variable_name) {
+void MessageBruteForce::CDescription::newVariable(const std::string& variable_name) {
     if (!variable_name.empty() && variable_name[0] == '_') {
         THROW exception::ReservedName("Message variable names cannot begin with '_', this is reserved for internal usage, "
             "in MessageDescription::newVariable().");
@@ -301,7 +325,7 @@ void MessageBruteForce::Description::newVariable(const std::string& variable_nam
 }
 #ifdef SWIG
 template<typename T>
-void MessageBruteForce::Description::newVariableArray(const std::string& variable_name, const size_type length) {
+void MessageBruteForce::CDescription::newVariableArray(const std::string& variable_name, const size_type length) {
     if (!variable_name.empty() && variable_name[0] == '_') {
         THROW exception::ReservedName("Message variable names cannot begin with '_', this is reserved for internal usage, "
             "in MessageDescription::newVariable().");

@@ -524,16 +524,15 @@ void HostAgentAPI::sum_async(const std::string &variable, OutT &result, const cu
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
     }
-    const auto &agentDesc = agent.getAgentDescription();
-
-    std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
-    if (agentDesc.variables.at(variable).elements != 1) {
+    const CAgentDescription agentDesc(agent.getAgentDescription());
+    std::type_index typ = agentDesc.getVariableType(variable);  // This will throw name exception
+    if (agentDesc.getVariableLength(variable) != 1) {
         THROW exception::UnsupportedVarType("HostAgentAPI::sum() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
         THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::sum(). "
             "This call expects '%s', but '%s' was requested.",
-            agentDesc.variables.at(variable).type.name(), typeid(InT).name());
+            agentDesc.getVariableType(variable).name(), typeid(InT).name());
     }
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
@@ -565,16 +564,15 @@ void HostAgentAPI::meanStandardDeviation_async(const std::string& variable, std:
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
     }
-    const auto& agentDesc = agent.getAgentDescription();
-
-    std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
-    if (agentDesc.variables.at(variable).elements != 1) {
+    const CAgentDescription agentDesc(agent.getAgentDescription());
+    std::type_index typ = agentDesc.getVariableType(variable);  // This will throw name exception
+    if (agentDesc.getVariableLength(variable) != 1) {
         THROW exception::UnsupportedVarType("HostAgentAPI::meanStandardDeviation() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
         THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::meanStandardDeviation(). "
             "This call expects '%s', but '%s' was requested.",
-            agentDesc.variables.at(variable).type.name(), typeid(InT).name());
+            agentDesc.getVariableType(variable).name(), typeid(InT).name());
     }
     const auto agentCount = agent.getStateSize(stateName);
     if (agentCount == 0) {
@@ -611,15 +609,15 @@ void HostAgentAPI::min_async(const std::string &variable, InT& result, const cud
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
     }
-    const auto &agentDesc = agent.getAgentDescription();
-    const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
-    if (agentDesc.variables.at(variable).elements != 1) {
+    const CAgentDescription agentDesc(agent.getAgentDescription());
+    std::type_index typ = agentDesc.getVariableType(variable);  // This will throw name exception
+    if (agentDesc.getVariableLength(variable) != 1) {
         THROW exception::UnsupportedVarType("HostAgentAPI::lowerBound() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::lowerBound(). "
+        THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::min(). "
             "This call expects '%s', but '%s' was requested.",
-            agentDesc.variables.at(variable).type.name(), typeid(InT).name());
+            agentDesc.getVariableType(variable).name(), typeid(InT).name());
     }
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
@@ -653,15 +651,15 @@ void HostAgentAPI::max_async(const std::string &variable, InT &result, const cud
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
     }
-    const auto &agentDesc = agent.getAgentDescription();
-    const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
-    if (agentDesc.variables.at(variable).elements != 1) {
-        THROW exception::UnsupportedVarType("HostAgentAPI::upperBound() does not support agent array variables.");
+    const CAgentDescription agentDesc(agent.getAgentDescription());
+    std::type_index typ = agentDesc.getVariableType(variable);  // This will throw name exception
+    if (agentDesc.getVariableLength(variable) != 1) {
+        THROW exception::UnsupportedVarType("HostAgentAPI::max() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
-        THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::upperBound(). "
+        THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::max(). "
             "This call expects '%s', but '%s' was requested.",
-            agentDesc.variables.at(variable).type.name(), typeid(InT).name());
+            agentDesc.getVariableType(variable).name(), typeid(InT).name());
     }
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
@@ -691,15 +689,15 @@ unsigned int HostAgentAPI::count_async(const std::string& variable, InT value, c
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
     }
-    const auto &agentDesc = agent.getAgentDescription();
-    const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
-    if (agentDesc.variables.at(variable).elements != 1) {
+    const CAgentDescription agentDesc(agent.getAgentDescription());
+    std::type_index typ = agentDesc.getVariableType(variable);  // This will throw name exception
+    if (agentDesc.getVariableLength(variable) != 1) {
         THROW exception::UnsupportedVarType("HostAgentAPI::count() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
         THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::count(). "
             "This call expects '%s', but '%s' was requested.",
-            agentDesc.variables.at(variable).type.name(), typeid(InT).name());
+            agentDesc.getVariableType(variable).name(), typeid(InT).name());
     }
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
@@ -736,15 +734,15 @@ void HostAgentAPI::histogramEven_async(const std::string &variable, unsigned int
         THROW exception::InvalidArgument("lowerBound (%s) must be lower than < upperBound (%s) in HostAgentAPI::histogramEven().",
             std::to_string(lowerBound).c_str(), std::to_string(upperBound).c_str());
     }
-    const auto &agentDesc = agent.getAgentDescription();
-    const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
-    if (agentDesc.variables.at(variable).elements != 1) {
+    const CAgentDescription agentDesc(agent.getAgentDescription());
+    std::type_index typ = agentDesc.getVariableType(variable);  // This will throw name exception
+    if (agentDesc.getVariableLength(variable) != 1) {
         THROW exception::UnsupportedVarType("HostAgentAPI::histogramEven() does not support agent array variables.");
     }
     if (std::type_index(typeid(InT)) != typ) {
         THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::histogramEven(). "
             "This call expects '%s', but '%s' was requested.",
-            agentDesc.variables.at(variable).type.name(), typeid(InT).name());
+            agentDesc.getVariableType(variable).name(), typeid(InT).name());
     }
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const auto agentCount = agent.getStateSize(stateName);
@@ -781,9 +779,9 @@ void HostAgentAPI::reduce_async(const std::string & variable, reductionOperatorT
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
     }
-    const auto &agentDesc = agent.getAgentDescription();
-    const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
-    if (agentDesc.variables.at(variable).elements != type_decode<InT>::len_t) {
+    const CAgentDescription agentDesc(agent.getAgentDescription());
+    std::type_index typ = agentDesc.getVariableType(variable);  // This will throw name exception
+    if (agentDesc.getVariableLength(variable) != type_decode<InT>::len_t) {
         THROW exception::UnsupportedVarType("HostAgentAPI::reduce() does not support agent array variables.");
     }
     if (std::type_index(typeid(typename type_decode<InT>::type_t)) != typ) {
@@ -822,9 +820,9 @@ OutT HostAgentAPI::transformReduce_async(const std::string &variable, transformO
         // If the user has a DeviceAgentVector out, sync changes
         population->syncChanges();
     }
-    const auto &agentDesc = agent.getAgentDescription();
-    const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
-    if (agentDesc.variables.at(variable).elements != type_decode<InT>::len_t) {
+    const CAgentDescription agentDesc(agent.getAgentDescription());
+    std::type_index typ = agentDesc.getVariableType(variable);  // This will throw name exception
+    if (agentDesc.getVariableLength(variable) != type_decode<InT>::len_t) {
         THROW exception::UnsupportedVarType("HostAgentAPI::transformReduce() does not support agent array variables.");
     }
     if (std::type_index(typeid(typename type_decode<InT>::type_t)) != typ) {
@@ -859,15 +857,15 @@ void HostAgentAPI::sort_async(const std::string & variable, Order order, int beg
     auto &scatter = api.agentModel.singletons->scatter;
     auto &scan = scatter.Scan();
     // Check variable is valid
-    const auto &agentDesc = agent.getAgentDescription();
-    const std::type_index typ = agentDesc.description->getVariableType(variable);  // This will throw name exception
-    if (agentDesc.variables.at(variable).elements != 1) {
+    CAgentDescription agentDesc(agent.getAgentDescription());
+    std::type_index typ = agentDesc.getVariableType(variable);  // This will throw name exception
+    if (agentDesc.getVariableLength(variable) != 1) {
         THROW exception::UnsupportedVarType("HostAgentAPI::sort() does not support agent array variables.");
     }
     if (std::type_index(typeid(VarT)) != typ) {
         THROW exception::InvalidVarType("Wrong variable type passed to HostAgentAPI::sort(). "
             "This call expects '%s', but '%s' was requested.",
-            agentDesc.variables.at(variable).type.name(), typeid(VarT).name());
+            agentDesc.getVariableType(variable).name(), typeid(VarT).name());
     }
     // We will use scan_flag agent_death/message_output here so resize
     const unsigned int agentCount = agent.getStateSize(stateName);
@@ -901,7 +899,7 @@ void HostAgentAPI::sort_async(const std::string & variable, Order order, int beg
         gpuErrchk(cub::DeviceRadixSort::SortPairsDescending(cub_temp.getPtr(), cub_temp.getSize(), keys_in, keys_out, vals_in, vals_out, agentCount, beginBit, endBit, stream));
     }
     // Scatter all agent variables
-    api.agentModel.agent_map.at(agentDesc.name)->scatterSort_async(stateName, scatter, streamId, stream);
+    api.agentModel.agent_map.at(agentDesc.getName())->scatterSort_async(stateName, scatter, streamId, stream);
     if (population) {
         // If the user has a DeviceAgentVector out, purge cache so it redownloads new data on next use
         population->purgeCache();
@@ -926,27 +924,27 @@ void HostAgentAPI::sort_async(const std::string & variable1, Order order1, const
     }
     auto &scatter = api.agentModel.singletons->scatter;
     auto &scan = scatter.Scan();
-    const auto &agentDesc = agent.getAgentDescription();
+    const CAgentDescription agentDesc(agent.getAgentDescription());
     {  // Check variable 1 is valid
-        const std::type_index typ = agentDesc.description->getVariableType(variable1);  // This will throw name exception
-        if (agentDesc.variables.at(variable1).elements != 1) {
+        std::type_index typ = agentDesc.getVariableType(variable1);  // This will throw name exception
+        if (agentDesc.getVariableLength(variable1) != 1) {
             THROW exception::UnsupportedVarType("HostAgentAPI::sort() does not support agent array variables.");
         }
         if (std::type_index(typeid(Var1T)) != typ) {
             THROW exception::InvalidVarType("Wrong type for variable '%s' passed to HostAgentAPI::sort(). "
                 "This call expects '%s', but '%s' was requested.",
-                variable1.c_str(), agentDesc.variables.at(variable1).type.name(), typeid(Var1T).name());
+                variable1.c_str(), agentDesc.getVariableType(variable1).name(), typeid(Var1T).name());
         }
     }
     {  // Check variable 2 is valid
-        const std::type_index typ = agentDesc.description->getVariableType(variable2);  // This will throw name exception
-        if (agentDesc.variables.at(variable2).elements != 1) {
+        std::type_index typ = agentDesc.getVariableType(variable2);  // This will throw name exception
+        if (agentDesc.getVariableLength(variable2) != 1) {
             THROW exception::UnsupportedVarType("HostAgentAPI::sort() does not support agent array variables.");
         }
         if (std::type_index(typeid(Var2T)) != typ) {
             THROW exception::InvalidVarType("Wrong type for variable '%s' passed to HostAgentAPI::sort(). "
                 "This call expects '%s', but '%s' was requested.",
-                variable2.c_str(), agentDesc.variables.at(variable2).type.name(), typeid(Var2T).name());
+                variable2.c_str(), agentDesc.getVariableType(variable2).name(), typeid(Var2T).name());
         }
     }
     const unsigned int agentCount = agent.getStateSize(stateName);
@@ -1006,7 +1004,7 @@ void HostAgentAPI::sort_async(const std::string & variable1, Order order1, const
         gpuErrchkLaunch();
     }
     // Scatter all agent variables
-    api.agentModel.agent_map.at(agentDesc.name)->scatterSort_async(stateName, scatter, streamId, stream);
+    api.agentModel.agent_map.at(agentDesc.getName())->scatterSort_async(stateName, scatter, streamId, stream);
 
     if (population) {
         // If the user has a DeviceAgentVector out, purge cache so it redownloads new data on next use

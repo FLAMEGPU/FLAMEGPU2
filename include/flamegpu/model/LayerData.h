@@ -23,7 +23,10 @@ class HostFunctionConditionCallback;
 struct LayerData {
     friend class ModelDescription;
     friend struct ModelData;
-
+    /**
+     * Parent model
+     */
+    std::weak_ptr<const ModelData> model;
     /**
      * Set of Agent Functions
      * set<AgentFunctionData>
@@ -44,10 +47,6 @@ struct LayerData {
      * (If present, layer can hold no host_functions or agent_functions)
      */
     std::shared_ptr<SubModelData> sub_model;
-    /**
-     * Description class which provides convenient accessors
-     */
-    std::unique_ptr<LayerDescription> description;
     /**
      * Name of the agent function, used to refer to the agent function in many functions
      */

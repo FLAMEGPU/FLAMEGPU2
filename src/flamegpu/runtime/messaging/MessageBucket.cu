@@ -19,7 +19,6 @@
 #include "flamegpu/util/detail/cuda.cuh"
 
 namespace flamegpu {
-
 MessageBucket::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
     : MessageSpecialisationHandler()
     , sim_message(a) {
@@ -142,19 +141,71 @@ void MessageBucket::CUDAModelHandler::resizeKeysVals(const unsigned int newSize)
     }
 }
 
+/// <summary>
+/// CDescription
+/// </summary>
+MessageBucket::CDescription::CDescription(std::shared_ptr<Data> data)
+    : MessageBruteForce::CDescription(std::move(std::static_pointer_cast<MessageBruteForce::Data>(data))) { }
+MessageBucket::CDescription::CDescription(std::shared_ptr<const Data> data)
+    : CDescription(std::move(std::const_pointer_cast<Data>(data))) { }
 
-MessageBucket::Data::Data(const std::shared_ptr<const ModelData> &model, const std::string &message_name)
+bool MessageBucket::CDescription::operator==(const CDescription& rhs) const {
+    return *this->message == *rhs.message;  // Compare content is functionally the same
+}
+bool MessageBucket::CDescription::operator!=(const CDescription& rhs) const {
+    return !(*this == rhs);
+}
+/**
+ * Const accessors
+ */
+IntT MessageBucket::CDescription::getLowerBound() const {
+    return std::static_pointer_cast<Data>(message)->lowerBound;
+}
+IntT MessageBucket::CDescription::getUpperBound() const {
+    return std::static_pointer_cast<Data>(message)->upperBound;
+}
+
+/// <summary>
+/// Description
+/// </summary>
+MessageBucket::Description::Description(std::shared_ptr<Data> data)
+    : CDescription(data) { }
+/**
+ * Accessors
+ */
+void MessageBucket::Description::setLowerBound(const IntT min) {
+    if (std::static_pointer_cast<Data>(message)->upperBound != std::numeric_limits<IntT>::max() &&
+        min >= std::static_pointer_cast<Data>(message)->upperBound) {
+        THROW exception::InvalidArgument("Bucket messaging minimum bound must be lower than upper bound, %lld !< %lld.", min, static_cast<int64_t>(std::static_pointer_cast<Data>(message)->upperBound));
+    }
+    std::static_pointer_cast<Data>(message)->lowerBound = min;
+}
+void MessageBucket::Description::setUpperBound(const IntT max) {
+    if (max <= std::static_pointer_cast<Data>(message)->lowerBound) {
+        THROW exception::InvalidArgument("Bucket messaging upperBound bound must be greater than lower bound, %lld !> %lld.", static_cast<int64_t>(max), static_cast<int64_t>(std::static_pointer_cast<Data>(message)->lowerBound));
+    }
+    std::static_pointer_cast<Data>(message)->upperBound = max;
+}
+void MessageBucket::Description::setBounds(const IntT min, const IntT max) {
+    if (max <= min) {
+        THROW exception::InvalidArgument("Bucket messaging upperBound bound must be greater than lower bound, %lld !> %lld.", static_cast<int64_t>(max), static_cast<int64_t>(min));
+    }
+    std::static_pointer_cast<Data>(message)->lowerBound = min;
+    std::static_pointer_cast<Data>(message)->upperBound = max;
+}
+/// <summary>
+/// Data
+/// </summary>
+MessageBucket::Data::Data(std::shared_ptr<const ModelData> model, const std::string &message_name)
     : MessageBruteForce::Data(model, message_name)
     , lowerBound(0)
     , upperBound(std::numeric_limits<IntT>::max()) {
-    description = std::unique_ptr<MessageBucket::Description>(new MessageBucket::Description(model, this));
     variables.emplace("_key", Variable(1, static_cast<IntT>(0)));
 }
-MessageBucket::Data::Data(const std::shared_ptr<const ModelData> &model, const Data &other)
+MessageBucket::Data::Data(std::shared_ptr<const ModelData> model, const Data &other)
     : MessageBruteForce::Data(model, other)
     , lowerBound(other.lowerBound)
     , upperBound(other.upperBound) {
-    description = std::unique_ptr<MessageBucket::Description>(model ? new MessageBucket::Description(model, this) : nullptr);
     if (lowerBound == std::numeric_limits<IntT>::max()) {
         THROW exception::InvalidMessage("Minimum bound has not been set for bucket message '%s.", other.name.c_str());
     }
@@ -171,35 +222,6 @@ std::unique_ptr<MessageSpecialisationHandler> MessageBucket::Data::getSpecialisa
 std::type_index MessageBucket::Data::getType() const { return std::type_index(typeid(MessageBucket)); }
 
 
-MessageBucket::Description::Description(const std::shared_ptr<const ModelData> &_model, Data *const data)
-    : MessageBruteForce::Description(_model, data) { }
 
-void MessageBucket::Description::setLowerBound(const IntT &min) {
-    if (reinterpret_cast<Data *>(message)->upperBound != std::numeric_limits<IntT>::max() &&
-        min >= reinterpret_cast<Data *>(message)->upperBound) {
-        THROW exception::InvalidArgument("Bucket messaging minimum bound must be lower than upper bound, %lld !< %lld.", min, static_cast<int64_t>(reinterpret_cast<Data *>(message)->upperBound));
-    }
-    reinterpret_cast<Data *>(message)->lowerBound = min;
-}
-void MessageBucket::Description::setUpperBound(const IntT &max) {
-    if (max <= reinterpret_cast<Data *>(message)->lowerBound) {
-        THROW exception::InvalidArgument("Bucket messaging upperBound bound must be greater than lower bound, %lld !> %lld.", static_cast<int64_t>(max), static_cast<int64_t>(reinterpret_cast<Data *>(message)->lowerBound));
-    }
-    reinterpret_cast<Data *>(message)->upperBound = max;
-}
-void MessageBucket::Description::setBounds(const IntT &min, const IntT &max) {
-    if (max <= min) {
-        THROW exception::InvalidArgument("Bucket messaging upperBound bound must be greater than lower bound, %lld !> %lld.", static_cast<int64_t>(max), static_cast<int64_t>(min));
-    }
-    reinterpret_cast<Data *>(message)->lowerBound = min;
-    reinterpret_cast<Data *>(message)->upperBound = max;
-}
-
-IntT MessageBucket::Description::getLowerBound() const {
-    return reinterpret_cast<Data *>(message)->lowerBound;
-}
-IntT MessageBucket::Description::getUpperBound() const {
-    return reinterpret_cast<Data *>(message)->upperBound;
-}
 
 }  // namespace flamegpu

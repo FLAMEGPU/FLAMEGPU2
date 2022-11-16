@@ -43,7 +43,7 @@ TEST(HostMacroPropertyTest, ReadTest) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int, 2, 3, 4, 5>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("i");
     agent.newVariable<unsigned int>("j");
     agent.newVariable<unsigned int>("k");
@@ -110,7 +110,7 @@ TEST(HostMacroPropertyTest, WriteTest) {
     model.Environment().newMacroProperty<unsigned int, 2, 3, 4, 5>("int");
     model.Environment().newMacroProperty<unsigned int>("plusequal");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("i");
     agent.newVariable<unsigned int>("j");
     agent.newVariable<unsigned int>("k");
@@ -174,7 +174,7 @@ TEST(HostMacroPropertyTest, ZeroTest) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int, 2, 3, 4, 5>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("i");
     agent.newVariable<unsigned int>("j");
     agent.newVariable<unsigned int>("k");
@@ -500,14 +500,14 @@ TEST(HostMacroPropertyTest, DISABLED_ReadSameLayerAsAgentWrite) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int, 2, 3, 4, 5>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("i");
     agent.newVariable<unsigned int>("j");
     agent.newVariable<unsigned int>("k");
     agent.newVariable<unsigned int>("w");
     agent.newVariable<unsigned int>("a");
     agent.newFunction("agentwrite", AgentWrite);
-    auto &l = model.newLayer();
+    autol = model.newLayer();
     l.addAgentFunction(AgentWrite);
     l.addHostFunction(HostRead);
     AgentVector population(agent, 1);
@@ -529,14 +529,14 @@ TEST(HostMacroPropertyTest, DISABLED_WriteSameLayerAsAgentRead) {
     model.Environment().newMacroProperty<unsigned int, 2, 3, 4, 5>("int");
     model.Environment().newMacroProperty<unsigned int>("plusequal");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("i");
     agent.newVariable<unsigned int>("j");
     agent.newVariable<unsigned int>("k");
     agent.newVariable<unsigned int>("w");
     agent.newVariable<unsigned int>("a");
     agent.newFunction("agentread", AgentRead);
-    auto &l = model.newLayer();
+    autol = model.newLayer();
     l.addHostFunction(HostWrite);
     l.addAgentFunction(AgentRead);
     AgentVector population(agent, 1);

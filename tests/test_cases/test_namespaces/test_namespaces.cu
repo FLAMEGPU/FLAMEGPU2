@@ -29,15 +29,15 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_explicit, flamegpu::MessageBruteForce, f
 }
 TEST(CXXNamespaceTest, AgentFunctionsExplicit) {
     flamegpu::ModelDescription m("model");
-    flamegpu::MessageBruteForce::Description& message = m.newMessage("message_x");
+    flamegpu::MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    flamegpu::AgentDescription& a = m.newAgent("agent");
+    flamegpu::AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    flamegpu::AgentFunctionDescription& fo = a.newFunction("message_out_func_explicit", message_out_func_explicit);
+    flamegpu::AgentFunctionDescription fo = a.newFunction("message_out_func_explicit", message_out_func_explicit);
     fo.setMessageOutput(message);
-    flamegpu::AgentFunctionDescription& fi = a.newFunction("message_in_func_explicit", message_in_func_explicit);
+    flamegpu::AgentFunctionDescription fi = a.newFunction("message_in_func_explicit", message_in_func_explicit);
     fi.setMessageInput(message);
     std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
@@ -48,9 +48,9 @@ TEST(CXXNamespaceTest, AgentFunctionsExplicit) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    flamegpu::LayerDescription& lo = m.newLayer("output_layer");
+    flamegpu::LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    flamegpu::LayerDescription& li = m.newLayer("input_layer");
+    flamegpu::LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     flamegpu::CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -97,15 +97,15 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_declaration, MessageBruteForce, MessageN
 }
 TEST(CXXNamespaceTest, AgentFunctionsDeclaration) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription& fo = a.newFunction("message_out_func_declaration", message_out_func_declaration);
+    AgentFunctionDescription fo = a.newFunction("message_out_func_declaration", message_out_func_declaration);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction("message_in_func_declaration", message_in_func_declaration);
+    AgentFunctionDescription fi = a.newFunction("message_in_func_declaration", message_in_func_declaration);
     fi.setMessageInput(message);
     std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
@@ -116,9 +116,9 @@ TEST(CXXNamespaceTest, AgentFunctionsDeclaration) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    LayerDescription& lo = m.newLayer("output_layer");
+    LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer("input_layer");
+    LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -156,15 +156,15 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_directive, MessageBruteForce, MessageNon
 
 TEST(CXXNamespaceTest, AgentFunctionsDirective) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription& fo = a.newFunction("message_out_func_directive", message_out_func_directive);
+    AgentFunctionDescription fo = a.newFunction("message_out_func_directive", message_out_func_directive);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction("message_in_func_directive", message_in_func_directive);
+    AgentFunctionDescription fi = a.newFunction("message_in_func_directive", message_in_func_directive);
     fi.setMessageInput(message);
     std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
@@ -175,9 +175,9 @@ TEST(CXXNamespaceTest, AgentFunctionsDirective) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    LayerDescription& lo = m.newLayer("output_layer");
+    LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer("input_layer");
+    LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -212,15 +212,15 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_named, MessageBruteForce, MessageNone) {
 }
 TEST(CXXNamespaceTest, AgentFunctionsNamed) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription& fo = a.newFunction("message_out_func_named", message_out_func_named);
+    AgentFunctionDescription fo = a.newFunction("message_out_func_named", message_out_func_named);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newFunction("message_in_func_named", message_in_func_named);
+    AgentFunctionDescription fi = a.newFunction("message_in_func_named", message_in_func_named);
     fi.setMessageInput(message);
     std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
@@ -231,9 +231,9 @@ TEST(CXXNamespaceTest, AgentFunctionsNamed) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    LayerDescription& lo = m.newLayer("output_layer");
+    LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer("input_layer");
+    LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -269,15 +269,15 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_alias, fgpu::MessageBruteForce, fgpu::Me
 }
 TEST(CXXNamespaceTest, AgentFunctionsAlias) {
     fgpu::ModelDescription m("model");
-    fgpu::MessageBruteForce::Description& message = m.newMessage("message_x");
+    fgpu::MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    fgpu::AgentDescription& a = m.newAgent("agent");
+    fgpu::AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    fgpu::AgentFunctionDescription& fo = a.newFunction("message_out_func_alias", message_out_func_alias);
+    fgpu::AgentFunctionDescription fo = a.newFunction("message_out_func_alias", message_out_func_alias);
     fo.setMessageOutput(message);
-    fgpu::AgentFunctionDescription& fi = a.newFunction("message_in_func_alias", message_in_func_alias);
+    fgpu::AgentFunctionDescription fi = a.newFunction("message_in_func_alias", message_in_func_alias);
     fi.setMessageInput(message);
     std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
@@ -288,9 +288,9 @@ TEST(CXXNamespaceTest, AgentFunctionsAlias) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    fgpu::LayerDescription& lo = m.newLayer("output_layer");
+    fgpu::LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    fgpu::LayerDescription& li = m.newLayer("input_layer");
+    fgpu::LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     fgpu::CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -324,15 +324,15 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_alias_mixed, flamegpu::MessageBruteForce
 }
 TEST(CXXNamespaceTest, AgentFunctionsAliasMixed) {
     fgpu::ModelDescription m("model");
-    flamegpu::MessageBruteForce::Description& message = m.newMessage("message_x");
+    flamegpu::MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    fgpu::AgentDescription& a = m.newAgent("agent");
+    fgpu::AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    flamegpu::AgentFunctionDescription& fo = a.newFunction("message_out_func_alias_mixed", message_out_func_alias_mixed);
+    flamegpu::AgentFunctionDescription fo = a.newFunction("message_out_func_alias_mixed", message_out_func_alias_mixed);
     fo.setMessageOutput(message);
-    fgpu::AgentFunctionDescription& fi = a.newFunction("message_in_func_alias_mixed", message_in_func_alias_mixed);
+    fgpu::AgentFunctionDescription fi = a.newFunction("message_in_func_alias_mixed", message_in_func_alias_mixed);
     fi.setMessageInput(message);
     std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
@@ -343,9 +343,9 @@ TEST(CXXNamespaceTest, AgentFunctionsAliasMixed) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    flamegpu::LayerDescription& lo = m.newLayer("output_layer");
+    flamegpu::LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    fgpu::LayerDescription& li = m.newLayer("input_layer");
+    fgpu::LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     flamegpu::CUDASimulation c(m);
     c.SimulationConfig().steps = 1;

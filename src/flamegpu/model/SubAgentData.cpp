@@ -7,12 +7,29 @@
 
 namespace flamegpu {
 
+SubAgentData::SubAgentData(std::shared_ptr<const ModelData> _model, const std::shared_ptr<SubModelData> &_parent, const SubAgentData &other)
+    : model(std::move(_model))
+    , subAgent(_parent->submodel->agents.at(other.subAgent.lock()->name))  // These two can only fail if the submodeldesc is cloned before the submodel
+    , masterAgent(_model->agents.at(other.masterAgent.lock()->name))
+    , parent(_parent) {
+    variables.insert(other.variables.begin(), other.variables.end());
+    states.insert(other.states.begin(), other.states.end());
+}
+SubAgentData::SubAgentData(std::shared_ptr<const ModelData> _model, const std::shared_ptr<SubModelData> &_parent, const std::shared_ptr<AgentData> &_subAgent, const std::shared_ptr<AgentData> &_masterAgent)
+    : model(std::move(_model))
+    , subAgent(_subAgent)
+    , masterAgent(_masterAgent)
+    , parent(_parent) { }
+
 bool SubAgentData::operator==(const SubAgentData &rhs) const {
     if (this == &rhs)  // They point to same object
         return true;
     // Compare members
     if (variables == rhs.variables
-        && states ==  rhs.states) {
+        && states ==  rhs.states
+        // && model.lock() == rhs.model.lock()  // Don't check weak pointers
+        // && masterAgent.lock() == rhs.masterAgent.lock() // Skipping any equality here feels unsafe
+        ) {
         // Compare variables map
         return true;
     }
@@ -21,18 +38,5 @@ bool SubAgentData::operator==(const SubAgentData &rhs) const {
 bool SubAgentData::operator!=(const SubAgentData &rhs) const {
     return !(*this == rhs);
 }
-SubAgentData::SubAgentData(const std::shared_ptr<const ModelData> &model, const std::shared_ptr<SubModelData> &_parent, const SubAgentData &other)
-    : subAgent(_parent->submodel->agents.at(other.subAgent.lock()->name))  // These two can only fail if the submodeldesc is cloned before the submodel
-    , masterAgent(model->agents.at(other.masterAgent.lock()->name))
-    , parent(_parent)
-    , description(model ? new SubAgentDescription(model, this) : nullptr) {
-    variables.insert(other.variables.begin(), other.variables.end());
-    states.insert(other.states.begin(), other.states.end());
-}
-SubAgentData::SubAgentData(const std::shared_ptr<const ModelData> &model, const std::shared_ptr<SubModelData> &_parent, const std::shared_ptr<AgentData> &_subAgent, const std::shared_ptr<AgentData> &_masterAgent)
-    : subAgent(_subAgent)
-    , masterAgent(_masterAgent)
-    , parent(_parent)
-    , description(new SubAgentDescription(model, this)) { }
 
 }  // namespace flamegpu

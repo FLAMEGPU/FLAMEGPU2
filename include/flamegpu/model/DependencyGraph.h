@@ -88,7 +88,7 @@ class DependencyGraph {
     /**
      * Generates a new layer in the model the dependency graph is associated with
      */
-    LayerDescription& newModelLayer();
+    LayerDescription newModelLayer();
     /**
      * Returns the name of a given DependencyNode
      * @param node The node to get the name of

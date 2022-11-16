@@ -8,6 +8,7 @@
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/model/AgentFunctionData.cuh"
 #include "flamegpu/model/LayerData.h"
+#include "flamegpu/model/EnvironmentData.h"
 #include "flamegpu/model/SubModelData.h"
 #include "flamegpu/model/SubAgentData.h"
 #include "flamegpu/model/SubEnvironmentData.h"
@@ -22,11 +23,10 @@ const char *ModelData::DEFAULT_STATE = "default";
  * Constructors
  */
 ModelData::ModelData(const std::string &model_name)
-    : environment(new EnvironmentDescription())
-    , name(model_name)
-    , dependencyGraph(new DependencyGraph(this)) { }
-
-ModelData::~ModelData() { }
+    : name(model_name)
+    , dependencyGraph(new DependencyGraph(this)) {
+    // Environment is init by ModelDescription's constructor (as it requires a shared pointer to this
+}
 
 std::shared_ptr<ModelData> ModelData::clone() const {
     // Awkwardly cant use shared from this inside constructor, so use raw pts instead
@@ -64,6 +64,7 @@ std::shared_ptr<ModelData> ModelData::clone() const {
     for (const auto &m : this->layers) {
         rtn->layers.push_back(std::shared_ptr<LayerData>(new LayerData(rtn, *m)));
     }
+    rtn->environment = std::shared_ptr<EnvironmentData>(new EnvironmentData(rtn, *this->environment));
     return rtn;
 }
 
@@ -77,7 +78,6 @@ ModelData::ModelData(const ModelData &other)
     , exitFunctionCallbacks(other.exitFunctionCallbacks)
     , exitConditions(other.exitConditions)
     , exitConditionCallbacks(other.exitConditionCallbacks)
-    , environment(new EnvironmentDescription(*other.environment))
     , name(other.name)
     , dependencyGraph(new DependencyGraph(*other.dependencyGraph)) {
     // Must be called from clone() so that items are all init

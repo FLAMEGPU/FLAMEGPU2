@@ -14,7 +14,7 @@ namespace test_message {
 
 TEST(MessageDescriptionTest, variables) {
     ModelDescription _m(MODEL_NAME);
-    MessageBruteForce::Description &m = _m.newMessage(MESSAGE_NAME1);
+    MessageBruteForce::Description m = _m.newMessage(MESSAGE_NAME1);
     EXPECT_FALSE(m.hasVariable(VARIABLE_NAME1));
     EXPECT_FALSE(m.hasVariable(VARIABLE_NAME2));
     EXPECT_EQ(m.getVariablesCount(), 0u);
@@ -49,7 +49,7 @@ TEST(MessageDescriptionTest, variables) {
 }
 TEST(MessageDescriptionTest, variables_array) {
     ModelDescription _m(MODEL_NAME);
-    MessageBruteForce::Description &m = _m.newMessage(MESSAGE_NAME1);
+    MessageBruteForce::Description m = _m.newMessage(MESSAGE_NAME1);
     EXPECT_FALSE(m.hasVariable(VARIABLE_NAME1));
     EXPECT_FALSE(m.hasVariable(VARIABLE_NAME2));
     EXPECT_EQ(m.getVariablesCount(), 0u);
@@ -97,33 +97,33 @@ FLAMEGPU_AGENT_FUNCTION(NoOutput, MessageSpatial2D, MessageNone) {
 
 TEST(MessageDescriptionTest, CorrectMessageTypeBound1) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent("foo");
-    AgentFunctionDescription &fo = a.newFunction("bar", NoInput);
-    LayerDescription &lo = m.newLayer("foo2");
+    AgentDescription a = m.newAgent("foo");
+    AgentFunctionDescription fo = a.newFunction("bar", NoInput);
+    LayerDescription lo = m.newLayer("foo2");
     lo.addAgentFunction(fo);
     EXPECT_THROW(CUDASimulation c(m), exception::InvalidMessageType);
 }
 TEST(MessageDescriptionTest, CorrectMessageTypeBound2) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent("foo");
-    AgentFunctionDescription &fo = a.newFunction("bar", NoOutput);
-    LayerDescription &lo = m.newLayer("foo2");
+    AgentDescription a = m.newAgent("foo");
+    AgentFunctionDescription fo = a.newFunction("bar", NoOutput);
+    LayerDescription lo = m.newLayer("foo2");
     lo.addAgentFunction(fo);
     EXPECT_THROW(CUDASimulation c(m), exception::InvalidMessageType);
 }
 TEST(MessageDescriptionTest, CorrectMessageTypeBound3) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent("foo");
-    AgentFunctionDescription &fo = a.newFunction("bar", NoInput);
-    MessageBruteForce::Description &md = m.newMessage<MessageBruteForce>("foo2");
+    AgentDescription a = m.newAgent("foo");
+    AgentFunctionDescription fo = a.newFunction("bar", NoInput);
+    MessageBruteForce::Description md = m.newMessage<MessageBruteForce>("foo2");
     EXPECT_THROW(fo.setMessageOutput(md), exception::InvalidMessageType);
     EXPECT_THROW(fo.setMessageInput(md), exception::InvalidMessageType);
 }
 TEST(MessageDescriptionTest, CorrectMessageTypeBound4) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent("foo");
-    AgentFunctionDescription &fo = a.newFunction("bar", NoOutput);
-    MessageBruteForce::Description &md = m.newMessage<MessageBruteForce>("foo2");
+    AgentDescription a = m.newAgent("foo");
+    AgentFunctionDescription fo = a.newFunction("bar", NoOutput);
+    MessageBruteForce::Description md = m.newMessage<MessageBruteForce>("foo2");
     EXPECT_THROW(fo.setMessageOutput(md), exception::InvalidMessageType);
     EXPECT_THROW(fo.setMessageInput(md), exception::InvalidMessageType);
 }

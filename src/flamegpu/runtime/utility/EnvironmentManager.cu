@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "flamegpu/model/EnvironmentDescription.h"
+#include "flamegpu/model/EnvironmentData.h"
 #include "flamegpu/model/SubEnvironmentData.h"
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/exception/FLAMEGPUException.h"
@@ -11,7 +11,7 @@
 
 namespace flamegpu {
 
-void EnvironmentManager::init(const EnvironmentDescription& desc) {
+void EnvironmentManager::init(const EnvironmentData& desc) {
     if (properties.size()) {
         THROW exception::EnvDescriptionAlreadyLoaded("Environment manager has already been initialised, in EnvironmentManager::init().");
     } else if (!desc.properties.size()) {
@@ -49,7 +49,7 @@ void EnvironmentManager::init(const EnvironmentDescription& desc) {
     }
     gpuErrchk(cudaMalloc(&d_buffer, newSize));
 }
-void EnvironmentManager::init(const EnvironmentDescription& desc, const std::shared_ptr<EnvironmentManager>& parent_environment, const SubEnvironmentData& mapping) {
+void EnvironmentManager::init(const EnvironmentData& desc, const std::shared_ptr<EnvironmentManager>& parent_environment, const SubEnvironmentData& mapping) {
     init(desc);
     // Iterate and link up all mapped properties with parent model's environment
     std::set<std::string> new_mapped_props;
@@ -152,7 +152,7 @@ EnvironmentManager::~EnvironmentManager() {
     }
     h_buffer_len = 0;
 }
-void EnvironmentManager::resetModel(const EnvironmentDescription& desc) {
+void EnvironmentManager::resetModel(const EnvironmentData& desc) {
     for (const auto &dp : desc.properties) {
         if (mapped_parent_properties.find(dp.first) == mapped_parent_properties.end()) {
             // Only reset properties which are not inherited from parent

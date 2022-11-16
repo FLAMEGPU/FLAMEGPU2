@@ -11,30 +11,97 @@
 
 namespace flamegpu {
 
+CAgentFunctionDescription::CAgentFunctionDescription(std::shared_ptr<AgentFunctionData> data)
+    : function(std::move(data)) { }
+CAgentFunctionDescription::CAgentFunctionDescription(std::shared_ptr<const AgentFunctionData> data)
+    : function(std::move(std::const_pointer_cast<AgentFunctionData>(data))) { }
+
+bool CAgentFunctionDescription::operator==(const CAgentFunctionDescription& rhs) const {
+    return *this->function == *rhs.function;  // Compare content is functionally the same
+}
+bool CAgentFunctionDescription::operator!=(const CAgentFunctionDescription& rhs) const {
+    return !(*this == rhs);
+}
+
+
+/**
+ * Const Accessors
+ */
+std::string CAgentFunctionDescription::getName() const {
+    return function->name;
+}
+std::string CAgentFunctionDescription::getInitialState() const {
+    return function->initial_state;
+}
+std::string CAgentFunctionDescription::getEndState() const {
+    return function->end_state;
+}
+MessageBruteForce::CDescription CAgentFunctionDescription::getMessageInput() const {
+    if (auto m = function->message_input.lock())
+        return MessageBruteForce::CDescription(m);
+    THROW exception::OutOfBoundsException("Message input has not been set, "
+        "in AgentFunctionDescription::getMessageInput().");
+}
+MessageBruteForce::CDescription CAgentFunctionDescription::getMessageOutput() const {
+    if (auto m = function->message_output.lock())
+        return MessageBruteForce::CDescription(m);
+    THROW exception::OutOfBoundsException("Message output has not been set, "
+        "in AgentFunctionDescription::getMessageOutput().");
+}
+bool CAgentFunctionDescription::getMessageOutputOptional() const {
+    return this->function->message_output_optional;
+}
+CAgentDescription CAgentFunctionDescription::getAgentOutput() const {
+    if (auto a = function->agent_output.lock())
+        return CAgentDescription(a);
+    THROW exception::OutOfBoundsException("Agent output has not been set, "
+        "in AgentFunctionDescription::getAgentOutput().");
+}
+std::string CAgentFunctionDescription::getAgentOutputState() const {
+    if (auto a = function->agent_output.lock())
+        return function->agent_output_state;
+    THROW exception::OutOfBoundsException("Agent output has not been set, "
+        "in AgentFunctionDescription::getAgentOutputState().");
+}
+bool CAgentFunctionDescription::getAllowAgentDeath() const {
+    return function->has_agent_death;
+}
+bool CAgentFunctionDescription::hasMessageInput() const {
+    return function->message_input.lock() != nullptr;
+}
+bool CAgentFunctionDescription::hasMessageOutput() const {
+    return function->message_output.lock() != nullptr;
+}
+bool CAgentFunctionDescription::hasAgentOutput() const {
+    return function->agent_output.lock() != nullptr;
+}
+bool CAgentFunctionDescription::hasFunctionCondition() const {
+    return function->condition != nullptr;
+}
+AgentFunctionWrapper* CAgentFunctionDescription::getFunctionPtr() const {
+    return function->func;
+}
+AgentFunctionConditionWrapper* CAgentFunctionDescription::getConditionPtr() const {
+    return function->condition;
+}
+bool CAgentFunctionDescription::isRTC() const {
+    return !function->rtc_source.empty();
+}
 
 /**
  * Constructors
  */
-
-AgentFunctionDescription::AgentFunctionDescription(const std::shared_ptr<const ModelData> &_model, AgentFunctionData *const description)
-    : model(_model)
-    , function(description) { }
-
-bool AgentFunctionDescription::operator==(const AgentFunctionDescription& rhs) const {
-    return *this->function == *rhs.function;  // Compare content is functionally the same
-}
-bool AgentFunctionDescription::operator!=(const AgentFunctionDescription& rhs) const {
-    return !(*this == rhs);
-}
+AgentFunctionDescription::AgentFunctionDescription(std::shared_ptr<AgentFunctionData> data)
+    : CAgentFunctionDescription(std::move(data)) { }
 
 /**
  * Accessors
  */
 void AgentFunctionDescription::setInitialState(const std::string &init_state) {
     if (auto p = function->parent.lock()) {
-        if (p->description->hasState(init_state)) {
+        if (p->states.find(init_state) != p->states.end()) {
             // Check if this agent function is already in a layer
-            auto mdl = model.lock();
+            auto mdl = function->model.lock();
             if (!mdl) {
                 THROW exception::ExpiredWeakPtr();
             }
@@ -79,9 +146,9 @@ void AgentFunctionDescription::setInitialState(const std::string &init_state) {
 }
 void AgentFunctionDescription::setEndState(const std::string &exit_state) {
     if (auto p = function->parent.lock()) {
-        if (p->description->hasState(exit_state)) {
+        if (p->states.find(exit_state) != p->states.end()) {
             // Check if this agent function is already in a layer
-            auto mdl = model.lock();
+            auto mdl = function->model.lock();
             if (!mdl) {
                 THROW exception::ExpiredWeakPtr();
             }
@@ -133,7 +200,7 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
                 message_name.c_str(), function->name.c_str());
         }
     }
-    auto mdl = model.lock();
+    auto mdl = function->model.lock();
     if (!mdl) {
         THROW exception::ExpiredWeakPtr();
     }
@@ -155,8 +222,8 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
             mdl->name.c_str(), message_name.c_str());
     }
 }
-void AgentFunctionDescription::setMessageInput(MessageBruteForce::Description &message) {
-    if (message.model.lock() != function->description->model.lock()) {
+void AgentFunctionDescription::setMessageInput(MessageBruteForce::CDescription message) {
+    if (message.message->model.lock() != function->model.lock()) {
         THROW exception::DifferentModel("Attempted to use agent description from a different model, "
             "in AgentFunctionDescription::setAgentOutput().");
     }
@@ -168,13 +235,13 @@ void AgentFunctionDescription::setMessageInput(MessageBruteForce::Description &m
                 message.getName().c_str(), function->name.c_str());
         }
     }
-    auto mdl = model.lock();
+    auto mdl = function->model.lock();
     if (!mdl) {
         THROW exception::ExpiredWeakPtr();
     }
     auto a = mdl->messages.find(message.getName());
     if (a != mdl->messages.end()) {
-        if (a->second->description.get() == &message) {
+        if (a->second == message.message) {
             // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
             auto message_in_classname = util::detail::cxxname::getUnqualifiedName(this->function->message_in_type);
             auto demangledClassName = util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
@@ -211,7 +278,7 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
             b->optional_outputs--;
         }
     }
-    auto mdl = model.lock();
+    auto mdl = function->model.lock();
     if (!mdl) {
         THROW exception::ExpiredWeakPtr();
     }
@@ -236,8 +303,8 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
             mdl->name.c_str(), message_name.c_str());
     }
 }
-void AgentFunctionDescription::setMessageOutput(MessageBruteForce::Description &message) {
-    if (message.model.lock() != function->description->model.lock()) {
+void AgentFunctionDescription::setMessageOutput(MessageBruteForce::CDescription message) {
+    if (message.message->model.lock() != function->model.lock()) {
         THROW exception::DifferentModel("Attempted to use agent description from a different model, "
             "in AgentFunctionDescription::setAgentOutput().");
     }
@@ -255,13 +322,13 @@ void AgentFunctionDescription::setMessageOutput(MessageBruteForce::Description &
             b->optional_outputs--;
         }
     }
-    auto mdl = model.lock();
+    auto mdl = function->model.lock();
     if (!mdl) {
         THROW exception::ExpiredWeakPtr();
     }
     auto a = mdl->messages.find(message.getName());
     if (a != mdl->messages.end()) {
-        if (a->second->description.get() == &message) {
+        if (a->second == message.message) {
             // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
             auto message_out_classname = util::detail::cxxname::getUnqualifiedName(this->function->message_out_type);
             auto demangledClassName = util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
@@ -299,7 +366,7 @@ void AgentFunctionDescription::setMessageOutputOptional(const bool output_is_opt
 }
 void AgentFunctionDescription::setAgentOutput(const std::string &agent_name, const std::string state) {
     // Set new
-    auto mdl = model.lock();
+    auto mdl = function->model.lock();
     if (!mdl) {
         THROW exception::ExpiredWeakPtr();
     }
@@ -325,18 +392,18 @@ void AgentFunctionDescription::setAgentOutput(const std::string &agent_name, con
     }
 }
 void AgentFunctionDescription::setAgentOutput(AgentDescription &agent, const std::string state) {
-    if (agent.model.lock() != function->description->model.lock()) {
+    if (agent.agent->model.lock() != function->model.lock()) {
         THROW exception::DifferentModel("Attempted to use agent description from a different model, "
             "in AgentFunctionDescription::setAgentOutput().");
     }
     // Set new
-    auto mdl = model.lock();
+    auto mdl = function->model.lock();
     if (!mdl) {
         THROW exception::ExpiredWeakPtr();
     }
     auto a = mdl->agents.find(agent.getName());
     if (a != mdl->agents.end()) {
-        if (a->second->description.get() == &agent) {
+        if (*a->second == agent) {
             // Check agent state is valid
             if (a->second->states.find(state) != a->second->states.end()) {
                 // Clear old value
@@ -424,15 +491,15 @@ void AgentFunctionDescription::setRTCFunctionConditionFile(const std::string& fi
         file_path.c_str());
 }
 
-MessageBruteForce::Description &AgentFunctionDescription::MessageInput() {
+MessageBruteForce::Description AgentFunctionDescription::MessageInput() {
     if (auto m = function->message_input.lock())
-        return *m->description;
+        return MessageBruteForce::Description(m);
     THROW exception::OutOfBoundsException("Message input has not been set, "
         "in AgentFunctionDescription::MessageInput().");
 }
-MessageBruteForce::Description &AgentFunctionDescription::MessageOutput() {
+MessageBruteForce::Description AgentFunctionDescription::MessageOutput() {
     if (auto m = function->message_output.lock())
-        return *m->description;
+        return MessageBruteForce::Description(m);
     THROW exception::OutOfBoundsException("Message output has not been set, "
         "in AgentFunctionDescription::MessageOutput().");
 }
@@ -442,74 +509,14 @@ bool &AgentFunctionDescription::MessageOutputOptional() {
 bool &AgentFunctionDescription::AllowAgentDeath() {
     return function->has_agent_death;
 }
-
-/**
- * Const Accessors
- */
-std::string AgentFunctionDescription::getName() const {
-    return function->name;
-}
-std::string AgentFunctionDescription::getInitialState() const {
-    return function->initial_state;
-}
-std::string AgentFunctionDescription::getEndState() const {
-    return function->end_state;
-}
-const MessageBruteForce::Description &AgentFunctionDescription::getMessageInput() const {
-    if (auto m = function->message_input.lock())
-        return *m->description;
-    THROW exception::OutOfBoundsException("Message input has not been set, "
-        "in AgentFunctionDescription::getMessageInput().");
-}
-const MessageBruteForce::Description &AgentFunctionDescription::getMessageOutput() const {
-    if (auto m = function->message_output.lock())
-        return *m->description;
-    THROW exception::OutOfBoundsException("Message output has not been set, "
-        "in AgentFunctionDescription::getMessageOutput().");
-}
-bool AgentFunctionDescription::getMessageOutputOptional() const {
-    return this->function->message_output_optional;
-}
-const AgentDescription &AgentFunctionDescription::getAgentOutput() const {
+AgentDescription AgentFunctionDescription::AgentOutput() {
     if (auto a = function->agent_output.lock())
-        return *a->description;
+        return AgentDescription(a);
     THROW exception::OutOfBoundsException("Agent output has not been set, "
-        "in AgentFunctionDescription::getAgentOutput().");
-}
-std::string AgentFunctionDescription::getAgentOutputState() const {
-    if (auto a = function->agent_output.lock())
-        return function->agent_output_state;
-    THROW exception::OutOfBoundsException("Agent output has not been set, "
-        "in AgentFunctionDescription::getAgentOutputState().");
-}
-bool AgentFunctionDescription::getAllowAgentDeath() const {
-    return function->has_agent_death;
+        "in AgentFunctionDescription::AgentOutput().");
 }
 
-bool AgentFunctionDescription::hasMessageInput() const {
-    return function->message_input.lock() != nullptr;
-}
-bool AgentFunctionDescription::hasMessageOutput() const {
-    return function->message_output.lock() != nullptr;
-}
-bool AgentFunctionDescription::hasAgentOutput() const {
-    return function->agent_output.lock() != nullptr;
-}
-bool AgentFunctionDescription::hasFunctionCondition() const {
-    return function->condition != nullptr;
-}
-AgentFunctionWrapper *AgentFunctionDescription::getFunctionPtr() const {
-    return function->func;
-}
-AgentFunctionConditionWrapper *AgentFunctionDescription::getConditionPtr() const {
-    return function->condition;
-}
-
-bool AgentFunctionDescription::isRTC() const {
-    return !function->rtc_source.empty();
-}
-
-AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& function_name, const std::string& func_src) {
+AgentFunctionDescription AgentDescription::newRTCFunction(const std::string& function_name, const std::string& func_src) {
     if (agent->functions.find(function_name) == agent->functions.end()) {
         // Use Regex to get agent function name, and input/output message type
         std::regex rgx(R"###(.*FLAMEGPU_AGENT_FUNCTION\([ \t]*(\w+),[ \t]*([:\w]+),[ \t]*([:\w]+)[ \t]*\))###");
@@ -551,7 +558,7 @@ AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& fu
                 }
                 auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, func_src_str, in_type_name, out_type_name, code_func_name));
                 agent->functions.emplace(function_name, rtn);
-                return *rtn->description;
+                return AgentFunctionDescription(rtn);
             } else {
                 THROW exception::InvalidAgentFunc("Runtime agent function('%s') is missing FLAMEGPU_AGENT_FUNCTION arguments e.g. (func_name, message_input_type, message_output_type), "
                     "in AgentDescription::newRTCFunction().",
@@ -568,7 +575,7 @@ AgentFunctionDescription& AgentDescription::newRTCFunction(const std::string& fu
         agent->name.c_str(), function_name.c_str());
 }
 
-AgentFunctionDescription& AgentDescription::newRTCFunctionFile(const std::string& function_name, const std::string& file_path) {
+AgentFunctionDescription AgentDescription::newRTCFunctionFile(const std::string& function_name, const std::string& file_path) {
     if (agent->functions.find(function_name) == agent->functions.end()) {
         // Load file and forward to regular RTC method
         std::ifstream file;

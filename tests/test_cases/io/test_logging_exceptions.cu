@@ -53,14 +53,14 @@ TEST(LoggingExceptionTest, LoggingConfigExceptions) {
     EXPECT_NO_THROW(lcfg.agent(AGENT_NAME1, flamegpu::ModelData::DEFAULT_STATE));
     // THIS DOES NOT WORK, cfg holds a copy of the ModelDescription, not a reference to it.
     // Add new agent after lcfg
-    AgentDescription &a2 = m.newAgent(AGENT_NAME2);
+    AgentDescription a2 = m.newAgent(AGENT_NAME2);
     a2.newState("state2");
     // Agent/State does not exist
     EXPECT_THROW(lcfg.agent(AGENT_NAME2, "state2"), exception::InvalidAgentName);
 }
 TEST(LoggingExceptionTest, AgentLoggingConfigExceptions) {
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<float, 2>("float_var_array");
 
@@ -137,7 +137,7 @@ TEST(LoggingExceptionTest, LogFrameExceptions) {
 TEST(LoggingExceptionTest, AgentLogFrameExceptions) {
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");

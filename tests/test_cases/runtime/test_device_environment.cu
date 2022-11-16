@@ -135,9 +135,9 @@ class MiniSim {
         ASSERT_NO_THROW(cudaSimulation->getPopulationData(*population));
     }
     ModelDescription model;
-    AgentDescription &agent;
+    AgentDescription agent;
     AgentVector *population;
-    EnvironmentDescription &env;
+    EnvironmentDescription env;
     CUDASimulation *cudaSimulation;
 
     template <typename T>
@@ -203,8 +203,8 @@ class DeviceEnvironmentTest : public testing::Test {
 
 TEST_F(DeviceEnvironmentTest, Get_float) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_float);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_float);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto float_check = ms->Get_test<float>();
@@ -215,8 +215,8 @@ TEST_F(DeviceEnvironmentTest, Get_float) {
 }
 TEST_F(DeviceEnvironmentTest, Get_double) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_double);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_double);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto double_check = ms->Get_test<double>();
@@ -227,8 +227,8 @@ TEST_F(DeviceEnvironmentTest, Get_double) {
 }
 TEST_F(DeviceEnvironmentTest, Get_int8_t) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_int8_t);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_int8_t);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto int8_t_check = ms->Get_test<int8_t>();
@@ -239,8 +239,8 @@ TEST_F(DeviceEnvironmentTest, Get_int8_t) {
 }
 TEST_F(DeviceEnvironmentTest, Get_uint8_t) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_uint8_t);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_uint8_t);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto uint8_t_check = ms->Get_test<uint8_t>();
@@ -251,8 +251,8 @@ TEST_F(DeviceEnvironmentTest, Get_uint8_t) {
 }
 TEST_F(DeviceEnvironmentTest, Get_int16_t) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_int16_t);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_int16_t);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto int16_t_check = ms->Get_test<int16_t>();
@@ -263,8 +263,8 @@ TEST_F(DeviceEnvironmentTest, Get_int16_t) {
 }
 TEST_F(DeviceEnvironmentTest, Get_uint16_t) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_uint16_t);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_uint16_t);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto uint16_t_check = ms->Get_test<uint16_t>();
@@ -275,8 +275,8 @@ TEST_F(DeviceEnvironmentTest, Get_uint16_t) {
 }
 TEST_F(DeviceEnvironmentTest, Get_int32_t) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_int32_t);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_int32_t);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto int32_t_check = ms->Get_test<int32_t>();
@@ -287,8 +287,8 @@ TEST_F(DeviceEnvironmentTest, Get_int32_t) {
 }
 TEST_F(DeviceEnvironmentTest, Get_uint32_t) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_uint32_t);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_uint32_t);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto uint32_t_check = ms->Get_test<uint32_t>();
@@ -299,8 +299,8 @@ TEST_F(DeviceEnvironmentTest, Get_uint32_t) {
 }
 TEST_F(DeviceEnvironmentTest, Get_int64_t) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_int64_t);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_int64_t);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto int64_t_check = ms->Get_test<int64_t>();
@@ -311,8 +311,8 @@ TEST_F(DeviceEnvironmentTest, Get_int64_t) {
 }
 TEST_F(DeviceEnvironmentTest, Get_uint64_t) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_uint64_t);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_uint64_t);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto uint64_t_check = ms->Get_test<uint64_t>();
@@ -324,8 +324,8 @@ TEST_F(DeviceEnvironmentTest, Get_uint64_t) {
 
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_float) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_float);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_arrayElement_float);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto float_check = ms->Get_arrayElement_test<float>();
@@ -336,8 +336,8 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_float) {
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_double) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_double);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_arrayElement_double);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto double_check = ms->Get_arrayElement_test<double>();
@@ -348,8 +348,8 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_double) {
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_int8_t) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_int8_t);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_arrayElement_int8_t);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto int8_t_check = ms->Get_arrayElement_test<int8_t>();
@@ -360,8 +360,8 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_int8_t) {
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint8_t) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_uint8_t);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_arrayElement_uint8_t);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto uint8_t_check = ms->Get_arrayElement_test<uint8_t>();
@@ -372,8 +372,8 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint8_t) {
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_int16_t) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_int16_t);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_arrayElement_int16_t);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto int16_t_check = ms->Get_arrayElement_test<int16_t>();
@@ -384,8 +384,8 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_int16_t) {
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint16_t) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_uint16_t);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_arrayElement_uint16_t);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto uint16_t_check = ms->Get_arrayElement_test<uint16_t>();
@@ -396,8 +396,8 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint16_t) {
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint32_t) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_uint32_t);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_arrayElement_uint32_t);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto uint32_t_check = ms->Get_arrayElement_test<uint32_t>();
@@ -408,8 +408,8 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint32_t) {
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_int32_t) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_int32_t);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_arrayElement_int32_t);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto int32_t_check = ms->Get_arrayElement_test<int32_t>();
@@ -420,8 +420,8 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_int32_t) {
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint64_t) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_uint64_t);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_arrayElement_uint64_t);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto uint64_t_check = ms->Get_arrayElement_test<uint64_t>();
@@ -432,8 +432,8 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint64_t) {
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_int64_t) {
     // Setup agent fn
-    AgentFunctionDescription &deviceFn = ms->agent.newFunction("device_function", get_arrayElement_int64_t);
-    LayerDescription &devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_arrayElement_int64_t);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     auto int64_t_check = ms->Get_arrayElement_test<int64_t>();
@@ -453,8 +453,8 @@ TEST_F(DeviceEnvironmentTest, Get_array_shorthand) {
     // This test is better ran with SEATBELTS=ON, to catch the seatbelts checking
     // Setup agent fn
     ms->agent.newVariable<float, 3>("k");
-    AgentFunctionDescription& deviceFn = ms->agent.newFunction("device_function", get_array_shorthand);
-    LayerDescription& devicefn_layer = ms->model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_array_shorthand);
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     const std::array<float, 3> t_in = { 12.0f, -12.5f, 13.0f };
@@ -477,10 +477,10 @@ TEST(RTCDeviceEnvironmentTest, get_array_shorthand) {
     const std::array<float, 3> t_in = { 12.0f, -12.5f, 13.0f };
     model.Environment().newProperty<float, 3>("k", t_in);
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float, 3>("k");
-    AgentFunctionDescription& deviceFn = agent.newRTCFunction("device_function", rtc_get_array_shorthand);
-    LayerDescription& devicefn_layer = model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = agent.newRTCFunction("device_function", rtc_get_array_shorthand);
+    LayerDescription devicefn_layer = model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     AgentVector population(agent, 1);
     // Do Sim
@@ -504,7 +504,7 @@ TEST_F(DeviceEnvironmentTest, Get_array_glm) {
     // Setup agent fn
     ms->agent.newVariable<glm::vec3>("k");
     AgentFunctionDescription& deviceFn = ms->agent.newFunction("device_function", get_array_glm);
-    LayerDescription& devicefn_layer = ms->model.newLayer("devicefn_layer");
+    LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
     const glm::vec3 t_in = { 12.0f, -12.5f, 13.0f };
@@ -528,10 +528,10 @@ TEST(RTCDeviceEnvironmentTest, Get_array_glm) {
     const glm::vec3 t_in = { 12.0f, -12.5f, 13.0f };
     model.Environment().newProperty<glm::vec3>("k", t_in);
     // Setup agent fn
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<glm::vec3>("k");
-    AgentFunctionDescription& deviceFn = agent.newRTCFunction("device_function", rtc_get_array_glm);
-    LayerDescription& devicefn_layer = model.newLayer("devicefn_layer");
+    AgentFunctionDescription deviceFn = agent.newRTCFunction("device_function", rtc_get_array_glm);
+    LayerDescription devicefn_layer = model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     AgentVector population(agent, 1);
     // Do Sim

@@ -68,7 +68,7 @@ TEST(Spatial2DMessageTest, Mandatory) {
     // Construct model
     ModelDescription model("Spatial2DMessageTestModel");
     {   // Location message
-        MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+        MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
         message.setMin(0, 0);
         message.setMax(11, 11);
         message.setRadius(1);
@@ -76,7 +76,7 @@ TEST(Spatial2DMessageTest, Mandatory) {
         message.newVariable<flamegpu::id_t>("id");  // unused by current test
     }
     {   // Circle agent
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<unsigned int>("myBin");  // This will be presumed bin index of the agent, might not use this
@@ -86,11 +86,11 @@ TEST(Spatial2DMessageTest, Mandatory) {
         agent.newFunction("in", in2D).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(out_mandatory2D);
     }
     {   // Layer #2
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(in2D);
     }
     CUDASimulation cudaSimulation(model);
@@ -193,7 +193,7 @@ TEST(Spatial2DMessageTest, Optional) {
     // Construct model
     ModelDescription model("Spatial2DMessageTestModel");
     {   // Location message
-        MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+        MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
         message.setMin(0, 0);
         message.setMax(11, 11);
         message.setRadius(1);
@@ -201,24 +201,24 @@ TEST(Spatial2DMessageTest, Optional) {
         message.newVariable<flamegpu::id_t>("id");  // unused by current test
     }
     {   // Circle agent
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<int>("do_output");  // NEW!
         agent.newVariable<unsigned int>("myBin");  // This will be presumed bin index of the agent, might not use this
         agent.newVariable<unsigned int>("count");  // Store the distance moved here, for validation
         agent.newVariable<unsigned int>("badCount");  // Store how many messages are out of range
-        auto &af = agent.newFunction("out", out_optional2D);  // NEW!
+        auto af = agent.newFunction("out", out_optional2D);  // NEW!
         af.setMessageOutput("location");
         af.setMessageOutputOptional(true);  // NEW!
         agent.newFunction("in", in2D).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(out_optional2D);  // NEW!
     }
     {   // Layer #2
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(in2D);
     }
     CUDASimulation cudaSimulation(model);
@@ -327,7 +327,7 @@ TEST(Spatial2DMessageTest, OptionalNone) {
     // Construct model
     ModelDescription model("Spatial2DMessageTestModel");
     {   // Location message
-        MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+        MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
         message.setMin(0, 0);
         message.setMax(11, 11);
         message.setRadius(1);
@@ -335,24 +335,24 @@ TEST(Spatial2DMessageTest, OptionalNone) {
         message.newVariable<flamegpu::id_t>("id");  // unused by current test
     }
     {   // Circle agent
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<int>("do_output");  // NEW!
         agent.newVariable<unsigned int>("myBin");  // This will be presumed bin index of the agent, might not use this
         agent.newVariable<unsigned int>("count");  // Store the distance moved here, for validation
         agent.newVariable<unsigned int>("badCount");  // Store how many messages are out of range
-        auto &af = agent.newFunction("out", out_optional2DNone);  // NEW!
+        auto af = agent.newFunction("out", out_optional2DNone);  // NEW!
         af.setMessageOutput("location");
         af.setMessageOutputOptional(true);  // NEW!
         agent.newFunction("in", in2D).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(out_optional2DNone);  // NEW!
     }
     {   // Layer #2
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(in2D);
     }
     CUDASimulation cudaSimulation(model);
@@ -409,13 +409,13 @@ TEST(Spatial2DMessageTest, OptionalNone) {
 
 TEST(Spatial2DMessageTest, BadRadius) {
     ModelDescription model("Spatial2DMessageTestModel");
-    MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+    MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
     EXPECT_THROW(message.setRadius(0), exception::InvalidArgument);
     EXPECT_THROW(message.setRadius(-10), exception::InvalidArgument);
 }
 TEST(Spatial2DMessageTest, BadMin) {
     ModelDescription model("Spatial2DMessageTestModel");
-    MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+    MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
     message.setMax(5, 5);
     EXPECT_THROW(message.setMin(5, 0), exception::InvalidArgument);
     EXPECT_THROW(message.setMin(0, 5), exception::InvalidArgument);
@@ -424,7 +424,7 @@ TEST(Spatial2DMessageTest, BadMin) {
 }
 TEST(Spatial2DMessageTest, BadMax) {
     ModelDescription model("Spatial2DMessageTestModel");
-    MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+    MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
     message.setMin(5, 5);
     EXPECT_THROW(message.setMax(5, 0), exception::InvalidArgument);
     EXPECT_THROW(message.setMax(0, 5), exception::InvalidArgument);
@@ -433,19 +433,19 @@ TEST(Spatial2DMessageTest, BadMax) {
 }
 TEST(Spatial2DMessageTest, UnsetMax) {
     ModelDescription model("Spatial2DMessageTestModel");
-    MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+    MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
     message.setMin(5, 5);
     EXPECT_THROW(CUDASimulation m(model), exception::InvalidMessage);
 }
 TEST(Spatial2DMessageTest, UnsetMin) {
     ModelDescription model("Spatial2DMessageTestModel");
-    MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+    MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
     message.setMin(5, 5);
     EXPECT_THROW(CUDASimulation m(model), exception::InvalidMessage);
 }
 TEST(Spatial2DMessageTest, reserved_name) {
     ModelDescription model("Spatial2DMessageTestModel");
-    MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+    MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
     EXPECT_THROW(message.newVariable<int>("_"), exception::ReservedName);
 }
 
@@ -463,19 +463,19 @@ TEST(Spatial2DMessageTest, ReadEmpty) {
 // What happens if we read a message list before it has been output?
     ModelDescription model("Model");
     {   // Location message
-        MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("location");
+        MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
         message.setMin(-3, -3);
         message.setMax(3, 3);
         message.setRadius(2);
         message.newVariable<flamegpu::id_t>("id");  // unused by current test
     }
     {   // Circle agent
-        AgentDescription &agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<unsigned int>("count", 0);  // Count the number of messages read
         agent.newFunction("in", count2D).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription &layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(count2D);
     }
     // Create 1 agent
@@ -525,21 +525,21 @@ TEST(Spatial2DMessageTest, ArrayVariable) {
     const char* OUT_LAYER_NAME = "OutLayer";
     const unsigned int SQRT_AGENT_COUNT = 64;
     ModelDescription m(MODEL_NAME);
-    MessageSpatial2D::Description &message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
+    MessageSpatial2D::Description message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
     message.setMin(0, 0);
     message.setMax(static_cast<float>(SQRT_AGENT_COUNT), static_cast<float>(SQRT_AGENT_COUNT));
     message.setRadius(1);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
     int k = 0;
@@ -600,21 +600,21 @@ TEST(RTCSpatial2DMessageTest, ArrayVariable) {
     const char* OUT_LAYER_NAME = "OutLayer";
     const unsigned int SQRT_AGENT_COUNT = 64;
     ModelDescription m(MODEL_NAME);
-    MessageSpatial2D::Description& message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
+    MessageSpatial2D::Description message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
     message.setMin(0, 0);
     message.setMax(static_cast<float>(SQRT_AGENT_COUNT), static_cast<float>(SQRT_AGENT_COUNT));
     message.setRadius(1);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
-    AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
+    AgentFunctionDescription fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
+    AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
     int k = 0;
@@ -670,21 +670,21 @@ TEST(Spatial2DMessageTest, ArrayVariable_glm) {
     const char* OUT_LAYER_NAME = "OutLayer";
     const unsigned int SQRT_AGENT_COUNT = 64;
     ModelDescription m(MODEL_NAME);
-    MessageSpatial2D::Description &message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
+    MessageSpatial2D::Description message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
     message.setMin(0, 0);
     message.setMax(static_cast<float>(SQRT_AGENT_COUNT), static_cast<float>(SQRT_AGENT_COUNT));
     message.setRadius(1);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int, 3>("message_read", {UINT_MAX, UINT_MAX, UINT_MAX});
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_glm);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn_glm);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
     int k = 0;
@@ -742,21 +742,21 @@ TEST(RTCSpatial2DMessageTest, ArrayVariable_glm) {
     const char* OUT_LAYER_NAME = "OutLayer";
     const unsigned int SQRT_AGENT_COUNT = 64;
     ModelDescription m(MODEL_NAME);
-    MessageSpatial2D::Description& message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
+    MessageSpatial2D::Description message = m.newMessage<MessageSpatial2D>(MESSAGE_NAME);
     message.setMin(0, 0);
     message.setMax(static_cast<float>(SQRT_AGENT_COUNT), static_cast<float>(SQRT_AGENT_COUNT));
     message.setRadius(1);
     message.newVariable<unsigned int, 3>("v");
-    AgentDescription& a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<unsigned int, 2>("index");
     a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
-    AgentFunctionDescription& fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
+    AgentFunctionDescription fo = a.newRTCFunction(OUT_FUNCTION_NAME, rtc_ArrayOut_func_glm);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
+    AgentFunctionDescription fi = a.newRTCFunction(IN_FUNCTION_NAME, rtc_ArrayIn_func_glm);
     fi.setMessageInput(message);
-    LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     AgentVector pop(a, SQRT_AGENT_COUNT * SQRT_AGENT_COUNT);
     int k = 0;
@@ -826,14 +826,14 @@ void wrapped_2d_test(const float x_offset, const float y_offset, const float out
     // Construct model
     ModelDescription model("Spatial2DMessageTestModel");
     {   // Location message
-        MessageSpatial2D::Description& message = model.newMessage<MessageSpatial2D>("location");
+        MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("location");
         message.setMin(0 + x_offset, 0 + y_offset);
         message.setMax(30 + x_offset, 30 + y_offset);
         message.setRadius(3);  // With a grid of agents spaced 2 units apart, this configuration should give each agent 8 neighbours (assuming my basic maths guessing works out)
         message.newVariable<flamegpu::id_t>("id");  // unused by current test
     }
     {   // Circle agent
-        AgentDescription& agent = model.newAgent("agent");
+        AgentDescription agent = model.newAgent("agent");
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
         agent.newVariable<float>("result_x");  // Sum all virtual X values, and this should equal 0 (or very close)
@@ -844,11 +844,11 @@ void wrapped_2d_test(const float x_offset, const float y_offset, const float out
         agent.newFunction("in", inWrapped2D).setMessageInput("location");
     }
     {   // Layer #1
-        LayerDescription& layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(out_mandatory2D);
     }
     {   // Layer #2
-        LayerDescription& layer = model.newLayer();
+        LayerDescription layer = model.newLayer();
         layer.addAgentFunction(inWrapped2D);
     }
     CUDASimulation cudaSimulation(model);

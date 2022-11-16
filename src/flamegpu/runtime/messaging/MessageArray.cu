@@ -96,17 +96,53 @@ void MessageArray::CUDAModelHandler::buildIndex(CUDAScatter &scatter, unsigned i
     gpuErrchk(cudaStreamSynchronize(stream));  // Redundant: Array msg reorder has a sync
 }
 
+/// <summary>
+/// CDescription
+/// </summary>
+MessageArray::CDescription::CDescription(std::shared_ptr<Data> data)
+    : MessageBruteForce::CDescription(std::move(std::static_pointer_cast<MessageBruteForce::Data>(data))) { }
+MessageArray::CDescription::CDescription(std::shared_ptr<const Data> data)
+    : CDescription(std::move(std::const_pointer_cast<Data>(data))) { }
 
-MessageArray::Data::Data(const std::shared_ptr<const ModelData>&model, const std::string &message_name)
+bool MessageArray::CDescription::operator==(const CDescription& rhs) const {
+    return *this->message == *rhs.message;  // Compare content is functionally the same
+}
+bool MessageArray::CDescription::operator!=(const CDescription& rhs) const {
+    return !(*this == rhs);
+}
+/**
+ * Const accessors
+ */
+flamegpu::size_type MessageArray::CDescription::getLength() const {
+    return std::static_pointer_cast<Data>(message)->length;
+}
+
+/// <summary>
+/// Description
+/// </summary>
+MessageArray::Description::Description(std::shared_ptr<Data> data)
+    : CDescription(data) { }
+/**
+ * Accessors
+ */
+void MessageArray::Description::setLength(const size_type len) {
+    if (len == 0) {
+        THROW exception::InvalidArgument("Array messaging length must not be zero.\n");
+    }
+    std::static_pointer_cast<Data>(message)->length = len;
+}
+
+/// <summary>
+/// Data
+/// </summary>
+MessageArray::Data::Data(std::shared_ptr<const ModelData> model, const std::string &message_name)
     : MessageBruteForce::Data(model, message_name)
     , length(0) {
-    description = std::unique_ptr<MessageArray::Description>(new MessageArray::Description(model, this));
     variables.emplace("___INDEX", Variable(1, size_type()));
 }
-MessageArray::Data::Data(const std::shared_ptr<const ModelData>&model, const Data &other)
+MessageArray::Data::Data(std::shared_ptr<const ModelData> model, const Data &other)
     : MessageBruteForce::Data(model, other)
     , length(other.length) {
-    description = std::unique_ptr<MessageArray::Description>(model ? new MessageArray::Description(model, this) : nullptr);
     if (length == 0) {
         THROW exception::InvalidMessage("Length must not be zero in array message '%s'\n", other.name.c_str());
     }
@@ -118,19 +154,5 @@ std::unique_ptr<MessageSpecialisationHandler> MessageArray::Data::getSpecialisat
     return std::unique_ptr<MessageSpecialisationHandler>(new CUDAModelHandler(owner));
 }
 std::type_index MessageArray::Data::getType() const { return std::type_index(typeid(MessageArray)); }
-
-
-MessageArray::Description::Description(const std::shared_ptr<const ModelData>&_model, Data *const data)
-    : MessageBruteForce::Description(_model, data) { }
-
-void MessageArray::Description::setLength(const size_type len) {
-    if (len == 0) {
-        THROW exception::InvalidArgument("Array messaging length must not be zero.\n");
-    }
-    reinterpret_cast<Data *>(message)->length = len;
-}
-flamegpu::size_type MessageArray::Description::getLength() const {
-    return reinterpret_cast<Data *>(message)->length;
-}
 
 }  // namespace flamegpu

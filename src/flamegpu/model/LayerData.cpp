@@ -5,20 +5,20 @@
 
 namespace flamegpu {
 
-LayerData::LayerData(const std::shared_ptr<const ModelData> &model, const std::string &layer_name, const flamegpu::size_type &layer_index)
-    : description(new LayerDescription(model, this))
+LayerData::LayerData(const std::shared_ptr<const ModelData> &_model, const std::string &layer_name, const flamegpu::size_type &layer_index)
+    : model(_model)
     , name(layer_name)
     , index(layer_index) { }
 
-LayerData::LayerData(const std::shared_ptr<const ModelData> &model, const LayerData &other)
-    : host_functions(other.host_functions)
+LayerData::LayerData(const std::shared_ptr<const ModelData> &_model, const LayerData &other)
+    : model(_model)
+    , host_functions(other.host_functions)
     , host_functions_callbacks(other.host_functions_callbacks)
-    , description(model ? new LayerDescription(model, this) : nullptr)
     , name(other.name)
     , index(other.index) {
     // Manually perform lookup copies
     for (auto &_f : other.agent_functions) {
-        for (auto &a : model->agents) {
+        for (auto &a : _model->agents) {
             for (auto &f : a.second->functions) {
                 if (*f.second == *_f) {
                     agent_functions.emplace(f.second);
@@ -29,7 +29,7 @@ LayerData::LayerData(const std::shared_ptr<const ModelData> &model, const LayerD
     next_agent_fn : {}
     }
     if (other.sub_model) {
-        for (auto &a : model->submodels) {
+        for (auto &a : _model->submodels) {
             if (other.sub_model->name == a.second->name) {
                 sub_model = a.second;
             }
@@ -41,6 +41,7 @@ bool LayerData::operator==(const LayerData &rhs) const {
     if (this == &rhs)  // They point to same object
         return true;
     if (name == rhs.name
+    //  && model.lock() == rhs.model.lock()  // Don't check weak pointers
     && index == rhs.index
     && agent_functions.size() == rhs.agent_functions.size()
     && host_functions.size() == rhs.host_functions.size()

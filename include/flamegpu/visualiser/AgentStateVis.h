@@ -3,6 +3,7 @@
 #ifdef VISUALISATION
 
 #include <string>
+#include <memory>
 
 // @todo - All vis headers should live in the vis repo.
 #include "flamegpu/visualiser/config/AgentStateConfig.h"
@@ -13,7 +14,32 @@ namespace visualiser {
 
 struct Color;
 class ColorFunction;
-class AgentVis;
+struct AgentVisData;
+
+struct AgentStateVisData {
+    /**
+     * Creates a new AgentStateVis to configure visualisation options for a particular agent-state
+     * @param parent Visualisation options for the agent
+     * @param state_name State of the agent for which this options should represent
+     */
+    AgentStateVisData(std::shared_ptr<const AgentVisData> parent, const std::string& state_name);
+    /**
+     * The parent visualisation options, these hold the default configuration
+     */
+    std::shared_ptr<const AgentVisData>  parent;
+    /**
+     * Name of the state from agent description hierarchy
+     */
+    const std::string state_name;
+    /**
+     * Holds the config used to render agents in this state
+     */
+    AgentStateConfig config;
+    /**
+     * Holds a boolean for each option (or group of options), to decide whether they should be updated if the default is changed
+     */
+    AgentStateConfigFlags configFlags;
+};
 
 /**
  * This provides an interface for managing the render options for all agents within a specific state
@@ -25,15 +51,11 @@ class AgentStateVis {
     /**
      * Parent has friend access
      */
+    friend struct AgentVisData;
     friend class AgentVis;
- public:
-    /**
-     * Creates a new AgentStateVis to configure visualisation options for a particular agent-state
-     * @param parent Visualisation options for the agent
-     * @param state_name State of the agent for which this options should represent
-     */
-    AgentStateVis(const AgentVis &parent, const std::string &state_name);
 
+ public:
+    explicit AgentStateVis(std::shared_ptr<AgentStateVisData> data);
     /**
      * Use a model from file
      * @param modelPath File path of model
@@ -87,22 +109,7 @@ class AgentStateVis {
     void clearColor();
 
  private:
-    /**
-     * The parent visualisation options, these hold the default configuration
-     */
-    const AgentVis &parent;
-    /**
-     * Name of the state from agent description hierarchy
-     */
-    const std::string state_name;
-    /**
-     * Holds the config used to render agents in this state
-     */
-    AgentStateConfig config;
-    /**
-     * Holds a boolean for each option (or group of options), to decide whether they should be updated if the default is changed
-     */
-    AgentStateConfigFlags configFlags;
+    std::shared_ptr<AgentStateVisData> data;
 };
 
 }  // namespace visualiser

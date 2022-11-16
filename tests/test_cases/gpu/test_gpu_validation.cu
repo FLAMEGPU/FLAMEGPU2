@@ -69,7 +69,7 @@ FLAMEGPU_AGENT_FUNCTION(stay_func, MessageNone, MessageNone) {
 */
 TEST(GPUTest, GPUMemoryTest) {
     ModelDescription flame_model("circles_model");
-    AgentDescription &circle_agent = flame_model.newAgent("circle");
+    AgentDescription circle_agent = flame_model.newAgent("circle");
 
 
     circle_agent.newVariable<int>("id");
@@ -109,13 +109,13 @@ TEST(GPUTest, GPUMemoryTest) {
 TEST(GPUTest, GPUSimulationTest) {
     // create  single FLAME GPU model and agent
     ModelDescription flame_model("circles_model");
-    AgentDescription &circle_agent = flame_model.newAgent("circle");
+    AgentDescription circle_agent = flame_model.newAgent("circle");
 
     // test requires only a  single agent variable
     circle_agent.newVariable<double>("x");
 
 
-    AgentFunctionDescription &add_data = circle_agent.newFunction("add", add_func);
+    AgentFunctionDescription add_data = circle_agent.newFunction("add", add_func);
 
     AgentVector population(circle_agent, 10);
     for (int i = 0; i< 10; i++) {
@@ -126,7 +126,7 @@ TEST(GPUTest, GPUSimulationTest) {
 
     GTEST_COUT << "Testing initial values .." << std::endl;
 
-    LayerDescription &add_layer = flame_model.newLayer("add_layer");
+    LayerDescription add_layer = flame_model.newLayer("add_layer");
     add_layer.addAgentFunction(add_data);
 
 
@@ -163,15 +163,15 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
     /* Multi agent model */
     ModelDescription flame_model("circles_model");
 
-    AgentDescription &circle1_agent = flame_model.newAgent("circle1");
+    AgentDescription circle1_agent = flame_model.newAgent("circle1");
     circle1_agent.newVariable<double>("x");
 
-    AgentDescription &circle2_agent = flame_model.newAgent("circle2");
+    AgentDescription circle2_agent = flame_model.newAgent("circle2");
     circle2_agent.newVariable<double>("x");
     circle2_agent.newVariable<double>("y");
 
-    AgentFunctionDescription &add_data = circle1_agent.newFunction("add", add_func);
-    AgentFunctionDescription &subtract_data = circle2_agent.newFunction("subtract", subtract_func);
+    AgentFunctionDescription add_data = circle1_agent.newFunction("add", add_func);
+    AgentFunctionDescription subtract_data = circle2_agent.newFunction("subtract", subtract_func);
 
 
     #define SIZE 10
@@ -189,7 +189,7 @@ TEST(GPUTest, GPUSimulationTestMultiple) {
     }
 
     // multiple functions per simulation layer (from different agents)
-    LayerDescription &concurrent_layer = flame_model.newLayer("concurrent_layer");
+    LayerDescription concurrent_layer = flame_model.newLayer("concurrent_layer");
     concurrent_layer.addAgentFunction(add_data);
     concurrent_layer.addAgentFunction(subtract_data);
 

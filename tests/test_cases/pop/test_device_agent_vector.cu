@@ -47,7 +47,7 @@ TEST(DeviceAgentVectorTest, SetGet) {
     // Update all agents by adding 12 to their value
     // After model completion, retrieve the agent population and check their values are [12,13,14..N+12]
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 0);
     model.addStepFunction(SetGet);
 
@@ -82,7 +82,7 @@ TEST(DeviceAgentVectorTest, SetGetHalf) {
     // Update half agents (contiguous block) by adding 12 to their value
     // After model completion, retrieve the agent population and check their values are [12,13,14..N+12]
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 0);
     model.addStepFunction(SetGetHalf);
 
@@ -126,7 +126,7 @@ TEST(DeviceAgentVectorTest, GetIndex) {
     // Inside a step function, iterate the device agent vector
     // Assert that agent index matches the order in the vector.
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 0);
     model.addStepFunction(GetIndex);
 
@@ -162,7 +162,7 @@ TEST(DeviceAgentVectorTest, Resize) {
 
     // The intention of this test is to check that agent birth via DeviceAgentVector works as expected (when CUDAAgent resizes)
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 0);
     model.addStepFunction(Resize);
 
@@ -217,18 +217,18 @@ TEST(DeviceAgentVectorTest, SubmodelResize) {
     // The intention of this test is to check that agent birth via DeviceAgentVector works as expected
     // Specifically, that when the agent population is resized, unbound variabled in the master-model are default init
     ModelDescription sub_model(SUBMODEL_NAME);
-    AgentDescription& sub_agent = sub_model.newAgent(AGENT_NAME);
+    AgentDescription sub_agent = sub_model.newAgent(AGENT_NAME);
     sub_agent.newVariable<int>("int", 0);
     sub_model.addStepFunction(Resize);
     sub_model.addExitCondition(AlwaysExit);
 
 
     ModelDescription master_model(MODEL_NAME);
-    AgentDescription& master_agent = master_model.newAgent(AGENT_NAME);
+    AgentDescription master_agent = master_model.newAgent(AGENT_NAME);
     master_agent.newVariable<int>("int", 0);
     master_agent.newVariable<unsigned int>("uint", 12u);
     master_agent.newFunction("MasterIncrement", MasterIncrement);
-    SubModelDescription &sub_desc = master_model.newSubModel(SUBMODEL_NAME, sub_model);
+    SubModelDescription sub_desc = master_model.newSubModel(SUBMODEL_NAME, sub_model);
     sub_desc.bindAgent(AGENT_NAME, AGENT_NAME, true);
     master_model.newLayer().addAgentFunction(MasterIncrement);
     master_model.newLayer().addSubModel(sub_desc);
@@ -290,18 +290,18 @@ TEST(DeviceAgentVectorTest, SubmodelInsert) {
     // The intention of this test is to check that agent birth via DeviceAgentVector::insert works as expected
     // Specifically, that when the agent population is resized, unbound variabled in the master-model are default init
     ModelDescription sub_model(SUBMODEL_NAME);
-    AgentDescription& sub_agent = sub_model.newAgent(AGENT_NAME);
+    AgentDescription sub_agent = sub_model.newAgent(AGENT_NAME);
     sub_agent.newVariable<int>("int", 0);
     sub_model.addStepFunction(Insert);
     sub_model.addExitCondition(AlwaysExit);
 
 
     ModelDescription master_model(MODEL_NAME);
-    AgentDescription& master_agent = master_model.newAgent(AGENT_NAME);
+    AgentDescription master_agent = master_model.newAgent(AGENT_NAME);
     master_agent.newVariable<int>("int", 0);
     master_agent.newVariable<unsigned int>("uint", 12u);
     master_agent.newFunction("MasterIncrement", MasterIncrement);
-    SubModelDescription& sub_desc = master_model.newSubModel(SUBMODEL_NAME, sub_model);
+    SubModelDescription sub_desc = master_model.newSubModel(SUBMODEL_NAME, sub_model);
     sub_desc.bindAgent(AGENT_NAME, AGENT_NAME, true);
     master_model.newLayer().addAgentFunction(MasterIncrement);
     master_model.newLayer().addSubModel(sub_desc);
@@ -354,17 +354,17 @@ TEST(DeviceAgentVectorTest, SubmodelInsert) {
 TEST(DeviceAgentVectorTest, SubmodelErase) {
     // The intention of this test is to check that agent death via DeviceAgentVector::erase works as expected
     ModelDescription sub_model(SUBMODEL_NAME);
-    AgentDescription& sub_agent = sub_model.newAgent(AGENT_NAME);
+    AgentDescription sub_agent = sub_model.newAgent(AGENT_NAME);
     sub_agent.newVariable<int>("int", 0);
     sub_model.addStepFunction(Erase);
     sub_model.addExitCondition(AlwaysExit);
 
 
     ModelDescription master_model(MODEL_NAME);
-    AgentDescription& master_agent = master_model.newAgent(AGENT_NAME);
+    AgentDescription master_agent = master_model.newAgent(AGENT_NAME);
     master_agent.newVariable<int>("int", -1);
     master_agent.newVariable<float>("float", 12.0f);
-    SubModelDescription& sub_desc = master_model.newSubModel(SUBMODEL_NAME, sub_model);
+    SubModelDescription sub_desc = master_model.newSubModel(SUBMODEL_NAME, sub_model);
     sub_desc.bindAgent(AGENT_NAME, AGENT_NAME, true);
     master_model.newLayer().addSubModel(sub_desc);
 
@@ -607,7 +607,7 @@ FLAMEGPU_STEP_FUNCTION(HostReduceAutoSync_step_sort2) {
 #define AUTOSYNCTEST(name)\
 TEST(DeviceAgentVectorTest, HostReduceAutoSync_ ## name) {\
     ModelDescription model(MODEL_NAME);\
-    AgentDescription& agent = model.newAgent(AGENT_NAME);\
+    AgentDescription agent = model.newAgent(AGENT_NAME);\
     agent.newVariable<int>("int", 10);\
     model.addStepFunction(HostReduceAutoSync_step_ ## name);\
     AgentVector av(agent, AGENT_COUNT);\
@@ -655,7 +655,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_at) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_at) {
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 10);
     model.addStepFunction(HostAgentBirthAutoSync_step_at);
     AgentVector av(agent, AGENT_COUNT);
@@ -682,7 +682,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_front) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_front) {
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 10);
     model.addStepFunction(HostAgentBirthAutoSync_step_front);
     AgentVector av(agent, AGENT_COUNT);
@@ -708,7 +708,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_back) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_back) {
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 10);
     model.addStepFunction(HostAgentBirthAutoSync_step_back);
     AgentVector av(agent, AGENT_COUNT);
@@ -748,7 +748,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_begin) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_begin) {
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 10);
     model.addStepFunction(HostAgentBirthAutoSync_step_begin);
     AgentVector av(agent, AGENT_COUNT);
@@ -788,7 +788,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_begin2) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_begin2) {
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 10);
     model.addStepFunction(HostAgentBirthAutoSync_step_begin2);
     AgentVector av(agent, AGENT_COUNT);
@@ -828,7 +828,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_cbegin) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_cbegin) {
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 10);
     model.addStepFunction(HostAgentBirthAutoSync_step_cbegin);
     AgentVector av(agent, AGENT_COUNT);
@@ -868,7 +868,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_rbegin) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_rbegin) {
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 10);
     model.addStepFunction(HostAgentBirthAutoSync_step_rbegin);
     AgentVector av(agent, AGENT_COUNT);
@@ -908,7 +908,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_crbegin) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_crbegin) {
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 10);
     model.addStepFunction(HostAgentBirthAutoSync_step_crbegin);
     AgentVector av(agent, AGENT_COUNT);
@@ -936,7 +936,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_empty) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_empty) {
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 10);
     model.addStepFunction(HostAgentBirthAutoSync_step_empty);
     AgentVector av(agent, AGENT_COUNT);
@@ -960,7 +960,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_size) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_size) {
     ModelDescription model(MODEL_NAME);
-        AgentDescription& agent = model.newAgent(AGENT_NAME);
+        AgentDescription agent = model.newAgent(AGENT_NAME);
         agent.newVariable<int>("int", 10);
         model.addStepFunction(HostAgentBirthAutoSync_step_size);
     AgentVector av(agent, AGENT_COUNT);
@@ -984,7 +984,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_capacity) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_capacity) {
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 10);
     model.addStepFunction(HostAgentBirthAutoSync_step_capacity);
     AgentVector av(agent, AGENT_COUNT);
@@ -1022,7 +1022,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_shrink_to_fit) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_step_shrink_to_fit) {
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 10);
     model.addStepFunction(HostAgentBirthAutoSync_step_shrink_to_fit);
     AgentVector av(agent, AGENT_COUNT);
@@ -1045,7 +1045,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_clear) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_clear) {
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 10);
     model.addStepFunction(HostAgentBirthAutoSync_step_clear);
     AgentVector av(agent, AGENT_COUNT);
@@ -1082,7 +1082,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_insert1) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_insert1) {
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 10);
     model.addStepFunction(HostAgentBirthAutoSync_step_insert1);
     AgentVector av(agent, AGENT_COUNT);
@@ -1133,7 +1133,7 @@ TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_insert2) {
     // Test the templated insert method, it doesn't use the common insert
     // This is kind of redundant, as begin() will be called before insert()
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 10);
     model.addStepFunction(HostAgentBirthAutoSync_step_insert2);
     AgentVector av(agent, AGENT_COUNT);
@@ -1174,7 +1174,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_erase) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_erase) {
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", 10);
     model.addStepFunction(HostAgentBirthAutoSync_step_erase);
     AgentVector av(agent, AGENT_COUNT);
@@ -1217,7 +1217,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_push_back) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_puck_back) {
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", -12);
     model.addStepFunction(HostAgentBirthAutoSync_step_push_back);
     AgentVector av(agent, AGENT_COUNT);
@@ -1258,7 +1258,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_pop_back) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_pop_back) {
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", -12);
     model.addStepFunction(HostAgentBirthAutoSync_step_pop_back);
     AgentVector av(agent, AGENT_COUNT);
@@ -1300,7 +1300,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_resize_up) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_resize_up) {
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", -12);
     model.addStepFunction(HostAgentBirthAutoSync_step_resize_up);
     AgentVector av(agent, AGENT_COUNT);
@@ -1336,7 +1336,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_resize_down) {
 }
 TEST(DeviceAgentVectorTest, HostAgentBirthAutoSync_resize_down) {
     ModelDescription model(MODEL_NAME);
-    AgentDescription& agent = model.newAgent(AGENT_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
     agent.newVariable<int>("int", -12);
     model.addStepFunction(HostAgentBirthAutoSync_step_resize_down);
     AgentVector av(agent, AGENT_COUNT);
@@ -1377,12 +1377,12 @@ TEST(DeviceAgentVectorTest, AgentID_MultipleStatesUniqueIDs) {
     // Also check that the id's copied during model match those at export
 
     ModelDescription model("test_agentid");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<id_t>("id_copy", ID_NOT_SET);
     agent.newState("a");
     agent.newState("b");
 
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addHostFunction(AgentID_DeviceAgentVectorBirth);
 
     AgentVector pop_in(agent, POP_SIZE);
@@ -1442,12 +1442,12 @@ TEST(DeviceAgentVectorTest, AgentID_MultipleAgents) {
     // Also check that the id's copied during model match those at export
 
     ModelDescription model("test_agentid");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<id_t>("id_copy", ID_NOT_SET);
-    AgentDescription& agent2 = model.newAgent("agent2");
+    AgentDescription agent2 = model.newAgent("agent2");
     agent2.newVariable<id_t>("id_copy", ID_NOT_SET);
 
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addHostFunction(AgentID_DeviceAgentVectorBirthMultiAgent);
 
     AgentVector pop_in_a(agent, POP_SIZE);
@@ -1517,12 +1517,12 @@ TEST(DeviceAgentVectorTest, AgentID_MultipleStatesUniqueIDs2) {
     // Also check that the id's copied during model match those at export
 
     ModelDescription model("test_agentid");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<id_t>("id_copy", ID_NOT_SET);
     agent.newState("a");
     agent.newState("b");
 
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addHostFunction(AgentID_DeviceAgentVectorBirth2);
 
     AgentVector pop_in(agent, POP_SIZE);
@@ -1580,12 +1580,12 @@ TEST(DeviceAgentVectorTest, AgentID_MultipleStatesUniqueIDs3) {
     // Also check that the id's copied during model match those at export
 
     ModelDescription model("test_agentid");
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<id_t>("id_copy", ID_NOT_SET);
     agent.newState("a");
     agent.newState("b");
 
-    auto& layer_a = model.newLayer();
+    auto layer_a = model.newLayer();
     layer_a.addHostFunction(AgentID_DeviceAgentVectorBirth3);
 
     AgentVector pop_in(agent, POP_SIZE);

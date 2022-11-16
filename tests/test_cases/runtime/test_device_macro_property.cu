@@ -43,10 +43,10 @@ TEST(DeviceMacroPropertyTest, DISABLED_WriteRead) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
-    AgentFunctionDescription& WriteReadFn = agent.newFunction("WriteRead", WriteRead);
+    AgentFunctionDescription WriteReadFn = agent.newFunction("WriteRead", WriteRead);
     model.newLayer().addAgentFunction(WriteReadFn);
     AgentVector population(agent, 1);
     population[0].setVariable<unsigned int>("a", 12u);
@@ -71,10 +71,10 @@ TEST(DeviceMacroPropertyTest, DISABLED_ReadWrite) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
-    AgentFunctionDescription& ReadWriteFn = agent.newFunction("ReadWrite", ReadWrite);
+    AgentFunctionDescription ReadWriteFn = agent.newFunction("ReadWrite", ReadWrite);
     model.newLayer().addAgentFunction(ReadWriteFn);
     AgentVector population(agent, 1);
     population[0].setVariable<unsigned int>("a", 12u);
@@ -106,13 +106,13 @@ TEST(DeviceMacroPropertyTest, add) {
     model.Environment().newMacroProperty<unsigned int>("int");
     model.Environment().newMacroProperty<double>("double");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<double>("c");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_add);
-    AgentFunctionDescription& writeFn = agent.newFunction("write", Write_add);
-    AgentFunctionDescription& readFn = agent.newFunction("read", Read_add);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_add);
+    AgentFunctionDescription writeFn = agent.newFunction("write", Write_add);
+    AgentFunctionDescription readFn = agent.newFunction("read", Read_add);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(writeFn);
     model.newLayer().addAgentFunction(readFn);
@@ -146,13 +146,13 @@ TEST(DeviceMacroPropertyTest, add2) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<unsigned int>("c");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_add2);
-    AgentFunctionDescription& writeFn = agent.newFunction("write", Write_add2);
-    AgentFunctionDescription& checkFn = agent.newFunction("check", Write_2check);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_add2);
+    AgentFunctionDescription writeFn = agent.newFunction("write", Write_add2);
+    AgentFunctionDescription checkFn = agent.newFunction("check", Write_2check);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(writeFn);
     model.newLayer().addAgentFunction(checkFn);
@@ -186,12 +186,12 @@ TEST(DeviceMacroPropertyTest, sub) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_sub);
-    AgentFunctionDescription& writeFn = agent.newFunction("write", Write_sub);
-    AgentFunctionDescription& readFn = agent.newFunction("read", Read_sub);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_sub);
+    AgentFunctionDescription writeFn = agent.newFunction("write", Write_sub);
+    AgentFunctionDescription readFn = agent.newFunction("read", Read_sub);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(writeFn);
     model.newLayer().addAgentFunction(readFn);
@@ -215,13 +215,13 @@ TEST(DeviceMacroPropertyTest, sub2) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<unsigned int>("c");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_sub);
-    AgentFunctionDescription& writeFn = agent.newFunction("write", Write_sub2);
-    AgentFunctionDescription& checkFn = agent.newFunction("check", Write_2check);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_sub);
+    AgentFunctionDescription writeFn = agent.newFunction("write", Write_sub2);
+    AgentFunctionDescription checkFn = agent.newFunction("check", Write_2check);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(writeFn);
     model.newLayer().addAgentFunction(checkFn);
@@ -255,12 +255,12 @@ TEST(DeviceMacroPropertyTest, postincrement) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<unsigned int>("c");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_postincrement);
-    AgentFunctionDescription& writeFn = agent.newFunction("write", Write_postincrement);
-    AgentFunctionDescription& readFn = agent.newFunction("read", Read_increment);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_postincrement);
+    AgentFunctionDescription writeFn = agent.newFunction("write", Write_postincrement);
+    AgentFunctionDescription readFn = agent.newFunction("read", Read_increment);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(writeFn);
     model.newLayer().addAgentFunction(readFn);
@@ -289,12 +289,12 @@ TEST(DeviceMacroPropertyTest, preincrement) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<unsigned int>("c");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_preincrement);
-    AgentFunctionDescription& writeFn = agent.newFunction("write", Write_preincrement);
-    AgentFunctionDescription& readFn = agent.newFunction("read", Read_increment);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_preincrement);
+    AgentFunctionDescription writeFn = agent.newFunction("write", Write_preincrement);
+    AgentFunctionDescription readFn = agent.newFunction("read", Read_increment);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(writeFn);
     model.newLayer().addAgentFunction(readFn);
@@ -319,12 +319,12 @@ TEST(DeviceMacroPropertyTest, postdecrement) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<unsigned int>("c");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_sub);
-    AgentFunctionDescription& writeFn = agent.newFunction("write", Write_postdecrement);
-    AgentFunctionDescription& readFn = agent.newFunction("read", Read_increment);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_sub);
+    AgentFunctionDescription writeFn = agent.newFunction("write", Write_postdecrement);
+    AgentFunctionDescription readFn = agent.newFunction("read", Read_increment);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(writeFn);
     model.newLayer().addAgentFunction(readFn);
@@ -349,12 +349,12 @@ TEST(DeviceMacroPropertyTest, predecrement) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<unsigned int>("c");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_sub);
-    AgentFunctionDescription& writeFn = agent.newFunction("write", Write_predecrement);
-    AgentFunctionDescription& readFn = agent.newFunction("read", Read_increment);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_sub);
+    AgentFunctionDescription writeFn = agent.newFunction("write", Write_predecrement);
+    AgentFunctionDescription readFn = agent.newFunction("read", Read_increment);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(writeFn);
     model.newLayer().addAgentFunction(readFn);
@@ -381,13 +381,13 @@ TEST(DeviceMacroPropertyTest, min) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<unsigned int>("c");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_sub);
-    AgentFunctionDescription& writeFn = agent.newFunction("write", Write_min);
-    AgentFunctionDescription& readFn = agent.newFunction("read", Read_increment);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_sub);
+    AgentFunctionDescription writeFn = agent.newFunction("write", Write_min);
+    AgentFunctionDescription readFn = agent.newFunction("read", Read_increment);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(writeFn);
     model.newLayer().addAgentFunction(readFn);
@@ -409,13 +409,13 @@ TEST(DeviceMacroPropertyTest, min2) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<unsigned int>("c");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_sub);
-    AgentFunctionDescription& writeFn = agent.newFunction("write", Write_min);
-    AgentFunctionDescription& readFn = agent.newFunction("read", Read_increment);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_sub);
+    AgentFunctionDescription writeFn = agent.newFunction("write", Write_min);
+    AgentFunctionDescription readFn = agent.newFunction("read", Read_increment);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(writeFn);
     model.newLayer().addAgentFunction(readFn);
@@ -442,13 +442,13 @@ TEST(DeviceMacroPropertyTest, max) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<unsigned int>("c");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_sub);
-    AgentFunctionDescription& writeFn = agent.newFunction("write", Write_max);
-    AgentFunctionDescription& readFn = agent.newFunction("read", Read_increment);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_sub);
+    AgentFunctionDescription writeFn = agent.newFunction("write", Write_max);
+    AgentFunctionDescription readFn = agent.newFunction("read", Read_increment);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(writeFn);
     model.newLayer().addAgentFunction(readFn);
@@ -470,13 +470,13 @@ TEST(DeviceMacroPropertyTest, max2) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<unsigned int>("c");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_sub);
-    AgentFunctionDescription& writeFn = agent.newFunction("write", Write_max);
-    AgentFunctionDescription& readFn = agent.newFunction("read", Read_increment);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_sub);
+    AgentFunctionDescription writeFn = agent.newFunction("write", Write_max);
+    AgentFunctionDescription readFn = agent.newFunction("read", Read_increment);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(writeFn);
     model.newLayer().addAgentFunction(readFn);
@@ -503,13 +503,13 @@ TEST(DeviceMacroPropertyTest, cas) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<unsigned int>("c");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_sub);
-    AgentFunctionDescription& writeFn = agent.newFunction("write", Write_cas);
-    AgentFunctionDescription& readFn = agent.newFunction("read", Read_increment);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_sub);
+    AgentFunctionDescription writeFn = agent.newFunction("write", Write_cas);
+    AgentFunctionDescription readFn = agent.newFunction("read", Read_increment);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(writeFn);
     model.newLayer().addAgentFunction(readFn);
@@ -531,13 +531,13 @@ TEST(DeviceMacroPropertyTest, cas2) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
     agent.newVariable<unsigned int>("c");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_sub);
-    AgentFunctionDescription& writeFn = agent.newFunction("write", Write_cas);
-    AgentFunctionDescription& readFn = agent.newFunction("read", Read_increment);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_sub);
+    AgentFunctionDescription writeFn = agent.newFunction("write", Write_cas);
+    AgentFunctionDescription readFn = agent.newFunction("read", Read_increment);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(writeFn);
     model.newLayer().addAgentFunction(readFn);
@@ -568,10 +568,10 @@ TEST(DeviceMacroPropertyTest, exchange_int64) {
     // Setup environment
     model.Environment().newMacroProperty<int64_t>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int64_t>("b");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_int64);
-    AgentFunctionDescription& readFn = agent.newFunction("read", Read_int64);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_int64);
+    AgentFunctionDescription readFn = agent.newFunction("read", Read_int64);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(readFn);
     AgentVector population(agent, 1);
@@ -597,10 +597,10 @@ TEST(DeviceMacroPropertyTest, exchange_uint64) {
     // Setup environment
     model.Environment().newMacroProperty<uint64_t>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<uint64_t>("b");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_uint64);
-    AgentFunctionDescription& readFn = agent.newFunction("read", Read_uint64);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_uint64);
+    AgentFunctionDescription readFn = agent.newFunction("read", Read_uint64);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(readFn);
     AgentVector population(agent, 1);
@@ -626,10 +626,10 @@ TEST(DeviceMacroPropertyTest, exchange_int32) {
     // Setup environment
     model.Environment().newMacroProperty<int32_t>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<int32_t>("b");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_int32);
-    AgentFunctionDescription& readFn = agent.newFunction("read", Read_int32);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_int32);
+    AgentFunctionDescription readFn = agent.newFunction("read", Read_int32);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(readFn);
     AgentVector population(agent, 1);
@@ -655,10 +655,10 @@ TEST(DeviceMacroPropertyTest, exchange_uint32) {
     // Setup environment
     model.Environment().newMacroProperty<uint32_t>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<uint32_t>("b");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_uint32);
-    AgentFunctionDescription& readFn = agent.newFunction("read", Read_uint32);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_uint32);
+    AgentFunctionDescription readFn = agent.newFunction("read", Read_uint32);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(readFn);
     AgentVector population(agent, 1);
@@ -684,10 +684,10 @@ TEST(DeviceMacroPropertyTest, exchange_double) {
     // Setup environment
     model.Environment().newMacroProperty<double>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<double>("b");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_double);
-    AgentFunctionDescription& readFn = agent.newFunction("read", Read_double);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_double);
+    AgentFunctionDescription readFn = agent.newFunction("read", Read_double);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(readFn);
     AgentVector population(agent, 1);
@@ -713,10 +713,10 @@ TEST(DeviceMacroPropertyTest, exchange_float) {
     // Setup environment
     model.Environment().newMacroProperty<float>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<float>("b");
-    AgentFunctionDescription& initFn = agent.newFunction("init", Init_float);
-    AgentFunctionDescription& readFn = agent.newFunction("read", Read_float);
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_float);
+    AgentFunctionDescription readFn = agent.newFunction("read", Read_float);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(readFn);
     AgentVector population(agent, 1);
@@ -746,10 +746,10 @@ TEST(DeviceMacroPropertyTest, DISABLED_RTC_WriteRead) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
-    AgentFunctionDescription& WriteReadFn = agent.newRTCFunction("WriteRead", WriteRead_func);
+    AgentFunctionDescription WriteReadFn = agent.newRTCFunction("WriteRead", WriteRead_func);
     model.newLayer().addAgentFunction(WriteReadFn);
     AgentVector population(agent, 1);
     population[0].setVariable<unsigned int>("a", 12u);
@@ -784,12 +784,12 @@ TEST(DeviceMacroPropertyTest, RTC_add) {
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
     // Setup agent fn
-    AgentDescription& agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("a");
     agent.newVariable<unsigned int>("b");
-    AgentFunctionDescription& initFn = agent.newRTCFunction("init", Init_add_func);
-    AgentFunctionDescription& writeFn = agent.newRTCFunction("write", Write_add_func);
-    AgentFunctionDescription& readFn = agent.newRTCFunction("read", Read_add_func);
+    AgentFunctionDescription initFn = agent.newRTCFunction("init", Init_add_func);
+    AgentFunctionDescription writeFn = agent.newRTCFunction("write", Write_add_func);
+    AgentFunctionDescription readFn = agent.newRTCFunction("read", Read_add_func);
     model.newLayer().addAgentFunction(initFn);
     model.newLayer().addAgentFunction(writeFn);
     model.newLayer().addAgentFunction(readFn);

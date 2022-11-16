@@ -52,11 +52,11 @@ TEST(LoggingTest, CUDASimulationStep) {
      */
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
-    AgentFunctionDescription &f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
     m.newLayer().addAgentFunction(f1);
     m.addStepFunction(step_fn1);
     m.Environment().newProperty<float>("float_prop", 1.0f);
@@ -167,11 +167,11 @@ TEST(LoggingTest, CUDASimulationSimulate) {
      */
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
-    AgentFunctionDescription &f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
     m.newLayer().addAgentFunction(f1);
     m.addStepFunction(step_fn1);
     m.Environment().newProperty<float>("float_prop", 1.0f);
@@ -343,9 +343,9 @@ TEST(LoggingTest, EmptyMean) {
      */
      // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
-    AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
     m.newLayer().addAgentFunction(f1);
 
     // Define logging configs
@@ -375,11 +375,11 @@ TEST(LoggingTest, CUDAEnsembleSimulate) {
      */
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription &a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
-    AgentFunctionDescription &f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
     m.addInitFunction(logging_ensemble_init);
     m.newLayer().addAgentFunction(f1);
     m.addStepFunction(step_fn1);
@@ -551,11 +551,11 @@ TEST(TestLogging, Simulation_ToFile_Step) {
 
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
-    AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
     m.newLayer().addAgentFunction(f1);
 
     // Define logging configs
@@ -612,11 +612,11 @@ TEST(TestLogging, Simulation_ToFile_Exit) {
 
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
-    AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
     m.newLayer().addAgentFunction(f1);
 
     // Define logging configs
@@ -673,11 +673,11 @@ TEST(TestLogging, Simulation_ToFile_Common) {
 
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
-    AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
     m.newLayer().addAgentFunction(f1);
 
     // Define logging configs
@@ -733,11 +733,11 @@ TEST(TestLogging, Simulation_ToFile_All) {
 
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
-    AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
     m.newLayer().addAgentFunction(f1);
     m.addStepFunction(Sleep_100_Milliseconds);
 
@@ -795,11 +795,11 @@ TEST(TestLogging, Ensemble_ToFile_Step) {
 
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
-    AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
     m.newLayer().addAgentFunction(f1);
     m.addInitFunction(logging_ensemble_init);
     m.Environment().newProperty<int>("instance_id", 0);  // This will act as the modifier for ensemble instances, only impacting the init fn
@@ -856,11 +856,11 @@ TEST(TestLogging, Ensemble_ToFile_Exit) {
 
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
-    AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
     m.newLayer().addAgentFunction(f1);
     m.addInitFunction(logging_ensemble_init);
     m.Environment().newProperty<int>("instance_id", 0);  // This will act as the modifier for ensemble instances, only impacting the init fn
@@ -922,11 +922,11 @@ TEST(TestLogging, Ensemble_ToFile_All) {
 
     // Define model
     ModelDescription m(MODEL_NAME);
-    AgentDescription& a = m.newAgent(AGENT_NAME1);
+    AgentDescription a = m.newAgent(AGENT_NAME1);
     a.newVariable<float>("float_var");
     a.newVariable<int>("int_var");
     a.newVariable<unsigned int>("uint_var");
-    AgentFunctionDescription& f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription f1 = a.newFunction(FUNCTION_NAME1, agent_fn1);
     m.newLayer().addAgentFunction(f1);
     m.addStepFunction(Sleep_100_Milliseconds);
     m.addInitFunction(logging_ensemble_init);

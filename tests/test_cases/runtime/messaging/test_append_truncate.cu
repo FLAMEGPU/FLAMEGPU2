@@ -71,22 +71,22 @@ namespace test_message_AppendTruncate {
     */
     TEST(TestMessage_AppendTruncate, Truncate) {
         ModelDescription m(MODEL_NAME);
-        MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+        MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
         message.newVariable<int>("x");
-        AgentDescription &a = m.newAgent(AGENT_NAME);
+        AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count");
-        AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, Out_AppendTruncate);
+        AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, Out_AppendTruncate);
         fo.setMessageOutput(message);
-        AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate);
+        AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate);
         fi.setMessageInput(message);
 
         AgentVector pop(a, (unsigned int)AGENT_COUNT);
         for (AgentVector::Agent ai : pop) {
             ai.setVariable<unsigned int>("count", 0);
         }
-        LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+        LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
         lo.addAgentFunction(fo);
-        LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+        LayerDescription li = m.newLayer(IN_LAYER_NAME);
         li.addAgentFunction(fi);
         CUDASimulation c(m);
         c.setPopulationData(pop);
@@ -105,16 +105,16 @@ namespace test_message_AppendTruncate {
     }
     TEST(TestMessage_AppendTruncate, Append_KeepData) {
         ModelDescription m(MODEL_NAME);
-        MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+        MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
         message.newVariable<int>("x");
-        AgentDescription &a = m.newAgent(AGENT_NAME);
+        AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count0");
         a.newVariable<unsigned int>("count1");
-        AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, Out_AppendTruncate);
+        AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, Out_AppendTruncate);
         fo.setMessageOutput(message);
-        AgentFunctionDescription &fo2 = a.newFunction(OUT_FUNCTION_NAME2, Out_AppendTruncate2);
+        AgentFunctionDescription fo2 = a.newFunction(OUT_FUNCTION_NAME2, Out_AppendTruncate2);
         fo2.setMessageOutput(message);
-        AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate2);
+        AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate2);
         fi.setMessageInput(message);
 
         AgentVector pop(a, (unsigned int)AGENT_COUNT);
@@ -122,11 +122,11 @@ namespace test_message_AppendTruncate {
             ai.setVariable<unsigned int>("count0", 0);
             ai.setVariable<unsigned int>("count1", 0);
         }
-        LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+        LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
         lo.addAgentFunction(fo);
-        LayerDescription &lo2 = m.newLayer(OUT_LAYER2_NAME);
+        LayerDescription lo2 = m.newLayer(OUT_LAYER2_NAME);
         lo2.addAgentFunction(fo2);
-        LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+        LayerDescription li = m.newLayer(IN_LAYER_NAME);
         li.addAgentFunction(fi);
         CUDASimulation c(m);
         c.setPopulationData(pop);
@@ -147,15 +147,15 @@ namespace test_message_AppendTruncate {
     }
     TEST(TestMessage_AppendTruncate, OptionalTruncate) {
         ModelDescription m(MODEL_NAME);
-        MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+        MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
         message.newVariable<int>("x");
-        AgentDescription &a = m.newAgent(AGENT_NAME);
+        AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count");
         a.newVariable<unsigned int>("do_out");
-        AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OptionalOut_AppendTruncate);
+        AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OptionalOut_AppendTruncate);
         fo.setMessageOutputOptional(true);
         fo.setMessageOutput(message);
-        AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate);
+        AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate);
         fi.setMessageInput(message);
         std::mt19937_64 rng;
         std::uniform_real_distribution<double> dist(0.0, 1.0);
@@ -170,9 +170,9 @@ namespace test_message_AppendTruncate {
             }
             ai.setVariable<unsigned int>("count", 0);
         }
-        LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+        LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
         lo.addAgentFunction(fo);
-        LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+        LayerDescription li = m.newLayer(IN_LAYER_NAME);
         li.addAgentFunction(fi);
         CUDASimulation c(m);
         c.setPopulationData(pop);
@@ -191,19 +191,19 @@ namespace test_message_AppendTruncate {
     }
     TEST(TestMessage_AppendTruncate, OptionalAppend_KeepData) {
         ModelDescription m(MODEL_NAME);
-        MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+        MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
         message.newVariable<int>("x");
-        AgentDescription &a = m.newAgent(AGENT_NAME);
+        AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<unsigned int>("count0");
         a.newVariable<unsigned int>("count1");
         a.newVariable<unsigned int>("do_out");
-        AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OptionalOut_AppendTruncate);
+        AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OptionalOut_AppendTruncate);
         fo.setMessageOutputOptional(true);
         fo.setMessageOutput(message);
-        AgentFunctionDescription &fo2 = a.newFunction(OUT_FUNCTION_NAME2, OptionalOut_AppendTruncate2);
+        AgentFunctionDescription fo2 = a.newFunction(OUT_FUNCTION_NAME2, OptionalOut_AppendTruncate2);
         fo2.setMessageOutputOptional(true);
         fo2.setMessageOutput(message);
-        AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate2);
+        AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, In_AppendTruncate2);
         fi.setMessageInput(message);
         std::mt19937_64 rng;
         std::uniform_real_distribution<double> dist(0.0, 1.0);
@@ -219,11 +219,11 @@ namespace test_message_AppendTruncate {
             ai.setVariable<unsigned int>("count0", 0);
             ai.setVariable<unsigned int>("count1", 0);
         }
-        LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+        LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
         lo.addAgentFunction(fo);
-        LayerDescription &lo2 = m.newLayer(OUT_LAYER2_NAME);
+        LayerDescription lo2 = m.newLayer(OUT_LAYER2_NAME);
         lo2.addAgentFunction(fo2);
-        LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+        LayerDescription li = m.newLayer(IN_LAYER_NAME);
         li.addAgentFunction(fi);
         CUDASimulation c(m);
         c.setPopulationData(pop);
@@ -274,23 +274,23 @@ namespace test_message_AppendTruncate {
         // Resizing is performed automatically, but by having the 2nd agent population to output messages
         // twice the size of the initial agent population, automatic resize should be forced
         ModelDescription m(MODEL_NAME);
-        MessageBruteForce::Description& message = m.newMessage(MESSAGE_NAME);
+        MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
         message.newVariable<int>("x");
-        AgentDescription& a = m.newAgent("a");
+        AgentDescription a = m.newAgent("a");
         a.newFunction("Out_1", Out_1).setMessageOutput(message);
-        AgentDescription& b = m.newAgent("b");
+        AgentDescription b = m.newAgent("b");
         b.newFunction("Out_2", Out_2).setMessageOutput(message);
-        AgentDescription& c = m.newAgent("c");
+        AgentDescription c = m.newAgent("c");
         c.newFunction("In", In).setMessageInput(message);
         c.newVariable<unsigned int>("0", 0);
         c.newVariable<unsigned int>("1", 0);
         c.newVariable<unsigned int>("2", 0);
 
-        LayerDescription& lo = m.newLayer(OUT_LAYER_NAME);
+        LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
         lo.addAgentFunction(Out_1);
-        LayerDescription& lo2 = m.newLayer(OUT_LAYER2_NAME);
+        LayerDescription lo2 = m.newLayer(OUT_LAYER2_NAME);
         lo2.addAgentFunction(Out_2);
-        LayerDescription& li = m.newLayer(IN_LAYER_NAME);
+        LayerDescription li = m.newLayer(IN_LAYER_NAME);
         li.addAgentFunction(In);
         AgentVector pop_a(a, AGENT_COUNT);
         AgentVector pop_b(b, AGENT_COUNT * 2);

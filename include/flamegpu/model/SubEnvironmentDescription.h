@@ -10,38 +10,89 @@ struct ModelData;
 struct SubModelData;
 struct SubEnvironmentData;
 
-/**
- * This class provides an interface to a mapping between a parent and submodel's environment properties
- */
-class SubEnvironmentDescription {
+class CSubEnvironmentDescription {
     /**
      * Data store class for this description, constructs instances of this class
      */
     friend struct SubEnvironmentData;
-    /**
-     * Constructor, this should only be called by AgentData
-     * @param model Model at root of model hierarchy
-     * @param data Data store of this subagent's data
-     */
-    SubEnvironmentDescription(const std::shared_ptr<const ModelData> &model, SubEnvironmentData *const data);
-    /**
-     * Default copy constructor, not implemented
-     */
-    SubEnvironmentDescription(const SubEnvironmentDescription &other_agent) = delete;
-    /**
-     * Default move constructor, not implemented
-     */
-    SubEnvironmentDescription(SubEnvironmentDescription &&other_agent) noexcept = delete;
-    /**
-     * Default copy assignment, not implemented
-     */
-    SubEnvironmentDescription& operator=(const SubEnvironmentDescription &other_agent) = delete;
-    /**
-     * Default move assignment, not implemented
-     */
-    SubEnvironmentDescription& operator=(SubEnvironmentDescription &&other_agent) noexcept = delete;
 
  public:
+    /**
+     * Constructor, creates an interface to the SubEnvironmentData
+     * @param data Data store of this subenvironment's data
+     */
+    explicit CSubEnvironmentDescription(std::shared_ptr<SubEnvironmentData> data);
+    explicit CSubEnvironmentDescription(std::shared_ptr<const SubEnvironmentData> data);
+    /**
+     * Copy constructor
+     * Creates a new interface to the same SubEnvironmentData/ModelData
+     */
+    CSubEnvironmentDescription(const CSubEnvironmentDescription& other_agent) = default;
+    CSubEnvironmentDescription(CSubEnvironmentDescription&& other_agent) = default;
+    /**
+     * Assignment operator
+     * Assigns this interface to the same SubEnvironmentData/ModelData
+     */
+    CSubEnvironmentDescription& operator=(const CSubEnvironmentDescription& other_agent) = default;
+    CSubEnvironmentDescription& operator=(CSubEnvironmentDescription&& other_agent) = default;
+    /**
+     * Equality operator, checks whether SubEnvironmentDescription hierarchies are functionally the same
+     * @param rhs right hand side
+     * @returns True when subenvironments are the same
+     * @note Instead compare pointers if you wish to check that they are the same instance
+     */
+    bool operator==(const CSubEnvironmentDescription& rhs) const;
+    /**
+     * Equality operator, checks whether SubEnvironmentDescription hierarchies are functionally different
+     * @param rhs right hand side
+     * @returns True when subenvironments are not the same
+     * @note Instead compare pointers if you wish to check that they are not the same instance
+     */
+    bool operator!=(const CSubEnvironmentDescription& rhs) const;
+    /**
+     * Returns the name of the master property which has been mapped to the named subenvironment property
+     * @param sub_property_name Name of the state in the sub agent to check
+     * @return The name of the state within the master agent which is mapped
+     * @throws exception::InvalidEnvProperty If the sub environment property does not exist or has not been mapped yet
+     */
+    std::string getPropertyMapping(const std::string& sub_property_name) const;
+    /**
+     * Returns the name of the master macro property which has been mapped to the named subenvironment macro property
+     * @param sub_property_name Name of the state in the sub agent to check
+     * @return The name of the state within the master agent which is mapped
+     * @throws exception::InvalidEnvProperty If the sub environment property does not exist or has not been mapped yet
+     */
+    std::string getMacroPropertyMapping(const std::string& sub_property_name) const;
+
+ protected:
+    /**
+     * The class which stores all of the subenvironment's data.
+     */
+    std::shared_ptr<SubEnvironmentData> subenvironment;
+};
+/**
+ * This class provides an interface to a mapping between a parent and submodel's environment properties
+ */
+class SubEnvironmentDescription : public CSubEnvironmentDescription {
+ public:
+    /**
+     * Constructor, creates an interface to the SubEnvironmentData
+     * @param data Data store of this subenvironment's data
+     */
+    explicit SubEnvironmentDescription(std::shared_ptr<SubEnvironmentData> data);
+    /**
+     * Copy constructor
+     * Creates a new interface to the same SubEnvironmentData/ModelData
+     */
+    SubEnvironmentDescription(const SubEnvironmentDescription& other_agent) = default;
+    SubEnvironmentDescription(SubEnvironmentDescription&& other_agent) = default;
+    /**
+     * Assignment operator
+     * Assigns this interface to the same SubEnvironmentData/ModelData
+     */
+    SubEnvironmentDescription& operator=(const SubEnvironmentDescription& other_agent) = default;
+    SubEnvironmentDescription& operator=(SubEnvironmentDescription&& other_agent) = default;
+
     /**
      * Automatically map all compatible properties and macro properties
      * In order to be compatible, properties must share the same name, type, dimensions/length (number of elements)
@@ -80,30 +131,6 @@ class SubEnvironmentDescription {
      * @throws exception::InvalidEnvProperty If the named macro properties do not share the same type and length
      */
     void mapMacroProperty(const std::string& sub_property_name, const std::string& master_property_name);
-    /**
-     * Returns the name of the master property which has been mapped to the named subenvironment property
-     * @param sub_property_name Name of the state in the sub agent to check
-     * @return The name of the state within the master agent which is mapped
-     * @throws exception::InvalidEnvProperty If the sub environment property does not exist or has not been mapped yet
-     */
-    std::string getPropertyMapping(const std::string &sub_property_name);
-    /**
-     * Returns the name of the master macro property which has been mapped to the named subenvironment macro property
-     * @param sub_property_name Name of the state in the sub agent to check
-     * @return The name of the state within the master agent which is mapped
-     * @throws exception::InvalidEnvProperty If the sub environment property does not exist or has not been mapped yet
-     */
-    std::string getMacroPropertyMapping(const std::string& sub_property_name);
-
- private:
-    /**
-     * Root of the model hierarchy
-     */
-    const std::weak_ptr<const ModelData> model;
-    /**
-     * The class which stores all of the agent's data.
-     */
-    SubEnvironmentData *const data;
 };
 
 }  // namespace flamegpu

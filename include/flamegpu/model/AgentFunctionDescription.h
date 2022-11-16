@@ -7,8 +7,6 @@
 
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/runtime/AgentFunction.cuh"
-#include "flamegpu/runtime/AgentFunctionCondition.cuh"
 #include "flamegpu/model/DependencyNode.h"
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/model/LayerDescription.h"
@@ -27,60 +25,161 @@ namespace flamegpu {
 
 struct ModelData;
 struct AgentFunctionData;
+class AgentFunctionDescription;
+
+class CAgentFunctionDescription : public DependencyNode {
+    friend struct AgentFunctionData;
+    /**
+     * Accesses internals to validate function description before adding to layer
+     */
+    friend void LayerDescription::addAgentFunction(const AgentFunctionDescription&);
+    /**
+     * Accesses internals to validate function belongs to the same model as the DependencyGraph
+     */
+    friend class DependencyGraph;
+    friend class DependencyNode;
+
+ public:
+     /**
+      * Constructor, creates an interface to the AgentFunctionData
+      * @param data Data store of this function's data
+      */
+     explicit CAgentFunctionDescription(std::shared_ptr<AgentFunctionData> data);
+     explicit CAgentFunctionDescription(std::shared_ptr<const AgentFunctionData> data);
+     /**
+      * Copy constructor
+      * Creates a new interface to the same AgentFunctionData/ModelData
+      */
+     CAgentFunctionDescription(const CAgentFunctionDescription& other_function) = default;
+     CAgentFunctionDescription(CAgentFunctionDescription&& other_function) = default;
+     /**
+      * Assignment operator
+      * Assigns this interface to the same AgentFunctionData/ModelData
+      */
+     CAgentFunctionDescription& operator=(const CAgentFunctionDescription& other_function) = default;
+     CAgentFunctionDescription& operator=(CAgentFunctionDescription&& other_function) = default;
+     /**
+      * Equality operator, checks whether AgentFunctionDescription hierarchies are functionally the same
+      * @param rhs right hand side
+      * @returns True when functions are the same
+      * @note Instead compare pointers if you wish to check that they are the same instance
+      */
+     bool operator==(const CAgentFunctionDescription& rhs) const;
+     /**
+      * Equality operator, checks whether AgentFunctionDescription hierarchies are functionally different
+      * @param rhs right hand side
+      * @returns True when functions are not the same
+      * @note Instead compare pointers if you wish to check that they are not the same instance
+      */
+     bool operator!=(const CAgentFunctionDescription& rhs) const;
+
+     /**
+      * @return The function's name
+      */
+     std::string getName() const;
+     /**
+      * @return The state which agents must be in to execute this agent function
+      */
+     std::string getInitialState() const;
+     /**
+      * @return The state which agents executing this function enter
+      */
+     std::string getEndState() const;
+     /**
+      * @return An immutable reference to the message input of this agent function
+      * @see AgentFunctionDescription::MessageInput() for the mutable version
+      * @throw exception::OutOfBoundsException If the message input has not been set
+      */
+     MessageBruteForce::CDescription getMessageInput() const;
+     /**
+      * @return An immutable reference to the message output of this agent function
+      * @see AgentFunctionDescription::MessageOutput() for the mutable version
+      * @throw exception::OutOfBoundsException If the message output has not been set
+      */
+     MessageBruteForce::CDescription getMessageOutput() const;
+     /**
+      * @return True if message output from this agent function is optional
+      */
+     bool getMessageOutputOptional() const;
+     /**
+      * @return A immutable interface to the agent output of this agent function
+      * @throw exception::OutOfBoundsException If the agent output has not been set
+      */
+     CAgentDescription getAgentOutput() const;
+     /**
+      * @return The state output agents will be output in
+      * @throw exception::OutOfBoundsException If the agent output has not been set
+      */
+     std::string getAgentOutputState() const;
+     /**
+      * @return True if this agent function can kill agents
+      */
+     bool getAllowAgentDeath() const;
+     /**
+      * @return True if setMessageInput() has been called successfully
+      * @see AgentFunctionDescription::setMessageInput(const std::string &)
+      * @see AgentFunctionDescription::setMessageInput(MessageDescription &)
+      */
+     bool hasMessageInput() const;
+     /**
+      * @return True if setMessageOutput() has been called successfully
+      * @see AgentFunctionDescription::setMessageOutput(const std::string &)
+      * @see AgentFunctionDescription::setMessageOutput(MessageDescription &)
+      */
+     bool hasMessageOutput() const;
+     /**
+      * @return True if setAgentOutput() has been called successfully
+      * @see AgentFunctionDescription::setAgentOutput(const std::string &)
+      * @see AgentFunctionDescription::setAgentOutput(AgentDescription &)
+      */
+     bool hasAgentOutput() const;
+     /**
+      * @return True if setFunctionCondition() has been called successfully
+      * @see AgentFunctionDescription::setFunctionCondition(AgentFunctionCondition)
+      */
+     bool hasFunctionCondition() const;
+     /**
+      * @return The cuda kernel entry point for executing the agent function
+      */
+     AgentFunctionWrapper* getFunctionPtr() const;
+     /**
+      * @return The cuda kernel entry point for executing the agent function condition
+      */
+     AgentFunctionConditionWrapper* getConditionPtr() const;
+     /**
+      * @return True if the function is a runtime time specified function
+      */
+     bool isRTC() const;
+
+ protected:
+     /**
+      * The class which stores all of the function's data.
+      */
+     std::shared_ptr<AgentFunctionData> function;
+};
+
 
 /**
  * Within the model hierarchy, this class represents an agent function for a FLAMEGPU model
  * This class is used to configure external elements of agent functions, such as inputs and outputs
  * @see AgentDescription::newFunction(const std::string&, AgentFunction) For creating instances of this class
  */
-class AgentFunctionDescription : public DependencyNode {
-    friend class DependencyNode;
-    /**
-     * Data store class for this description, constructs instances of this class
-     */
-    friend struct AgentFunctionData;
-    /**
-     * Accesses internals to validate function description before adding to layer
-     */
-    friend void LayerDescription::addAgentFunction(const AgentFunctionDescription &);
-    /**
-     * Accesses internals to validate function belongs to the same model as the DependencyGraph
-     */
-    friend class DependencyGraph;
+class AgentFunctionDescription : public CAgentFunctionDescription {
+ public:
     /**
      * Constructors
      */
-    AgentFunctionDescription(const std::shared_ptr<const ModelData> &model, AgentFunctionData *const data);
+    explicit AgentFunctionDescription(std::shared_ptr<AgentFunctionData> data);
     /**
-     * Default copy constructor, not implemented
+     * Copy constructor
      */
-    AgentFunctionDescription(const AgentFunctionDescription &other_function) = delete;
+    AgentFunctionDescription(const AgentFunctionDescription& other_agent) = default;
+    AgentFunctionDescription(AgentFunctionDescription&& other_agent) = default;
     /**
-     * Default move constructor, not implemented
+     * Assignment operator
      */
-    AgentFunctionDescription(AgentFunctionDescription &&other_function) noexcept = delete;
-    /**
-     * Default copy assignment, not implemented
-     */
-    AgentFunctionDescription& operator=(const AgentFunctionDescription &other_function) = delete;
-    /**
-     * Default move assignment, not implemented
-     */
-    AgentFunctionDescription& operator=(AgentFunctionDescription &&other_function) noexcept = delete;
-
- public:
-    /**
-     * Equality operator, checks whether AgentFunctionDescription hierarchies are functionally the same
-     * @returns True when agent functions are the same
-     * @note Instead compare pointers if you wish to check that they are the same instance
-     */
-    bool operator==(const AgentFunctionDescription& rhs) const;
-    /**
-     * Equality operator, checks whether AgentFunctionDescription hierarchies are functionally different
-     * @returns True when agent functions are not the same
-     * @note Instead compare pointers if you wish to check that they are not the same instance
-     */
-    bool operator!=(const AgentFunctionDescription& rhs) const;
+    AgentFunctionDescription& operator=(const AgentFunctionDescription &other_function) = default;
+    AgentFunctionDescription& operator=(AgentFunctionDescription &&other_function) = default;
 
     /**
      * Sets the initial state which agents must be in to execute this function
@@ -114,7 +213,7 @@ class AgentFunctionDescription : public DependencyNode {
      * @throws exception::InvalidMessageName If the same message is already bound to the message output of this agent function
      * @see AgentFunctionDescription::setMessageInput(const std::string &)
      */
-    void setMessageInput(MessageBruteForce::Description &message);
+    void setMessageInput(MessageBruteForce::CDescription message);
     /**
      * Sets the message type that can be output during this agent function
      * This is optional, and only one type of message can be output per agent function
@@ -135,7 +234,7 @@ class AgentFunctionDescription : public DependencyNode {
      * @see AgentFunctionDescription::setMessageInput(const std::string &)
      * @see AgentFunctionDescription::setMessageOutputOptional(bool) To configure whether all agents must output messages
      */
-    void setMessageOutput(MessageBruteForce::Description &message);
+    void setMessageOutput(MessageBruteForce::CDescription message);
     /**
      * Configures whether message output from this agent function is optional
      * (e.g. whether all agents must output a message each time the function is called)
@@ -209,13 +308,13 @@ class AgentFunctionDescription : public DependencyNode {
      * @see AgentFunctionDescription::getMessageInput() for the immutable version
      * @throw exception::OutOfBoundsException If the message input has not been set
      */
-    MessageBruteForce::Description &MessageInput();
+    MessageBruteForce::Description MessageInput();
     /**
      * @return An mutable reference to the message output of this agent function
      * @see AgentFunctionDescription::getMessageOutput() for the immutable version
      * @throw exception::OutOfBoundsException If the message output has not been set
      */
-    MessageBruteForce::Description &MessageOutput();
+    MessageBruteForce::Description MessageOutput();
     /**
      * @return A mutable reference to the message output optional configuration flag
      * @see AgentFunctionDescription::getAgentOutputOptional()
@@ -228,100 +327,16 @@ class AgentFunctionDescription : public DependencyNode {
      * @see AgentFunctionDescription::setAllowAgentDeath(bool)
      */
     bool &AllowAgentDeath();
-
     /**
-     * @return The function's name
-     */
-    std::string getName() const;
-    /**
-     * @return The state which agents must be in to execute this agent function
-     */
-    std::string getInitialState() const;
-    /**
-     * @return The state which agents executing this function enter
-     */
-    std::string getEndState() const;
-    /**
-     * @return An immutable reference to the message input of this agent function
-     * @see AgentFunctionDescription::MessageInput() for the mutable version
-     * @throw exception::OutOfBoundsException If the message input has not been set
-     */
-    const MessageBruteForce::Description &getMessageInput() const;
-    /**
-     * @return An immutable reference to the message output of this agent function
-     * @see AgentFunctionDescription::MessageOutput() for the mutable version
-     * @throw exception::OutOfBoundsException If the message output has not been set
-     */
-    const MessageBruteForce::Description &getMessageOutput() const;
-    /**
-     * @return True if message output from this agent function is optional
-     */
-    bool getMessageOutputOptional() const;
-    /**
-     * @return An immutable reference to the agent output of this agent function
+     * @return An interface to the agent output of this agent function
      * @throw exception::OutOfBoundsException If the agent output has not been set
      */
-    const AgentDescription &getAgentOutput() const;
-    /**
-     * @return The state output agents will be output in
-     * @throw exception::OutOfBoundsException If the agent output has not been set
-     */
-    std::string getAgentOutputState() const;
-    /**
-     * @return True if this agent function can kill agents
-     */
-    bool getAllowAgentDeath() const;
-    /**
-     * @return True if setMessageInput() has been called successfully
-     * @see AgentFunctionDescription::setMessageInput(const std::string &)
-     * @see AgentFunctionDescription::setMessageInput(MessageDescription &)
-     */
-    bool hasMessageInput() const;
-    /**
-     * @return True if setMessageOutput() has been called successfully
-     * @see AgentFunctionDescription::setMessageOutput(const std::string &)
-     * @see AgentFunctionDescription::setMessageOutput(MessageDescription &)
-     */
-    bool hasMessageOutput() const;
-    /**
-     * @return True if setAgentOutput() has been called successfully
-     * @see AgentFunctionDescription::setAgentOutput(const std::string &)
-     * @see AgentFunctionDescription::setAgentOutput(AgentDescription &)
-     */
-    bool hasAgentOutput() const;
-    /**
-     * @return True if setFunctionCondition() has been called successfully
-     * @see AgentFunctionDescription::setFunctionCondition(AgentFunctionCondition)
-     */
-    bool hasFunctionCondition() const;
-    /**
-     * @return The cuda kernel entry point for executing the agent function
-     */
-    AgentFunctionWrapper *getFunctionPtr() const;
-
-    /**
-     * @return The cuda kernel entry point for executing the agent function condition
-     */
-    AgentFunctionConditionWrapper *getConditionPtr() const;
-    /**
-     * @return True if the function is a runtime time specified function
-     */
-    bool isRTC() const;
-
- private:
-    /**
-     * Root of the model hierarchy
-     */
-    const std::weak_ptr<const ModelData> model;
-    /**
-     * The class which stores all of the layer's data.
-     */
-    AgentFunctionData *const function;
+    AgentDescription AgentOutput();
 };
 
 
 template<typename AgentFunction>
-AgentFunctionDescription &AgentDescription::newFunction(const std::string &function_name, AgentFunction) {
+AgentFunctionDescription AgentDescription::newFunction(const std::string &function_name, AgentFunction) {
     if (agent->functions.find(function_name) == agent->functions.end()) {
         AgentFunctionWrapper *f = AgentFunction::fnPtr();
         std::string in_t = detail::curve::CurveRTCHost::demangle(AgentFunction::inType().name());
@@ -333,7 +348,7 @@ AgentFunctionDescription &AgentDescription::newFunction(const std::string &funct
         }
         auto rtn = std::shared_ptr<AgentFunctionData>(new AgentFunctionData(this->agent->shared_from_this(), function_name, f, in_t, out_t));
         agent->functions.emplace(function_name, rtn);
-        return *rtn->description;
+        return AgentFunctionDescription(rtn);
     }
     THROW exception::InvalidAgentFunc("Agent ('%s') already contains function '%s', "
         "in AgentDescription::newFunction().",

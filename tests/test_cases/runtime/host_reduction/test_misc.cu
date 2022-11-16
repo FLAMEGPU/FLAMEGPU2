@@ -155,7 +155,7 @@ FLAMEGPU_STEP_FUNCTION(ArrayVarNotSupported_transformReduce) {
 const unsigned int AGENT_COUNT = 1024;
 TEST(HostMiscTest, ArrayVarNotSupported_sum1) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
     AgentVector init_population(agent, AGENT_COUNT);
     // Add the function to be tested
@@ -168,7 +168,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_sum1) {
 }
 TEST(HostMiscTest, ArrayVarNotSupported_sum2) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
     AgentVector init_population(agent, AGENT_COUNT);
     // Add the function to be tested
@@ -181,7 +181,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_sum2) {
 }
 TEST(HostMiscTest, ArrayVarNotSupported_min) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
     AgentVector init_population(agent, AGENT_COUNT);
     // Add the function to be tested
@@ -194,7 +194,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_min) {
 }
 TEST(HostMiscTest, ArrayVarNotSupported_max) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
     AgentVector init_population(agent, AGENT_COUNT);
     // Add the function to be tested
@@ -207,7 +207,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_max) {
 }
 TEST(HostMiscTest, ArrayVarNotSupported_count) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
     AgentVector init_population(agent, AGENT_COUNT);
     // Add the function to be tested
@@ -220,7 +220,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_count) {
 }
 TEST(HostMiscTest, ArrayVarNotSupported_hist1) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
     AgentVector init_population(agent, AGENT_COUNT);
     // Add the function to be tested
@@ -233,7 +233,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_hist1) {
 }
 TEST(HostMiscTest, ArrayVarNotSupported_hist2) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
     AgentVector init_population(agent, AGENT_COUNT);
     // Add the function to be tested
@@ -246,7 +246,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_hist2) {
 }
 TEST(HostMiscTest, ArrayVarNotSupported_reduce) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
     AgentVector init_population(agent, AGENT_COUNT);
     // Add the function to be tested
@@ -259,7 +259,7 @@ TEST(HostMiscTest, ArrayVarNotSupported_reduce) {
 }
 TEST(HostMiscTest, ArrayVarNotSupported_transformReduce) {
     ModelDescription model("model");
-    AgentDescription &agent = model.newAgent("agent_name");
+    AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 4>("array_var");
     AgentVector init_population(agent, AGENT_COUNT);
     // Add the function to be tested

@@ -3,23 +3,51 @@
 #include "flamegpu/model/AgentData.h"
 #include "flamegpu/model/SubModelData.h"
 #include "flamegpu/model/SubAgentData.h"
+#include "flamegpu/model/SubAgentDescription.h"
 #include "flamegpu/model/SubEnvironmentData.h"
 #include "flamegpu/model/SubEnvironmentDescription.h"
 
 namespace flamegpu {
 
-SubModelDescription::SubModelDescription(const std::shared_ptr<const ModelData> &_model, SubModelData *const _data)
-    : model(_model)
-    , data(_data) { }
+CSubModelDescription::CSubModelDescription(std::shared_ptr<SubModelData> data)
+    : submodel(std::move(data)) { }
+CSubModelDescription::CSubModelDescription(std::shared_ptr<const SubModelData> data)
+    : submodel(std::move(std::const_pointer_cast<SubModelData>(data))) { }
 
-SubAgentDescription &SubModelDescription::bindAgent(const std::string &sub_agent_name, const std::string &master_agent_name, bool auto_map_vars, bool auto_map_states) {
+bool CSubModelDescription::operator==(const CSubModelDescription& rhs) const {
+    return *this->submodel == *rhs.submodel;  // Compare content is functionally the same
+}
+bool CSubModelDescription::operator!=(const CSubModelDescription& rhs) const {
+    return !(*this == rhs);
+}
+
+/**
+ * Const Accessors
+ */
+unsigned int CSubModelDescription::getMaxSteps() const {
+    return submodel->max_steps;
+}
+const std::string CSubModelDescription::getName() const {
+    return submodel->name;
+}
+
+/**
+ * Constructors
+ */
+SubModelDescription::SubModelDescription(std::shared_ptr<SubModelData> data)
+    : CSubModelDescription(std::move(data)) { }
+
+/**
+ * Accessors
+ */
+SubAgentDescription SubModelDescription::bindAgent(const std::string &sub_agent_name, const std::string &master_agent_name, bool auto_map_vars, bool auto_map_states) {
     // Sub agent exists
-    const auto subagent = data->submodel->agents.find(sub_agent_name);
-    if (subagent == data->submodel->agents.end()) {
+    const auto subagent = submodel->submodel->agents.find(sub_agent_name);
+    if (subagent == submodel->submodel->agents.end()) {
         THROW exception::InvalidSubAgentName("SubModel '%s' does not contain Agent '%s', "
-            "in SubModelDescription::bindAgent()\n", data->submodel->name.c_str(), sub_agent_name.c_str());
+            "in SubModelDescription::bindAgent()\n", submodel->submodel->name.c_str(), sub_agent_name.c_str());
     }
-    auto mdl = model.lock();
+    auto mdl = submodel->model.lock();
     if (!mdl) {
         THROW exception::ExpiredWeakPtr();
     }
@@ -31,15 +59,15 @@ SubAgentDescription &SubModelDescription::bindAgent(const std::string &sub_agent
     }
     // Sub agent has not been bound yet
     {
-        const auto subagent_bind = data->subagents.find(sub_agent_name);
-        if (subagent_bind != data->subagents.end()) {
+        const auto subagent_bind = submodel->subagents.find(sub_agent_name);
+        if (subagent_bind != submodel->subagents.end()) {
             auto master_agent_ptr = subagent_bind->second->masterAgent.lock();
             THROW exception::InvalidSubAgentName("SubModel '%s's Agent '%s' has already been bound to Master agent '%s', "
-                "in SubModelDescription::bindAgent()\n", data->submodel->name.c_str(), sub_agent_name.c_str(), master_agent_ptr ? master_agent_ptr->name.c_str() : "?");
+                "in SubModelDescription::bindAgent()\n", submodel->submodel->name.c_str(), sub_agent_name.c_str(), master_agent_ptr ? master_agent_ptr->name.c_str() : "?");
         }
     }
     // Master agent has not been bound yet
-    for (auto &a : data->subagents) {
+    for (auto &a : submodel->subagents) {
         const auto master_agent_ptr = a.second->masterAgent.lock();
         if (master_agent_ptr && master_agent_ptr->name == master_agent_name) {
             THROW exception::InvalidAgentName("Master Agent '%s' has already been bound to Sub agent '%s', "
@@ -47,8 +75,8 @@ SubAgentDescription &SubModelDescription::bindAgent(const std::string &sub_agent
         }
     }
     // Create SubAgent
-    auto rtn = std::shared_ptr<SubAgentData>(new SubAgentData(mdl, data->shared_from_this(), subagent->second, masteragent->second));
-    data->subagents.emplace(sub_agent_name, rtn);
+    auto rtn = std::shared_ptr<SubAgentData>(new SubAgentData(mdl, submodel->shared_from_this(), subagent->second, masteragent->second));
+    submodel->subagents.emplace(sub_agent_name, rtn);
     // If auto_map, map any matching vars
     // Otherwise map all internal variables that begin _ (e.g. _id)
     for (auto& sub_var : subagent->second->variables) {
@@ -77,64 +105,55 @@ SubAgentDescription &SubModelDescription::bindAgent(const std::string &sub_agent
         }
     }
     // return SubAgentDescription
-    return *rtn->description;
+    return SubAgentDescription(rtn);
 }
 
-SubAgentDescription &SubModelDescription::SubAgent(const std::string &sub_agent_name) {
-    const auto rtn = data->subagents.find(sub_agent_name);
-    if (rtn != data->subagents.end())
-        return *rtn->second->description;
+SubAgentDescription SubModelDescription::SubAgent(const std::string &sub_agent_name) {
+    const auto rtn = submodel->subagents.find(sub_agent_name);
+    if (rtn != submodel->subagents.end())
+        return SubAgentDescription(rtn->second);
     THROW exception::InvalidSubAgentName("SubAgent ('%s') either does not exist, or has not been bound yet, "
         "in SubModelDescription::SubAgent().",
         sub_agent_name.c_str());
 }
-const SubAgentDescription &SubModelDescription::getSubAgent(const std::string &sub_agent_name) const {
-    const auto rtn = data->subagents.find(sub_agent_name);
-    if (rtn != data->subagents.end())
-        return *rtn->second->description;
+CSubAgentDescription SubModelDescription::getSubAgent(const std::string &sub_agent_name) const {
+    const auto rtn = submodel->subagents.find(sub_agent_name);
+    if (rtn != submodel->subagents.end())
+        return SubAgentDescription(rtn->second);
     THROW exception::InvalidSubAgentName("SubAgent ('%s')  either does not exist, or has not been bound yet, "
         "in SubModelDescription::getSubAgent().",
         sub_agent_name.c_str());
 }
 
 
-SubEnvironmentDescription &SubModelDescription::SubEnvironment(bool auto_map) {
-    if (!data->subenvironment) {
-        auto mdl = model.lock();
+SubEnvironmentDescription SubModelDescription::SubEnvironment(bool auto_map) {
+    if (!submodel->subenvironment) {
+        auto mdl = submodel->model.lock();
         if (!mdl) {
             THROW exception::ExpiredWeakPtr();
         }
-        data->subenvironment = std::shared_ptr<SubEnvironmentData>(new SubEnvironmentData(mdl, data->shared_from_this(), data->submodel->environment));
+        submodel->subenvironment = std::shared_ptr<SubEnvironmentData>(new SubEnvironmentData(mdl, submodel->shared_from_this(), submodel->submodel->environment));
     }
+    SubEnvironmentDescription rtn(submodel->subenvironment);
     if (auto_map) {
-        data->subenvironment->description->autoMapProperties();
-        data->subenvironment->description->autoMapMacroProperties();
+        rtn.autoMapProperties();
+        rtn.autoMapMacroProperties();
     }
-    return *data->subenvironment->description;
+    return rtn;
 }
-const SubEnvironmentDescription &SubModelDescription::getSubEnvironment(bool auto_map) const {
-    if (!data->subenvironment) {
-        auto mdl = model.lock();
+CSubEnvironmentDescription SubModelDescription::getSubEnvironment() const {
+    if (!submodel->subenvironment) {
+        auto mdl = submodel->model.lock();
         if (!mdl) {
             THROW exception::ExpiredWeakPtr();
         }
-        data->subenvironment = std::shared_ptr<SubEnvironmentData>(new SubEnvironmentData(mdl, data->shared_from_this(), data->submodel->environment));
+        submodel->subenvironment = std::shared_ptr<SubEnvironmentData>(new SubEnvironmentData(mdl, submodel->shared_from_this(), submodel->submodel->environment));
     }
-    if (auto_map) {
-        data->subenvironment->description->autoMapProperties();
-        data->subenvironment->description->autoMapMacroProperties();
-    }
-    return *data->subenvironment->description;
+    return CSubEnvironmentDescription(submodel->subenvironment);
 }
 
 void SubModelDescription::setMaxSteps(const unsigned int max_steps) {
-    data->max_steps = max_steps;
-}
-unsigned int SubModelDescription::getMaxSteps() const {
-    return data->max_steps;
-}
-const std::string SubModelDescription::getName() {
-    return data->name;
+    submodel->max_steps = max_steps;
 }
 
 }  // namespace flamegpu

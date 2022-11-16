@@ -17,7 +17,7 @@ TEST(SubAgentDescriptionTest, RequiresExitCondition) {
         sm.newAgent("a");
     }
     ModelDescription m("host");
-    auto &ma = m.newAgent("b");
+    auto ma = m.newAgent("b");
     {
         // Define Model
         ma.newVariable<float>("b_float");
@@ -41,7 +41,7 @@ TEST(SubAgentDescriptionTest, InvalidAgentName) {
     {
        m.newAgent("b");
     }
-    auto &smd = m.newSubModel("sub", sm);
+    auto smd = m.newSubModel("sub", sm);
     // Invalid agent
     EXPECT_THROW(smd.bindAgent("c", "b", false, false), exception::InvalidSubAgentName);
     EXPECT_THROW(smd.bindAgent("a", "c", false, false), exception::InvalidAgentName);
@@ -53,14 +53,14 @@ TEST(SubAgentDescriptionTest, InvalidAgentState) {
     sm.addExitCondition(ExitAlways);
     {
         // Define SubModel
-        auto &a = sm.newAgent("a");
+        auto a = sm.newAgent("a");
         a.newVariable<float>("a_float");
         a.newVariable<unsigned int>("a_uint");
         a.newState("a");
         a.newState("a2");
     }
     ModelDescription m("host");
-    auto &ma = m.newAgent("b");
+    auto ma = m.newAgent("b");
     {
         // Define Model
         ma.newVariable<float>("b_float");
@@ -68,8 +68,8 @@ TEST(SubAgentDescriptionTest, InvalidAgentState) {
         ma.newState("b");
         ma.newState("b2");
     }
-    auto &smd = m.newSubModel("sub", sm);
-    auto &agent_map = smd.bindAgent("a", "b", false, false);
+    auto smd = m.newSubModel("sub", sm);
+    auto agent_map = smd.bindAgent("a", "b", false, false);
     // Invalid name
     EXPECT_THROW(agent_map.mapState("c", "b"), exception::InvalidAgentState);
     EXPECT_THROW(agent_map.mapState("a", "c"), exception::InvalidAgentState);
@@ -86,7 +86,7 @@ TEST(SubAgentDescriptionTest, InvalidAgentVariable) {
     sm.addExitCondition(ExitAlways);
     {
         // Define SubModel
-        auto &a = sm.newAgent("a");
+        auto a = sm.newAgent("a");
         a.newVariable<float>("a_float");
         a.newVariable<unsigned int>("a_uint");
         a.newVariable<unsigned int, 2>("a_uint2");
@@ -94,7 +94,7 @@ TEST(SubAgentDescriptionTest, InvalidAgentVariable) {
         a.newState("a");
     }
     ModelDescription m("host");
-    auto &ma = m.newAgent("b");
+    auto ma = m.newAgent("b");
     {
         // Define Model
         ma.newVariable<float>("b_float");
@@ -103,8 +103,8 @@ TEST(SubAgentDescriptionTest, InvalidAgentVariable) {
         ma.newVariable<float>("b_float2");
         ma.newState("b");
     }
-    auto &smd = m.newSubModel("sub", sm);
-    auto &agent_map = smd.bindAgent("a", "b", false, false);
+    auto smd = m.newSubModel("sub", sm);
+    auto agent_map = smd.bindAgent("a", "b", false, false);
     // Bad name
     EXPECT_THROW(agent_map.mapVariable("c", "b_float"), exception::InvalidAgentVar);
     EXPECT_THROW(agent_map.mapVariable("a_float", "c"), exception::InvalidAgentVar);
@@ -137,7 +137,7 @@ TEST(SubAgentDescriptionTest, AlreadyBound) {
         m.newAgent("b");
         m.newAgent("b2");
     }
-    auto &smd = m.newSubModel("sub", sm);
+    auto smd = m.newSubModel("sub", sm);
     // Good
     EXPECT_NO_THROW(smd.bindAgent("a", "b", false, false));
     // Already Bound

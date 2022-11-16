@@ -33,6 +33,10 @@ struct SubModelData : std::enable_shared_from_this<SubModelData> {
      */
     friend class ModelDescription;
     /**
+     * Parent model
+     */
+    std::weak_ptr<const ModelData> model;
+    /**
      * The SubModel represented by this class
      */
     std::shared_ptr<const ModelData> submodel;
@@ -44,7 +48,7 @@ struct SubModelData : std::enable_shared_from_this<SubModelData> {
     /**
      * Holds all of the model's subagent definitions
      */
-    SubAgentMap subagents;
+    SubAgentMap subagents = {};
     /**
      * The SubModel represented by this class
      */
@@ -58,11 +62,6 @@ struct SubModelData : std::enable_shared_from_this<SubModelData> {
      * Name assigned to the submodel at creation
      */
     std::string name;
-    /**
-     * Description class which provides convenient accessors
-     * This may be null if the instance has been cloned
-     */
-    std::unique_ptr<SubModelDescription> description;
     /**
      * Equality operator, checks whether SubModelData hierarchies are functionally the same
      * @returns True when models are the same
@@ -85,12 +84,12 @@ struct SubModelData : std::enable_shared_from_this<SubModelData> {
      * Copy constructor
      * This should only be called via clone();
      */
-    explicit SubModelData(const std::shared_ptr<ModelData> &model, const SubModelData &other);
+    explicit SubModelData(std::shared_ptr<ModelData> model, const SubModelData &other);
     /**
      * Normal constructor
      * This should only be called by ModelDescription
      */
-    explicit SubModelData(const std::shared_ptr<ModelData> &model, const std::string &submodel_name, const std::shared_ptr<ModelData> &submodel);
+    explicit SubModelData(std::shared_ptr<ModelData> model, const std::string &submodel_name, const std::shared_ptr<ModelData> &submodel);
 };
 
 }  // namespace flamegpu

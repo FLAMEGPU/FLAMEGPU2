@@ -4,9 +4,11 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/exception/FLAMEGPUException.h"
+#include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/runtime/messaging/MessageBruteForce.h"
 #include "flamegpu/model/SubModelData.h"
 #include "flamegpu/model/SubModelDescription.h"
+#include "flamegpu/model/SubEnvironmentDescription.h"
 
 namespace flamegpu {
 
@@ -14,7 +16,9 @@ namespace flamegpu {
 * Constructors
 */
 ModelDescription::ModelDescription(const std::string &model_name)
-    : model(new ModelData(model_name)) { }
+    : model(new ModelData(model_name)) {
+    model->environment = std::shared_ptr<EnvironmentData>(new EnvironmentData(model));
+}
 
 bool ModelDescription::operator==(const ModelDescription& rhs) const {
     return *this->model == *rhs.model;  // Compare content is functionally the same
@@ -26,37 +30,37 @@ bool ModelDescription::operator!=(const ModelDescription& rhs) const {
 /**
  * Accessors
  */
-AgentDescription& ModelDescription::newAgent(const std::string &agent_name) {
+AgentDescription ModelDescription::newAgent(const std::string &agent_name) {
     if (!hasAgent(agent_name)) {
         auto rtn = std::shared_ptr<AgentData>(new AgentData(model, agent_name));
         model->agents.emplace(agent_name, rtn);
-        return *rtn->description;
+        return AgentDescription(rtn);
     }
     THROW exception::InvalidAgentName("Agent with name '%s' already exists, "
         "in ModelDescription::newAgent().",
         agent_name.c_str());
 }
-AgentDescription& ModelDescription::Agent(const std::string &agent_name) {
+AgentDescription ModelDescription::Agent(const std::string &agent_name) {
     auto rtn = model->agents.find(agent_name);
     if (rtn != model->agents.end())
-        return *rtn->second->description;
+        return AgentDescription(rtn->second);
     THROW exception::InvalidAgentName("Agent ('%s') was not found, "
         "in ModelDescription::Agent().",
         agent_name.c_str());
 }
 
-MessageBruteForce::Description& ModelDescription::newMessage(const std::string &message_name) {
+MessageBruteForce::Description ModelDescription::newMessage(const std::string &message_name) {
     return newMessage<MessageBruteForce>(message_name);
 }
-MessageBruteForce::Description& ModelDescription::Message(const std::string &message_name) {
+MessageBruteForce::Description ModelDescription::Message(const std::string &message_name) {
     return Message<MessageBruteForce>(message_name);
 }
 
-EnvironmentDescription& ModelDescription::Environment() {
-    return *model->environment;
+EnvironmentDescription ModelDescription::Environment() {
+    return EnvironmentDescription(model->environment);
 }
 
-SubModelDescription& ModelDescription::newSubModel(const std::string &submodel_name, const ModelDescription &submodel_description) {
+SubModelDescription ModelDescription::newSubModel(const std::string &submodel_name, const ModelDescription &submodel_description) {
     // Submodel is not self
     if (submodel_description.model == this->model) {
         THROW exception::InvalidSubModel("A model cannot be a submodel of itself, that would create infinite recursion, "
@@ -78,26 +82,27 @@ SubModelDescription& ModelDescription::newSubModel(const std::string &submodel_n
     // Submodel name is not in use
     if (!hasSubModel(submodel_name)) {
         auto rtn = std::shared_ptr<SubModelData>(new SubModelData(model, submodel_name, submodel_description.model));
+        model->submodels.emplace(submodel_name, rtn);
         // This will actually generate the environment mapping (cant do it in constructor, due to shared_from_this)
         // Not the end of the world if it isn't init (we should be able to catch it down the line), but safer this way
-        rtn->description->SubEnvironment(false);
-        model->submodels.emplace(submodel_name, rtn);
-        return *rtn->description;
+        SubModelDescription rtn2(rtn);
+        rtn2.SubEnvironment(false);
+        return rtn2;
     }
     THROW exception::InvalidSubModelName("SubModel with name '%s' already exists, "
         "in ModelDescription::newSubModel().",
         submodel_name.c_str());
 }
-SubModelDescription &ModelDescription::SubModel(const std::string &submodel_name) {
+SubModelDescription ModelDescription::SubModel(const std::string &submodel_name) {
     auto rtn = model->submodels.find(submodel_name);
     if (rtn != model->submodels.end())
-        return *rtn->second->description;
+        return SubModelDescription(rtn->second);
     THROW exception::InvalidSubModelName("SubModel ('%s') was not found, "
         "in ModelDescription::SubModel().",
         submodel_name.c_str());
 }
 
-LayerDescription& ModelDescription::newLayer(const std::string &name) {
+LayerDescription ModelDescription::newLayer(const std::string &name) {
     // Ensure name is unique
     if (!name.empty()) {
         for (auto it = model->layers.begin(); it != model->layers.end(); ++it) {
@@ -110,24 +115,24 @@ LayerDescription& ModelDescription::newLayer(const std::string &name) {
     }
     auto rtn = std::shared_ptr<LayerData>(new LayerData(model, name, static_cast<unsigned int>(model->layers.size())));
     model->layers.push_back(rtn);
-    return *rtn->description;
+    return LayerDescription(rtn);
 }
-LayerDescription& ModelDescription::Layer(const flamegpu::size_type &layer_index) {
+LayerDescription ModelDescription::Layer(const flamegpu::size_type &layer_index) {
     if (model->layers.size() > layer_index) {
         auto it = model->layers.begin();
         for (auto i = 0u; i < layer_index; ++i)
             ++it;
-        return *(*it)->description;
+        return LayerDescription(*it);
     }
     THROW exception::OutOfBoundsException("Layer %d is out of bounds, "
         "in ModelDescription::Layer().",
         layer_index);
 }
-LayerDescription& ModelDescription::Layer(const std::string &name) {
+LayerDescription ModelDescription::Layer(const std::string &name) {
     if (!name.empty()) {  // Can't search for no name, multiple layers might be nameless
         for (auto &layer : model->layers) {
             if (layer->name == name)
-                return *layer->description;
+                return LayerDescription(layer);
         }
     }
     THROW exception::InvalidFuncLayerIndx("Layer '%s' was not found, "
@@ -174,58 +179,51 @@ void ModelDescription::generateLayers() {
 }
 
 /**
- * Accessors
- */
-const DependencyGraph& ModelDescription::getDependencyGraph() const {
-    return *(model->dependencyGraph);
-}
-
-/**
 * Const Accessors
 */
 std::string ModelDescription::getName() const {
     return model->name;
 }
 
-const AgentDescription& ModelDescription::getAgent(const std::string &agent_name) const {
+CAgentDescription ModelDescription::getAgent(const std::string& agent_name) const {
     const auto rtn = model->agents.find(agent_name);
     if (rtn != model->agents.end())
-        return *rtn->second->description;
+        return CAgentDescription(rtn->second);
     THROW exception::InvalidAgentName("Agent ('%s') was not found, "
         "in ModelDescription::getAgent().",
         agent_name.c_str());
 }
-const MessageBruteForce::Description& ModelDescription::getMessage(const std::string &message_name) const {
+MessageBruteForce::CDescription ModelDescription::getMessage(const std::string &message_name) const {
     return getMessage<MessageBruteForce>(message_name);
 }
-const SubModelDescription &ModelDescription::getSubModel(const std::string &submodel_name) const {
+CSubModelDescription ModelDescription::getSubModel(const std::string &submodel_name) const {
     const auto rtn = model->submodels.find(submodel_name);
     if (rtn != model->submodels.end())
-        return *rtn->second->description;
+        return CSubModelDescription(rtn->second);
     THROW exception::InvalidSubModelName("SubModel ('%s') was not found, "
         "in ModelDescription::getSubModel().",
         submodel_name.c_str());
 }
-const EnvironmentDescription& ModelDescription::getEnvironment() const {
-    return *model->environment;
+CEnvironmentDescription ModelDescription::getEnvironment() const {
+    return CEnvironmentDescription(model->environment);
 }
-const LayerDescription& ModelDescription::getLayer(const std::string &name) const {
+CLayerDescription ModelDescription::getLayer(const std::string &name) const {
     if (!name.empty()) {  // Can't search for no name, multiple layers might be nameless
         for (auto it = model->layers.begin(); it != model->layers.end(); ++it) {
             if ((*it)->name == name)
-                return *(*it)->description;
+                return CLayerDescription(*it);
         }
     }
     THROW exception::InvalidFuncLayerIndx("Layer ('%s') was not found, "
         "in ModelDescription::getAgent().",
         name.c_str());
 }
-const LayerDescription& ModelDescription::getLayer(const flamegpu::size_type &layer_index) const {
+CLayerDescription ModelDescription::getLayer(const flamegpu::size_type &layer_index) const {
     if (model->layers.size() > layer_index) {
         auto it = model->layers.begin();
         for (auto i = 0u; i < layer_index; ++i)
             ++it;
-        return *(*it)->description;
+        return CLayerDescription(*it);
     }
     THROW exception::OutOfBoundsException("Layer %d is out of bounds, "
         "in ModelDescription::Layer().",

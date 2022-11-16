@@ -18,7 +18,6 @@
 #include "flamegpu/util/detail/cuda.cuh"
 
 namespace flamegpu {
-
 MessageSpatial2D::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
     : MessageSpecialisationHandler()
     , sim_message(a) {
@@ -149,26 +148,127 @@ void MessageSpatial2D::CUDAModelHandler::resizeKeysVals(const unsigned int newSi
     }
 }
 
+/// <summary>
+/// CDescription
+/// </summary>
+MessageSpatial2D::CDescription::CDescription(std::shared_ptr<Data> data)
+    : MessageBruteForce::CDescription(std::move(std::static_pointer_cast<MessageBruteForce::Data>(data))) { }
+MessageSpatial2D::CDescription::CDescription(std::shared_ptr<const Data> data)
+    : CDescription(std::move(std::const_pointer_cast<Data>(data))) { }
 
-MessageSpatial2D::Data::Data(const std::shared_ptr<const ModelData> &model, const std::string &message_name)
+bool MessageSpatial2D::CDescription::operator==(const CDescription& rhs) const {
+    return *this->message == *rhs.message;  // Compare content is functionally the same
+}
+bool MessageSpatial2D::CDescription::operator!=(const CDescription& rhs) const {
+    return !(*this == rhs);
+}
+/**
+ * Const accessors
+ */
+float MessageSpatial2D::CDescription::getRadius() const {
+    return std::static_pointer_cast<Data>(message)->radius;
+}
+float MessageSpatial2D::CDescription::getMinX() const {
+    return std::static_pointer_cast<Data>(message)->minX;
+}
+float MessageSpatial2D::CDescription::getMinY() const {
+    return std::static_pointer_cast<Data>(message)->minY;
+}
+float MessageSpatial2D::CDescription::getMaxX() const {
+    return std::static_pointer_cast<Data>(message)->maxX;
+}
+float MessageSpatial2D::CDescription::getMaxY() const {
+    return std::static_pointer_cast<Data>(message)->maxY;
+}
+
+/// <summary>
+/// Description
+/// </summary>
+MessageSpatial2D::Description::Description(std::shared_ptr<Data> data)
+    : CDescription(data) { }
+/**
+ * Accessors
+ */
+void MessageSpatial2D::CDescription::setRadius(const float r) {
+    if (r <= 0) {
+        THROW exception::InvalidArgument("Spatial messaging radius must be a positive value, %f is not valid.", r);
+    }
+    std::static_pointer_cast<Data>(message)->radius = r;
+}
+void MessageSpatial2D::CDescription::setMinX(const float x) {
+    if (!isnan(std::static_pointer_cast<Data>(message)->maxX) &&
+        x >= std::static_pointer_cast<Data>(message)->maxX) {
+        THROW exception::InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f.", x, std::static_pointer_cast<Data>(message)->maxX);
+    }
+    std::static_pointer_cast<Data>(message)->minX = x;
+}
+void MessageSpatial2D::CDescription::setMinY(const float y) {
+    if (!isnan(std::static_pointer_cast<Data>(message)->maxY) &&
+        y >= std::static_pointer_cast<Data>(message)->maxY) {
+        THROW exception::InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f.", y, std::static_pointer_cast<Data>(message)->maxY);
+    }
+    std::static_pointer_cast<Data>(message)->minY = y;
+}
+void MessageSpatial2D::CDescription::setMin(const float x, const float y) {
+    if (!isnan(std::static_pointer_cast<Data>(message)->maxX) &&
+        x >= std::static_pointer_cast<Data>(message)->maxX) {
+        THROW exception::InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f.", x, std::static_pointer_cast<Data>(message)->maxX);
+    }
+    if (!isnan(std::static_pointer_cast<Data>(message)->maxY) &&
+        y >= std::static_pointer_cast<Data>(message)->maxY) {
+        THROW exception::InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f.", y, std::static_pointer_cast<Data>(message)->maxY);
+    }
+    std::static_pointer_cast<Data>(message)->minX = x;
+    std::static_pointer_cast<Data>(message)->minY = y;
+}
+void MessageSpatial2D::CDescription::setMaxX(const float x) {
+    if (!isnan(std::static_pointer_cast<Data>(message)->minX) &&
+        x <= std::static_pointer_cast<Data>(message)->minX) {
+        THROW exception::InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f.", x, std::static_pointer_cast<Data>(message)->minX);
+    }
+    std::static_pointer_cast<Data>(message)->maxX = x;
+}
+void MessageSpatial2D::CDescription::setMaxY(const float y) {
+    if (!isnan(std::static_pointer_cast<Data>(message)->minY) &&
+        y <= std::static_pointer_cast<Data>(message)->minY) {
+        THROW exception::InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f.", y, std::static_pointer_cast<Data>(message)->minY);
+    }
+    std::static_pointer_cast<Data>(message)->maxY = y;
+}
+void MessageSpatial2D::CDescription::setMax(const float x, const float y) {
+    if (!isnan(std::static_pointer_cast<Data>(message)->minX) &&
+        x <= std::static_pointer_cast<Data>(message)->minX) {
+        THROW exception::InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f.", x, std::static_pointer_cast<Data>(message)->minX);
+    }
+    if (!isnan(std::static_pointer_cast<Data>(message)->minY) &&
+        y <= std::static_pointer_cast<Data>(message)->minY) {
+        THROW exception::InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f.", y, std::static_pointer_cast<Data>(message)->minY);
+    }
+    std::static_pointer_cast<Data>(message)->maxX = x;
+    std::static_pointer_cast<Data>(message)->maxY = y;
+}
+
+/// <summary>
+/// Data
+/// </summary>
+MessageSpatial2D::Data::Data(std::shared_ptr<const ModelData> model, const std::string &message_name)
     : MessageBruteForce::Data(model, message_name)
     , radius(NAN)
     , minX(NAN)
     , minY(NAN)
     , maxX(NAN)
     , maxY(NAN) {
-    description = std::unique_ptr<MessageSpatial2D::Description>(new MessageSpatial2D::Description(model, this));
-    description->newVariable<float>("x");
-    description->newVariable<float>("y");
+    // MessageSpatial2D has x/y variables by default
+    variables.emplace("x", Variable(std::array<typename type_decode<float>::type_t, 1>{}));
+    variables.emplace("y", Variable(std::array<typename type_decode<float>::type_t, 1>{}));
 }
-MessageSpatial2D::Data::Data(const std::shared_ptr<const ModelData> &model, const Data &other)
+MessageSpatial2D::Data::Data(std::shared_ptr<const ModelData> model, const Data &other)
     : MessageBruteForce::Data(model, other)
     , radius(other.radius)
     , minX(other.minX)
     , minY(other.minY)
     , maxX(other.maxX)
     , maxY(other.maxY) {
-    description = std::unique_ptr<MessageSpatial2D::Description>(model ? new MessageSpatial2D::Description(model, this) : nullptr);
     if (isnan(radius)) {
         THROW exception::InvalidMessage("Radius has not been set in spatial message '%s'.", other.name.c_str());
     }
@@ -195,84 +295,6 @@ std::type_index MessageSpatial2D::Data::getType() const { return std::type_index
 
 flamegpu::MessageSortingType MessageSpatial2D::Data::getSortingType() const {
     return flamegpu::MessageSortingType::spatial2D;
-}
-
-MessageSpatial2D::Description::Description(const std::shared_ptr<const ModelData> &_model, Data *const data)
-    : MessageBruteForce::Description(_model, data) { }
-
-void MessageSpatial2D::Description::setRadius(const float r) {
-    if (r <= 0) {
-        THROW exception::InvalidArgument("Spatial messaging radius must be a positive value, %f is not valid.", r);
-    }
-    reinterpret_cast<Data *>(message)->radius = r;
-}
-void MessageSpatial2D::Description::setMinX(const float x) {
-    if (!isnan(reinterpret_cast<Data *>(message)->maxX) &&
-        x >= reinterpret_cast<Data *>(message)->maxX) {
-        THROW exception::InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f.", x, reinterpret_cast<Data *>(message)->maxX);
-    }
-    reinterpret_cast<Data *>(message)->minX = x;
-}
-void MessageSpatial2D::Description::setMinY(const float y) {
-    if (!isnan(reinterpret_cast<Data *>(message)->maxY) &&
-        y >= reinterpret_cast<Data *>(message)->maxY) {
-        THROW exception::InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f.", y, reinterpret_cast<Data *>(message)->maxY);
-    }
-    reinterpret_cast<Data *>(message)->minY = y;
-}
-void MessageSpatial2D::Description::setMin(const float x, const float y) {
-    if (!isnan(reinterpret_cast<Data *>(message)->maxX) &&
-        x >= reinterpret_cast<Data *>(message)->maxX) {
-        THROW exception::InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f.", x, reinterpret_cast<Data *>(message)->maxX);
-    }
-    if (!isnan(reinterpret_cast<Data *>(message)->maxY) &&
-        y >= reinterpret_cast<Data *>(message)->maxY) {
-        THROW exception::InvalidArgument("Spatial messaging minimum bound must be lower than max bound, %f !< %f.", y, reinterpret_cast<Data *>(message)->maxY);
-    }
-    reinterpret_cast<Data *>(message)->minX = x;
-    reinterpret_cast<Data *>(message)->minY = y;
-}
-void MessageSpatial2D::Description::setMaxX(const float x) {
-    if (!isnan(reinterpret_cast<Data *>(message)->minX) &&
-        x <= reinterpret_cast<Data *>(message)->minX) {
-        THROW exception::InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f.", x, reinterpret_cast<Data *>(message)->minX);
-    }
-    reinterpret_cast<Data *>(message)->maxX = x;
-}
-void MessageSpatial2D::Description::setMaxY(const float y) {
-    if (!isnan(reinterpret_cast<Data *>(message)->minY) &&
-        y <= reinterpret_cast<Data *>(message)->minY) {
-        THROW exception::InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f.", y, reinterpret_cast<Data *>(message)->minY);
-    }
-    reinterpret_cast<Data *>(message)->maxY = y;
-}
-void MessageSpatial2D::Description::setMax(const float x, const float y) {
-    if (!isnan(reinterpret_cast<Data *>(message)->minX) &&
-        x <= reinterpret_cast<Data *>(message)->minX) {
-        THROW exception::InvalidArgument("Spatial messaging max x bound must be greater than min bound, %f !> %f.", x, reinterpret_cast<Data *>(message)->minX);
-    }
-    if (!isnan(reinterpret_cast<Data *>(message)->minY) &&
-        y <= reinterpret_cast<Data *>(message)->minY) {
-        THROW exception::InvalidArgument("Spatial messaging max y bound must be greater than min bound, %f !> %f.", y, reinterpret_cast<Data *>(message)->minY);
-    }
-    reinterpret_cast<Data *>(message)->maxX = x;
-    reinterpret_cast<Data *>(message)->maxY = y;
-}
-
-float MessageSpatial2D::Description::getRadius() const {
-    return reinterpret_cast<Data *>(message)->radius;
-}
-float MessageSpatial2D::Description::getMinX() const {
-    return reinterpret_cast<Data *>(message)->minX;
-}
-float MessageSpatial2D::Description::getMinY() const {
-    return reinterpret_cast<Data *>(message)->minY;
-}
-float MessageSpatial2D::Description::getMaxX() const {
-    return reinterpret_cast<Data *>(message)->maxX;
-}
-float MessageSpatial2D::Description::getMaxY() const {
-    return reinterpret_cast<Data *>(message)->maxY;
 }
 
 }  // namespace flamegpu

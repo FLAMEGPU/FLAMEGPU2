@@ -9,7 +9,7 @@ namespace flamegpu {
 
 struct ModelData;
 struct SubModelData;
-class EnvironmentDescription;
+struct EnvironmentData;
 class SubEnvironmentDescription;
 
 /**
@@ -30,13 +30,17 @@ struct SubEnvironmentData : std::enable_shared_from_this<SubEnvironmentData> {
      */
     friend struct ModelData;
     /**
+     * Parent model
+     */
+    std::weak_ptr<const ModelData> model;
+    /**
      * The sub environment which is bound
      */
-    std::weak_ptr<EnvironmentDescription> subEnvironment;
+    std::weak_ptr<EnvironmentData> subEnvironment;
     /**
     * The master environment which is bound
     */
-    std::weak_ptr<EnvironmentDescription> masterEnvironment;
+    std::weak_ptr<EnvironmentData> masterEnvironment;
     /**
     * Map of submodel item name:parent model item name
     * map<string, string>
@@ -54,11 +58,6 @@ struct SubEnvironmentData : std::enable_shared_from_this<SubEnvironmentData> {
      * The model which this environment is a member of
      */
     std::weak_ptr<SubModelData> parent;
-    /**
-    * Description class which provides convenient accessors
-    * This may be null if the instance has been cloned
-    */
-    std::shared_ptr<SubEnvironmentDescription> description;
     /**
     * Equality operator, checks whether SubAgentData hierarchies are functionally the same
     * @returns True when models are the same
@@ -81,12 +80,12 @@ struct SubEnvironmentData : std::enable_shared_from_this<SubEnvironmentData> {
     * Copy constructor
     * This should only be called via clone();
     */
-    explicit SubEnvironmentData(const std::shared_ptr<const ModelData> &model, const std::shared_ptr<SubModelData> &parent, const SubEnvironmentData &other);
+    explicit SubEnvironmentData(std::shared_ptr<const ModelData> model, const std::shared_ptr<SubModelData> &parent, const SubEnvironmentData &other);
     /**
     * Normal constructor
     * This should only be called by SubModelDescription
     */
-    explicit SubEnvironmentData(const std::shared_ptr<const ModelData> &model, const std::shared_ptr<SubModelData> &_parent, const std::shared_ptr<EnvironmentDescription> &subEnv);
+    explicit SubEnvironmentData(std::shared_ptr<const ModelData> model, const std::shared_ptr<SubModelData> &_parent, const std::shared_ptr<EnvironmentData> &subEnv);
 };
 
 }  // namespace flamegpu

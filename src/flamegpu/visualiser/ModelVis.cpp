@@ -3,6 +3,7 @@
 #include "flamegpu/visualiser/ModelVis.h"
 
 #include <thread>
+#include <utility>
 
 #include "flamegpu/gpu/CUDASimulation.h"
 #include "flamegpu/model/AgentData.h"
@@ -11,80 +12,13 @@
 namespace flamegpu {
 namespace visualiser {
 
-ModelVis::ModelVis(const flamegpu::CUDASimulation &_model)
-    : modelCfg(_model.getModelDescription().name.c_str())
-    , autoPalette(std::make_shared<AutoPalette>(Stock::Palettes::DARK2))
-    , model(_model)
-    , modelData(_model.getModelDescription()) { }
-ModelVis::~ModelVis() {
-    // Default behaviour
-}
-void ModelVis::setAutoPalette(const Palette& palette) {
-    autoPalette = std::make_shared<AutoPalette>(palette);
-}
-void ModelVis::clearAutoPalette() {
-    autoPalette = nullptr;
-}
-AgentVis &ModelVis::addAgent(const std::string &agent_name) {
-    // If agent exists
-    if (modelData.agents.find(agent_name) != modelData.agents.end()) {
-        // If agent is not already in vis map
-        auto visAgent = agents.find(agent_name);
-        if (visAgent == agents.end()) {
-            // Create new vis agent
-            return agents.emplace(agent_name, AgentVis(model.getCUDAAgent(agent_name), autoPalette)).first->second;
-        }
-        return visAgent->second;
-    }
-    THROW exception::InvalidAgentName("Agent name '%s' was not found within the model description hierarchy, "
-        "in ModelVis::addAgent()\n",
-        agent_name.c_str());
-}
+ModelVisData::ModelVisData(const flamegpu::CUDASimulation &_model)
+: modelCfg(_model.getModelDescription().name.c_str())
+, autoPalette(std::make_shared<AutoPalette>(Stock::Palettes::DARK2))
+, model(_model)
+, modelData(_model.getModelDescription()) { }
 
-AgentVis &ModelVis::Agent(const std::string &agent_name) {
-    // If agent exists
-    if (modelData.agents.find(agent_name) != modelData.agents.end()) {
-        // If agent is not already in vis map
-        auto visAgent = agents.find(agent_name);
-        if (visAgent != agents.end()) {
-            // Create new vis agent
-            return visAgent->second;
-        }
-        THROW exception::InvalidAgentName("Agent name '%s' has not been marked for visualisation, ModelVis::addAgent() must be called first, "
-            "in ModelVis::Agent()\n",
-            agent_name.c_str());
-    }
-    THROW exception::InvalidAgentName("Agent name '%s' was not found within the model description hierarchy, "
-        "in ModelVis::Agent()\n",
-        agent_name.c_str());
-}
-
-// Below methods are related to executing the visualiser
-void ModelVis::_activate() {
-    // Only execute if background thread is not active
-    if ((!visualiser || !visualiser->isRunning()) && !model.getSimulationConfig().console_mode) {
-        // Init visualiser
-        visualiser = std::make_unique<FLAMEGPU_Visualisation>(modelCfg);  // Window resolution
-        visualiser->setRandomSeed(model.getSimulationConfig().random_seed);
-        for (auto &agent : agents) {
-            // If x and y aren't set, throw exception
-            if (agent.second.core_tex_buffers.find(TexBufferConfig::Position_x) == agent.second.core_tex_buffers.end() &&
-                agent.second.core_tex_buffers.find(TexBufferConfig::Position_y) == agent.second.core_tex_buffers.end() &&
-                agent.second.core_tex_buffers.find(TexBufferConfig::Position_z) == agent.second.core_tex_buffers.end() &&
-                agent.second.core_tex_buffers.find(TexBufferConfig::Position_xy) == agent.second.core_tex_buffers.end() &&
-                agent.second.core_tex_buffers.find(TexBufferConfig::Position_xyz) == agent.second.core_tex_buffers.end()) {
-                THROW exception::VisualisationException("Agent '%s' has not had x, y or z variables set, agent requires location to render, "
-                    "in ModelVis::activate()\n",
-                    agent.second.agentData.name.c_str());
-            }
-            agent.second.initBindings(visualiser);
-        }
-        env_registered = false;
-        registerEnvProperties();
-        visualiser->start();
-    }
-}
-void ModelVis::registerEnvProperties() {
+void ModelVisData::registerEnvProperties() {
     if (model.singletons && !env_registered) {
         char* const host_env_origin = const_cast<char*>(static_cast<const char*>(model.singletons->environment->getHostBuffer()));
         for (const auto &panel : modelCfg.panels) {
@@ -98,30 +32,11 @@ void ModelVis::registerEnvProperties() {
         env_registered = true;
     }
 }
-void ModelVis::deactivate() {
-    if (visualiser && visualiser->isRunning()) {
-        visualiser->stop();
-        join();
-        visualiser.reset();
-    }
-}
-
-void ModelVis::join() {
-    if (visualiser) {
-        visualiser->join();
-        visualiser.reset();
-    }
-}
-
-bool ModelVis::isRunning() const {
-    return visualiser ? visualiser->isRunning() : false;
-}
-
-void ModelVis::updateBuffers(const unsigned int &sc) {
+void ModelVisData::updateBuffers(const unsigned int& sc) {
     if (visualiser) {
         bool has_agents = false;
-        for (auto &a : agents) {
-            has_agents = a.second.requestBufferResizes(visualiser, sc == 0 || sc == UINT_MAX) || has_agents;
+        for (auto& a : agents) {
+            has_agents = a.second->requestBufferResizes(visualiser, sc == 0 || sc == UINT_MAX) || has_agents;
         }
         // Block the sim when we first get agents, until vis has resized buffers, incase vis is being slow to init
         if (has_agents && (sc == 0 || sc == UINT_MAX)) {
@@ -130,81 +45,168 @@ void ModelVis::updateBuffers(const unsigned int &sc) {
                 std::this_thread::yield();
             }
         }
-        // wait for lock visualiser (its probably executing render loop in separate thread) This might not be 100% safe. RequestResize might need extra thread safety.
+        // wait for lock data->visualiser (its probably executing render loop in separate thread) This might not be 100% safe. RequestResize might need extra thread safety.
         visualiser->lockMutex();
         // Update step count
         if (sc != UINT_MAX) {
             visualiser->setStepCount(sc);
         }
-        for (auto &a : agents) {
-            a.second.updateBuffers(visualiser);
+        for (auto& a : agents) {
+            a.second->updateBuffers(visualiser);
         }
         visualiser->releaseMutex();
     }
 }
-void ModelVis::updateRandomSeed() {
+void ModelVisData::updateRandomSeed() {
     if (visualiser) {
         // Yolo thread safety, shouldn't matter if random seed is printed wrong for a single frame
         visualiser->setRandomSeed(model.getSimulationConfig().random_seed);
     }
 }
+
+ModelVis::ModelVis(std::shared_ptr<ModelVisData> _data)
+    : data(std::move(_data)) { }
+
+void ModelVis::setAutoPalette(const Palette& palette) {
+    data->autoPalette = std::make_shared<AutoPalette>(palette);
+}
+void ModelVis::clearAutoPalette() {
+    data->autoPalette = nullptr;
+}
+AgentVis ModelVis::addAgent(const std::string &agent_name) {
+    // If agent exists
+    if (data->modelData.agents.find(agent_name) != data->modelData.agents.end()) {
+        // If agent is not already in vis map
+        auto visAgent = data->agents.find(agent_name);
+        if (visAgent == data->agents.end()) {
+            // Create new vis agent
+            return AgentVis(data->agents.emplace(agent_name, std::make_shared<AgentVisData>(data->model.getCUDAAgent(agent_name), data->autoPalette)).first->second);
+        }
+        return AgentVis(visAgent->second);
+    }
+    THROW exception::InvalidAgentName("Agent name '%s' was not found within the model description hierarchy, "
+        "in ModelVis::addAgent()\n",
+        agent_name.c_str());
+}
+
+AgentVis ModelVis::Agent(const std::string &agent_name) {
+    // If agent exists
+    if (data->modelData.agents.find(agent_name) != data->modelData.agents.end()) {
+        // If agent is not already in vis map
+        auto visAgent = data->agents.find(agent_name);
+        if (visAgent != data->agents.end()) {
+            // Create new vis agent
+            return AgentVis(visAgent->second);
+        }
+        THROW exception::InvalidAgentName("Agent name '%s' has not been marked for visualisation, ModelVis::addAgent() must be called first, "
+            "in ModelVis::Agent()\n",
+            agent_name.c_str());
+    }
+    THROW exception::InvalidAgentName("Agent name '%s' was not found within the model description hierarchy, "
+        "in ModelVis::Agent()\n",
+        agent_name.c_str());
+}
+
+// Below methods are related to executing the visualiser
+void ModelVis::_activate() {
+    // Only execute if background thread is not active
+    if ((!data->visualiser || !data->visualiser->isRunning()) && !data->model.getSimulationConfig().console_mode) {
+        // Init visualiser
+        data->visualiser = std::make_unique<FLAMEGPU_Visualisation>(data->modelCfg);  // Window resolution
+        data->visualiser->setRandomSeed(data->model.getSimulationConfig().random_seed);
+        for (auto &agent : data->agents) {
+            // If x and y aren't set, throw exception
+            if (agent.second->core_tex_buffers.find(TexBufferConfig::Position_x) == agent.second->core_tex_buffers.end() &&
+                agent.second->core_tex_buffers.find(TexBufferConfig::Position_y) == agent.second->core_tex_buffers.end() &&
+                agent.second->core_tex_buffers.find(TexBufferConfig::Position_z) == agent.second->core_tex_buffers.end() &&
+                agent.second->core_tex_buffers.find(TexBufferConfig::Position_xy) == agent.second->core_tex_buffers.end() &&
+                agent.second->core_tex_buffers.find(TexBufferConfig::Position_xyz) == agent.second->core_tex_buffers.end()) {
+                THROW exception::VisualisationException("Agent '%s' has not had x, y or z variables set, agent requires location to render, "
+                    "in ModelVis::activate()\n",
+                    agent.second->agentData->name.c_str());
+            }
+            agent.second->initBindings(data->visualiser);
+        }
+        data->env_registered = false;
+        data->registerEnvProperties();
+        data->visualiser->start();
+    }
+}
+void ModelVis::deactivate() {
+    if (data->visualiser && data->visualiser->isRunning()) {
+        data->visualiser->stop();
+        join();
+        data->visualiser.reset();
+    }
+}
+
+void ModelVis::join() {
+    if (data->visualiser) {
+        data->visualiser->join();
+        data->visualiser.reset();
+    }
+}
+
+bool ModelVis::isRunning() const {
+    return data->visualiser ? data->visualiser->isRunning() : false;
+}
 void ModelVis::setWindowTitle(const std::string& title) {
-    ModelConfig::setString(&modelCfg.windowTitle, title);
+    ModelConfig::setString(&data->modelCfg.windowTitle, title);
 }
 
 void ModelVis::setWindowDimensions(const unsigned int& width, const unsigned int& height) {
-    modelCfg.windowDimensions[0] = width;
-    modelCfg.windowDimensions[1] = height;
+    data->modelCfg.windowDimensions[0] = width;
+    data->modelCfg.windowDimensions[1] = height;
 }
 
 void ModelVis::setClearColor(const float& red, const float& green, const float& blue) {
-    modelCfg.clearColor[0] = red;
-    modelCfg.clearColor[1] = green;
-    modelCfg.clearColor[2] = blue;
+    data->modelCfg.clearColor[0] = red;
+    data->modelCfg.clearColor[1] = green;
+    data->modelCfg.clearColor[2] = blue;
 }
 
 void ModelVis::setFPSVisible(const bool& showFPS) {
-    modelCfg.fpsVisible = showFPS;
+    data->modelCfg.fpsVisible = showFPS;
 }
 
 void ModelVis::setFPSColor(const float& red, const float& green, const float& blue) {
-    modelCfg.fpsColor[0] = red;
-    modelCfg.fpsColor[1] = green;
-    modelCfg.fpsColor[2] = blue;
+    data->modelCfg.fpsColor[0] = red;
+    data->modelCfg.fpsColor[1] = green;
+    data->modelCfg.fpsColor[2] = blue;
 }
 
 void ModelVis::setInitialCameraLocation(const float &x, const float &y, const float &z) {
-    modelCfg.cameraLocation[0] = x;
-    modelCfg.cameraLocation[1] = y;
-    modelCfg.cameraLocation[2] = z;
+    data->modelCfg.cameraLocation[0] = x;
+    data->modelCfg.cameraLocation[1] = y;
+    data->modelCfg.cameraLocation[2] = z;
 }
 
 void ModelVis::setInitialCameraTarget(const float &x, const float &y, const float &z) {
-    modelCfg.cameraTarget[0] = x;
-    modelCfg.cameraTarget[1] = y;
-    modelCfg.cameraTarget[2] = z;
+    data->modelCfg.cameraTarget[0] = x;
+    data->modelCfg.cameraTarget[1] = y;
+    data->modelCfg.cameraTarget[2] = z;
 }
 
 void ModelVis::setCameraSpeed(const float &speed, const float &shiftMultiplier) {
-    modelCfg.cameraSpeed[0] = speed;
-    modelCfg.cameraSpeed[1] = shiftMultiplier;
+    data->modelCfg.cameraSpeed[0] = speed;
+    data->modelCfg.cameraSpeed[1] = shiftMultiplier;
 }
 
 void ModelVis::setViewClips(const float &nearClip, const float &farClip) {
-    modelCfg.nearFarClip[0] = nearClip;
-    modelCfg.nearFarClip[1] = farClip;
+    data->modelCfg.nearFarClip[0] = nearClip;
+    data->modelCfg.nearFarClip[1] = farClip;
 }
 
 void ModelVis::setStepVisible(const bool& showStep) {
-    modelCfg.stepVisible = showStep;
+    data->modelCfg.stepVisible = showStep;
 }
 
 void ModelVis::setSimulationSpeed(const unsigned int& _stepsPerSecond) {
-    modelCfg.stepsPerSecond = _stepsPerSecond;
+    data->modelCfg.stepsPerSecond = _stepsPerSecond;
 }
 
 void ModelVis::setBeginPaused(const bool& beginPaused) {
-    modelCfg.beginPaused = beginPaused;
+    data->modelCfg.beginPaused = beginPaused;
 }
 
 StaticModelVis ModelVis::newStaticModel(const std::string &modelPath, const std::string &texturePath) {
@@ -214,29 +216,29 @@ StaticModelVis ModelVis::newStaticModel(const std::string &modelPath, const std:
     m->path = modelPath;
     m->texture = texturePath;
     // add to ModelConfig.staticModels
-    modelCfg.staticModels.push_back(m);
+    data->modelCfg.staticModels.push_back(m);
     // Create return type
-    return StaticModelVis(modelCfg.staticModels.back());
+    return StaticModelVis(data->modelCfg.staticModels.back());
 }
 
 LineVis ModelVis::newLineSketch(float r, float g, float b, float a) {
     auto m = std::make_shared<LineConfig>(LineConfig::Type::Lines);
-    modelCfg.lines.push_back(m);
+    data->modelCfg.lines.push_back(m);
     return LineVis(m, r, g, b, a);
 }
 
 LineVis ModelVis::newPolylineSketch(float r, float g, float b, float a) {
     auto m = std::make_shared<LineConfig>(LineConfig::Type::Polyline);
-    modelCfg.lines.push_back(m);
+    data->modelCfg.lines.push_back(m);
     return LineVis(m, r, g, b, a);
 }
 PanelVis ModelVis::newUIPanel(const std::string& panel_title) {
-    if (modelCfg.panels.find(panel_title) != modelCfg.panels.end()) {
+    if (data->modelCfg.panels.find(panel_title) != data->modelCfg.panels.end()) {
         THROW exception::InvalidOperation("Panel with title '%s' already exists.\n", panel_title.c_str());
     }
     auto m = std::make_shared<PanelConfig>(panel_title);
-    modelCfg.panels.emplace(panel_title, m);
-    return PanelVis(m, model.getModelDescription().environment);
+    data->modelCfg.panels.emplace(panel_title, m);
+    return PanelVis(m, data->model.getModelDescription().environment);
 }
 
 }  // namespace visualiser

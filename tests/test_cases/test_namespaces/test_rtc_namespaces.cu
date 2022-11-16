@@ -35,15 +35,15 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_explicit, flamegpu::MessageBruteForce, f
 
 TEST(RTCNamespaceTest, AgentFunctionsExplicit) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription& fo = a.newRTCFunction("message_out_func_explicit", message_out_func_explicit);
+    AgentFunctionDescription fo = a.newRTCFunction("message_out_func_explicit", message_out_func_explicit);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction("message_in_func_explicit", message_in_func_explicit);
+    AgentFunctionDescription fi = a.newRTCFunction("message_in_func_explicit", message_in_func_explicit);
     fi.setMessageInput(message);
     std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
@@ -54,9 +54,9 @@ TEST(RTCNamespaceTest, AgentFunctionsExplicit) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    LayerDescription& lo = m.newLayer("output_layer");
+    LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer("input_layer");
+    LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -98,15 +98,15 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_declaration, MessageBruteForce, MessageN
 
 TEST(RTCNamespaceTest, AgentFunctionsDeclaration) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription& fo = a.newRTCFunction("message_out_func_declaration", message_out_func_declaration);
+    AgentFunctionDescription fo = a.newRTCFunction("message_out_func_declaration", message_out_func_declaration);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction("message_in_func_declaration", message_in_func_declaration);
+    AgentFunctionDescription fi = a.newRTCFunction("message_in_func_declaration", message_in_func_declaration);
     fi.setMessageInput(message);
     std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
@@ -117,9 +117,9 @@ TEST(RTCNamespaceTest, AgentFunctionsDeclaration) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    LayerDescription& lo = m.newLayer("output_layer");
+    LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer("input_layer");
+    LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -157,15 +157,15 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_directive, MessageBruteForce, MessageNon
 
 TEST(RTCNamespaceTest, AgentFunctionsDirective) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription& fo = a.newRTCFunction("message_out_func_directive", message_out_func_directive);
+    AgentFunctionDescription fo = a.newRTCFunction("message_out_func_directive", message_out_func_directive);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction("message_in_func_directive", message_in_func_directive);
+    AgentFunctionDescription fi = a.newRTCFunction("message_in_func_directive", message_in_func_directive);
     fi.setMessageInput(message);
     std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
@@ -176,9 +176,9 @@ TEST(RTCNamespaceTest, AgentFunctionsDirective) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    LayerDescription& lo = m.newLayer("output_layer");
+    LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer("input_layer");
+    LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -225,15 +225,15 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_named, MessageBruteForce, MessageNone) {
 
 TEST(RTCNamespaceTest, AgentFunctionsNamed) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription& fo = a.newRTCFunction("message_out_func_named", message_out_func_named);
+    AgentFunctionDescription fo = a.newRTCFunction("message_out_func_named", message_out_func_named);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction("message_in_func_named", message_in_func_named);
+    AgentFunctionDescription fi = a.newRTCFunction("message_in_func_named", message_in_func_named);
     fi.setMessageInput(message);
     std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
@@ -244,9 +244,9 @@ TEST(RTCNamespaceTest, AgentFunctionsNamed) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    LayerDescription& lo = m.newLayer("output_layer");
+    LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer("input_layer");
+    LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -285,15 +285,15 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_alias, fgpu::MessageBruteForce, fgpu::Me
 
 TEST(RTCNamespaceTest, AgentFunctionsAlias) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription& fo = a.newRTCFunction("message_out_func_alias", message_out_func_alias);
+    AgentFunctionDescription fo = a.newRTCFunction("message_out_func_alias", message_out_func_alias);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction("message_in_func_alias", message_in_func_alias);
+    AgentFunctionDescription fi = a.newRTCFunction("message_in_func_alias", message_in_func_alias);
     fi.setMessageInput(message);
     std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
@@ -304,9 +304,9 @@ TEST(RTCNamespaceTest, AgentFunctionsAlias) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    LayerDescription& lo = m.newLayer("output_layer");
+    LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer("input_layer");
+    LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;
@@ -344,15 +344,15 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_alias_mixed, flamegpu::MessageBruteForce
 
 TEST(RTCNamespaceTest, AgentFunctionsAliasMixed) {
     ModelDescription m("model");
-    MessageBruteForce::Description& message = m.newMessage("message_x");
+    MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
-    AgentDescription& a = m.newAgent("agent");
+    AgentDescription a = m.newAgent("agent");
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription& fo = a.newRTCFunction("message_out_func_alias_mixed", message_out_func_alias_mixed);
+    AgentFunctionDescription fo = a.newRTCFunction("message_out_func_alias_mixed", message_out_func_alias_mixed);
     fo.setMessageOutput(message);
-    AgentFunctionDescription& fi = a.newRTCFunction("message_in_func_alias_mixed", message_in_func_alias_mixed);
+    AgentFunctionDescription fi = a.newRTCFunction("message_in_func_alias_mixed", message_in_func_alias_mixed);
     fi.setMessageInput(message);
     std::mt19937_64 rng(static_cast<unsigned int>(time(nullptr)));
     std::uniform_int_distribution<int> dist(-3, 3);
@@ -363,9 +363,9 @@ TEST(RTCNamespaceTest, AgentFunctionsAliasMixed) {
         sum += x;
         ai.setVariable<int>("x", x);
     }
-    LayerDescription& lo = m.newLayer("output_layer");
+    LayerDescription lo = m.newLayer("output_layer");
     lo.addAgentFunction(fo);
-    LayerDescription& li = m.newLayer("input_layer");
+    LayerDescription li = m.newLayer("input_layer");
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 1;

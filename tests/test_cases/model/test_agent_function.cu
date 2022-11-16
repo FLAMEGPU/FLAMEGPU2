@@ -39,16 +39,16 @@ const char *OTHER_STATE_NAME = "State4";
 
 TEST(AgentFunctionDescriptionTest, InitialState) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
-    AgentDescription &a2 = _m.newAgent(AGENT_NAME2);
-    AgentDescription &a3 = _m.newAgent(AGENT_NAME3);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
+    AgentDescription a2 = _m.newAgent(AGENT_NAME2);
+    AgentDescription a3 = _m.newAgent(AGENT_NAME3);
     a2.newState(STATE_NAME);
     a3.newState(ModelData::DEFAULT_STATE);
     a2.newState(NEW_STATE_NAME);
     a3.newState(NEW_STATE_NAME);
-    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
-    AgentFunctionDescription &f2 = a2.newFunction(FUNCTION_NAME2, agent_fn2);
-    AgentFunctionDescription &f3 = a3.newFunction(FUNCTION_NAME3, agent_fn3);
+    AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription f2 = a2.newFunction(FUNCTION_NAME2, agent_fn2);
+    AgentFunctionDescription f3 = a3.newFunction(FUNCTION_NAME3, agent_fn3);
     // Initial state begins whatever agent's initial state is
     EXPECT_EQ(f.getInitialState(), a.getInitialState());
     EXPECT_EQ(f2.getInitialState(), a2.getInitialState());
@@ -71,16 +71,16 @@ TEST(AgentFunctionDescriptionTest, InitialState) {
 }
 TEST(AgentFunctionDescriptionTest, EndState) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
-    AgentDescription &a2 = _m.newAgent(AGENT_NAME2);
-    AgentDescription &a3 = _m.newAgent(AGENT_NAME3);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
+    AgentDescription a2 = _m.newAgent(AGENT_NAME2);
+    AgentDescription a3 = _m.newAgent(AGENT_NAME3);
     a2.newState(STATE_NAME);
     a3.newState(ModelData::DEFAULT_STATE);
     a2.newState(NEW_STATE_NAME);
     a3.newState(NEW_STATE_NAME);
-    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
-    AgentFunctionDescription &f2 = a2.newFunction(FUNCTION_NAME2, agent_fn2);
-    AgentFunctionDescription &f3 = a3.newFunction(FUNCTION_NAME3, agent_fn3);
+    AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentFunctionDescription f2 = a2.newFunction(FUNCTION_NAME2, agent_fn2);
+    AgentFunctionDescription f3 = a3.newFunction(FUNCTION_NAME3, agent_fn3);
     // End state begins whatever agent's end state is
     EXPECT_EQ(f.getEndState(), a.getInitialState());
     EXPECT_EQ(f2.getEndState(), a2.getInitialState());
@@ -103,10 +103,10 @@ TEST(AgentFunctionDescriptionTest, EndState) {
 }
 TEST(AgentFunctionDescriptionTest, MessageInput) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
-    MessageBruteForce::Description &m = _m.newMessage(MESSAGE_NAME1);
-    MessageBruteForce::Description &m2 = _m.newMessage(MESSAGE_NAME2);
-    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
+    MessageBruteForce::Description m = _m.newMessage(MESSAGE_NAME1);
+    MessageBruteForce::Description m2 = _m.newMessage(MESSAGE_NAME2);
+    AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Begins empty
     EXPECT_FALSE(f.hasMessageInput());
     EXPECT_THROW(f.getMessageInput(), exception::OutOfBoundsException);
@@ -123,10 +123,10 @@ TEST(AgentFunctionDescriptionTest, MessageInput) {
 }
 TEST(AgentFunctionDescriptionTest, MessageOutput) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
-    MessageBruteForce::Description &m = _m.newMessage(MESSAGE_NAME1);
-    MessageBruteForce::Description &m2 = _m.newMessage(MESSAGE_NAME2);
-    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
+    MessageBruteForce::Description m = _m.newMessage(MESSAGE_NAME1);
+    MessageBruteForce::Description m2 = _m.newMessage(MESSAGE_NAME2);
+    AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Begins empty
     EXPECT_FALSE(f.hasMessageOutput());
     EXPECT_THROW(f.getMessageOutput(), exception::OutOfBoundsException);
@@ -143,8 +143,8 @@ TEST(AgentFunctionDescriptionTest, MessageOutput) {
 }
 TEST(AgentFunctionDescriptionTest, MessageOutputOptional) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
-    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Begins disabled
     EXPECT_FALSE(f.getMessageOutputOptional());
     EXPECT_FALSE(f.MessageOutputOptional());
@@ -158,28 +158,31 @@ TEST(AgentFunctionDescriptionTest, MessageOutputOptional) {
 }
 TEST(AgentFunctionDescriptionTest, AgentOutput) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
-    AgentDescription &a2 = _m.newAgent(AGENT_NAME2);
-    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
+    AgentDescription a2 = _m.newAgent(AGENT_NAME2);
+    AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Begins empty
     EXPECT_FALSE(f.hasAgentOutput());
     EXPECT_THROW(f.getAgentOutput(), exception::OutOfBoundsException);
+    EXPECT_THROW(f.AgentOutput(), exception::OutOfBoundsException);
     // Can be set
     f.setAgentOutput(a);
     EXPECT_TRUE(f.hasAgentOutput());
     // Returns the expected value
     EXPECT_EQ(f.getAgentOutput(), a);
+    EXPECT_EQ(f.AgentOutput(), a);
     // Can be updated
     f.setAgentOutput(a2);
     EXPECT_TRUE(f.hasAgentOutput());
     // Returns the expected value
     EXPECT_EQ(f.getAgentOutput(), a2);
+    EXPECT_EQ(f.AgentOutput(), a2);
 }
 TEST(AgentFunctionDescriptionTest, AgentOutputState) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
-    AgentDescription &a2 = _m.newAgent(AGENT_NAME2);
-    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
+    AgentDescription a2 = _m.newAgent(AGENT_NAME2);
+    AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Can't set it to a state that doesn't exist
     EXPECT_THROW(f.setAgentOutput(a, "wrong"), exception::InvalidStateName);
     a.newState("a");
@@ -204,8 +207,8 @@ TEST(AgentFunctionDescriptionTest, AgentOutputState) {
 }
 TEST(AgentFunctionDescriptionTest, AllowAgentDeath) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
-    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
+    AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Begins disabled
     EXPECT_FALSE(f.getAllowAgentDeath());
     EXPECT_FALSE(f.AllowAgentDeath());
@@ -221,10 +224,10 @@ TEST(AgentFunctionDescriptionTest, AllowAgentDeath) {
 TEST(AgentFunctionDescriptionTest, MessageInput_WrongModel) {
     ModelDescription _m(MODEL_NAME);
     ModelDescription _m2(WRONG_MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
-    MessageBruteForce::Description &m1 = _m.newMessage(MESSAGE_NAME1);
-    MessageBruteForce::Description &m2 = _m2.newMessage(MESSAGE_NAME2);
-    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
+    MessageBruteForce::Description m1 = _m.newMessage(MESSAGE_NAME1);
+    MessageBruteForce::Description m2 = _m2.newMessage(MESSAGE_NAME2);
+    AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
 
     EXPECT_THROW(f.setMessageInput(m2), exception::DifferentModel);
     EXPECT_NO_THROW(f.setMessageInput(m1));
@@ -232,10 +235,10 @@ TEST(AgentFunctionDescriptionTest, MessageInput_WrongModel) {
 TEST(AgentFunctionDescriptionTest, MessageOutput_WrongModel) {
     ModelDescription _m(MODEL_NAME);
     ModelDescription _m2(WRONG_MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
-    MessageBruteForce::Description &m1 = _m.newMessage(MESSAGE_NAME1);
-    MessageBruteForce::Description &m2 = _m2.newMessage(MESSAGE_NAME2);
-    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
+    MessageBruteForce::Description m1 = _m.newMessage(MESSAGE_NAME1);
+    MessageBruteForce::Description m2 = _m2.newMessage(MESSAGE_NAME2);
+    AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
 
     EXPECT_THROW(f.setMessageOutput(m2), exception::DifferentModel);
     EXPECT_NO_THROW(f.setMessageOutput(m1));
@@ -243,19 +246,19 @@ TEST(AgentFunctionDescriptionTest, MessageOutput_WrongModel) {
 TEST(AgentFunctionDescriptionTest, AgentOutput_WrongModel) {
     ModelDescription _m(MODEL_NAME);
     ModelDescription _m2(WRONG_MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
-    AgentDescription &a2 = _m2.newAgent(AGENT_NAME2);
-    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
+    AgentDescription a2 = _m2.newAgent(AGENT_NAME2);
+    AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
 
     EXPECT_THROW(f.setAgentOutput(a2), exception::DifferentModel);
     EXPECT_NO_THROW(f.setAgentOutput(a));
 }
 TEST(AgentFunctionDescriptionTest, MessageInputOutput) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
-    MessageBruteForce::Description &m = _m.newMessage(MESSAGE_NAME1);
-    MessageBruteForce::Description &m2 = _m.newMessage(MESSAGE_NAME2);
-    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
+    MessageBruteForce::Description m = _m.newMessage(MESSAGE_NAME1);
+    MessageBruteForce::Description m2 = _m.newMessage(MESSAGE_NAME2);
+    AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Cannot bind same message to input and output
     EXPECT_NO_THROW(f.setMessageInput(m));
     EXPECT_THROW(f.setMessageOutput(m), exception::InvalidMessageName);
@@ -263,10 +266,10 @@ TEST(AgentFunctionDescriptionTest, MessageInputOutput) {
 }
 TEST(AgentFunctionDescriptionTest, MessageOutputInput) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
-    MessageBruteForce::Description &m = _m.newMessage(MESSAGE_NAME1);
-    MessageBruteForce::Description &m2 = _m.newMessage(MESSAGE_NAME2);
-    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn1);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
+    MessageBruteForce::Description m = _m.newMessage(MESSAGE_NAME1);
+    MessageBruteForce::Description m2 = _m.newMessage(MESSAGE_NAME2);
+    AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn1);
     // Cannot bind same message to output and input
     EXPECT_NO_THROW(f.setMessageOutput(m));
     EXPECT_THROW(f.setMessageInput(m), exception::InvalidMessageName);
@@ -274,18 +277,18 @@ TEST(AgentFunctionDescriptionTest, MessageOutputInput) {
 }
 TEST(AgentFunctionDescriptionTest, SameAgentAndStateInLayer) {
     ModelDescription _m(MODEL_NAME);
-    AgentDescription &a = _m.newAgent(AGENT_NAME);
+    AgentDescription a = _m.newAgent(AGENT_NAME);
     a.newState(STATE_NAME);
     a.newState(NEW_STATE_NAME);
     a.newState(WRONG_STATE_NAME);
     a.newState(OTHER_STATE_NAME);
-    AgentFunctionDescription &f = a.newFunction(FUNCTION_NAME1, agent_fn2);
+    AgentFunctionDescription f = a.newFunction(FUNCTION_NAME1, agent_fn2);
     f.setInitialState(STATE_NAME);
     f.setEndState(NEW_STATE_NAME);
-    AgentFunctionDescription &f2 = a.newFunction(FUNCTION_NAME2, agent_fn3);
+    AgentFunctionDescription f2 = a.newFunction(FUNCTION_NAME2, agent_fn3);
     f2.setInitialState(WRONG_STATE_NAME);
     f2.setEndState(OTHER_STATE_NAME);
-    LayerDescription &l = _m.newLayer();
+    LayerDescription l = _m.newLayer();
     // start matches end state
     EXPECT_NO_THROW(l.addAgentFunction(agent_fn2));
     EXPECT_NO_THROW(l.addAgentFunction(agent_fn3));

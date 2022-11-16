@@ -37,19 +37,19 @@ TEST(TestMessage, NoAgents) {
     // This test confirms that it nolonger exists
 
     ModelDescription m(MODEL_NAME);
-    MessageBruteForce::Description &message = m.newMessage(MESSAGE_NAME);
+    MessageBruteForce::Description message = m.newMessage(MESSAGE_NAME);
     message.newVariable<int>("x");
-    AgentDescription &a = m.newAgent(AGENT_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
     a.newVariable<int>("x");
     a.newVariable<int>("sum");
     a.newVariable<int>("product");
-    AgentFunctionDescription &fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, OutFunction);
     fo.setMessageOutput(message);
-    AgentFunctionDescription &fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, InFunction);
     fi.setMessageInput(message);
-    LayerDescription &lo = m.newLayer(OUT_LAYER_NAME);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
     lo.addAgentFunction(fo);
-    LayerDescription &li = m.newLayer(IN_LAYER_NAME);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
     li.addAgentFunction(fi);
     CUDASimulation c(m);
     c.SimulationConfig().steps = 10;

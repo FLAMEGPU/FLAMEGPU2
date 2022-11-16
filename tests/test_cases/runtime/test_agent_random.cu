@@ -31,13 +31,13 @@ TEST(AgentRandomTest, AgentRandomCheck) {
     const unsigned int AGENT_COUNT = 5;
 
     ModelDescription model("random_model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
 
     agent.newVariable<float>("a");
     agent.newVariable<float>("b");
     agent.newVariable<float>("c");
 
-    AgentFunctionDescription &af = agent.newFunction("random1", random1_func);
+    AgentFunctionDescription af = agent.newFunction("random1", random1_func);
 
     AgentVector init_population(agent, AGENT_COUNT);
     AgentVector population(agent, AGENT_COUNT);
@@ -48,7 +48,7 @@ TEST(AgentRandomTest, AgentRandomCheck) {
     }
 
 
-    LayerDescription &layer = model.newLayer("layer");
+    LayerDescription layer = model.newLayer("layer");
     layer.addAgentFunction(af);
 
     CUDASimulation cudaSimulation(model);
@@ -190,7 +190,7 @@ TEST(AgentRandomTest, AgentRandomFunctionsNoExcept) {
 
 
     ModelDescription model("random_model");
-    AgentDescription &agent = model.newAgent("agent");
+    AgentDescription agent = model.newAgent("agent");
 
     agent.newVariable<float>("uniform_float");
     agent.newVariable<double>("uniform_double");
@@ -218,11 +218,11 @@ TEST(AgentRandomTest, AgentRandomFunctionsNoExcept) {
     agent.newVariable<uint64_t>("uniform_u_longlong");
 
     // do_random.setFunction(&random1);
-    AgentFunctionDescription &do_random = agent.newFunction("random2", random2_func);
+    AgentFunctionDescription do_random = agent.newFunction("random2", random2_func);
 
     AgentVector population(agent, AGENT_COUNT);
 
-    LayerDescription &layer = model.newLayer("layer");
+    LayerDescription layer = model.newLayer("layer");
     layer.addAgentFunction(do_random);
 
     CUDASimulation cudaSimulation(model);

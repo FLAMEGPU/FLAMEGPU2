@@ -27,6 +27,7 @@
 #include "flamegpu/sim/LogFrame.h"
 #include "flamegpu/sim/RunPlan.h"
 #include "flamegpu/version.h"
+#include "flamegpu/model/AgentFunctionDescription.h"
 #ifdef VISUALISATION
 #include "flamegpu/visualiser/FLAMEGPU_Visualisation.h"
 #endif
@@ -197,7 +198,7 @@ CUDASimulation::~CUDASimulation() {
     host_api.reset();
     macro_env.free();
 #ifdef VISUALISATION
-    visualisation.reset();
+    visualisation.reset();  // Might want to force destruct this, as user could hold a ModelVis that has shared ptr
 #endif
 
     // Destroy streams, potentially unsafe in a destructor as it will invoke cuda commands.
@@ -356,7 +357,7 @@ void CUDASimulation::determineAgentsToSort() {
                 // Check if this agent function uses 3D spatial messages
                 if (ptr->getSortingType() == flamegpu::MessageSortingType::spatial3D) {
                     // Agent uses spatial, check it has correct variables
-                    const auto& ad = *(it->second->description);
+                    CAgentDescription ad(it->second);
                     if (ad.hasVariable("x") && ad.hasVariable("y") && ad.hasVariable("z")) {
                         auto& x = it->second->variables.at("x");
                         auto& y = it->second->variables.at("y");
@@ -377,7 +378,7 @@ void CUDASimulation::determineAgentsToSort() {
                 // Check if this agent function uses 2D spatial messages
                 if (ptr->getSortingType() == flamegpu::MessageSortingType::spatial2D) {
                     // Agent uses spatial, check it has correct variables
-                    const auto& ad = *(it->second->description);
+                    CAgentDescription ad(it->second);
                     if (ad.hasVariable("x") && ad.hasVariable("y")) {
                         auto& x = it->second->variables.at("x");
                         auto& y = it->second->variables.at("y");
@@ -407,14 +408,12 @@ void CUDASimulation::spatialSortAgent_async(const std::string& funcName, const s
     if (!state_list_size)
         return;
 
-    auto& cudaAgentData = cuda_agent.getAgentDescription();
-    auto& funcData = cudaAgentData.functions.at(funcName);
-    std::string messageName;
-    if (auto ptr = funcData->message_input.lock()) {
-        messageName = ptr->name;
-    } else {
+    const CAgentDescription cudaAgentData(cuda_agent.getAgentDescription());
+    auto funcData = cudaAgentData.getFunction(funcName);
+    if (!funcData.hasMessageInput()) {
         THROW exception::InvalidAgentFunc("Function %s registered for auto-spatial sorting but input message type not found!\n", funcName.c_str());
     }
+    std::string messageName = funcData.getMessageInput().getName();
     MessageBruteForce::Data* msgData = model->messages.at(messageName).get();
 
     // Get the spatial metadata
@@ -451,9 +450,9 @@ void CUDASimulation::spatialSortAgent_async(const std::string& funcName, const s
     // TODO: User could supply alternatives to "x", "y", "z" to use alternative variables?
     void* xPtr = nullptr, *yPtr = nullptr, *zPtr = nullptr;
     void* xyPtr = nullptr, * xyzPtr = nullptr;
-    if (mode == Agent3D && cudaAgentData.variables.find("xyz") != cudaAgentData.variables.end()) {
+    if (mode == Agent3D && cudaAgentData.hasVariable("xyz")) {
         xyzPtr = cuda_agent.getStateVariablePtr(state, "xyz");
-    } else if (mode == Agent2D && cudaAgentData.variables.find("xy") != cudaAgentData.variables.end()) {
+    } else if (mode == Agent2D && cudaAgentData.hasVariable("xy")) {
         xyPtr = cuda_agent.getStateVariablePtr(state, "xy");
     } else {
         xPtr = cuda_agent.getStateVariablePtr(state, "x");
@@ -1186,6 +1185,7 @@ void CUDASimulation::simulate() {
     if (visualisation) {
         visualisation->updateBuffers();
     }
+    visualiser::ModelVis mv(visualisation);
     #endif
 
     // Run the required number of simulation steps.
@@ -1196,10 +1196,11 @@ void CUDASimulation::simulate() {
             break;
         }
         #ifdef VISUALISATION
+
         // Special case, if steps == 0 and visualisation has been closed
         if (getSimulationConfig().steps == 0 &&
-            visualisation && !visualisation->isRunning()) {
-            visualisation->join();  // Vis exists in separate thread, make sure it has actually exited
+            visualisation && !mv.isRunning()) {
+            mv.join();  // Vis exists in separate thread, make sure it has actually exited
             break;
         }
         #endif
@@ -1237,7 +1238,7 @@ void CUDASimulation::simulate() {
 void CUDASimulation::simulate(const RunPlan& plan) {
     // Validate that RunPlan is for same ModelDesc
     // RunPlan only holds a copy of env, so we must compare those
-    if (*plan.environment != model->environment->getPropertiesMap()) {
+    if (*plan.environment != model->environment->properties) {
         THROW exception::InvalidArgument("RunPlan's associated environment does not match the ModelDescription's environment, "
         "in CUDASimulation::simulate(RunPlan)\n");
     }
@@ -1421,8 +1422,9 @@ void CUDASimulation::applyConfig_derived() {
     // Handle console_mode
 #ifdef VISUALISATION
     if (visualisation) {
+        visualiser::ModelVis mv(visualisation);
         if (getSimulationConfig().console_mode) {
-            visualisation->deactivate();
+            mv.deactivate();
         } else {
             visualisation->updateRandomSeed();
         }
@@ -1613,10 +1615,10 @@ const CUDASimulation::Config &CUDASimulation::getCUDAConfig() const {
     return config;
 }
 #ifdef VISUALISATION
-visualiser::ModelVis &CUDASimulation::getVisualisation() {
+visualiser::ModelVis CUDASimulation::getVisualisation() {
     if (!visualisation)
-        visualisation = std::make_unique<visualiser::ModelVis>(*this);
-    return *visualisation.get();
+        visualisation = std::make_shared<visualiser::ModelVisData>(*this);
+    return visualiser::ModelVis(visualisation);
 }
 #endif
 

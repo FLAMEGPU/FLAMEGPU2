@@ -60,200 +60,200 @@ class MiniSim {
     }
     template<typename T, typename C>
     void addFuncCdn(T func, C cdn) {
-        auto &fn = agent.newFunction("name", func);
+        auto fn = agent.newFunction("name", func);
         fn.setFunctionCondition(cdn);
         model.newLayer().addAgentFunction(fn);
     }
     template<typename T>
     void addAgentOutFunc(T func) {
-        auto &fn = agent.newFunction("name", func);
+        auto fn = agent.newFunction("name", func);
         fn.setAgentOutput("agent");
         model.newLayer().addAgentFunction(func);
     }
     template<typename Message, typename T>
     void addMessageOutFunc(T func) {
-        typename Message::Description &message = model.newMessage<Message>("message");
+        typename Message::Description message = model.newMessage<Message>("message");
         message.template newVariable<int>("int");
-        auto &fn = agent.newFunction("name", func);
+        auto fn = agent.newFunction("name", func);
         fn.setMessageOutput("message");
         model.newLayer().addAgentFunction(func);
     }
     template<typename T>
     void addMessageS2DOutFunc(T func) {
-        MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("message");
+        MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("message");
         message.setMin(-1, -1);
         message.setMax(1, 1);
         message.setRadius(1);
         message.newVariable<int>("int");
-        auto &fn = agent.newFunction("name", func);
+        auto fn = agent.newFunction("name", func);
         fn.setMessageOutput("message");
         model.newLayer().addAgentFunction(func);
     }
     template<typename T>
     void addMessageS3DOutFunc(T func) {
-        MessageSpatial3D::Description &message = model.newMessage<MessageSpatial3D>("message");
+        MessageSpatial3D::Description message = model.newMessage<MessageSpatial3D>("message");
         message.setMin(-1, -1, -2);
         message.setMax(1, 1, 1);
         message.setRadius(1);
         message.newVariable<int>("int");
-        auto &fn = agent.newFunction("name", func);
+        auto fn = agent.newFunction("name", func);
         fn.setMessageOutput("message");
         model.newLayer().addAgentFunction(func);
     }
     template<typename T>
     void addMessageA1DOutFunc(T func) {
-        MessageArray::Description &message = model.newMessage<MessageArray>("message");
+        MessageArray::Description message = model.newMessage<MessageArray>("message");
         message.setLength(10);
         message.newVariable<int>("int");
-        auto &fn = agent.newFunction("name", func);
+        auto fn = agent.newFunction("name", func);
         fn.setMessageOutput("message");
         model.newLayer().addAgentFunction(func);
     }
     template<typename T>
     void addMessageA2DOutFunc(T func) {
-        MessageArray2D::Description &message = model.newMessage<MessageArray2D>("message");
+        MessageArray2D::Description message = model.newMessage<MessageArray2D>("message");
         message.setDimensions(10, 10);
         message.newVariable<int>("int");
-        auto &fn = agent.newFunction("name", func);
+        auto fn = agent.newFunction("name", func);
         fn.setMessageOutput("message");
         model.newLayer().addAgentFunction(func);
     }
     template<typename T>
     void addMessageA3DOutFunc(T func) {
-        MessageArray3D::Description &message = model.newMessage<MessageArray3D>("message");
+        MessageArray3D::Description message = model.newMessage<MessageArray3D>("message");
         message.setDimensions(10, 10, 10);
         message.newVariable<int>("int");
-        auto &fn = agent.newFunction("name", func);
+        auto fn = agent.newFunction("name", func);
         fn.setMessageOutput("message");
         model.newLayer().addAgentFunction(func);
     }
     template<typename T>
     void addMessageBucketOutFunc(T func) {
-        MessageBucket::Description &message = model.newMessage<MessageBucket>("message");
+        MessageBucket::Description message = model.newMessage<MessageBucket>("message");
         message.setBounds(0, 1023);
         message.newVariable<int>("int");
-        auto &fn = agent.newFunction("name", func);
+        auto fn = agent.newFunction("name", func);
         fn.setMessageOutput("message");
         model.newLayer().addAgentFunction(func);
     }
 
     template<typename Message, typename T1, typename T2>
     void addMessageInFunc(T1 out_func, T2 in_func) {
-        auto &message = model.newMessage<Message>("message");
+        auto message = model.newMessage<Message>("message");
         message.template newVariable<int>("int");
         {
-            auto &fn = agent.newFunction("out_name", out_func);
+            auto fn = agent.newFunction("out_name", out_func);
             fn.setMessageOutput("message");
             model.newLayer().addAgentFunction(out_func);
         }
         {
-            auto &fn = agent.newFunction("in_name", in_func);
+            auto fn = agent.newFunction("in_name", in_func);
             fn.setMessageInput("message");
             model.newLayer().addAgentFunction(in_func);
         }
     }
     template<typename T1, typename T2>
     void addMessageS2DInFunc(T1 out_func, T2 in_func) {
-        MessageSpatial2D::Description &message = model.newMessage<MessageSpatial2D>("message");
+        MessageSpatial2D::Description message = model.newMessage<MessageSpatial2D>("message");
         message.setMin(-1, -1);
         message.setMax(1, 1);
         message.setRadius(1);
         message.template newVariable<int>("int");
         {
-            auto &fn = agent.newFunction("out_name", out_func);
+            auto fn = agent.newFunction("out_name", out_func);
             fn.setMessageOutput("message");
             model.newLayer().addAgentFunction(out_func);
         }
         {
-            auto &fn = agent.newFunction("in_name", in_func);
+            auto fn = agent.newFunction("in_name", in_func);
             fn.setMessageInput("message");
             model.newLayer().addAgentFunction(in_func);
         }
     }
     template<typename T1, typename T2>
     void addMessageS3DInFunc(T1 out_func, T2 in_func) {
-        MessageSpatial3D::Description &message = model.newMessage<MessageSpatial3D>("message");
+        MessageSpatial3D::Description message = model.newMessage<MessageSpatial3D>("message");
         message.setMin(-1, -1, -1);
         message.setMax(1, 1, 1);
         message.setRadius(1);
         message.template newVariable<int>("int");
         {
-            auto &fn = agent.newFunction("out_name", out_func);
+            auto fn = agent.newFunction("out_name", out_func);
             fn.setMessageOutput("message");
             model.newLayer().addAgentFunction(out_func);
         }
         {
-            auto &fn = agent.newFunction("in_name", in_func);
+            auto fn = agent.newFunction("in_name", in_func);
             fn.setMessageInput("message");
             model.newLayer().addAgentFunction(in_func);
         }
     }
     template<typename T1, typename T2>
     void addMessageA1DInFunc(T1 out_func, T2 in_func) {
-        MessageArray::Description &message = model.newMessage<MessageArray>("message");
+        MessageArray::Description message = model.newMessage<MessageArray>("message");
         message.setLength(10);
         message.template newVariable<int>("int");
         {
-            auto &fn = agent.newFunction("out_name", out_func);
+            auto fn = agent.newFunction("out_name", out_func);
             fn.setMessageOutput("message");
             model.newLayer().addAgentFunction(out_func);
         }
         {
-            auto &fn = agent.newFunction("in_name", in_func);
+            auto fn = agent.newFunction("in_name", in_func);
             fn.setMessageInput("message");
             model.newLayer().addAgentFunction(in_func);
         }
     }
     template<typename T1, typename T2>
     void addMessageA2DInFunc(T1 out_func, T2 in_func) {
-        MessageArray2D::Description &message = model.newMessage<MessageArray2D>("message");
+        MessageArray2D::Description message = model.newMessage<MessageArray2D>("message");
         message.setDimensions(10, 10);
         message.template newVariable<int>("int");
         {
-            auto &fn = agent.newFunction("out_name", out_func);
+            auto fn = agent.newFunction("out_name", out_func);
             fn.setMessageOutput("message");
             model.newLayer().addAgentFunction(out_func);
         }
         {
-            auto &fn = agent.newFunction("in_name", in_func);
+            auto fn = agent.newFunction("in_name", in_func);
             fn.setMessageInput("message");
             model.newLayer().addAgentFunction(in_func);
         }
     }
     template<typename T1, typename T2>
     void addMessageA3DInFunc(T1 out_func, T2 in_func) {
-        MessageArray3D::Description &message = model.newMessage<MessageArray3D>("message");
+        MessageArray3D::Description message = model.newMessage<MessageArray3D>("message");
         message.setDimensions(10, 10, 10);
         message.template newVariable<int>("int");
         {
-            auto &fn = agent.newFunction("out_name", out_func);
+            auto fn = agent.newFunction("out_name", out_func);
             fn.setMessageOutput("message");
             model.newLayer().addAgentFunction(out_func);
         }
         {
-            auto &fn = agent.newFunction("in_name", in_func);
+            auto fn = agent.newFunction("in_name", in_func);
             fn.setMessageInput("message");
             model.newLayer().addAgentFunction(in_func);
         }
     }
     template<typename T1, typename T2>
     void addMessageBucketInFunc(T1 out_func, T2 in_func) {
-        MessageBucket::Description &message = model.newMessage<MessageBucket>("message");
+        MessageBucket::Description message = model.newMessage<MessageBucket>("message");
         message.setBounds(0, 1023);
         message.template newVariable<int>("int");
         {
-            auto &fn = agent.newFunction("out_name", out_func);
+            auto fn = agent.newFunction("out_name", out_func);
             fn.setMessageOutput("message");
             model.newLayer().addAgentFunction(out_func);
         }
         {
-            auto &fn = agent.newFunction("in_name", in_func);
+            auto fn = agent.newFunction("in_name", in_func);
             fn.setMessageInput("message");
             model.newLayer().addAgentFunction(in_func);
         }
     }
     ModelDescription model;
-    AgentDescription &agent;
+    AgentDescription agent;
 };
 /**
 * This defines a common fixture used as a base for all test cases in the file

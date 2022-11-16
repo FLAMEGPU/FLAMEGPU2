@@ -97,17 +97,62 @@ void MessageArray2D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, unsigned
     gpuErrchk(cudaStreamSynchronize(stream));  // Redundant: Array msg reorder has a sync
 }
 
+/// <summary>
+/// CDescription
+/// </summary>
+MessageArray2D::CDescription::CDescription(std::shared_ptr<Data> data)
+    : MessageBruteForce::CDescription(std::move(std::static_pointer_cast<MessageBruteForce::Data>(data))) { }
+MessageArray2D::CDescription::CDescription(std::shared_ptr<const Data> data)
+    : CDescription(std::move(std::const_pointer_cast<Data>(data))) { }
 
-MessageArray2D::Data::Data(const std::shared_ptr<const ModelData> &model, const std::string &message_name)
+bool MessageArray2D::CDescription::operator==(const CDescription& rhs) const {
+    return *this->message == *rhs.message;  // Compare content is functionally the same
+}
+bool MessageArray2D::CDescription::operator!=(const CDescription& rhs) const {
+    return !(*this == rhs);
+}
+/**
+ * Const accessors
+ */
+std::array<flamegpu::size_type, 2> MessageArray2D::CDescription::getDimensions() const {
+    return std::static_pointer_cast<Data>(message)->dimensions;
+}
+flamegpu::size_type MessageArray2D::CDescription::getDimX() const {
+    return std::static_pointer_cast<Data>(message)->dimensions[0];
+}
+flamegpu::size_type MessageArray2D::CDescription::getDimY() const {
+    return std::static_pointer_cast<Data>(message)->dimensions[1];
+}
+
+/// <summary>
+/// Description
+/// </summary>
+MessageArray2D::Description::Description(std::shared_ptr<Data> data)
+    : CDescription(data) { }
+/**
+ * Accessors
+ */
+void MessageArray2D::Description::setDimensions(const size_type len_x, const size_type len_y) {
+    setDimensions({ len_x , len_y });
+}
+void MessageArray2D::Description::setDimensions(const std::array<size_type, 2>& dims) {
+    if (dims[0] == 0 || dims[1] == 0) {
+        THROW exception::InvalidArgument("All dimensions must be above zero in array2D message.\n");
+    }
+    std::static_pointer_cast<Data>(message)->dimensions = dims;
+}
+
+/// <summary>
+/// Data
+/// </summary>
+MessageArray2D::Data::Data(std::shared_ptr<const ModelData> model, const std::string &message_name)
     : MessageBruteForce::Data(model, message_name)
     , dimensions({ 0, 0 }) {
-    description = std::unique_ptr<MessageArray2D::Description>(new MessageArray2D::Description(model, this));
     variables.emplace("___INDEX", Variable(1, size_type()));
 }
-MessageArray2D::Data::Data(const std::shared_ptr<const ModelData> &model, const Data &other)
+MessageArray2D::Data::Data(std::shared_ptr<const ModelData> model, const Data &other)
     : MessageBruteForce::Data(model, other)
     , dimensions(other.dimensions) {
-    description = std::unique_ptr<MessageArray2D::Description>(model ? new MessageArray2D::Description(model, this) : nullptr);
     if (dimensions[0] == 0 || dimensions[1] == 0) {
         THROW exception::InvalidMessage("All dimensions must be ABOVE zero in array2D message '%s'\n", other.name.c_str());
     }
@@ -119,28 +164,5 @@ std::unique_ptr<MessageSpecialisationHandler> MessageArray2D::Data::getSpecialis
     return std::unique_ptr<MessageSpecialisationHandler>(new CUDAModelHandler(owner));
 }
 std::type_index MessageArray2D::Data::getType() const { return std::type_index(typeid(MessageArray2D)); }
-
-
-MessageArray2D::Description::Description(const std::shared_ptr<const ModelData> &_model, Data *const data)
-    : MessageBruteForce::Description(_model, data) { }
-
-void MessageArray2D::Description::setDimensions(const size_type len_x, const size_type len_y) {
-    setDimensions({ len_x , len_y });
-}
-void MessageArray2D::Description::setDimensions(const std::array<size_type, 2> &dims) {
-    if (dims[0] == 0 || dims[1] == 0) {
-        THROW exception::InvalidArgument("All dimensions must be above zero in array2D message.\n");
-    }
-    reinterpret_cast<Data *>(message)->dimensions = dims;
-}
-std::array<flamegpu::size_type, 2> MessageArray2D::Description::getDimensions() const {
-    return reinterpret_cast<Data *>(message)->dimensions;
-}
-flamegpu::size_type MessageArray2D::Description::getDimX() const {
-    return reinterpret_cast<Data *>(message)->dimensions[0];
-}
-flamegpu::size_type MessageArray2D::Description::getDimY() const {
-    return reinterpret_cast<Data *>(message)->dimensions[1];
-}
 
 }  // namespace flamegpu

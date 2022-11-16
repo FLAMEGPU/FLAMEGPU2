@@ -15,8 +15,13 @@
 namespace flamegpu {
 
 class AgentDescription;
+class CAgentDescription;
+class CLayerDescription;
 class LayerDescription;
+class CSubModelDescription;
 class SubModelDescription;
+class CEnvironmentDescription;
+class EnvironmentDescription;
 class DependencyNode;
 struct ModelData;
 
@@ -75,7 +80,7 @@ class ModelDescription {
      * @return A mutable reference to the specified AgentDescription
      * @throws exception::InvalidAgentName If an agent with the same name already exists within the model description hierarchy
      */
-    AgentDescription& newAgent(const std::string &agent_name);
+    AgentDescription newAgent(const std::string &agent_name);
     /**
      * Returns a mutable reference to the named agent, which can be used to configure the agent
      * @param agent_name Name which can be used to the refer to the desired agent within the model description hierarchy
@@ -83,7 +88,7 @@ class ModelDescription {
      * @throws exception::InvalidAgentName If an agent with the name does not exist within the model description hierarchy
      * @see ModelDescription::getAgent(const std::string &) for the immutable version
      */
-    AgentDescription& Agent(const std::string &agent_name);
+    AgentDescription Agent(const std::string &agent_name);
 
     /**
      * Creates a new message with the specified name
@@ -92,17 +97,17 @@ class ModelDescription {
      * @throws exception::InvalidMessageName If a message with the same name already exists within the model description hierarchy
      */
     template<typename MessageType>
-    typename MessageType::Description& newMessage(const std::string &message_name) {
+    typename MessageType::Description newMessage(const std::string &message_name) {
         if (!hasMessage<MessageType>(message_name)) {
             auto rtn = std::shared_ptr<typename MessageType::Data>(new typename MessageType::Data(model, message_name));
             model->messages.emplace(message_name, rtn);
-            return *reinterpret_cast<typename MessageType::Description*>(rtn->description.get());
+            return typename MessageType::Description(rtn);
         }
         THROW exception::InvalidMessageName("Message with name '%s' already exists, "
             "in ModelDescription::newMessage().",
             message_name.c_str());
     }
-    MessageBruteForce::Description& newMessage(const std::string &message_name);
+    MessageBruteForce::Description newMessage(const std::string &message_name);
     /**
      * Returns a mutable reference to the named message, which can be used to configure the message
      * @param message_name Name used to refer to the desired message within the model description hierarchy
@@ -111,11 +116,11 @@ class ModelDescription {
      * @see ModelDescription::getMessage(const std::string &) for the immutable version
      */
     template<typename MessageType>
-    typename MessageType::Description& Message(const std::string &message_name) {
+    typename MessageType::Description Message(const std::string &message_name) {
         auto rtn = model->messages.find(message_name);
         if (rtn != model->messages.end()) {
             if (auto r = std::dynamic_pointer_cast<typename MessageType::Data>(rtn->second)) {
-                return *reinterpret_cast<typename MessageType::Description*>(r->description.get());
+                return typename MessageType::Description(r);
             }
             THROW exception::InvalidMessageName("Message ('%s') is not of correct type, "
                 "in ModelDescription::Message().",
@@ -125,20 +130,20 @@ class ModelDescription {
             "in ModelDescription::Message().",
             message_name.c_str());
     }
-    MessageBruteForce::Description& Message(const std::string &message_name);
+    MessageBruteForce::Description Message(const std::string &message_name);
     /**
      * Returns a mutable reference to the environment description for the model description hierarchy
      * This can be used to configure environment properties
      * @see ModelDescription::getEnvironment() for the immutable version
      */
-    EnvironmentDescription& Environment();
+    EnvironmentDescription Environment();
     /**
      * Add a submodel to the Model Description hierarchy
      * The return value can be used to map agent variables
      * @param submodel_name The name used to refer to the submodel (e.g. when adding it to the layer)
      * @param submodel_description The actual definition of the submodel
      */
-    SubModelDescription &newSubModel(const std::string &submodel_name, const ModelDescription &submodel_description);
+    SubModelDescription newSubModel(const std::string &submodel_name, const ModelDescription &submodel_description);
     /**
      * Returns a mutable reference to the named submodel
      * @param submodel_name Name which can be used to the refer to the desired submodel within the model description hierarchy
@@ -146,7 +151,7 @@ class ModelDescription {
      * @throws exception::InvalidSubModelName If a submodel with the name does not exist within the model description hierarchy
      * @see ModelDescription::getSubModel(const std::string &) for the immutable version
      */
-    SubModelDescription &SubModel(const std::string &submodel_name);
+    SubModelDescription SubModel(const std::string &submodel_name);
 
     /**
      * Creates a new layer with the specified name
@@ -155,7 +160,7 @@ class ModelDescription {
      * @throws exception::InvalidFuncLayerIndx If a layer with the same name already exists within the model description hierarchy
      * @note Layer names are not required, passing empty string will not set a name
      */
-    LayerDescription& newLayer(const std::string &name = "");
+    LayerDescription newLayer(const std::string &name = "");
     /**
      * Returns a mutable reference to the named layer, which can be used to configure the layer
      * @param name Name used to refer to the desired layer within the model description hierarchy
@@ -164,7 +169,7 @@ class ModelDescription {
      * @see ModelDescription::Layer(const flamegpu::size_type &)
      * @see ModelDescription::getLayer(const std::string &) for the immutable version
      */
-    LayerDescription& Layer(const std::string &name);
+    LayerDescription Layer(const std::string &name);
     /**
      * Returns a mutable reference to the named layer, which can be used to configure the layer
      * @param layer_index Index of the desired layer within the model description hierarchy
@@ -173,7 +178,7 @@ class ModelDescription {
      * @see ModelDescription::Layer(const std::string &)
      * @see ModelDescription::getLayer(const flamegpu::size_type &) for the immutable version
      */
-    LayerDescription& Layer(const flamegpu::size_type &layer_index);
+    LayerDescription Layer(const flamegpu::size_type &layer_index);
 
     /**
      * Adds an init function to the simulation
@@ -258,10 +263,6 @@ class ModelDescription {
      */
     std::string getName() const;
     /**
-     * @return A reference to the this model's DependencyGraph
-     */
-    const DependencyGraph& getDependencyGraph() const;
-    /**
      * Sets root as an execution root of the model. Multiple roots can be used which represent independent chains of dependencies.
      * @param root The DependencyNode which will be used as an execution root
      */
@@ -287,7 +288,7 @@ class ModelDescription {
      * @throws exception::InvalidAgentName If an agent with the name does not exist within the model description hierarchy
      * @see ModelDescription::Agent(const std::string &) for the mutable version
      */
-    const AgentDescription& getAgent(const std::string &agent_name) const;
+    CAgentDescription getAgent(const std::string& agent_name) const;
     /**
      * Returns a mutable reference to the named message, which can be used to configure the message
      * @param message_name Name used to refer to the desired message within the model description hierarchy
@@ -296,11 +297,11 @@ class ModelDescription {
      * @see ModelDescription::Message(const std::string &) for the mutable version
      */
     template<typename MessageType>
-    const typename MessageType::Description& getMessage(const std::string &message_name) const {
+    typename MessageType::CDescription getMessage(const std::string &message_name) const {
         auto rtn = model->messages.find(message_name);
         if (rtn != model->messages.end()) {
             if (auto r = std::dynamic_pointer_cast<typename MessageType::Data>(rtn->second)) {
-                return *reinterpret_cast<typename MessageType::Description*>(r->description.get());
+                return typename MessageType::CDescription(r);
             }
             THROW exception::InvalidMessageType("Message ('%s') is not of correct type, "
                 "in ModelDescription::getMessage().",
@@ -310,7 +311,7 @@ class ModelDescription {
             "in ModelDescription::getMessage().",
             message_name.c_str());
     }
-    const MessageBruteForce::Description& getMessage(const std::string &message_name) const;
+    MessageBruteForce::CDescription getMessage(const std::string &message_name) const;
     /**
      * Returns an immutable reference to the specified submodel, which can be used to view the submodel's configuration
      * @param submodel_name Name which can be used to the refer to the desired submodel within the model description hierarchy
@@ -318,13 +319,13 @@ class ModelDescription {
      * @throws exception::InvalidSubModelName If a submodel with the name does not exist within the model description hierarchy
      * @see ModelDescription::SubModel(const std::string &) for the mutable version
      */
-    const SubModelDescription& getSubModel(const std::string &submodel_name) const;
+    CSubModelDescription getSubModel(const std::string &submodel_name) const;
     /**
      * Returns a mutable reference to the environment description for the model description hierarchy
      * This can be used to configure environment properties
      * @see ModelDescription::Environment() for the mutable version
      */
-    const EnvironmentDescription& getEnvironment() const;
+    CEnvironmentDescription getEnvironment() const;
     /**
      * Returns a mutable reference to the named layer, which can be used to configure the layer
      * @param name Name used to refer to the desired layer within the model description hierarchy
@@ -333,7 +334,7 @@ class ModelDescription {
      * @see ModelDescription::getLayer(const flamegpu::size_type &)
      * @see ModelDescription::Layer(const std::string &) for the mutable version
      */
-    const LayerDescription& getLayer(const std::string &name) const;
+    CLayerDescription getLayer(const std::string &name) const;
     /**
      * Returns a mutable reference to the named layer, which can be used to configure the layer
      * @param layer_index Index of the desired layer within the model description hierarchy
@@ -342,7 +343,7 @@ class ModelDescription {
      * @see ModelDescription::getLayer(const std::string &)
      * @see ModelDescription::Layer(const flamegpu::size_type &) for the mutable version
      */
-    const LayerDescription& getLayer(const flamegpu::size_type &layer_index) const;
+    CLayerDescription getLayer(const flamegpu::size_type &layer_index) const;
 
     /**
      * @param agent_name Name of the agent to check

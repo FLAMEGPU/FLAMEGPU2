@@ -50,23 +50,23 @@ namespace test_agent_function_conditions {
         const std::array<int, 4> ARRAY_REFERENCE2 = { 23, 24, 25, 26 };
         const std::array<int, 4> ARRAY_REFERENCE3 = { 3, 4, 5, 6 };
         ModelDescription m(MODEL_NAME);
-        AgentDescription &a = m.newAgent(AGENT_NAME);
+        AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<int>("x");
         a.newVariable<int, 4>("y");
         a.newState(STATE1);
         a.newState(STATE2);
         a.newState(STATE3);
-        AgentFunctionDescription &af1 = a.newFunction(FUNCTION_NAME1, NullFn1);
+        AgentFunctionDescription af1 = a.newFunction(FUNCTION_NAME1, NullFn1);
         af1.setInitialState(STATE1);
         af1.setEndState(STATE2);
         af1.setFunctionCondition(Condition1);
-        AgentFunctionDescription &af2 = a.newFunction(FUNCTION_NAME2, NullFn2);
+        AgentFunctionDescription af2 = a.newFunction(FUNCTION_NAME2, NullFn2);
         af2.setInitialState(STATE1);
         af2.setEndState(STATE3);
         af2.setFunctionCondition(Condition2);
-        LayerDescription &l1 = m.newLayer();
+        LayerDescription l1 = m.newLayer();
         l1.addAgentFunction(af1);
-        LayerDescription &l2 = m.newLayer();
+        LayerDescription l2 = m.newLayer();
         l2.addAgentFunction(af2);
         AgentVector pop(a, AGENT_COUNT * 2);
         for (unsigned int i = 0; i < AGENT_COUNT * 2; ++i) {
@@ -109,15 +109,15 @@ namespace test_agent_function_conditions {
         // If all agents got disabled by an agent function condition, they would not get re-enabled
         // This would lead to an exception later on
         ModelDescription m(MODEL_NAME);
-        AgentDescription &a = m.newAgent(AGENT_NAME);
+        AgentDescription a = m.newAgent(AGENT_NAME);
         a.newVariable<int>("x");
         a.newVariable<int, 4>("y");
-        AgentFunctionDescription &af1 = a.newFunction(FUNCTION_NAME1, NullFn1);
+        AgentFunctionDescription af1 = a.newFunction(FUNCTION_NAME1, NullFn1);
         af1.setFunctionCondition(AllFail);
-        AgentFunctionDescription &af2 = a.newFunction(FUNCTION_NAME2, NullFn2);
-        LayerDescription &l1 = m.newLayer();
+        AgentFunctionDescription af2 = a.newFunction(FUNCTION_NAME2, NullFn2);
+        LayerDescription l1 = m.newLayer();
         l1.addAgentFunction(af1);
-        LayerDescription &l2 = m.newLayer();
+        LayerDescription l2 = m.newLayer();
         l2.addAgentFunction(af2);
         // Create a bunch of empty agents
         AgentVector pop(a, AGENT_COUNT);

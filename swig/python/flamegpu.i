@@ -346,9 +346,9 @@ class FLAMEGPURuntimeException : public std::exception {
 
 // Disable non RTC function and function condition set methods
 %ignore flamegpu::AgentDescription::newFunction;
-%ignore flamegpu::AgentFunctionDescription::getFunctionPtr;
+%ignore flamegpu::CAgentFunctionDescription::getFunctionPtr;
 %ignore flamegpu::AgentFunctionDescription::setFunctionCondition;
-%ignore flamegpu::AgentFunctionDescription::getConditionPtr;
+%ignore flamegpu::CAgentFunctionDescription::getConditionPtr;
 
 // Ignore function which returns something not currently wrapped.
 %ignore flamegpu::AgentInterface::getAgentDescription;
@@ -447,11 +447,18 @@ class FLAMEGPURuntimeException : public std::exception {
     %rename (MessageBruteForce_Description) flamegpu::MessageBruteForce::Description;
     %rename (MessageSpatial2D_Description) flamegpu::MessageSpatial2D::Description;
     %rename (MessageSpatial3D_Description) flamegpu::MessageSpatial3D::Description;
-    %rename (MessageSpatial3D_MetaData) flamegpu::MessageSpatial3D::MetaData;
     %rename (MessageArray_Description) flamegpu::MessageArray::Description;
     %rename (MessageArray2D_Description) flamegpu::MessageArray2D::Description;
     %rename (MessageArray3D_Description) flamegpu::MessageArray3D::Description;
     %rename (MessageBucket_Description) flamegpu::MessageBucket::Description;
+
+    %rename (MessageBruteForce_CDescription) flamegpu::MessageBruteForce::CDescription;
+    %rename (MessageSpatial2D_CDescription) flamegpu::MessageSpatial2D::CDescription;
+    %rename (MessageSpatial3D_CDescription) flamegpu::MessageSpatial3D::CDescription;
+    %rename (MessageArray_CDescription) flamegpu::MessageArray::CDescription;
+    %rename (MessageArray2D_CDescription) flamegpu::MessageArray2D::CDescription;
+    %rename (MessageArray3D_CDescription) flamegpu::MessageArray3D::CDescription;
+    %rename (MessageBucket_CDescription) flamegpu::MessageBucket::CDescription;
 
     %rename (CUDAEnsembleConfig) flamegpu::CUDAEnsemble::EnsembleConfig;
 %feature("flatnested", ""); // flat nested off
@@ -937,6 +944,10 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
 
     // Ignore directives. These go before any %includes. 
     // -----------------
+    // Disable internal vis structs
+    %ignore flamegpu::visualiser::ModelVisData;
+    %ignore flamegpu::visualiser::AgentVisData;
+    %ignore flamegpu::visualiser::AgentStateVisData;
     // Disable functions which return std::type_index
     %ignore flamegpu::visualiser::ColorFunction::getAgentVariableRequiredType;
     %ignore flamegpu::visualiser::DiscreteColor::getAgentVariableRequiredType;

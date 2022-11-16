@@ -13,51 +13,126 @@
 
 namespace flamegpu {
 
-/**
- * Within the model hierarchy, this class represents an execution layer for a FLAMEGPU model
- * This class is used to configure which agent and host functions execute at a stage of the model's execution
- * @see ModelDescription::newLayer(const std::string&) For creating instances of this class
- */
-class LayerDescription {
+class CLayerDescription {
     /**
      * Data store class for this description, constructs instances of this class
      */
     friend struct LayerData;
     friend class DependencyGraph;
-    /**
-    * Constructors
-    */
-    LayerDescription(const std::shared_ptr<const ModelData> &_model, LayerData *const data);
-    /**
-     * Default copy constructor, not implemented
-     */
-    LayerDescription(const LayerDescription &other_layer) = delete;
-    /**
-     * Default move constructor, not implemented
-     */
-    LayerDescription(LayerDescription &&other_layer) noexcept = delete;
-    /**
-     * Default copy assignment, not implemented
-     */
-    LayerDescription& operator=(const LayerDescription &other_layer) = delete;
-    /**
-     * Default move assignment, not implemented
-     */
-    LayerDescription& operator=(LayerDescription &&other_layer) noexcept = delete;
 
  public:
     /**
+     * Constructor, creates an interface to the LayerData
+     * @param data Data store of this layer's data
+     */
+    explicit CLayerDescription(std::shared_ptr<LayerData> data);
+    explicit CLayerDescription(std::shared_ptr<const LayerData> data);
+    /**
+     * Copy constructor
+     * Creates a new interface to the same LayerData/ModelData
+     */
+    CLayerDescription(const CLayerDescription& other_agent) = default;
+    CLayerDescription(CLayerDescription&& other_agent) = default;
+    /**
+     * Assignment operator
+     * Assigns this interface to the same LayerData/ModelData
+     */
+    CLayerDescription& operator=(const CLayerDescription& other_agent) = default;
+    CLayerDescription& operator=(CLayerDescription&& other_agent) = default;
+    /**
      * Equality operator, checks whether LayerDescription hierarchies are functionally the same
+     * @param rhs right hand side
      * @returns True when layers are the same
      * @note Instead compare pointers if you wish to check that they are the same instance
      */
-    bool operator==(const LayerDescription& rhs) const;
+    bool operator==(const CLayerDescription& rhs) const;
     /**
      * Equality operator, checks whether LayerDescription hierarchies are functionally different
+     * @param rhs right hand side
      * @returns True when layers are not the same
      * @note Instead compare pointers if you wish to check that they are not the same instance
      */
-    bool operator!=(const LayerDescription& rhs) const;
+    bool operator!=(const CLayerDescription& rhs) const;
+
+    /**
+     * @return The layer's name
+     */
+    std::string getName() const;
+    /**
+     * @return The index of the layer within the model's execution
+     */
+    flamegpu::size_type getIndex() const;
+    /**
+     * @return The total number of agent functions within the layer
+     */
+    flamegpu::size_type getAgentFunctionsCount() const;
+    /**
+     * @return The total number of host functions within the layer
+     */
+    flamegpu::size_type getHostFunctionsCount() const;
+#ifdef SWIG
+    /**
+     * @return The total number of host function callbacks within the layer
+     */
+    inline flamegpu::size_type getHostFunctionCallbackCount() const;
+#endif
+    /**
+     * @param index Index of the function to return
+     * @return An immutable reference to the agent function at the provided index
+     * @throw exception::OutOfBoundsException When index exceeds number of agent functions in the layer
+     * @see LayerDescription::getAgentFunctionsCount()
+     * @note Functions are stored in a set, so order may change as new functions are added
+     */
+    CAgentFunctionDescription getAgentFunction(unsigned int index) const;
+    /**
+     * @param index Index of the function to return
+     * @return A function pointer to the host function at the provided index
+     * @throw exception::OutOfBoundsException When index exceeds number of host functions in the layer
+     * @see LayerDescription::getHostFunctionsCount()
+     * @note Functions are stored in a set, so order may change as new functions are added
+     */
+    FLAMEGPU_HOST_FUNCTION_POINTER getHostFunction(unsigned int index) const;
+#ifdef SWIG
+    /**
+     * @param index Index of the function to return
+     * @return A function callback to the host function at the provided index
+     * @throw exception::OutOfBoundsException When index exceeds number of host functions in the layer
+     * @see LayerDescription::getHostFunctionCallbackCount()
+     * @note Functions are stored in a set, so order may change as new functions are added
+     */
+    inline HostFunctionCallback* getHostFunctionCallback(unsigned int index) const;
+#endif
+
+ protected:
+    /**
+     * The class which stores all of the layer's data.
+     */
+    std::shared_ptr<LayerData> layer;
+};
+/**
+ * Within the model hierarchy, this class represents an execution layer for a FLAMEGPU model
+ * This class is used to configure which agent and host functions execute at a stage of the model's execution
+ * @see ModelDescription::newLayer(const std::string&) For creating instances of this class
+ */
+class LayerDescription : public CLayerDescription {
+ public:
+    /**
+     * Constructor, creates an interface to the LayerData
+     * @param data Data store of this environment's data
+     */
+    explicit LayerDescription(std::shared_ptr<LayerData> data);
+    /**
+     * Copy constructor
+     * Creates a new interface to the same LayerData/ModelData
+     */
+    LayerDescription(const LayerDescription& other_layer) = default;
+    LayerDescription(LayerDescription&& other_layer) = default;
+    /**
+     * Assignment operator
+     * Assigns this interface to the same LayerData/ModelData
+     */
+    LayerDescription& operator=(const LayerDescription& other_layer) = default;
+    LayerDescription& operator=(LayerDescription&& other_layer) = default;
 
     /**
      * Adds an agent function to this layer
@@ -124,7 +199,7 @@ class LayerDescription {
      * @param name Name of the submodel (passed to ModelDescription::newSubModel() was called)
      * @throw exception::InvalidLayerMember If the layer already contains any agent functions or host functions
      * @throw exception::InvalidSubModel If the layer already contains a submodel
-     * @see addSubModel(const SubModelDescription &)
+     * @see addSubModel(const CSubModelDescription &)
      */
     void addSubModel(const std::string &name);
     /**
@@ -135,7 +210,7 @@ class LayerDescription {
      * @throw exception::InvalidSubModel If the layer already contains a submodel
      * @see addSubModel(const std::string &)
      */
-    void addSubModel(const SubModelDescription &submodel);
+    void addSubModel(const CSubModelDescription &submodel);
     /**
      * Adds a host function to this layer, similar to addHostFunction
      * however the runnable function is encapsulated within an object which permits cross language support in swig.
@@ -146,28 +221,7 @@ class LayerDescription {
      */
     void _addHostFunctionCallback(HostFunctionCallback *func_callback);
 
- public:
-    /**
-     * @return The layer's name
-     */
-    std::string getName() const;
-    /**
-     * @return The index of the layer within the model's execution
-     */
-    flamegpu::size_type getIndex() const;
-    /**
-     * @return The total number of agent functions within the layer
-     */
-    flamegpu::size_type getAgentFunctionsCount() const;
-    /**
-     * @return The total number of host functions within the layer
-     */
-    flamegpu::size_type getHostFunctionsCount() const;
 #ifdef SWIG
-    /**
-     * @return The total number of host function callbacks within the layer
-     */
-    inline flamegpu::size_type getHostFunctionCallbackCount() const;
     /**
      * Adds a host function to this layer, similar to addHostFunction
      * however the runnable function is encapsulated within an object which permits cross language support in swig.
@@ -178,43 +232,6 @@ class LayerDescription {
      */
     inline void addHostFunctionCallback(HostFunctionCallback *func_callback);
 #endif
-
-    /**
-     * @param index Index of the function to return
-     * @return An immutable reference to the agent function at the provided index
-     * @throw exception::OutOfBoundsException When index exceeds number of agent functions in the layer
-     * @see LayerDescription::getAgentFunctionsCount()
-     * @note Functions are stored in a set, so order may change as new functions are added
-     */
-    const AgentFunctionDescription &getAgentFunction(unsigned int index) const;
-    /**
-     * @param index Index of the function to return
-     * @return A function pointer to the host function at the provided index
-     * @throw exception::OutOfBoundsException When index exceeds number of host functions in the layer
-     * @see LayerDescription::getHostFunctionsCount()
-     * @note Functions are stored in a set, so order may change as new functions are added
-     */
-    FLAMEGPU_HOST_FUNCTION_POINTER getHostFunction(unsigned int index) const;
-#ifdef SWIG
-    /**
-     * @param index Index of the function to return
-     * @return A function callback to the host function at the provided index
-     * @throw exception::OutOfBoundsException When index exceeds number of host functions in the layer
-     * @see LayerDescription::getHostFunctionCallbackCount()
-     * @note Functions are stored in a set, so order may change as new functions are added
-     */
-    inline HostFunctionCallback* getHostFunctionCallback(unsigned int index) const;
-#endif
-
- private:
-    /**
-     * Root of the model hierarchy
-     */
-    std::weak_ptr<const ModelData> model;
-    /**
-     * The class which stores all of the layer's data.
-     */
-    LayerData *const layer;
 };
 
 
@@ -230,7 +247,7 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
     }
     AgentFunctionWrapper * func_compare = AgentFunction::fnPtr();
     // Find the matching agent function in model hierarchy
-    auto mdl = model.lock();
+    auto mdl = layer->model.lock();
     if (!mdl) {
         THROW exception::ExpiredWeakPtr();
     }
@@ -322,11 +339,11 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
 void LayerDescription::addHostFunctionCallback(HostFunctionCallback* func_callback) {
     this->_addHostFunctionCallback(func_callback);
 }
-flamegpu::size_type LayerDescription::getHostFunctionCallbackCount() const {
+flamegpu::size_type CLayerDescription::getHostFunctionCallbackCount() const {
     // Safe down-cast
     return static_cast<flamegpu::size_type>(layer->host_functions_callbacks.size());
 }
-HostFunctionCallback* LayerDescription::getHostFunctionCallback(unsigned int index) const {
+HostFunctionCallback* CLayerDescription::getHostFunctionCallback(unsigned int index) const {
     if (index < layer->host_functions_callbacks.size()) {
         auto it = layer->host_functions_callbacks.begin();
         for (unsigned int i = 0; i < index; ++i)

@@ -83,9 +83,9 @@ class MiniSim {
         ASSERT_NO_THROW(cudaSimulation.getPopulationData(*population));
     }
     ModelDescription model;
-    AgentDescription &agent;
+    AgentDescription agent;
     AgentVector*population;
-    EnvironmentDescription &ed;
+    EnvironmentDescription ed;
 };
 
 FLAMEGPU_STEP_FUNCTION(get_set_float) {

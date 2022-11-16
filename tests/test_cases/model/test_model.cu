@@ -20,9 +20,9 @@ TEST(ModelDescriptionTest, Agent) {
     EXPECT_FALSE(m.hasAgent(test_model::AGENT_NAME1));
     EXPECT_FALSE(m.hasAgent(test_model::AGENT_NAME2));
     EXPECT_EQ(m.getAgentsCount(), 0u);
-    AgentDescription &a = m.newAgent(test_model::AGENT_NAME1);
+    AgentDescription a = m.newAgent(test_model::AGENT_NAME1);
     EXPECT_EQ(m.getAgentsCount(), 1u);
-    AgentDescription &b = m.newAgent(test_model::AGENT_NAME2);
+    AgentDescription b = m.newAgent(test_model::AGENT_NAME2);
     EXPECT_EQ(m.getAgentsCount(), 2u);
     // Cannot create agent with same name
     EXPECT_THROW(m.newAgent(test_model::AGENT_NAME1), exception::InvalidAgentName);
@@ -36,17 +36,17 @@ TEST(ModelDescriptionTest, Agent) {
     // Returned agent is same
     EXPECT_EQ(a, m.Agent(test_model::AGENT_NAME1));
     EXPECT_EQ(b, m.Agent(test_model::AGENT_NAME2));
-    EXPECT_EQ(a, m.getAgent(test_model::AGENT_NAME1));
-    EXPECT_EQ(b, m.getAgent(test_model::AGENT_NAME2));
+    EXPECT_EQ(CAgentDescription(a), m.getAgent(test_model::AGENT_NAME1));
+    EXPECT_EQ(CAgentDescription(b), m.getAgent(test_model::AGENT_NAME2));
 }
 TEST(ModelDescriptionTest, Message) {
     ModelDescription m(test_model::MODEL_NAME);
     EXPECT_FALSE(m.hasMessage(test_model::AGENT_NAME1));
     EXPECT_FALSE(m.hasMessage(test_model::AGENT_NAME2));
     EXPECT_EQ(m.getMessagesCount(), 0u);
-    MessageBruteForce::Description &a = m.newMessage(test_model::AGENT_NAME1);
+    MessageBruteForce::Description a = m.newMessage(test_model::AGENT_NAME1);
     EXPECT_EQ(m.getMessagesCount(), 1u);
-    MessageBruteForce::Description &b = m.newMessage(test_model::AGENT_NAME2);
+    MessageBruteForce::Description b = m.newMessage(test_model::AGENT_NAME2);
     EXPECT_EQ(m.getMessagesCount(), 2u);
     // Cannot create message with same name
     EXPECT_THROW(m.newMessage(test_model::AGENT_NAME1), exception::InvalidMessageName);
@@ -70,11 +70,11 @@ TEST(ModelDescriptionTest, Layer) {
     EXPECT_FALSE(m.hasLayer(0));
     EXPECT_FALSE(m.hasLayer(1));
     EXPECT_EQ(m.getLayersCount(), 0u);
-    LayerDescription &a = m.newLayer(test_model::AGENT_NAME1);
+    LayerDescription a = m.newLayer(test_model::AGENT_NAME1);
     EXPECT_EQ(m.getLayersCount(), 1u);
     EXPECT_TRUE(m.hasLayer(0));
     EXPECT_TRUE(m.hasLayer(test_model::AGENT_NAME1));
-    LayerDescription &b = m.newLayer(test_model::AGENT_NAME2);
+    LayerDescription b = m.newLayer(test_model::AGENT_NAME2);
     EXPECT_EQ(m.getLayersCount(), 2u);
     // Cannot create layer with same name
     EXPECT_THROW(m.newLayer(test_model::AGENT_NAME1), exception::InvalidFuncLayerIndx);

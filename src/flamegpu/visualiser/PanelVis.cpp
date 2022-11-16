@@ -5,8 +5,8 @@
 namespace flamegpu {
 namespace visualiser {
 
-PanelVis::PanelVis(std::shared_ptr<PanelConfig> _m, std::shared_ptr<EnvironmentDescription> _environment)
-    : env_properties(_environment->getPropertiesMap())  // For some reason this method returns a copy, not a reference
+PanelVis::PanelVis(std::shared_ptr<PanelConfig> _m, std::shared_ptr<EnvironmentData> _environment)
+    : env_properties(_environment->properties)
     , m(std::move(_m)) {
     // Rebuild added_properties
     for (const auto &element : m->ui_elements) {
