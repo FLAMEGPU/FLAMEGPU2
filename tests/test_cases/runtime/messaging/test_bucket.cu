@@ -368,27 +368,27 @@ TEST(BucketMessageTest, SubmodelPBMPersistence) {
     // Construct submodel
     ModelDescription submodel("submodel");
     {   // MessageBucket::Description
-        MessageBucket::Description &message = submodel.newMessage<MessageBucket>("bucket");
+        MessageBucket::Description message = submodel.newMessage<MessageBucket>("bucket");
         message.setBounds(0, AGENT_COUNT);
         message.newVariable<int>("id");
     }
     {   // AgentDescription
-        AgentDescription &agent = submodel.newAgent(AGENT_NAME);
+        AgentDescription agent = submodel.newAgent(AGENT_NAME);
         agent.newVariable<int>("id");
         agent.newVariable<unsigned int>("count", 0);  // Number of messages iterated
         agent.newVariable<unsigned int>("sum", 0);  // Sums of IDs in bucket
-        auto &af = agent.newFunction("out", out_simple);
+        auto af = agent.newFunction("out", out_simple);
         af.setMessageOutput("bucket");
         af.setMessageOutputOptional(true);
         af.setFunctionCondition(ParentEvenOnlyCondition);
         agent.newFunction("in", in_simple).setMessageInput("bucket");
     }
     {   // Layer #1
-        LayerDescription &layer = submodel.newLayer();
+        LayerDescription layer = submodel.newLayer();
         layer.addAgentFunction(out_simple);
     }
     {   // Layer #2
-        LayerDescription &layer = submodel.newLayer();
+        LayerDescription layer = submodel.newLayer();
         layer.addAgentFunction(in_simple);
     }
     // Add an enviornment variable access the parent model iteration number in the submodel
@@ -399,9 +399,9 @@ TEST(BucketMessageTest, SubmodelPBMPersistence) {
     submodel.addExitCondition(ExitAfter2);
     // Construct the parent model
     ModelDescription model("model");
-    auto &smd = model.newSubModel("sub", submodel);
+    auto smd = model.newSubModel("sub", submodel);
     {
-        AgentDescription &agent = model.newAgent(AGENT_NAME);
+        AgentDescription agent = model.newAgent(AGENT_NAME);
         agent.newVariable<int>("id");
         agent.newVariable<unsigned int>("count", 0);  // Number of messages iterated
         agent.newVariable<unsigned int>("sum", 0);  // Sums of IDs in bucket
