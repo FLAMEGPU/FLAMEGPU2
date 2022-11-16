@@ -10,7 +10,8 @@ def AddGet_SetGet_test(type: str):
     Function replicates the template version in C++ by getting type qualified add, get and set 
     functions from EnvironmentDescription
     """
-    ed = pyflamegpu.EnvironmentDescription()
+    m = pyflamegpu.ModelDescription("model")
+    ed = m.Environment()
     add_func = getattr(ed, f"newProperty{type}")
     get_func = getattr(ed, f"getProperty{type}")
     set_func = getattr(ed, f"setProperty{type}")
@@ -26,7 +27,8 @@ def AddGet_SetGet_array_test(type: str):
     Function replicates the template version in C++ by getting type and array size qualified 
     add, get and set functions from EnvironmentDescription
     """
-    ed = pyflamegpu.EnvironmentDescription()
+    m = pyflamegpu.ModelDescription("model")
+    ed = m.Environment()
     add_func = getattr(ed, f"newPropertyArray{type}")
     get_func = getattr(ed, f"getPropertyArray{type}")
     set_func = getattr(ed, f"setPropertyArray{type}")
@@ -52,7 +54,8 @@ def AddGet_SetGet_array_element_test(type: str):
     Function replicates the template version in C++ by getting type and array size qualified 
     add, get and set functions from EnvironmentDescription
     """
-    ed = pyflamegpu.EnvironmentDescription()
+    m = pyflamegpu.ModelDescription("model")
+    ed = m.Environment()
     add_func = getattr(ed, f"newPropertyArray{type}")
     get_func = getattr(ed, f"getProperty{type}")
     set_func = getattr(ed, f"setProperty{type}")
@@ -74,7 +77,8 @@ def ExceptionPropertyType_test(type1: str, type2: str):
     Function replicates the template version in C++ by getting type and array size qualified 
     add, get and set functions from EnvironmentDescription
     """
-    ed = pyflamegpu.EnvironmentDescription()
+    m = pyflamegpu.ModelDescription("model")
+    ed = m.Environment()
     add_func_t1 = getattr(ed, f"newProperty{type1}")
     add_func_array_t1 = getattr(ed, f"newPropertyArray{type1}")
     set_func_t1 = getattr(ed, f"setProperty{type1}")
@@ -107,7 +111,8 @@ def ExceptionPropertyLength_test(type: str):
     Function replicates the template version in C++ by getting type and array size qualified 
     add, get and set functions from EnvironmentDescription
     """
-    ed = pyflamegpu.EnvironmentDescription()
+    m = pyflamegpu.ModelDescription("model")
+    ed = m.Environment()
     add_func = getattr(ed, f"newPropertyArray{type}")
     set_func = getattr(ed, f"setPropertyArray{type}")
     
@@ -127,7 +132,8 @@ def ExceptionPropertyLength_test(type: str):
     set_func("a", b)
 
 def ExceptionPropertyRange_test(type:str):
-    ed = pyflamegpu.EnvironmentDescription()
+    m = pyflamegpu.ModelDescription("model")
+    ed = m.Environment()
     add_func = getattr(ed, f"newPropertyArray{type}")
     set_func = getattr(ed, f"setProperty{type}")
     get_func = getattr(ed, f"getProperty{type}")
@@ -342,7 +348,8 @@ class EnvironmentDescriptionTest(TestCase):
 
 
     def test_exception_property_doesnt_exist(self):
-        ed = pyflamegpu.EnvironmentDescription()
+        m = pyflamegpu.ModelDescription("model")
+        ed = m.Environment()
         a = 12.0
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ed.getPropertyFloat("a")
@@ -365,7 +372,8 @@ class EnvironmentDescriptionTest(TestCase):
         assert e.value.type() == "InvalidEnvProperty"
 
     def test_reserved_name(self):
-        ed = pyflamegpu.EnvironmentDescription()
+        m = pyflamegpu.ModelDescription("model")
+        ed = m.Environment()
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             ed.newPropertyInt("_", 1)
         assert e.value.type() == "ReservedName"
