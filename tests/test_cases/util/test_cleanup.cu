@@ -52,8 +52,8 @@ TEST(TestCleanup, Explicit) {
 TEST(TestCleanup, CUDASimulation) {
     // Define a model and a pop.
     ModelDescription model(MODEL_NAME);
-    AgentDescription &agent = model.newAgent(AGENT_NAME);
-    flamegpu::AgentFunctionDescription& aliveDesc = agent.newFunction("alive", alive);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
+    flamegpu::AgentFunctionDescription aliveDesc = agent.newFunction("alive", alive);
     model.addInitFunction(initfn);
     model.addExecutionRoot(aliveDesc);
     model.generateLayers();
@@ -82,8 +82,8 @@ TEST(TestCleanup, CUDASimulation) {
 TEST(TestCleanup, CUDAEnsemble) {
     // Define a model and a pop.
     ModelDescription model(MODEL_NAME);
-    AgentDescription &agent = model.newAgent(AGENT_NAME);
-    flamegpu::AgentFunctionDescription& aliveDesc = agent.newFunction("alive", alive);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
+    flamegpu::AgentFunctionDescription aliveDesc = agent.newFunction("alive", alive);
     model.addInitFunction(initfn);
     model.addExecutionRoot(aliveDesc);
     model.generateLayers();
