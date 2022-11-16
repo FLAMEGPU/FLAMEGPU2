@@ -80,9 +80,8 @@ class DependencyGraphTest(TestCase):
     
     def test_ValidateEmptyGraph(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
-        graph = _m.getDependencyGraph()
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            graph.validateDependencyGraph()
+            _m.generateLayers() # Triggers validateDependencyGraph() internally
         assert e.value.type() == "InvalidDependencyGraph"
     
     def test_ValidateSingleNode(self):
@@ -90,8 +89,7 @@ class DependencyGraphTest(TestCase):
         a = _m.newAgent(AGENT_NAME)
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
         _m.addExecutionRoot(f)
-        graph = _m.getDependencyGraph()
-        assert graph.validateDependencyGraph() == True
+        _m.generateLayers() # Triggers validateDependencyGraph() internally, which throws exception on failure
     
     def test_ValidateSingleChain(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
@@ -101,9 +99,8 @@ class DependencyGraphTest(TestCase):
         f3 = a.newRTCFunction(FUNCTION_NAME3, self.agent_fn3)
         f2.dependsOn(f)
         f3.dependsOn(f2)
-        graph = _m.getDependencyGraph()
         _m.addExecutionRoot(f)
-        assert graph.validateDependencyGraph() == True
+        _m.generateLayers() # Triggers validateDependencyGraph() internally, which throws exception on failure
     
     def test_ValidateBranch(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
@@ -113,9 +110,8 @@ class DependencyGraphTest(TestCase):
         f3 = a.newRTCFunction(FUNCTION_NAME3, self.agent_fn3)
         f2.dependsOn(f)
         f3.dependsOn(f)
-        graph = _m.getDependencyGraph()
         _m.addExecutionRoot(f)
-        assert graph.validateDependencyGraph() == True
+        _m.generateLayers() # Triggers validateDependencyGraph() internally, which throws exception on failure
     
     def test_ValidateCycle(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
@@ -126,10 +122,9 @@ class DependencyGraphTest(TestCase):
         f2.dependsOn(f)
         f2.dependsOn(f3)
         f3.dependsOn(f2)
-        graph = _m.getDependencyGraph()
         _m.addExecutionRoot(f)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            graph.validateDependencyGraph()
+            _m.generateLayers() # Triggers validateDependencyGraph() internally
         assert e.value.type() == "InvalidDependencyGraph"
     
     def test_ValidateRootWithDependencies(self):
@@ -140,10 +135,9 @@ class DependencyGraphTest(TestCase):
         f3 = a.newRTCFunction(FUNCTION_NAME3, self.agent_fn3)
         f2.dependsOn(f)
         f3.dependsOn(f2)
-        graph = _m.getDependencyGraph()
         _m.addExecutionRoot(f2)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            graph.validateDependencyGraph()
+            _m.generateLayers() # Triggers validateDependencyGraph() internally
         assert e.value.type() == "InvalidDependencyGraph"
     
     def test_ConstructLayersSingleChain(self):
@@ -154,10 +148,8 @@ class DependencyGraphTest(TestCase):
         f3 = a.newRTCFunction(FUNCTION_NAME3, self.agent_fn3)
         f2.dependsOn(f)
         f3.dependsOn(f2)
-        graph = _m.getDependencyGraph()
         _m.addExecutionRoot(f)
-        _m.generateLayers()
-        assert graph.validateDependencyGraph() == True
+        _m.generateLayers() # Triggers validateDependencyGraph() internally, which throws exception on failure
         assert _m.getLayersCount() == 3
     
     def test_ConstructLayersRootTwoChildrenConflict(self):
@@ -168,7 +160,6 @@ class DependencyGraphTest(TestCase):
         f3 = a.newRTCFunction(FUNCTION_NAME3, self.agent_fn3)
         f2.dependsOn(f)
         f3.dependsOn(f)
-        graph = _m.getDependencyGraph()
         _m.addExecutionRoot(f)
         _m.generateLayers()
         assert _m.getLayersCount() == 3
@@ -179,10 +170,8 @@ class DependencyGraphTest(TestCase):
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
         hf = pyflamegpu.HostFunctionDescription(HOST_FN_NAME1, self.host_fn1)
         hf.dependsOn(f)
-        graph = _m.getDependencyGraph()
         _m.addExecutionRoot(f)
-        _m.generateLayers()
-        assert graph.validateDependencyGraph() == True
+        _m.generateLayers() # Triggers validateDependencyGraph() internally, which throws exception on failure
     
     def test_AddHostFunctionAsDependency(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
@@ -190,10 +179,8 @@ class DependencyGraphTest(TestCase):
         f = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1)
         hf = pyflamegpu.HostFunctionDescription(HOST_FN_NAME1, self.host_fn1)
         f.dependsOn(hf)
-        graph = _m.getDependencyGraph()
         _m.addExecutionRoot(hf)
-        _m.generateLayers()
-        assert graph.validateDependencyGraph() == True
+        _m.generateLayers() # Triggers validateDependencyGraph() internally, which throws exception on failure
     
     def test_AddSubmodelAsDependent(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
@@ -206,10 +193,8 @@ class DependencyGraphTest(TestCase):
         _smd = _m.newSubModel("sub", _sm)
     
         _smd.dependsOn(f)
-        graph = _m.getDependencyGraph()
         _m.addExecutionRoot(f)
-        _m.generateLayers()
-        assert graph.validateDependencyGraph() == True
+        _m.generateLayers() # Triggers validateDependencyGraph() internally, which throws exception on failure
         assert _m.getLayersCount() == 2
     
     def test_AddSubmodelAsDependency(self):
@@ -223,10 +208,8 @@ class DependencyGraphTest(TestCase):
         _smd = _m.newSubModel("sub", _sm)
     
         f.dependsOn(_smd)
-        graph = _m.getDependencyGraph()
         _m.addExecutionRoot(_smd)
-        _m.generateLayers()
-        assert graph.validateDependencyGraph() == True
+        _m.generateLayers() # Triggers validateDependencyGraph() internally, which throws exception on failure
     
     def test_DOTDiagramSingleChain(self):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
@@ -236,10 +219,8 @@ class DependencyGraphTest(TestCase):
         f3 = a.newRTCFunction(FUNCTION_NAME3, self.agent_fn3)
         f2.dependsOn(f)
         f3.dependsOn(f2)
-        graph = _m.getDependencyGraph()
         _m.addExecutionRoot(f)
-        _m.generateLayers()
-        assert graph.validateDependencyGraph() == True
+        _m.generateLayers() # Triggers validateDependencyGraph() internally, which throws exception on failure
         _m.generateDependencyGraphDOTDiagram("singlechain.gv")
 
         # Check file contents
@@ -265,9 +246,8 @@ class DependencyGraphTest(TestCase):
         f3 = a.newRTCFunction(FUNCTION_NAME3, self.agent_fn3)
         f2.dependsOn(f)
         f3.dependsOn(f)
-        graph = _m.getDependencyGraph()
         _m.addExecutionRoot(f)
-        assert graph.validateDependencyGraph() == True
+        _m.generateLayers() # Triggers validateDependencyGraph() internally, which throws exception on failure
         _m.generateDependencyGraphDOTDiagram("twodeps.gv")
 
         # Check file contents
@@ -296,9 +276,8 @@ class DependencyGraphTest(TestCase):
         f3.dependsOn(f)
         f4.dependsOn(f2)
         f4.dependsOn(f3)
-        graph = _m.getDependencyGraph()
         _m.addExecutionRoot(f)
-        assert graph.validateDependencyGraph() == True
+        _m.generateLayers() # Triggers validateDependencyGraph() internally, which throws exception on failure
         _m.generateDependencyGraphDOTDiagram("diamond.gv")
 
         # Check file contents
@@ -334,10 +313,9 @@ class DependencyGraphTest(TestCase):
         f4.dependsOn(f2)
         f4.dependsOn(hf)
         hf2.dependsOn(f3)
-        graph = _m.getDependencyGraph()
         _m.addExecutionRoot(f)
         _m.addExecutionRoot(hf)
-        assert graph.validateDependencyGraph() == True
+        _m.generateLayers() # Triggers validateDependencyGraph() internally, which throws exception on failure
         _m.generateDependencyGraphDOTDiagram("host_functions.gv")
 
         # Check file contents
@@ -381,10 +359,9 @@ class DependencyGraphTest(TestCase):
         f4.dependsOn(hf)
         hf2.dependsOn(f3)
         _smd.dependsOn(hf2)
-        graph = _m.getDependencyGraph()
         _m.addExecutionRoot(f)
         _m.addExecutionRoot(hf)
-        assert graph.validateDependencyGraph() == True
+        _m.generateLayers() # Triggers validateDependencyGraph() internally, which throws exception on failure
         _m.generateDependencyGraphDOTDiagram("all_dependencies.gv")
 
         # Check file contents
@@ -430,7 +407,6 @@ class DependencyGraphTest(TestCase):
         f4.dependsOn(hf)
         hf2.dependsOn(f3)
         _smd.dependsOn(hf2)
-        graph = _m.getDependencyGraph()
         _m.addExecutionRoot(f)
         _m.addExecutionRoot(hf)
         _m.generateLayers()
@@ -472,7 +448,7 @@ sub
 '''
         print (expectedLayers)
         print (_m.getConstructedLayersString())
-        assert expectedLayers == graph.getConstructedLayersString()
+        assert expectedLayers == _m.getConstructedLayersString()
         assert _m.getLayersCount() == 7
 
     def test_CorrectLayersConcurrent(self):
@@ -490,8 +466,6 @@ sub
         hf2.dependsOn(f)
         hf2.dependsOn(f2)
         hf2.dependsOn(f3)
-
-        graph = _m.getDependencyGraph()
         _m.addExecutionRoot(f3)
         _m.addExecutionRoot(hf)
         _m.generateLayers()
@@ -543,7 +517,6 @@ HostFn2
         l = _m.newLayer(LAYER_NAME)
         l.addAgentFunction(f2)
 
-        graph = _m.getDependencyGraph()
         _m.addExecutionRoot(f)
 
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
