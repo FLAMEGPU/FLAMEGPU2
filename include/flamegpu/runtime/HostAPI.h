@@ -14,6 +14,7 @@
 #include "flamegpu/runtime/utility/HostEnvironment.cuh"
 #include "flamegpu/runtime/HostAPI_macros.h"
 #include "flamegpu/runtime/HostNewAgentAPI.h"
+#include "flamegpu/util/detail/cuda.cuh"
 
 namespace flamegpu {
 
@@ -115,7 +116,7 @@ template<typename T>
 void HostAPI::resizeOutputSpace(const unsigned int items) {
     if (sizeof(T) * items > d_output_space_size) {
         if (d_output_space_size) {
-            gpuErrchk(cudaFree(d_output_space));
+            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_output_space));
         }
         gpuErrchk(cudaMalloc(&d_output_space, sizeof(T) * items));
         d_output_space_size = sizeof(T) * items;

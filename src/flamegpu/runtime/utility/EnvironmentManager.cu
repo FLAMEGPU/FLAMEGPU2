@@ -7,6 +7,7 @@
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/util/nvtx.h"
+#include "flamegpu/util/detail/cuda.cuh"
 
 namespace flamegpu {
 
@@ -146,7 +147,7 @@ EnvironmentManager::~EnvironmentManager() {
         h_buffer = nullptr;
     }
     if (d_buffer) {
-        gpuErrchk(cudaFree(d_buffer));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_buffer));
         d_buffer = nullptr;
     }
     h_buffer_len = 0;

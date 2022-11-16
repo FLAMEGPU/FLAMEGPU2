@@ -12,6 +12,7 @@
 #include "flamegpu/util/detail/curand.cuh"
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/gpu/CUDASimulation.h"
+#include "flamegpu/util/detail/cuda.cuh"
 
 namespace flamegpu {
 
@@ -69,7 +70,7 @@ void RandomManager::freeDevice() {
         length = 0;
         // Release old random states on the deivce and update pointers.
         if (d_random_state) {
-            gpuErrchk(cudaFree(d_random_state));
+            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_random_state));
         }
         d_random_state = nullptr;
     }
@@ -123,7 +124,7 @@ void RandomManager::resizeDeviceArray(const size_type _length, cudaStream_t stre
         }
         // Update pointers hd=t_hd
         if (d_random_state) {
-            gpuErrchk(cudaFree(d_random_state));
+            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_random_state));
         }
         d_random_state = t_hd_random_state;
         // Init new[    ****]
@@ -166,7 +167,7 @@ void RandomManager::resizeDeviceArray(const size_type _length, cudaStream_t stre
         }
         // Release old
         if (d_random_state != nullptr) {
-            gpuErrchk(cudaFree(d_random_state));
+            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_random_state));
         }
         // Update pointer
         d_random_state = t_hd_random_state;

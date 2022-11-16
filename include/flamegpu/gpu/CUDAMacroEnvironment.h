@@ -14,6 +14,7 @@
 #include "detail/CUDAErrorChecking.cuh"
 #include "flamegpu/runtime/detail/curve/HostCurve.cuh"
 #include "flamegpu/runtime/utility/HostMacroProperty.cuh"
+#include "flamegpu/util/detail/cuda.cuh"
 
 // forward declare classes from other modules
 
@@ -50,7 +51,7 @@ class CUDAMacroEnvironment {
             , is_sub(false) { }
         ~MacroEnvProp() {
             if (d_ptr && !is_sub) {
-                gpuErrchk(cudaFree(d_ptr));
+                gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_ptr));
             }
         }
         MacroEnvProp(const MacroEnvProp& other) = delete;

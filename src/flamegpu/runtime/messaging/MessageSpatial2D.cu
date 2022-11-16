@@ -15,11 +15,9 @@
 #include "flamegpu/gpu/CUDAMessage.h"
 #include "flamegpu/gpu/CUDAScatter.cuh"
 #include "flamegpu/util/nvtx.h"
-
+#include "flamegpu/util/detail/cuda.cuh"
 
 namespace flamegpu {
-
-
 
 MessageSpatial2D::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
     : MessageSpecialisationHandler()
@@ -79,18 +77,18 @@ void MessageSpatial2D::CUDAModelHandler::allocateMetaDataDevicePtr(cudaStream_t 
 void MessageSpatial2D::CUDAModelHandler::freeMetaDataDevicePtr() {
     if (d_data != nullptr) {
         d_CUB_temp_storage_bytes = 0;
-        gpuErrchk(cudaFree(d_CUB_temp_storage));
-        gpuErrchk(cudaFree(d_histogram));
-        gpuErrchk(cudaFree(hd_data.PBM));
-        gpuErrchk(cudaFree(d_data));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_CUB_temp_storage));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_histogram));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(hd_data.PBM));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_data));
         d_CUB_temp_storage = nullptr;
         d_histogram = nullptr;
         hd_data.PBM = nullptr;
         d_data = nullptr;
         if (d_keys) {
             d_keys_vals_storage_bytes = 0;
-            gpuErrchk(cudaFree(d_keys));
-            gpuErrchk(cudaFree(d_vals));
+            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_keys));
+            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_vals));
             d_keys = nullptr;
             d_vals = nullptr;
         }
@@ -131,7 +129,7 @@ void MessageSpatial2D::CUDAModelHandler::resizeCubTemp(cudaStream_t stream) {
     gpuErrchk(cub::DeviceScan::ExclusiveSum(nullptr, bytesCheck, hd_data.PBM, d_histogram, binCount + 1, stream));
     if (bytesCheck > d_CUB_temp_storage_bytes) {
         if (d_CUB_temp_storage) {
-            gpuErrchk(cudaFree(d_CUB_temp_storage));
+            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_CUB_temp_storage));
         }
         d_CUB_temp_storage_bytes = bytesCheck;
         gpuErrchk(cudaMalloc(&d_CUB_temp_storage, d_CUB_temp_storage_bytes));
@@ -142,8 +140,8 @@ void MessageSpatial2D::CUDAModelHandler::resizeKeysVals(const unsigned int newSi
     size_t bytesCheck = newSize * sizeof(unsigned int);
     if (bytesCheck > d_keys_vals_storage_bytes) {
         if (d_keys) {
-            gpuErrchk(cudaFree(d_keys));
-            gpuErrchk(cudaFree(d_vals));
+            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_keys));
+            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_vals));
         }
         d_keys_vals_storage_bytes = bytesCheck;
         gpuErrchk(cudaMalloc(&d_keys, d_keys_vals_storage_bytes));

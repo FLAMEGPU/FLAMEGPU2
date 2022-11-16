@@ -30,6 +30,7 @@
 #include "flamegpu/util/detail/compute_capability.cuh"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/pop/DeviceAgentVector_impl.h"
+#include "flamegpu/util/detail/cuda.cuh"
 
 namespace flamegpu {
 
@@ -204,7 +205,7 @@ void CUDAAgent::validateIDCollisions(cudaStream_t stream) const {
     size_t temp_storage_bytes2 = 0;
     gpuErrchk(cub::DeviceReduce::Sum(nullptr, temp_storage_bytes2, d_keysIn, d_keysOut, agentCount - 1, stream));
     if (temp_storage_bytes2 > temp_storage_bytes) {
-        gpuErrchk(cudaFree(d_temp_storage));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_temp_storage));
         temp_storage_bytes = temp_storage_bytes2;
         gpuErrchk(cudaMalloc(&d_temp_storage, temp_storage_bytes));
     }
@@ -212,9 +213,9 @@ void CUDAAgent::validateIDCollisions(cudaStream_t stream) const {
     id_t flagsSet = 0;
     gpuErrchk(cudaMemcpyAsync(&flagsSet, d_keysOut, sizeof(id_t), cudaMemcpyDeviceToHost, stream));
     // Cleanup
-    gpuErrchk(cudaFree(d_temp_storage));
-    gpuErrchk(cudaFree(d_keysIn));
-    gpuErrchk(cudaFree(d_keysOut));
+    gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_temp_storage));
+    gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_keysIn));
+    gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_keysOut));
     if (flagsSet) {
         THROW exception::AgentIDCollision("%u agents of type '%s' share an ID with another agent of the same type, "
             "you may need to explicitly reset agent IDs for 1 or more populations before adding them to the CUDASimulation, "

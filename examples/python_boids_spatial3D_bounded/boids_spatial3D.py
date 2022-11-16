@@ -501,3 +501,6 @@ cudaSimulation.simulate();
 
 if pyflamegpu.VISUALISATION:
     visualisation.join();
+
+# Ensure profiling / memcheck work correctly
+pyflamegpu.cleanup()

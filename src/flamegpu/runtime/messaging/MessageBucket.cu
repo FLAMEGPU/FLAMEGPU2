@@ -16,6 +16,7 @@
 
 #include "flamegpu/runtime/messaging/MessageBucket/MessageBucketHost.h"
 // #include "flamegpu/runtime/messaging/MessageBucket/MessageBucketDevice.cuh"
+#include "flamegpu/util/detail/cuda.cuh"
 
 namespace flamegpu {
 
@@ -69,18 +70,18 @@ void MessageBucket::CUDAModelHandler::allocateMetaDataDevicePtr(cudaStream_t str
 void MessageBucket::CUDAModelHandler::freeMetaDataDevicePtr() {
     if (d_data != nullptr) {
         d_CUB_temp_storage_bytes = 0;
-        gpuErrchk(cudaFree(d_CUB_temp_storage));
-        gpuErrchk(cudaFree(d_histogram));
-        gpuErrchk(cudaFree(hd_data.PBM));
-        gpuErrchk(cudaFree(d_data));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_CUB_temp_storage));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_histogram));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(hd_data.PBM));
+        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_data));
         d_CUB_temp_storage = nullptr;
         d_histogram = nullptr;
         hd_data.PBM = nullptr;
         d_data = nullptr;
         if (d_keys) {
             d_keys_vals_storage_bytes = 0;
-            gpuErrchk(cudaFree(d_keys));
-            gpuErrchk(cudaFree(d_vals));
+            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_keys));
+            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_vals));
             d_keys = nullptr;
             d_vals = nullptr;
         }
@@ -121,7 +122,7 @@ void MessageBucket::CUDAModelHandler::resizeCubTemp() {
     gpuErrchk(cub::DeviceScan::ExclusiveSum(nullptr, bytesCheck, hd_data.PBM, d_histogram, bucketCount + 1));
     if (bytesCheck > d_CUB_temp_storage_bytes) {
         if (d_CUB_temp_storage) {
-            gpuErrchk(cudaFree(d_CUB_temp_storage));
+            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_CUB_temp_storage));
         }
         d_CUB_temp_storage_bytes = bytesCheck;
         gpuErrchk(cudaMalloc(&d_CUB_temp_storage, d_CUB_temp_storage_bytes));
@@ -132,8 +133,8 @@ void MessageBucket::CUDAModelHandler::resizeKeysVals(const unsigned int newSize)
     size_t bytesCheck = newSize * sizeof(unsigned int);
     if (bytesCheck > d_keys_vals_storage_bytes) {
         if (d_keys) {
-            gpuErrchk(cudaFree(d_keys));
-            gpuErrchk(cudaFree(d_vals));
+            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_keys));
+            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_vals));
         }
         d_keys_vals_storage_bytes = bytesCheck;
         gpuErrchk(cudaMalloc(&d_keys, d_keys_vals_storage_bytes));

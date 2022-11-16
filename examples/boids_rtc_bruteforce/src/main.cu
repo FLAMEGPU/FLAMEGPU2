@@ -514,5 +514,9 @@ int main(int argc, const char ** argv) {
 #ifdef VISUALISATION
     visualisation.join();
 #endif
+
+    // Ensure profiling / memcheck work correctly
+    flamegpu::util::cleanup();
+
     return 0;
 }

@@ -25,7 +25,7 @@ namespace detail {
  */
 inline void gpuAssert(cudaError_t code, const char *file, int line) {
     if (code != cudaSuccess) {
-        THROW exception::CUDAError("CUDA Error: %s(%d): %s", file, line, cudaGetErrorString(code));
+        THROW exception::CUDAError("CUDA Error: %s(%d): %s %s", file, line, cudaGetErrorName(code), cudaGetErrorString(code));
     }
 }
 

@@ -125,5 +125,8 @@ int main(int argc, const char ** argv) {
 
     cudaSimulation.getPopulationData(population);
 
+    // Ensure profiling / memcheck work correctly
+    flamegpu::util::cleanup();
+
     return 0;
 }

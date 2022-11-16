@@ -37,6 +37,7 @@
 #include "flamegpu/sim/LoggingConfig.h"
 #include "flamegpu/sim/AgentLoggingConfig.h"
 #include "flamegpu/sim/LogFrame.h"
+#include "flamegpu/util/cleanup.h"
 
 // This include has no impact if VISUALISATION is not defined
 #include "flamegpu/visualiser/visualiser_api.h"
