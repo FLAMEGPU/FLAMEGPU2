@@ -1290,6 +1290,7 @@ void CUDASimulation::reset(bool submodelReset) {
     for (auto &a : message_map) {
         a.second->setMessageCount(0);
         a.second->setTruncateMessageListFlag();
+        a.second->setPBMConstructionRequiredFlag();
     }
 
 
