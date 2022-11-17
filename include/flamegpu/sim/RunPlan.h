@@ -175,6 +175,9 @@ class RunPlan {
     RunPlanVector operator+(const RunPlanVector& rhs) const;
     RunPlanVector operator*(unsigned int rhs) const;
 
+    bool operator==(const RunPlan& rhs) const;
+    bool operator!=(const RunPlan& rhs) const;
+
  private:
     explicit RunPlan(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentData::PropData>> &environment, bool allow_0);
     uint64_t random_seed;

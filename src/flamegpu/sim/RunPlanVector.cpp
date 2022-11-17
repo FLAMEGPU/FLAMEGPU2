@@ -128,4 +128,25 @@ RunPlanVector RunPlanVector::operator*(const unsigned int rhs) const {
     return rtn;
 }
 
+bool RunPlanVector::operator==(const RunPlanVector& rhs) const {
+    if (this == &rhs)
+        return true;
+    if (this->randomPropertySeed == rhs.randomPropertySeed &&
+        this->rand == rhs.rand &&
+        this->environment == rhs.environment &&  // Could check the pointed to map matches instead
+        this->allow_0_steps == rhs.allow_0_steps &&
+        this->size() == rhs.size()) {
+        for (size_t i = 0; i < this->size(); ++i) {
+            if (!(this->at(i) == rhs.at(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+bool RunPlanVector::operator!=(const RunPlanVector& rhs) const {
+    return !((*this) == rhs);
+}
+
 }  // namespace flamegpu

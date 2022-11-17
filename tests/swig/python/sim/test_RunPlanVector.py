@@ -594,9 +594,12 @@ class TestRunPlanVector(TestCase):
     def test_operatorSubscript(self): 
         # Define the simple model to use
         model = pyflamegpu.ModelDescription("test")
-        # Create a vector of plans
+        environment = model.Environment()
+        environment.newPropertyInt("i", 0)
+        # Create a vector of plans, and make them all differ
         totalPlans = 4
         plans = pyflamegpu.RunPlanVector(model, totalPlans)
+        plans.setPropertyLerpInt("i", 0, 100)
         # Check that each in-range element can be accessed
         prev = None
         for idx in range(totalPlans):

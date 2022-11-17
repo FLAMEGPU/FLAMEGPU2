@@ -365,6 +365,77 @@ TEST(TestRunPlan, operatorMultiplication) {
         // @todo - compare more than one part? Operator== might be easier / cleaner
     }
 }
+TEST(TestRunPlan, operatorEquals) {
+    // Create a model
+    flamegpu::ModelDescription model("test");
+    auto environment = model.Environment();
+    environment.newProperty<float>("f", 1.0f);
+    environment.newProperty<int32_t>("i", -1);
+    environment.newProperty<uint32_t>("u", 1u);
+    // Create an individual run plan.
+    flamegpu::RunPlan plan(model);
+    // Set a value to a non default value to allow comparison
+    const uint64_t newSimulationSeed = 12u;
+    plan.setRandomSimulationSeed(newSimulationSeed);
+
+    {
+        // Copy the plan, test it matches
+        flamegpu::RunPlan plan2(plan);
+        EXPECT_EQ(plan, plan2);
+        // Set a property in plan, test it nolonger matches
+        plan.setProperty<float>("f", -1.0f);
+        EXPECT_NE(plan, plan2);
+        // Update plan2, they match again
+        plan2.setProperty<float>("f", -1.0f);
+        EXPECT_EQ(plan, plan2);
+        // Set a property in plan2, test it nolonger matches
+        plan2.setProperty<int32_t>("i", 25);
+        EXPECT_NE(plan, plan2);
+        // Update plan, they match again
+        plan.setProperty<int32_t>("i", 25);
+        EXPECT_EQ(plan, plan2);
+        // Same process for other internal properties
+        plan.setRandomSimulationSeed(45u);
+        EXPECT_NE(plan, plan2);
+        plan2.setRandomSimulationSeed(45u);
+        EXPECT_EQ(plan, plan2);
+        // again
+        plan.setSteps(100u);
+        EXPECT_NE(plan, plan2);
+        plan2.setSteps(100u);
+        EXPECT_EQ(plan, plan2);
+        // again
+        plan.setOutputSubdirectory("test");
+        EXPECT_NE(plan, plan2);
+        plan2.setOutputSubdirectory("test");
+        EXPECT_EQ(plan, plan2);
+    }
+    {
+        // Different model, different env
+        flamegpu::ModelDescription model2("test");
+        auto environment2 = model2.Environment();
+        environment2.newProperty<float>("f", 1.0f);
+        environment2.newProperty<int32_t>("i", -1);
+        flamegpu::RunPlan plan1(model);
+        flamegpu::RunPlan plan2(model2);
+        plan1.setProperty<float>("f", -1.0f);
+        plan2.setProperty<float>("f", -1.0f);
+        EXPECT_NE(plan1, plan2);
+    }
+    {
+        // Different model, same env
+        flamegpu::ModelDescription model2("test");
+        auto environment2 = model2.Environment();
+        environment2.newProperty<float>("f", 1.0f);
+        environment2.newProperty<int32_t>("i", -1);
+        environment2.newProperty<uint32_t>("u", 1u);
+        flamegpu::RunPlan plan1(model);
+        flamegpu::RunPlan plan2(model2);
+        plan1.setProperty<float>("f", -1.0f);
+        plan2.setProperty<float>("f", -1.0f);
+        EXPECT_NE(plan1, plan2);  // We currently only compare env pointer matches than contents of env
+    }
+}
 /*
 getPropertyArray/setPropertyArray are only declared if SWIG is defined.
 // This is not currently the case when building the test suite, so these cannot be tested here.

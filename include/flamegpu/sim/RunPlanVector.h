@@ -275,6 +275,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
     using std::vector<RunPlan>::size;
     using std::vector<RunPlan>::operator[];
     using std::vector<RunPlan>::insert;
+    using std::vector<RunPlan>::at;
 #else
     // Can't get SWIG %import to use std::vector<RunPlan> so manually implement the required items
     size_t size() const { return std::vector<RunPlan>::size(); }
@@ -290,6 +291,8 @@ class RunPlanVector : private std::vector<RunPlan>  {
     RunPlanVector& operator+=(const RunPlanVector& rhs);
     RunPlanVector& operator*=(unsigned int rhs);
     RunPlanVector operator*(unsigned int rhs) const;
+    bool operator==(const RunPlanVector& rhs) const;
+    bool operator!=(const RunPlanVector &rhs) const;
 
  private:
     RunPlanVector(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentData::PropData>> &environment, bool allow_0_steps);
