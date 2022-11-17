@@ -664,6 +664,58 @@ TEST(TestRunPlanVector, operatorSubscript) {
         prevPtr = ptr;
     }
 }
+// at()
+TEST(TestRunPlanVector, at) {
+    // Define the simple model to use
+    flamegpu::ModelDescription model("test");
+    // Create a vector of plans
+    constexpr uint32_t totalPlans = 4u;
+    flamegpu::RunPlanVector plans(model, totalPlans);
+    // Check that each in-range element can be accessed
+    flamegpu::RunPlan* prevPtr = nullptr;
+    for (uint32_t idx = 0; idx < totalPlans; idx++) {
+        flamegpu::RunPlan* ptr = nullptr;
+        EXPECT_NO_THROW(ptr = &plans.at(idx));
+        if (idx > 0) {
+            EXPECT_NE(ptr, prevPtr);
+        }
+        prevPtr = ptr;
+    }
+}
+// operator==()
+TEST(TestRunPlanVector, operatorEquals) {
+    // Define the simple model to use
+    flamegpu::ModelDescription model("test");
+    flamegpu::EnvironmentDescription env = model.Environment();
+    env.newProperty<float>("foo", -1.0f);
+    // Create a vector of plans
+    constexpr uint32_t totalPlans = 4u;
+    flamegpu::RunPlanVector plans(model, totalPlans);
+    // Make the plans unique
+    plans.setPropertyUniformRandom<float>("foo", 0, 1);
+    {
+        // Make a copy of the plans
+        flamegpu::RunPlanVector plans2(plans);
+        // Check it matches
+        EXPECT_EQ(plans, plans2);
+        // Change an element in plans2
+        plans2[totalPlans - 1].setProperty<float>("foo", 12.0f);
+        // Check it doesnt match
+        EXPECT_NE(plans, plans2);
+    }
+    {
+        // Make a copy of the plans
+        flamegpu::RunPlanVector plans2(plans);
+        // Check it matches
+        EXPECT_TRUE(plans == plans2);
+        // Add an element to plans 2, check they now differ
+        plans2.insert(plans2.begin(), plans[0]);
+        EXPECT_NE(plans, plans2);
+        // Add same element to plans 1
+        plans.insert(plans.begin(), plans2[0]);
+        EXPECT_EQ(plans, plans2);
+    }
+}
 
 /*
 // setPropertyArray is only declared if SWIG is defined.

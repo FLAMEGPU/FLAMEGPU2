@@ -82,4 +82,21 @@ RunPlanVector RunPlan::operator*(const unsigned int rhs) const {
     return rtn;
 }
 
+bool RunPlan::operator==(const RunPlan& rhs) const {
+    if (this == &rhs)
+        return true;
+    if (this->random_seed == rhs.random_seed &&
+        this->steps == rhs.steps &&
+        this->property_overrides == rhs.property_overrides &&
+        this->environment == rhs.environment &&  // Could check the pointed to map matches instead
+        this->allow_0_steps == rhs.allow_0_steps &&
+        this->output_subdirectory == rhs.output_subdirectory) {
+        return true;
+    }
+    return false;
+}
+bool RunPlan::operator!=(const RunPlan& rhs) const {
+    return !((*this) == rhs);
+}
+
 }  // namespace flamegpu

@@ -54,6 +54,22 @@ struct Any {
      * Can't assign, members are const at creation
      */
     void operator=(const Any &_other) = delete;
+    bool operator==(const Any &rhs) const {
+        if (this == &rhs)
+            return true;
+        if (this->length == rhs.length &&
+            this->type == rhs.type &&  // Could check the pointed to map matches instead
+            this->elements == rhs.elements) {
+            const char *const t_ptr = static_cast<char *>(this->ptr);
+            const char *const t_ptr2 = static_cast<char *>(rhs.ptr);
+            for (size_t i = 0; i < length; ++i) {
+                if (t_ptr[i] != t_ptr2[i])
+                    return false;
+            }
+            return true;
+        }
+        return false;
+    }
     /**
      * Data represented by this object
      */
