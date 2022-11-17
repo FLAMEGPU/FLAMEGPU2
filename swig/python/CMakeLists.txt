@@ -68,11 +68,15 @@ SET(SWIG_INPUT_FILE_NAME flamegpu)
 set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY CPLUSPLUS ON)
 set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY SWIG_MODULE_NAME ${PYTHON_MODULE_NAME})
 set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY SWIG_FLAGS "-threads")
-
+# Get the list of FLAMEGPU2 headers from the flamegpu target
+get_target_property(FLAMEGPU_HEADERS flamegpu SOURCES)
+list(FILTER FLAMEGPU_HEADERS INCLUDE REGEX ".*\.(h|hpp|cuh)$")
+# Specify the dependency for swig file processing on all known headers manually.
+set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY DEPENDS ${FLAMEGPU_HEADERS})
+unset (FLAMEGPU_HEADERS)
 # Add swig module via the native CMake integration integraiton.
 swig_add_library(${PYTHON_SWIG_TARGET_NAME}
 	TYPE SHARED
-	#TYPE STATIC
 	LANGUAGE python
 	OUTPUT_DIR ${PYTHON_LIB_TEMP_DIRECTORY}/${PYTHON_MODULE_NAME}
 	SOURCES ${SWIG_INPUT_FILE_NAME}.i
