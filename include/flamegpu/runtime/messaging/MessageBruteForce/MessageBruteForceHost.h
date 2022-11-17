@@ -225,7 +225,10 @@ class MessageBruteForce::CDescription {
      */
     bool hasVariable(const std::string& variable_name) const;
 
+#ifndef SWIG
+
  protected:
+#endif
     ///
     /// These mutable accessors will only be available via mutable subclasses
     /// This solves a multiple inheritance issue

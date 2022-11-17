@@ -877,6 +877,7 @@ TEMPLATE_VARIABLE_INSTANTIATE(getSum, flamegpu::AgentLogFrame::getSum)
 
 
 // Instantiate template versions of message functions from the API
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MessageBruteForce::CDescription::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MessageBruteForce::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MessageSpatial2D::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MessageSpatial3D::Description::newVariable)
@@ -884,6 +885,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MessageArray::Descriptio
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MessageArray2D::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MessageArray3D::Description::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::MessageBucket::Description::newVariable)
+TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MessageBruteForce::CDescription::newVariableArray)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MessageBruteForce::Description::newVariableArray)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MessageSpatial2D::Description::newVariableArray)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::MessageSpatial3D::Description::newVariableArray)
