@@ -212,17 +212,17 @@ TEST(TestRunPlanVector, setPropertyUniformDistribution) {
     const std::array<uint32_t, 3> u3Max = {{100u, 200u, 300u}};
     const std::array<float, 2> f2Min = { {1.0f, 100.f} };
     const std::array<float, 2> f2Max = { {0.0f, -100.0f} };
-    // void setPropertyUniformDistribution(const std::string &name, T min, T max);
-    plans.setPropertyUniformDistribution("f", fMin, fMax);
-    plans.setPropertyUniformDistribution("fb", fbMin, fbMax);
-    plans.setPropertyUniformDistribution("i", iMin, iMax);
+    // void setPropertyLerpRange(const std::string &name, T min, T max);
+    plans.setPropertyLerpRange("f", fMin, fMax);
+    plans.setPropertyLerpRange("fb", fbMin, fbMax);
+    plans.setPropertyLerpRange("i", iMin, iMax);
     // Check setting individual array elements
-    // void setPropertyUniformDistribution(const std::string &name, flamegpu::size_type index, T min, T max);
-    plans.setPropertyUniformDistribution("u3", 0, u3Min[0], u3Max[0]);
-    plans.setPropertyUniformDistribution("u3", 1, u3Min[1], u3Max[1]);
-    plans.setPropertyUniformDistribution("u3", 2, u3Min[2], u3Max[2]);
-    plans.setPropertyUniformDistribution("f2", 0, f2Min[0], f2Max[0]);
-    plans.setPropertyUniformDistribution("f2", 1, f2Min[1], f2Max[1]);
+    // void setPropertyLerpRange(const std::string &name, flamegpu::size_type index, T min, T max);
+    plans.setPropertyLerpRange("u3", 0, u3Min[0], u3Max[0]);
+    plans.setPropertyLerpRange("u3", 1, u3Min[1], u3Max[1]);
+    plans.setPropertyLerpRange("u3", 2, u3Min[2], u3Max[2]);
+    plans.setPropertyLerpRange("f2", 0, f2Min[0], f2Max[0]);
+    plans.setPropertyLerpRange("f2", 1, f2Min[1], f2Max[1]);
     // Check values are as expected by accessing the properties from each plan
     int i = 0;
     const double divisor = totalPlans - 1;
@@ -245,18 +245,18 @@ TEST(TestRunPlanVector, setPropertyUniformDistribution) {
     // --------------------
     flamegpu::RunPlanVector singlePlanVector(model, 1);
     // Note literals used must match the templated type not the incorrect types used, to appease MSVC warnings.
-    // void RunPlanVector::setPropertyUniformDistribution(const std::string &name, T min, T max)
-    EXPECT_THROW((singlePlanVector.setPropertyUniformDistribution<float>("f", 1.f, 100.f)), exception::OutOfBoundsException);
-    EXPECT_THROW((plans.setPropertyUniformDistribution<float>("does_not_exist", 1.f, 100.f)), flamegpu::exception::InvalidEnvProperty);
-    EXPECT_THROW((plans.setPropertyUniformDistribution<float>("i", 1.f, 100.f)), flamegpu::exception::InvalidEnvPropertyType);
-    EXPECT_THROW((plans.setPropertyUniformDistribution<uint32_t>("u3", 1u, 100u)), flamegpu::exception::InvalidEnvPropertyType);
-    // void RunPlanVector::setPropertyUniformDistribution(const std::string &name, const flamegpu::size_type
+    // void RunPlanVector::setPropertyLerpRange(const std::string &name, T min, T max)
+    EXPECT_THROW((singlePlanVector.setPropertyLerpRange<float>("f", 1.f, 100.f)), exception::OutOfBoundsException);
+    EXPECT_THROW((plans.setPropertyLerpRange<float>("does_not_exist", 1.f, 100.f)), flamegpu::exception::InvalidEnvProperty);
+    EXPECT_THROW((plans.setPropertyLerpRange<float>("i", 1.f, 100.f)), flamegpu::exception::InvalidEnvPropertyType);
+    EXPECT_THROW((plans.setPropertyLerpRange<uint32_t>("u3", 1u, 100u)), flamegpu::exception::InvalidEnvPropertyType);
+    // void RunPlanVector::setPropertyLerpRange(const std::string &name, const flamegpu::size_type
     // Extra brackets within the macro mean commas can be used due to how preproc tokenizers work
-    EXPECT_THROW((singlePlanVector.setPropertyUniformDistribution<uint32_t>("u3", 0u, 1u, 100u)), exception::OutOfBoundsException);
-    EXPECT_THROW((plans.setPropertyUniformDistribution<float>("does_not_exist", 0u, 1.f, 100.f)), flamegpu::exception::InvalidEnvProperty);
-    EXPECT_THROW((plans.setPropertyUniformDistribution<float>("u3", 0u, 1.f, 100.f)), flamegpu::exception::InvalidEnvPropertyType);
-    EXPECT_THROW((plans.setPropertyUniformDistribution<uint32_t>("u3", static_cast<flamegpu::size_type>(-1), 1u, 100u)), exception::OutOfBoundsException);
-    EXPECT_THROW((plans.setPropertyUniformDistribution<uint32_t>("u3", 4u, 1u, 100u)), exception::OutOfBoundsException);
+    EXPECT_THROW((singlePlanVector.setPropertyLerpRange<uint32_t>("u3", 0u, 1u, 100u)), exception::OutOfBoundsException);
+    EXPECT_THROW((plans.setPropertyLerpRange<float>("does_not_exist", 0u, 1.f, 100.f)), flamegpu::exception::InvalidEnvProperty);
+    EXPECT_THROW((plans.setPropertyLerpRange<float>("u3", 0u, 1.f, 100.f)), flamegpu::exception::InvalidEnvPropertyType);
+    EXPECT_THROW((plans.setPropertyLerpRange<uint32_t>("u3", static_cast<flamegpu::size_type>(-1), 1u, 100u)), exception::OutOfBoundsException);
+    EXPECT_THROW((plans.setPropertyLerpRange<uint32_t>("u3", 4u, 1u, 100u)), exception::OutOfBoundsException);
 }
 // Checking for uniformity of distribution would require a very large samples size.
 // As std:: is used, we trust the distribution is legit, and instead just check for min/max.

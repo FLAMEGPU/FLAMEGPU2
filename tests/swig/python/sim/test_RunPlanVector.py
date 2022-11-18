@@ -178,7 +178,7 @@ class TestRunPlanVector(TestCase):
     
     # Check that all values set lie within the min and max inclusive
     # @todo - should fp be [min, max) like when using RNG?
-    def test_setPropertyUniformDistribution(self): 
+    def test_setPropertyLerpRange(self): 
         # Define the simple model to use
         model = pyflamegpu.ModelDescription("test")
         # Add a few environment properties to the model.
@@ -202,13 +202,13 @@ class TestRunPlanVector(TestCase):
         u3Min = (1, 101, 201)
         u3Max = (100, 200, 300)
         # void setPropertyUniformDistribution(const std::string &name, const T &min, const T &max)
-        plans.setPropertyUniformDistributionFloat("f", fMin, fMax)
-        plans.setPropertyUniformDistributionInt("i", iMin, iMax)
+        plans.setPropertyLerpRangeFloat("f", fMin, fMax)
+        plans.setPropertyLerpRangeInt("i", iMin, iMax)
         # Check setting individual array elements
         # void setPropertyUniformDistribution(const std::string &name, const EnvironmentManager::size_type &index, const T &min, const T &max)
-        plans.setPropertyUniformDistributionUInt("u3", 0, u3Min[0], u3Max[0])
-        plans.setPropertyUniformDistributionUInt("u3", 1, u3Min[1], u3Max[1])
-        plans.setPropertyUniformDistributionUInt("u3", 2, u3Min[2], u3Max[2])
+        plans.setPropertyLerpRangeUInt("u3", 0, u3Min[0], u3Max[0])
+        plans.setPropertyLerpRangeUInt("u3", 1, u3Min[1], u3Max[1])
+        plans.setPropertyLerpRangeUInt("u3", 2, u3Min[2], u3Max[2])
         # Check values are as expected by accessing the properties from each plan
         for plan in plans:
             assert plan.getPropertyFloat("f") >= fMin
@@ -230,34 +230,34 @@ class TestRunPlanVector(TestCase):
         # Note litereals used must match the templated type not the incorrect types used, to appease MSVC warnings.
         # void RunPlanVector::setPropertyUniformDistribution(const std::string &name, const T &min, const T &max)
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            singlePlanVector.setPropertyUniformDistributionFloat("f", 1., 100.)
+            singlePlanVector.setPropertyLerpRangeFloat("f", 1., 100.)
         assert e.value.type() == "OutOfBoundsException"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            plans.setPropertyUniformDistributionFloat("does_not_exist", 1., 100.)
+            plans.setPropertyLerpRangeFloat("does_not_exist", 1., 100.)
         assert e.value.type() == "InvalidEnvProperty"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            plans.setPropertyUniformDistributionFloat("i", 1., 100.)
+            plans.setPropertyLerpRangeFloat("i", 1., 100.)
         assert e.value.type() == "InvalidEnvPropertyType"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            plans.setPropertyUniformDistributionUInt("u3", 1, 100)
+            plans.setPropertyLerpRangeUInt("u3", 1, 100)
         assert e.value.type() == "InvalidEnvPropertyType"
         # void RunPlanVector::setPropertyUniformDistribution(const std::string &name, const EnvironmentManager::size_type
         # Extra brackets within the macro mean commas can be used due to how preproc tokenizers work
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            singlePlanVector.setPropertyUniformDistributionUInt("u3", 0, 1, 100)
+            singlePlanVector.setPropertyLerpRangeUInt("u3", 0, 1, 100)
         assert e.value.type() == "OutOfBoundsException"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            plans.setPropertyUniformDistributionFloat("does_not_exist", 0, 1., 100.)
+            plans.setPropertyLerpRangeFloat("does_not_exist", 0, 1., 100.)
         assert e.value.type() == "InvalidEnvProperty"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            plans.setPropertyUniformDistributionFloat("u3", 0, 1., 100.)
+            plans.setPropertyLerpRangeFloat("u3", 0, 1., 100.)
         assert e.value.type() == "InvalidEnvPropertyType"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
             minus_one_uint32_t = -1 & 0xffffffff
-            plans.setPropertyUniformDistributionUInt("u3", minus_one_uint32_t, 1, 100)
+            plans.setPropertyLerpRangeUInt("u3", minus_one_uint32_t, 1, 100)
         assert e.value.type() == "OutOfBoundsException"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            plans.setPropertyUniformDistributionUInt("u3", 4, 1, 100)
+            plans.setPropertyLerpRangeUInt("u3", 4, 1, 100)
         assert e.value.type() == "OutOfBoundsException"
     
     # Checking for uniformity of distribution would require a very large samples size.
@@ -599,7 +599,7 @@ class TestRunPlanVector(TestCase):
         # Create a vector of plans, and make them all differ
         totalPlans = 4
         plans = pyflamegpu.RunPlanVector(model, totalPlans)
-        plans.setPropertyLerpInt("i", 0, 100)
+        plans.setPropertyLerpRangeInt("i", 0, 100)
         # Check that each in-range element can be accessed
         prev = None
         for idx in range(totalPlans):

@@ -865,7 +865,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_ID(getPropertyArray, flamegpu::RunPlan::getPropert
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setProperty, flamegpu::RunPlanVector::setProperty)
 TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(setProperty, flamegpu::RunPlanVector::setProperty)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(setPropertyArray, flamegpu::RunPlanVector::setPropertyArray)
-TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformDistribution, flamegpu::RunPlanVector::setPropertyUniformDistribution)
+TEMPLATE_VARIABLE_INSTANTIATE(setPropertyLerpRange, flamegpu::RunPlanVector::setPropertyLerpRange)
 TEMPLATE_VARIABLE_INSTANTIATE(setPropertyUniformRandom, flamegpu::RunPlanVector::setPropertyUniformRandom)
 TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyNormalRandom, flamegpu::RunPlanVector::setPropertyNormalRandom)
 TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(setPropertyLogNormalRandom, flamegpu::RunPlanVector::setPropertyLogNormalRandom)

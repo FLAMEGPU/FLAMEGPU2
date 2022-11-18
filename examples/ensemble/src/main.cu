@@ -60,9 +60,9 @@ int main(int argc, const char ** argv) {
     {
         runs.setSteps(STEPS);
         runs.setRandomSimulationSeed(12, 1);
-        runs.setPropertyUniformDistribution<int>("init", 0, 9);
-        runs.setPropertyUniformDistribution<int>("init_offset", 1, 0);
-        runs.setPropertyUniformDistribution<int>("offset", 0, 99);
+        runs.setPropertyLerpRange<int>("init", 0, 9);
+        runs.setPropertyLerpRange<int>("init_offset", 1, 0);
+        runs.setPropertyLerpRange<int>("offset", 0, 99);
     }
 
     /**

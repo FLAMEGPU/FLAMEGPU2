@@ -115,9 +115,9 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @throws exception::OutOfBoundsException If this vector has a length less than 2
      */
     template<typename T>
-    void setPropertyUniformDistribution(const std::string &name, const T min, const T max);
+    void setPropertyLerpRange(const std::string &name, const T min, const T max);
     /**
-     * Array property element equivalent of setPropertyUniformDistribution()
+     * Array property element equivalent of setPropertyLerpRange()
      * Sweep element of named environment property array over an inclusive uniform distribution
      * value = min * (1.0 - a) + max * a, where a = index/(size()-1)
      * Integer types will be rounded to the nearest integer
@@ -133,7 +133,7 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @see setPropertyUniformDistribution(const std::string &name, T min, T max)
      */
     template<typename T>
-    void setPropertyUniformDistribution(const std::string &name, const flamegpu::size_type index, const T min, const T max);
+    void setPropertyLerpRange(const std::string &name, const flamegpu::size_type index, const T min, const T max);
     /**
      * Seed the internal random generator used for random property distributions
      * This will only affect subsequent calls to setPropertyRandom()
@@ -405,26 +405,26 @@ void RunPlanVector::setPropertyArray(const std::string &name, const std::vector<
 #endif
 
 template<typename T>
-void RunPlanVector::setPropertyUniformDistribution(const std::string &name, const T min, const T max) {
+void RunPlanVector::setPropertyLerpRange(const std::string &name, const T min, const T max) {
     // Validation
     if (this->size() < 2) {
         THROW exception::OutOfBoundsException("Unable to apply a property distribution a vector with less than 2 elements, "
-            "in RunPlanVector::setPropertyUniformDistribution()\n");
+            "in RunPlanVector::setPropertyLerpRange()\n");
     }
     const auto it = environment->find(name);
     if (it == environment->end()) {
         THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
-            "in RunPlanVector::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyLerpRange()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
         THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
-            "in RunPlanVector::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyLerpRange()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     if (it->second.data.elements != 1) {
         THROW exception::InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
-            "in RunPlanVector::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyLerpRange()\n",
             name.c_str(), it->second.data.elements);
     }
     unsigned int ct = 0;
@@ -438,27 +438,27 @@ void RunPlanVector::setPropertyUniformDistribution(const std::string &name, cons
     }
 }
 template<typename T>
-void RunPlanVector::setPropertyUniformDistribution(const std::string &name, const flamegpu::size_type index, const T min, const T max) {
+void RunPlanVector::setPropertyLerpRange(const std::string &name, const flamegpu::size_type index, const T min, const T max) {
     // Validation
     if (this->size() < 2) {
         THROW exception::OutOfBoundsException("Unable to apply a property distribution a vector with less than 2 elements, "
-            "in RunPlanVector::setPropertyUniformDistribution()\n");
+            "in RunPlanVector::setPropertyLerpRange()\n");
     }
     const auto it = environment->find(name);
     if (it == environment->end()) {
         THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
-            "in RunPlanVector::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyLerpRange()\n",
             name.c_str());
     }
     if (it->second.data.type != std::type_index(typeid(T))) {
         THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
-            "in RunPlanVector::setPropertyUniformDistribution()\n",
+            "in RunPlanVector::setPropertyLerpRange()\n",
             name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
     }
     const unsigned int t_index = type_decode<T>::len_t * index + type_decode<T>::len_t;
     if (t_index > it->second.data.elements || t_index < index) {
         throw exception::OutOfBoundsException("Environment property array index out of bounds "
-            "in RunPlanVector::setPropertyUniformDistribution()\n");
+            "in RunPlanVector::setPropertyLerpRange()\n");
     }
     unsigned int ct = 0;
     for (auto &i : *this) {
