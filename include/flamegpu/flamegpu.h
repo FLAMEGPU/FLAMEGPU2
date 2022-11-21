@@ -1,7 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_FLAMEGPU_H_
 #define INCLUDE_FLAMEGPU_FLAMEGPU_H_
 
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 #ifdef __CUDACC__
 #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
 #pragma nv_diag_suppress = esa_on_defaulted_function_ignored
@@ -40,7 +40,7 @@
 #include "flamegpu/util/cleanup.h"
 #include "flamegpu/io/Telemetry.h"
 
-// This include has no impact if VISUALISATION is not defined
+// This include has no impact if FLAMEGPU_VISUALISATION is not defined
 #include "flamegpu/visualiser/visualiser_api.h"
 
 #endif  // INCLUDE_FLAMEGPU_FLAMEGPU_H_

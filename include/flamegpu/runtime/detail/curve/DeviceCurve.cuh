@@ -6,7 +6,7 @@
 #include "flamegpu/exception/FLAMEGPUDeviceException_device.cuh"
 #include "flamegpu/util/type_decode.h"
 
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 #ifdef __CUDACC__
 #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
 #pragma nv_diag_suppress = esa_on_defaulted_function_ignored
@@ -15,7 +15,7 @@
 #endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
 #endif  // __CUDACC__
 #include <glm/glm.hpp>
-#endif  // USE_GLM
+#endif  // FLAMEGPU_USE_GLM
 
 namespace flamegpu {
 namespace detail {
@@ -52,11 +52,11 @@ class DeviceCurve {
      * @param variableName A constant char array (C string) variable name.
      * @param namespace_hash Curve namespace hash for the variable.
      * @param offset an offset into the variable's buffer in bytes (offset is normally variable index * sizeof(T) * N).
-     * @tparam T The return type requested of the variable (only used for type-checking when SEATBELTS==ON).
-     * @tparam N The variable array length, 1 for non array variables (only used for type-checking when SEATBELTS==ON).
+     * @tparam T The return type requested of the variable (only used for type-checking when FLAMEGPU_SEATBELTS==ON).
+     * @tparam N The variable array length, 1 for non array variables (only used for type-checking when FLAMEGPU_SEATBELTS==ON).
      * @tparam M The length of the string literal passed to variableName. This parameter should always be implicit, and does not need to be provided.
      * @return A generic pointer to the variable value. Will be nullptr if there is an error and a DeviceError has been raised.
-     * @throws exception::DeviceError (Only when SEATBELTS==ON) If the specified variable is not found in the cuRVE hashtable, or it's details are invalid.
+     * @throws exception::DeviceError (Only when FLAMEGPU_SEATBELTS==ON) If the specified variable is not found in the cuRVE hashtable, or it's details are invalid.
      */
     template <typename T, unsigned int N, unsigned int M>
     __device__ __forceinline__ static char* getVariablePtr(const char(&variableName)[M], VariableHash namespace_hash, unsigned int offset);
@@ -75,7 +75,7 @@ class DeviceCurve {
      * @tparam T The return type requested of the variable.
      * @tparam N The variable array length, 1 for non array variables.
      * @tparam M The length of the string literal passed to variableName. This parameter should always be implicit, and does not need to be provided.
-     * @throws exception::DeviceError (Only when SEATBELTS==ON) If the specified variable is not found in the cuRVE hashtable, or it's details are invalid.
+     * @throws exception::DeviceError (Only when FLAMEGPU_SEATBELTS==ON) If the specified variable is not found in the cuRVE hashtable, or it's details are invalid.
      */
     template <typename T, unsigned int N = 1, unsigned int M>
     __device__ __forceinline__ static T getVariable(const char(&variableName)[M], VariableHash namespace_hash, unsigned int agent_index = 0, unsigned int array_index = 0);
@@ -96,7 +96,7 @@ class DeviceCurve {
      * @tparam T The type variable to be stored.
      * @tparam N The variable array length, 1 for non array variables.
      * @tparam M The length of the string literal passed to variableName. This parameter should always be implicit, and does not need to be provided.
-     * @throws exception::DeviceError (Only when SEATBELTS==ON) If the specified variable is not found in the cuRVE hashtable, or it's details are invalid.
+     * @throws exception::DeviceError (Only when FLAMEGPU_SEATBELTS==ON) If the specified variable is not found in the cuRVE hashtable, or it's details are invalid.
      */
     template <typename T, unsigned int N = 1, unsigned int M>
     __device__ __forceinline__ static void setVariable(const char(&variableName)[M], VariableHash namespace_hash, T value, unsigned int agent_index = 0, unsigned int array_index = 0);
@@ -110,7 +110,7 @@ class DeviceCurve {
          for (int idx = threadIdx.x; idx < Curve::MAX_VARIABLES; idx += blockDim.x) {
              sm()->curve_variables[idx] = d_curve_table->variables[idx];
              sm()->curve_hashes[idx] = d_curve_table->hashes[idx];
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
              sm()->curve_type_size[idx] = d_curve_table->type_size[idx];
              sm()->curve_elements[idx] = d_curve_table->elements[idx];
              sm()->curve_count[idx] = d_curve_table->count[idx];
@@ -128,7 +128,7 @@ class DeviceCurve {
      * @tparam T The return type requested of the variable.
      * @tparam M The length of the string literal passed to variableName. This parameter should always be implicit, and does not need to be provided.
      * @return The requested variable
-     * @throws exception::DeviceError (Only when SEATBELTS==ON) If the specified variable is not found in the cuRVE hashtable, or it's details are invalid.
+     * @throws exception::DeviceError (Only when FLAMEGPU_SEATBELTS==ON) If the specified variable is not found in the cuRVE hashtable, or it's details are invalid.
      */
     template <typename T, unsigned int M>
     __device__ __forceinline__ static T getAgentVariable(const char(&variableName)[M], unsigned int index);
@@ -181,7 +181,7 @@ class DeviceCurve {
      * @param index The index of the variable in the named variable vector. This corresponds to the agent/message agent/message/new-agent index within the agent/message/new-agent population.
      * @tparam T The return type requested of the variable.
      * @tparam M The length of the string literal passed to variableName. This parameter should always be implicit, and does not need to be provided.
-     * @throws exception::DeviceError (Only when SEATBELTS==ON) If the specified variable is not found in the cuRVE hashtable, or it's details are invalid.
+     * @throws exception::DeviceError (Only when FLAMEGPU_SEATBELTS==ON) If the specified variable is not found in the cuRVE hashtable, or it's details are invalid.
      */
     template <typename T, unsigned int M>
     __device__ __forceinline__ static void setAgentVariable(const char(&variableName)[M], T variable, unsigned int index);
@@ -218,14 +218,14 @@ class DeviceCurve {
      * @tparam T The return type requested of the property.
      * @tparam M The length of the string literal passed to variableName. This parameter should always be implicit, and does not need to be provided.
      * @return The requested property
-     * @throws exception::DeviceError (Only when SEATBELTS==ON) If the specified property is not found in the cuRVE hashtable, or it's details are invalid.
+     * @throws exception::DeviceError (Only when FLAMEGPU_SEATBELTS==ON) If the specified property is not found in the cuRVE hashtable, or it's details are invalid.
      */
     template <typename T, unsigned int M>
     __device__ __forceinline__ static T getEnvironmentProperty(const char(&propertyName)[M]);
     /**
      * @copydoc DeviceCurve::getEnvironmentProperty()
      * @param array_index The index of the element in the named variable array.
-     * @tparam N (Optional) Length of the array variable specified by variableName, available for parity with other APIs, checked if provided  (flamegpu must be built with SEATBELTS enabled for device error checking).
+     * @tparam N (Optional) Length of the array variable specified by variableName, available for parity with other APIs, checked if provided  (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking).
      */
     template <typename T, unsigned int N = 0, unsigned int M>
     __device__ __forceinline__ static T getEnvironmentArrayProperty(const char(&propertyName)[M], unsigned int array_index);
@@ -240,7 +240,7 @@ class DeviceCurve {
      * @tparam K The length of the 3rd dimension of the environment macro property, default 1.
      * @tparam W The length of the 4th dimension of the environment macro property, default 1.
      * @tparam M The length of the string literal passed to variableName. This parameter should always be implicit, and does not need to be provided.
-     * @throws exception::DeviceError (Only when SEATBELTS==ON) If the specified variable is not found in the cuRVE hashtable, or it's details are invalid.
+     * @throws exception::DeviceError (Only when FLAMEGPU_SEATBELTS==ON) If the specified variable is not found in the cuRVE hashtable, or it's details are invalid.
      */
     template<typename T, unsigned int I = 1, unsigned int J = 1, unsigned int K = 1, unsigned int W = 1, unsigned int M>
     __device__ __forceinline__ static char *getEnvironmentMacroProperty(const char(&name)[M]);
@@ -264,7 +264,7 @@ template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ char* DeviceCurve::getVariablePtr(const char(&variableName)[M], const VariableHash namespace_hash, const unsigned int offset) {
     using detail::sm;
     const Variable cv = getVariableIndex(Curve::variableHash(variableName) + namespace_hash);
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (cv == UNKNOWN_VARIABLE) {
         DTHROW("Curve variable with name '%s' was not found.\n", variableName);
         return nullptr;
@@ -291,7 +291,7 @@ __device__ __forceinline__ T DeviceCurve::getVariable(const char(&variableName)[
     const unsigned int buffer_offset = agent_index * static_cast<unsigned int>(sizeof(T)) * N + array_index * sizeof(typename type_decode<T>::type_t);
     T *value_ptr = reinterpret_cast<T*>(getVariablePtr<T, N>(variableName, namespace_hash, buffer_offset));
 
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (!value_ptr)
         return {};
 #endif
@@ -302,7 +302,7 @@ __device__ __forceinline__ T DeviceCurve::getVariable_ldg(const char(&variableNa
     const unsigned int buffer_offset = agent_index * static_cast<unsigned int>(sizeof(T)) * N + array_index * sizeof(typename type_decode<T>::type_t);
     T *value_ptr = reinterpret_cast<T*>(getVariablePtr<T, N>(variableName, namespace_hash, buffer_offset));
 
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (!value_ptr)
         return {};
 #endif
@@ -313,7 +313,7 @@ __device__ __forceinline__ void DeviceCurve::setVariable(const char(&variableNam
     const unsigned int buffer_offset = agent_index * static_cast<unsigned int>(sizeof(T)) * N + array_index * sizeof(typename type_decode<T>::type_t);
     T* value_ptr = reinterpret_cast<T*>(getVariablePtr<T, N>(variableName, namespace_hash, buffer_offset));
 
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (!value_ptr)
         return;
 #endif

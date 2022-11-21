@@ -165,7 +165,7 @@ TEST(DeviceAPITest, ArrayGet) {
         EXPECT_EQ(instance.getVariable<int>("a4"), 16 + j);
     }
 }
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 FLAMEGPU_AGENT_FUNCTION(agent_fn_da_set_glm, MessageNone, MessageNone) {
     // Read array from `array_var`
     // Store it's values back in `a1` -> `a4`

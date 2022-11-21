@@ -1,5 +1,5 @@
 # Minimum CMake version 3.18 for CUDA --std=c++17 
-cmake_minimum_required(VERSION VERSION 3.18 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18...3.25 FATAL_ERROR)
 include(FetchContent)
 
 
@@ -151,6 +151,14 @@ if(NOT SWIG_FOUND)
     # Attempt to find swig again, but as REQUIRED.
     find_package(SWIG ${SWIG_MINIMUM_SUPPORTED_VERSION} REQUIRED)
 endif()
+
+# Mark some CACHE vars advanced for a cleaner GUI
+mark_as_advanced(FETCHCONTENT_SOURCE_DIR_SWIG)
+mark_as_advanced(FETCHCONTENT_QUIET)
+mark_as_advanced(FETCHCONTENT_BASE_DIR)
+mark_as_advanced(FETCHCONTENT_FULLY_DISCONNECTED)
+mark_as_advanced(FETCHCONTENT_UPDATES_DISCONNECTED) 
+mark_as_advanced(FETCHCONTENT_UPDATES_DISCONNECTED_SWIG) 
 
 # Set flags for SWIG.
 set(CMAKE_SWIG_FLAGS)

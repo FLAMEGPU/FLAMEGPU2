@@ -1479,7 +1479,7 @@ TEST(DeviceAgentCreationTest, Output_Array) {
     EXPECT_EQ(is_1, AGENT_COUNT);  // Original agents (unchanged)
     EXPECT_EQ(is_12, AGENT_COUNT);  // New agents
 }
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 FLAMEGPU_AGENT_FUNCTION(ArrayVarDeviceBirth_DefaultWorks_glm, MessageNone, MessageNone) {
     unsigned int i = FLAMEGPU->getVariable<unsigned int>("id") * 3;
     FLAMEGPU->agent_out.setVariable<unsigned int>("id", i);

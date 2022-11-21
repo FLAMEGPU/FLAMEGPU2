@@ -40,7 +40,7 @@ class MessageArray::In {
         * @note See member variable documentation for their purposes
         */
         __device__ Message(const MessageArray::In &parent, const size_type _index) : _parent(parent), index(_index) {}
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         /**
          * A null message which always returns the message at index 0
          */
@@ -78,9 +78,9 @@ class MessageArray::In {
          * @tparam T Type of the message variable being accessed
          * @tparam N The length of the array variable, as set within the model description hierarchy
          * @tparam M Length of variable_name, this should always be implicit if passing a string literal
-         * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-         * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
-         * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
          */
         template<typename T, flamegpu::size_type N, unsigned int M>
         __device__ T getVariable(const char(&variable_name)[M], unsigned int index) const;
@@ -177,9 +177,9 @@ class MessageArray::In {
              * @tparam T Type of the message variable being accessed
              * @tparam N The length of the array variable, as set within the model description hierarchy
              * @tparam M Length of variable_name, this should always be implicit if passing a string literal
-             * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-             * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
-             * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
              */
             template<typename T, flamegpu::size_type N, unsigned int M> __device__
             T getVariable(const char(&variable_name)[M], unsigned int index) const;
@@ -244,7 +244,7 @@ class MessageArray::In {
          * @param _radius Search radius
          */
         inline __device__ WrapFilter(const size_type _length, const size_type x, const size_type _radius);
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         /**
          * A null filter which always returns 0 messages
          */
@@ -254,7 +254,7 @@ class MessageArray::In {
          * Returns an iterator to the start of the message list subset about the search origin
          */
         inline __device__ iterator begin(void) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
             if (!this->length)
                 return iterator(*this, radius);
 #endif
@@ -376,9 +376,9 @@ class MessageArray::In {
              * @tparam T Type of the message variable being accessed
              * @tparam N The length of the array variable, as set within the model description hierarchy
              * @tparam M Length of variable_name, this should always be implicit if passing a string literal
-             * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-             * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
-             * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
              */
             template<typename T, flamegpu::size_type N, unsigned int M>
             __device__ T getVariable(const char(&variable_name)[M], unsigned int index) const;
@@ -444,7 +444,7 @@ class MessageArray::In {
          */
 
         inline __device__ Filter(size_type _length, size_type x, size_type _radius);
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         /**
          * A null filter which always returns 0 messages
          */
@@ -507,7 +507,7 @@ class MessageArray::In {
      * @note The location x must be within the bounds of the message list
      */
     inline __device__ WrapFilter wrap(const size_type x, const size_type radius = 1) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         if (radius == 0) {
             DTHROW("Invalid radius %u for accessing array messagelist of length %u\n", radius, length);
             return WrapFilter();
@@ -540,7 +540,7 @@ class MessageArray::In {
      * @note The location x must be within the bounds of the message list
      */
     inline __device__ Filter operator() (const size_type x, const size_type radius = 1) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         if (radius == 0) {
             DTHROW("Invalid radius %u for accessing array messagelist of length %u\n", radius, length);
             return Filter();
@@ -559,7 +559,7 @@ class MessageArray::In {
         return length;
     }
     __device__ Message at(const size_type index) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         if (index >= length) {
             DTHROW("Index is out of bounds for Array messagelist (%u >= %u).\n", index, length);
             return Message(*this);
@@ -588,7 +588,7 @@ class MessageArray::Out {
      */
     __device__ Out(const void *_metadata, unsigned int *scan_flag_messageOutput)
         : scan_flag(scan_flag_messageOutput)
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         , metadata(reinterpret_cast<const MetaData*>(_metadata))
 #else
         , metadata(nullptr)
@@ -616,9 +616,9 @@ class MessageArray::Out {
      * @tparam T The type of the variable, as set within the model description hierarchy
      * @tparam N The length of the array variable, as set within the model description hierarchy
      * @tparam M variable_name length, this should be ignored as it is implicitly set
-     * @throws exception::DeviceError If name is not a valid variable within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If name is not a valid variable within the message (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N, unsigned int M>
     __device__ void setVariable(const char(&variable_name)[M], unsigned int index, T value) const;
@@ -636,7 +636,7 @@ class MessageArray::Out {
 
 template<typename T, unsigned int N>
 __device__ T MessageArray::In::Message::getVariable(const char(&variable_name)[N]) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Ensure that the message is within bounds.
     if (index >= this->_parent.length) {
         DTHROW("Invalid Array message, unable to get variable '%s'.\n", variable_name);
@@ -649,7 +649,7 @@ __device__ T MessageArray::In::Message::getVariable(const char(&variable_name)[N
 template<typename T, flamegpu::size_type N, unsigned int M> __device__
 T MessageArray::In::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
     // simple indexing assumes index is the thread number (this may change later)
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Ensure that the message is within bounds.
     if (index >= this->_parent.length) {
         DTHROW("Invalid Array message, unable to get variable '%s'.\n", variable_name);
@@ -662,7 +662,7 @@ T MessageArray::In::Message::getVariable(const char(&variable_name)[M], const un
 }
 template<typename T, unsigned int N>
 __device__ T MessageArray::In::WrapFilter::Message::getVariable(const char(&variable_name)[N]) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Ensure that the message is within bounds.
     if (index_1d >= this->_parent.length) {
         DTHROW("Invalid Array message, unable to get variable '%s'.\n", variable_name);
@@ -675,7 +675,7 @@ __device__ T MessageArray::In::WrapFilter::Message::getVariable(const char(&vari
 template<typename T, flamegpu::size_type N, unsigned int M> __device__
 T MessageArray::In::WrapFilter::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
     // simple indexing assumes index is the thread number (this may change later)
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Ensure that the message is within bounds.
     if (index_1d >= this->_parent.length) {
         DTHROW("Invalid Array message, unable to get variable '%s'.\n", variable_name);
@@ -688,7 +688,7 @@ T MessageArray::In::WrapFilter::Message::getVariable(const char(&variable_name)[
 }
 template<typename T, unsigned int N>
 __device__ T MessageArray::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Ensure that the message is within bounds.
     if (index_1d >= this->_parent.length) {
         DTHROW("Invalid Array message, unable to get variable '%s'.\n", variable_name);
@@ -701,7 +701,7 @@ __device__ T MessageArray::In::Filter::Message::getVariable(const char(&variable
 template<typename T, flamegpu::size_type N, unsigned int M> __device__
 T MessageArray::In::Filter::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
     // simple indexing assumes index is the thread number (this may change later)
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Ensure that the message is within bounds.
     if (index_1d >= this->_parent.length) {
         DTHROW("Invalid Array message, unable to get variable '%s'.\n", variable_name);
@@ -716,7 +716,7 @@ T MessageArray::In::Filter::Message::getVariable(const char(&variable_name)[M], 
 template<typename T, unsigned int N>
 __device__ void MessageArray::Out::setVariable(const char(&variable_name)[N], T value) const {  // message name or variable name
     if (variable_name[0] == '_') {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in MessageArray::Out::setVariable().\n", variable_name);
 #endif
         return;  // Fail silently
@@ -731,7 +731,7 @@ __device__ void MessageArray::Out::setVariable(const char(&variable_name)[N], T 
 template<typename T, unsigned int N, unsigned int M>
 __device__ void MessageArray::Out::setVariable(const char(&variable_name)[M], const unsigned int array_index, T value) const {
     if (variable_name[0] == '_') {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in MessageArray::Out::setVariable().\n", variable_name);
 #endif
         return;  // Fail silently
@@ -750,7 +750,7 @@ __device__ void MessageArray::Out::setVariable(const char(&variable_name)[M], co
 __device__ void MessageArray::Out::setIndex(const size_type id) const {
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
 
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (id >= metadata->length) {
         DTHROW("MessageArray index [%u] is out of bounds [%u]\n", id, metadata->length);
     }
@@ -767,7 +767,7 @@ __device__ MessageArray::In::WrapFilter::WrapFilter(const size_type _length, con
     , length(_length) {
     loc = x;
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 __device__ inline MessageArray::In::WrapFilter::WrapFilter()
     : radius(0)
     , length(0) {
@@ -775,7 +775,7 @@ __device__ inline MessageArray::In::WrapFilter::WrapFilter()
 }
 #endif
 __device__ MessageArray::In::WrapFilter::Message& MessageArray::In::WrapFilter::Message::operator++() {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (!_parent.length)
         return *this;
 #endif
@@ -794,7 +794,7 @@ __device__ MessageArray::In::Filter::Filter(const size_type _length, const size_
     min_cell = static_cast<int>(x) - static_cast<int>(_radius) < 0 ? -static_cast<int>(x) : -static_cast<int>(_radius);
     max_cell = x + _radius >= _length ? static_cast<int>(_length) - 1 - static_cast<int>(x) : static_cast<int>(_radius);
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 __device__ inline MessageArray::In::Filter::Filter()
     : length(0) {
     loc = 0;
@@ -803,7 +803,7 @@ __device__ inline MessageArray::In::Filter::Filter()
 }
 #endif
 __device__ MessageArray::In::Filter::Message& MessageArray::In::Filter::Message::operator++() {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (!_parent.length)
         return *this;
 #endif

@@ -1,6 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_VISUALISER_AGENTSTATEVIS_H_
 #define INCLUDE_FLAMEGPU_VISUALISER_AGENTSTATEVIS_H_
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
 
 #include <string>
 #include <memory>
@@ -115,5 +115,5 @@ class AgentStateVis {
 }  // namespace visualiser
 }  // namespace flamegpu
 
-#endif  // VISUALISATION
+#endif  // FLAMEGPU_VISUALISATION
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_AGENTSTATEVIS_H_

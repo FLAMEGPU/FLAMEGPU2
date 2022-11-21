@@ -1,7 +1,7 @@
 /**
  * Tests of class: DeviceMacroProperty
- * WriteRead: Check that SEATBELTS catches a read after write in same agent fn
- * ReadWrite: Check that SEATBELTS catches a write after read in same agent fn
+ * WriteRead: Check that FLAMEGPU_SEATBELTS catches a read after write in same agent fn
+ * ReadWrite: Check that FLAMEGPU_SEATBELTS catches a write after read in same agent fn
  * add: Use DeviceAPI operator+=, then read the value back in a subsequent agent function
  * add2: Use DeviceAPI operator+, and read the returned result
  * sub: Use DeviceAPI operator-=, then read the value back in a subsequent agent function
@@ -34,7 +34,7 @@ FLAMEGPU_AGENT_FUNCTION(WriteRead, flamegpu::MessageNone, flamegpu::MessageNone)
     FLAMEGPU->setVariable<unsigned int>("b", FLAMEGPU->environment.getMacroProperty<unsigned int>("int"));
     return flamegpu::ALIVE;
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(DeviceMacroPropertyTest, WriteRead) {
 #else
 TEST(DeviceMacroPropertyTest, DISABLED_WriteRead) {
@@ -62,7 +62,7 @@ FLAMEGPU_AGENT_FUNCTION(ReadWrite, flamegpu::MessageNone, flamegpu::MessageNone)
     FLAMEGPU->setVariable<unsigned int>("b", t);
     return flamegpu::ALIVE;
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(DeviceMacroPropertyTest, ReadWrite) {
 #else
 TEST(DeviceMacroPropertyTest, DISABLED_ReadWrite) {
@@ -737,7 +737,7 @@ FLAMEGPU_AGENT_FUNCTION(WriteRead, flamegpu::MessageNone, flamegpu::MessageNone)
     return flamegpu::ALIVE;
 }
 )###";
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(DeviceMacroPropertyTest, RTC_WriteRead) {
 #else
 TEST(DeviceMacroPropertyTest, DISABLED_RTC_WriteRead) {

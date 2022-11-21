@@ -18,7 +18,7 @@
 #include "flamegpu/gpu/CUDAMacroEnvironment.h"
 #include "flamegpu/runtime/utility/EnvironmentManager.cuh"
 
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
 #include "flamegpu/visualiser/ModelVis.h"
 #endif
 
@@ -52,7 +52,7 @@ class CUDASimulation : public Simulation {
     friend class HostAgentAPI;
     friend class SimRunner;
     friend class CUDAEnsemble;
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     friend struct visualiser::ModelVisData;
 #endif
     /**
@@ -291,7 +291,7 @@ class CUDASimulation : public Simulation {
      * Returns a reference to the current exit log
      */
     const RunLog &getRunLog() const override;
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     /**
      * Creates (on first call) and returns the visualisation configuration options for this model instance
      */
@@ -526,7 +526,7 @@ class CUDASimulation : public Simulation {
          * Held here for tracking when to release cuda memory
          */
         std::shared_ptr<EnvironmentManager> environment;
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         /**
          * Provides buffers for device error checking
          */
@@ -598,7 +598,7 @@ class CUDASimulation : public Simulation {
      */
     AgentDataMap agentData;
     void initOffsetsAndMap();
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     /**
      * Empty if getVisualisation() hasn't been called
      */

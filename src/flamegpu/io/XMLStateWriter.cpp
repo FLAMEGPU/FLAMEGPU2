@@ -126,7 +126,7 @@ int XMLStateWriter::writeStates(bool prettyPrint) {
             pListElement = doc.NewElement("timing");
             pListElement->SetText(sim_cfg.timing);
             pSimCfg->InsertEndChild(pListElement);
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
             // Console Mode
             pListElement = doc.NewElement("console_mode");
             pListElement->SetText(sim_cfg.console_mode);

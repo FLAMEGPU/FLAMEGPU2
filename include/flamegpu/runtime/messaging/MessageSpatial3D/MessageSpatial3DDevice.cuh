@@ -119,9 +119,9 @@ class MessageSpatial3D::In {
              * @tparam T Type of the message variable being accessed
              * @tparam N The length of the array variable, as set within the model description hierarchy
              * @tparam M Length of variable_name, this should always be implicit if passing a string literal
-             * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-             * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
-             * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
              */
             template<typename T, flamegpu::size_type N, unsigned int M> __device__
             T getVariable(const char(&variable_name)[M], unsigned int index) const;
@@ -338,9 +338,9 @@ class MessageSpatial3D::In {
              * @tparam T Type of the message variable being accessed
              * @tparam N The length of the array variable, as set within the model description hierarchy
              * @tparam M Length of variable_name, this should always be implicit if passing a string literal
-             * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-             * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
-             * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
              */
             template<typename T, flamegpu::size_type N, unsigned int M> __device__
             T getVariable(const char(&variable_name)[M], unsigned int index) const;
@@ -525,7 +525,7 @@ class MessageSpatial3D::In {
      * @note Unlike the regular iterator, this iterator will not return messages outside of the search radius. The wrapped distance can be returned via WrapFilter::Message::distance()
      */
     inline __device__ WrapFilter wrap(const float x, const float y, const float z) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         if (x > metadata->max[0] ||
             y > metadata->max[1] ||
             z > metadata->max[2] ||
@@ -584,7 +584,7 @@ class MessageSpatial3D::Out : public MessageBruteForce::Out {
 
 template<typename T, unsigned int N>
 __device__ T MessageSpatial3D::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Ensure that the message is within bounds.
     if (relative_cell[0] >= 2) {
         DTHROW("MessageSpatial3D in invalid bin, unable to get variable '%s'.\n", variable_name);
@@ -597,7 +597,7 @@ __device__ T MessageSpatial3D::In::Filter::Message::getVariable(const char(&vari
 }
 template<typename T, flamegpu::size_type N, unsigned int M> __device__
 T MessageSpatial3D::In::Filter::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Ensure that the message is within bounds.
     if (relative_cell[0] >= 2) {
         DTHROW("MessageSpatial3D in invalid bin, unable to get variable '%s'.\n", variable_name);
@@ -610,7 +610,7 @@ T MessageSpatial3D::In::Filter::Message::getVariable(const char(&variable_name)[
 }
 template<typename T, unsigned int N>
 __device__ T MessageSpatial3D::In::WrapFilter::Message::getVariable(const char(&variable_name)[N]) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Ensure that the message is within bounds.
     if (relative_cell[0] >= 2) {
         DTHROW("MessageSpatial3D in invalid bin, unable to get variable '%s'.\n", variable_name);
@@ -623,7 +623,7 @@ __device__ T MessageSpatial3D::In::WrapFilter::Message::getVariable(const char(&
 }
 template<typename T, flamegpu::size_type N, unsigned int M> __device__
 T MessageSpatial3D::In::WrapFilter::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Ensure that the message is within bounds.
     if (relative_cell[0] >= 2) {
         DTHROW("MessageSpatial3D in invalid bin, unable to get variable '%s'.\n", variable_name);

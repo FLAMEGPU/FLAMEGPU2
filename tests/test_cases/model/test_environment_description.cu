@@ -36,7 +36,7 @@ void AddGet_SetGet_test() {
     EXPECT_EQ(ed.setProperty<T>("a", c), b);
     EXPECT_EQ(ed.getProperty<T>("a"), c);
 }
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 template<typename T>
 void AddGet_SetGet_vec_test() {
     ModelDescription model("test");
@@ -80,7 +80,7 @@ void AddGet_SetGet_array_test() {
         EXPECT_EQ(a[i], c[i]);
     }
 }
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 template<typename T>
 void AddGet_SetGet_array_vec_test() {
     ModelDescription model("test");
@@ -132,7 +132,7 @@ void AddGet_SetGet_array_element_test() {
         EXPECT_EQ(ed.getProperty<T>("a", i), c[i]);
     }
 }
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 template<typename T>
 void AddGet_SetGet_array_element_vec_test() {
     ModelDescription model("test");
@@ -244,7 +244,7 @@ TEST(EnvironmentDescriptionTest, AddGet_SetGetint64_t) {
 TEST(EnvironmentDescriptionTest, AddGet_SetGetuint64_t) {
     AddGet_SetGet_test<uint64_t>();
 }
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 TEST(EnvironmentDescriptionTest, AddGet_SetGetvec3) {
     AddGet_SetGet_vec_test<glm::vec3>();
 }
@@ -283,7 +283,7 @@ TEST(EnvironmentDescriptionTest, AddGet_SetGetarray_int64_t) {
 TEST(EnvironmentDescriptionTest, AddGet_SetGetarray_uint64_t) {
     AddGet_SetGet_array_test<uint64_t>();
 }
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 TEST(EnvironmentDescriptionTest, AddGet_SetGetrray_vec3) {
     AddGet_SetGet_array_vec_test<glm::vec3>();
 }
@@ -322,7 +322,7 @@ TEST(EnvironmentDescriptionTest, AddGet_SetGetarray_element_int64_t) {
 TEST(EnvironmentDescriptionTest, AddGet_SetGetarray_element_uint64_t) {
     AddGet_SetGet_array_element_test<uint64_t>();
 }
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 TEST(EnvironmentDescriptionTest, AddGet_SetGetrray_element_vec3) {
     AddGet_SetGet_array_element_vec_test<glm::vec3>();
 }
@@ -429,7 +429,7 @@ TEST(EnvironmentDescriptionTest, ExceptionPropertyRange_int64_t) {
 TEST(EnvironmentDescriptionTest, ExceptionPropertyRange_uint64_t) {
     ExceptionPropertyRange_test<uint64_t>();
 }
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 TEST(EnvironmentDescriptionTest, Exception_array_glm) {
     EnvironmentDescription ed;
     std::array<float, 15> b;

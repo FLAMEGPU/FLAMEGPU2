@@ -35,7 +35,7 @@ jobs:
     env:
       # Define constants
       BUILD_DIR: "build"
-      BUILD_TESTS: "ON"
+      FLAMEGPU_BUILD_TESTS: "ON"
       # Port matrix options to environment, for more portability.
       CUDA: ${{ matrix.cudacxx.cuda }}
       OS: ${{ matrix.cudacxx.os }}
@@ -62,8 +62,8 @@ jobs:
         cmake . -B "${{ env.BUILD_DIR }}"
         -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF"
-        -DWARNINGS_AS_ERRORS="ON"
-        -DBUILD_TESTS="${{ env.BUILD_TESTS }}"
+        -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
+        -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
 
     - name: Lint
       working-directory: ${{ env.BUILD_DIR }}

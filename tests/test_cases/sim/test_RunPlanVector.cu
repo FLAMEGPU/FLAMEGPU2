@@ -101,7 +101,7 @@ TEST(TestRunPlanVector, setProperty) {
     environment.newProperty<int32_t>("i", iOriginal);
     environment.newProperty<uint32_t, 3>("u3", u3Original);
     environment.newProperty<double, 3>("d3", d3Original);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     environment.newProperty<glm::ivec3>("ivec3", {});
     environment.newProperty<glm::ivec3, 2>("ivec32", {});
     environment.newProperty<glm::ivec3, 3>("ivec33", {});
@@ -126,7 +126,7 @@ TEST(TestRunPlanVector, setProperty) {
     plans.setProperty<double>("d3", 0, d3New[0]);
     plans.setProperty<double>("d3", 1, d3New[1]);
     plans.setProperty<double>("d3", 2, d3New[2]);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     const glm::ivec3 ivec3_1_check = glm::ivec3{ 1, 2, 3 };
     const std::array<glm::ivec3, 2> ivec3_2_check = { glm::ivec3{4, 5, 6}, glm::ivec3{7, 8, 9} };
     const std::array<glm::ivec3, 3> ivec3_3_check =
@@ -142,7 +142,7 @@ TEST(TestRunPlanVector, setProperty) {
         // Extra brackets allow template commas in macros.
         EXPECT_EQ((plan.getProperty<uint32_t, 3>("u3")), u3New);
         EXPECT_EQ((plan.getProperty<double, 3>("d3")), d3New);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
         EXPECT_EQ(plan.getProperty<glm::ivec3>("ivec3"), ivec3_1_check);
         EXPECT_EQ((plan.getProperty<glm::ivec3, 3>)("ivec33"), ivec3_3_check);
         EXPECT_EQ(plan.getProperty<glm::ivec3>("ivec32", 0), ivec3_2_check[0]);
@@ -168,7 +168,7 @@ TEST(TestRunPlanVector, setProperty) {
     EXPECT_THROW((plans.setProperty<float>("u3", 0u, 3.f)), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW((plans.setProperty<double>("d3", static_cast<flamegpu::size_type>(-1), 3)), exception::OutOfBoundsException);
     EXPECT_THROW((plans.setProperty<double>("d3", 4u, 3)), exception::OutOfBoundsException);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     EXPECT_THROW((plans.setProperty<glm::ivec3>)("ivec32", 3u, {}), exception::OutOfBoundsException);  // Out of bounds
     EXPECT_THROW((plans.setProperty<glm::ivec3>)("ivec33", 4u, {}), exception::OutOfBoundsException);  // Out of bounds
 #endif

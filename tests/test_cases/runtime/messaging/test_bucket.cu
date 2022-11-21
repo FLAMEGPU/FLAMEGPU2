@@ -792,7 +792,7 @@ TEST(TestRTCMessage_Bucket, ArrayVariable) {
     }
 }
 
-#if defined(USE_GLM)
+#if defined(FLAMEGPU_USE_GLM)
 FLAMEGPU_AGENT_FUNCTION(ArrayOut_glm, MessageNone, MessageBucket) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     glm::uvec3 t = glm::uvec3(index * 3, index * 7, index * 11);

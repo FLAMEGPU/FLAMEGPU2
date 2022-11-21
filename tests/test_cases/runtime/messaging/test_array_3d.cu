@@ -326,7 +326,7 @@ TEST(TestMessage_Array3D, Moore2W) {
 }
 
 // Exception tests
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(TestMessage_Array3D, DuplicateOutputException) {
 #else
 TEST(TestMessage_Array3D, DISABLED_DuplicateOutputException) {
@@ -428,7 +428,7 @@ FLAMEGPU_AGENT_FUNCTION(InMooreWrapOutOfBoundsX, MessageArray3D, MessageNone) {
     }
     return ALIVE;
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(TestMessage_Array3D, MooreWrap_InitOutOfBoundsX) {
 #else
 TEST(TestMessage_Array3D, DISABLED_MooreWrap_InitOutOfBoundsX) {
@@ -468,7 +468,7 @@ FLAMEGPU_AGENT_FUNCTION(InMooreWrapOutOfBoundsY, MessageArray3D, MessageNone) {
     }
     return ALIVE;
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(TestMessage_Array3D, MooreWrap_InitOutOfBoundsY) {
 #else
 TEST(TestMessage_Array3D, DISABLED_MooreWrap_InitOutOfBoundsY) {
@@ -508,7 +508,7 @@ FLAMEGPU_AGENT_FUNCTION(InMooreWrapOutOfBoundsZ, MessageArray3D, MessageNone) {
     }
     return ALIVE;
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(TestMessage_Array3D, MooreWrap_InitOutOfBoundsZ) {
 #else
 TEST(TestMessage_Array3D, DISABLED_MooreWrap_InitOutOfBoundsZ) {
@@ -548,7 +548,7 @@ FLAMEGPU_AGENT_FUNCTION(InMooreWrapBadRadius1, MessageArray3D, MessageNone) {
     }
     return ALIVE;
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(TestMessage_Array3D, MooreWrap_BadRadius1) {
 #else
 TEST(TestMessage_Array3D, DISABLED_MooreWrap_BadRadius1) {
@@ -588,7 +588,7 @@ FLAMEGPU_AGENT_FUNCTION(InMooreWrapBadRadius2, MessageArray3D, MessageNone) {
     }
     return ALIVE;
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(TestMessage_Array3D, MooreWrap_BadRadius2) {
 #else
 TEST(TestMessage_Array3D, DISABLED_MooreWrap_BadRadius2) {
@@ -628,7 +628,7 @@ FLAMEGPU_AGENT_FUNCTION(InMooreOutOfBoundsX, MessageArray3D, MessageNone) {
     }
     return ALIVE;
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(TestMessage_Array3D, Moore_InitOutOfBoundsX) {
 #else
 TEST(TestMessage_Array3D, DISABLED_Moore_InitOutOfBoundsX) {
@@ -668,7 +668,7 @@ FLAMEGPU_AGENT_FUNCTION(InMooreOutOfBoundsY, MessageArray3D, MessageNone) {
     }
     return ALIVE;
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(TestMessage_Array3D, Moore_InitOutOfBoundsY) {
 #else
 TEST(TestMessage_Array3D, DISABLED_Moore_InitOutOfBoundsY) {
@@ -708,7 +708,7 @@ FLAMEGPU_AGENT_FUNCTION(InMooreOutOfBoundsZ, MessageArray3D, MessageNone) {
     }
     return ALIVE;
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(TestMessage_Array3D, Moore_InitOutOfBoundsZ) {
 #else
 TEST(TestMessage_Array3D, DISABLED_Moore_InitOutOfBoundsZ) {
@@ -748,7 +748,7 @@ FLAMEGPU_AGENT_FUNCTION(InMooreBadRadius, MessageArray3D, MessageNone) {
     }
     return ALIVE;
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(TestMessage_Array3D, Moore_BadRadius) {
 #else
 TEST(TestMessage_Array3D, DISABLED_Moore_BadRadius) {
@@ -898,9 +898,9 @@ void test_moore_wrapped_comradius(
             ASSERT_EQ(value_success, 1u);
         }
     } else {
-        // If the comradius would lead to double message reads, a device error is thrown when SEATBELTS is enabled
+        // If the comradius would lead to double message reads, a device error is thrown when FLAMEGPU_SEATBELTS is enabled
         // Behaviour is otherwise undefined
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         EXPECT_THROW(simulation.step(), flamegpu::exception::DeviceError);
 #endif
     }
@@ -1213,7 +1213,7 @@ TEST(TestRTCMessage_Array3D, ArrayVariable) {
     }
 }
 
-#if defined(USE_GLM)
+#if defined(FLAMEGPU_USE_GLM)
 FLAMEGPU_AGENT_FUNCTION(ArrayOut_glm, MessageNone, MessageArray3D) {
     const unsigned int x = FLAMEGPU->getVariable<unsigned int, 3>("index", 0);
     const unsigned int y = FLAMEGPU->getVariable<unsigned int, 3>("index", 1);

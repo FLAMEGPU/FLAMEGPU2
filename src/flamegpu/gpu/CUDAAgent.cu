@@ -500,8 +500,8 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const 
     // get the dynamically generated header from curve rtc
     const std::string curve_dynamic_header = curve_header.getDynamicHeader(env->getBufferLen());
 
-    // output to disk if OUTPUT_RTC_DYNAMIC_FILES macro is set
-#ifdef OUTPUT_RTC_DYNAMIC_FILES
+    // output to disk if FLAMEGPU_OUTPUT_RTC_DYNAMIC_FILES macro is set
+#ifdef FLAMEGPU_OUTPUT_RTC_DYNAMIC_FILES
         // create string for agent function implementation
         std::string func_impl = std::string(func.rtc_func_name).append("_impl");
         // curve

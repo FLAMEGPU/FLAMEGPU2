@@ -1,10 +1,18 @@
 # Minimum CMake version 3.18 for CUDA --std=c++17
 # for multi-config generators, CMake must be >= 3.20 for python bindings due to use of generator expressions in outputs/byproducts
-cmake_minimum_required(VERSION VERSION 3.18 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18...3.25 FATAL_ERROR)
 
 # Defines multiple CMake targets and custom commands to build swig bindings, create a python wheel and (optionally) install it into a venv.
 # defines `pyflamegpu` - the user-facing target which creates the wheel.
 # It depends on `pyflamegpu_swig` which performs the expensive swig phase (i.e. pyflamepgu.dll/so/pyd).
+
+# Define a few advanced options which are only relevant to this file
+# By default, build into a venv, otherwise it is set to ON anyway. 
+option(FLAMEGPU_BUILD_PYTHON_VENV "Enable the use of a venv for swig/python installation" ON)
+mark_as_advanced(FLAMEGPU_BUILD_PYTHON_VENV)
+# Add option to embed the cuda version in the python local version, for pseudo downstream releases / to differentiate wheel files.
+option(FLAMEGPU_BUILD_PYTHON_LOCALVERSION "Embed CUDA version for the build in the local information" ON)
+mark_as_advanced(FLAMEGPU_BUILD_PYTHON_LOCALVERSION)
 
 # Get the root of the repository to find other CMake files etc.
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../ REALPATH)
@@ -14,10 +22,6 @@ find_package(CUDAToolkit REQUIRED)
 
 # include CMake function to enable setting of warning suppressions
 include(${FLAMEGPU_ROOT}/cmake/warnings.cmake)
-# include CMake function to enable setting of gencode flags
-include(${FLAMEGPU_ROOT}/cmake/cuda_arch.cmake)
-# Set the C++ and CUDA standard to use
-include(${FLAMEGPU_ROOT}/cmake/cxxstd.cmake)
 # Get FLAMEGPU Version information
 include(${FLAMEGPU_ROOT}/cmake/version.cmake)
 
@@ -97,14 +101,19 @@ set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} PROPERTY CUDA_SEPARABLE_COMPILATI
 # Build with the SWIG pre-processor macro enabled
 set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS "SWIG")
 
-# Set the gencode arguments for the target
-SetCUDAGencodes(TARGET "${PYTHON_SWIG_TARGET_NAME}")
+# Require C++17 as a public target property for C++ and CUDA, with no extensions, and the standard is required
+target_compile_features(${PYTHON_SWIG_TARGET_NAME} PUBLIC cxx_std_17)
+target_compile_features(${PYTHON_SWIG_TARGET_NAME} PUBLIC cuda_std_17)
+set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} PROPERTY CXX_EXTENSIONS OFF)
+set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} PROPERTY CUDA_EXTENSIONS OFF)
+set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} PROPERTY CUDA_STANDARD_REQUIRED ON)
 
 # Disable all compiler warnings, as we do not control the generated code
-DisableCompilerWarnings(TARGET "${PYTHON_SWIG_TARGET_NAME}")
+flamegpu_disable_compiler_warnings(TARGET "${PYTHON_SWIG_TARGET_NAME}")
 
 # Suppress additional warnings
-SuppressSomeCompilerWarnings(TARGET "${PYTHON_SWIG_TARGET_NAME}")
+flamegpu_suppress_some_compiler_warnings(TARGET "${PYTHON_SWIG_TARGET_NAME}")
 
 # Set bigobj property for windows compiler, required by the very large generated swig file
 if(MSVC)
@@ -114,46 +123,14 @@ endif()
 # set include directories for module build
 target_include_directories(${PYTHON_SWIG_TARGET_NAME} PRIVATE ${Python3_INCLUDE_DIRS})
 
-# Handle user options
-# This does not use common/CommonCompilerSettings as it appears to rely on swig specific properties (although this is untested.)
-if (VISUALISATION)
-  set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS VISUALISATION)
-  set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS VISUALISATION)
-endif()
-if (SEATBELTS)
-  # Debug always has seatbelts.
-  set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS SEATBELTS=1)
-  set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS SEATBELTS=1)
-else()
-  # Debug builds still have seatbelts. Non debug builds do not.
-  set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS $<IF:$<CONFIG:Debug>,SEATBELTS=1,SEATBELTS=0>)
-  set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS $<IF:$<CONFIG:Debug>,SEATBELTS=1,SEATBELTS=0>)
-endif()
-# Build SWIG for the corresponding CURAND
-string(TOUPPER CURAND_ENGINE CURAND_ENGINE_UPPER)
-if(${CURAND_ENGINE_UPPER} STREQUAL "MRG")
-  set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS CURAND_MRG32k3a)
-  set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS CURAND_MRG32k3a)
-elseif(${CURAND_ENGINE_UPPER} STREQUAL "PHILOX")
-  set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS CURAND_Philox4_32_10)
-  set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS CURAND_Philox4_32_10)
-elseif(${CURAND_ENGINE_UPPER} STREQUAL "XORWOW")
-  set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS CURAND_XORWOW)
-  set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS CURAND_XORWOW)
-endif()
-if (NOT RTC_DISK_CACHE)
-  set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS DISABLE_RTC_DISK_CACHE)
-  set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS DISABLE_RTC_DISK_CACHE)
-endif()
-if (EXPORT_RTC_SOURCES)
-  set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS OUTPUT_RTC_DYNAMIC_FILES)
-  set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS OUTPUT_RTC_DYNAMIC_FILES)
-endif ()
-# Block windows.h min and max defines.
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS NOMINMAX)
-    set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS NOMINMAX)
-endif()
+# Get the list of compile definitions from the FLAMEGPU target, and also set them for swig generation and swig compilation
+# This removes duplciation of setting FLAMEGPU compiler definitions
+get_target_property(flamegpu_compile_defines flamegpu COMPILE_DEFINITIONS)
+foreach(flamegpu_definition ${flamegpu_compile_defines})
+  set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_COMPILE_DEFINITIONS "${flamegpu_definition}")
+  set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS "${flamegpu_definition}")
+endforeach()
+unset(flamegpu_compile_defines)
 
 # link with the static flamegpu, inherriting links on nvrtc and the cuda driver api etc
 target_link_libraries(${PYTHON_SWIG_TARGET_NAME} PRIVATE flamegpu)
@@ -195,10 +172,24 @@ endforeach()
 
 # Build a list of OS specific python package_data entries.
 set(FLAMEGPU_PYTHON_PACKAGE_DATA_OS_SPECIFIC "")
-if(WIN32)
-  # @todo - See if there is a dynamic way to achieve this through target properties?
-  set(FLAMEGPU_PYTHON_PACKAGE_DATA_OS_SPECIFIC "${FLAMEGPU_PYTHON_PACKAGE_DATA_OS_SPECIFIC}'glew32.dll', 'SDL2.dll', 'DevIL.dll'")
+if (FLAMEGPU_VISUALISATION)
+  if(COMMAND flamegpu_visualiser_get_runtime_depenencies)
+    flamegpu_visualiser_get_runtime_depenencies(vis_runtime_dependencies)
+    foreach(vis_runtime_dependency ${vis_runtime_dependencies})
+      # get the filename from teh abs filepath
+      get_filename_component(vis_runtime_dependency_fname ${vis_runtime_dependency} NAME)
+      list(APPEND FLAMEGPU_PYTHON_PACKAGE_DATA_OS_SPECIFIC "'${vis_runtime_dependency_fname}'")
+      unset(vis_runtime_dependency_fname)
+    endforeach()
+    unset(vis_runtime_dependencies)
+  endif()
 endif()
+# Join the cmake list with commas to form the value for conf.py
+if(FLAMEGPU_PYTHON_PACKAGE_DATA_OS_SPECIFIC)
+  string (REPLACE ";" ", " FLAMEGPU_PYTHON_PACKAGE_DATA_OS_SPECIFIC "${FLAMEGPU_PYTHON_PACKAGE_DATA_OS_SPECIFIC}")
+endif()
+
+
 # configure the python setup.py and __init__.py files for packaging and output to the final lib output folder. Must configure into a temp dir then call file(GENERATE) due to use of generator expression in PYTHON_LIB_OUTPUT_DIRECTORY
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in
@@ -217,7 +208,7 @@ file(GENERATE
 	INPUT ${PYTHON_LIB_TEMP_DIRECTORY}/__init__.py.in)
 
 # Function to find if python module MODULE_NAME is available, and error if it is not available.
-function(search_python_module MODULE_NAME)
+function(flamegpu_search_python_module MODULE_NAME)
   execute_process(
     COMMAND ${Python3_EXECUTABLE} -c "import ${MODULE_NAME}; print(${MODULE_NAME}.__version__) if hasattr(${MODULE_NAME}, '__version__') else print('Unknown');"
     RESULT_VARIABLE _RESULT
@@ -236,9 +227,9 @@ function(search_python_module MODULE_NAME)
 endfunction()
 
 # Look for required python modules to build the python module, error if they are not found.
-search_python_module(setuptools)
-search_python_module(wheel)
-search_python_module(build)
+flamegpu_search_python_module(setuptools)
+flamegpu_search_python_module(wheel)
+flamegpu_search_python_module(build)
 
 ## ------
 # Define custom commands to produce files in the current cmake directory, a custom target which the user invokes to build the python wheel with appropraite dependencies configured, and any post-build steps required.
@@ -291,48 +282,27 @@ foreach(PYTHON_CODEGEN_FILE IN LISTS PYTHON_CODEGEN_SRC_FILES)
 endforeach()
 
 # Copy the visualisation dlls if required, this must occur before the wheel is built
-if (VISUALISATION)
-  # Copy DLLs
-  if(WIN32)
-    # sdl
-    get_filename_component(SDL2_RUNTIME_LIB_NAME ${SDL2_RUNTIME_LIBRARIES} NAME)
-    set(SDL2_PYTHON_OUTPUT_DESTINATION "${PYTHON_FLAMEGPU_LIB_OUTPUT_MODULE_DIR}/${SDL2_RUNTIME_LIB_NAME}")
-    add_custom_command(
-      OUTPUT ${SDL2_PYTHON_OUTPUT_DESTINATION}
-      DEPENDS ${SDL2_RUNTIME_LIBRARIES}
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SDL2_RUNTIME_LIBRARIES} ${SDL2_PYTHON_OUTPUT_DESTINATION}
-      COMMENT "Copying ${SDL2_RUNTIME_LIB_NAME} to ${SDL2_PYTHON_OUTPUT_DESTINATION}"
-    )
-    list(APPEND PYTHON_MODULE_TARGET_NAME_DEPENDS "${SDL2_PYTHON_OUTPUT_DESTINATION}")
-    unset(SDL2_PYTHON_OUTPUT_DESTINATION)
-    unset(SDL2_RUNTIME_LIB_NAME)
-    # glew
-    get_filename_component(GLEW_RUNTIME_LIB_NAME ${GLEW_RUNTIME_LIBRARIES} NAME)
-    set(GLEW_PYTHON_OUTPUT_DESTINATION "${PYTHON_FLAMEGPU_LIB_OUTPUT_MODULE_DIR}/${GLEW_RUNTIME_LIB_NAME}")
-    add_custom_command(
-      OUTPUT ${GLEW_PYTHON_OUTPUT_DESTINATION}
-      DEPENDS ${GLEW_RUNTIME_LIBRARIES}
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${GLEW_RUNTIME_LIBRARIES} ${GLEW_PYTHON_OUTPUT_DESTINATION}
-      COMMENT "Copying ${GLEW_RUNTIME_LIB_NAME} to ${GLEW_PYTHON_OUTPUT_DESTINATION}"
-    )
-    list(APPEND PYTHON_MODULE_TARGET_NAME_DEPENDS "${GLEW_PYTHON_OUTPUT_DESTINATION}")
-    unset(GLEW_PYTHON_OUTPUT_DESTINATION)
-    unset(GLEW_RUNTIME_LIB_NAME)
-    # DevIL
-    get_filename_component(IL_RUNTIME_LIB_NAME ${IL_RUNTIME_LIBRARIES} NAME)
-    set(IL_PYTHON_OUTPUT_DESTINATION "${PYTHON_FLAMEGPU_LIB_OUTPUT_MODULE_DIR}/${IL_RUNTIME_LIB_NAME}")
-    add_custom_command(
-      OUTPUT ${IL_PYTHON_OUTPUT_DESTINATION}
-      DEPENDS ${IL_RUNTIME_LIBRARIES}
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${IL_RUNTIME_LIBRARIES} ${IL_PYTHON_OUTPUT_DESTINATION}
-      COMMENT "Copying ${IL_RUNTIME_LIB_NAME} to ${IL_PYTHON_OUTPUT_DESTINATION}"
-    )
-    list(APPEND PYTHON_MODULE_TARGET_NAME_DEPENDS "${IL_PYTHON_OUTPUT_DESTINATION}")
-    unset(IL_PYTHON_OUTPUT_DESTINATION)
-    unset(IL_RUNTIME_LIB_NAME)
+if (FLAMEGPU_VISUALISATION)
+  if(COMMAND flamegpu_visualiser_get_runtime_depenencies)
+    flamegpu_visualiser_get_runtime_depenencies(vis_runtime_dependencies)
+    foreach(vis_runtime_dependency ${vis_runtime_dependencies})
+      # get the filename from teh abs filepath
+      get_filename_component(vis_runtime_dependency_fname ${vis_runtime_dependency} NAME)
+      set(vis_runtime_dependency_dest "${PYTHON_FLAMEGPU_LIB_OUTPUT_MODULE_DIR}/${vis_runtime_dependency_fname}")
+      add_custom_command(
+        OUTPUT ${vis_runtime_dependency_dest}
+        DEPENDS ${vis_runtime_dependency}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${vis_runtime_dependency} ${vis_runtime_dependency_dest}
+        COMMENT "Copying ${vis_runtime_dependency_fname} to ${vis_runtime_dependency_dest}"
+      )
+      # Add the file to the list of dependencies for the python module target
+      list(APPEND PYTHON_MODULE_TARGET_NAME_DEPENDS "${vis_runtime_dependency_dest}")
+      unset(vis_runtime_dependency_fname)
+      unset(vis_runtime_dependency_dest)
+    endforeach()
+    unset(vis_runtime_dependencies)
   endif()
 endif()
-
 
 # Define a custom commmand to copy the swig generated .py file to the correct destination for wheel generation. This output is then appended to the list of dependencies for the target which builds the wheel.
 set(PYTHON_FLAMEGPU_LIB_OUTPUT_MODULE_PY "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/${PYTHON_MODULE_NAME}.py")
@@ -378,9 +348,9 @@ add_custom_target(${PYTHON_MODULE_TARGET_NAME}
 add_dependencies(${PYTHON_MODULE_TARGET_NAME} ${PYTHON_SWIG_TARGET_NAME})
 
 # Build Virtual Environment for python testing and install the packaged wheel
-if(BUILD_SWIG_PYTHON_VENV)
+if(FLAMEGPU_BUILD_PYTHON_VENV)
 	# Look for python module venv, error if not found
-	search_python_module(venv)
+	flamegpu_search_python_module(venv)
 	# Testing using a virtual environment
 	set(VENV_EXECUTABLE ${Python3_EXECUTABLE} -m venv)
 	set(VENV_DIR ${PYTHON_LIB_OUTPUT_DIRECTORY}/venv)

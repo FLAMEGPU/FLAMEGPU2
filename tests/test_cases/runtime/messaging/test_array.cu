@@ -291,7 +291,7 @@ TEST(TestMessage_Array, Moore2W) {
     }
 }
 // Exception tests
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(TestMessage_Array, DuplicateOutputException) {
 #else
 TEST(TestMessage_Array, DISABLED_DuplicateOutputException) {
@@ -388,7 +388,7 @@ FLAMEGPU_AGENT_FUNCTION(InMooreWrapOutOfBoundsX, MessageArray, MessageNone) {
     }
     return ALIVE;
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(TestMessage_Array, MooreWrap_InitOutOfBoundsX) {
 #else
 TEST(TestMessage_Array, DISABLED_MooreWrap_InitOutOfBoundsX) {
@@ -428,7 +428,7 @@ FLAMEGPU_AGENT_FUNCTION(InMooreWrapBadRadius1, MessageArray, MessageNone) {
     }
     return ALIVE;
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(TestMessage_Array, MooreWrap_BadRadius1) {
 #else
 TEST(TestMessage_Array, DISABLED_MooreWrap_BadRadius1) {
@@ -468,7 +468,7 @@ FLAMEGPU_AGENT_FUNCTION(InMooreWrapBadRadius2, MessageArray, MessageNone) {
     }
     return ALIVE;
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(TestMessage_Array, MooreWrap_BadRadius2) {
 #else
 TEST(TestMessage_Array, DISABLED_MooreWrap_BadRadius2) {
@@ -508,7 +508,7 @@ FLAMEGPU_AGENT_FUNCTION(InMooreOutOfBoundsX, MessageArray, MessageNone) {
     }
     return ALIVE;
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(TestMessage_Array, Moore_InitOutOfBoundsX) {
 #else
 TEST(TestMessage_Array, DISABLED_Moore_InitOutOfBoundsX) {
@@ -548,7 +548,7 @@ FLAMEGPU_AGENT_FUNCTION(InMooreBadRadius, MessageArray, MessageNone) {
     }
     return ALIVE;
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(TestMessage_Array, Moore_BadRadius) {
 #else
 TEST(TestMessage_Array, DISABLED_Moore_BadRadius) {
@@ -664,9 +664,9 @@ void test_moore_wrap_comradius(
             ASSERT_EQ(expected_count, message_read);
         }
     } else {
-        // If the comradius would lead to double message reads, a device error is thrown when SEATBELTS is enabled
+        // If the comradius would lead to double message reads, a device error is thrown when FLAMEGPU_SEATBELTS is enabled
         // Behaviour is otherwise undefined
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         EXPECT_THROW(simulation.step(), flamegpu::exception::DeviceError);
 #endif
     }
@@ -889,7 +889,7 @@ TEST(TestRTCMessage_Array, ArrayVariable) {
     }
 }
 
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 FLAMEGPU_AGENT_FUNCTION(ArrayOut_glm, MessageNone, MessageArray) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     glm::uvec3 t = glm::uvec3(index * 3, index * 7, index * 11);

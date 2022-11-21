@@ -45,15 +45,15 @@ jobs:
     env:
       # Define constants
       BUILD_DIR: "build"
-      BUILD_TESTS: "ON"
-      BUILD_SWIG_PYTHON: "OFF"
+      FLAMEGPU_BUILD_TESTS: "ON"
+      FLAMEGPU_BUILD_PYTHON: "OFF"
       # Port matrix options to environment, for more portability.
       CUDA: ${{ matrix.cudacxx.cuda }}
       CUDA_ARCH: ${{ matrix.cudacxx.cuda_arch }}
       HOSTCXX: ${{ matrix.cudacxx.hostcxx }}
       OS: ${{ matrix.cudacxx.os }}
       CONFIG: ${{ matrix.config.config }}
-      SEATBELTS: ${{ matrix.config.SEATBELTS }}
+      FLAMEGPU_SEATBELTS: ${{ matrix.config.SEATBELTS }}
       VISUALISATION: ${{ matrix.VISUALISATION }}
 
     steps:
@@ -77,19 +77,19 @@ jobs:
         -G "${{ env.HOSTCXX }}" -A x64
         -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF"
-        -DWARNINGS_AS_ERRORS="ON"
-        -DCUDA_ARCH="${{ env.CUDA_ARCH }}"
-        -DBUILD_TESTS="${{ env.BUILD_TESTS }}"
-        -DBUILD_SWIG_PYTHON="${{ env.BUILD_SWIG_PYTHON }}"
-        -DVISUALISATION="${{ env.VISUALISATION }}"
-        -DUSE_NVTX="ON"
+        -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
+        -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
+        -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
+        -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}"
+        -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
+        -DFLAMEGPU_ENABLE_NVTX="ON"
 
     - name: Build static library
       working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --config ${{ env.CONFIG }} --target flamegpu --verbose -j `nproc`
 
     - name: Build tests
-      if: ${{ env.BUILD_TESTS == 'ON' }}
+      if: ${{ env.FLAMEGPU_BUILD_TESTS == 'ON' }}
       working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --config ${{ env.CONFIG }} --target tests --verbose -j `nproc`
 

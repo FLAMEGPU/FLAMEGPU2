@@ -550,7 +550,7 @@ class ModelDescription;  // For DependencyGraph circular dependency.
 }
 
 // If visualisation is enabled, then CUDASimulation provides access to the visualisation class. This requires a forward declaraiton to place it in the correct namespace. 
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
 namespace flamegpu {
 namespace visualiser {
 class ModelVis;
@@ -987,7 +987,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
 
 
 // Include visualisation support if enabled.
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     // Include relevant headers in the generated c++
     // @todo - Need to put the vis repo into a subfolder for more sensible include paths
     %{
@@ -1093,8 +1093,8 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
     TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_INTS(newEnvironmentPropertyToggle, flamegpu::visualiser::PanelVis::newEnvironmentPropertyToggle)
 
     
-    // Redefine the value to ensure it makes it into the python modules
-    #undef VISUALISATION
+    // Redefine the value to ensure it makes it into the python modules (without the FLAMEGPU_ prefix)
+    #undef FLAMEGPU_VISUALISATION
     #define VISUALISATION true
 #else 
     // Define in the python module as false.
@@ -1102,11 +1102,11 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
 #endif
 
 // Define pyflamegpu.SEATBELTS as true or false as appropriate, so tests can be disabled / enabled  
-#if defined(SEATBELTS) && SEATBELTS
-    #undef SEATBELTS
+#if defined(FLAMEGPU_SEATBELTS) && FLAMEGPU_SEATBELTS
+    #undef FLAMEGPU_SEATBELTS
     #define SEATBELTS true
 #elif defined(SEATBELTS)
-    #undef SEATBELTS
+    #undef FLAMEGPU_SEATBELTS
     #define SEATBELTS false
 #else
     #define SEATBELTS false

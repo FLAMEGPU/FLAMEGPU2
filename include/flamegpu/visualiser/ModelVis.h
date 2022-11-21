@@ -1,6 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_VISUALISER_MODELVIS_H_
 #define INCLUDE_FLAMEGPU_VISUALISER_MODELVIS_H_
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
 
 #include <string>
 #include <unordered_map>
@@ -269,5 +269,5 @@ class ModelVis {
 }  // namespace visualiser
 }  // namespace flamegpu
 
-#endif  // VISUALISATION
+#endif  // FLAMEGPU_VISUALISATION
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_MODELVIS_H_

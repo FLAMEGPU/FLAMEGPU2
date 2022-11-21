@@ -330,7 +330,7 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set) {
     }
 }
 
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 const char* rtc_array_get_agent_func_glm = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
     // Read array from `array_var`

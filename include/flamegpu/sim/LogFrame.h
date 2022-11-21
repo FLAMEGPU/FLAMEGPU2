@@ -186,7 +186,7 @@ struct RunLog {
          */
         int cuda_version;
         /**
-         * True if FLAME GPU was built with SEATBELTS enabled at CMake configure time
+         * True if FLAME GPU was built with FLAMEGPU_SEATBELTS enabled at CMake configure time
          * For maximum performance, this value should be false
          */
         bool seatbelts;

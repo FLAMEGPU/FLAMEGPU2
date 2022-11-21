@@ -68,7 +68,7 @@ void JSONStateWriter::doWrite(T &writer) {
                 // Timing Output
                 writer.Key("timing");
                 writer.Bool(sim_cfg.timing);
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
                 // Console mode
                 writer.Key("console_mode");
                 writer.Bool(sim_cfg.console_mode);

@@ -80,7 +80,7 @@ TEST(TestRunPlan, setProperty) {
     environment.newProperty<float, 3>("f_a", {-1.0f, 0.0f, 1.0f});
     environment.newProperty<int32_t, 3>("i_a", {-1, 0, 1 });
     environment.newProperty<uint32_t, 3>("u_a", {0, 1, 2 });
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     environment.newProperty<glm::ivec3>("ivec3", {});
     environment.newProperty<glm::ivec3, 2>("ivec32", {});
     environment.newProperty<glm::ivec3, 3>("ivec33", {});
@@ -102,7 +102,7 @@ TEST(TestRunPlan, setProperty) {
     plan.setProperty<uint32_t>("u_a", 0, 3u);
     plan.setProperty<uint32_t>("u_a", 1, 4u);
     plan.setProperty<uint32_t>("u_a", 2, 5u);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     const glm::ivec3 ivec3_1_check = glm::ivec3{ 1, 2, 3 };
     const std::array<glm::ivec3, 2> ivec3_2_check = { glm::ivec3{4, 5, 6}, glm::ivec3{7, 8, 9} };
     const std::array<glm::ivec3, 3> ivec3_3_check =
@@ -121,7 +121,7 @@ TEST(TestRunPlan, setProperty) {
     EXPECT_EQ(plan.getProperty<uint32_t>("u_a", 0), 3u);
     EXPECT_EQ(plan.getProperty<uint32_t>("u_a", 1), 4u);
     EXPECT_EQ(plan.getProperty<uint32_t>("u_a", 2), 5u);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     EXPECT_EQ(plan.getProperty<glm::ivec3>("ivec3"), ivec3_1_check);
     EXPECT_EQ((plan.getProperty<glm::ivec3, 3>)("ivec33"), ivec3_3_check);
     EXPECT_EQ(plan.getProperty<glm::ivec3>("ivec32", 0), ivec3_2_check[0]);
@@ -142,7 +142,7 @@ TEST(TestRunPlan, setProperty) {
     plan.setProperty<uint32_t>("u_a", 0, 13u);
     plan.setProperty<uint32_t>("u_a", 1, 14u);
     plan.setProperty<uint32_t>("u_a", 2, 15u);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     plan.setProperty<glm::ivec3>("ivec3", glm::ivec3{ 31, 32, 33 });
     const std::array<glm::ivec3, 3> ivec3_3_check2 =
     { glm::ivec3{ 41, 42, 43 }, glm::ivec3{44, 45, 46}, glm::ivec3{47, 48, 49} };
@@ -160,7 +160,7 @@ TEST(TestRunPlan, setProperty) {
     EXPECT_EQ(plan.getProperty<uint32_t>("u_a", 0), 13u);
     EXPECT_EQ(plan.getProperty<uint32_t>("u_a", 1), 14u);
     EXPECT_EQ(plan.getProperty<uint32_t>("u_a", 2), 15u);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     EXPECT_EQ(plan.getProperty<glm::ivec3>("ivec3"), glm::ivec3(31, 32, 33));
     EXPECT_EQ((plan.getProperty<glm::ivec3, 3>)("ivec33"), ivec3_3_check2);
     EXPECT_EQ(plan.getProperty<glm::ivec3>("ivec32", 0), ivec3_2_check[1]);
@@ -202,7 +202,7 @@ TEST(TestRunPlan, setProperty) {
     EXPECT_THROW((plan.getProperty<float>("u_a", 0u)), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW((plan.getProperty<int32_t>("i_a", static_cast<flamegpu::size_type>(-1))), exception::OutOfBoundsException);
     EXPECT_THROW((plan.getProperty<int32_t>("i_a", 4u)), exception::OutOfBoundsException);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     EXPECT_THROW((plan.setProperty<glm::ivec3>)("ivec32", 3u, {}), exception::OutOfBoundsException);  // Out of bounds
     EXPECT_THROW((plan.setProperty<glm::ivec3>)("ivec33", 4u, {}), exception::OutOfBoundsException);  // Out of bounds
     EXPECT_THROW((plan.getProperty<glm::ivec3>)("ivec32", 3u), exception::OutOfBoundsException);  // Out of bounds

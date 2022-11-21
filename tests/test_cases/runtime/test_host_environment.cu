@@ -41,7 +41,7 @@ class MiniSim {
         ed.newProperty<uint64_t>("uint64_t_", static_cast<uint64_t>(TEST_VALUE));
         ed.newProperty<float>("read_only", static_cast<float>(TEST_VALUE), true);
         ed.newProperty<bool>("bool", true);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
         ed.newProperty<glm::vec3>("vec3_", static_cast<glm::vec3>(TEST_VALUE));
 #endif
 
@@ -57,7 +57,7 @@ class MiniSim {
         ed.newProperty<uint64_t, TEST_ARRAY_LEN>("uint64_t_a_", makeInit<uint64_t>());
         ed.newProperty<int, TEST_ARRAY_LEN>("read_only_a", makeInit<int>(), true);
         ed.newProperty<bool, 3>("bool_a", {true, false, true});
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
         ed.newProperty<glm::vec3, TEST_ARRAY_LEN>("vec3_a_", makeInit<glm::vec3>());
 #endif
     }
@@ -1117,7 +1117,7 @@ TEST_F(HostEnvironmentTest, BoolWorks) {
     ms->run(1);
 }
 
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 FLAMEGPU_STEP_FUNCTION(get_set_vec3_t) {
 // Test Set + Get (Description set value)
 EXPECT_EQ(FLAMEGPU->environment.setProperty<glm::vec3>("vec3_", glm::vec3(static_cast<float>(TEST_VALUE) * 2)), glm::vec3(static_cast<float>(TEST_VALUE)));

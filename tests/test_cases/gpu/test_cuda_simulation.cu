@@ -757,7 +757,7 @@ FLAMEGPU_HOST_FUNCTION(Check_setEnvironmentProperty) {
     std::array<int, 3> t_check = { 6, 7, 8 };
     EXPECT_EQ(t, t_check);
 
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     const std::array<glm::ivec3, 3> ivec3_3_check2 =
     { glm::ivec3{ 41, 42, 43 }, glm::ivec3{44, 45, 46}, glm::ivec3{47, 48, 49} };
     EXPECT_EQ(FLAMEGPU->environment.getProperty<glm::ivec3>("ivec3"), glm::ivec3(31, 32, 33));
@@ -773,7 +773,7 @@ TEST(TestCUDASimulation, setEnvironmentProperty) {
     m.Environment().newProperty<int>("int", 2);
     m.Environment().newProperty<int, 2>("int2", { -1, 1 });
     m.Environment().newProperty<int, 3>("int3", t_check);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     const glm::ivec3 ivec3_1_check = glm::ivec3{ 1, 2, 3 };
     const std::array<glm::ivec3, 2> ivec3_2_check = { glm::ivec3{4, 5, 6}, glm::ivec3{7, 8, 9} };
     const std::array<glm::ivec3, 3> ivec3_3_check =
@@ -791,7 +791,7 @@ TEST(TestCUDASimulation, setEnvironmentProperty) {
     EXPECT_EQ((s.getEnvironmentProperty<int, 3>)("int3"), t_check);
     EXPECT_EQ(s.getEnvironmentProperty<int>("int2", 0), -1);
     EXPECT_EQ(s.getEnvironmentProperty<int>("int2", 1), 1);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     EXPECT_EQ(s.getEnvironmentProperty<glm::ivec3>("ivec3"), ivec3_1_check);
     EXPECT_EQ((s.getEnvironmentProperty<glm::ivec3, 3>)("ivec33"), ivec3_3_check);
     EXPECT_EQ(s.getEnvironmentProperty<glm::ivec3>("ivec32", 0), ivec3_2_check[0]);
@@ -802,7 +802,7 @@ TEST(TestCUDASimulation, setEnvironmentProperty) {
     s.setEnvironmentProperty<int, 3>("int3", { 6, 7, 8 });
     s.setEnvironmentProperty<int>("int2", 0, 1);
     s.setEnvironmentProperty<int>("int2", 1, -1);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     s.setEnvironmentProperty<glm::ivec3>("ivec3", glm::ivec3{ 31, 32, 33 });
     const std::array<glm::ivec3, 3> ivec3_3_check2 =
     { glm::ivec3{ 41, 42, 43 }, glm::ivec3{44, 45, 46}, glm::ivec3{47, 48, 49} };
@@ -826,7 +826,7 @@ TEST(TestCUDASimulation, setEnvironmentProperty) {
     EXPECT_THROW((s.CUDASimulation::getEnvironmentProperty<int, 5>)("int3"), exception::OutOfBoundsException);  // Bad length
     EXPECT_THROW((s.CUDASimulation::getEnvironmentProperty<float, 3>)("int3"), exception::InvalidEnvPropertyType);  // Bad type
     EXPECT_THROW((s.CUDASimulation::getEnvironmentProperty<int>)("int3", 4), exception::OutOfBoundsException);  // Out of bounds
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     EXPECT_THROW((s.CUDASimulation::setEnvironmentProperty<glm::ivec3>)("ivec32", 3, {}), exception::OutOfBoundsException);  // Out of bounds
     EXPECT_THROW((s.CUDASimulation::setEnvironmentProperty<glm::ivec3>)("ivec33", 4, {}), exception::OutOfBoundsException);  // Out of bounds
     EXPECT_THROW((s.CUDASimulation::getEnvironmentProperty<glm::ivec3>)("ivec32", 3), exception::OutOfBoundsException);  // Out of bounds

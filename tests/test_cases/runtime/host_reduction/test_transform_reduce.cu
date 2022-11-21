@@ -195,7 +195,7 @@ TEST_F(HostReductionTest, CustomTransformReduceUnsignedInt64) {
     std::transform(in.begin(), in.end(), inTransform.begin(), customTransform_impl::unary_function<uint64_t, int>());
     EXPECT_EQ(int32_t_out, std::count(inTransform.begin(), inTransform.end(), static_cast<int>(1)));
 }
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 FLAMEGPU_CUSTOM_REDUCTION(customMax2_glm, a, b) {
     return glm::max(a, b);
 }

@@ -24,3 +24,11 @@ endif()
 set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${jitify_SOURCE_DIR}/..")
 # Always find the package, even if jitify is already populated.
 find_package(Jitify REQUIRED)
+
+# Mark some CACHE vars advanced for a cleaner GUI
+mark_as_advanced(FETCHCONTENT_SOURCE_DIR_JITIFY)
+mark_as_advanced(FETCHCONTENT_QUIET)
+mark_as_advanced(FETCHCONTENT_BASE_DIR)
+mark_as_advanced(FETCHCONTENT_FULLY_DISCONNECTED)
+mark_as_advanced(FETCHCONTENT_UPDATES_DISCONNECTED) 
+mark_as_advanced(FETCHCONTENT_UPDATES_DISCONNECTED_JITIFY) 

@@ -35,8 +35,8 @@ int compute_capability::getComputeCapability(int deviceIndex) {
 }
 
 int compute_capability::minimumCompiledComputeCapability() {
-    #if defined(MIN_CUDA_ARCH)
-        return MIN_CUDA_ARCH;
+    #if defined(FLAMEGPU_MIN_CUDA_ARCH)
+        return FLAMEGPU_MIN_CUDA_ARCH;
     #else
         // Return 0 as a default minimum?
         return 0;

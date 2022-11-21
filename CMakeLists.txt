@@ -1,7 +1,19 @@
 # Minimum CMake version 3.18 for CUDA --std=c++17 
-cmake_minimum_required(VERSION VERSION 3.18 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18...3.25 FATAL_ERROR)
 
+# Include and call some CMake to record initial state of CMAKE_CUDA_ARCHITECTURES for later use
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/CUDAArchitectures.cmake)
+flamegpu_init_cuda_architectures()
+
+# Declare the project with no languages
 project(FLAMEGPU LANGUAGES NONE)
+
+# Detect if this is the top-level project or if it has been included by add_subdirectory. PROJECT_IS_TOP_LEVEL requires CMake 3.21
+if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_LIST_DIR}")
+  set(FLAMEGPU_PROJECT_IS_TOP_LEVEL ON)
+else()
+  set(FLAMEGPU_PROJECT_IS_TOP_LEVEL OFF)
+endif()
 
 # Find the root directory
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR} REALPATH)
@@ -19,9 +31,9 @@ set(DOCUMENTATION_ONLY_BUILD OFF)
 # Check compiler functionailty, as there are known issues in some cases, but version checks are not always sufficient.
 include(./cmake/CheckCompilerFunctionality.cmake)
 # If this returned a negative result, set the docs only build. 
-if(NOT CheckCompilerFunctionality_RESULT)
+if(NOT FLAMEGPU_CheckCompilerFunctionality_RESULT)
     set(DOCUMENTATION_ONLY_BUILD ON)      
-    message(STATUS "Documentation-only build: due to Compiler compatability version. See prior warnings.")
+    message(STATUS "Documentation-only build: due to compiler compatability version. See prior warnings.")
 endif()
 
 # If the checks passed, enable CXX and CUDA languages
@@ -33,6 +45,8 @@ endif()
 check_language(CUDA)
 if(CMAKE_CUDA_COMPILER)
     enable_language(CUDA)
+    # Set CMAKE_CUDA_ARCHITECTURES correctly, now CUDA is enabled.
+    flamegpu_set_cuda_architectures()
 endif()
 
 # Set the minimum supported version of CUDA for FLAME GPU, currently 11.0
@@ -55,8 +69,8 @@ endif()
 if(DOCUMENTATION_ONLY_BUILD)
     # Not able to build code, so just make docs    
     include(./cmake/dependencies/doxygen.cmake)
-    if(${BUILD_API_DOCUMENTATION})
-        create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}" "")
+    if(${FLAMEGPU_BUILD_API_DOCUMENTATION})
+        flamegpu_create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}" "")
     endif()
     return()
 endif()
@@ -64,54 +78,33 @@ endif()
 # include for dependent modules
 include(CMakeDependentOption)
 
-# Option to enable/disable building the static library
-option(BUILD_FLAMEGPU "Enable building FLAMEGPU library" ON)
+# Option to enable building all examples, defaults to ON if FLAMEPGU is the top level cmake, else OFF
+cmake_dependent_option(FLAMEGPU_BUILD_ALL_EXAMPLES "Enable building all FLAMEGPU examples" ON "FLAMEGPU_PROJECT_IS_TOP_LEVEL" OFF)
 
-# Option to enable/disable building the static library
-option(VISUALISATION "Enable visualisation support" OFF)
+# Options to enable building individual examples, if FLAMEGPU_BUILD_ALL_EXAMPLES is off. 
+# Dependent options hide these from the CMake GUI if FLAMEGPU_BUILD_ALL_EXAMPLES is on, or if it is not the top level project
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_BOIDS_BRUTEFORCE "Enable building examples/boids_bruteforce" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_BOIDS_SPATIAL3D "Enable building examples/boids_spatial3D" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_BOIDS_RTC_BRUTEFORCE "Enable building examples/boids_rtc_bruteforce" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_BOIDS_RTC_SPATIAL3D "Enable building examples/boids_rtc_spatial3D" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_CIRCLES_BRUTEFORCE "Enable building examples/circles_bruteforcespatial3D" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_CIRCLES_SPATIAL3D "Enable building examples/circles_spatial3D" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_GAME_OF_LIFE "Enable building examples/game_of_life" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_HOST_FUNCTIONS "Enable building examples/host_functions" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_ENSEMBLE "Enable building examples/ensemble" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_SUGARSCAPE "Enable building examples/sugarscape" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_DIFFUSION "Enable building examples/diffusion" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
 
-if(NOT NO_EXAMPLES)
-    # Option to enable building all examples
-    option(BUILD_ALL_EXAMPLES "Enable building examples" ON)
-
-    # Options to enable building individual examples, if BUILD_ALL_EXAMPLES is off.
-    option(BUILD_EXAMPLE_BOIDS_BRUTEFORCE "Enable building examples/boids_bruteforce" OFF)
-    option(BUILD_EXAMPLE_BOIDS_SPATIAL3D "Enable building examples/boids_spatial3D" OFF)
-    option(BUILD_EXAMPLE_BOIDS_RTC_BRUTEFORCE "Enable building examples/boids_rtc_bruteforce" OFF)
-    option(BUILD_EXAMPLE_BOIDS_RTC_SPATIAL3D "Enable building examples/boids_rtc_spatial3D" OFF)
-    option(BUILD_EXAMPLE_CIRCLES_BRUTEFORCE "Enable building examples/circles_bruteforcespatial3D" OFF)
-    option(BUILD_EXAMPLE_CIRCLES_SPATIAL3D "Enable building examples/circles_spatial3D" OFF)
-    option(BUILD_EXAMPLE_GAME_OF_LIFE "Enable building examples/game_of_life" OFF)
-    option(BUILD_EXAMPLE_HOST_FUNCTIONS "Enable building examples/host_functions" OFF)
-    option(BUILD_EXAMPLE_ENSEMBLE "Enable building examples/ensemble" OFF)
-    option(BUILD_EXAMPLE_SUGARSCAPE "Enable building examples/sugarscape" OFF)
-    option(BUILD_EXAMPLE_DIFFUSION "Enable building examples/diffusion" OFF)
-endif()
-
-option(BUILD_SWIG_PYTHON "Enable python bindings via SWIG" OFF)
-# By default, build into a venv, otherwise it is set to ON anyway. 
-cmake_dependent_option(BUILD_SWIG_PYTHON_VENV "Enable the use of a venv for swig/python installation" ON "BUILD_SWIG_PYTHON" ON)
-# Add option to embed the cuda version in the python local version, for pseudo downstream releases / to differentiate wheel files.
-cmake_dependent_option(BUILD_SWIG_PYTHON_LOCALVERSION "Embed CUDA version for the build in the local information" ON "BUILD_SWIG_PYTHON" ON)
-
+option(FLAMEGPU_BUILD_PYTHON "Enable python bindings via SWIG" OFF)
 
 # Option to enable/disable tests.
-option(BUILD_TESTS "Enable building tests" OFF)
+option(FLAMEGPU_BUILD_TESTS "Enable building tests" OFF)
 
-# Option to enable the development tests target, test_dev. This is independant from build_tests
-option(BUILD_TESTS_DEV "Enable building test_dev" OFF)
-
-# Option to enable GTEST_DISCOVER if tests or tests_dev are enabled. Defaults to off due to runtime increase
-cmake_dependent_option(USE_GTEST_DISCOVER "Enable GTEST_DISCOVER for more detailed ctest output without -VV. This dramitically increases test suite runtime to CUDA context initialisation." OFF "BUILD_TESTS OR BUILD_TESTS_DEV" OFF)
-
-# Option to enable/disable NVTX markers for improved profiling
-option(USE_NVTX "Build with NVTX markers enabled" OFF)
-
-# Option to enable/disable logging of dynamic RTC files to disk
-option(EXPORT_RTC_SOURCES "Export RTC source files to disk at runtime" OFF)
+# Option to enable the development tests target, test_dev. This is independant from FLAMEGPU_BUILD_TESTS
+option(FLAMEGPU_BUILD_TESTS_DEV "Enable building test_dev" OFF)
 
 # If a mutli-config generator is beign used, and swig / python bindings are enabled, then CMake must be >= 3.20 not >= 3.18 due to cmake limitations.
-if(BUILD_SWIG_PYTHON AND "${CMAKE_VERSION}" VERSION_LESS "3.20")
+if(FLAMEGPU_BUILD_PYTHON AND "${CMAKE_VERSION}" VERSION_LESS "3.20")
 get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
   if(${isMultiConfig})
     # Multiconfig generators (visual studio, eclipse, ninja multi config) do not support genex in byproducts/outptus, but these are required.
@@ -120,91 +113,56 @@ get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
   unset(isMultiConfig)
 endif()
 
-# Option to change curand engine used for CUDA random generation
-set(CURAND_ENGINE "PHILOX" CACHE STRING "The curand engine to use. Suitable options: \"XORWOW\", \"PHILOX\", \"MRG\"")
-mark_as_advanced(CURAND_ENGINE)
-
-# If CUDA >= 11.2, add an option to enable using NVCC_THREASD
-if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.2)
-    option(USE_NVCC_THREADS "Enable parallel compilation of multiple NVCC targets. See NVCC_THREADS for more control." ON)
-    # The number of threads to use defaults to 2, telling the compiler to use up to 2 threads when multiple arch's are specified.
-    # Setting this value to 0 would use as many threads as possible.
-    # In some cases, this may increase total runtime due to excessive thread creation, and lowering the number of threads, or lowering the value of `-j` passed to cmake may be beneficial.
-    if(NOT DEFINED NVCC_THREADS)
-        set(NVCC_THREADS "2")
-    endif()
-    SET(NVCC_THREADS "${NVCC_THREADS}" CACHE STRING "Number of concurrent threads for building multiple target architectures. 0 indicates use as many as required." FORCE)
-endif()
-
-# Control target CUDA_ARCH to compile for
-SET(CUDA_ARCH "${CUDA_ARCH}" CACHE STRING "List of CUDA Architectures to target. E.g. 61;70" FORCE)
-
-# Define a function to add a lint target.
-find_file(CPPLINT NAMES cpplint cpplint.exe)
-if(CPPLINT)
-  # Add a custom target to lint all child projects. Dependencies are specified in child projects.
-  add_custom_target(all_lint)
-  # Don't trigger this target on ALL_BUILD or Visual Studio 'Rebuild Solution'
-  set_target_properties(all_lint PROPERTIES EXCLUDE_FROM_ALL TRUE)
-  # set_target_properties(all_lint PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD TRUE)
-endif()
+include(${FLAMEGPU_ROOT}/cmake/cpplint.cmake)
+flamegpu_create_all_lint_target()
 
 # Add the library building subdirectory
-if(BUILD_FLAMEGPU)
-    add_subdirectory(src "${PROJECT_BINARY_DIR}/FLAMEGPU")
-    # Set as startup project
-    set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT flamegpu)
-endif()
+add_subdirectory(src "${PROJECT_BINARY_DIR}/FLAMEGPU")
+# Set as startup project
+set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT flamegpu)
 
 # Add each example
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_BOIDS_BRUTEFORCE)
+if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_BOIDS_BRUTEFORCE)
     add_subdirectory(examples/boids_bruteforce)
 endif()
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_BOIDS_SPATIAL3D)
+if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_BOIDS_SPATIAL3D)
     add_subdirectory(examples/boids_spatial3D)
 endif()
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_BOIDS_RTC_BRUTEFORCE)
+if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_BOIDS_RTC_BRUTEFORCE)
     add_subdirectory(examples/boids_rtc_bruteforce)
 endif()
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_BOIDS_RTC_SPATIAL3D)
+if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_BOIDS_RTC_SPATIAL3D)
     add_subdirectory(examples/boids_rtc_spatial3D)
 endif()
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_CIRCLES_BRUTEFORCE)
+if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_CIRCLES_BRUTEFORCE)
     add_subdirectory(examples/circles_bruteforce)
 endif()
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_CIRCLES_SPATIAL3D)
+if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_CIRCLES_SPATIAL3D)
     add_subdirectory(examples/circles_spatial3D)
 endif()
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_GAME_OF_LIFE)
+if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_GAME_OF_LIFE)
     add_subdirectory(examples/game_of_life)
 endif()
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_HOST_FUNCTIONS)
+if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_HOST_FUNCTIONS)
     add_subdirectory(examples/host_functions)
 endif()
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_ENSEMBLE)
+if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_ENSEMBLE)
     add_subdirectory(examples/ensemble)
 endif()
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_SUGARSCAPE)
+if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_SUGARSCAPE)
     add_subdirectory(examples/sugarscape)
 endif()
-if(BUILD_ALL_EXAMPLES OR BUILD_EXAMPLE_DIFFUSION)
+if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_DIFFUSION)
     add_subdirectory(examples/diffusion)
 endif()
 # Add the tests directory (if required)
-if(BUILD_TESTS OR BUILD_TESTS_DEV)
+if(FLAMEGPU_BUILD_TESTS OR FLAMEGPU_BUILD_TESTS_DEV)
     # Enable Ctest
     enable_testing()
     # Add the tests subdirectory
     add_subdirectory(tests)
 endif()
 
-if(BUILD_SWIG_PYTHON)
+if(FLAMEGPU_BUILD_PYTHON)
     add_subdirectory(swig)
 endif()
-
-# Put all_lint within Lint filter
-CMAKE_SET_TARGET_FOLDER(all_lint "Lint")
-
-
-# message("Generated with CMAKE_BUILD_TYPE types: ${CMAKE_BUILD_TYPE}")
-# message("Generated with config types: ${CMAKE_CONFIGURATION_TYPES}")

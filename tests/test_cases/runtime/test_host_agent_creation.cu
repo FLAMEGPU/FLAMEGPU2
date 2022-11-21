@@ -787,7 +787,7 @@ TEST(HostAgentCreationTest, AgentID_MultipleAgents) {
     }
     ASSERT_EQ(ids_b.size(), 2 * POP_SIZE);  // No collisions
 }
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirthSetGet_glm) {
     auto t = FLAMEGPU->agent("agent_name");
     for (int i = 0; i < static_cast<int>(AGENT_COUNT); ++i) {

@@ -393,7 +393,7 @@ int main(int argc, const char ** argv) {
     /**
      * Create visualisation
      */
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     flamegpu::visualiser::ModelVis visualisation = cudaSimulation.getVisualisation();
     {
         flamegpu::EnvironmentDescription env = model.Environment();
@@ -481,7 +481,7 @@ int main(int argc, const char ** argv) {
      */
     // cudaSimulation.exportData("end.xml");
 
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     visualisation.join();
 #endif
 
