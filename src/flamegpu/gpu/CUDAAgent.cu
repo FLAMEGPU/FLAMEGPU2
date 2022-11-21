@@ -164,7 +164,7 @@ __global__ void generateCollisionFlags(const id_t* d_sortedKeys, id_t* d_flagsOu
     }
 }
 void CUDAAgent::validateIDCollisions(cudaStream_t stream) const {
-    NVTX_RANGE("CUDAAgent::validateIDCollisions");
+    flamegpu::util::nvtx::Range range{"CUDAAgent::validateIDCollisions"};
     // All data is on device, so use a device technique to check for collisions
     // Sort agent IDs, have a simple kernel check for neighbouring ID collisions to set a flag
     // Scan that flag

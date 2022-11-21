@@ -462,7 +462,7 @@ if(USE_NVTX AND TARGET NVTX::nvtx)
         # fallback to the old cmake var.
         set(nvtxversion ${NVTX_VERSION})
     endif()
-    target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<COMPILE_LANGUAGE:C,CXX,CUDA>:USE_NVTX=${nvtxversion}>")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<COMPILE_LANGUAGE:C,CXX,CUDA>:FLAMEGPU_USE_NVTX=${nvtxversion}>")
     unset(nvtxversion)
 endif()
 

@@ -142,7 +142,7 @@ int HostCurve::size() const {
     return rtn;
 }
 void HostCurve::updateDevice_async(const cudaStream_t stream) {
-    NVTX_RANGE("HostCurve::updateDevice_async()");
+    flamegpu::util::nvtx::Range range{"HostCurve::updateDevice_async()"};
     // Initialise the device (if required)
     assert(d_curve_table);  // No reason for this to ever fail.
     // Copy

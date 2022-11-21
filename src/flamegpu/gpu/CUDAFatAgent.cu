@@ -328,7 +328,7 @@ void CUDAFatAgent::notifyDeviceBirths(unsigned int newCount) {
 #endif
 }
 void CUDAFatAgent::assignIDs(HostAPI& hostapi, CUDAScatter &scatter, cudaStream_t stream, const unsigned int streamId) {
-    NVTX_RANGE("CUDAFatAgent::assignIDs");
+    flamegpu::util::nvtx::Range range{"CUDAFatAgent::assignIDs"};
     if (agent_ids_have_init) return;
     id_t h_max = ID_NOT_SET;
     // Find the max ID within the current agents

@@ -212,7 +212,7 @@ CUDASimulation::~CUDASimulation() {
 }
 
 void CUDASimulation::initFunctions() {
-    NVTX_RANGE("CUDASimulation::initFunctions");
+    flamegpu::util::nvtx::Range range{"CUDASimulation::initFunctions"};
     std::unique_ptr<util::detail::Timer> initFunctionsTimer(new util::detail::SteadyClockTimer());
     initFunctionsTimer->start();
 
@@ -242,7 +242,7 @@ void CUDASimulation::initFunctions() {
 }
 
 void CUDASimulation::exitFunctions() {
-    NVTX_RANGE("CUDASimulation::exitFunctions");
+    flamegpu::util::nvtx::Range range{"CUDASimulation::exitFunctions"};
     std::unique_ptr<util::detail::Timer> exitFunctionsTimer(new util::detail::SteadyClockTimer());
     exitFunctionsTimer->start();
 
@@ -512,7 +512,7 @@ void CUDASimulation::spatialSortAgent_async(const std::string& funcName, const s
 }
 
 bool CUDASimulation::step() {
-    NVTX_RANGE(std::string("CUDASimulation::step " + std::to_string(step_count)).c_str());
+    flamegpu::util::nvtx::Range range{std::string("CUDASimulation::step " + std::to_string(step_count)).c_str()};
     // Ensure singletons have been initialised
     initialiseSingletons();
 
@@ -581,7 +581,7 @@ bool CUDASimulation::step() {
 }
 
 void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const unsigned int layerIndex) {
-    NVTX_RANGE(std::string("stepLayer " + std::to_string(layerIndex)).c_str());
+    flamegpu::util::nvtx::Range range{std::string("stepLayer " + std::to_string(layerIndex)).c_str()};
 
     std::string message_name;
 
@@ -625,7 +625,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     for (const auto &func_des : layer->agent_functions) {
         if ((func_des->condition) || (!func_des->rtc_func_condition_name.empty())) {
             auto func_agent = func_des->parent.lock();
-            NVTX_RANGE(std::string("condition map " + func_agent->name + "::" + func_des->name).c_str());
+            flamegpu::util::nvtx::Range condition_range{std::string("condition map " + func_agent->name + "::" + func_des->name).c_str()};
             const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
 
             const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
@@ -672,7 +672,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
         for (const auto &func_des : layer->agent_functions) {
             if ((func_des->condition) || (!func_des->rtc_func_condition_name.empty())) {
                 auto func_agent = func_des->parent.lock();
-                NVTX_RANGE(std::string("condition " + func_agent->name + "::" + func_des->name).c_str());
+                flamegpu::util::nvtx::Range condition_range{std::string("condition " + func_agent->name + "::" + func_des->name).c_str()};
                 if (!func_agent) {
                     THROW exception::InvalidAgentFunc("Agent function condition refers to expired agent.");
                 }
@@ -754,7 +754,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
             if (!func_agent) {
                 THROW exception::InvalidAgentFunc("Agent function condition refers to expired agent.");
             }
-            NVTX_RANGE(std::string("condition unmap " + func_agent->name + "::" + func_des->name).c_str());
+            flamegpu::util::nvtx::Range unmap_range{std::string("condition unmap " + func_agent->name + "::" + func_des->name).c_str()};
             CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
 
             // Skip if no agents in the input state
@@ -784,7 +784,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
         if (!func_agent) {
             THROW exception::InvalidAgentFunc("Agent function refers to expired agent.");
         }
-        NVTX_RANGE(std::string("map" + func_agent->name + "::" + func_des->name).c_str());
+        flamegpu::util::nvtx::Range map_range{std::string("map" + func_agent->name + "::" + func_des->name).c_str()};
 
         const CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
         const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
@@ -872,7 +872,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
             if (!func_agent) {
                 THROW exception::InvalidAgentFunc("Agent function refers to expired agent.");
             }
-            NVTX_RANGE(std::string(func_agent->name + "::" + func_des->name).c_str());
+            flamegpu::util::nvtx::Range func_range{std::string(func_agent->name + "::" + func_des->name).c_str()};
             const void *d_in_messagelist_metadata = nullptr;
             const void *d_out_messagelist_metadata = nullptr;
             id_t *d_agentOut_nextID = nullptr;
@@ -983,7 +983,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
         if (!func_agent) {
             THROW exception::InvalidAgentFunc("Agent function refers to expired agent.");
         }
-        NVTX_RANGE(std::string("unmap" + func_agent->name + "::" + func_des->name).c_str());
+        flamegpu::util::nvtx::Range unmap_range{std::string("unmap" + func_agent->name + "::" + func_des->name).c_str()};
         CUDAAgent& cuda_agent = getCUDAAgent(func_agent->name);
 
         const unsigned int state_list_size = cuda_agent.getStateSize(func_des->initial_state);
@@ -1048,17 +1048,17 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
 }
 
 void CUDASimulation::layerHostFunctions(const std::shared_ptr<LayerData>& layer, const unsigned int layerIndex) {
-    NVTX_RANGE("CUDASimulation::stepHostFunctions");
+    flamegpu::util::nvtx::Range range{"CUDASimulation::stepHostFunctions"};
     // Execute all host functions attached to layer
     // TODO: Concurrency?
     assert(host_api);
     for (auto &stepFn : layer->host_functions) {
-        NVTX_RANGE("hostFunc");
+        flamegpu::util::nvtx::Range hostfn_range{"hostFunc"};
         stepFn(this->host_api.get());
     }
     // Execute all host function callbacks attached to layer
     for (auto &stepFn : layer->host_functions_callbacks) {
-        NVTX_RANGE("hostFunc_swig");
+        flamegpu::util::nvtx::Range hostfncallback_range{"hostFunc_swig"};
         stepFn->run(this->host_api.get());
     }
     // If we have host layer functions, we might have host agent creation
@@ -1073,15 +1073,15 @@ void CUDASimulation::layerHostFunctions(const std::shared_ptr<LayerData>& layer,
 }
 
 void CUDASimulation::stepStepFunctions() {
-    NVTX_RANGE("CUDASimulation::step::StepFunctions");
+    flamegpu::util::nvtx::Range range{"CUDASimulation::step::StepFunctions"};
     // Execute step functions
     for (auto &stepFn : model->stepFunctions) {
-        NVTX_RANGE("stepFunc");
+        flamegpu::util::nvtx::Range step_range{"stepFunc"};
         stepFn(this->host_api.get());
     }
     // Execute step function callbacks
     for (auto &stepFn : model->stepFunctionCallbacks) {
-        NVTX_RANGE("stepFunc_swig");
+        flamegpu::util::nvtx::Range callback_range{"stepFunc_swig"};
         stepFn->run(this->host_api.get());
     }
     // If we have step functions, we might have host agent creation
@@ -1095,7 +1095,7 @@ void CUDASimulation::stepStepFunctions() {
 }
 
 bool CUDASimulation::stepExitConditions() {
-    NVTX_RANGE("CUDASimulation::stepExitConditions");
+    flamegpu::util::nvtx::Range range{"CUDASimulation::stepExitConditions"};
     // Track if any exit conditions were successful. Use this to control return code and skipsteps.
     // early returning makes timing/stepCounter logic more complicated.
     bool exitConditionExit = false;
@@ -1145,7 +1145,7 @@ bool CUDASimulation::stepExitConditions() {
 }
 
 void CUDASimulation::simulate() {
-    NVTX_RANGE("CUDASimulation::simulate");
+    flamegpu::util::nvtx::Range range{"CUDASimulation::simulate"};
 
     // Ensure there is work to do.
     if (agent_map.size() == 0) {
@@ -1319,7 +1319,7 @@ void CUDASimulation::reset(bool submodelReset) {
 void CUDASimulation::setPopulationData(AgentVector& population, const std::string& state_name) {
     // Ensure singletons have been initialised
     initialiseSingletons();
-    NVTX_RANGE("CUDASimulation::setPopulationData()");
+    flamegpu::util::nvtx::Range range{"CUDASimulation::setPopulationData()"};
     auto it = agent_map.find(population.getAgentName());
     if (it == agent_map.end()) {
         THROW exception::InvalidAgent("Agent '%s' was not found, "
@@ -1339,7 +1339,7 @@ void CUDASimulation::setPopulationData(AgentVector& population, const std::strin
 void CUDASimulation::getPopulationData(AgentVector& population, const std::string& state_name) {
     // Ensure singletons have been initialised
     initialiseSingletons();
-    NVTX_RANGE("CUDASimulation::getPopulationData()");
+    flamegpu::util::nvtx::Range range{"CUDASimulation::getPopulationData()"};
     gpuErrchk(cudaDeviceSynchronize());
     auto it = agent_map.find(population.getAgentName());
     if (it == agent_map.end()) {
@@ -1426,7 +1426,7 @@ void CUDASimulation::printHelp_derived() {
 }
 
 void CUDASimulation::applyConfig_derived() {
-    NVTX_RANGE("applyConfig_derived");
+    flamegpu::util::nvtx::Range range{"applyConfig_derived"};
 
     // Handle console_mode
 #ifdef VISUALISATION
@@ -1577,7 +1577,7 @@ void CUDASimulation::initialiseSingletons() {
 void CUDASimulation::initialiseRTC() {
     // Only do this once.
     if (!rtcInitialised) {
-        NVTX_RANGE("CUDASimulation::initialiseRTC");
+        flamegpu::util::nvtx::Range range{"CUDASimulation::initialiseRTC"};
         std::unique_ptr<util::detail::Timer> rtcTimer(new util::detail::SteadyClockTimer());
         rtcTimer->start();
         // Build any RTC functions
@@ -1922,7 +1922,7 @@ std::shared_ptr<EnvironmentManager> CUDASimulation::getEnvironment() const {
     return nullptr;
 }
 void CUDASimulation::assignAgentIDs() {
-    NVTX_RANGE("CUDASimulation::assignAgentIDs");
+    flamegpu::util::nvtx::Range range{"CUDASimulation::assignAgentIDs"};
     if (!agent_ids_have_init) {
         // Ensure singletons have been initialised
         initialiseSingletons();

@@ -44,8 +44,8 @@ FLAMEGPU_EXIT_CONDITION(stable_temperature) {
 int main(int argc, const char ** argv) {
     const unsigned int SQRT_AGENT_COUNT = 200;
     const unsigned int AGENT_COUNT = SQRT_AGENT_COUNT * SQRT_AGENT_COUNT;
-    NVTX_RANGE("main");
-    NVTX_PUSH("ModelDescription");
+    flamegpu::util::nvtx::Range range{"main"};
+    flamegpu::util::nvtx::push("ModelDescription");
     flamegpu::ModelDescription model("Heat Equation");
 
     {   // Message
@@ -101,14 +101,14 @@ int main(int argc, const char ** argv) {
         layer.addAgentFunction(update);
     }
     model.addExitCondition(stable_temperature);
-    NVTX_POP();
+    flamegpu::util::nvtx::pop();
 
     /**
      * Create Model Runner
      */
-    NVTX_PUSH("CUDASimulation creation");
+    flamegpu::util::nvtx::push("CUDASimulation creation");
     flamegpu::CUDASimulation cudaSimulation(model, argc, argv);
-    NVTX_POP();
+    flamegpu::util::nvtx::pop();
 
     /**
      * Initialisation

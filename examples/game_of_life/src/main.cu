@@ -33,8 +33,8 @@ FLAMEGPU_AGENT_FUNCTION(update, flamegpu::MessageArray2D, flamegpu::MessageNone)
 int main(int argc, const char ** argv) {
     const unsigned int SQRT_AGENT_COUNT = 1000;
     const unsigned int AGENT_COUNT = SQRT_AGENT_COUNT * SQRT_AGENT_COUNT;
-    NVTX_RANGE("main");
-    NVTX_PUSH("ModelDescription");
+    flamegpu::util::nvtx::Range range{"main"};
+    flamegpu::util::nvtx::push("ModelDescription");
     flamegpu::ModelDescription model("Game of Life");
 
     {   // Location message
@@ -75,14 +75,14 @@ int main(int argc, const char ** argv) {
         flamegpu::LayerDescription layer = model.newLayer();
         layer.addAgentFunction(update);
     }
-    NVTX_POP();
+    flamegpu::util::nvtx::pop();
 
     /**
      * Create Model Runner
      */
-    NVTX_PUSH("CUDASimulation creation");
+    flamegpu::util::nvtx::push("CUDASimulation creation");
     flamegpu::CUDASimulation  cudaSimulation(model, argc, argv);
-    NVTX_POP();
+    flamegpu::util::nvtx::pop();
 
     /**
      * Initialisation
