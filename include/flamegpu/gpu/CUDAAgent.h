@@ -16,9 +16,10 @@
 #include "flamegpu/model/SubAgentData.h"
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 #include "flamegpu/sim/AgentInterface.h"
+#include "flamegpu/runtime/utility/EnvironmentManager.cuh"
 
 namespace flamegpu {
-
+class CUDAMacroEnvironment;
 class CUDAScatter;
 class CUDAFatAgent;
 struct VarOffsetStruct;
