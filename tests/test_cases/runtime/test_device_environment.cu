@@ -450,7 +450,7 @@ FLAMEGPU_AGENT_FUNCTION(get_array_shorthand, MessageNone, MessageNone) {
 }
 TEST_F(DeviceEnvironmentTest, Get_array_shorthand) {
     // It's no longer necessary to specify env property array length in agent functions when retrieiving them
-    // This test is better ran with SEATBELTS=ON, to catch the seatbelts checking
+    // This test is better ran with FLAMEGPU_SEATBELTS=ON, to catch the seatbelts checking
     // Setup agent fn
     ms->agent.newVariable<float, 3>("k");
     AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_array_shorthand);
@@ -492,7 +492,7 @@ TEST(RTCDeviceEnvironmentTest, get_array_shorthand) {
     const std::array<float, 3> t_out = population.at(0).getVariable<float, 3>("k");
     ASSERT_EQ(t_in, t_out);
 }
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 FLAMEGPU_AGENT_FUNCTION(get_array_glm, MessageNone, MessageNone) {
     glm::vec3 t = FLAMEGPU->environment.getProperty<glm::vec3>("k");
     FLAMEGPU->setVariable<float, 3>("k", 0, t[0]);

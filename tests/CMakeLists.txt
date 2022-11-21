@@ -1,9 +1,12 @@
 # Minimum CMake version 3.18 for CUDA --std=c++17 
-cmake_minimum_required(VERSION VERSION 3.18 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18...3.25 FATAL_ERROR)
 
-# Only Do anything if BUILD_TESTS or BUILD_TESTS_DEV is set.
-if(NOT (BUILD_TESTS OR BUILD_TESTS_DEV))
-    message(FATAL_ERROR "${CMAKE_CURRENT_LIST_FILE} requires BUILD_TESTS or BUILD_TESTS_DEV to be ON")
+# Option to enable GTEST_DISCOVER if tests or tests_dev are enabled. Defaults to off due to runtime increase
+cmake_dependent_option(FLAMEGPU_ENABLE_GTEST_DISCOVER "Enable GTEST_DISCOVER for more detailed ctest output without -VV. This dramitically increases test suite runtime to CUDA context initialisation." OFF "FLAMEGPU_BUILD_TESTS OR FLAMEGPU_BUILD_TESTS_DEV" OFF)
+
+# Only Do anything if FLAMEGPU_BUILD_TESTS or FLAMEGPU_BUILD_TESTS_DEV is set.
+if(NOT (FLAMEGPU_BUILD_TESTS OR FLAMEGPU_BUILD_TESTS_DEV))
+    message(FATAL_ERROR "${CMAKE_CURRENT_LIST_FILE} requires FLAMEGPU_BUILD_TESTS or FLAMEGPU_BUILD_TESTS_DEV to be ON")
 endif()
 
 # Define the source files early, prior to projects.
@@ -103,16 +106,21 @@ SET(HELPERS_SRC
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 
+# Include CMake for managing CMAKE_CUDA_ARCHITECTURES
+include(${FLAMEGPU_ROOT}/cmake/CUDAArchitectures.cmake)
+
 # Include googletest as a dependency.
 include(${FLAMEGPU_ROOT}/cmake/dependencies/googletest.cmake)
 
 # If CTest's GoogleTest integreation is required, include GoogleTest.
-if((BUILD_TESTS OR BUILD_TESTS_DEV) AND USE_GTEST_DISCOVER)
+if((FLAMEGPU_BUILD_TESTS OR FLAMEGPU_BUILD_TESTS_DEV) AND FLAMEGPU_ENABLE_GTEST_DISCOVER)
     include(GoogleTest)
 endif()
 
-if(BUILD_TESTS)
+if(FLAMEGPU_BUILD_TESTS)
     enable_testing()
+    # Handle CMAKE_CUDA_ARCHITECTURES and inject code into the tests project() command
+    flamegpu_init_cuda_architectures(PROJECT tests)
     # Name the project and set languages
     project(tests CUDA CXX)
     # Include common rules.
@@ -131,13 +139,16 @@ if(BUILD_TESTS)
         SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../bin/${CMAKE_BUILD_TYPE}/)
     endif()
     # Add the executable and set required flags for the target
-    add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" "${PROJECT_BINARY_DIR}" FALSE)
+    flamegpu_add_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" "${PROJECT_BINARY_DIR}" FALSE)
     # Add the tests directory to the include path,
     target_include_directories("${PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
     # Add the targets we depend on (this does link and include)
     target_link_libraries("${PROJECT_NAME}" PRIVATE GTest::gtest)
+    # Pass a tests specific compiler definition for cheking CMAKE_CUDA_ARCHITECTURES behaviour
+    flamegpu_get_minimum_cuda_architecture(min_cuda_arch)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE FLAMEGPU_TEST_MIN_CUDA_ARCH=${min_cuda_arch})
     # Put Within Tests filter
-    CMAKE_SET_TARGET_FOLDER("${PROJECT_NAME}" "Tests")
+    flamegpu_set_target_folder("${PROJECT_NAME}" "Tests")
     # Also set as startup project (if top level project)
     set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
     # Set the default (visual studio) debugger configure_file
@@ -145,7 +156,7 @@ if(BUILD_TESTS)
     VS_DEBUGGER_COMMAND_ARGUMENTS "$<$<CONFIG:Debug>:--gtest_catch_exceptions=0> --gtest_filter=*")
 
     # Add the tests target as to ctest, optionally using the gtest_discover integration.
-    if(USE_GTEST_DISCOVER)
+    if(FLAMEGPU_ENABLE_GTEST_DISCOVER)
         # If GTEST_DISCOVER is enabled, add the unit test executable using it. This results in very long test exeuction times due to CUDA context initialisation per test
         gtest_discover_tests(
             "${PROJECT_NAME}"
@@ -163,8 +174,10 @@ if(BUILD_TESTS)
 endif()
 
 # If the tests_dev target is requirest, create it.
-if(BUILD_TESTS_DEV)
+if(FLAMEGPU_BUILD_TESTS_DEV)
     enable_testing()
+    # Handle CMAKE_CUDA_ARCHITECTURES and inject code into the tests project() command
+    flamegpu_init_cuda_architectures(PROJECT tests_dev)
     # DEVELOPMENT TESTING THING (Compact repeated version of above)
     project(tests_dev CUDA CXX)
     # Include common rules.
@@ -183,19 +196,22 @@ if(BUILD_TESTS_DEV)
         SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../bin/${CMAKE_BUILD_TYPE}/)
     endif()
     # Add the executable and set required flags for the target
-    add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" "${PROJECT_BINARY_DIR}" FALSE)
+    flamegpu_add_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" "${PROJECT_BINARY_DIR}" FALSE)
     # Add the tests directory to the include path,
     target_include_directories("${PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
     # Add the targets we depend on (this does link and include)
     target_link_libraries("${PROJECT_NAME}" PRIVATE GTest::gtest)
+    # Pass a tests specific compiler definition for cheking CMAKE_CUDA_ARCHITECTURES behaviour
+    flamegpu_get_minimum_cuda_architecture(min_cuda_arch)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE FLAMEGPU_TEST_MIN_CUDA_ARCH=${min_cuda_arch})
     # Put Within Tests filter
-    CMAKE_SET_TARGET_FOLDER("${PROJECT_NAME}" "Tests")
+    flamegpu_set_target_folder("${PROJECT_NAME}" "Tests")
     # Set the default (visual studio) debugger configure_file
     set_target_properties("${PROJECT_NAME}" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     VS_DEBUGGER_COMMAND_ARGUMENTS "$<$<CONFIG:Debug>:--gtest_catch_exceptions=0> --gtest_filter=*")
     
     # Add the tests target as to ctest, optionally using the gtest_discover integration.
-    if(USE_GTEST_DISCOVER)
+    if(FLAMEGPU_ENABLE_GTEST_DISCOVER)
         # If GTEST_DISCOVER is enabled, add the unit test executable using it. This results in very long test exeuction times due to CUDA context initialisation per test
         gtest_discover_tests(
             "${PROJECT_NAME}"

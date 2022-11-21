@@ -12,7 +12,7 @@ struct type_decode {
     typedef T type_t;
 };
 
-#if defined(USE_GLM) || defined(GLM_VERSION)
+#if defined(FLAMEGPU_USE_GLM) || defined(GLM_VERSION)
 #ifndef GLM_VERSION
 #ifdef __CUDACC__
 #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__

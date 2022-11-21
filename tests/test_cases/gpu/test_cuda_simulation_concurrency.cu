@@ -25,7 +25,7 @@ namespace flamegpu {
 #endif
 
 // if seatbelts and not debug, run the test, otherwise disable.
-#if defined(SEATBELTS) && SEATBELTS && !defined(_DEBUG)
+#if defined(FLAMEGPU_SEATBELTS) && FLAMEGPU_SEATBELTS && !defined(_DEBUG)
 #define RELEASE_ONLY_SEATBELTS_TEST(TestSuiteName, TestName)\
     TEST(TestSuiteName, TestName)
 #else
@@ -1179,7 +1179,7 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, DISABLED_FastConditionConcurren
 }
 
 /**
- * If SEATBELTS are on, try to get a device exception from parallel agent functions.
+ * If FLAMEGPU_SEATBELTS are on, try to get a device exception from parallel agent functions.
  */
 RELEASE_ONLY_SEATBELTS_TEST(TestCUDASimulationConcurrency, LayerConcurrencyDeviceException) {
     // Define a model with multiple agent types

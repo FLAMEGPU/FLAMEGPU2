@@ -1,4 +1,4 @@
-// @todo - ifdef VISUALISATION
+// @todo - ifdef FLAMEGPU_VISUALISATION
 #include "flamegpu/visualiser/color/StaticColor.h"
 
 #include <sstream>

@@ -11,7 +11,7 @@
 namespace flamegpu {
 namespace exception {
 
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 /**
  * This allows us to write DTHROW("My Error message: %d", 12); or similar to report an error in device code
  */
@@ -197,11 +197,11 @@ __device__ unsigned int DeviceException::getErrorCount() {
 #endif
 #else
 /**
- * Ignore the device error macro when SEATBELTS is OFF
+ * Ignore the device error macro when FLAMEGPU_SEATBELTS is OFF
  * These checks are costly to performance
  */
 #define DTHROW(nop)
-#endif  // SEATBELTS=OFF
+#endif  // FLAMEGPU_SEATBELTS=OFF
 
 }  // namespace exception
 }  // namespace flamegpu

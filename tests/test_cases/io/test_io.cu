@@ -216,7 +216,7 @@ class MiniSim {
             am.SimulationConfig().steps = 123;
             am.SimulationConfig().verbosity = Verbosity::Quiet;
             am.SimulationConfig().timing = true;
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
             am.SimulationConfig().console_mode = true;
 #endif
             am.CUDAConfig().device_id = 0;
@@ -234,7 +234,7 @@ class MiniSim {
             am.SimulationConfig().steps = 0;
             am.SimulationConfig().verbosity = Verbosity::Verbose;
             am.SimulationConfig().timing = false;
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
             am.SimulationConfig().console_mode = false;
 #endif
             am.CUDAConfig().device_id = 1000;
@@ -252,7 +252,7 @@ class MiniSim {
             EXPECT_EQ(am.getSimulationConfig().steps, 123u);
             EXPECT_EQ(am.getSimulationConfig().verbosity, Verbosity::Quiet);
             EXPECT_EQ(am.getSimulationConfig().timing, true);
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
             EXPECT_EQ(am.getSimulationConfig().console_mode, true);
 #endif
             EXPECT_EQ(am.getCUDAConfig().device_id, 0);

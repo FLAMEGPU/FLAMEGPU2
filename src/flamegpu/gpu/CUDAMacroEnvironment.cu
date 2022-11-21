@@ -24,7 +24,7 @@ void CUDAMacroEnvironment::init(cudaStream_t stream) {
                                      * prop.second.elements[1]
                                      * prop.second.elements[2]
                                      * prop.second.elements[3];
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
             buffer_size += sizeof(unsigned int);  // Extra uint is used as read-write flag by seatbelts
 #endif
             gpuErrchk(cudaMalloc(&prop.second.d_ptr, buffer_size));
@@ -46,7 +46,7 @@ void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, const CUDAMac
                         * prop.second.elements[1]
                         * prop.second.elements[2]
                         * prop.second.elements[3];
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
                     buffer_size += sizeof(unsigned int);  // Extra uint is used as read-write flag by seatbelts
 #endif
                     gpuErrchk(cudaMalloc(&prop.second.d_ptr, buffer_size));
@@ -96,7 +96,7 @@ void CUDAMacroEnvironment::unmapRTCVariables(detail::curve::CurveRTCHost& curve_
         curve_header.unregisterEnvMacroProperty(p.first.c_str());
     }
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 void CUDAMacroEnvironment::resetFlagsAsync(const std::vector<cudaStream_t> &streams) {
     unsigned int i = 0;
     for (const auto& prop : properties) {

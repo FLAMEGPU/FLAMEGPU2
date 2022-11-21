@@ -45,7 +45,7 @@ class Simulation {
             timing = other.timing;
             silence_unknown_args = other.silence_unknown_args;
             telemetry = other.telemetry;
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
             console_mode = other.console_mode;
 #endif
         }
@@ -60,7 +60,7 @@ class Simulation {
         bool timing = false;
         bool silence_unknown_args = false;
         bool telemetry = false;
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
         bool console_mode = false;
 #else
         const bool console_mode = true;

@@ -432,7 +432,7 @@ int main(int argc, const char ** argv) {
     /**
      * Create visualisation
      */
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     flamegpu::visualiser::ModelVis visualisation = cudaSimulation.getVisualisation();
     {
         float envWidth = env.getProperty<float>("MAX_POSITION") - env.getProperty<float>("MIN_POSITION");
@@ -512,7 +512,7 @@ int main(int argc, const char ** argv) {
      */
     // cudaSimulation.exportData("end.xml");
 
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     visualisation.join();
 #endif
 

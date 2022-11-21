@@ -30,8 +30,8 @@ class ReadOnlyDeviceEnvironment {
      * @param name name used for accessing the property, this value should be a string literal e.g. "foobar"
      * @tparam T Type of the environment property being accessed
      * @tparam M Length of property name, this should always be implicit if passing a string literal
-     * @throws exception::DeviceError If name is not a valid property within the environment (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws exception::DeviceError If T is not the type of the environment property specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If name is not a valid property within the environment (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of the environment property specified by name (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int M>
     __device__ __forceinline__ T getProperty(const char(&name)[M]) const;
@@ -42,10 +42,10 @@ class ReadOnlyDeviceEnvironment {
      * @tparam T Type of the environment property being accessed
      * @tparam N (Optional) Length of the environment property array, available for parity with other APIs, checked if provided
      * @tparam M Length of property name, this should always be implicit if passing a string literal
-     * @throws exception::DeviceError If name is not a valid property within the environment (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws exception::DeviceError If T is not the type of the environment property specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws exception::DeviceError If index is out of bounds for the environment property array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws exception::DeviceError If N does not match the length of the environment property array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If name is not a valid property within the environment (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of the environment property specified by name (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If index is out of bounds for the environment property array specified by name (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If N does not match the length of the environment property array specified by name (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N = 0, unsigned int M>
     __device__ __forceinline__ T getProperty(const char(&name)[M], unsigned int index) const;
@@ -99,7 +99,7 @@ __device__ __forceinline__ T ReadOnlyDeviceEnvironment::getProperty(const char(&
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W, unsigned int N>
 __device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, I, J, K, W> ReadOnlyDeviceEnvironment::getMacroProperty(const char(&name)[N]) const {
     char * d_ptr = detail::curve::DeviceCurve::getEnvironmentMacroProperty<T, I, J, K, W>(name);
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (!d_ptr) {
         return ReadOnlyDeviceMacroProperty<T, I, J, K, W>(nullptr, nullptr);
     }
@@ -113,7 +113,7 @@ __device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, I, J, K, W> ReadOnlyDe
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W, unsigned int N>
 __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W> DeviceEnvironment::getMacroProperty(const char(&name)[N]) const {
     char* d_ptr = detail::curve::DeviceCurve::getEnvironmentMacroProperty<T, I, J, K, W>(name);
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (!d_ptr) {
         return DeviceMacroProperty<T, I, J, K, W>(nullptr, nullptr);
     }

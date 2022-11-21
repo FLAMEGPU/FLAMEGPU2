@@ -18,10 +18,32 @@ FetchContent_Declare(
 FetchContent_GetProperties(glm)
 if(NOT glm_POPULATED)
     FetchContent_Populate(glm)
-    # glm CMake wants to generate the find file in a system location, so handle it manually
-    set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${glm_SOURCE_DIR}")
+    if (NOT TARGET glm::glm)
+        # glm CMake wants to generate the find file in a system location, so handle it manually
+        # Find the path, just incase
+        find_path(glm_INCLUDE_DIRS
+        NAMES
+            glm/glm.hpp
+        PATHS
+            ${glm_SOURCE_DIR}
+        NO_CACHE
+        )
+        if(glm_INCLUDE_DIRS)
+            # Define an imported interface target
+            add_library(glm::glm INTERFACE IMPORTED)
+            # Specify the location of the headers (but actually the parent dir, so include <glm/glm.hpp> can be used.)
+            target_include_directories(glm::glm INTERFACE "${glm_INCLUDE_DIRS}")
+        else()
+            message(FATAL_ERROR "Error during creation og `glm::glm` target. Could not find glm/glm.hpp")
+        endif()
+        unset(glm_INCLUDE_DIRS)
+    endif()
 endif()
-if (NOT glm_FOUND)
-    find_package(glm REQUIRED)
-    # Include path is ${glm_INCLUDE_DIRS}
-endif()
+
+# Mark some CACHE vars advanced for a cleaner GUI
+mark_as_advanced(FETCHCONTENT_QUIET)
+mark_as_advanced(FETCHCONTENT_BASE_DIR)
+mark_as_advanced(FETCHCONTENT_FULLY_DISCONNECTED)
+mark_as_advanced(FETCHCONTENT_UPDATES_DISCONNECTED)
+mark_as_advanced(FETCHCONTENT_SOURCE_DIR_GLM)
+mark_as_advanced(FETCHCONTENT_UPDATES_DISCONNECTED_GLM)

@@ -30,7 +30,7 @@
 #include "flamegpu/version.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/io/Telemetry.h"
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
 #include "flamegpu/visualiser/FLAMEGPU_Visualisation.h"
 #endif
 
@@ -199,7 +199,7 @@ CUDASimulation::~CUDASimulation() {
     submodel_map.clear();
     host_api.reset();
     macro_env.free();
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     visualisation.reset();  // Might want to force destruct this, as user could hold a ModelVis that has shared ptr
 #endif
 
@@ -474,7 +474,7 @@ void CUDASimulation::spatialSortAgent_async(const std::string& funcName, const s
     gridSize = (state_list_size + blockSize - 1) / blockSize;
 
     unsigned int sm_size = 0;
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     auto *error_buffer = this->singletons->exception.getDevicePtr(streamId, stream);
     sm_size = sizeof(error_buffer);
 #endif
@@ -696,7 +696,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 //  Agent function condition kernel wrapper args
                 util::detail::curandState *t_rng = d_rng + totalThreads;
                 unsigned int *scanFlag_agentDeath = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_DEATH, streamIdx).d_ptrs.scan_flag;
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
                 auto *error_buffer = this->singletons->exception.getDevicePtr(streamIdx, this->getStream(streamIdx));
 #endif
                 // switch between normal and RTC agent function condition
@@ -707,7 +707,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     //! Round up according to CUDAAgent state list size
                     gridSize = (state_list_size + blockSize - 1) / blockSize;
                     (func_des->condition) << <gridSize, blockSize, 0, this->getStream(streamIdx) >> > (
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
                     error_buffer,
 #endif
                     cuda_agent.getCurve(func_des->name + "_condition").getDevicePtr(),
@@ -727,7 +727,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     gridSize = (state_list_size + blockSize - 1) / blockSize;
                     // launch the kernel
                     CUresult a = instance.configure(gridSize, blockSize, 0, this->getStream(streamIdx)).launch({
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
                         reinterpret_cast<void*>(&error_buffer),
 #endif
                         const_cast<void *>(reinterpret_cast<const void*>(&state_list_size)),
@@ -766,7 +766,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 continue;
             }
 
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
             // Error check after unmap vars
             this->singletons->exception.checkError("condition " + func_des->name, streamIdx, this->getStream(streamIdx));
 #endif
@@ -920,7 +920,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
             unsigned int *scanFlag_agentDeath = func_des->has_agent_death ? this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_DEATH, streamIdx).d_ptrs.scan_flag : nullptr;
             unsigned int *scanFlag_messageOutput = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamIdx).d_ptrs.scan_flag;
             unsigned int *scanFlag_agentOutput = this->singletons->scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_OUTPUT, streamIdx).d_ptrs.scan_flag;
-    #if !defined(SEATBELTS) || SEATBELTS
+    #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
             auto *error_buffer = this->singletons->exception.getDevicePtr(streamIdx, this->getStream(streamIdx));
     #endif
 
@@ -931,7 +931,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
 
                 (func_des->func) << <gridSize, blockSize, 0, this->getStream(streamIdx) >> > (
-    #if !defined(SEATBELTS) || SEATBELTS
+    #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
                     error_buffer,
     #endif
                     cuda_agent.getCurve(func_des->name).getDevicePtr(),
@@ -955,7 +955,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
                 // launch the kernel
                 CUresult a = instance.configure(gridSize, blockSize, 0, this->getStream(streamIdx)).launch({
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
                     reinterpret_cast<void*>(&error_buffer),
 #endif
                     reinterpret_cast<void*>(&d_agentOut_nextID),
@@ -1023,7 +1023,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 output_agent.releaseNewBuffer(*func_des);
             }
 
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
             // Error check after unmap vars
             // This means that curve is cleaned up before we throw exception (mostly prevents curve being polluted if we catch and handle errors)
             this->singletons->exception.checkError(func_des->name, streamIdx, this->getStream(streamIdx));
@@ -1039,7 +1039,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     // Execute the host functions.
     layerHostFunctions(layer, layerIndex);
 
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Reset macro-environment read-write flags
     // Note this does not synchronise threads, it relies on synchronizeAllStreams() post host fns
     macro_env.resetFlagsAsync(streams);
@@ -1105,7 +1105,7 @@ bool CUDASimulation::stepExitConditions() {
     // Execute exit conditions
     for (auto &exitCdns : model->exitConditions) {
         if (exitCdns(this->host_api.get()) == EXIT) {
-            #ifdef VISUALISATION
+            #ifdef FLAMEGPU_VISUALISATION
                 if (visualisation) {
                     visualisation->updateBuffers(step_count+1);
                 }
@@ -1119,7 +1119,7 @@ bool CUDASimulation::stepExitConditions() {
     if (!exitConditionExit) {
         for (auto &exitCdns : model->exitConditionCallbacks) {
             if (exitCdns->run(this->host_api.get()) == EXIT) {
-                #ifdef VISUALISATION
+                #ifdef FLAMEGPU_VISUALISATION
                 if (visualisation) {
                     visualisation->updateBuffers(step_count+1);
                 }
@@ -1137,7 +1137,7 @@ bool CUDASimulation::stepExitConditions() {
             processHostAgentCreation(0);
         }
 
-        #ifdef VISUALISATION
+        #ifdef FLAMEGPU_VISUALISATION
             if (visualisation) {
                 visualisation->updateBuffers(step_count+1);
             }
@@ -1191,7 +1191,7 @@ void CUDASimulation::simulate() {
     resetLog();
     processStepLog(this->elapsedSecondsRTCInitialisation + this->elapsedSecondsInitFunctions);
 
-    #ifdef VISUALISATION
+    #ifdef FLAMEGPU_VISUALISATION
     // Pre step-loop visualisation update
     if (visualisation) {
         visualisation->updateBuffers();
@@ -1206,7 +1206,7 @@ void CUDASimulation::simulate() {
         if (!continueSimulation) {
             break;
         }
-        #ifdef VISUALISATION
+        #ifdef FLAMEGPU_VISUALISATION
 
         // Special case, if steps == 0 and visualisation has been closed
         if (getSimulationConfig().steps == 0 &&
@@ -1221,7 +1221,7 @@ void CUDASimulation::simulate() {
     this->exitFunctions();
 
     // Sync visualistaion after the exit functions
-    #ifdef VISUALISATION
+    #ifdef FLAMEGPU_VISUALISATION
     if (visualisation) {
         visualisation->updateBuffers();
     }
@@ -1356,7 +1356,7 @@ void CUDASimulation::setPopulationData(AgentVector& population, const std::strin
     }
     // This call hierarchy validates agent desc matches and state is valid
     it->second->setPopulationData(population, state_name, this->singletons->scatter, 0, getStream(0));  // Streamid shouldn't matter here
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     if (visualisation) {
         visualisation->updateBuffers();
     }
@@ -1457,7 +1457,7 @@ void CUDASimulation::applyConfig_derived() {
     flamegpu::util::nvtx::Range range{"applyConfig_derived"};
 
     // Handle console_mode
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     if (visualisation) {
         visualiser::ModelVis mv(visualisation);
         if (getSimulationConfig().console_mode) {
@@ -1575,7 +1575,7 @@ void CUDASimulation::initialiseSingletons() {
         // Store the WDDM/TCC driver mode status, for timer class decisions. Result is cached in the anon namespace to avoid multiple queries
         deviceUsingWDDM = util::detail::wddm::deviceIsWDDM();
 
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
         if (visualisation) {
             visualisation->updateRandomSeed();  // Incase user hasn't triggered applyConfig()
             visualisation->registerEnvProperties();
@@ -1651,7 +1651,7 @@ CUDASimulation::Config &CUDASimulation::CUDAConfig() {
 const CUDASimulation::Config &CUDASimulation::getCUDAConfig() const {
     return config;
 }
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
 visualiser::ModelVis CUDASimulation::getVisualisation() {
     if (!visualisation)
         visualisation = std::make_shared<visualiser::ModelVisData>(*this);
@@ -1809,7 +1809,7 @@ void CUDASimulation::resetLog() {
     gpuErrchk(cudaDeviceGetAttribute(&run_log->performance_specs.device_cc_major, cudaDevAttrComputeCapabilityMajor, CUDAConfig().device_id));
     gpuErrchk(cudaDeviceGetAttribute(&run_log->performance_specs.device_cc_minor,  cudaDevAttrComputeCapabilityMinor, CUDAConfig().device_id));
     gpuErrchk(cudaRuntimeGetVersion(&run_log->performance_specs.cuda_version));
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     run_log->performance_specs.seatbelts = true;
 #else
     run_log->performance_specs.seatbelts = false;

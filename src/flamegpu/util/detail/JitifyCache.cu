@@ -291,21 +291,21 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
     for (const auto &p : getIncludeDirs())
         options.push_back(std::string("-I" + p.generic_string()));
 
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     // GLM headers increase build time ~5x, so only enable glm if user is using it
     if (kernel_src.find("glm") != std::string::npos) {
-        options.push_back(std::string("-I") + GLM_PATH);
-        options.push_back(std::string("-DUSE_GLM"));
+        options.push_back(std::string("-I") + FLAMEGPU_GLM_PATH);
+        options.push_back(std::string("-DFLAMEGPU_USE_GLM"));
     }
 #endif
 
     // Forward the curand Engine request
-#if defined(CURAND_MRG32k3a)
-    options.push_back(std::string("-DCURAND_MRG32k3a"));
-#elif defined(CURAND_Philox4_32_10)
-    options.push_back(std::string("-DCURAND_Philox4_32_10"));
-#elif defined(CURAND_XORWOW)
-    options.push_back(std::string("-DCURAND_XORWOW"));
+#if defined(FLAMEGPU_CURAND_MRG32k3a)
+    options.push_back(std::string("-DFLAMEGPU_CURAND_MRG32k3a"));
+#elif defined(FLAMEGPU_CURAND_Philox4_32_10)
+    options.push_back(std::string("-DFLAMEGPU_CURAND_Philox4_32_10"));
+#elif defined(FLAMEGPU_CURAND_XORWOW)
+    options.push_back(std::string("-DFLAMEGPU_CURAND_XORWOW"));
 #endif
 
     // Set the cuda compuate capability architecture to optimize / generate for, based on the values supported by the current dynamiclaly linked nvrtc and the device in question.
@@ -348,11 +348,11 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
     options.push_back("--std=c++17");
 #endif
 
-    // If SEATBELTS is defined and false, forward it as off, otherwise forward it as on.
-#if !defined(SEATBELTS) || SEATBELTS
-    options.push_back("--define-macro=SEATBELTS=1");
+    // If FLAMEGPU_SEATBELTS is defined and false, forward it as off, otherwise forward it as on.
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
+    options.push_back("--define-macro=FLAMEGPU_SEATBELTS=1");
 #else
-    options.push_back("--define-macro=SEATBELTS=0");
+    options.push_back("--define-macro=FLAMEGPU_SEATBELTS=0");
 #endif
 
     // cuda.h
@@ -465,7 +465,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::loadKernel(const std::string &
     const std::string arch = std::to_string((status == cudaSuccess) ? compute_capability::getComputeCapability(currentDeviceIdx) : 0);
     status = cudaRuntimeGetVersion(&currentDeviceIdx);
     const std::string cuda_version = std::to_string((status == cudaSuccess) ? currentDeviceIdx : 0);
-    const std::string seatbelts = std::to_string(SEATBELTS);
+    const std::string seatbelts = std::to_string(FLAMEGPU_SEATBELTS);
     // Cat kernel, dynamic header, header version
     const std::string long_reference = kernel_src + dynamic_header;  // Don't need to include rest, they are explicit in short reference/filename
     // Generate short reference string
@@ -475,14 +475,14 @@ std::unique_ptr<KernelInstantiation> JitifyCache::loadKernel(const std::string &
         arch + "_" +
         seatbelts + "_" +
         std::string(flamegpu::VERSION_FULL) + "_" +
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
         "glm_" +
 #endif
-#if defined(CURAND_MRG32k3a)
+#if defined(FLAMEGPU_CURAND_MRG32k3a)
         "MRG_" +
-#elif defined(CURAND_Philox4_32_10)
+#elif defined(FLAMEGPU_CURAND_Philox4_32_10)
         "PHILOX_" +
-#elif defined(CURAND_XORWOW)
+#elif defined(FLAMEGPU_CURAND_XORWOW)
         "XORWOW_" +
 #endif
         // Use jitify hash methods for consistent hashing between OSs
@@ -569,7 +569,7 @@ void JitifyCache::clearDiskCache() {
 }
 JitifyCache::JitifyCache()
     : use_memory_cache(true)
-#ifndef DISABLE_RTC_DISK_CACHE
+#ifndef FLAMEGPU_DISABLE_RTC_DISK_CACHE
     , use_disk_cache(true) { }
 #else
     , use_disk_cache(false) { }

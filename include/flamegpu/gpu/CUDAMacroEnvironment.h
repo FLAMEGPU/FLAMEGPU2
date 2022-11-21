@@ -117,7 +117,7 @@ class CUDAMacroEnvironment {
      */
     void registerCurveVariables(detail::curve::HostCurve &curve) const;
 
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     /**
      * Reset the flags used by seatbelts to catch potential race conditions
      * @param streams Streams to async reset over
@@ -180,7 +180,7 @@ HostMacroProperty<T, I, J, K, W> CUDAMacroEnvironment::getProperty(const std::st
             "in HostEnvironment::getMacroProperty()\n",
             name.c_str(), I, J, K, W, prop->second.elements[0], prop->second.elements[1], prop->second.elements[2], prop->second.elements[3]);
     }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     const unsigned int flags = getDeviceWriteFlag(name);
     if (flags & (1 << 1)) {
         THROW flamegpu::exception::InvalidOperation("Environment macro property '%s' was written to by an agent function in the same layer, "
@@ -218,7 +218,7 @@ HostMacroProperty_swig<T> CUDAMacroEnvironment::getProperty_swig(const std::stri
             "in HostEnvironment::getMacroProperty()\n",
             name.c_str(), std::type_index(typeid(T)).name(), prop->second.type.name());
     }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     const unsigned int flags = getDeviceWriteFlag(name);
     if (flags & (1 << 1)) {
         THROW flamegpu::exception::InvalidOperation("Environment macro property '%s' was written to by an agent function in the same layer, "

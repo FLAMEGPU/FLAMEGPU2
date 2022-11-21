@@ -15,7 +15,7 @@ TEST(AgentVectorTest, constructor) {
     agent.newVariable<unsigned int>("uint", 2u);
     agent.newVariable<float>("float", 3.0f);
     agent.newVariable<double>("double", 4.0);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     agent.newVariable<glm::vec3>("vec3", glm::vec3(2.0f, 4.0f, 6.0f));
 #endif
 
@@ -32,7 +32,7 @@ TEST(AgentVectorTest, constructor) {
         ASSERT_EQ(instance.getVariable<unsigned int>("uint"), 2u);
         ASSERT_EQ(instance.getVariable<float>("float"), 3.0f);
         ASSERT_EQ(instance.getVariable<double>("double"), 4.0);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
         ASSERT_EQ(instance.getVariable<glm::vec3>("vec3"), glm::vec3(2.0f, 4.0f, 6.0f));
 #endif
     }
@@ -46,7 +46,7 @@ TEST(AgentVectorTest, copy_constructor) {
     agent.newVariable<unsigned int>("uint", 2u);
     agent.newVariable<float>("float", 3.0f);
     agent.newVariable<double>("double", 4.0);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     agent.newVariable<glm::vec3>("vec3", glm::vec3(2.0f, 4.0f, 6.0f));
 #endif
 
@@ -65,7 +65,7 @@ TEST(AgentVectorTest, copy_constructor) {
         ASSERT_EQ(instance.getVariable<unsigned int>("uint"), 2u);
         ASSERT_EQ(instance.getVariable<float>("float"), 3.0f);
         ASSERT_EQ(instance.getVariable<double>("double"), 4.0);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
         ASSERT_EQ(instance.getVariable<glm::vec3>("vec3"), glm::vec3(2.0f, 4.0f, 6.0f));
 #endif
     }
@@ -79,7 +79,7 @@ TEST(AgentVectorTest, move_constructor) {
     agent.newVariable<unsigned int>("uint", 2u);
     agent.newVariable<float>("float", 3.0f);
     agent.newVariable<double>("double", 4.0);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     agent.newVariable<glm::vec3>("vec3", glm::vec3(2.0f, 4.0f, 6.0f));
 #endif
 
@@ -98,7 +98,7 @@ TEST(AgentVectorTest, move_constructor) {
         ASSERT_EQ(instance.getVariable<unsigned int>("uint"), 2u);
         ASSERT_EQ(instance.getVariable<float>("float"), 3.0f);
         ASSERT_EQ(instance.getVariable<double>("double"), 4.0);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
         ASSERT_EQ(instance.getVariable<glm::vec3>("vec3"), glm::vec3(2.0f, 4.0f, 6.0f));
 #endif
     }
@@ -112,7 +112,7 @@ TEST(AgentVectorTest, copy_assignment_operator) {
     agent.newVariable<unsigned int>("uint", 2u);
     agent.newVariable<float>("float", 3.0f);
     agent.newVariable<double>("double", 4.0);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     agent.newVariable<glm::vec3>("vec3", glm::vec3(2.0f, 4.0f, 6.0f));
 #endif
 
@@ -132,7 +132,7 @@ TEST(AgentVectorTest, copy_assignment_operator) {
         ASSERT_EQ(instance.getVariable<unsigned int>("uint"), 2u);
         ASSERT_EQ(instance.getVariable<float>("float"), 3.0f);
         ASSERT_EQ(instance.getVariable<double>("double"), 4.0);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
         ASSERT_EQ(instance.getVariable<glm::vec3>("vec3"), glm::vec3(2.0f, 4.0f, 6.0f));
 #endif
     }
@@ -146,7 +146,7 @@ TEST(AgentVectorTest, move_assignment_operator) {
     agent.newVariable<unsigned int>("uint", 2u);
     agent.newVariable<float>("float", 3.0f);
     agent.newVariable<double>("double", 4.0);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     agent.newVariable<glm::vec3>("vec3", glm::vec3(2.0f, 4.0f, 6.0f));
 #endif
 
@@ -166,7 +166,7 @@ TEST(AgentVectorTest, move_assignment_operator) {
         ASSERT_EQ(instance.getVariable<unsigned int>("uint"), 2u);
         ASSERT_EQ(instance.getVariable<float>("float"), 3.0f);
         ASSERT_EQ(instance.getVariable<double>("double"), 4.0);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
         ASSERT_EQ(instance.getVariable<glm::vec3>("vec3"), glm::vec3(2.0f, 4.0f, 6.0f));
 #endif
     }
@@ -180,7 +180,7 @@ TEST(AgentVectorTest, at) {
     agent.newVariable<unsigned int>("uint", 2u);
     agent.newVariable<float>("float", 3.0f);
     agent.newVariable<double>("double", 4.0);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     agent.newVariable<glm::vec3>("vec3", glm::vec3(2.0f, 4.0f, 6.0f));
 #endif
 
@@ -193,7 +193,7 @@ TEST(AgentVectorTest, at) {
         ASSERT_EQ(instance.getVariable<unsigned int>("uint"), 2u);
         ASSERT_EQ(instance.getVariable<float>("float"), 3.0f);
         ASSERT_EQ(instance.getVariable<double>("double"), 4.0);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
         ASSERT_EQ(instance.getVariable<glm::vec3>("vec3"), glm::vec3(2.0f, 4.0f, 6.0f));
 #endif
     }
@@ -207,7 +207,7 @@ TEST(AgentVectorTest, at) {
         ASSERT_EQ(instance.getVariable<unsigned int>("uint"), 2u);
         ASSERT_EQ(instance.getVariable<float>("float"), 3.0f);
         ASSERT_EQ(instance.getVariable<double>("double"), 4.0);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
         ASSERT_EQ(instance.getVariable<glm::vec3>("vec3"), glm::vec3(2.0f, 4.0f, 6.0f));
 #endif
     }
@@ -371,7 +371,7 @@ TEST(AgentVectorTest, iterator) {
     }
     ASSERT_EQ(i, 0u);
 }
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 TEST(AgentVectorTest, iterator_GLM) {
     const unsigned int POP_SIZE = 10;
     // Test correctness of AgentVector array iterator, and the member functions for creating them.
@@ -1356,7 +1356,7 @@ TEST(AgentVectorTest, AgentVector_Agent) {
     agent.newVariable<int, 3>("int3", {2, 3, 4});
     agent.newVariable<int, 2>("int2", { 5, 6 });
     agent.newVariable<float>("float", 15.0f);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     agent.newVariable<glm::vec3>("vec3", glm::vec3(2.0f, 4.0f, 6.0f));
     agent.newVariable<glm::ivec3, 3>("ivec3_3", {glm::ivec3(12, 14, 16), glm::ivec3(2, 4, 6), glm::ivec3(22, 24, 26)});
     agent.newVariable<glm::ivec3, 3>("ivec3_3b", {glm::ivec3(12, 14, 16), glm::ivec3(2, 4, 6), glm::ivec3(22, 24, 26)});
@@ -1365,7 +1365,7 @@ TEST(AgentVectorTest, AgentVector_Agent) {
     // Create pop, variables are as expected
     AgentVector pop(agent, POP_SIZE);
     const std::array<int, 3> int3_ref = { 2, 3, 4 };
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     const std::array<glm::ivec3, 3> vec_array_check = {glm::ivec3(12, 14, 16), glm::ivec3(2, 4, 6), glm::ivec3(22, 24, 26)};
 #endif
     for (unsigned int i = 0; i < POP_SIZE; ++i) {
@@ -1378,7 +1378,7 @@ TEST(AgentVectorTest, AgentVector_Agent) {
         ASSERT_EQ(ai.getVariable<float>("float"), 15.0f);
         // check index value is as expected
         ASSERT_EQ(ai.getIndex(), i);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
         ASSERT_EQ(ai.getVariable<glm::vec3>("vec3"), glm::vec3(2.0f, 4.0f, 6.0f));
         const auto vec_array_test = ai.getVariable<glm::ivec3, 3>("ivec3_3");
         ASSERT_EQ(vec_array_test, vec_array_check);
@@ -1397,7 +1397,7 @@ TEST(AgentVectorTest, AgentVector_Agent) {
         ai.setVariable<int>("int2", 0, 5 + static_cast<int>(i));
         ai.setVariable<int>("int2", 1, 6 + static_cast<int>(i));
         ai.setVariable<float>("float", 15.0f + static_cast<float>(i));
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
         ai.setVariable<glm::vec3>("vec3", glm::vec3(2.0f + static_cast<float>(i), 4.0f + static_cast<float>(i), 6.0f + static_cast<float>(i)));
         ai.setVariable<glm::ivec3, 3>("ivec3_3", {glm::ivec3(12, 14, 16) + glm::ivec3(static_cast<int>(i)), glm::ivec3(2, 4, 6) + glm::ivec3(static_cast<int>(i)), glm::ivec3(22, 24, 26) + glm::ivec3(static_cast<int>(i))});
         // Don't update ivec3_3b index 0
@@ -1416,7 +1416,7 @@ TEST(AgentVectorTest, AgentVector_Agent) {
         ASSERT_EQ(ai.getVariable<int>("int2", 0), 5 + static_cast<int>(i));
         ASSERT_EQ(ai.getVariable<int>("int2", 1), 6 + static_cast<int>(i));
         ASSERT_EQ(ai.getVariable<float>("float"), 15.0f + static_cast<float>(i));
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
         ASSERT_EQ(ai.getVariable<glm::vec3>("vec3"), glm::vec3(2.0f + static_cast<float>(i), 4.0f + static_cast<float>(i), 6.0f + static_cast<float>(i)));
         const std::array<glm::ivec3, 3> vec_array_check2 = {glm::ivec3(12, 14, 16) + glm::ivec3(static_cast<int>(i)), glm::ivec3(2, 4, 6) + glm::ivec3(static_cast<int>(i)), glm::ivec3(22, 24, 26) + glm::ivec3(static_cast<int>(i))};
         const std::array<glm::ivec3, 3> vec_array_test = ai.getVariable<glm::ivec3, 3>("ivec3_3");
@@ -1434,7 +1434,7 @@ TEST(AgentVectorTest, AgentVector_Agent) {
         EXPECT_THROW(ai.setVariable<int>("wrong", 1), exception::InvalidAgentVar);
         // Array passed to non-array method
         EXPECT_THROW(ai.setVariable<int>("int2", 1), exception::InvalidVarType);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
         EXPECT_THROW(ai.setVariable<glm::vec3>("float", {}), exception::InvalidVarType);
 #endif
         // Wrong type
@@ -1456,7 +1456,7 @@ TEST(AgentVectorTest, AgentVector_Agent) {
         // Index out of bounds
         EXPECT_THROW(ai.setVariable<int>("int2", 2, 1), exception::OutOfBoundsException);
         EXPECT_THROW(ai.setVariable<float>("float", 1, 1), exception::OutOfBoundsException);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
         EXPECT_THROW(ai.setVariable<glm::ivec3>("ivec3_3", 4, {}), exception::OutOfBoundsException);
         EXPECT_THROW(ai.setVariable<glm::ivec3>("int3", 1, {}), exception::OutOfBoundsException);
 #endif
@@ -1468,7 +1468,7 @@ TEST(AgentVectorTest, AgentVector_Agent) {
         EXPECT_THROW(ai.getVariable<int>("wrong"), exception::InvalidAgentVar);
         // Array passed to non-array method
         EXPECT_THROW(ai.getVariable<int>("int2"), exception::InvalidVarType);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
         EXPECT_THROW(ai.getVariable<glm::vec3>("float"), exception::InvalidVarType);
 #endif
         // Wrong type
@@ -1488,7 +1488,7 @@ TEST(AgentVectorTest, AgentVector_Agent) {
         // Index out of bounds
         EXPECT_THROW(ai.getVariable<int>("int2", 2), exception::OutOfBoundsException);
         EXPECT_THROW(ai.getVariable<float>("float", 1), exception::OutOfBoundsException);
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
         EXPECT_THROW(ai.getVariable<glm::vec3>("ivec3_3", 4), exception::OutOfBoundsException);
         EXPECT_THROW(ai.getVariable<glm::vec3>("int3", 1), exception::OutOfBoundsException);
 #endif

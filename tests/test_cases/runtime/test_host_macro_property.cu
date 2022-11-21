@@ -488,7 +488,7 @@ TEST(HostMacroPropertyTest, ArithmeticTest) {
 }
 
 /* These tests, test functionality which is not exposed unless LayerDescription allows agent fn and host fn in the same layer
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(HostMacroPropertyTest, ReadSameLayerAsAgentWrite) {
 #else
 TEST(HostMacroPropertyTest, DISABLED_ReadSameLayerAsAgentWrite) {
@@ -517,7 +517,7 @@ TEST(HostMacroPropertyTest, DISABLED_ReadSameLayerAsAgentWrite) {
     cudaSimulation.setPopulationData(population);
     ASSERT_THROW(cudaSimulation.simulate(), flamegpu::exception::InvalidOperation);
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(HostMacroPropertyTest, WriteSameLayerAsAgentRead) {
 #else
 TEST(HostMacroPropertyTest, DISABLED_WriteSameLayerAsAgentRead) {

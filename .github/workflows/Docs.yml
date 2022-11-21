@@ -46,8 +46,8 @@ jobs:
         cmake . -B "${{ env.BUILD_DIR }}"
         -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF"
-        -DWARNINGS_AS_ERRORS="ON"
-        -DBUILD_API_DOCUMENTATION="ON"
+        -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
+        -DFLAMEGPU_BUILD_API_DOCUMENTATION="ON"
 
     - name: Docs
       working-directory: ${{ env.BUILD_DIR }}

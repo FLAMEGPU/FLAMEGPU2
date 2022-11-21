@@ -86,7 +86,7 @@ TEST(AgentDescriptionTest, variables) {
     EXPECT_EQ(sizeof(int16_t), a.getVariableSize(VARIABLE_NAME2));
     EXPECT_EQ(std::type_index(typeid(float)), a.getVariableType(VARIABLE_NAME1));
     EXPECT_EQ(std::type_index(typeid(int16_t)), a.getVariableType(VARIABLE_NAME2));
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     // Can create variable with GLM types
     a.newVariable<glm::vec3>("vec3");
     a.newVariable<glm::uvec4>("uvec4");
@@ -130,7 +130,7 @@ TEST(AgentDescriptionTest, variables_array) {
     EXPECT_EQ(sizeof(int16_t), a.getVariableSize(VARIABLE_NAME2));
     EXPECT_EQ(std::type_index(typeid(float)), a.getVariableType(VARIABLE_NAME1));
     EXPECT_EQ(std::type_index(typeid(int16_t)), a.getVariableType(VARIABLE_NAME2));
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     // Can create variable array with GLM types
     a.newVariable<glm::vec3, 5>("vec3_5");
     a.newVariable<glm::uvec4, 2>("uvec4_2");

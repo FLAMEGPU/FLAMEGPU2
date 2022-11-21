@@ -1,6 +1,8 @@
+include_guard(GLOBAL)
+
 # Function to disable all (as many as possible) compiler warnings for a given target
-if(NOT COMMAND DisableCompilerWarnings)
-    function(DisableCompilerWarnings)
+if(NOT COMMAND flamegpu_disable_compiler_warnings)
+    function(flamegpu_disable_compiler_warnings)
         # Parse the expected arguments, prefixing variables.
         cmake_parse_arguments(
             DCW
@@ -11,9 +13,9 @@ if(NOT COMMAND DisableCompilerWarnings)
         )
         # Ensure that a target has been passed, and that it is a valid target.
         if(NOT DCW_TARGET)
-            message(FATAL_ERROR "DisableCompilerWarnings: 'TARGET' argument required.")
+            message(FATAL_ERROR "flamegpu_disable_compiler_warnings: 'TARGET' argument required.")
         elseif(NOT TARGET ${DCW_TARGET})
-            message(FATAL_ERROR "DisableCompilerWarnings: TARGET '${DCW_TARGET}' is not a valid target")
+            message(FATAL_ERROR "flamegpu_disable_compiler_warnings: TARGET '${DCW_TARGET}' is not a valid target")
         endif()
         # By default, suppress all warnings, so that warnings are applied per-target.
         if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -28,8 +30,8 @@ endif()
 
 # Function to set a high level of compiler warnings for a target
 # Function to disable all (as many as possible) compiler warnings for a given target
-if(NOT COMMAND SetHighWarningLevel)
-    function(SetHighWarningLevel)
+if(NOT COMMAND flamegpu_set_high_warning_level)
+    function(flamegpu_set_high_warning_level)
         # Parse the expected arguments, prefixing variables.
         cmake_parse_arguments(
             SHWL
@@ -40,9 +42,9 @@ if(NOT COMMAND SetHighWarningLevel)
         )
         # Ensure that a target has been passed, and that it is a valid target.
         if(NOT SHWL_TARGET)
-            message(FATAL_ERROR "SetHighWarningLevel: 'TARGET' argument required.")
+            message(FATAL_ERROR "flamegpu_set_high_warning_level: 'TARGET' argument required.")
         elseif(NOT TARGET ${SHWL_TARGET})
-            message(FATAL_ERROR "SetHighWarningLevel: TARGET '${SHWL_TARGET}' is not a valid target")
+            message(FATAL_ERROR "flamegpu_set_high_warning_level: TARGET '${SHWL_TARGET}' is not a valid target")
         endif()
         
         # Per host-compiler settings for high warning levels and opt-in warnings.
@@ -69,8 +71,8 @@ if(NOT COMMAND SetHighWarningLevel)
 endif()
 
 # Function to apply warning suppressions to a given target, without changing the general warning level (This is so SWIG can have suppressions, with default warning levels)
-if(NOT COMMAND SuppressSomeCompilerWarnings)
-    function(SuppressSomeCompilerWarnings)
+if(NOT COMMAND flamegpu_suppress_some_compiler_warnings)
+    function(flamegpu_suppress_some_compiler_warnings)
         # Parse the expected arguments, prefixing variables.
         cmake_parse_arguments(
             SSCW
@@ -81,9 +83,9 @@ if(NOT COMMAND SuppressSomeCompilerWarnings)
         )
         # Ensure that a target has been passed, and that it is a valid target.
         if(NOT SSCW_TARGET)
-            message(FATAL_ERROR "SuppressSomeCompilerWarnings: 'TARGET' argument required.")
+            message(FATAL_ERROR "flamegpu_suppress_some_compiler_warnings: 'TARGET' argument required.")
         elseif(NOT TARGET ${SSCW_TARGET})
-            message(FATAL_ERROR "SuppressSomeCompilerWarnings: TARGET '${SSCW_TARGET}' is not a valid target")
+            message(FATAL_ERROR "flamegpu_suppress_some_compiler_warnings: TARGET '${SSCW_TARGET}' is not a valid target")
         endif()
 
         # Per host-compiler/OS settings for suppressions
@@ -105,7 +107,7 @@ if(NOT COMMAND SuppressSomeCompilerWarnings)
             # CUDA 11.6 deprecates __device__ cudaDeviceSynchronize, but does not provide an alternative.
             # This is used in cub/thrust, and windows still emits this warning from the third party library
             if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.6.0)
-                target_compile_definitions(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX,CUDA>:__CDPRT_SUPPRESS_SYNC_DEPRECATION_WARNING>")
+                target_compile_definitions(${SSCW_TARGET} PRIVATE "__CDPRT_SUPPRESS_SYNC_DEPRECATION_WARNING")
             endif()
         else()
             # Linux specific warning suppressions
@@ -131,9 +133,9 @@ if(NOT COMMAND SuppressSomeCompilerWarnings)
     endfunction()
 endif()
 
-# Function to promote warnings to errors, controlled by the WARNINGS_AS_ERRORS CMake option.
-if(NOT COMMAND EnableWarningsAsErrors)
-    function(EnableWarningsAsErrors)
+# Function to promote warnings to errors, controlled by the FLAMEGPU_WARNINGS_AS_ERRORS CMake option.
+if(NOT COMMAND flamegpu_enable_warnings_as_errors)
+    function(flamegpu_enable_warnings_as_errors)
         # Parse the expected arguments, prefixing variables.
         cmake_parse_arguments(
             EWAS
@@ -144,13 +146,13 @@ if(NOT COMMAND EnableWarningsAsErrors)
         )
         # Ensure that a target has been passed, and that it is a valid target.
         if(NOT EWAS_TARGET)
-            message(FATAL_ERROR "EnableWarningsAsErrors: 'TARGET' argument required.")
+            message(FATAL_ERROR "flamegpu_enable_warnings_as_errors: 'TARGET' argument required.")
         elseif(NOT TARGET ${EWAS_TARGET})
-            message(FATAL_ERROR "EnableWarningsAsErrors: TARGET '${EWAS_TARGET}' is not a valid target")
+            message(FATAL_ERROR "flamegpu_enable_warnings_as_errors: TARGET '${EWAS_TARGET}' is not a valid target")
         endif()
         
-        # Check the WARNINGS_AS_ERRORS cmake option to optionally enable this.
-        if(WARNINGS_AS_ERRORS)
+        # Check the FLAMEGPU_WARNINGS_AS_ERRORS cmake option to optionally enable this.
+        if(FLAMEGPU_WARNINGS_AS_ERRORS)
             # OS Specific flags
             if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
                 # Windows specific options
@@ -183,8 +185,8 @@ endif()
 # + With some warnings suppressed
 # + Optionally promotes warnings to errors.
 # Also enables the treating of warnings as errors if required.
-if(NOT COMMAND EnableFLAMEGPUCompilerWarnings)
-    function(EnableFLAMEGPUCompilerWarnings)
+if(NOT COMMAND flamegpu_enable_compiler_warnings)
+    function(flamegpu_enable_compiler_warnings)
         # Parse the expected arguments, prefixing variables.
         cmake_parse_arguments(
             EFCW
@@ -195,16 +197,16 @@ if(NOT COMMAND EnableFLAMEGPUCompilerWarnings)
         )
         # Ensure that a target has been passed, and that it is a valid target.
         if(NOT EFCW_TARGET)
-            message(FATAL_ERROR "EnableFLAMEGPUCompilerWarnings: 'TARGET' argument required.")
+            message(FATAL_ERROR "flamegpu_enable_compiler_warnings: 'TARGET' argument required.")
         elseif(NOT TARGET ${EFCW_TARGET})
-            message(FATAL_ERROR "EnableFLAMEGPUCompilerWarnings: TARGET '${EFCW_TARGET}' is not a valid target")
+            message(FATAL_ERROR "flamegpu_enable_compiler_warnings: TARGET '${EFCW_TARGET}' is not a valid target")
         endif()
 
         # Enable a high level of warnings
-        SetHighWarningLevel(TARGET ${EFCW_TARGET})
+        flamegpu_set_high_warning_level(TARGET ${EFCW_TARGET})
         # Suppress some warnings
-        SuppressSomeCompilerWarnings(TARGET ${EFCW_TARGET})
+        flamegpu_suppress_some_compiler_warnings(TARGET ${EFCW_TARGET})
         # Optionally promote warnings to errors.
-        EnableWarningsAsErrors(TARGET ${EFCW_TARGET})
+        flamegpu_enable_warnings_as_errors(TARGET ${EFCW_TARGET})
     endfunction()
 endif()

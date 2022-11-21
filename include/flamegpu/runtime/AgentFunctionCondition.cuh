@@ -14,7 +14,7 @@ namespace flamegpu {
 
 // ! FLAMEGPU function return type
 typedef void(AgentFunctionConditionWrapper)(
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     exception::DeviceExceptionBuffer *error_buffer,
 #endif
 #ifndef __CUDACC_RTC__
@@ -28,7 +28,7 @@ typedef void(AgentFunctionConditionWrapper)(
 /**
  * Wrapper function for launching agent functions
  * Initialises FLAMEGPU_API instance
- * @param error_buffer Buffer used for detecting and reporting exception::DeviceErrors (flamegpu must be built with SEATBELTS enabled for this to be used)
+ * @param error_buffer Buffer used for detecting and reporting exception::DeviceErrors (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for this to be used)
  * @param d_curve_table Pointer to curve hash table in device memory
  * @param d_env_buffer Pointer to env buffer in device memory
  * @param popNo Total number of agents exeucting the function (number of threads launched)
@@ -39,7 +39,7 @@ typedef void(AgentFunctionConditionWrapper)(
  */
 template<typename AgentFunctionCondition>
 __global__ void agent_function_condition_wrapper(
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     exception::DeviceExceptionBuffer *error_buffer,
 #endif
 #ifndef __CUDACC_RTC__
@@ -52,7 +52,7 @@ __global__ void agent_function_condition_wrapper(
     // We place these at the start of shared memory, so we can locate it anywhere in device code without a reference
     using detail::sm;
     if (threadIdx.x == 0) {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         sm()->device_exception = error_buffer;
 #endif
 #ifndef __CUDACC_RTC__

@@ -456,12 +456,12 @@ void AgentFunctionDescription::setRTCFunctionCondition(std::string func_cond_src
 
     // append jitify program string and include
     std::string func_cond_src_str = std::string(func_cond_name + "_program\n");
-#ifdef OUTPUT_RTC_DYNAMIC_FILES
+#ifdef FLAMEGPU_OUTPUT_RTC_DYNAMIC_FILES
     func_cond_src_str.append("#line 1 \"").append(function->rtc_func_name).append("_impl_condition.cu\"\n");
 #endif
     func_cond_src_str.append("#include \"flamegpu/runtime/DeviceAPI.cuh\"\n");
-    // Append line pragma to correct file/line number in same format as OUTPUT_RTC_DYNAMIC_FILES
-#ifndef OUTPUT_RTC_DYNAMIC_FILES
+    // Append line pragma to correct file/line number in same format as FLAMEGPU_OUTPUT_RTC_DYNAMIC_FILES
+#ifndef FLAMEGPU_OUTPUT_RTC_DYNAMIC_FILES
     func_cond_src_str.append("#line 1 \"").append(function->rtc_func_name).append("_impl_condition.cu\"\n");
 #endif
     // If src begins (\r)\n, trim that
@@ -533,7 +533,7 @@ AgentFunctionDescription AgentDescription::newRTCFunction(const std::string& fun
                 }
                 // set the runtime agent function source in agent function data
                 std::string func_src_str = std::string(function_name + "_program\n");
-#ifdef OUTPUT_RTC_DYNAMIC_FILES
+#ifdef FLAMEGPU_OUTPUT_RTC_DYNAMIC_FILES
                 func_src_str.append("#line 1 \"").append(code_func_name).append("_impl.cu\"\n");
 #endif
                 func_src_str.append("#include \"flamegpu/runtime/DeviceAPI.cuh\"\n");
@@ -545,8 +545,8 @@ AgentFunctionDescription AgentDescription::newRTCFunction(const std::string& fun
                     std::string out_type_include_name = out_type_name.substr(out_type_name.find_last_of("::") + 1);
                     func_src_str = func_src_str.append("#include \"flamegpu/runtime/messaging/"+ out_type_include_name + "/" + out_type_include_name + "Device.cuh\"\n");
                 }
-                // Append line pragma to correct file/line number in same format as OUTPUT_RTC_DYNAMIC_FILES
-#ifndef OUTPUT_RTC_DYNAMIC_FILES
+                // Append line pragma to correct file/line number in same format as FLAMEGPU_OUTPUT_RTC_DYNAMIC_FILES
+#ifndef FLAMEGPU_OUTPUT_RTC_DYNAMIC_FILES
                 func_src_str.append("#line 1 \"").append(code_func_name).append("_impl.cu\"\n");
 #endif
                 // If src begins (\r)\n, trim that

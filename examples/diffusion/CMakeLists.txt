@@ -1,11 +1,15 @@
 # Set the minimum cmake version to that which supports cuda natively.
-cmake_minimum_required(VERSION VERSION 3.12 FATAL_ERROR)
-
-# Name the project and set languages
-project(diffusion CUDA CXX)
+cmake_minimum_required(VERSION 3.18...3.25 FATAL_ERROR)
 
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../.. REALPATH)
+
+# Handle CMAKE_CUDA_ARCHITECTURES gracefully
+include(${FLAMEGPU_ROOT}/cmake/CUDAArchitectures.cmake)
+flamegpu_init_cuda_architectures(PROJECT diffusion)
+
+# Name the project and enable required languages
+project(diffusion CXX CUDA)
 
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
@@ -26,10 +30,10 @@ SET(ALL_SRC
 )
 
 # Option to enable/disable building the static library
-option(VISUALISATION "Enable visualisation support" OFF)
+option(FLAMEGPU_VISUALISATION "Enable visualisation support" OFF)
 
 # Add the executable and set required flags for the target
-add_flamegpu_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" "${PROJECT_BINARY_DIR}" TRUE)
+flamegpu_add_executable("${PROJECT_NAME}" "${ALL_SRC}" "${FLAMEGPU_ROOT}" "${PROJECT_BINARY_DIR}" TRUE)
 
 # Also set as startup project (if top level project)
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")

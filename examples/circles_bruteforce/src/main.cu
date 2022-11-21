@@ -126,7 +126,7 @@ int main(int argc, const char ** argv) {
     /**
      * Create visualisation
      */
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     flamegpu::visualiser::ModelVis  m_vis = cudaSimulation.getVisualisation();
     {
         const float INIT_CAM = ENV_MAX * 1.25F;
@@ -167,7 +167,7 @@ int main(int argc, const char ** argv) {
      */
     cudaSimulation.exportData("end.xml");
 
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     m_vis.join();
 #endif
 

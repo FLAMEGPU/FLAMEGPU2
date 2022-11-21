@@ -639,7 +639,7 @@ TEST(RTCSpatial2DMessageTest, ArrayVariable) {
     }
 }
 
-#if defined(USE_GLM)
+#if defined(FLAMEGPU_USE_GLM)
 FLAMEGPU_AGENT_FUNCTION(ArrayOut_glm, MessageNone, MessageSpatial2D) {
     const unsigned int x = FLAMEGPU->getVariable<unsigned int, 2>("index", 0);
     const unsigned int y = FLAMEGPU->getVariable<unsigned int, 2>("index", 1);
@@ -903,8 +903,8 @@ TEST(Spatial2DMessageTest, Wrapped6) {
 TEST(Spatial2DMessageTest, Wrapped7) {
     wrapped_2d_test(141.4f, -540.7f);
 }
-#if !defined(SEATBELTS) || SEATBELTS
-// Test that SEATBELTS catches out of bounds messages
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
+// Test that FLAMEGPU_SEATBELTS catches out of bounds messages
 TEST(Spatial2DMessageTest, Wrapped_OutOfBounds) {
     EXPECT_THROW(wrapped_2d_test(141.0f, -540.0f, 200.0f), exception::DeviceError);
 }

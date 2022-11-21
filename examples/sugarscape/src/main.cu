@@ -222,7 +222,7 @@ flamegpu::AgentDescription makeCoreAgent(flamegpu::ModelDescription &model) {
     // environment specific var
     agent.newVariable<int>("env_sugar_level");
     agent.newVariable<int>("env_max_sugar_level");
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     // Redundant seperate floating point position vars for vis
     agent.newVariable<float>("x");
     agent.newVariable<float>("y");
@@ -362,7 +362,7 @@ int main(int argc, const char ** argv) {
      * Create visualisation
      * @note FLAMEGPU2 doesn't currently have proper support for discrete/2d visualisations
      */
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     flamegpu::visualiser::ModelVis visualisation = cudaSimulation.getVisualisation();
     {
         visualisation.setSimulationSpeed(2);
@@ -463,7 +463,7 @@ int main(int argc, const char ** argv) {
                 env_sugar_lvl = env_sugar_lvl < SUGAR_MAX_CAPACITY / 2 ? poor_env_sugar_dist(rng) : env_sugar_lvl;
                 instance.setVariable<int>("env_max_sugar_level", env_sugar_lvl);  // All cells begin at their local max sugar
                 instance.setVariable<int>("env_sugar_level", env_sugar_lvl);
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
                 // Redundant separate floating point position vars for vis
                 instance.setVariable<float>("x", static_cast<float>(x));
                 instance.setVariable<float>("y", static_cast<float>(y));
@@ -484,7 +484,7 @@ int main(int argc, const char ** argv) {
      */
     // cudaSimulation.exportData("end.xml");
 
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     visualisation.join();
 #endif
 

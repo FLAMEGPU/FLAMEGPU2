@@ -81,6 +81,13 @@ if(FETCH_THRUST_CUB)
         find_package(Thrust REQUIRED CONFIG)
         find_package(CUB REQUIRED CONFIG)
     endif()
+    # Mark some CACHE vars as advnaced for a cleaner CMake GUI
+    mark_as_advanced(FETCHCONTENT_QUIET)
+    mark_as_advanced(FETCHCONTENT_BASE_DIR)
+    mark_as_advanced(FETCHCONTENT_FULLY_DISCONNECTED)
+    mark_as_advanced(FETCHCONTENT_UPDATES_DISCONNECTED) 
+    mark_as_advanced(FETCHCONTENT_SOURCE_DIR_THRUST)
+    mark_as_advanced(FETCHCONTENT_UPDATES_DISCONNECTED_THRUST)
 endif()
 
 # Unset temporary variables
@@ -88,3 +95,7 @@ unset(FETCH_THRUST_CUB)
 unset(MIN_REQUIRED_THRUST_VERSION)
 unset(MIN_REQUIRED_CUB_VERSION)
 unset(THRUST_DOWNLOAD_VERSION)
+
+# Mark some CACHE vars as advnaced for a cleaner CMake GUI
+mark_as_advanced(CUB_DIR)
+mark_as_advanced(Thrust_DIR)

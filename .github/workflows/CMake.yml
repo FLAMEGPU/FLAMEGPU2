@@ -52,16 +52,16 @@ jobs:
       INDIVIDUAL_EXAMPLE: "game_of_life"
       # Define constants
       BUILD_DIR: "build"
-      BUILD_TESTS: "ON"
+      FLAMEGPU_BUILD_TESTS: "ON"
       # Conditional based on matrix via awkward almost ternary
-      BUILD_SWIG_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
+      FLAMEGPU_BUILD_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
       # Port matrix options to environment, for more portability.
       CUDA: ${{ matrix.cudacxx.cuda }}
       CUDA_ARCH: ${{ matrix.cudacxx.cuda_arch }}
       HOSTCXX: ${{ matrix.cudacxx.hostcxx }}
       OS: ${{ matrix.cudacxx.os }}
       CONFIG: ${{ matrix.config.config }}
-      SEATBELTS: ${{ matrix.config.SEATBELTS }}
+      FLAMEGPU_SEATBELTS: ${{ matrix.config.SEATBELTS }}
       PYTHON: ${{ matrix.python}}
       VISUALISATION: ${{ matrix.VISUALISATION }}
       CMAKE: ${{ matrix.cmake }}
@@ -94,14 +94,14 @@ jobs:
         echo "CUDAHOSTCXX=/usr/bin/g++-${gcc_version}" >> $GITHUB_ENV
 
     - name: Select Python
-      if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }} 
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
       uses: actions/setup-python@v4
       with:
         python-version: ${{ env.PYTHON }}
 
     # @todo - is some/all of this still required when using select Python?
     - name: Install python dependencies
-      if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }}
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       run: |
         sudo apt-get install python3-venv
         python3 -m pip install --upgrade wheel build setuptools
@@ -147,13 +147,13 @@ jobs:
         -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
         -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF" 
-        -DWARNINGS_AS_ERRORS="ON"
-        -DCUDA_ARCH="${{ env.CUDA_ARCH }}"
-        -DBUILD_TESTS="${{ env.BUILD_TESTS }}"
-        -DBUILD_SWIG_PYTHON="${{ env.BUILD_SWIG_PYTHON }}"
+        -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
+        -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
+        -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
+        -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}"
         -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
-        -DVISUALISATION="${{ env.VISUALISATION }}"
-        -DUSE_NVTX="ON"
+        -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
+        -DFLAMEGPU_ENABLE_NVTX="ON"
 
     - name: Configure Individual example
       if: ${{ env.INDIVIDUAL_EXAMPLE != '' }}
@@ -163,6 +163,6 @@ jobs:
         -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
         -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF" 
-        -DWARNINGS_AS_ERRORS="ON"
-        -DCUDA_ARCH="${{ env.CUDA_ARCH }}"
-        -DUSE_NVTX="ON"
+        -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
+        -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
+        -DFLAMEGPU_ENABLE_NVTX="ON"

@@ -19,7 +19,7 @@ namespace flamegpu {
 enum AGENT_STATUS { ALIVE = 1, DEAD = 0 };
 
 typedef void(AgentFunctionWrapper)(
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     exception::DeviceExceptionBuffer *error_buffer,
 #endif
 #ifndef __CUDACC_RTC__
@@ -38,7 +38,7 @@ typedef void(AgentFunctionWrapper)(
 /**
  * Wrapper function for launching agent functions
  * Initialises FLAMEGPU_API instance
- * @param error_buffer Buffer used for detecting and reporting exception::DeviceErrors (flamegpu must be built with SEATBELTS enabled for this to be used)
+ * @param error_buffer Buffer used for detecting and reporting exception::DeviceErrors (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for this to be used)
  * @param d_curve_table Pointer to curve hash table in device memory
  * @param d_env_buffer Pointer to env buffer in device memory
  * @param d_agent_output_nextID If agent output is enabled, this points to a global memory src of the next suitable agent id, this will be atomically incremented at birth
@@ -55,7 +55,7 @@ typedef void(AgentFunctionWrapper)(
  */
 template<typename AgentFunction, typename MessageIn, typename MessageOut>
 __global__ void agent_function_wrapper(
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     exception::DeviceExceptionBuffer *error_buffer,
 #endif
 #ifndef __CUDACC_RTC__
@@ -73,7 +73,7 @@ __global__ void agent_function_wrapper(
     // We place these at the start of shared memory, so we can locate it anywhere in device code without a reference
     using detail::sm;
     if (threadIdx.x == 0) {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         sm()->device_exception = error_buffer;
 #endif
 #ifndef __CUDACC_RTC__
@@ -104,7 +104,7 @@ __global__ void agent_function_wrapper(
     if (scanFlag_agentDeath) {
         // (scan flags will not be processed unless agent death has been requested in model definition)
         scanFlag_agentDeath[DeviceAPI<MessageIn, MessageOut>::getIndex()] = flag;
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     } else if (flag == DEAD) {
         DTHROW("Agent death must be enabled per agent function when defining the model.\n");
 #endif

@@ -108,8 +108,8 @@ class MessageBruteForce::In {
          * @tparam T type of the variable
          * @tparam N Length of variable name (this should be implicit if a string literal is passed to variable name)
          * @return The specified variable, else 0x0 if an error occurs
-         * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-         * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
          */
         template<typename T, unsigned int N> __device__
         T getVariable(const char(&variable_name)[N]) const;
@@ -120,9 +120,9 @@ class MessageBruteForce::In {
          * @tparam T Type of the message variable being accessed
          * @tparam N The length of the array variable, as set within the model description hierarchy
          * @tparam M Length of variable_name, this should always be implicit if passing a string literal
-         * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-         * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
-         * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
          */
         template<typename T, flamegpu::size_type N, unsigned int M> __device__
         T getVariable(const char(&variable_name)[M], unsigned int index) const;
@@ -205,9 +205,9 @@ class MessageBruteForce::Out {
      * @tparam T The type of the variable, as set within the model description hierarchy
      * @tparam N The length of the array variable, as set within the model description hierarchy
      * @tparam M variable_name length, this should be ignored as it is implicitly set
-     * @throws exception::DeviceError If name is not a valid variable within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If name is not a valid variable within the message (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N, unsigned int M>
     __device__ void setVariable(const char(&variable_name)[M], unsigned int index, T value) const;
@@ -221,7 +221,7 @@ class MessageBruteForce::Out {
 
 template<typename T, unsigned int N>
 __device__ T MessageBruteForce::In::Message::getVariable(const char(&variable_name)[N]) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Ensure that the message is within bounds.
     if (index >= this->_parent.len) {
         DTHROW("Brute force message index exceeds messagelist length, unable to get variable '%s'.\n", variable_name);
@@ -229,7 +229,7 @@ __device__ T MessageBruteForce::In::Message::getVariable(const char(&variable_na
     }
 #endif
     // get the value from curve using the message index.
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     T value = detail::curve::DeviceCurve::getMessageVariable<T>(variable_name, index);
 #else
     T value = detail::curve::DeviceCurve::getMessageVariable_ldg<T>(variable_name, index);
@@ -240,7 +240,7 @@ template<typename T, flamegpu::size_type N, unsigned int M> __device__
 T MessageBruteForce::In::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
     // simple indexing assumes index is the thread number (this may change later)
     const unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Ensure that the message is within bounds.
     if (index >= this->_parent.len) {
         DTHROW("Brute force message index exceeds messagelist length, unable to get variable '%s'.\n", variable_name);
@@ -248,7 +248,7 @@ T MessageBruteForce::In::Message::getVariable(const char(&variable_name)[M], con
     }
 #endif
     // get the value from curve using the message index.
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     T value = detail::curve::DeviceCurve::getMessageArrayVariable<T, N>(variable_name, index, array_index);
 #else
     T value = detail::curve::DeviceCurve::getMessageArrayVariable_ldg<T, N>(variable_name, index, array_index);
@@ -259,7 +259,7 @@ T MessageBruteForce::In::Message::getVariable(const char(&variable_name)[M], con
 template<typename T, unsigned int N>
 __device__ void MessageBruteForce::Out::setVariable(const char(&variable_name)[N], T value) const {  // message name or variable name
     if (variable_name[0] == '_') {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in MessageBruteForce::Out::setVariable().\n", variable_name);
 #endif
         return;  // Fail silently
@@ -277,7 +277,7 @@ __device__ void MessageBruteForce::Out::setVariable(const char(&variable_name)[N
 template<typename T, unsigned int N, unsigned int M>
 __device__ void MessageBruteForce::Out::setVariable(const char(&variable_name)[M], const unsigned int array_index, T value) const {
     if (variable_name[0] == '_') {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in MessageBruteForce::Out::setVariable().\n", variable_name);
 #endif
         return;  // Fail silently

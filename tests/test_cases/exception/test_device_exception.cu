@@ -5,8 +5,8 @@
 
 namespace flamegpu {
 
-// These tests wont work if built with SEATBELTS=OFF, so mark them all as disabled instead
-#if defined(SEATBELTS) && !SEATBELTS
+// These tests wont work if built with FLAMEGPU_SEATBELTS=OFF, so mark them all as disabled instead
+#if defined(FLAMEGPU_SEATBELTS) && !FLAMEGPU_SEATBELTS
 #undef TEST_F
 #define TEST_F(test_fixture, test_name)\
   GTEST_TEST_(test_fixture, DISABLED_ ## test_name, test_fixture, \

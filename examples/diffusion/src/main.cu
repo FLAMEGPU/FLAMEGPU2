@@ -57,7 +57,7 @@ int main(int argc, const char ** argv) {
         flamegpu::AgentDescription agent = model.newAgent("cell");
         agent.newVariable<unsigned int, 2>("pos");
         agent.newVariable<float>("value");
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
         // Redundant separate floating point position vars for vis
         agent.newVariable<float>("x");
         agent.newVariable<float>("y");
@@ -125,7 +125,7 @@ int main(int argc, const char ** argv) {
                 flamegpu::AgentVector::Agent instance = init_pop.back();
                 instance.setVariable<unsigned int, 2>("pos", { x, y });
                 instance.setVariable<float>("value", dist(rng));
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
 // Redundant separate floating point position vars for vis
                 instance.setVariable<float>("x", static_cast<float>(x));
                 instance.setVariable<float>("y", static_cast<float>(y));
@@ -139,7 +139,7 @@ int main(int argc, const char ** argv) {
      * Create visualisation
      * @note FLAMEGPU2 doesn't currently have proper support for discrete/2d visualisations
      */
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     flamegpu::visualiser::ModelVis visualisation = cudaSimulation.getVisualisation();
     {
         visualisation.setBeginPaused(true);
@@ -167,7 +167,7 @@ int main(int argc, const char ** argv) {
     /**
      * Export Pop
      */
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     visualisation.join();
 #endif
 

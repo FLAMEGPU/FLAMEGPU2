@@ -21,14 +21,14 @@ int getComputeCapability(int deviceIndex);
 
 /**
  * Get the minimum compute capability which this file was compiled for.
- * Specified via the MIN_ARCH macro, as __CUDA_ARCH__ is only defined for device compilation.
+ * Specified via the FLAMEGPU_MIN_CUDA_ARCH macro, as __CUDA_ARCH__ is only defined for device compilation.
  */
 int minimumCompiledComputeCapability();
 
 /**
  * Check that the current executable has been built with a low enough compute capability for the current device.
  * This assumes JIT support is enabled for future (major) architectures.
- * If the compile time flag MIN_ARCH was not specified, no decision can be made so it is assumed to be successful.
+ * If the compile time macro FLAMEGPU_MIN_CUDA_ARCH was not specified or incorrectly detected, no decision can be made so it is assumed to be successful.
  * @param deviceIndex the index of the device to be checked.
  * @return boolean indicating if the executable can run on the specified device.
  */

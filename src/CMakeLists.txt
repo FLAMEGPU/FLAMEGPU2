@@ -1,5 +1,5 @@
 # Minimum CMake version 3.18 for CUDA --std=c++17 
-cmake_minimum_required(VERSION VERSION 3.18 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18...3.25 FATAL_ERROR)
 
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
@@ -7,20 +7,25 @@ get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 # Include versioning CMake logic, to set the project version 
 include(${FLAMEGPU_ROOT}/cmake/version.cmake)
 
+# Include CMake Logic and call a method to record user-provided CMAKE_CUDA_ARCHITECTURES
+include(${FLAMEGPU_ROOT}/cmake/CUDAArchitectures.cmake)
+flamegpu_init_cuda_architectures()
+
 # Set the project  with no languages iniitailly, in case of doxygen only builds.
 project(flamegpu LANGUAGES NONE VERSION ${FLAMEGPU_VERSION})
 
 # See what languages are supported. Must be called within a project.
 # This is primarily here incase someone targets src/CMakeFiles.txt directly
 include(CheckLanguage)
+include(CheckCXXCompilerFlag)
 check_language(CXX)
 check_language(CUDA)
 if(CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
     #Not able to build code, so just make docs
     message("Suitable compilers for building code not found.\n" "Attempting generation of minimal documentation only project.")
     include(${FLAMEGPU_ROOT}/cmake/dependencies/doxygen.cmake)
-    if(${BUILD_API_DOCUMENTATION})
-        create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}" "")
+    if(${FLAMEGPU_BUILD_API_DOCUMENTATION})
+        flamegpu_create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}" "")
     endif()
     return()
 endif()
@@ -29,6 +34,9 @@ endif()
 enable_language(C)
 enable_language(CXX)
 enable_language(CUDA)
+
+# Set CMAKE_CUDA_ARCHITECTURES now CUDA is enabled
+flamegpu_set_cuda_architectures()
 
 # Ensure this is not an in-source build
 include(${FLAMEGPU_ROOT}/cmake/OutOfSourceOnly.cmake)
@@ -67,14 +75,20 @@ unset(FLAMEGPU_TELEMETRY_TEST_MODE_DEFAULT)
 
 # Option to enable/disable runtime checks which may impact performance
 # This will primarily prevent device code from reporting errors
-option(SEATBELTS "Enable runtime checks which harm performance for release/profile builds.\nThis should only be disabled after a model is known to be correct." ON)
+option(FLAMEGPU_SEATBELTS "Enable runtime checks which harm performance for release/profile builds.\nThis should only be disabled after a model is known to be correct." ON)
+
+# Option to enable/disable building the flamegpu visualiser into the flamegpu
+option(FLAMEGPU_VISUALISATION "Enable FLAMEGPU visualisation support" OFF)
 
 # Option to enable/disable the default status of JitifyCache
-option(RTC_DISK_CACHE "Enable caching of RTC kernels to disk by default (this can still be overridden programatically)." ON)
+option(FLAMEGPU_RTC_DISK_CACHE "Enable caching of RTC kernels to disk by default (this can still be overridden programatically)." ON)
+
+# Option to enable/disable logging of dynamic RTC files to disk
+option(FLAMEGPU_RTC_EXPORT_SOURCES "Export RTC source files to disk at runtime" OFF)
 
 # Option to make put glm on the include path
-option(USE_GLM "Experimental: Make GLM available to flamegpu2 projects on the include path" OFF)
-mark_as_advanced(USE_GLM)
+option(FLAMEGPU_ENABLE_GLM "Experimental: Make GLM available to flamegpu2 projects on the include path" OFF)
+mark_as_advanced(FLAMEGPU_ENABLE_GLM)
 
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
@@ -82,7 +96,7 @@ include(${FLAMEGPU_ROOT}/cmake/common.cmake)
 include(${FLAMEGPU_ROOT}/cmake/dependencies/doxygen.cmake)
 
 # Include the visualiser cmake if requested
-if(VISUALISATION)
+if(FLAMEGPU_VISUALISATION)
   include(${FLAMEGPU_ROOT}/cmake/dependencies/flamegpu2-visualiser.cmake)
 endif()
 
@@ -100,14 +114,14 @@ configure_file(${DYNAMIC_VERSION_SRC_SRC} ${DYNAMIC_VERSION_SRC_DEST} @ONLY)
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
     # If top level project
     SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/${CMAKE_BUILD_TYPE}/)
-    if(${BUILD_API_DOCUMENTATION})
-        create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}" "")
+    if(${FLAMEGPU_BUILD_API_DOCUMENTATION})
+        flamegpu_create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}" "")
     endif()
 else()
     # If called via add_subdirectory()
     SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/${CMAKE_BUILD_TYPE}/)
-    if(${BUILD_API_DOCUMENTATION})
-        create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/.." "")
+    if(${FLAMEGPU_BUILD_API_DOCUMENTATION})
+        flamegpu_create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/.." "")
     endif()
 endif()
 
@@ -362,7 +376,7 @@ set(SRC_FLAMEGPU_VISUALISER
     ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/color/ViridisInterpolation.cpp
 )
 # If visualisation is enabled, the the visualiser inc/src files must be in the appropriate lists
-if (VISUALISATION)
+if (FLAMEGPU_VISUALISATION)
     SET(SRC_INCLUDE
         ${SRC_INCLUDE}
         ${SRC_INCLUDE_VISUALISER}
@@ -404,17 +418,59 @@ source_group(TREE ${FLAMEGPU_ROOT}/include PREFIX external FILES ${T_SRC_EXTERNA
 # Define which source files are required for the target executable
 add_library(${PROJECT_NAME} STATIC ${ALL_SRC})
 
+# Require C++17 as a public target property for C++ and CUDA, with no extensions, and the standard is required
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+target_compile_features(${PROJECT_NAME} PUBLIC cuda_std_17)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_EXTENSIONS OFF)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CUDA_EXTENSIONS OFF)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CUDA_STANDARD_REQUIRED ON)
+
 # Add the library headers as public so they are forwarded on.
 target_include_directories(${PROJECT_NAME} PUBLIC "${FLAMEGPU_ROOT}/include")
 # Add any private headers.
 target_include_directories(${PROJECT_NAME} PRIVATE "${FLAMEGPU_ROOT}/src")
 
 # Set target level warnings.
-EnableFLAMEGPUCompilerWarnings(TARGET "${PROJECT_NAME}")
+flamegpu_enable_compiler_warnings(TARGET "${PROJECT_NAME}")
 # Apply common compiler settings
-CommonCompilerSettings(TARGET "${PROJECT_NAME}")
-# Set the cuda gencodes, potentially using the user-provided CUDA_ARCH
-SetCUDAGencodes(TARGET "${PROJECT_NAME}")
+flamegpu_common_compiler_settings(TARGET "${PROJECT_NAME}")
+
+# Ensure that DEBUG macros and -G are set for debug NVCC builds, as public properties so they are inherrited by consumers. Used in include files.
+target_compile_options(${PROJECT_NAME} PUBLIC "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CONFIG:Debug>>:-G>")
+target_compile_definitions(${PROJECT_NAME} PUBLIC $<$<CONFIG:Debug>:DEBUG>)
+target_compile_definitions(${PROJECT_NAME} PUBLIC $<$<CONFIG:Debug>:_DEBUG>)
+
+# Prevent windows.h from defining max and min, this can be private as windows.h is only included in src files (directly, or via nvrtc/jitify)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE NOMINMAX)
+endif()
+
+# If FLAMEGPU_SEATBELTS is enabled, set it as a public compile defition (i.e it's in the headers)
+if (FLAMEGPU_SEATBELTS)
+    # If on, all build configs have  seatbelts
+    target_compile_definitions(${PROJECT_NAME} PUBLIC FLAMEGPU_SEATBELTS=1)
+else()
+    # If off, debug builds have seatbelts, non debug builds do not.
+    target_compile_definitions(${PROJECT_NAME} PUBLIC $<IF:$<CONFIG:Debug>,FLAMEGPU_SEATBELTS=1,FLAMEGPU_SEATBELTS=0>)
+endif()
+
+# Detect and forward the minimum CMAKE_CUDA_ARCHITECTURES value to the compiler, if possible. This is only used in a library source file so can be private.
+flamegpu_get_minimum_cuda_architecture(min_cuda_arch)
+target_compile_definitions(${PROJECT_NAME} PRIVATE FLAMEGPU_MIN_CUDA_ARCH=${min_cuda_arch})
+
+# Select the curand engine to use for FLAMEGPU, used in include, so must match the library build (PUBLIC)
+string(TOUPPER FLAMEGPU_CURAND_ENGINE FLAMEGPU_CURAND_ENGINE_UPPER)
+if(${FLAMEGPU_CURAND_ENGINE_UPPER} STREQUAL "MRG")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC FLAMEGPU_CURAND_MRG32k3a)
+elseif(${FLAMEGPU_CURAND_ENGINE_UPPER} STREQUAL "PHILOX")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC FLAMEGPU_CURAND_Philox4_32_10)
+elseif(${FLAMEGPU_CURAND_ENGINE_UPPER} STREQUAL "XORWOW")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC FLAMEGPU_CURAND_XORWOW)
+elseif(DEFINED FLAMEGPU_CURAND_ENGINE)
+    message(FATAL_ERROR "${FLAMEGPU_CURAND_ENGINE} is not a suitable value of FLAMEGPU_CURAND_ENGINE\nOptions: \"MRG\", \"PHILOX\", \"XORWOW\"")
+endif()
+unset(FLAMEGPU_CURAND_ENGINE_UPPER)
 
 # Telemetry (perform this check here are not in common as it only effects the library build)
 if (FLAMEGPU_SHARE_USAGE_STATISTICS)
@@ -445,32 +501,36 @@ endif()
 set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 # Activate visualisation if requested
-if (VISUALISATION)
+if (FLAMEGPU_VISUALISATION)
     # @todo - these could/should be private, but must be PUBLIC for swig to build. Alternatively it could be PRIVATE but also set for swig.
     target_link_libraries(${PROJECT_NAME} PUBLIC flamegpu_visualiser)
-    CMAKE_SET_TARGET_FOLDER(flamegpu_visualiser "FLAMEGPU")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC VISUALISATION) 
+    flamegpu_set_target_folder(flamegpu_visualiser "FLAMEGPU")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC FLAMEGPU_VISUALISATION) 
 endif()
 
-# Make the visualisers GLM accessible via include
+# Make GLM accessible via include. PUBLIC so this is usable by downstream projects
 # @todo - make the vis cmake/glm create a target to use.
-if (USE_GLM)
-    if(glm_FOUND)
-        target_include_directories(${PROJECT_NAME} PUBLIC "${glm_INCLUDE_DIRS}")
-        target_compile_definitions(${PROJECT_NAME} PUBLIC GLM_PATH="${glm_INCLUDE_DIRS}")
+if (FLAMEGPU_ENABLE_GLM)
+    if(TARGET glm::glm)
+        # Get the interface include directories property from the glm target to forward onto nvrtc, which is a bit grim (i.e. not portable/installable)
+        target_link_libraries(${PROJECT_NAME} PUBLIC glm::glm)
+        target_compile_definitions(${PROJECT_NAME} PUBLIC FLAMEGPU_USE_GLM)
+        get_target_property(glm_inc_path glm::glm INTERFACE_INCLUDE_DIRECTORIES)
+        target_compile_definitions(${PROJECT_NAME} PUBLIC FLAMEGPU_GLM_PATH="${glm_inc_path}")
+        unset(glm_inc_path)
     else()
-        message(WARNING "USE_GLM enabled, but glm_FOUND is False.")
+        message(WARNING "FLAMEGPU_ENABLE_GLM enabled, but glm was not found")
     endif()
-    target_compile_definitions(${PROJECT_NAME} PRIVATE USE_GLM)
 endif()  
 
-if (NOT RTC_DISK_CACHE)
+
+if (NOT FLAMEGPU_RTC_DISK_CACHE)
     # Only used in source files, so can be private
-    target_compile_definitions(${PROJECT_NAME} PRIVATE DISABLE_RTC_DISK_CACHE)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE FLAMEGPU_DISABLE_RTC_DISK_CACHE)
 endif()    
-if (EXPORT_RTC_SOURCES)
+if (FLAMEGPU_RTC_EXPORT_SOURCES)
     # Only used in source files, so can be private
-    target_compile_definitions(${PROJECT_NAME} PRIVATE OUTPUT_RTC_DYNAMIC_FILES)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE FLAMEGPU_OUTPUT_RTC_DYNAMIC_FILES)
 endif ()
 
 # Enable RDC
@@ -511,7 +571,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::nvrtc)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::cuda_driver)
 
-if(USE_NVTX AND TARGET NVTX::nvtx)
+if(FLAMEGPU_ENABLE_NVTX AND TARGET NVTX::nvtx)
     target_link_libraries(${PROJECT_NAME} PUBLIC NVTX::nvtx)
     # Get the version to set a definition value 
     # Interface targets only support the version property from 3.19
@@ -521,12 +581,13 @@ if(USE_NVTX AND TARGET NVTX::nvtx)
         # fallback to the old cmake var.
         set(nvtxversion ${NVTX_VERSION})
     endif()
-    target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<COMPILE_LANGUAGE:C,CXX,CUDA>:FLAMEGPU_USE_NVTX=${nvtxversion}>")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC "FLAMEGPU_USE_NVTX=${nvtxversion}")
     unset(nvtxversion)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Jitify::jitify)
-target_compile_definitions(${PROJECT_NAME} PUBLIC "$<$<COMPILE_LANGUAGE:C,CXX,CUDA>:JITIFY_PRINT_LOG>")
+# jitify is included in public headers, so this definiition must be public too.
+target_compile_definitions(${PROJECT_NAME} PUBLIC "JITIFY_PRINT_LOG")
 
 # If gcc < 9, needs to link against stdc++fs
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
@@ -538,33 +599,23 @@ if(CMAKE_DL_LIBS)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${CMAKE_DL_LIBS})
 endif()
 
-# Make GLM accessible via include. PUBLIC so this is usable by downstream projects
-if (USE_GLM)
-    if(TARGET GLM::glm)
-        target_link_libraries(${PROJECT_NAME} PUBLIC GLM::glm)
-        target_compile_definitions(${PROJECT_NAME} PUBLIC USE_GLM)
-    else()
-        message(WARNING "USE_GLM enabled, but glm was not found")
-    endif()
-endif()
-
 # Ensure we link against pthread / windows equilvalent. This was previously implied
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
 # Flag the new linter target and the files to be linted. Ensure vis sources are linted even if vis is not enabled (mostly for CI)
-if (VISUALISATION)
+if (FLAMEGPU_VISUALISATION)
     # If vis is enabled, just use ALL_SRC
-    new_linter_target(${PROJECT_NAME} "${ALL_SRC}")
+    flamegpu_new_linter_target(${PROJECT_NAME} "${ALL_SRC}")
 else()
     # If vis is not enabled, pass in the vis source files too.
-    new_linter_target(${PROJECT_NAME} "${ALL_SRC};${SRC_INCLUDE_VISUALISER};${SRC_FLAMEGPU_VISUALISER}")
+    flamegpu_new_linter_target(${PROJECT_NAME} "${ALL_SRC};${SRC_INCLUDE_VISUALISER};${SRC_FLAMEGPU_VISUALISER}")
 endif()
 # Put within FLAMEGPU filter
-CMAKE_SET_TARGET_FOLDER(${PROJECT_NAME} "FLAMEGPU")
+flamegpu_set_target_folder(${PROJECT_NAME} "FLAMEGPU")
 # Put the tinyxml2 in the folder
-CMAKE_SET_TARGET_FOLDER("tinyxml2" "FLAMEGPU/Dependencies")
+flamegpu_set_target_folder("tinyxml2" "FLAMEGPU/Dependencies")
 
 # Emit some warnings that should only be issued once and are related to this file (but not this target)
 # @todo - move these author warnigns elsewhere, so they will be emitted if not building FLAMEGPU iteself? Common but with some form of guard?

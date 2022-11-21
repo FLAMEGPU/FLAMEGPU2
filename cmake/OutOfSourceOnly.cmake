@@ -1,5 +1,7 @@
+include_guard(GLOBAL)
+
 # Define a cmake function which emits a fatal error if the source directory and binary directory are the same.
-function(EnforceOutOfSourceBuilds)
+function(flamegpu_enforce_out_of_source_builds)
     # Resolve paths before comparioson to ensure comparions are accurate
     get_filename_component(source_dir "${CMAKE_SOURCE_DIR}" REALPATH)
     get_filename_component(binary_dir "${CMAKE_BINARY_DIR}" REALPATH)
@@ -15,5 +17,5 @@ function(EnforceOutOfSourceBuilds)
 endfunction()
 
 # Call the function imediately, so the file only needs to be included. 
-EnforceOutOfSourceBuilds()
+flamegpu_enforce_out_of_source_builds()
 

@@ -39,7 +39,7 @@ template<typename T, unsigned int I = 1, unsigned int J = 1, unsigned int K = 1,
 class ReadOnlyDeviceMacroProperty {
  protected:
     T* ptr;
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     /**
      * This flag is used by seatbelts to check for a read/atomic-write conflict
      * Reading sets 1<<0
@@ -57,7 +57,7 @@ class ReadOnlyDeviceMacroProperty {
 #endif
 
  public:
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
      /**
       * Constructor
       * @param _ptr Pointer to buffer
@@ -86,7 +86,7 @@ class ReadOnlyDeviceMacroProperty {
 template<typename T, unsigned int I = 1, unsigned int J = 1, unsigned int K = 1, unsigned int W = 1>
 class DeviceMacroProperty : public ReadOnlyDeviceMacroProperty<T, I, J, K, W> {
  public:
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     /**
      * Constructor
      * @param _ptr Pointer to buffer
@@ -188,7 +188,7 @@ class DeviceMacroProperty : public ReadOnlyDeviceMacroProperty<T, I, J, K, W> {
     __device__ __forceinline__ T exchange(T val);
 };
 
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, I, J, K, W>::ReadOnlyDeviceMacroProperty(T* _ptr, unsigned int* _rwf)
     : ptr(_ptr)
@@ -228,7 +228,7 @@ __device__ __forceinline__ DeviceMacroProperty<T, I , J, K, W>::DeviceMacroPrope
 #endif
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, J, K, W, 1> ReadOnlyDeviceMacroProperty<T, I, J, K, W>::operator[](unsigned int i) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (I == 1 && J == 1 && K == 1 && W == 1) {
         DTHROW("Indexing error, property has less dimensions.\n");
         return ReadOnlyDeviceMacroProperty<T, J, K, W, 1>(nullptr, nullptr);
@@ -240,7 +240,7 @@ __device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, J, K, W, 1> ReadOnlyDe
     }
 #endif
     // (i * J * K * W) + (j * K * W) + (k * W) + w
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     return ReadOnlyDeviceMacroProperty<T, J, K, W, 1>(this->ptr + (i * J * K * W), this->read_write_flag);
 #else
     return DeviceMacroProperty<T, J, K, W, 1>(this->ptr + (i * J * K * W));
@@ -248,7 +248,7 @@ __device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, J, K, W, 1> ReadOnlyDe
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ DeviceMacroProperty<T, J, K, W, 1> DeviceMacroProperty<T, I, J, K, W>::operator[](unsigned int i) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (I == 1 && J == 1 && K == 1 && W == 1) {
         DTHROW("Indexing error, property has less dimensions.\n");
         return DeviceMacroProperty<T, J, K, W, 1>(nullptr, nullptr);
@@ -260,7 +260,7 @@ __device__ __forceinline__ DeviceMacroProperty<T, J, K, W, 1> DeviceMacroPropert
     }
 #endif
     // (i * J * K * W) + (j * K * W) + (k * W) + w
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     return DeviceMacroProperty<T, J, K, W, 1>(this->ptr + (i * J * K * W), this->read_write_flag);
 #else
     return DeviceMacroProperty<T, J, K, W, 1>(this->ptr + (i * J * K * W));
@@ -268,7 +268,7 @@ __device__ __forceinline__ DeviceMacroProperty<T, J, K, W, 1> DeviceMacroPropert
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, I, J, K, W>::operator T() const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
         return { };
@@ -286,7 +286,7 @@ __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& DeviceMacroProper
         std::is_same<T, uint64_t>::value ||
         std::is_same<T, float>::value ||
         std::is_same<T, double>::value, "atomic add only supports the types int32_t/uint32_t/uint64_t/float/double.");
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
         return *this;
@@ -301,7 +301,7 @@ __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& DeviceMacroProper
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& DeviceMacroProperty<T, I, J, K, W>::operator-=(const T val) {
     static_assert(std::is_same<T, uint32_t>::value || std::is_same<T, int32_t>::value, "atomic subtract only supports the types int32_t/uint32_t.");
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
         return *this;
@@ -315,7 +315,7 @@ __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& DeviceMacroProper
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator+(const T val) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
         return { };
@@ -328,7 +328,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator+(const
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator-(const T val) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
         return { };
@@ -342,7 +342,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator-(const
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator++() {
     static_assert(std::is_same<T, uint32_t>::value, "atomic increment only supports the type uint32_t.");
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
         return *this;
@@ -358,7 +358,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator++() {
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator--() {
     static_assert(std::is_same<T, uint32_t>::value, "atomic decrement only supports the type uint32_t.");
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
         return *this;
@@ -373,7 +373,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator--() {
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator++(int) {
     static_assert(std::is_same<T, uint32_t>::value, "atomic increment only supports the type uint32_t.");
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
         return { };
@@ -388,7 +388,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator++(int)
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator--(int) {
     static_assert(std::is_same<T, uint32_t>::value, "atomic decrement only supports the type uint32_t.");
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
         return { };
@@ -404,7 +404,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::min(T val) {
     static_assert(std::is_same<T, int32_t>::value ||
         std::is_same<T, uint32_t>::value ||
         std::is_same<T, uint64_t>::value, "atomic min only supports the types int32_t/uint32_t/uint64_t.");
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
         return { };
@@ -420,7 +420,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::max(T val) {
     static_assert(std::is_same<T, int32_t>::value ||
         std::is_same<T, uint32_t>::value ||
         std::is_same<T, uint64_t>::value, "atomic max only supports the types int32_t/uint32_t/uint64_t.");
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
         return { };
@@ -437,7 +437,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::CAS(T compare, 
         std::is_same<T, uint32_t>::value ||
         std::is_same<T, uint64_t>::value ||
         std::is_same<T, uint16_t>::value, "atomic compare and swap only supports the types int32_t/uint32_t/uint64_t/uint16_t.");
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
         return { };
@@ -465,7 +465,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::exchange(T val)
         std::is_same<T, float>::value ||
         std::is_same<T, double>::value, "atomic exchange only supports the types int32_t/int64_t/uint32_t/uint64_t/float/double.");
     static_assert(sizeof(uint64_t) == sizeof(unsigned long long int), "uint64_t != unsigned long long int.");  // NOLINT(runtime/int)
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (I != 1 || J != 1 || K != 1 || W != 1) {
         DTHROW("Indexing error, property has more dimensions.\n");
         return { };

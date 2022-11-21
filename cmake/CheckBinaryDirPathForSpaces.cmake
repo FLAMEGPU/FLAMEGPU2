@@ -3,7 +3,7 @@ include_guard(GLOBAL)
 # Define a cmake function which emits a warning if the build directory path contains a space, in some cases
 # With Visual Stuido 2022 and CUDA 11.7, this resulted in compilation errors. A relevant bug report has been logged with NVIDIA, so should be fixed in a future CUDA release.
 # https://github.com/FLAMEGPU/FLAMEGPU2/issues/867
-function(CheckBinaryDirPathForSpaces)
+function(flamegpu_check_binary_dir_for_spaces)
     # If using Visual Studio 17 2022 (the known verison which errors with this, with current CUDA version(s))
     if (CMAKE_GENERATOR MATCHES "Visual Studio 17 2022")
         # Resolve paths to get the full abs path of the binary dir
@@ -25,5 +25,5 @@ function(CheckBinaryDirPathForSpaces)
 endfunction()
 
 # Call the function imediately, so the file only needs to be included. 
-CheckBinaryDirPathForSpaces()
+flamegpu_check_binary_dir_for_spaces()
 

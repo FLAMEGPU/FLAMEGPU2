@@ -4,7 +4,7 @@ This FLAME GPU 2 example uses the `pyflamegpu` library. It uses Spatial 3D messa
 
 # Running the example
 
-Running the model requires the pyflamegpu module to be installed. Ensure that you have installed the prerequisites listed in the main README.md and that you have build FLAME GPU using the `BUILD_SWIG_PYTHON` CMake option. This will build a virtual environment which you can activate before executing this script. E.g.
+Running the model requires the pyflamegpu module to be installed. Ensure that you have installed the prerequisites listed in the main README.md and that you have build FLAME GPU using the `FLAMEGPU_BUILD_PYTHON` CMake option. This will build a virtual environment which you can activate before executing this script. E.g.
 
 `../../build/lib/Release/python/venv/Scripts/activate`
 

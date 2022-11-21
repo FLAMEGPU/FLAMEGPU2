@@ -1,4 +1,3 @@
-// @todo - ifdef VISUALISTION?
 #include "flamegpu/visualiser/color/DiscreteColor.h"
 #include "flamegpu/visualiser/color/Palette.h"
 

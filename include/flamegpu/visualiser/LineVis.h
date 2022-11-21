@@ -1,6 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_VISUALISER_LINEVIS_H_
 #define INCLUDE_FLAMEGPU_VISUALISER_LINEVIS_H_
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
 
 #include <memory>
 
@@ -56,5 +56,5 @@ class LineVis {
 }  // namespace visualiser
 }  // namespace flamegpu
 
-#endif  // VISUALISATION
+#endif  // FLAMEGPU_VISUALISATION
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_LINEVIS_H_

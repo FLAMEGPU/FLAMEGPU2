@@ -1,6 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_VISUALISER_AGENTVIS_H_
 #define INCLUDE_FLAMEGPU_VISUALISER_AGENTVIS_H_
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
 
 // #include <glm/mat4x4.hpp>
 #include <unordered_map>
@@ -594,5 +594,5 @@ class AgentVis {
 }  // namespace visualiser
 }  // namespace flamegpu
 
-#endif  // VISUALISATION
+#endif  // FLAMEGPU_VISUALISATION
 #endif  // INCLUDE_FLAMEGPU_VISUALISER_AGENTVIS_H_

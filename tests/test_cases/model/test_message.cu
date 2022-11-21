@@ -34,7 +34,7 @@ TEST(MessageDescriptionTest, variables) {
     EXPECT_EQ(sizeof(int16_t), m.getVariableSize(VARIABLE_NAME2));
     EXPECT_EQ(std::type_index(typeid(int16_t)), m.getVariableType(VARIABLE_NAME2));
     EXPECT_EQ(1u, m.getVariableLength(VARIABLE_NAME2));
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     // Can create variable with GLM types
     m.newVariable<glm::vec3>("vec3");
     m.newVariable<glm::uvec4>("uvec4");
@@ -74,7 +74,7 @@ TEST(MessageDescriptionTest, variables_array) {
     EXPECT_EQ(std::type_index(typeid(int16_t)), m.getVariableType(VARIABLE_NAME2));
     EXPECT_EQ(2u, m.getVariableLength(VARIABLE_NAME1));
     EXPECT_EQ(2u, m.getVariableLength(VARIABLE_NAME2));
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
     // Can create variable array with GLM types
     m.newVariable<glm::vec3, 5>("vec3_5");
     m.newVariable<glm::uvec4, 2>("uvec4_2");

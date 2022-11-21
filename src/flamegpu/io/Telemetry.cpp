@@ -187,7 +187,7 @@ std::string Telemetry::generateData(std::string event_name, std::map<std::string
     payload_items["operatingSystem"] = "Other";
 #endif
     // visualiastion status
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     payload_items["Visualisation"] = "true";
 #else
     payload_items["Visualisation"] = "false";

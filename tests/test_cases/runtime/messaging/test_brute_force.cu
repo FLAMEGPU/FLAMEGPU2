@@ -663,7 +663,7 @@ TEST(TestRTCMessage_BruteForce, ArrayVariable) {
     }
 }
 
-#if defined(USE_GLM)
+#if defined(FLAMEGPU_USE_GLM)
 FLAMEGPU_AGENT_FUNCTION(ArrayOut_glm, MessageNone, MessageBruteForce) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     FLAMEGPU->message_out.setVariable<unsigned int>("index", index);

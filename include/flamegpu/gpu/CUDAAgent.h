@@ -30,9 +30,9 @@ class HostAPI;
  * However it does not own these buffers, they are owned by it's parent CUDAFatAgent, as buffers are shared with all mapped agents too.
  */
 class CUDAAgent : public AgentInterface {
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     friend struct visualiser::AgentVisData;
-#endif  // VISUALISATION
+#endif  // FLAMEGPU_VISUALISATION
 
  public:
     /**

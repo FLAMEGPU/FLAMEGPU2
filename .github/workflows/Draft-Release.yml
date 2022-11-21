@@ -38,11 +38,11 @@ jobs:
         # CUDA_ARCH values are reduced compared to wheels due to CI memory issues while compiling the test suite.
         cudacxx:
           - cuda: "11.8"
-            cuda_arch: "35 60 80"
+            cuda_arch: "35;60;90"
             hostcxx: gcc-9
             os: ubuntu-20.04
           - cuda: "11.0"
-            cuda_arch: "35 60 80"
+            cuda_arch: "35;60;80"
             hostcxx: gcc-8
             os: ubuntu-20.04
         python:
@@ -61,16 +61,16 @@ jobs:
     env:
       # Define constants
       BUILD_DIR: "build"
-      BUILD_TESTS: "ON"
+      FLAMEGPU_BUILD_TESTS: "ON"
       # Conditional based on matrix via awkward almost ternary
-      BUILD_SWIG_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
+      FLAMEGPU_BUILD_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
       # Port matrix options to environment, for more portability.
       CUDA: ${{ matrix.cudacxx.cuda }}
       CUDA_ARCH: ${{ matrix.cudacxx.cuda_arch }}
       HOSTCXX: ${{ matrix.cudacxx.hostcxx }}
       OS: ${{ matrix.cudacxx.os }}
       CONFIG: ${{ matrix.config.config }}
-      SEATBELTS: ${{ matrix.config.SEATBELTS }}
+      FLAMEGPU_SEATBELTS: ${{ matrix.config.SEATBELTS }}
       PYTHON: ${{ matrix.python}}
       VISUALISATION: ${{ matrix.VISUALISATION }}
 
@@ -93,14 +93,14 @@ jobs:
         echo "CUDAHOSTCXX=/usr/bin/g++-${gcc_version}" >> $GITHUB_ENV
 
     - name: Select Python
-      if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }} 
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
       uses: actions/setup-python@v4
       with:
         python-version: ${{ env.PYTHON }}
 
     # @todo - is some/all of this still required when using select Python?
     - name: Install python dependencies
-      if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }}
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       run: |
         sudo apt-get install python3-venv
         python3 -m pip install --upgrade wheel build setuptools
@@ -146,25 +146,25 @@ jobs:
         -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
         -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF" 
-        -DWARNINGS_AS_ERRORS="ON"
-        -DCUDA_ARCH="${{ env.CUDA_ARCH }}"
-        -DBUILD_TESTS="${{ env.BUILD_TESTS }}"
-        -DBUILD_SWIG_PYTHON="${{ env.BUILD_SWIG_PYTHON }}"
+        -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
+        -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
+        -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
+        -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}"
         -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
-        -DVISUALISATION="${{ env.VISUALISATION }}"
-        -DUSE_NVTX="ON"
+        -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
+        -DFLAMEGPU_ENABLE_NVTX="ON"
 
     - name: Build static library
       working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --target flamegpu --verbose -j `nproc`
 
     - name: Build python wheel
-      if: ${{ env.BUILD_SWIG_PYTHON == 'ON' }}
+      if: ${{ env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --target pyflamegpu --verbose -j `nproc`
 
     - name: Build tests
-      if: ${{ env.BUILD_TESTS == 'ON' }}
+      if: ${{ env.FLAMEGPU_BUILD_TESTS == 'ON' }}
       working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --target tests --verbose -j `nproc`
 
@@ -184,11 +184,11 @@ jobs:
         # CUDA_ARCH values are reduced compared to wheels due to CI memory issues while compiling the test suite.
         cudacxx:
           - cuda: "11.8.0"
-            cuda_arch: "35 60 80"
+            cuda_arch: "35;60;90"
             hostcxx: "Visual Studio 16 2019"
             os: windows-2019
           - cuda: "11.0.3"
-            cuda_arch: "35 60 80"
+            cuda_arch: "35;60;80"
             hostcxx: "Visual Studio 16 2019"
             os: windows-2019
         python: 
@@ -207,16 +207,16 @@ jobs:
     env:
       # Define constants
       BUILD_DIR: "build"
-      BUILD_TESTS: "ON"
+      FLAMEGPU_BUILD_TESTS: "ON"
       # Conditional based on matrix via awkward almost ternary
-      BUILD_SWIG_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
+      FLAMEGPU_BUILD_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
       # Port matrix options to environment, for more portability.
       CUDA: ${{ matrix.cudacxx.cuda }}
       CUDA_ARCH: ${{ matrix.cudacxx.cuda_arch }}
       HOSTCXX: ${{ matrix.cudacxx.hostcxx }}
       OS: ${{ matrix.cudacxx.os }}
       CONFIG: ${{ matrix.config.config }}
-      SEATBELTS: ${{ matrix.config.SEATBELTS }}
+      FLAMEGPU_SEATBELTS: ${{ matrix.config.SEATBELTS }}
       PYTHON: ${{ matrix.python}}
       VISUALISATION: ${{ matrix.VISUALISATION }}
 
@@ -232,7 +232,7 @@ jobs:
       run: .github\scripts\install_cuda_windows.ps1
 
     - name: Select Python
-      if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }} 
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
       uses: actions/setup-python@v4
       with:
         python-version: ${{ env.PYTHON }}
@@ -244,26 +244,26 @@ jobs:
         -G "${{ env.HOSTCXX }}" -A x64
         -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF"
-        -DWARNINGS_AS_ERRORS="ON"
-        -DCUDA_ARCH="${{ env.CUDA_ARCH }}"
-        -DBUILD_TESTS="${{ env.BUILD_TESTS }}"
-        -DBUILD_SWIG_PYTHON="${{ env.BUILD_SWIG_PYTHON }}" 
+        -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
+        -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
+        -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
+        -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}" 
         -DPython3_ROOT_DIR="$(dirname $(which python))" 
         -DPython3_EXECUTABLE="$(which python)"
-        -DVISUALISATION="${{ env.VISUALISATION }}"
-        -DUSE_NVTX="ON"
+        -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
+        -DFLAMEGPU_ENABLE_NVTX="ON"
 
     - name: Build static library
       working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --config ${{ env.CONFIG }} --target flamegpu --verbose -j `nproc`
 
     - name: Build python wheel
-      if: ${{ env.BUILD_SWIG_PYTHON == 'ON' }}
+      if: ${{ env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --config ${{ env.CONFIG }} --target pyflamegpu --verbose -j `nproc`
 
     - name: Build tests
-      if: ${{ env.BUILD_TESTS == 'ON' }}
+      if: ${{ env.FLAMEGPU_BUILD_TESTS == 'ON' }}
       working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --config ${{ env.CONFIG }} --target tests --verbose -j `nproc`
 
@@ -284,11 +284,11 @@ jobs:
       matrix:
         cudacxx:
           - cuda: "11.2"
-            cuda_arch: "35 52 60 70 80"
+            cuda_arch: "35;52;60;70;80"
             hostcxx: devtoolset-9
             os: ubuntu-20.04
           - cuda: "11.0"
-            cuda_arch: "35 52 60 70 80"
+            cuda_arch: "35;52;60;70;80"
             hostcxx: devtoolset-8
             os: ubuntu-20.04
         python: 
@@ -319,16 +319,16 @@ jobs:
       ARTIFACT_NAME: wheel-manylinux2014-${{ matrix.cudacxx.cuda }}-${{matrix.python}}-${{ matrix.VISUALISATION }}-${{ matrix.config.name }}-${{ matrix.cudacxx.os }}
       # Define constants
       BUILD_DIR: "build"
-      BUILD_TESTS: "OFF"
+      FLAMEGPU_BUILD_TESTS: "OFF"
       # Conditional based on matrix via awkward almost ternary
-      BUILD_SWIG_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
+      FLAMEGPU_BUILD_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
       # Port matrix options to environment, for more portability.
       CUDA: ${{ matrix.cudacxx.cuda }}
       CUDA_ARCH: ${{ matrix.cudacxx.cuda_arch }}
       HOSTCXX: ${{ matrix.cudacxx.hostcxx }}
       OS: ${{ matrix.cudacxx.os }}
       CONFIG: ${{ matrix.config.config }}
-      SEATBELTS: ${{ matrix.config.SEATBELTS }}
+      FLAMEGPU_SEATBELTS: ${{ matrix.config.SEATBELTS }}
       PYTHON: ${{ matrix.python}}
       VISUALISATION: ${{ matrix.VISUALISATION }}
 
@@ -391,18 +391,18 @@ jobs:
         -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
         -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF" 
-        -DWARNINGS_AS_ERRORS="ON"
-        -DCUDA_ARCH="${{ env.CUDA_ARCH }}"
-        -DBUILD_TESTS="${{ env.BUILD_TESTS }}"
-        -DBUILD_SWIG_PYTHON="${{ env.BUILD_SWIG_PYTHON }}"
+        -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
+        -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
+        -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
+        -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}"
         -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
-        -DVISUALISATION="${{ env.VISUALISATION }}"
-        -DUSE_NVTX="ON"
+        -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
+        -DFLAMEGPU_ENABLE_NVTX="ON"
         -DGLEW_USE_STATIC_LIBS="${{ env.USE_STATIC_GLEW }}"
         -DOpenGL_GL_PREFERENCE:STRING=LEGACY
 
     - name: Build python wheel
-      if: ${{ env.BUILD_SWIG_PYTHON == 'ON' }}
+      if: ${{ env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --target pyflamegpu --verbose -j `nproc`
 
@@ -421,7 +421,7 @@ jobs:
     # Upload wheel artifacts to the job on GHA, with a short retention
     # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
     - name: Upload Wheel Artifacts
-      if: ${{ env.BUILD_SWIG_PYTHON == 'ON' }}
+      if: ${{ env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.ARTIFACT_NAME }}
@@ -440,11 +440,11 @@ jobs:
       matrix:
         cudacxx:
           - cuda: "11.2.2"
-            cuda_arch: "35 52 60 70 80"
+            cuda_arch: "35;52;60;70;80"
             hostcxx: "Visual Studio 16 2019"
             os: windows-2019
           - cuda: "11.0.3"
-            cuda_arch: "35 52 60 70 80"
+            cuda_arch: "35;52;60;70;80"
             hostcxx: "Visual Studio 16 2019"
             os: windows-2019
         python: 
@@ -471,16 +471,16 @@ jobs:
       ARTIFACT_NAME: wheel-windows-${{ matrix.cudacxx.cuda }}-${{matrix.python}}-${{ matrix.VISUALISATION }}-${{ matrix.config.name }}-${{ matrix.cudacxx.os }}
       # Define constants
       BUILD_DIR: "build"
-      BUILD_TESTS: "OFF"
+      FLAMEGPU_BUILD_TESTS: "OFF"
       # Conditional based on matrix via awkward almost ternary
-      BUILD_SWIG_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
+      FLAMEGPU_BUILD_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
       # Port matrix options to environment, for more portability.
       CUDA: ${{ matrix.cudacxx.cuda }}
       CUDA_ARCH: ${{ matrix.cudacxx.cuda_arch }}
       HOSTCXX: ${{ matrix.cudacxx.hostcxx }}
       OS: ${{ matrix.cudacxx.os }}
       CONFIG: ${{ matrix.config.config }}
-      SEATBELTS: ${{ matrix.config.SEATBELTS }}
+      FLAMEGPU_SEATBELTS: ${{ matrix.config.SEATBELTS }}
       PYTHON: ${{ matrix.python}}
       VISUALISATION: ${{ matrix.VISUALISATION }}
 
@@ -496,7 +496,7 @@ jobs:
       run: .github\scripts\install_cuda_windows.ps1
 
     - name: Select Python
-      if: ${{ env.PYTHON != '' && env.BUILD_SWIG_PYTHON == 'ON' }} 
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
       uses: actions/setup-python@v4
       with:
         python-version: ${{ env.PYTHON }}
@@ -508,24 +508,24 @@ jobs:
         -G "${{ env.HOSTCXX }}" -A x64
         -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF"
-        -DWARNINGS_AS_ERRORS="ON"
-        -DCUDA_ARCH="${{ env.CUDA_ARCH }}"
-        -DBUILD_TESTS="${{ env.BUILD_TESTS }}"
-        -DBUILD_SWIG_PYTHON="${{ env.BUILD_SWIG_PYTHON }}" 
+        -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
+        -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
+        -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
+        -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}" 
         -DPython3_ROOT_DIR="$(dirname $(which python))" 
         -DPython3_EXECUTABLE="$(which python)"
-        -DVISUALISATION="${{ env.VISUALISATION }}"
-        -DUSE_NVTX="ON"
+        -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
+        -DFLAMEGPU_ENABLE_NVTX="ON"
 
     - name: Build python wheel
-      if: ${{ env.BUILD_SWIG_PYTHON == 'ON' }}
+      if: ${{ env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --config ${{ env.CONFIG }} --target pyflamegpu --verbose -j `nproc`
 
     # Upload wheel artifacts to the job on GHA, with a short retention
     # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
     - name: Upload Wheel Artifacts
-      if: ${{env.BUILD_SWIG_PYTHON == 'ON' }}
+      if: ${{env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.ARTIFACT_NAME }}

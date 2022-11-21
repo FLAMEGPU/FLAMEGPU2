@@ -141,7 +141,7 @@ int XMLStateReader::parse() {
                         sim_instance->SimulationConfig().timing = static_cast<bool>(stoll(val));
                     }
                 } else if (key == "console_mode") {
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
                     for (auto& c : val)
                         c = static_cast<char>(::tolower(c));
                     if (val == "true") {

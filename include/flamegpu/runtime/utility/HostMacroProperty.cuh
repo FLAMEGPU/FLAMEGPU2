@@ -45,7 +45,7 @@ struct HostMacroProperty_MetaData {
      */
     void upload() {
         if (h_base_ptr && has_changed) {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
             if (device_read_flag) {
                 THROW flamegpu::exception::InvalidEnvProperty("The environment macro property '%s' was not found, "
                     "in HostMacroProperty_MetaData::upload()\n",
@@ -287,7 +287,7 @@ void HostMacroProperty<T, I, J, K, W>::zero() {
         memset(reinterpret_cast<T*>(metadata->h_base_ptr) + offset, 0, I * J * K * W * metadata->type_size);
         metadata->has_changed = true;
     } else {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         if (metadata->device_read_flag) {
             THROW flamegpu::exception::InvalidEnvProperty("The environment macro property '%s' was not found, "
                 "in HostMacroProperty::zero()\n",

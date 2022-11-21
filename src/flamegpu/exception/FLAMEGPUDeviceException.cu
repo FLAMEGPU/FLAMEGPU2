@@ -3,7 +3,7 @@
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/util/detail/cuda.cuh"
 
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 
 namespace flamegpu {
 namespace exception {
@@ -212,4 +212,4 @@ std::string DeviceExceptionManager::getErrorString(const DeviceExceptionBuffer &
 }  // namespace exception
 }  // namespace flamegpu
 
-#endif  // SEATBELTS are off
+#endif  // FLAMEGPU_SEATBELTS are off

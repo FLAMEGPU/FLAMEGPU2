@@ -84,9 +84,9 @@ class MessageBucket::In {
              * @tparam T Type of the message variable being accessed
              * @tparam N The length of the array variable, as set within the model description hierarchy
              * @tparam M Length of variable_name, this should always be implicit if passing a string literal
-             * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-             * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with SEATBELTS enabled for device error checking)
-             * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If T is not the type of variable 'name' within the message (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+             * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
              */
             template<typename T, flamegpu::size_type N, unsigned int M> __device__
             T getVariable(const char(&variable_name)[M], unsigned int index) const;
@@ -152,7 +152,7 @@ class MessageBucket::In {
         * @param endKey Exclusive final bucket of range to access, this is the final bucket + 1
         */
         inline __device__ Filter(const MetaData *_metadata, const IntT &beginKey, const IntT &endKey);
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         /**
          * Creates a null filter which always returns 0 messages
          */
@@ -205,7 +205,7 @@ class MessageBucket::In {
     * @param key The bucket to access
     */
     inline __device__ Filter operator() (const IntT &key) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         {
             if (key < metadata->min) {
                 DTHROW("Bucket messaging iterator key %d is lower than minimum key (%d).\n", key, metadata->min);
@@ -226,7 +226,7 @@ class MessageBucket::In {
     * @param endKey The bin beyond the last bin to access messages from
     */
     inline __device__ Filter operator() (const IntT &beginKey, const IntT &endKey) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         {
             if (beginKey < metadata->min) {
                 DTHROW("Bucket messaging iterator begin key %d is lower than minimum key (%d).\n", beginKey, metadata->min);
@@ -265,7 +265,7 @@ class MessageBucket::Out : public MessageBruteForce::Out {
     */
     __device__ Out(const void *_metadata, unsigned int *scan_flag_messageOutput)
         : MessageBruteForce::Out(nullptr, scan_flag_messageOutput)
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         , metadata(reinterpret_cast<const MetaData*>(_metadata))
 #else
         , metadata(nullptr)
@@ -293,7 +293,7 @@ __device__ MessageBucket::In::Filter::Filter(const MetaData* _metadata, const In
         bucket_end = metadata->PBM[endKey - metadata->min];
     }
 }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 __device__ MessageBucket::In::Filter::Filter()
     : bucket_begin(0)
     , bucket_end(0)
@@ -303,7 +303,7 @@ __device__ MessageBucket::In::Filter::Filter()
 __device__ void MessageBucket::Out::setKey(const IntT &key) const {
     unsigned int index = (blockDim.x * blockIdx.x) + threadIdx.x;  // + d_message_count;
 
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (key < metadata->min || key >= metadata->max) {
         DTHROW("MessageArray key %u is out of range [%d, %d).\n", key, metadata->min, metadata->max);
         return;
@@ -318,7 +318,7 @@ __device__ void MessageBucket::Out::setKey(const IntT &key) const {
 
 template<typename T, unsigned int N>
 __device__ T MessageBucket::In::Filter::Message::getVariable(const char(&variable_name)[N]) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Ensure that the message is within bounds.
     if (cell_index >= _parent.bucket_end) {
         DTHROW("Bucket message index exceeds bin length, unable to get variable '%s'.\n", variable_name);
@@ -331,7 +331,7 @@ __device__ T MessageBucket::In::Filter::Message::getVariable(const char(&variabl
 }
 template<typename T, flamegpu::size_type N, unsigned int M> __device__
 T MessageBucket::In::Filter::Message::getVariable(const char(&variable_name)[M], const unsigned int array_index) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Ensure that the message is within bounds.
     if (cell_index >= _parent.bucket_end) {
         DTHROW("Bucket message index exceeds bin length, unable to get variable '%s'.\n", variable_name);

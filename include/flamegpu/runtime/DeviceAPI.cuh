@@ -18,7 +18,7 @@
 #include "flamegpu/runtime/AgentFunctionCondition.cuh"
 #include "flamegpu/defines.h"
 
-#ifdef USE_GLM
+#ifdef FLAMEGPU_USE_GLM
 #ifdef __CUDACC__
 #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
 #pragma nv_diag_suppress = esa_on_defaulted_function_ignored
@@ -27,7 +27,7 @@
 #endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
 #endif  // __CUDACC__
 #include <glm/glm.hpp>
-#endif  // USE_GLM
+#endif  // FLAMEGPU_USE_GLM
 
 namespace flamegpu {
 
@@ -40,7 +40,7 @@ class ReadOnlyDeviceAPI {
     // Friends have access to TID() & TS_ID()
     template<typename AgentFunctionCondition>
     friend __global__ void agent_function_condition_wrapper(
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         exception::DeviceExceptionBuffer *,
 #endif
 #ifndef __CUDACC_RTC__
@@ -62,8 +62,8 @@ class ReadOnlyDeviceAPI {
      * @param variable_name name used for accessing the variable, this value should be a string literal e.g. "foobar"
      * @tparam T Type of the agent variable being accessed
      * @tparam N Length of variable name, this should always be implicit if passing a string literal
-     * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N> __device__
     T getVariable(const char(&variable_name)[N]) const;
@@ -74,9 +74,9 @@ class ReadOnlyDeviceAPI {
      * @tparam T Type of the agent variable being accessed
      * @tparam N The length of the array variable, as set within the model description hierarchy
      * @tparam M Length of variable_name, this should always be implicit if passing a string literal
-     * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N, unsigned int M> __device__
     T getVariable(const char(&variable_name)[M], unsigned int index) const;
@@ -121,7 +121,7 @@ class ReadOnlyDeviceAPI {
         + (threadIdx.y * blockDim.x)
         + threadIdx.x;
         return threadId;*/
-#ifdef SEATBELTS
+#ifdef FLAMEGPU_SEATBELTS
         assert(blockDim.y == 1);
         assert(blockDim.z == 1);
         assert(gridDim.y == 1);
@@ -145,7 +145,7 @@ class DeviceAPI {
     // Friends have access to TID() & TS_ID()
     template<typename AgentFunction, typename _MessageIn, typename _MessageOut>
     friend __global__ void agent_function_wrapper(
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         exception::DeviceExceptionBuffer *,
 #endif
 #ifndef __CUDACC_RTC__
@@ -182,8 +182,8 @@ class DeviceAPI {
          * @tparam N Variable name length, this should be ignored as it is implicitly set
          * @note Any agent variables not set will remain as their default values
          * @note Calling AgentOut::setVariable() or AgentOut::getID() will trigger agent output
-         * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-         * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
          */
         template<typename T, unsigned int N>
         __device__ void setVariable(const char(&variable_name)[N], T value) const;
@@ -197,9 +197,9 @@ class DeviceAPI {
          * @tparam M Variable name length, this should be ignored as it is implicitly set
          * @note Any agent variables not set will remain as their default values
          * @note Calling AgentOut::setVariable() or AgentOut::getID() will trigger agent output
-         * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-         * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-         * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+         * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
          */
         template<typename T, unsigned int N, unsigned int M>
         __device__ void setVariable(const char(&variable_name)[M], unsigned int index, T value) const;
@@ -254,8 +254,8 @@ class DeviceAPI {
      * @param variable_name name used for accessing the variable, this value should be a string literal e.g. "foobar"
      * @tparam T Type of the agent variable being accessed
      * @tparam N Length of variable name, this should always be implicit if passing a string literal
-     * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N> __device__
     T getVariable(const char(&variable_name)[N]) const;
@@ -266,9 +266,9 @@ class DeviceAPI {
      * @tparam T Type of the agent variable being accessed
      * @tparam N The length of the array variable, as set within the model description hierarchy
      * @tparam M Length of variable_name, this should always be implicit if passing a string literal
-     * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N, unsigned int M> __device__
     T getVariable(const char(&variable_name)[M], unsigned int index) const;
@@ -278,8 +278,8 @@ class DeviceAPI {
      * @param value The value to set the variable
      * @tparam T The type of the variable, as set within the model description hierarchy
      * @tparam N variable_name length, this should be ignored as it is implicitly set
-     * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N>
     __device__ void setVariable(const char(&variable_name)[N], T value);
@@ -291,9 +291,9 @@ class DeviceAPI {
      * @tparam T The type of the variable, as set within the model description hierarchy
      * @tparam N The length of the array variable, as set within the model description hierarchy
      * @tparam M variable_name length, this should be ignored as it is implicitly set
-     * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with SEATBELTS enabled for device error checking)
-     * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If name is not a valid variable within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If T is not the type of variable 'name' within the agent (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
+     * @throws exception::DeviceError If index is out of bounds for the variable array specified by name (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for device error checking)
      */
     template<typename T, unsigned int N, unsigned int M>
     __device__ void setVariable(const char(&variable_name)[M], unsigned int index, T value);
@@ -328,7 +328,7 @@ class DeviceAPI {
         + (threadIdx.y * blockDim.x)
         + threadIdx.x;
         return threadId;*/
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         assert(blockDim.y == 1);
         assert(blockDim.z == 1);
         assert(gridDim.y == 1);
@@ -417,7 +417,7 @@ template<typename MessageIn, typename MessageOut>
 template<typename T, unsigned int N>
 __device__ void DeviceAPI<MessageIn, MessageOut>::setVariable(const char(&variable_name)[N], T value) {
     if (variable_name[0] == '_') {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in DeviceAPI::setVariable().\n", variable_name);
 #endif
         return;  // Fail silently
@@ -431,7 +431,7 @@ template<typename MessageIn, typename MessageOut>
 template<typename T, unsigned int N, unsigned int M>
 __device__ void DeviceAPI<MessageIn, MessageOut>::setVariable(const char(&variable_name)[M], const unsigned int array_index, const T value) {
     if (variable_name[0] == '_') {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in DeviceAPI::setVariable().\n", variable_name);
 #endif
         return;  // Fail silently
@@ -448,7 +448,7 @@ template<typename T, unsigned int N>
 __device__ void DeviceAPI<MessageIn, MessageOut>::AgentOut::setVariable(const char(&variable_name)[N], T value) const {
     if (nextID) {
         if (variable_name[0] == '_') {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
             DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in AgentOut::setVariable().\n", variable_name);
 #endif
             return;  // Fail silently
@@ -461,7 +461,7 @@ __device__ void DeviceAPI<MessageIn, MessageOut>::AgentOut::setVariable(const ch
 
         // Mark scan flag
         genID();
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     } else {
         DTHROW("Agent output must be enabled per agent function when defining the model.\n");
 #endif
@@ -472,7 +472,7 @@ template<typename T, unsigned int N, unsigned int M>
 __device__ void DeviceAPI<MessageIn, MessageOut>::AgentOut::setVariable(const char(&variable_name)[M], const unsigned int array_index, T value) const {
     if (nextID) {
         if (variable_name[0] == '_') {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
             DTHROW("Variable names starting with '_' are reserved for internal use, with '%s', in AgentOut::setVariable().\n", variable_name);
 #endif
             return;  // Fail silently
@@ -485,7 +485,7 @@ __device__ void DeviceAPI<MessageIn, MessageOut>::AgentOut::setVariable(const ch
 
         // Mark scan flag
         genID();
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     } else {
         DTHROW("Agent output must be enabled per agent function when defining the model.\n");
 #endif
@@ -498,7 +498,7 @@ __device__ id_t DeviceAPI<MessageIn, MessageOut>::AgentOut::getID() const {
         genID();
         return this->id;
     }
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     DTHROW("Agent output must be enabled per agent function when defining the model.\n");
 #endif
     return ID_NOT_SET;

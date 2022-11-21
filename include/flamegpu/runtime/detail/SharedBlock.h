@@ -16,14 +16,14 @@ struct SharedBlock {
 #ifndef __CUDACC_RTC__
     curve::Curve::VariableHash curve_hashes[curve::Curve::MAX_VARIABLES];
     char* curve_variables[curve::Curve::MAX_VARIABLES];
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     unsigned int curve_type_size[curve::Curve::MAX_VARIABLES];
     unsigned int curve_elements[curve::Curve::MAX_VARIABLES];
     unsigned int curve_count[curve::Curve::MAX_VARIABLES];
 #endif
     const char* env_buffer;
 #endif
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     exception::DeviceExceptionBuffer *device_exception;
 #endif
 };
