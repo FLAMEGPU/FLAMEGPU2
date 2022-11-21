@@ -151,10 +151,6 @@ bool MessageBruteForce::CDescription::hasVariable(const std::string& variable_na
     return message->variables.find(variable_name) != message->variables.end();
 }
 
-void MessageBruteForce::CDescription::setPersistent(const bool persistent) {
-    message->persistent = persistent;
-}
-
 /// <summary>
 ///  Description
 /// </summary>

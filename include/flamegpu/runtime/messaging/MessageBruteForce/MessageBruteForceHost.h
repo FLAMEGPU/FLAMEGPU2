@@ -246,7 +246,9 @@ class MessageBruteForce::CDescription {
      * Set that the message list should be persistent or not
      * @param persistent new value for message list persistence
      */
-    void setPersistent(const bool persistent);
+    void setPersistent(const bool persistent) {
+        message->persistent = persistent;
+    }
     /**
      * Adds a new variable to the message
      * @param variable_name Name of the variable
