@@ -22,7 +22,7 @@ CubTemporaryMemory::~CubTemporaryMemory() {
 }
 void CubTemporaryMemory::resize(const size_t newSize) {
     if (newSize > d_cub_temp_size) {
-        NVTX_RANGE("CubTemporaryMemory::resizeTempStorage");
+        flamegpu::util::nvtx::Range range{"CubTemporaryMemory::resizeTempStorage"};
         if (d_cub_temp) {
             gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_cub_temp));
         }

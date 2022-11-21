@@ -463,6 +463,11 @@ class FLAMEGPURuntimeException : public std::exception {
     %rename (CUDAEnsembleConfig) flamegpu::CUDAEnsemble::EnsembleConfig;
 %feature("flatnested", ""); // flat nested off
 
+// Renames required for nvtx as it is a namespace not a class.
+%rename (nvtx_push) flamegpu::util::nvtx::push;
+%rename (nvtx_pop) flamegpu::util::nvtx::pop;
+%rename (NVTX_ENABLED) flamegpu::util::nvtx::ENABLED;
+
 // Director features. These go before the %includes.
 // -----------------
 /* Enable callback functions for step, exit and init through the use of "director" which allows Python -> C and C-> Python in callback.
@@ -631,8 +636,11 @@ class ModelVis;
 %include "flamegpu/sim/RunPlan.h"
 %include "flamegpu/sim/RunPlanVector.h"
 
-// Include  cleanup utility method
+// Include public utility headers
 %include "flamegpu/util/cleanup.h"
+// Don't flatnest this, range is explicitly not included incase of GC related issues.
+%include "flamegpu/util/nvtx.h"
+
 
 // %extend classes go after %includes, but before tempalates (that use them)
 // -----------------
@@ -974,6 +982,8 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
 
     // Ignore directives. These go before any %includes. 
     // -----------------
+    // Disable nvtx::range class, we don't trust swig+GC to dtor at the right time for it to be reliable
+    %ignore flamegpu::util::nvtx::range;
     // Disable internal vis structs
     %ignore flamegpu::visualiser::ModelVisData;
     %ignore flamegpu::visualiser::AgentVisData;

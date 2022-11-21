@@ -230,8 +230,8 @@ flamegpu::AgentDescription makeCoreAgent(flamegpu::ModelDescription &model) {
     return agent;
 }
 int main(int argc, const char ** argv) {
-    NVTX_RANGE("main");
-    NVTX_PUSH("ModelDescription");
+    flamegpu::util::nvtx::Range range{"main"};
+    flamegpu::util::nvtx::push("ModelDescription");
     flamegpu::ModelDescription submodel("Movement_model");
     {  // Define sub model for conflict resolution
         /**
@@ -349,14 +349,14 @@ int main(int argc, const char ** argv) {
         flamegpu::LayerDescription layer = model.newLayer();
         layer.addSubModel(movement_sub);
     }
-    NVTX_POP();
+    flamegpu::util::nvtx::pop();
 
     /**
      * Create Model Runner
      */
-    NVTX_PUSH("CUDASimulation creation");
+    flamegpu::util::nvtx::push("CUDASimulation creation");
     flamegpu::CUDASimulation  cudaSimulation(model);
-    NVTX_POP();
+    flamegpu::util::nvtx::pop();
 
     /**
      * Create visualisation
@@ -392,7 +392,7 @@ int main(int argc, const char ** argv) {
     /**
      * Initialisation
      */
-    NVTX_PUSH("CUDASimulation initialisation");
+    flamegpu::util::nvtx::push("CUDASimulation initialisation");
     cudaSimulation.initialise(argc, argv);
     if (cudaSimulation.getSimulationConfig().input_file.empty()) {
         std::mt19937_64 rng;
@@ -472,7 +472,7 @@ int main(int argc, const char ** argv) {
         }
         cudaSimulation.setPopulationData(init_pop);
     }
-    NVTX_POP();
+    flamegpu::util::nvtx::pop();
 
     /**
      * Execution

@@ -268,7 +268,7 @@ bool confirmFLAMEGPUHeaderVersion(const std::string flamegpuIncludeDir, const st
 
 std::mutex JitifyCache::instance_mutex;
 std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::string &func_name, const std::vector<std::string> &template_args, const std::string &kernel_src, const std::string &dynamic_header) {
-    NVTX_RANGE("JitifyCache::compileKernel");
+    flamegpu::util::nvtx::Range range{"JitifyCache::compileKernel"};
     // find and validate the cuda include directory via CUDA_PATH or CUDA_HOME.
     static const std::string cuda_include_dir = getCUDAIncludeDir();
     // find and validate the the flamegpu include directory
@@ -457,7 +457,7 @@ void JitifyCache::getKnownHeaders(std::vector<std::string>& headers) {
 }
 
 std::unique_ptr<KernelInstantiation> JitifyCache::loadKernel(const std::string &func_name, const std::vector<std::string> &template_args, const std::string &kernel_src, const std::string &dynamic_header) {
-    NVTX_RANGE("JitifyCache::loadKernel");
+    flamegpu::util::nvtx::Range range{"JitifyCache::loadKernel"};
     std::lock_guard<std::mutex> lock(cache_mutex);
     // Detect current compute capability=
     int currentDeviceIdx = 0;

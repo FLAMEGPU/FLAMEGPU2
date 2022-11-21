@@ -22,7 +22,7 @@ namespace flamegpu {
 MessageBucket::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
     : MessageSpecialisationHandler()
     , sim_message(a) {
-    NVTX_RANGE("MessageBucket::CUDAModelHandler::CUDAModelHandler");
+    flamegpu::util::nvtx::Range range{"MessageBucket::CUDAModelHandler::CUDAModelHandler"};
     const Data &d = (const Data &)a.getMessageDescription();
     hd_data.min = d.lowerBound;
     // Here we convert it so that upperBound is one greater than the final valid index
@@ -88,7 +88,7 @@ void MessageBucket::CUDAModelHandler::freeMetaDataDevicePtr() {
 }
 
 void MessageBucket::CUDAModelHandler::buildIndex(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
-    NVTX_RANGE("MessageBucket::CUDAModelHandler::buildIndex");
+    flamegpu::util::nvtx::Range range{"MessageBucket::CUDAModelHandler::buildIndex"};
     // Cuda operations all occur within the stream, so only a final sync is required.s
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count

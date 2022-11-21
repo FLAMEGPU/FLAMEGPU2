@@ -37,7 +37,7 @@ Simulation::Simulation(const std::shared_ptr<SubModelData> &submodel_desc, CUDAS
     , maxLayerWidth(submodel_desc->submodel->getMaxLayerWidth()) { }
 
 void Simulation::initialise(int argc, const char** argv) {
-    NVTX_RANGE("Simulation::initialise");
+    flamegpu::util::nvtx::Range range{"Simulation::initialise"};
     // check input args
     if (argc)
         if (!checkArgs(argc, argv))

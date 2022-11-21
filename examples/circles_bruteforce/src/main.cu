@@ -65,8 +65,8 @@ FLAMEGPU_STEP_FUNCTION(Validation) {
     printf("%.2f%% Drift correct\n", 100 * driftDropped / static_cast<float>(driftDropped + driftIncreased));
 }
 int main(int argc, const char ** argv) {
-    NVTX_RANGE("main");
-    NVTX_PUSH("ModelDescription");
+    flamegpu::util::nvtx::Range range{"main"};
+    flamegpu::util::nvtx::push("ModelDescription");
     flamegpu::ModelDescription model("Circles BruteForce");
 
     const unsigned int AGENT_COUNT = 16384;
@@ -114,14 +114,14 @@ int main(int argc, const char ** argv) {
         layer.addAgentFunction(move);
     }
 
-    NVTX_POP();
+    flamegpu::util::nvtx::pop();
 
     /**
      * Create Model Runner
      */
-    NVTX_PUSH("CUDASimulation creation");
+    flamegpu::util::nvtx::push("CUDASimulation creation");
     flamegpu::CUDASimulation  cudaSimulation(model, argc, argv);
-    NVTX_POP();
+    flamegpu::util::nvtx::pop();
 
     /**
      * Create visualisation

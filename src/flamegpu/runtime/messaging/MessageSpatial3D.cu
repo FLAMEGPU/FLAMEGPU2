@@ -16,7 +16,7 @@ namespace flamegpu {
 MessageSpatial3D::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
   : MessageSpecialisationHandler()
   , sim_message(a) {
-    NVTX_RANGE("Spatial3D::CUDAModelHandler");
+    flamegpu::util::nvtx::Range range{"Spatial3D::CUDAModelHandler"};
     const Data &d = (const Data &)a.getMessageDescription();
     hd_data.radius = d.radius;
     hd_data.min[0] = d.minX;
@@ -94,7 +94,7 @@ void MessageSpatial3D::CUDAModelHandler::freeMetaDataDevicePtr() {
 }
 
 void MessageSpatial3D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
-    NVTX_RANGE("MessageSpatial3D::CUDAModelHandler::buildIndex");
+    flamegpu::util::nvtx::Range range{"MessageSpatial3D::CUDAModelHandler::buildIndex"};
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count
     {  // Build atomic histogram
