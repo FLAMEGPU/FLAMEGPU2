@@ -1,4 +1,7 @@
 #include "flamegpu/pop/AgentVector.h"
+
+#include <limits>
+
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/pop/AgentVector_Agent.h"
 

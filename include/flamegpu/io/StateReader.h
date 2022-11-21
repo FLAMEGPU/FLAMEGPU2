@@ -6,9 +6,9 @@
 #include <unordered_map>
 #include <utility>
 
-#include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
 #include "flamegpu/model/EnvironmentData.h"
+#include "flamegpu/sim/Simulation.h"
 
 namespace flamegpu {
 

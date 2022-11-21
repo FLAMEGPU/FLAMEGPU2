@@ -1,5 +1,6 @@
 #include "flamegpu/pop/DeviceAgentVector_impl.h"
 #include "flamegpu/gpu/CUDAAgent.h"
+#include "flamegpu/runtime/HostNewAgentAPI.h"
 
 namespace flamegpu {
 

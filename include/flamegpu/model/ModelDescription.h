@@ -7,9 +7,7 @@
 #include <string>
 
 
-#include "flamegpu/gpu/CUDAEnsemble.h"
 #include "flamegpu/model/ModelData.h"
-#include "flamegpu/gpu/CUDASimulation.h"
 #include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h"
 
 namespace flamegpu {
@@ -34,8 +32,8 @@ class ModelDescription {
     /**
      * Simulation accesses the classes internals to convert it to a constant ModelData
      */
-    friend CUDASimulation::CUDASimulation(const ModelDescription& _model, int argc, const char** argv);
-    friend CUDAEnsemble::CUDAEnsemble(const ModelDescription& model, int argc, const char** argv);
+    friend class CUDASimulation;
+    friend class CUDAEnsemble;
     friend class RunPlanVector;
     friend class RunPlan;
     friend class LoggingConfig;

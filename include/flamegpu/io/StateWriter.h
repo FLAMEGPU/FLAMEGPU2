@@ -12,6 +12,8 @@
 namespace flamegpu {
 
 class AgentVector;
+class EnvironmentManager;
+class Simulation;
 
 namespace io {
 
