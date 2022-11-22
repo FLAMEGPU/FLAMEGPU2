@@ -67,7 +67,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
                 const std::filesystem::path exit_path = config.out_directory / std::filesystem::path(plans[p].getOutputSubdirectory()) / std::filesystem::path(std::to_string(p) + "." + config.out_format);
                 exit_files.insert(exit_path);
             }
-            if (!config.truncate_output_files) {
+            if (!config.truncate_log_files) {
                 // Step
                 for (int p = 0; p < plans.size(); ++p) {
                     const std::filesystem::path step_path = config.out_directory / std::filesystem::path(plans[p].getOutputSubdirectory()) / std::filesystem::path("exit." + config.out_format);
@@ -367,7 +367,7 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
         }
         // --truncate, Truncate output files
         if (arg.compare("--truncate") == 0) {
-            config.truncate_output_files = true;
+            config.truncate_log_files = true;
             continue;
         }
         // --standby Disable the blocking of standby

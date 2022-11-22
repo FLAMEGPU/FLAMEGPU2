@@ -282,6 +282,11 @@ int Simulation::checkArgs(int argc, const char** argv) {
             config.common_log_file = argv[++i];
             continue;
         }
+        // --truncate, Output log files will truncate (rather than throwing an exception)
+        if (arg.compare("--truncate") == 0) {
+            config.truncate_log_files = true;
+            continue;
+        }
 #ifdef VISUALISATION
         // -c/--console, Renders the visualisation inert
         if (arg.compare("--console") == 0 || arg.compare("-c") == 0) {
