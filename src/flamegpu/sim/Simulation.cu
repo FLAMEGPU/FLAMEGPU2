@@ -123,6 +123,9 @@ const ModelData& Simulation::getModelDescription() const {
  * issues: only saves the last output, hardcoded, will be changed
  */
 void Simulation::exportData(const std::string &path, bool prettyPrint) {
+    if (!config.truncate_log_files && std::filesystem::exists(path)) {
+        THROW exception::FileAlreadyExists("File '%s' already exists, in Simulation::exportData()", path.c_str());
+    }
     // Build population vector
     util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> pops;
     for (auto &agent : model->agents) {
@@ -137,6 +140,9 @@ void Simulation::exportData(const std::string &path, bool prettyPrint) {
     write__->writeStates(prettyPrint);
 }
 void Simulation::exportLog(const std::string &path, bool steps, bool exit, bool stepTime, bool exitTime, bool prettyPrint) {
+    if (!config.truncate_log_files && std::filesystem::exists(path)) {
+        THROW exception::FileAlreadyExists("Log file '%s' already exists, in Simulation::exportLog()", path.c_str());
+    }
     // Create the correct type of logger
     auto logger = io::LoggerFactory::createLogger(path, prettyPrint, config.truncate_log_files);
     // Perform logging

@@ -239,7 +239,7 @@ int JSONStateWriter::writeStates(bool prettyPrint) {
     }
 
     // Perform output
-    std::ofstream out(outputFile);
+    std::ofstream out(outputFile, std::ofstream::trunc);
     out << s.GetString();
     out.close();
 
