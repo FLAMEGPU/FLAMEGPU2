@@ -73,6 +73,11 @@ class CUDAEnsemble {
          */
         ErrorLevel error_level = Slow;
         /**
+         * If true, all log files created will truncate any existing files with the same name
+         * If false, an exception will be raised when a log file already exists
+         */
+        bool truncate_output_files = false;
+        /**
          * Prevents the computer from entering standby whilst the ensemble is running
          * @note This feature is currently only supported by Windows builds.
          */

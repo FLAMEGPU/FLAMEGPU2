@@ -60,6 +60,34 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
         if (config.out_format.empty()) {
             THROW exception::InvalidArgument("The out_directory config option also requires the out_format options to be set to a suitable type (e.g. 'json', 'xml'), in CUDAEnsemble::simulate()");
         }
+        // Check that output files don't already exist
+        if (std::filesystem::exists(config.out_directory)) {
+            std::set<std::filesystem::path> exit_files;
+            for (int p = 0; p < plans.size(); ++p) {
+                const std::filesystem::path exit_path = config.out_directory / std::filesystem::path(plans[p].getOutputSubdirectory()) / std::filesystem::path(std::to_string(p) + "." + config.out_format);
+                exit_files.insert(exit_path);
+            }
+            if (!config.truncate_output_files) {
+                // Step
+                for (int p = 0; p < plans.size(); ++p) {
+                    const std::filesystem::path step_path = config.out_directory / std::filesystem::path(plans[p].getOutputSubdirectory()) / std::filesystem::path("exit." + config.out_format);
+                    if (std::filesystem::exists(step_path)) {
+                        THROW exception::FileAlreadyExists("Step log file '%s' already exists, in CUDAEnsemble::simulate()", step_path.c_str());
+                    }
+                }
+                // Exit
+                for (const auto &exit_path : exit_files) {
+                    if (std::filesystem::exists(exit_path)) {
+                        THROW exception::FileAlreadyExists("Step log file '%s' already exists, in CUDAEnsemble::simulate()", exit_path.c_str());
+                    }
+                }
+            } else {
+                // Delete pre-existing exit log files
+                for (const auto& exit_path : exit_files) {
+                    std::filesystem::remove(exit_path);  // Returns false if the file didn't exist
+                }
+            }
+        }
         // Create any missing directories
         try {
             std::filesystem::create_directories(config.out_directory);
@@ -335,6 +363,11 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
                 fprintf(stderr, "%s is not an appropriate argument for %s\n", error_level_string.c_str(), arg.c_str());
                 return false;
             }
+            continue;
+        }
+        // --truncate, Truncate output files
+        if (arg.compare("--truncate") == 0) {
+            config.truncate_output_files = true;
             continue;
         }
         // --standby Disable the blocking of standby
