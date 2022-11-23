@@ -307,13 +307,8 @@ FLAME GPU is distributed under the [MIT Licence](https://github.com/FLAMEGPU/FLA
 There are currently several known issues which will be fixed in future releases (where possible).
 For a full list of known issues pleases see the [Issue Tracker](https://github.com/FLAMEGPU/FLAMEGPU2/issues).
 
-+ Performance regressions in CUDA 11.3+, due to changes in compiler register usage ([#560](https://github.com/FLAMEGPU/FLAMEGPU2/issues/560)).
-+ Segfault when using `flamegpu::DependencyGraph` via the default constructor ([#555](https://github.com/FLAMEGPU/FLAMEGPU2/issues/555)). This will require an API break to resolve.
 + Warnings and a loss of performance due to hash collisions in device code ([#356](https://github.com/FLAMEGPU/FLAMEGPU2/issues/356))
 + Multiple known areas where performance can be improved (e.g. [#449](https://github.com/FLAMEGPU/FLAMEGPU2/issues/449), [#402](https://github.com/FLAMEGPU/FLAMEGPU2/issues/402))
-+ Windows/MSVC builds using CUDA < 11.0 may encounter intermittent compiler failures. Please use CUDA 11.0+.
-  + This will be resolved by dropping CUDA 10 support in a future release.
 + Windows/MSVC builds using CUDA 11.0 may encounter errors when performing incremental builds if the static library has been recompiled. If this presents itself, re-save any `.cu` file in your executable producing project and re-trigger the build.
 + Debug builds under linux with CUDA 11.0 may encounter cuda errors during `validateIDCollisions`. Consider using an alternate CUDA version if this is required ([#569](https://github.com/FLAMEGPU/FLAMEGPU2/issues/569)).
 + CUDA 11.0 with GCC 9 may encounter a segmentation fault during compilation of the test suite. Consider using GCC 8 with CUDA 11.0.
-+ CMake 3.16 has known issues on some platforms. CMake versions less than 3.18 are deprecated and support will be removed in a future release.
