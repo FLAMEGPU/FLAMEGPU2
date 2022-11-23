@@ -77,6 +77,84 @@ FLAMEGPU_AGENT_FUNCTION(countBF, flamegpu::MessageBruteForce, flamegpu::MessageN
     return flamegpu::ALIVE;
 }
 """
+even_only_condition = """
+FLAMEGPU_AGENT_FUNCTION_CONDITION(EvenOnlyCondition) {
+    return FLAMEGPU->getStepCounter() % 2 == 0;
+}
+"""
+out_simple = """
+FLAMEGPU_AGENT_FUNCTION(out_simple, flamegpu::MessageNone, flamegpu::MessageBruteForce) {
+    int id = FLAMEGPU->getVariable<int>("id");
+    FLAMEGPU->message_out.setVariable<int>("id", id);
+    return flamegpu::ALIVE;
+}
+"""
+
+in_simple = """
+FLAMEGPU_AGENT_FUNCTION(in_simple, flamegpu::MessageBruteForce, flamegpu::MessageNone) {
+    const int id = FLAMEGPU->getVariable<int>("id");
+    unsigned int count = 0;
+    unsigned int sum = 0;
+    for (auto &m : FLAMEGPU->message_in) {
+        count++;
+        sum += m.getVariable<int>("id");
+    }
+    FLAMEGPU->setVariable<unsigned int>("count", count);
+    FLAMEGPU->setVariable<unsigned int>("sum", sum);
+    return flamegpu::ALIVE;
+}"""
+
+class InitPopulationEvenOutputOnly(pyflamegpu.HostFunctionCallback):
+    def __init__(self):
+        super().__init__()
+
+    def run(self, FLAMEGPU):
+        # Generate a basic pop
+        agent = FLAMEGPU.agent(AGENT_NAME)
+        for i in range (AGENT_COUNT) :
+            instance = agent.newAgent()
+            instance.setVariableInt("id", i)
+            instance.setVariableUInt("count", 0)
+            instance.setVariableUInt("sum", 0)
+
+class AssertEvenOutputOnly(pyflamegpu.HostFunctionCallback):
+    def __init__(self):
+        super().__init__()
+
+    def run(self, FLAMEGPU):
+        agent = FLAMEGPU.agent(AGENT_NAME)
+        # Get the population data
+        av = agent.getPopulationData()
+        # Iterate the population, ensuring that each agent read the correct number of messages and got the correct sum of messages.
+        # These values expect only a single bin is used, in the interest of simplicitly.
+        exepctedCountEven = agent.count()
+        expectedCountOdd = 0
+        for a in av:
+            if (FLAMEGPU.getStepCounter() % 2 == 0):
+                # Even iterations expect the count to match the number of agents, and sum to be non zero.
+                assert a.getVariableUInt("count") == exepctedCountEven
+                assert a.getVariableUInt("sum") != 0
+            else:
+                # Odd iters expect 0 count and 0 sum
+                assert a.getVariableUInt("count") == expectedCountOdd
+                assert a.getVariableUInt("sum") == 0
+
+class AssertPersistent(pyflamegpu.HostFunctionCallback):
+    def __init__(self):
+        super().__init__()
+
+    def run(self, FLAMEGPU):
+        agent = FLAMEGPU.agent(AGENT_NAME)
+        # Get the population data
+        av = agent.getPopulationData()
+        # Iterate the population, ensuring that each agent read the correct number of messages and got the correct sum of messages.
+        # These values expect only a single bin is used, in the interest of simplicitly.
+        exepctedCountEven = agent.count()
+        for a in av:
+            if (FLAMEGPU.getStepCounter() % 2 == 0):
+                # all iterations expect the count to match the number of agents, and sum to be non zero.
+                assert a.getVariableUInt("count") == exepctedCountEven
+                assert a.getVariableUInt("sum") != 0
 
 class TestMessage_BruteForce(TestCase):
 
@@ -321,3 +399,89 @@ class TestMessage_BruteForce(TestCase):
         assert len(pop_out) == 1
         ai = pop_out.front()
         assert ai.getVariableUInt("count") == 0
+
+    def test_getSetPersistent(self):
+        """Test that getting and setting a message lists's persistent flag behaves as intended
+        """
+        model = pyflamegpu.ModelDescription("Model")
+        message = model.newMessageBruteForce("location")
+        # message lists should be non-persistent by default
+        assert message.getPersistent() == False
+        # Settiog the persistent value ot true should not throw
+        message.setPersistent(True)
+        # The value should now be true
+        assert message.getPersistent() == True
+        # Set it to true again, to make sure it isn't an invert
+        message.setPersistent(True)
+        assert message.getPersistent() == True
+        # And flip it back to false for good measure
+        message.setPersistent(False)
+        assert message.getPersistent() == False
+
+    def test_PersistenceOff(self): 
+        """Test for persistence / non persistence of messaging, by emitting messages on even iters, but reading on all iters.
+        """
+        model = pyflamegpu.ModelDescription("TestMessage_BruteForce")
+        message = model.newMessageBruteForce("msg")
+        message.newVariableInt("id")
+
+        # agent
+        agent = model.newAgent(AGENT_NAME)
+        agent.newVariableInt("id")
+        agent.newVariableUInt("count", 0)  # Count the number of messages read
+        agent.newVariableUInt("sum", 0)  # Count of IDs
+        ouf = agent.newRTCFunction("out", out_simple)
+        ouf.setMessageOutput("msg")
+        ouf.setMessageOutputOptional(True)
+        ouf.setRTCFunctionCondition(even_only_condition)
+        inf = agent.newRTCFunction("in", in_simple)
+        inf.setMessageInput("msg")
+
+        # Define layers
+        model.newLayer().addAgentFunction(ouf)
+        model.newLayer().addAgentFunction(inf)
+        # init function for pop
+        init_population_even_output_only = InitPopulationEvenOutputOnly()
+        model.addInitFunctionCallback(init_population_even_output_only)
+        # add a step function which validates the correct number of messages was read
+        assert_even_output_only = AssertEvenOutputOnly()
+        model.addStepFunctionCallback(assert_even_output_only)
+
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
+        # Execute model
+        cudaSimulation.SimulationConfig().steps = 2
+        cudaSimulation.simulate()
+
+    def test_PersistenceOn(self): 
+        """Test for persistence / non persistence of messaging, by emitting messages on even iters, but reading on all iters.
+        """
+        model = pyflamegpu.ModelDescription("TestMessage_BruteForce")
+        message = model.newMessageBruteForce("msg")
+        message.newVariableInt("id")
+
+        # agent
+        agent = model.newAgent(AGENT_NAME)
+        agent.newVariableInt("id")
+        agent.newVariableUInt("count", 0)  # Count the number of messages read
+        agent.newVariableUInt("sum", 0)  # Count of IDs
+        ouf = agent.newRTCFunction("out", out_simple)
+        ouf.setMessageOutput("msg")
+        ouf.setMessageOutputOptional(True)
+        ouf.setRTCFunctionCondition(even_only_condition)
+        inf = agent.newRTCFunction("in", in_simple)
+        inf.setMessageInput("msg")
+
+        # Define layers
+        model.newLayer().addAgentFunction(ouf)
+        model.newLayer().addAgentFunction(inf)
+        # init function for pop
+        init_population_even_output_only = InitPopulationEvenOutputOnly()
+        model.addInitFunctionCallback(init_population_even_output_only)
+        # add a step function which validates the correct number of messages was read
+        assert_persistent = AssertPersistent()
+        model.addStepFunctionCallback(assert_persistent)
+
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
+        # Execute model
+        cudaSimulation.SimulationConfig().steps = 2
+        cudaSimulation.simulate()

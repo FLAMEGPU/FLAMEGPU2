@@ -554,6 +554,15 @@ bool CUDASimulation::step() {
     // Run the exit conditons, detecting wheter or not any we
     bool exitRequired = this->stepExitConditions();
 
+    // Set message counts to zero, and set flags to update state of non-persistent message lists
+    for (auto &a : message_map) {
+        if (!a.second->getMessageDescription().persistent) {
+            a.second->setMessageCount(0);
+            a.second->setTruncateMessageListFlag();
+            a.second->setPBMConstructionRequiredFlag();
+        }
+    }
+
     // Record, store and output the elapsed time of the step.
     stepTimer->stop();
     float stepMilliseconds = stepTimer->getElapsedSeconds();

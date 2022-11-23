@@ -104,6 +104,10 @@ struct MessageBruteForce::Data {
      */
     std::string name;
     /**
+     * Boolean indicating if the message list is allowed to persist iterations or not
+     */
+    bool persistent;
+    /**
      * The number of functions that have optional output of this message type
      * This value is modified by AgentFunctionDescription
      */
@@ -198,6 +202,11 @@ class MessageBruteForce::CDescription {
      */
     std::string getName() const;
     /**
+     * Query if the message list is a persistent message list or not (messages will persist from one iteration to the next)
+     * @return if the message list is persistent or not
+     */
+    bool getPersistent() const;
+    /**
      * @param variable_name Name used to refer to the desired variable
      * @return The type of the named variable
      * @throws exception::InvalidMessageVar If a variable with the name does not exist within the message
@@ -233,6 +242,13 @@ class MessageBruteForce::CDescription {
     /// These mutable accessors will only be available via mutable subclasses
     /// This solves a multiple inheritance issue
     ///
+    /**
+     * Set that the message list should be persistent or not
+     * @param persistent new value for message list persistence
+     */
+    void setPersistent(const bool persistent) {
+        message->persistent = persistent;
+    }
     /**
      * Adds a new variable to the message
      * @param variable_name Name of the variable
@@ -298,6 +314,7 @@ class MessageBruteForce::Description : public CDescription {
     Description& operator=(const Description& other_message) = default;
     Description& operator=(Description&& other_message) = default;
 
+    using MessageBruteForce::CDescription::setPersistent;
     using MessageBruteForce::CDescription::newVariable;
 #ifdef SWIG
     using MessageBruteForce::CDescription::newVariableArray;

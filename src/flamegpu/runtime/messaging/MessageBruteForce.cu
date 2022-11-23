@@ -41,11 +41,13 @@ void MessageBruteForce::CUDAModelHandler::buildIndex(CUDAScatter &, unsigned int
 MessageBruteForce::Data::Data(std::shared_ptr<const ModelData> _model, const std::string &message_name)
     : model(_model)
     , name(message_name)
+    , persistent(false)
     , optional_outputs(0) { }
 MessageBruteForce::Data::Data(std::shared_ptr<const ModelData> _model, const MessageBruteForce::Data &other)
     : model(_model)
     , variables(other.variables)
     , name(other.name)
+    , persistent(other.persistent)
     , optional_outputs(other.optional_outputs) { }
 MessageBruteForce::Data *MessageBruteForce::Data::clone(const std::shared_ptr<const ModelData> &newParent) {
     return new MessageBruteForce::Data(newParent, *this);
@@ -55,6 +57,7 @@ bool MessageBruteForce::Data::operator==(const MessageBruteForce::Data& rhs) con
         return true;
     if (name == rhs.name
         // && model.lock() == rhs.model.lock()  // Don't check weak pointers
+        && persistent == rhs.persistent
         && variables.size() == rhs.variables.size()) {
             {  // Compare variables
                 for (auto &v : variables) {
@@ -107,6 +110,10 @@ bool MessageBruteForce::CDescription::operator!=(const CDescription& rhs) const 
  */
 std::string MessageBruteForce::CDescription::getName() const {
     return message->name;
+}
+
+bool MessageBruteForce::CDescription::getPersistent() const {
+    return message->persistent;
 }
 
 const std::type_index& MessageBruteForce::CDescription::getVariableType(const std::string& variable_name) const {
