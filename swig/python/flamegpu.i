@@ -472,6 +472,34 @@ class FLAMEGPURuntimeException : public std::exception {
 %feature("director") flamegpu::HostFunctionCallback;
 %feature("director") flamegpu::HostFunctionConditionCallback;
 
+
+// Automatically disown all passed host functions, to prevent them going out of scope too early
+// This still leaves a potential race condition if stateful information is stored in a host function instance
+%feature("pythonprepend") flamegpu::LayerDescription::addHostFunctionCallback(HostFunctionCallback*) %{
+    try:
+        func_callback = func_callback.__disown__()
+    except:
+        pass
+%}
+%feature("pythonprepend") flamegpu::ModelDescription::addInitFunctionCallback(HostFunctionCallback*) %{
+    try:
+        func_callback = func_callback.__disown__()
+    except:
+        pass
+%}
+%feature("pythonprepend") flamegpu::ModelDescription::addStepFunctionCallback(HostFunctionCallback*) %{
+    try:
+        func_callback = func_callback.__disown__()
+    except:
+        pass
+%}
+%feature("pythonprepend") flamegpu::ModelDescription::addExitFunctionCallback(HostFunctionCallback*) %{
+    try:
+        func_callback = func_callback.__disown__()
+    except:
+        pass
+%}
+
 // Apply type mappings go before %includes.
 // -----------------
 
