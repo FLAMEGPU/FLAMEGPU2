@@ -1,4 +1,5 @@
 #include <chrono>
+#include <filesystem>
 #include <thread>
 #include <set>
 
@@ -209,6 +210,14 @@ TEST(TestSimulation, ArgParse_unknown_silenced) {
     c.initialise(sizeof(argv) / sizeof(char*), argv);
     std::string errors = testing::internal::GetCapturedStderr();
     EXPECT_TRUE(errors.find("Warning: Unknown argument") == std::string::npos);  // Shoudl NOT be found
+}
+TEST(TestSimulation, ArgParse_truncate) {
+    ModelDescription m(MODEL_NAME);
+    CUDASimulation c(m);
+    EXPECT_EQ(c.getSimulationConfig().truncate_log_files, false);
+    const char* argv[2] = { "prog.exe", "--truncate" };
+    c.initialise(sizeof(argv) / sizeof(char*), argv);
+    EXPECT_EQ(c.getSimulationConfig().truncate_log_files, true);
 }
 TEST(TestSimulation, initialise_quiet) {
     ModelDescription m(MODEL_NAME);
@@ -930,7 +939,264 @@ TEST(TestCUDASimulation, simulationVerbosity) {
         EXPECT_TRUE(errors.empty());
     }
 }
-
+TEST(TestCUDASimulation, TruncationOff_Step) {
+    ModelDescription m("test");
+    m.newAgent("agent");
+    StepLoggingConfig slc(m);
+    CUDASimulation e(m);
+    e.SimulationConfig().truncate_log_files = false;
+    e.SimulationConfig().step_log_file = "test_truncate.json";
+    e.setStepLog(slc);
+    // Create an empty file at the output location
+    {
+        std::ofstream os("test_truncate.json", std::ios_base::trunc);
+        os << "test";
+    }
+    // Run sim
+    EXPECT_THROW(e.simulate(), exception::FileAlreadyExists);
+    // Cleanup
+    std::filesystem::remove("test_truncate.json");
+}
+TEST(TestCUDASimulation, TruncationOff_Exit) {
+    ModelDescription m("test");
+    m.newAgent("agent");
+    LoggingConfig elc(m);
+    CUDASimulation e(m);
+    e.SimulationConfig().truncate_log_files = false;
+    e.SimulationConfig().exit_log_file = "test_truncate.json";
+    e.SimulationConfig().steps = 1;
+    e.setExitLog(elc);
+    // Create an empty file at the output location
+    {
+        std::ofstream os("test_truncate.json", std::ios_base::trunc);
+        os << "test";
+    }
+    // Run sim
+    EXPECT_THROW(e.simulate(), exception::FileAlreadyExists);
+    // Cleanup
+    std::filesystem::remove("test_truncate.json");
+}
+TEST(TestCUDASimulation, TruncationOff_Common) {
+    ModelDescription m("test");
+    m.newAgent("agent");
+    StepLoggingConfig slc(m);
+    LoggingConfig elc(m);
+    CUDASimulation e(m);
+    e.SimulationConfig().truncate_log_files = false;
+    e.SimulationConfig().common_log_file = "test_truncate.json";
+    e.SimulationConfig().steps = 1;
+    e.setStepLog(slc);
+    e.setExitLog(elc);
+    // Create an empty file at the output location
+    {
+        std::ofstream os("test_truncate.json", std::ios_base::trunc);
+        os << "test";
+    }
+    // Run sim
+    EXPECT_THROW(e.simulate(), exception::FileAlreadyExists);
+    // Cleanup
+    std::filesystem::remove("test_truncate.json");
+}
+TEST(TestCUDASimulation, TruncationOff_exportLog) {
+    ModelDescription m("test");
+    m.newAgent("agent");
+    StepLoggingConfig slc(m);
+    LoggingConfig elc(m);
+    CUDASimulation e(m);
+    e.SimulationConfig().truncate_log_files = false;
+    e.SimulationConfig().steps = 1;
+    e.setStepLog(slc);
+    e.setExitLog(elc);
+    // Create an empty file at the output location
+    {
+        std::ofstream os("test_truncate.json", std::ios_base::trunc);
+        os << "test";
+    }
+    // Run sim
+    EXPECT_NO_THROW(e.simulate());
+    EXPECT_THROW(e.exportLog("test_truncate.json", true, true, true, true, true), exception::FileAlreadyExists);
+    // Cleanup
+    std::filesystem::remove("test_truncate.json");
+}
+TEST(TestCUDASimulation, TruncationOff_exportData) {
+    ModelDescription m("test");
+    m.newAgent("agent");
+    CUDASimulation e(m);
+    e.SimulationConfig().truncate_log_files = false;
+    // Create an empty file at the output location
+    {
+        std::ofstream os("test_truncate.json", std::ios_base::trunc);
+        os << "test";
+    }
+    // Run sim
+    EXPECT_THROW(e.exportData("test_truncate.json", true), exception::FileAlreadyExists);
+    // Cleanup
+    std::filesystem::remove("test_truncate.json");
+}
+TEST(TestCUDASimulation, TruncationOn_Step) {
+    ModelDescription m("test");
+    m.newAgent("agent");
+    StepLoggingConfig slc(m);
+    CUDASimulation e(m);
+    e.SimulationConfig().truncate_log_files = true;
+    e.SimulationConfig().step_log_file = "test_truncate.json";
+    e.setStepLog(slc);
+    // Create an empty file at the output location
+    {
+        std::ofstream os("test_truncate.json", std::ios_base::trunc);
+        os << "test";
+    }
+    // Sanity check on the file we created
+    {
+        std::ifstream is("test_truncate.json");
+        char word[5];
+        is.getline(word, 5);
+        EXPECT_EQ(std::string("test"), std::string(word));
+    }
+    // Run sim
+    EXPECT_NO_THROW(e.simulate());
+    // Read back the file, check it nolonger has contents "test"
+    {
+        std::ifstream is("test_truncate.json");
+        char word[5];
+        is.getline(word, 5);
+        EXPECT_NE(std::string("test"), std::string(word));
+    }
+    // Cleanup
+    std::filesystem::remove("test_truncate.json");
+}
+TEST(TestCUDASimulation, TruncationOn_Exit) {
+    ModelDescription m("test");
+    m.newAgent("agent");
+    LoggingConfig elc(m);
+    CUDASimulation e(m);
+    e.SimulationConfig().truncate_log_files = true;
+    e.SimulationConfig().exit_log_file = "test_truncate.json";
+    e.SimulationConfig().steps = 1;
+    e.setExitLog(elc);
+    // Create an empty file at the output location
+    {
+        std::ofstream os("test_truncate.json", std::ios_base::trunc);
+        os << "test";
+    }
+    // Sanity check on the file we created
+    {
+        std::ifstream is("test_truncate.json");
+        char word[5];
+        is.getline(word, 5);
+        EXPECT_EQ(std::string("test"), std::string(word));
+    }
+    // Run sim
+    EXPECT_NO_THROW(e.simulate());
+    // Read back the file, check it nolonger has contents "test"
+    {
+        std::ifstream is("test_truncate.json");
+        char word[5];
+        is.getline(word, 5);
+        EXPECT_NE(std::string("test"), std::string(word));
+    }
+    // Cleanup
+    std::filesystem::remove("test_truncate.json");
+}
+TEST(TestCUDASimulation, TruncationOn_Common) {
+    ModelDescription m("test");
+    m.newAgent("agent");
+    StepLoggingConfig slc(m);
+    LoggingConfig elc(m);
+    CUDASimulation e(m);
+    e.SimulationConfig().truncate_log_files = true;
+    e.SimulationConfig().common_log_file = "test_truncate.json";
+    e.SimulationConfig().steps = 1;
+    e.setStepLog(slc);
+    e.setExitLog(elc);
+    // Create an empty file at the output location
+    {
+        std::ofstream os("test_truncate.json", std::ios_base::trunc);
+        os << "test";
+    }
+    // Sanity check on the file we created
+    {
+        std::ifstream is("test_truncate.json");
+        char word[5];
+        is.getline(word, 5);
+        EXPECT_EQ(std::string("test"), std::string(word));
+    }
+    // Run sim
+    EXPECT_NO_THROW(e.simulate());
+    // Read back the file, check it nolonger has contents "test"
+    {
+        std::ifstream is("test_truncate.json");
+        char word[5];
+        is.getline(word, 5);
+        EXPECT_NE(std::string("test"), std::string(word));
+    }
+    // Cleanup
+    std::filesystem::remove("test_truncate.json");
+}
+TEST(TestCUDASimulation, TruncationOn_exportLog) {
+    ModelDescription m("test");
+    m.newAgent("agent");
+    StepLoggingConfig slc(m);
+    LoggingConfig elc(m);
+    CUDASimulation e(m);
+    e.SimulationConfig().truncate_log_files = true;
+    e.SimulationConfig().steps = 1;
+    e.setStepLog(slc);
+    e.setExitLog(elc);
+    // Create an empty file at the output location
+    {
+        std::ofstream os("test_truncate.json", std::ios_base::trunc);
+        os << "test";
+    }
+    // Sanity check on the file we created
+    {
+        std::ifstream is("test_truncate.json");
+        char word[5];
+        is.getline(word, 5);
+        EXPECT_EQ(std::string("test"), std::string(word));
+    }
+    // Run sim
+    EXPECT_NO_THROW(e.simulate());
+    EXPECT_NO_THROW(e.exportLog("test_truncate.json", true, true, true, true, true));
+    // Read back the file, check it nolonger has contents "test"
+    {
+        std::ifstream is("test_truncate.json");
+        char word[5];
+        is.getline(word, 5);
+        EXPECT_NE(std::string("test"), std::string(word));
+    }
+    // Cleanup
+    std::filesystem::remove("test_truncate.json");
+}
+TEST(TestCUDASimulation, TruncationOn_exportData) {
+    ModelDescription m("test");
+    m.newAgent("agent");
+    CUDASimulation e(m);
+    e.SimulationConfig().truncate_log_files = true;
+    // Create an empty file at the output location
+    {
+        std::ofstream os("test_truncate.json", std::ios_base::trunc);
+        os << "test";
+    }
+    // Sanity check on the file we created
+    {
+        std::ifstream is("test_truncate.json");
+        char word[5];
+        is.getline(word, 5);
+        EXPECT_EQ(std::string("test"), std::string(word));
+    }
+    // Run sim
+    EXPECT_NO_THROW(e.exportData("test_truncate.json", true));
+    // Read back the file, check it nolonger has contents "test"
+    {
+        std::ifstream is("test_truncate.json");
+        char word[5];
+        is.getline(word, 5);
+        EXPECT_NE(std::string("test"), std::string(word));
+    }
+    // Cleanup
+    std::filesystem::remove("test_truncate.json");
+}
 
 }  // namespace test_cuda_simulation
 }  // namespace tests

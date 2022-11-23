@@ -64,13 +64,19 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
         if (std::filesystem::exists(config.out_directory)) {
             std::set<std::filesystem::path> exit_files;
             for (unsigned int p = 0; p < plans.size(); ++p) {
-                const std::filesystem::path exit_path = config.out_directory / std::filesystem::path(plans[p].getOutputSubdirectory()) / std::filesystem::path(std::to_string(p) + "." + config.out_format);
+                std::filesystem::path exit_path = config.out_directory;
+                if (!plans[p].getOutputSubdirectory().empty())
+                    exit_path /= std::filesystem::path(plans[p].getOutputSubdirectory());
+                exit_path /= std::filesystem::path("exit." + config.out_format);
                 exit_files.insert(exit_path);
             }
             if (!config.truncate_log_files) {
                 // Step
                 for (unsigned int p = 0; p < plans.size(); ++p) {
-                    const std::filesystem::path step_path = config.out_directory / std::filesystem::path(plans[p].getOutputSubdirectory()) / std::filesystem::path("exit." + config.out_format);
+                    std::filesystem::path step_path = config.out_directory;
+                    if (!plans[p].getOutputSubdirectory().empty())
+                        step_path /= std::filesystem::path(plans[p].getOutputSubdirectory());
+                    step_path /= std::filesystem::path(std::to_string(p) + "." + config.out_format);
                     if (std::filesystem::exists(step_path)) {
                         THROW exception::FileAlreadyExists("Step log file '%s' already exists, in CUDAEnsemble::simulate()", step_path.c_str());
                     }
