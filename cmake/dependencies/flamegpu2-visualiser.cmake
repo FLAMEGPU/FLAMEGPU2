@@ -8,7 +8,7 @@ cmake_policy(SET CMP0079 NEW)
 
 # Set the visualiser repo and tag to use unless overridden by the user.
 # @todo - If the git version has changed in this file, fetch again? 
-set(DEFAULT_VISUALISATION_GIT_VERSION "3c4d209a0fa8008fbd398095a66afcf085d1bf61")
+set(DEFAULT_VISUALISATION_GIT_VERSION "dcfeb74b9a3df60c44af64ab98af87aae525f795")
 set(DEFAULT_VISUALISATION_REPOSITORY "https://github.com/FLAMEGPU/FLAMEGPU2-visualiser.git")
 
 # If overridden by the user, attempt to use that
