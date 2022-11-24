@@ -115,6 +115,8 @@ class CLayerDescription {
  * @see ModelDescription::newLayer(const std::string&) For creating instances of this class
  */
 class LayerDescription : public CLayerDescription {
+    friend class DependencyGraph;
+
  public:
     /**
      * Constructor, creates an interface to the LayerData
@@ -211,15 +213,6 @@ class LayerDescription : public CLayerDescription {
      * @see addSubModel(const std::string &)
      */
     void addSubModel(const CSubModelDescription &submodel);
-    /**
-     * Adds a host function to this layer, similar to addHostFunction
-     * however the runnable function is encapsulated within an object which permits cross language support in swig.
-     * The host function will be called during this stage of model execution
-     * @param func_callback a Host function callback object
-     * @throw exception::InvalidHostFunc If the function has already been added to the layer
-     * @note ONLY USED INTERNALLY AND BY PYTHON API - DO NOT CALL IN C++ BUILD
-     */
-    void _addHostFunction(HostFunctionCallback *func_callback);
 
 #ifdef SWIG
     /**
@@ -232,6 +225,18 @@ class LayerDescription : public CLayerDescription {
      */
     inline void addHostFunction(HostFunctionCallback *func_callback);
 #endif
+
+ private:
+    /**
+     * Adds a host function to this layer, similar to addHostFunction
+     * however the runnable function is encapsulated within an object which permits cross language support in swig.
+     * The host function will be called during this stage of model execution
+     * @param func_callback a Host function callback object
+     * @throw exception::InvalidHostFunc If the function has already been added to the layer
+     * @note ONLY USED INTERNALLY AND BY PYTHON API - DO NOT CALL IN C++ BUILD
+     * @note This exists, so that the internals of the function aren't defined in the header
+     */
+    void _addHostFunction(HostFunctionCallback * func_callback);
 };
 
 
