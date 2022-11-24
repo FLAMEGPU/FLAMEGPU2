@@ -31,7 +31,7 @@ NEW_STATE_NAME = "State2"
 WRONG_STATE_NAME = "State3"
 OTHER_STATE_NAME = "State4"
 
-class EmptyHostFunc(pyflamegpu.HostFunctionCallback):
+class EmptyHostFunc(pyflamegpu.HostFunction):
     """
     pyflamegpu requires step functions to be a class which extends the StepFunction base class.
     This class must extend the run function
@@ -42,7 +42,7 @@ class EmptyHostFunc(pyflamegpu.HostFunctionCallback):
     def run(self, FLAMEGPU):
         pass
 
-class ExitAlways(pyflamegpu.HostFunctionConditionCallback):
+class ExitAlways(pyflamegpu.HostCondition):
     def __init__(self):
         super().__init__()
 
@@ -189,7 +189,7 @@ class DependencyGraphTest(TestCase):
     
         _sm = pyflamegpu.ModelDescription(SUBMODEL_NAME)
         _sm.newAgent(SUBAGENT_NAME)
-        _sm.addExitConditionCallback(self.exit_always)
+        _sm.addExitCondition(self.exit_always)
         _smd = _m.newSubModel("sub", _sm)
     
         _smd.dependsOn(f)
@@ -204,7 +204,7 @@ class DependencyGraphTest(TestCase):
     
         _sm = pyflamegpu.ModelDescription(SUBMODEL_NAME)
         _sm.newAgent(SUBAGENT_NAME)
-        _sm.addExitConditionCallback(self.exit_always)
+        _sm.addExitCondition(self.exit_always)
         _smd = _m.newSubModel("sub", _sm)
     
         f.dependsOn(_smd)
@@ -351,7 +351,7 @@ class DependencyGraphTest(TestCase):
         hf2 = pyflamegpu.HostFunctionDescription(HOST_FN_NAME2, self.host_fn2)
         _sm = pyflamegpu.ModelDescription(SUBMODEL_NAME)
         _sm.newAgent(SUBAGENT_NAME)
-        _sm.addExitConditionCallback(self.exit_always)
+        _sm.addExitCondition(self.exit_always)
         _smd = _m.newSubModel("sub", _sm)
         f2.dependsOn(f)
         f3.dependsOn(hf)
@@ -399,7 +399,7 @@ class DependencyGraphTest(TestCase):
         hf2 = pyflamegpu.HostFunctionDescription(HOST_FN_NAME2, self.host_fn2)
         _sm = pyflamegpu.ModelDescription(SUBMODEL_NAME)
         _sm.newAgent(SUBAGENT_NAME)
-        _sm.addExitConditionCallback(self.exit_always)
+        _sm.addExitCondition(self.exit_always)
         _smd = _m.newSubModel("sub", _sm)
         f2.dependsOn(f)
         f3.dependsOn(hf)

@@ -2,7 +2,7 @@ import pytest
 from unittest import TestCase
 from pyflamegpu import *
 
-class ExitAlways(pyflamegpu.HostFunctionConditionCallback):
+class ExitAlways(pyflamegpu.HostCondition):
     def __init__(self):
         super().__init__()
 
@@ -15,7 +15,7 @@ class SubEnvironmentDescriptionTest(TestCase):
         m2 = pyflamegpu.ModelDescription("sub");
         # Define SubModel
         exitcdn = ExitAlways()
-        m2.addExitConditionCallback(exitcdn);
+        m2.addExitCondition(exitcdn);
         m2.Environment().newPropertyFloat("a", 0);
         m2.Environment().newPropertyArrayFloat("a2", [0] * 2);
         m = pyflamegpu.ModelDescription("host");
@@ -39,7 +39,7 @@ class SubEnvironmentDescriptionTest(TestCase):
         m2 = pyflamegpu.ModelDescription("sub");
         # Define SubModel
         exitcdn = ExitAlways()
-        m2.addExitConditionCallback(exitcdn);
+        m2.addExitCondition(exitcdn);
         m2.Environment().newPropertyFloat("a", 0);
         m2.Environment().newPropertyArrayInt("a2", [0] * 2);
         m = pyflamegpu.ModelDescription("host");
@@ -57,7 +57,7 @@ class SubEnvironmentDescriptionTest(TestCase):
         m2 = pyflamegpu.ModelDescription("sub");
         # Define SubModel
         exitcdn = ExitAlways()
-        m2.addExitConditionCallback(exitcdn);
+        m2.addExitCondition(exitcdn);
         m2.Environment().newPropertyFloat("a", 0);
         m2.Environment().newPropertyArrayFloat("a2", [0] * 2);
         m = pyflamegpu.ModelDescription("host");
@@ -77,7 +77,7 @@ class SubEnvironmentDescriptionTest(TestCase):
         m2 = pyflamegpu.ModelDescription("sub");
         # Define SubModel
         exitcdn = ExitAlways()
-        m2.addExitConditionCallback(exitcdn);
+        m2.addExitCondition(exitcdn);
         m2.Environment().newPropertyFloat("a", 0);
         m2.Environment().newPropertyArrayFloat("a2", [0] * 2);
         m = pyflamegpu.ModelDescription("host");
@@ -95,7 +95,7 @@ class SubEnvironmentDescriptionTest(TestCase):
         m2 = pyflamegpu.ModelDescription("sub");
         # Define SubModel
         exitcdn = ExitAlways()
-        m2.addExitConditionCallback(exitcdn);
+        m2.addExitCondition(exitcdn);
         m2.Environment().newPropertyFloat("a", 0);
         m2.Environment().newPropertyArrayFloat("a2", [0.0] * 2);
         m2.Environment().newPropertyFloat("a_", 0);
@@ -124,7 +124,7 @@ class SubEnvironmentDescriptionTest(TestCase):
         m2 = pyflamegpu.ModelDescription("sub");
         # Define SubModel
         exitcdn = ExitAlways()
-        m2.addExitConditionCallback(exitcdn);
+        m2.addExitCondition(exitcdn);
         m2.Environment().newMacroPropertyFloat("a");
         m2.Environment().newMacroPropertyFloat("a2", 2, 3, 4, 5);
         m = pyflamegpu.ModelDescription("host");
@@ -148,7 +148,7 @@ class SubEnvironmentDescriptionTest(TestCase):
         m2 = pyflamegpu.ModelDescription("sub");
         # Define SubModel
         exitcdn = ExitAlways()
-        m2.addExitConditionCallback(exitcdn);
+        m2.addExitCondition(exitcdn);
         m2.Environment().newMacroPropertyFloat("a");
         m2.Environment().newMacroPropertyInt("a2");
         m = pyflamegpu.ModelDescription("host");
@@ -166,7 +166,7 @@ class SubEnvironmentDescriptionTest(TestCase):
         m2 = pyflamegpu.ModelDescription("sub");
         # Define SubModel
         exitcdn = ExitAlways()
-        m2.addExitConditionCallback(exitcdn);
+        m2.addExitCondition(exitcdn);
         m2.Environment().newMacroPropertyFloat("a", 4, 3, 2, 1);
         m2.Environment().newMacroPropertyFloat("a2", 1, 2, 3, 4);
         m2.Environment().newMacroPropertyFloat("a3", 1, 2, 3);
@@ -201,7 +201,7 @@ class SubEnvironmentDescriptionTest(TestCase):
         m2 = pyflamegpu.ModelDescription("sub");
         # Define SubModel
         exitcdn = ExitAlways()
-        m2.addExitConditionCallback(exitcdn);
+        m2.addExitCondition(exitcdn);
         m2.Environment().newMacroPropertyFloat("a");
         m2.Environment().newMacroPropertyFloat("a2", 2);
         m2.Environment().newMacroPropertyFloat("a_");

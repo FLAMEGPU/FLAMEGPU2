@@ -73,7 +73,7 @@ class MiniSim():
         self.cudaSimulation.getPopulationData(self.population)
 
 
-class get_set_float(pyflamegpu.HostFunctionCallback):
+class get_set_float(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -89,7 +89,7 @@ class get_set_float(pyflamegpu.HostFunctionCallback):
         assert self.float == float(TEST_VALUE)
         assert self.float_ == float(TEST_VALUE * 2)
         
-class get_set_double(pyflamegpu.HostFunctionCallback):
+class get_set_double(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -107,7 +107,7 @@ class get_set_double(pyflamegpu.HostFunctionCallback):
 
 
 
-class get_set_int8(pyflamegpu.HostFunctionCallback):
+class get_set_int8(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -123,7 +123,7 @@ class get_set_int8(pyflamegpu.HostFunctionCallback):
         assert self.int8 == TEST_VALUE
         assert self.int8_ == TEST_VALUE * 2
 
-class get_set_int16(pyflamegpu.HostFunctionCallback):
+class get_set_int16(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -139,7 +139,7 @@ class get_set_int16(pyflamegpu.HostFunctionCallback):
         assert self.int16 == TEST_VALUE
         assert self.int16_ == TEST_VALUE * 2
         
-class get_set_uint16(pyflamegpu.HostFunctionCallback):
+class get_set_uint16(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -155,7 +155,7 @@ class get_set_uint16(pyflamegpu.HostFunctionCallback):
         assert self.uint16 == TEST_VALUE
         assert self.uint16_ == TEST_VALUE * 2
         
-class get_set_int32(pyflamegpu.HostFunctionCallback):
+class get_set_int32(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -172,7 +172,7 @@ class get_set_int32(pyflamegpu.HostFunctionCallback):
         assert self.int32_ == TEST_VALUE * 2
         
         
-class get_set_uint32(pyflamegpu.HostFunctionCallback):
+class get_set_uint32(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -188,7 +188,7 @@ class get_set_uint32(pyflamegpu.HostFunctionCallback):
         assert self.uint32 == TEST_VALUE
         assert self.uint32_ == TEST_VALUE * 2
 
-class get_set_int64(pyflamegpu.HostFunctionCallback):
+class get_set_int64(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -204,7 +204,7 @@ class get_set_int64(pyflamegpu.HostFunctionCallback):
         assert self.int64 == TEST_VALUE
         assert self.int64_ == TEST_VALUE * 2      
 
-class get_set_uint64(pyflamegpu.HostFunctionCallback):
+class get_set_uint64(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -220,7 +220,7 @@ class get_set_uint64(pyflamegpu.HostFunctionCallback):
         assert self.uint64 == TEST_VALUE
         assert self.uint64_ == TEST_VALUE * 2      
 
-class get_set_id(pyflamegpu.HostFunctionCallback):
+class get_set_id(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -238,7 +238,7 @@ class get_set_id(pyflamegpu.HostFunctionCallback):
 
 # Arrays
 
-class get_set_array_float(pyflamegpu.HostFunctionCallback):
+class get_set_array_float(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -255,7 +255,7 @@ class get_set_array_float(pyflamegpu.HostFunctionCallback):
         assert list(self.set_float_a) == init1
         assert list(self.get_float_a) == init2
         
-class get_set_array_double(pyflamegpu.HostFunctionCallback):
+class get_set_array_double(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -274,7 +274,7 @@ class get_set_array_double(pyflamegpu.HostFunctionCallback):
 
 
        
-class get_set_array_int8(pyflamegpu.HostFunctionCallback):
+class get_set_array_int8(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -291,7 +291,7 @@ class get_set_array_int8(pyflamegpu.HostFunctionCallback):
         assert list(self.set_int8_a) == init1
         assert list(self.get_int8_a) == init2
         
-class get_set_array_uint8(pyflamegpu.HostFunctionCallback):
+class get_set_array_uint8(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -308,7 +308,7 @@ class get_set_array_uint8(pyflamegpu.HostFunctionCallback):
         assert list(self.set_uint8_a) == init1
         assert list(self.get_uint8_a) == init2
  
-class get_set_array_int16(pyflamegpu.HostFunctionCallback):
+class get_set_array_int16(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -325,7 +325,7 @@ class get_set_array_int16(pyflamegpu.HostFunctionCallback):
         assert list(self.set_int16_a) == init1
         assert list(self.get_int16_a) == init2
         
-class get_set_array_uint16(pyflamegpu.HostFunctionCallback):
+class get_set_array_uint16(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -342,7 +342,7 @@ class get_set_array_uint16(pyflamegpu.HostFunctionCallback):
         assert list(self.set_uint16_a) == init1
         assert list(self.get_uint16_a) == init2
 
-class get_set_array_int32(pyflamegpu.HostFunctionCallback):
+class get_set_array_int32(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -359,7 +359,7 @@ class get_set_array_int32(pyflamegpu.HostFunctionCallback):
         assert list(self.set_int32_a) == init1
         assert list(self.get_int32_a) == init2
         
-class get_set_array_uint32(pyflamegpu.HostFunctionCallback):
+class get_set_array_uint32(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -376,7 +376,7 @@ class get_set_array_uint32(pyflamegpu.HostFunctionCallback):
         assert list(self.set_uint32_a) == init1
         assert list(self.get_uint32_a) == init2    
 
-class get_set_array_int64(pyflamegpu.HostFunctionCallback):
+class get_set_array_int64(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -393,7 +393,7 @@ class get_set_array_int64(pyflamegpu.HostFunctionCallback):
         assert list(self.set_int64_a) == init1
         assert list(self.get_int64_a) == init2
         
-class get_set_array_uint64(pyflamegpu.HostFunctionCallback):
+class get_set_array_uint64(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -410,7 +410,7 @@ class get_set_array_uint64(pyflamegpu.HostFunctionCallback):
         assert list(self.set_uint64_a) == init1
         assert list(self.get_uint64_a) == init2 
         
-class get_set_array_id(pyflamegpu.HostFunctionCallback):
+class get_set_array_id(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -429,7 +429,7 @@ class get_set_array_id(pyflamegpu.HostFunctionCallback):
                
 # Array Elements
 
-class get_set_array_element_float(pyflamegpu.HostFunctionCallback):
+class get_set_array_element_float(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -444,7 +444,7 @@ class get_set_array_element_float(pyflamegpu.HostFunctionCallback):
         assert self.set_float_a == init1[TEST_ARRAY_LEN - 1]
         assert self.get_float_a == TEST_VALUE * 2    
 
-class get_set_array_element_double(pyflamegpu.HostFunctionCallback):
+class get_set_array_element_double(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -459,7 +459,7 @@ class get_set_array_element_double(pyflamegpu.HostFunctionCallback):
         assert self.set_double_a == init1[TEST_ARRAY_LEN - 1]
         assert self.get_double_a == TEST_VALUE * 2
 
-class get_set_array_element_int8(pyflamegpu.HostFunctionCallback):
+class get_set_array_element_int8(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -474,7 +474,7 @@ class get_set_array_element_int8(pyflamegpu.HostFunctionCallback):
         assert self.set_int8_a == init1[TEST_ARRAY_LEN - 1]
         assert self.get_int8_a == TEST_VALUE * 2    
 
-class get_set_array_element_uint8(pyflamegpu.HostFunctionCallback):
+class get_set_array_element_uint8(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -489,7 +489,7 @@ class get_set_array_element_uint8(pyflamegpu.HostFunctionCallback):
         assert self.set_uint8_a == init1[TEST_ARRAY_LEN - 1]
         assert self.get_uint8_a == TEST_VALUE * 2  
 
-class get_set_array_element_int16(pyflamegpu.HostFunctionCallback):
+class get_set_array_element_int16(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -504,7 +504,7 @@ class get_set_array_element_int16(pyflamegpu.HostFunctionCallback):
         assert self.set_int16_a == init1[TEST_ARRAY_LEN - 1]
         assert self.get_int16_a == TEST_VALUE * 2    
 
-class get_set_array_element_uint16(pyflamegpu.HostFunctionCallback):
+class get_set_array_element_uint16(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -519,7 +519,7 @@ class get_set_array_element_uint16(pyflamegpu.HostFunctionCallback):
         assert self.set_uint16_a == init1[TEST_ARRAY_LEN - 1]
         assert self.get_uint16_a == TEST_VALUE * 2          
 
-class get_set_array_element_int32(pyflamegpu.HostFunctionCallback):
+class get_set_array_element_int32(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -534,7 +534,7 @@ class get_set_array_element_int32(pyflamegpu.HostFunctionCallback):
         assert self.set_int32_a == init1[TEST_ARRAY_LEN - 1]
         assert self.get_int32_a == TEST_VALUE * 2    
 
-class get_set_array_element_uint32(pyflamegpu.HostFunctionCallback):
+class get_set_array_element_uint32(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -549,7 +549,7 @@ class get_set_array_element_uint32(pyflamegpu.HostFunctionCallback):
         assert self.set_uint32_a == init1[TEST_ARRAY_LEN - 1]
         assert self.get_uint32_a == TEST_VALUE * 2  
 
-class get_set_array_element_int64(pyflamegpu.HostFunctionCallback):
+class get_set_array_element_int64(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -564,7 +564,7 @@ class get_set_array_element_int64(pyflamegpu.HostFunctionCallback):
         assert self.set_int64_a == init1[TEST_ARRAY_LEN - 1]
         assert self.get_int64_a == TEST_VALUE * 2    
 
-class get_set_array_element_uint64(pyflamegpu.HostFunctionCallback):
+class get_set_array_element_uint64(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -579,7 +579,7 @@ class get_set_array_element_uint64(pyflamegpu.HostFunctionCallback):
         assert self.set_uint64_a == init1[TEST_ARRAY_LEN - 1]
         assert self.get_uint64_a == TEST_VALUE * 2  
 
-class get_set_array_element_id(pyflamegpu.HostFunctionCallback):
+class get_set_array_element_id(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -596,7 +596,7 @@ class get_set_array_element_id(pyflamegpu.HostFunctionCallback):
              
 # Exception ProprtyType
 
-class exception_property_type_float(pyflamegpu.HostFunctionCallback):
+class exception_property_type_float(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -616,7 +616,7 @@ class exception_property_type_float(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "InvalidEnvPropertyType"
         assert self.e2 == "InvalidEnvPropertyType" 
 
-class exception_property_type_double(pyflamegpu.HostFunctionCallback):
+class exception_property_type_double(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -636,7 +636,7 @@ class exception_property_type_double(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "InvalidEnvPropertyType"
         assert self.e2 == "InvalidEnvPropertyType" 
         
-class exception_property_type_int8(pyflamegpu.HostFunctionCallback):
+class exception_property_type_int8(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -656,7 +656,7 @@ class exception_property_type_int8(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "InvalidEnvPropertyType"
         assert self.e2 == "InvalidEnvPropertyType" 
         
-class exception_property_type_uint8(pyflamegpu.HostFunctionCallback):
+class exception_property_type_uint8(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -676,7 +676,7 @@ class exception_property_type_uint8(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "InvalidEnvPropertyType"
         assert self.e2 == "InvalidEnvPropertyType" 
         
-class exception_property_type_int16(pyflamegpu.HostFunctionCallback):
+class exception_property_type_int16(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -696,7 +696,7 @@ class exception_property_type_int16(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "InvalidEnvPropertyType"
         assert self.e2 == "InvalidEnvPropertyType" 
         
-class exception_property_type_uint16(pyflamegpu.HostFunctionCallback):
+class exception_property_type_uint16(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -716,7 +716,7 @@ class exception_property_type_uint16(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "InvalidEnvPropertyType"
         assert self.e2 == "InvalidEnvPropertyType" 
 
-class exception_property_type_int32(pyflamegpu.HostFunctionCallback):
+class exception_property_type_int32(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -736,7 +736,7 @@ class exception_property_type_int32(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "InvalidEnvPropertyType"
         assert self.e2 == "InvalidEnvPropertyType" 
         
-class exception_property_type_uint32(pyflamegpu.HostFunctionCallback):
+class exception_property_type_uint32(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -756,7 +756,7 @@ class exception_property_type_uint32(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "InvalidEnvPropertyType"
         assert self.e2 == "InvalidEnvPropertyType"
 
-class exception_property_type_int64(pyflamegpu.HostFunctionCallback):
+class exception_property_type_int64(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -776,7 +776,7 @@ class exception_property_type_int64(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "InvalidEnvPropertyType"
         assert self.e2 == "InvalidEnvPropertyType" 
         
-class exception_property_type_uint64(pyflamegpu.HostFunctionCallback):
+class exception_property_type_uint64(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -798,7 +798,7 @@ class exception_property_type_uint64(pyflamegpu.HostFunctionCallback):
 
 # Exceptions Length    
 
-class exception_property_length_float(pyflamegpu.HostFunctionCallback):
+class exception_property_length_float(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -820,7 +820,7 @@ class exception_property_length_float(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "OutOfBoundsException"
         assert self.e2 == "OutOfBoundsException"    
 
-class exception_property_length_double(pyflamegpu.HostFunctionCallback):
+class exception_property_length_double(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -842,7 +842,7 @@ class exception_property_length_double(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "OutOfBoundsException"
         assert self.e2 == "OutOfBoundsException"
 
-class exception_property_length_int8(pyflamegpu.HostFunctionCallback):
+class exception_property_length_int8(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -864,7 +864,7 @@ class exception_property_length_int8(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "OutOfBoundsException"
         assert self.e2 == "OutOfBoundsException"  
 
-class exception_property_length_uint8(pyflamegpu.HostFunctionCallback):
+class exception_property_length_uint8(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -886,7 +886,7 @@ class exception_property_length_uint8(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "OutOfBoundsException"
         assert self.e2 == "OutOfBoundsException"           
 
-class exception_property_length_int16(pyflamegpu.HostFunctionCallback):
+class exception_property_length_int16(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -908,7 +908,7 @@ class exception_property_length_int16(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "OutOfBoundsException"
         assert self.e2 == "OutOfBoundsException"  
 
-class exception_property_length_uint16(pyflamegpu.HostFunctionCallback):
+class exception_property_length_uint16(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -930,7 +930,7 @@ class exception_property_length_uint16(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "OutOfBoundsException"
         assert self.e2 == "OutOfBoundsException" 
 
-class exception_property_length_int32(pyflamegpu.HostFunctionCallback):
+class exception_property_length_int32(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -952,7 +952,7 @@ class exception_property_length_int32(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "OutOfBoundsException"
         assert self.e2 == "OutOfBoundsException"  
 
-class exception_property_length_uint32(pyflamegpu.HostFunctionCallback):
+class exception_property_length_uint32(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -974,7 +974,7 @@ class exception_property_length_uint32(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "OutOfBoundsException"
         assert self.e2 == "OutOfBoundsException" 
         
-class exception_property_length_int64(pyflamegpu.HostFunctionCallback):
+class exception_property_length_int64(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -996,7 +996,7 @@ class exception_property_length_int64(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "OutOfBoundsException"
         assert self.e2 == "OutOfBoundsException"  
 
-class exception_property_length_uint64(pyflamegpu.HostFunctionCallback):
+class exception_property_length_uint64(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -1020,7 +1020,7 @@ class exception_property_length_uint64(pyflamegpu.HostFunctionCallback):
         
 # Exception Range
 
-class exception_property_range_float(pyflamegpu.HostFunctionCallback):
+class exception_property_range_float(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -1039,7 +1039,7 @@ class exception_property_range_float(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "OutOfBoundsException"
         assert self.e2 == "OutOfBoundsException" 
         
-class exception_property_range_double(pyflamegpu.HostFunctionCallback):
+class exception_property_range_double(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -1058,7 +1058,7 @@ class exception_property_range_double(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "OutOfBoundsException"
         assert self.e2 == "OutOfBoundsException"
         
-class exception_property_range_int8(pyflamegpu.HostFunctionCallback):
+class exception_property_range_int8(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -1077,7 +1077,7 @@ class exception_property_range_int8(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "OutOfBoundsException"
         assert self.e2 == "OutOfBoundsException"
         
-class exception_property_range_uint8(pyflamegpu.HostFunctionCallback):
+class exception_property_range_uint8(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -1096,7 +1096,7 @@ class exception_property_range_uint8(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "OutOfBoundsException"
         assert self.e2 == "OutOfBoundsException"
         
-class exception_property_range_int16(pyflamegpu.HostFunctionCallback):
+class exception_property_range_int16(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -1115,7 +1115,7 @@ class exception_property_range_int16(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "OutOfBoundsException"
         assert self.e2 == "OutOfBoundsException"
         
-class exception_property_range_uint16(pyflamegpu.HostFunctionCallback):
+class exception_property_range_uint16(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -1134,7 +1134,7 @@ class exception_property_range_uint16(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "OutOfBoundsException"
         assert self.e2 == "OutOfBoundsException"
         
-class exception_property_range_int32(pyflamegpu.HostFunctionCallback):
+class exception_property_range_int32(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -1153,7 +1153,7 @@ class exception_property_range_int32(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "OutOfBoundsException"
         assert self.e2 == "OutOfBoundsException"
         
-class exception_property_range_uint32(pyflamegpu.HostFunctionCallback):
+class exception_property_range_uint32(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -1172,7 +1172,7 @@ class exception_property_range_uint32(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "OutOfBoundsException"
         assert self.e2 == "OutOfBoundsException"
 
-class exception_property_range_int64(pyflamegpu.HostFunctionCallback):
+class exception_property_range_int64(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -1191,7 +1191,7 @@ class exception_property_range_int64(pyflamegpu.HostFunctionCallback):
         assert self.e1 == "OutOfBoundsException"
         assert self.e2 == "OutOfBoundsException"
         
-class exception_property_range_uint64(pyflamegpu.HostFunctionCallback):
+class exception_property_range_uint64(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -1212,7 +1212,7 @@ class exception_property_range_uint64(pyflamegpu.HostFunctionCallback):
 
 # Other
 
-class exception_property_doesnt_exist(pyflamegpu.HostFunctionCallback):
+class exception_property_doesnt_exist(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -1231,7 +1231,7 @@ class exception_property_doesnt_exist(pyflamegpu.HostFunctionCallback):
         assert self.e2 == "InvalidEnvProperty"
 
 
-class exception_property_read_only(pyflamegpu.HostFunctionCallback):
+class exception_property_read_only(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -1258,14 +1258,14 @@ class exception_property_read_only(pyflamegpu.HostFunctionCallback):
         assert self.e2 == "ReadOnlyEnvProperty"
 
 
-class reserved_name_set_step(pyflamegpu.HostFunctionCallback):
+class reserved_name_set_step(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
         FLAMEGPU.environment.setPropertyInt("_", 1)     
       
-class reserved_name_set_array_step(pyflamegpu.HostFunctionCallback):
+class reserved_name_set_array_step(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -1281,7 +1281,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_float(self):
         ms = MiniSim()
         step = get_set_float()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1289,7 +1289,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_double(self):
         ms = MiniSim()
         step = get_set_double()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1297,7 +1297,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_int8(self):
         ms = MiniSim()
         step = get_set_int8()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1305,7 +1305,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_int16(self):
         ms = MiniSim()
         step = get_set_int16()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1313,7 +1313,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_uint16(self):
         ms = MiniSim()
         step = get_set_uint16()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1321,7 +1321,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_int32(self):
         ms = MiniSim()
         step = get_set_int32()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1329,7 +1329,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_uint32(self):
         ms = MiniSim()
         step = get_set_uint32()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1337,7 +1337,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_int64(self):
         ms = MiniSim()
         step = get_set_int32()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1345,7 +1345,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_uint64(self):
         ms = MiniSim()
         step = get_set_uint32()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1353,7 +1353,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_id(self):
         ms = MiniSim()
         step = get_set_id()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1363,7 +1363,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_float(self):
         ms = MiniSim()
         step = get_set_array_float()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1371,7 +1371,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_double(self):
         ms = MiniSim()
         step = get_set_array_double()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1379,7 +1379,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_int8(self):
         ms = MiniSim()
         step = get_set_array_int8()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1387,7 +1387,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_uint8(self):
         ms = MiniSim()
         step = get_set_array_uint8()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1395,7 +1395,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_int32(self):
         ms = MiniSim()
         step = get_set_array_int32()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1403,7 +1403,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_uint32(self):
         ms = MiniSim()
         step = get_set_array_uint32()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1411,7 +1411,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_int64(self):
         ms = MiniSim()
         step = get_set_array_int64()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1419,7 +1419,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_uint64(self):
         ms = MiniSim()
         step = get_set_array_uint64()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1427,7 +1427,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_id(self):
         ms = MiniSim()
         step = get_set_array_id()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1437,7 +1437,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_element_float(self):
         ms = MiniSim()
         step = get_set_array_element_float()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1445,7 +1445,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_element_double(self):
         ms = MiniSim()
         step = get_set_array_element_double()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1453,7 +1453,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_element_int8(self):
         ms = MiniSim()
         step = get_set_array_element_int8()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1461,7 +1461,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_element_uint8(self):
         ms = MiniSim()
         step = get_set_array_element_uint8()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1469,7 +1469,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_element_int16(self):
         ms = MiniSim()
         step = get_set_array_element_int16()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1477,7 +1477,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_element_uint16(self):
         ms = MiniSim()
         step = get_set_array_element_uint16()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1485,7 +1485,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_element_int32(self):
         ms = MiniSim()
         step = get_set_array_element_int32()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1493,7 +1493,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_element_uint32(self):
         ms = MiniSim()
         step = get_set_array_element_uint32()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1501,7 +1501,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_element_int64(self):
         ms = MiniSim()
         step = get_set_array_element_int64()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1509,7 +1509,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_element_uint64(self):
         ms = MiniSim()
         step = get_set_array_element_uint64()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1517,7 +1517,7 @@ class HostEnvironmentTest(TestCase):
     def test_get_set_get_array_element_id(self):
         ms = MiniSim()
         step = get_set_array_element_id()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1527,7 +1527,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_type_float(self):
         ms = MiniSim()
         step = exception_property_type_float()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1535,7 +1535,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_type_double(self):
         ms = MiniSim()
         step = exception_property_type_double()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1543,7 +1543,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_type_int8(self):
         ms = MiniSim()
         step = exception_property_type_int8()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1551,7 +1551,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_type_uint8(self):
         ms = MiniSim()
         step = exception_property_type_uint8()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1559,7 +1559,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_type_int16(self):
         ms = MiniSim()
         step = exception_property_type_int16()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1567,7 +1567,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_type_uint16(self):
         ms = MiniSim()
         step = exception_property_type_uint16()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1575,7 +1575,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_type_int32(self):
         ms = MiniSim()
         step = exception_property_type_int32()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1583,7 +1583,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_type_uint32(self):
         ms = MiniSim()
         step = exception_property_type_uint32()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1591,7 +1591,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_type_int64(self):
         ms = MiniSim()
         step = exception_property_type_int64()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1599,7 +1599,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_type_uint64(self):
         ms = MiniSim()
         step = exception_property_type_uint64()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1609,7 +1609,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_length_float(self):
         ms = MiniSim()
         step = exception_property_length_float()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1617,7 +1617,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_length_double(self):
         ms = MiniSim()
         step = exception_property_length_double()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1625,7 +1625,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_length_int8(self):
         ms = MiniSim()
         step = exception_property_length_int8()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1633,7 +1633,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_length_uint8(self):
         ms = MiniSim()
         step = exception_property_length_uint8()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1641,7 +1641,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_length_int16(self):
         ms = MiniSim()
         step = exception_property_length_int16()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1649,7 +1649,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_length_uint16(self):
         ms = MiniSim()
         step = exception_property_length_uint16()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1657,7 +1657,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_length_int32(self):
         ms = MiniSim()
         step = exception_property_length_int32()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1665,7 +1665,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_length_uint32(self):
         ms = MiniSim()
         step = exception_property_length_uint32()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1673,7 +1673,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_length_int64(self):
         ms = MiniSim()
         step = exception_property_length_int64()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1681,7 +1681,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_length_uint64(self):
         ms = MiniSim()
         step = exception_property_length_uint64()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1691,7 +1691,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_range_float(self):
         ms = MiniSim()
         step = exception_property_range_float()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1699,7 +1699,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_range_double(self):
         ms = MiniSim()
         step = exception_property_range_double()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1707,7 +1707,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_range_int8(self):
         ms = MiniSim()
         step = exception_property_range_int8()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1715,7 +1715,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_range_uint8(self):
         ms = MiniSim()
         step = exception_property_range_uint8()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1723,7 +1723,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_range_int16(self):
         ms = MiniSim()
         step = exception_property_range_int16()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1731,7 +1731,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_range_uint16(self):
         ms = MiniSim()
         step = exception_property_range_uint16()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1739,7 +1739,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_range_int32(self):
         ms = MiniSim()
         step = exception_property_range_int32()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1747,7 +1747,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_range_uint32(self):
         ms = MiniSim()
         step = exception_property_range_uint32()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions() 
@@ -1755,7 +1755,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_range_int64(self):
         ms = MiniSim()
         step = exception_property_range_int64()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1763,7 +1763,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_range_uint64(self):
         ms = MiniSim()
         step = exception_property_range_uint64()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1773,7 +1773,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_doesnt_exist(self):
         ms = MiniSim()
         step = exception_property_doesnt_exist()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1781,7 +1781,7 @@ class HostEnvironmentTest(TestCase):
     def test_exception_property_read_only(self):
         ms = MiniSim()
         step = exception_property_read_only()
-        ms.model.addStepFunctionCallback(step)
+        ms.model.addStepFunction(step)
         # Test and apply assertions
         ms.run()
         step.apply_assertions()
@@ -1789,7 +1789,7 @@ class HostEnvironmentTest(TestCase):
     def reserved_name_set(self):
         model = pyflamegpu.ModelDescription("model")
         step = reserved_name_set_step()
-        model.addStepFunctionCallback(step)
+        model.addStepFunction(step)
         sim = pyflamegpu.CUDASimulation(model)
         # Test and apply assertions
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
@@ -1799,7 +1799,7 @@ class HostEnvironmentTest(TestCase):
     def reserved_name_set_array(self):
         model = pyflamegpu.ModelDescription("model")
         step = reserved_name_set_array_step()
-        model.addStepFunctionCallback(step)
+        model.addStepFunction(step)
         sim = pyflamegpu.CUDASimulation(model)
         # Test and apply assertions
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:

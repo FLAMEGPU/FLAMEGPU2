@@ -2,7 +2,7 @@ import pytest
 from unittest import TestCase
 from pyflamegpu import *
 
-class ExitAlways(pyflamegpu.HostFunctionConditionCallback):
+class ExitAlways(pyflamegpu.HostCondition):
     def __init__(self):
         super().__init__()
 
@@ -27,14 +27,14 @@ class SubAgentDescriptionTest(TestCase):
             s = pyflamegpu.CUDASimulation(m)
         assert e.value.type() == "InvalidSubModel"
         exitcdn = ExitAlways()
-        sm.addExitConditionCallback(exitcdn);
+        sm.addExitCondition(exitcdn);
         # Does not throw with exit condition
         s = pyflamegpu.CUDASimulation(m)
 
     def test_InvalidAgentName(self):
         sm = pyflamegpu.ModelDescription("sub");
         exitcdn = ExitAlways()
-        sm.addExitConditionCallback(exitcdn);
+        sm.addExitCondition(exitcdn);
         # Define SubModel
         sm.newAgent("a");
         m = pyflamegpu.ModelDescription("host");
@@ -51,7 +51,7 @@ class SubAgentDescriptionTest(TestCase):
     def test_InvalidAgentState(self):
         sm = pyflamegpu.ModelDescription("sub");
         exitcdn = ExitAlways()
-        sm.addExitConditionCallback(exitcdn);
+        sm.addExitCondition(exitcdn);
         # Define SubModel
         a = sm.newAgent("a");
         a.newVariableFloat("a_float");
@@ -85,7 +85,7 @@ class SubAgentDescriptionTest(TestCase):
     def test_InvalidAgentVariable(self):
         sm = pyflamegpu.ModelDescription("sub");
         exitcdn = ExitAlways()
-        sm.addExitConditionCallback(exitcdn);
+        sm.addExitCondition(exitcdn);
         # Define SubModel
         a = sm.newAgent("a");
         a.newVariableFloat("a_float");
@@ -133,7 +133,7 @@ class SubAgentDescriptionTest(TestCase):
     def test_AlreadyBound(self):
         sm = pyflamegpu.ModelDescription("sub");
         exitcdn = ExitAlways()
-        sm.addExitConditionCallback(exitcdn);
+        sm.addExitCondition(exitcdn);
         # Define SubModel
         sm.newAgent("a");
         sm.newAgent("a2");

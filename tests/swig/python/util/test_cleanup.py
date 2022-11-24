@@ -2,7 +2,7 @@ import pytest
 from unittest import TestCase
 from pyflamegpu import *
 
-class initfn(pyflamegpu.HostFunctionCallback):
+class initfn(pyflamegpu.HostFunction):
     # Init should always be 0th iteration/step
     def __init__(self):
         super().__init__()
@@ -74,7 +74,7 @@ class CleanupTest(TestCase):
         aliveDesc = agent.newRTCFunction("AliveFN", self.AliveFN)
         agent.newVariableInt("test")
         init = initfn()
-        model.addInitFunctionCallback(init)
+        model.addInitFunction(init)
         model.addExecutionRoot(aliveDesc)
         model.generateLayers()
 

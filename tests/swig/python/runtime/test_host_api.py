@@ -7,7 +7,7 @@ import random as rand
 TOTAL_STEPS = 4
 
 
-class init_testGetStepCounter(pyflamegpu.HostFunctionCallback):
+class init_testGetStepCounter(pyflamegpu.HostFunction):
     # Init should always be 0th iteration/step
     def __init__(self):
         super().__init__()
@@ -20,7 +20,7 @@ class init_testGetStepCounter(pyflamegpu.HostFunctionCallback):
         assert self.step_counter == 0
 
 
-class host_testGetStepCounter(pyflamegpu.HostFunctionCallback):
+class host_testGetStepCounter(pyflamegpu.HostFunction):
     # host is during, so 0? - @todo dynamic
     def __init__(self):
         super().__init__()
@@ -33,7 +33,7 @@ class host_testGetStepCounter(pyflamegpu.HostFunctionCallback):
         assert self.step_counter == expected_step_counter
 
 
-class step_testGetStepCounter(pyflamegpu.HostFunctionCallback):
+class step_testGetStepCounter(pyflamegpu.HostFunction):
     # Step functions are at the end of the step
     def __init__(self):
         super().__init__()
@@ -45,7 +45,7 @@ class step_testGetStepCounter(pyflamegpu.HostFunctionCallback):
     def apply_assertions(self, expected_step_counter):
         assert self.step_counter == expected_step_counter
 
-class exit_testGetStepCounter(pyflamegpu.HostFunctionCallback):
+class exit_testGetStepCounter(pyflamegpu.HostFunction):
     # Runs between steps - i.e. after step functions
     def __init__(self):
         super().__init__()
@@ -65,13 +65,13 @@ class HostAPITest(TestCase):
         agent = model.newAgent("agent")
 
         init = init_testGetStepCounter()
-        model.addInitFunctionCallback(init)
+        model.addInitFunction(init)
         host = host_testGetStepCounter()
-        model.newLayer().addHostFunctionCallback(host)
+        model.newLayer().addHostFunction(host)
         step = step_testGetStepCounter()
-        model.addStepFunctionCallback(step)
+        model.addStepFunction(step)
         exit = exit_testGetStepCounter()
-        model.addExitFunctionCallback(exit)
+        model.addExitFunction(exit)
 
         # Init pop
         agentCount = 1

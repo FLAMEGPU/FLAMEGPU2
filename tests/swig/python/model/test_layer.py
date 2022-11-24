@@ -16,7 +16,7 @@ NEW_STATE_NAME = "State2"
 WRONG_STATE_NAME = "State3"
 OTHER_STATE_NAME = "State4"
     
-class EmptyHostFunc(pyflamegpu.HostFunctionCallback):
+class EmptyHostFunc(pyflamegpu.HostFunction):
     """
     pyflamegpu requires step functions to be a class which extends the StepFunction base class.
     This class must extend the run function
@@ -136,11 +136,11 @@ class LayerDescriptionTest(TestCase):
         _m = pyflamegpu.ModelDescription(MODEL_NAME)
         l = _m.newLayer(LAYER_NAME)
         assert l.getHostFunctionCallbackCount() == 0
-        l.addHostFunctionCallback(self.host_fn)
+        l.addHostFunction(self.host_fn)
         assert l.getHostFunctionCallbackCount() == 1
         # Cannot create function with same name
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            l.addHostFunctionCallback(self.host_fn)
+            l.addHostFunction(self.host_fn)
         assert e.value.type() == "InvalidLayerMember"
 
     def test_agent_function_wrong_model(self):
