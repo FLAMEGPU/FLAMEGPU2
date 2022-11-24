@@ -206,6 +206,14 @@ class TestCUDAEnsemble(TestCase):
         argv = ["ensemble.exe", "--timing"]
         ensemble.initialise(argv)
         assert ensemble.Config().timing == True
+
+    def test_initialise_truncate(self):
+        model = pyflamegpu.ModelDescription("test_initialise_truncate")
+        ensemble = pyflamegpu.CUDAEnsemble(model)
+        assert ensemble.Config().truncate_log_files == False
+        argv = [ "prog.exe", "--truncate"]
+        ensemble.initialise(argv)
+        assert ensemble.Config().truncate_log_files == True
         
     def test_initialise_error_level(self):
         # Create a model
