@@ -17,7 +17,7 @@ MessageSpatial3D::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
   : MessageSpecialisationHandler()
   , sim_message(a) {
     flamegpu::util::nvtx::Range range{"Spatial3D::CUDAModelHandler"};
-    const Data &d = (const Data &)a.getMessageDescription();
+    const Data &d = (const Data &)a.getMessageData();
     hd_data.radius = d.radius;
     hd_data.min[0] = d.minX;
     hd_data.min[1] = d.minY;
@@ -113,7 +113,7 @@ void MessageSpatial3D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, unsign
     }
     {  // Reorder messages
        // Copy messages from d_messages to d_messages_swap, in hash order
-        scatter.pbm_reorder(streamId, stream, this->sim_message.getMessageDescription().variables, this->sim_message.getReadList(), this->sim_message.getWriteList(), MESSAGE_COUNT, d_keys, d_vals, hd_data.PBM);
+        scatter.pbm_reorder(streamId, stream, this->sim_message.getMessageData().variables, this->sim_message.getReadList(), this->sim_message.getWriteList(), MESSAGE_COUNT, d_keys, d_vals, hd_data.PBM);
         this->sim_message.swap();  // Stream id is unused here
         gpuErrchk(cudaStreamSynchronize(stream));  // Not striclty neceesary while pbm_reorder is synchronous.
     }

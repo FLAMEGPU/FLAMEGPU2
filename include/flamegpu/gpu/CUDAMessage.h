@@ -44,7 +44,7 @@ class CUDAMessage {
     /**
      * Return an immutable reference to the message description represented by the CUDAMessage instance
      */
-    const MessageBruteForce::Data& getMessageDescription() const;
+    const MessageBruteForce::Data& getMessageData() const;
     /**
      * @return The currently allocated length of the message array (in the number of messages)
      */
