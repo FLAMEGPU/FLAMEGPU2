@@ -41,7 +41,7 @@ void CUDAMessageList::cleanupAllocatedData() {
 
 void CUDAMessageList::allocateDeviceMessageList(CUDAMessageMap &memory_map) {
     // we use the  messages memory map to iterate the  message variables and do allocation within our GPU hash map
-    const auto &mem = message.getMessageDescription().variables;
+    const auto &mem = message.getMessageData().variables;
 
     // for each variable allocate a device array and add to map
     for (const auto &mm : mem) {
@@ -78,7 +78,7 @@ void CUDAMessageList::resize(CUDAScatter& scatter, cudaStream_t stream, unsigned
         // Note, if keep_len exceeds length of d_swap_list_old, this will crash
         scatter.scatterAll(streamId,
             stream,
-            message.getMessageDescription().variables,
+            message.getMessageData().variables,
             d_list_old, d_list,
             keep_len,
             0);
@@ -108,7 +108,7 @@ void CUDAMessageList::zeroDeviceMessageList_async(CUDAMessageMap& memory_map, cu
     // for each device pointer in the cuda memory map set the values to 0
     for (const auto &mm : memory_map) {
         // get the variable size from message description
-        const auto var = message.getMessageDescription().variables.at(mm.first);
+        const auto var = message.getMessageData().variables.at(mm.first);
         const size_t var_size = var.type_size * var.elements;
 
         // set the memory to zero
@@ -121,7 +121,7 @@ void* CUDAMessageList::getReadMessageListVariablePointer(std::string variable_na
     if (mm == d_list.end()) {
         THROW exception::InvalidMessageVar("Variable '%s' was not found in message '%s', "
           "in CUDAMessageList::getReadMessageListVariablePointer()",
-          variable_name.c_str(), message.getMessageDescription().name.c_str());
+          variable_name.c_str(), message.getMessageData().name.c_str());
     }
 
     return mm->second;
@@ -131,7 +131,7 @@ void* CUDAMessageList::getWriteMessageListVariablePointer(std::string variable_n
     if (mm == d_swap_list.end()) {
         THROW exception::InvalidMessageVar("Variable '%s' was not found in message '%s', "
             "in CUDAMessageList::getWriteMessageListVariablePointer()",
-            variable_name.c_str(), message.getMessageDescription().name.c_str());
+            variable_name.c_str(), message.getMessageData().name.c_str());
     }
 
     return mm->second;
@@ -154,7 +154,7 @@ unsigned int CUDAMessageList::scatter(unsigned int newCount, CUDAScatter &scatte
         return oldCount + scatter.scatter(streamId,
             stream,
             CUDAScatter::Type::MESSAGE_OUTPUT,
-            message.getMessageDescription().variables,
+            message.getMessageData().variables,
             d_swap_list, d_list,
             newCount,
             oldCount);
@@ -162,7 +162,7 @@ unsigned int CUDAMessageList::scatter(unsigned int newCount, CUDAScatter &scatte
         return scatter.scatter(streamId,
             stream,
             CUDAScatter::Type::MESSAGE_OUTPUT,
-            message.getMessageDescription().variables,
+            message.getMessageData().variables,
             d_swap_list, d_list,
             newCount,
             0);
@@ -172,7 +172,7 @@ unsigned int CUDAMessageList::scatterAll(unsigned int newCount, CUDAScatter &sca
     unsigned int oldCount = message.getMessageCount();
     return oldCount + scatter.scatterAll(streamId,
         stream,
-        message.getMessageDescription().variables,
+        message.getMessageData().variables,
         d_swap_list, d_list,
         newCount,
         oldCount);

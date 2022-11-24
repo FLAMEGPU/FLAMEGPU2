@@ -556,7 +556,7 @@ bool CUDASimulation::step() {
 
     // Set message counts to zero, and set flags to update state of non-persistent message lists
     for (auto &a : message_map) {
-        if (!a.second->getMessageDescription().persistent) {
+        if (!a.second->getMessageData().persistent) {
             a.second->setMessageCount(0);
             a.second->setTruncateMessageListFlag();
             a.second->setPBMConstructionRequiredFlag();

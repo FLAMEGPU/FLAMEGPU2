@@ -20,7 +20,7 @@ MessageArray2D::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
     , sim_message(a)
     , d_write_flag(nullptr)
     , d_write_flag_len(0) {
-    const Data& d = static_cast<const Data &>(a.getMessageDescription());
+    const Data& d = static_cast<const Data &>(a.getMessageData());
     memcpy(&hd_metadata.dimensions, d.dimensions.data(), d.dimensions.size() * sizeof(unsigned int));
     hd_metadata.length = d.dimensions[0] * d.dimensions[1];
 }
@@ -33,7 +33,7 @@ void MessageArray2D::CUDAModelHandler::init(CUDAScatter &scatter, unsigned int s
     // Zero the output arrays
     auto &read_list = this->sim_message.getReadList();
     auto &write_list = this->sim_message.getWriteList();
-    for (auto &var : this->sim_message.getMessageDescription().variables) {
+    for (auto &var : this->sim_message.getMessageData().variables) {
         // Elements is harmless, futureproof for arrays support
         // hd_metadata.length is used, as message array can be longer than message count
         gpuErrchk(cudaMemsetAsync(write_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length));
@@ -66,7 +66,7 @@ void MessageArray2D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, unsigned
     // Zero the output arrays
     auto &read_list = this->sim_message.getReadList();
     auto &write_list = this->sim_message.getWriteList();
-    for (auto &var : this->sim_message.getMessageDescription().variables) {
+    for (auto &var : this->sim_message.getMessageData().variables) {
         // Elements is harmless, futureproof for arrays support
         // hd_metadata.length is used, as message array can be longer than message count
         gpuErrchk(cudaMemsetAsync(write_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length, stream));
@@ -86,7 +86,7 @@ void MessageArray2D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, unsigned
         }
         t_d_write_flag = d_write_flag;
     }
-    scatter.arrayMessageReorder(streamId, stream, this->sim_message.getMessageDescription().variables, read_list, write_list, MESSAGE_COUNT, hd_metadata.length, t_d_write_flag);
+    scatter.arrayMessageReorder(streamId, stream, this->sim_message.getMessageData().variables, read_list, write_list, MESSAGE_COUNT, hd_metadata.length, t_d_write_flag);
     this->sim_message.swap();
     // Reset message count back to full array length
     // Array message exposes not output messages as 0

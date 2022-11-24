@@ -40,7 +40,7 @@ CUDAMessage::~CUDAMessage(void) {
     specialisation_handler->freeMetaDataDevicePtr();
 }
 
-const MessageBruteForce::Data& CUDAMessage::getMessageDescription() const {
+const MessageBruteForce::Data& CUDAMessage::getMessageData() const {
     return message_description;
 }
 

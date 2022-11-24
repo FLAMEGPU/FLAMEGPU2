@@ -23,7 +23,7 @@ MessageBucket::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
     : MessageSpecialisationHandler()
     , sim_message(a) {
     flamegpu::util::nvtx::Range range{"MessageBucket::CUDAModelHandler::CUDAModelHandler"};
-    const Data &d = (const Data &)a.getMessageDescription();
+    const Data &d = (const Data &)a.getMessageData();
     hd_data.min = d.lowerBound;
     // Here we convert it so that upperBound is one greater than the final valid index
     hd_data.max = d.upperBound + 1;
@@ -106,7 +106,7 @@ void MessageBucket::CUDAModelHandler::buildIndex(CUDAScatter &scatter, unsigned 
     }
     {  // Reorder messages
        // Copy messages from d_messages to d_messages_swap, in hash order
-        scatter.pbm_reorder(streamId, stream, this->sim_message.getMessageDescription().variables, this->sim_message.getReadList(), this->sim_message.getWriteList(), MESSAGE_COUNT, d_keys, d_vals, hd_data.PBM);
+        scatter.pbm_reorder(streamId, stream, this->sim_message.getMessageData().variables, this->sim_message.getReadList(), this->sim_message.getWriteList(), MESSAGE_COUNT, d_keys, d_vals, hd_data.PBM);
         this->sim_message.swap();
         gpuErrchk(cudaStreamSynchronize(stream));  // Not strictly necessary while pbm_reorder is synchronous.
     }
