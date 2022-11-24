@@ -239,7 +239,7 @@ void LayerDescription::addSubModel(const CSubModelDescription &submodel) {
         submodel.submodel->name.c_str(), mdl->name.c_str());
 }
 
-void LayerDescription::_addHostFunctionCallback(HostFunctionCallback* func_callback) {
+void LayerDescription::_addHostFunction(HostFunctionCallback* func_callback) {
     if (layer->sub_model) {
         THROW exception::InvalidLayerMember("A layer containing a submodel may not also contain a host function, "
         "in LayerDescription::addHostFunctionCallback()\n");

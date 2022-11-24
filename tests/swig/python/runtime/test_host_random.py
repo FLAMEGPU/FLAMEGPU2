@@ -19,7 +19,7 @@ UINT16_MAX = int("0xffff", 16)
 UINT32_MAX = int("0xffffffff", 16)
 UINT64_MAX = int("0xffffffffffffffff",16)
 
-class step_func(pyflamegpu.HostFunctionCallback):
+class step_func(pyflamegpu.HostFunction):
     def __init__(self, function, Type, arga, argb):
         """
         arga and argb mayebe either min/max or mena/stdv
@@ -83,7 +83,7 @@ class step_func(pyflamegpu.HostFunctionCallback):
         assert diff == 0
 
 
-class step_func_uniform_range(pyflamegpu.HostFunctionCallback):
+class step_func_uniform_range(pyflamegpu.HostFunction):
     def __init__(self, Type, min, max):
         """
         arga and argb mayebe either min/max or mena/stdv
@@ -142,7 +142,7 @@ class MiniSim():
         Main contexts of tests are parameterised in this function by random function type (normal/uniform) and the variable type
         """
         step = step_func(function, Type, arga, argb)
-        self.model.addStepFunctionCallback(step)
+        self.model.addStepFunction(step)
         # Initially 0
         step.assert_zero()
         # Seed RNG
@@ -171,7 +171,7 @@ class MiniSim():
         
     def range_test(self, Type, min=None, max=None):
         step = step_func_uniform_range(Type, min, max)
-        self.model.addStepFunctionCallback(step)
+        self.model.addStepFunction(step)
         self.run([])
         step.assert_range()
         

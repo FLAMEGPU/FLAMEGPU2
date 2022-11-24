@@ -354,11 +354,15 @@ class FLAMEGPURuntimeException : public std::exception {
 %ignore flamegpu::AgentInterface::getAgentDescription;
 
 // Disable functions which allow raw C pointers in favour of callback objects
-%ignore flamegpu::ModelDescription::addInitFunction;
-%ignore flamegpu::ModelDescription::addStepFunction;
-%ignore flamegpu::ModelDescription::addExitFunction;
-%ignore flamegpu::ModelDescription::addExitCondition;
-%ignore flamegpu::LayerDescription::addHostFunction;
+%ignore flamegpu::ModelDescription::addInitFunction(FLAMEGPU_INIT_FUNCTION_POINTER);
+%ignore flamegpu::ModelDescription::addStepFunction(FLAMEGPU_STEP_FUNCTION_POINTER);
+%ignore flamegpu::ModelDescription::addExitFunction(FLAMEGPU_EXIT_FUNCTION_POINTER);
+%ignore flamegpu::ModelDescription::addExitCondition(FLAMEGPU_EXIT_CONDITION_POINTER);
+%ignore flamegpu::LayerDescription::addHostFunction(FLAMEGPU_HOST_FUNCTION_POINTER);
+
+// Rename SWIG specific types to match C API naming
+%rename flamegpu::HostFunctionCallback HostFunction;
+%rename flamegpu::HostConditionCallback HostCondition;
 
 // Disable functions which use C++ iterators/type_index
 %ignore flamegpu::AgentVector::const_iterator;
@@ -475,30 +479,36 @@ class FLAMEGPURuntimeException : public std::exception {
  * To prevent raw pointer functions being exposed in Python these are ignored so only the callback versions are accessible.
  */
 %feature("director") flamegpu::HostFunctionCallback;
-%feature("director") flamegpu::HostFunctionConditionCallback;
+%feature("director") flamegpu::HostConditionCallback;
 
 
 // Automatically disown all passed host functions, to prevent them going out of scope too early
 // This still leaves a potential race condition if stateful information is stored in a host function instance
-%feature("pythonprepend") flamegpu::LayerDescription::addHostFunctionCallback(HostFunctionCallback*) %{
+%feature("pythonprepend") flamegpu::LayerDescription::addHostFunction(HostFunctionCallback*) %{
     try:
         func_callback = func_callback.__disown__()
     except:
         pass
 %}
-%feature("pythonprepend") flamegpu::ModelDescription::addInitFunctionCallback(HostFunctionCallback*) %{
+%feature("pythonprepend") flamegpu::ModelDescription::addInitFunction(HostFunctionCallback*) %{
     try:
         func_callback = func_callback.__disown__()
     except:
         pass
 %}
-%feature("pythonprepend") flamegpu::ModelDescription::addStepFunctionCallback(HostFunctionCallback*) %{
+%feature("pythonprepend") flamegpu::ModelDescription::addStepFunction(HostFunctionCallback*) %{
     try:
         func_callback = func_callback.__disown__()
     except:
         pass
 %}
-%feature("pythonprepend") flamegpu::ModelDescription::addExitFunctionCallback(HostFunctionCallback*) %{
+%feature("pythonprepend") flamegpu::ModelDescription::addExitFunction(HostFunctionCallback*) %{
+    try:
+        func_callback = func_callback.__disown__()
+    except:
+        pass
+%}
+%feature("pythonprepend") flamegpu::ModelDescription::addExitCondition(HostConditionCallback*) %{
     try:
         func_callback = func_callback.__disown__()
     except:

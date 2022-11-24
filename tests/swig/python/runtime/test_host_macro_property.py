@@ -11,7 +11,7 @@ from pyflamegpu import *
 
 TEST_DIMS = [2, 3, 4, 5];
 
-class HostRead(pyflamegpu.HostFunctionCallback):
+class HostRead(pyflamegpu.HostFunction):
   def run(self,FLAMEGPU):
     t = FLAMEGPU.environment.getMacroPropertyUInt("int");
     a = 0;
@@ -42,7 +42,7 @@ FLAMEGPU_AGENT_FUNCTION(AgentWrite, flamegpu::MessageNone, flamegpu::MessageNone
 }
 """
 
-class HostWrite(pyflamegpu.HostFunctionCallback):
+class HostWrite(pyflamegpu.HostFunction):
   def run(self,FLAMEGPU):
     t = FLAMEGPU.environment.getMacroPropertyUInt("int");
     a = 0;
@@ -69,7 +69,7 @@ FLAMEGPU_AGENT_FUNCTION(AgentRead, flamegpu::MessageNone, flamegpu::MessageNone)
 }
 """
 
-class HostZero(pyflamegpu.HostFunctionCallback):
+class HostZero(pyflamegpu.HostFunction):
   def run(self,FLAMEGPU):
     t = FLAMEGPU.environment.getMacroPropertyUInt("int");
     t.zero();
@@ -90,7 +90,7 @@ FLAMEGPU_AGENT_FUNCTION(AgentReadZero, flamegpu::MessageNone, flamegpu::MessageN
 }
 """
 
-class HostArithmeticInit(pyflamegpu.HostFunctionCallback):
+class HostArithmeticInit(pyflamegpu.HostFunction):
   def run(self,FLAMEGPU):
     FLAMEGPU.environment.getMacroPropertyInt("int")[0] = 10;
     FLAMEGPU.environment.getMacroPropertyUInt("uint")[0] = 10;
@@ -102,7 +102,7 @@ class HostArithmeticInit(pyflamegpu.HostFunctionCallback):
     FLAMEGPU.environment.getMacroPropertyFloat("float")[0] = 10;
     FLAMEGPU.environment.getMacroPropertyDouble("double").set(10);  # alt
 
-class HostArithmetic(pyflamegpu.HostFunctionCallback):
+class HostArithmetic(pyflamegpu.HostFunction):
   def run(self,FLAMEGPU):
         # int
         t = FLAMEGPU.environment.getMacroPropertyInt("int");
@@ -439,7 +439,7 @@ class HostMacroPropertyTest(TestCase):
         agent.newVariableUInt("a");
         t = agent.newRTCFunction("agentwrite", AgentWrite);
         model.newLayer().addAgentFunction(t);
-        model.newLayer().addHostFunctionCallback(HostRead());
+        model.newLayer().addHostFunction(HostRead());
         total_agents = TEST_DIMS[0] * TEST_DIMS[1] * TEST_DIMS[2] * TEST_DIMS[3];
         population = pyflamegpu.AgentVector(agent, total_agents);
         a = 0;
@@ -476,7 +476,7 @@ class HostMacroPropertyTest(TestCase):
         agent.newVariableUInt("w");
         agent.newVariableUInt("a");
         t = agent.newRTCFunction("agentread", AgentRead);
-        model.newLayer().addHostFunctionCallback(HostWrite());
+        model.newLayer().addHostFunction(HostWrite());
         model.newLayer().addAgentFunction(t);
         total_agents = TEST_DIMS[0] * TEST_DIMS[1] * TEST_DIMS[2] * TEST_DIMS[3];
         population = pyflamegpu.AgentVector(agent, total_agents);
@@ -523,7 +523,7 @@ class HostMacroPropertyTest(TestCase):
         t1 = agent.newRTCFunction("agentwrite", AgentWrite);
         t2 = agent.newRTCFunction("agentread", AgentReadZero);
         model.newLayer().addAgentFunction(t1);
-        model.newLayer().addHostFunctionCallback(HostZero());
+        model.newLayer().addHostFunction(HostZero());
         model.newLayer().addAgentFunction(t2);
         total_agents = TEST_DIMS[0] * TEST_DIMS[1] * TEST_DIMS[2] * TEST_DIMS[3];
         population = pyflamegpu.AgentVector(agent, total_agents);
@@ -569,8 +569,8 @@ class HostMacroPropertyTest(TestCase):
         model.Environment().newMacroPropertyDouble("double");
         # Setup agent fn
         model.newAgent("agent");
-        model.newLayer().addHostFunctionCallback(HostArithmeticInit());
-        model.newLayer().addHostFunctionCallback(HostArithmetic());
+        model.newLayer().addHostFunction(HostArithmeticInit());
+        model.newLayer().addHostFunction(HostArithmetic());
         # Do Sim
         cudaSimulation = pyflamegpu.CUDASimulation(model);
         cudaSimulation.SimulationConfig().steps = 1;

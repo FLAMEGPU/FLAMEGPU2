@@ -219,7 +219,7 @@ class LayerDescription : public CLayerDescription {
      * @throw exception::InvalidHostFunc If the function has already been added to the layer
      * @note ONLY USED INTERNALLY AND BY PYTHON API - DO NOT CALL IN C++ BUILD
      */
-    void _addHostFunctionCallback(HostFunctionCallback *func_callback);
+    void _addHostFunction(HostFunctionCallback *func_callback);
 
 #ifdef SWIG
     /**
@@ -230,7 +230,7 @@ class LayerDescription : public CLayerDescription {
      * @throw exception::InvalidHostFunc If the function has already been added to the layer
      * @note ONLY USED INTERNALLY AND BY PYTHON API - DO NOT CALL IN C++ BUILD
      */
-    inline void addHostFunctionCallback(HostFunctionCallback *func_callback);
+    inline void addHostFunction(HostFunctionCallback *func_callback);
 #endif
 };
 
@@ -336,8 +336,8 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
 }
 
 #ifdef SWIG
-void LayerDescription::addHostFunctionCallback(HostFunctionCallback* func_callback) {
-    this->_addHostFunctionCallback(func_callback);
+void LayerDescription::addHostFunction(HostFunctionCallback* func_callback) {
+    this->_addHostFunction(func_callback);
 }
 flamegpu::size_type CLayerDescription::getHostFunctionCallbackCount() const {
     // Safe down-cast

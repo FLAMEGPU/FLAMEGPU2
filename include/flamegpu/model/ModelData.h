@@ -15,7 +15,7 @@
 namespace flamegpu {
 
 class HostFunctionCallback;
-class HostFunctionConditionCallback;
+class HostConditionCallback;
 class DependencyGraph;
 struct EnvironmentData;
 struct AgentData;
@@ -75,7 +75,7 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      * Vector of host condition callback pointers.
      * Uses a vector rather than a set to preserve order.
      */
-    typedef std::vector<HostFunctionConditionCallback*> HostFunctionConditionCallbackVector;
+    typedef std::vector<HostConditionCallback*> HostConditionCallbackVector;
     /**
      * Vector of Exit function pointers.
      * Uses a vector rather than a set to preserve order.
@@ -122,7 +122,7 @@ struct ModelData : std::enable_shared_from_this<ModelData>{
      * Holds pointers to all of the exit conditions used by the model
      */
     ExitConditionVector exitConditions;
-    HostFunctionConditionCallbackVector exitConditionCallbacks;
+    HostConditionCallbackVector exitConditionCallbacks;
     /**
      * Holds all of the model's environment property definitions
      */

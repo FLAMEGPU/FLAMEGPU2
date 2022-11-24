@@ -10,28 +10,28 @@ Note: Casting random floats to in in python causes an off by one error
 
 AGENT_COUNT = 1024
 
-class sort_ascending_float(pyflamegpu.HostFunctionCallback):
+class sort_ascending_float(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
         FLAMEGPU.agent("agent").sortFloat("float", pyflamegpu.HostAgentAPI.Asc)
         
-class sort_descending_float(pyflamegpu.HostFunctionCallback):
+class sort_descending_float(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
         FLAMEGPU.agent("agent").sortFloat("float",  pyflamegpu.HostAgentAPI.Desc)
     
-class sort_ascending_int(pyflamegpu.HostFunctionCallback):
+class sort_ascending_int(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
     def run(self, FLAMEGPU):
         FLAMEGPU.agent("agent").sortInt("int",  pyflamegpu.HostAgentAPI.Asc)
    
-class sort_descending_int(pyflamegpu.HostFunctionCallback):
+class sort_descending_int(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -47,7 +47,7 @@ class HostAgentSort(TestCase):
         agent.newVariableFloat("float")
         agent.newVariableFloat("spare")
         func = sort_ascending_float()
-        model.newLayer().addHostFunctionCallback(func)
+        model.newLayer().addHostFunction(func)
         rand.seed(a=31313131)
         # Init pop
         pop = pyflamegpu.AgentVector(agent, AGENT_COUNT)
@@ -82,7 +82,7 @@ class HostAgentSort(TestCase):
         agent.newVariableFloat("float")
         agent.newVariableFloat("spare")
         func = sort_descending_float()
-        model.newLayer().addHostFunctionCallback(func)
+        model.newLayer().addHostFunction(func)
         rand.seed(a=31313131)
 
         # Init pop
@@ -119,7 +119,7 @@ class HostAgentSort(TestCase):
         agent.newVariableInt("int")
         agent.newVariableInt("spare")
         func = sort_ascending_int()
-        model.newLayer().addHostFunctionCallback(func)
+        model.newLayer().addHostFunction(func)
         rand.seed(a=31313131)
 
         # Init pop
@@ -159,7 +159,7 @@ class HostAgentSort(TestCase):
         agent.newVariableInt("int")
         agent.newVariableInt("spare")
         func = sort_descending_int()
-        model.newLayer().addHostFunctionCallback(func)
+        model.newLayer().addHostFunction(func)
         rand.seed(a=31313131)
 
         # Init pop

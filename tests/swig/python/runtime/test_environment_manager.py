@@ -37,7 +37,7 @@ class MiniSim:
         self.cudaSimulation.getPopulationData(self.population)
 
 
-class AlignTest(pyflamegpu.HostFunctionCallback):
+class AlignTest(pyflamegpu.HostFunction):
     """
     pyflamegpu requires step functions to be a class which extends the StepFunction base class.
     This class must extend the run function
@@ -73,7 +73,7 @@ class AlignTest(pyflamegpu.HostFunctionCallback):
         assert self.f == 13.0
 
 
-class Multi_ms1(pyflamegpu.HostFunctionCallback):
+class Multi_ms1(pyflamegpu.HostFunction):
     """
     pyflamegpu requires step functions to be a class which extends the StepFunction base class.
     This class must extend the run function
@@ -99,7 +99,7 @@ class Multi_ms1(pyflamegpu.HostFunctionCallback):
         assert self.ms1_float == MS1_VAL
         assert self.ms1_float2 == MS1_VAL2
         
-class Multi_ms2(pyflamegpu.HostFunctionCallback):
+class Multi_ms2(pyflamegpu.HostFunction):
     """
     pyflamegpu requires step functions to be a class which extends the StepFunction base class.
     This class must extend the run function
@@ -136,7 +136,7 @@ class EnvironmentManagerTest(TestCase):
         ms.env.newPropertyFloat("f", 13.0)
         # simulate
         at = AlignTest()
-        ms.model.addStepFunctionCallback(at)
+        ms.model.addStepFunction(at)
         ms.run()
         # apply assertions
         at.apply_assertions()
@@ -161,8 +161,8 @@ class EnvironmentManagerTest(TestCase):
         ms2.env.newPropertyFloat("ms2_float", MS2_VAL)
         multi_ms1 = Multi_ms1()
         multi_ms2 = Multi_ms2()
-        ms1.model.addStepFunctionCallback(multi_ms1)
-        ms2.model.addStepFunctionCallback(multi_ms2)
+        ms1.model.addStepFunction(multi_ms1)
+        ms2.model.addStepFunction(multi_ms2)
         ms1.run()
         ms2.run()
 

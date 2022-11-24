@@ -9,7 +9,7 @@ externalCounter = 0
     
 
 
-class IncrementCounter(pyflamegpu.HostFunctionCallback):
+class IncrementCounter(pyflamegpu.HostFunction):
     """
     pyflamegpu requires step functions to be a class which extends the StepFunction base class.
     This class must extend the handle function
@@ -25,7 +25,7 @@ class IncrementCounter(pyflamegpu.HostFunctionCallback):
         print ("Hello from step function")
         externalCounter += 1
         
-class Check_setEnvironmentProperty(pyflamegpu.HostFunctionCallback):
+class Check_setEnvironmentProperty(pyflamegpu.HostFunction):
     # Override C++ method: virtual void run(FLAMEGPU_HOST_API*);
     def run(self, FLAMEGPU):
       # Check env property has expected value
@@ -267,7 +267,7 @@ class TestSimulation(TestCase):
         pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         # Create IncrementCounter object to add a step function to the special addPythonStepFunction wrapper
         inc = IncrementCounter()
-        m.addStepFunctionCallback(inc)
+        m.addStepFunction(inc)
         c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
         externalCounter = 0
@@ -290,7 +290,7 @@ class TestSimulation(TestCase):
         pop = pyflamegpu.AgentVector(a, AGENT_COUNT)
         # Create IncrementCounter object to add a step function to the special addPythonStepFunction wrapper
         inc = IncrementCounter()
-        m.addStepFunctionCallback(inc)
+        m.addStepFunction(inc)
         c = pyflamegpu.CUDASimulation(m)
         c.setPopulationData(pop)
         externalCounter = 0
@@ -473,7 +473,7 @@ class TestSimulation(TestCase):
         m.Environment().newPropertyInt("int", 2);
         m.Environment().newPropertyArrayInt("int2", [ 12, 13 ]);
         m.Environment().newPropertyArrayInt("int3", [ 56, 57, 58 ]);
-        m.newLayer().addHostFunctionCallback(Check_setEnvironmentProperty());
+        m.newLayer().addHostFunction(Check_setEnvironmentProperty());
         s = pyflamegpu.CUDASimulation(m);
         s.SimulationConfig().steps = 1;
         # Test the getters work

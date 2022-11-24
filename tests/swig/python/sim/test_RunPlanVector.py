@@ -7,7 +7,7 @@ from random import randint
 #     @pytest.mark.skip(reason="Not yet implemented")
 
     # Exit function condition which leads to 0 steps being allowed for plans within a vector.
-class exitcond(pyflamegpu.HostFunctionConditionCallback):
+class exitcond(pyflamegpu.HostCondition):
     def test___init__(self):
         super().__init__()
 
@@ -72,7 +72,7 @@ class TestRunPlanVector(TestCase):
         # If the model has an exit condition, then it will not throw.
         modelWithExit = pyflamegpu.ModelDescription("modelWithExit")
         f = exitcond()
-        modelWithExit.addExitConditionCallback(f)
+        modelWithExit.addExitCondition(f)
         plansWithExit = pyflamegpu.RunPlanVector(modelWithExit, 1)
         # Do not expect an exception iff allow_o_steps is set.
         plansWithExit.setSteps(0)

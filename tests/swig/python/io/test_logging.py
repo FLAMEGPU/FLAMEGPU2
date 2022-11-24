@@ -9,7 +9,7 @@ FUNCTION_NAME1 = "Func1";
 HOST_FUNCTION_NAME1 = "Func2";
 
 
-class step_fn1(pyflamegpu.HostFunctionCallback):
+class step_fn1(pyflamegpu.HostFunction):
     def run(self, FLAMEGPU):
         # increment all properties
         FLAMEGPU.environment.setPropertyFloat("float_prop", FLAMEGPU.environment.getPropertyFloat("float_prop") + 1.0);
@@ -23,7 +23,7 @@ class step_fn1(pyflamegpu.HostFunctionCallback):
         FLAMEGPU.environment.setPropertyArrayInt("int_prop_array", [b[0] + 1, b[1] + 1, b[2] + 1]);
         FLAMEGPU.environment.setPropertyArrayUInt("uint_prop_array", [c[0] + 1, c[1] + 1, c[2] + 1, c[3] + 1]);
     
-class logging_ensemble_init(pyflamegpu.HostFunctionCallback):
+class logging_ensemble_init(pyflamegpu.HostFunction):
     def run(self, FLAMEGPU):
         instance_id  = FLAMEGPU.environment.getPropertyInt("instance_id");
         for i in range(instance_id, instance_id + 101):
@@ -70,7 +70,7 @@ class LoggingTest(TestCase):
         f1 = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1);
         m.newLayer().addAgentFunction(f1);
         sf1 = step_fn1();
-        m.addStepFunctionCallback(sf1);
+        m.addStepFunction(sf1);
         m.Environment().newPropertyFloat("float_prop", 1.0);
         m.Environment().newPropertyInt("int_prop", 1);
         m.Environment().newPropertyUInt("uint_prop", 1);
@@ -184,7 +184,7 @@ class LoggingTest(TestCase):
         f1 = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1);
         m.newLayer().addAgentFunction(f1);
         sf1 = step_fn1();
-        m.addStepFunctionCallback(sf1);
+        m.addStepFunction(sf1);
         m.Environment().newPropertyFloat("float_prop", 1.0);
         m.Environment().newPropertyInt("int_prop", 1);
         m.Environment().newPropertyUInt("uint_prop", 1);
@@ -346,10 +346,10 @@ class LoggingTest(TestCase):
         a.newVariableUInt("uint_var");
         f1 = a.newRTCFunction(FUNCTION_NAME1, self.agent_fn1);
         if1 = logging_ensemble_init();
-        m.addInitFunctionCallback(if1);  # This causes an access violation?
+        m.addInitFunction(if1);  # This causes an access violation?
         m.newLayer().addAgentFunction(f1);
         sf1 = step_fn1();
-        m.addStepFunctionCallback(sf1);  # This causes an access violation?
+        m.addStepFunction(sf1);  # This causes an access violation?
         m.Environment().newPropertyInt("instance_id", 0); # This will act as the modifier for ensemble instances, only impacting the init fn
         m.Environment().newPropertyFloat("float_prop", 1.0);
         m.Environment().newPropertyInt("int_prop", 1);
