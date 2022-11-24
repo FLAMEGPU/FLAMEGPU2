@@ -26,7 +26,7 @@ class HostFunctionCallback {
  * Different to HostFunctionCallback as it returns a value.
  * This is mostly required to allow swig wrapping of host functions in a target language
  */
-class HostFunctionConditionCallback {
+class HostConditionCallback {
  public:
      /**
       * This is the method that will be implemented by a user in Python to define their host condition
@@ -36,7 +36,7 @@ class HostFunctionConditionCallback {
     /**
      * Virtual destructor for correct inheritance behaviour
      */
-    virtual ~HostFunctionConditionCallback() {}
+    virtual ~HostConditionCallback() {}
 };
 
 }  // namespace flamegpu

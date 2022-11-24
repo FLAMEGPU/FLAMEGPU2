@@ -11,7 +11,7 @@ INT16_MAX = 32767
 INT32_MAX = 2147483647  
 INT64_MAX = 9223372036854775807
 
-class step_func_sum(pyflamegpu.HostFunctionCallback):
+class step_func_sum(pyflamegpu.HostFunction):
     def __init__(self, Type, variable):
         super().__init__()
         self.Type = Type
@@ -42,7 +42,7 @@ class MiniSim():
         
         # create a sum step function
         self.step = step_func_sum(Type, variable)
-        self.model.addStepFunctionCallback(self.step)
+        self.model.addStepFunction(self.step)
         
         # create a population and set random values to be sumed
         self.population = pyflamegpu.AgentVector(self.agent, TEST_LEN)

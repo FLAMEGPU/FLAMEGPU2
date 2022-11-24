@@ -5,7 +5,7 @@ import random as rand
 
 TEST_LEN = 101
 
-class step_func_mean_sd(pyflamegpu.HostFunctionCallback):
+class step_func_mean_sd(pyflamegpu.HostFunction):
     def __init__(self, Type, variable):
         super().__init__()
         self.Type = Type
@@ -34,7 +34,7 @@ class MiniSim():
         
         # create a mean sd step function
         self.step = step_func_mean_sd(Type, variable)
-        self.model.addStepFunctionCallback(self.step)
+        self.model.addStepFunction(self.step)
         
         # create a population and set random values to be sumed
         self.population = pyflamegpu.AgentVector(self.agent, TEST_LEN)

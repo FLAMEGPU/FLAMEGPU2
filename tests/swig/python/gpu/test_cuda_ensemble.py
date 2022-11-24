@@ -10,7 +10,7 @@ sleepDurationMilliseconds = 500
 tracked_err_ct = 0;
 tracked_runs_ct = 0;
 
-class simulateInit(pyflamegpu.HostFunctionCallback):
+class simulateInit(pyflamegpu.HostFunction):
     # Init should always be 0th iteration/step
     def __init__(self):
         super().__init__()
@@ -21,7 +21,7 @@ class simulateInit(pyflamegpu.HostFunctionCallback):
         agent = FLAMEGPU.agent("Agent")
         for i in range(POPULATION_TO_GENERATE):
             agent.newAgent().setVariableUInt("counter", 0)
-class simulateExit(pyflamegpu.HostFunctionCallback):
+class simulateExit(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -29,7 +29,7 @@ class simulateExit(pyflamegpu.HostFunctionCallback):
         totalCounters = FLAMEGPU.agent("Agent").sumUInt("counter")
         # Add to the  file scoped atomic sum of sums. @todo
         # testSimulateSumOfSums += totalCounters
-class elapsedInit(pyflamegpu.HostFunctionCallback):
+class elapsedInit(pyflamegpu.HostFunction):
     # Init should always be 0th iteration/step
     def __init__(self):
         super().__init__()
@@ -40,7 +40,7 @@ class elapsedInit(pyflamegpu.HostFunctionCallback):
         agent = FLAMEGPU.agent("Agent")
         for i in range(POPULATION_TO_GENERATE):
             agent.newAgent().setVariableUInt("counter", 0)
-class elapsedStep(pyflamegpu.HostFunctionCallback):
+class elapsedStep(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -48,7 +48,7 @@ class elapsedStep(pyflamegpu.HostFunctionCallback):
         # Sleep each thread for a duration of time.
         seconds = sleepDurationMilliseconds / 1000.0
         time.sleep(seconds)
-class throwException(pyflamegpu.HostFunctionCallback):
+class throwException(pyflamegpu.HostFunction):
     i = 0;
     def __init__(self):
         super().__init__()
@@ -264,9 +264,9 @@ class TestCUDAEnsemble(TestCase):
         # Control flow
         model.newLayer().addAgentFunction(afn)
         init = simulateInit()
-        model.addInitFunctionCallback(init)
+        model.addInitFunction(init)
         exitfn = simulateExit()
-        model.addExitFunctionCallback(exitfn)
+        model.addExitFunction(exitfn)
         # Crete a small runplan, using a different number of steps per sim.
         expectedResult = 0
         plans = pyflamegpu.RunPlanVector(model, planCount)
@@ -409,9 +409,9 @@ class TestCUDAEnsemble(TestCase):
         # Control flow
         model.newLayer().addAgentFunction(afn)
         init = elapsedInit()
-        model.addInitFunctionCallback(init)
+        model.addInitFunction(init)
         step = elapsedStep()
-        model.addStepFunctionCallback(step)
+        model.addStepFunction(step)
         # Create a single run.
         plans = pyflamegpu.RunPlanVector(model, 1)
         plans[0].setSteps(1)
@@ -445,9 +445,9 @@ class TestCUDAEnsemble(TestCase):
         agent = model.newAgent("Agent")
         agent.newVariableUInt("counter", 0)
         init = elapsedInit()
-        model.addInitFunctionCallback(init)
+        model.addInitFunction(init)
         step = throwException()
-        model.addStepFunctionCallback(step)
+        model.addStepFunction(step)
         # Create a set of 10 Run plans
         ENSEMBLE_COUNT = 10
         plans = pyflamegpu.RunPlanVector(model, ENSEMBLE_COUNT)
@@ -481,9 +481,9 @@ class TestCUDAEnsemble(TestCase):
         agent = model.newAgent("Agent")
         agent.newVariableUInt("counter", 0)
         init = elapsedInit()
-        model.addInitFunctionCallback(init)
+        model.addInitFunction(init)
         step = throwException()
-        model.addStepFunctionCallback(step)
+        model.addStepFunction(step)
         # Create a set of 10 Run plans
         ENSEMBLE_COUNT = 10
         plans = pyflamegpu.RunPlanVector(model, ENSEMBLE_COUNT)
@@ -518,9 +518,9 @@ class TestCUDAEnsemble(TestCase):
         agent = model.newAgent("Agent")
         agent.newVariableUInt("counter", 0)
         init = elapsedInit()
-        model.addInitFunctionCallback(init)
+        model.addInitFunction(init)
         step = throwException()
-        model.addStepFunctionCallback(step)
+        model.addStepFunction(step)
         # Create a set of 10 Run plans
         ENSEMBLE_COUNT = 10
         plans = pyflamegpu.RunPlanVector(model, ENSEMBLE_COUNT)

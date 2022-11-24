@@ -104,7 +104,7 @@ FLAMEGPU_AGENT_FUNCTION(in_simple, flamegpu::MessageBruteForce, flamegpu::Messag
     return flamegpu::ALIVE;
 }"""
 
-class InitPopulationEvenOutputOnly(pyflamegpu.HostFunctionCallback):
+class InitPopulationEvenOutputOnly(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -117,7 +117,7 @@ class InitPopulationEvenOutputOnly(pyflamegpu.HostFunctionCallback):
             instance.setVariableUInt("count", 0)
             instance.setVariableUInt("sum", 0)
 
-class AssertEvenOutputOnly(pyflamegpu.HostFunctionCallback):
+class AssertEvenOutputOnly(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -139,7 +139,7 @@ class AssertEvenOutputOnly(pyflamegpu.HostFunctionCallback):
                 assert a.getVariableUInt("count") == expectedCountOdd
                 assert a.getVariableUInt("sum") == 0
 
-class AssertPersistent(pyflamegpu.HostFunctionCallback):
+class AssertPersistent(pyflamegpu.HostFunction):
     def __init__(self):
         super().__init__()
 
@@ -442,10 +442,10 @@ class TestMessage_BruteForce(TestCase):
         model.newLayer().addAgentFunction(inf)
         # init function for pop
         init_population_even_output_only = InitPopulationEvenOutputOnly()
-        model.addInitFunctionCallback(init_population_even_output_only)
+        model.addInitFunction(init_population_even_output_only)
         # add a step function which validates the correct number of messages was read
         assert_even_output_only = AssertEvenOutputOnly()
-        model.addStepFunctionCallback(assert_even_output_only)
+        model.addStepFunction(assert_even_output_only)
 
         cudaSimulation = pyflamegpu.CUDASimulation(model)
         # Execute model
@@ -476,10 +476,10 @@ class TestMessage_BruteForce(TestCase):
         model.newLayer().addAgentFunction(inf)
         # init function for pop
         init_population_even_output_only = InitPopulationEvenOutputOnly()
-        model.addInitFunctionCallback(init_population_even_output_only)
+        model.addInitFunction(init_population_even_output_only)
         # add a step function which validates the correct number of messages was read
         assert_persistent = AssertPersistent()
-        model.addStepFunctionCallback(assert_persistent)
+        model.addStepFunction(assert_persistent)
 
         cudaSimulation = pyflamegpu.CUDASimulation(model)
         # Execute model

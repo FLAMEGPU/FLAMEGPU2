@@ -7,7 +7,7 @@ XML_FILE_NAME = "test.xml"
 JSON_FILE_NAME = "test.json"
 AGENT_COUNT = 100
 
-class ValidateEnv(pyflamegpu.HostFunctionCallback):
+class ValidateEnv(pyflamegpu.HostFunction):
     """
     pyflamegpu requires step functions to be a class which extends the StepFunction base class.
     This class must extend the run function
@@ -87,7 +87,7 @@ class ValidateEnv(pyflamegpu.HostFunctionCallback):
         assert self.uint8_t_a == ( 21, 0, 1 )
         assert self.validate_has_run == True
 
-class ResetEnv(pyflamegpu.HostFunctionCallback):
+class ResetEnv(pyflamegpu.HostFunction):
     """
     pyflamegpu requires step functions to be a class which extends the StepFunction base class.
     This class must extend the run function
@@ -199,8 +199,8 @@ def io_test_fixture(IO_FILENAME):
     # Add the validate and reset step functions in specific order.
     validate = ValidateEnv()
     reset = ResetEnv()
-    m.newLayer().addHostFunctionCallback(validate)
-    m.newLayer().addHostFunctionCallback(reset)
+    m.newLayer().addHostFunction(validate)
+    m.newLayer().addHostFunction(reset)
     
     # Run Export
     am_export = pyflamegpu.CUDASimulation(m)

@@ -122,7 +122,7 @@ FLAMEGPU_AGENT_FUNCTION(UpdateId100, flamegpu::MessageNone, flamegpu::MessageNon
     return flamegpu::ALIVE;
 }
 """
-class ExitAlways(pyflamegpu.HostFunctionConditionCallback):
+class ExitAlways(pyflamegpu.HostCondition):
     def __init__(self):
         super().__init__()
 
@@ -171,7 +171,7 @@ class TestCUDASubAgent(TestCase):
         sm.newLayer().addAgentFunction(fn_1);
         sm.newLayer().addAgentFunction(fn_2);
         exitcdn = ExitAlways()
-        sm.addExitConditionCallback(exitcdn);
+        sm.addExitCondition(exitcdn);
         
         m = pyflamegpu.ModelDescription(MODEL_NAME);
         ma = m.newAgent(AGENT_NAME);
@@ -226,7 +226,7 @@ class TestCUDASubAgent(TestCase):
         fn_1 = a.newRTCFunction("1", AddOne);
         sm.newLayer().addAgentFunction(fn_1);
         exitcdn = ExitAlways()
-        sm.addExitConditionCallback(exitcdn);
+        sm.addExitCondition(exitcdn);
         
         m = pyflamegpu.ModelDescription(MODEL_NAME);
         ma = m.newAgent(AGENT_NAME);
@@ -303,7 +303,7 @@ class TestCUDASubAgent(TestCase):
         fn_1.setAllowAgentDeath(True);
         sm.newLayer().addAgentFunction(fn_1);
         exitcdn = ExitAlways()
-        sm.addExitConditionCallback(exitcdn);
+        sm.addExitCondition(exitcdn);
         
         m = pyflamegpu.ModelDescription(MODEL_NAME);
         ma = m.newAgent(AGENT_NAME);
@@ -378,7 +378,7 @@ class TestCUDASubAgent(TestCase):
         fn_1.setAllowAgentDeath(True);
         sm.newLayer().addAgentFunction(fn_1);
         exitcdn = ExitAlways()
-        sm.addExitConditionCallback(exitcdn);
+        sm.addExitCondition(exitcdn);
         
         # Define Proxy SubModel
         psm = pyflamegpu.ModelDescription(SUB_MODEL_NAME);
@@ -389,7 +389,7 @@ class TestCUDASubAgent(TestCase):
         psmd = psm.newSubModel("sub", sm);
         psmd.bindAgent(AGENT_NAME, AGENT_NAME, True, True);  # auto map vars and states
         psm.newLayer().addSubModel("sub");
-        psm.addExitConditionCallback(exitcdn);
+        psm.addExitCondition(exitcdn);
         
         m = pyflamegpu.ModelDescription(MODEL_NAME);
         ma = m.newAgent(AGENT_NAME);

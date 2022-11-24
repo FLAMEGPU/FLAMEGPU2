@@ -8,11 +8,11 @@ import pytest
 from unittest import TestCase
 from pyflamegpu import *
 
-class ExitAlways(pyflamegpu.HostFunctionConditionCallback):
+class ExitAlways(pyflamegpu.HostCondition):
     def run(self, FLAMEGPU):
       return pyflamegpu.EXIT;
       
-class Host_Write_5(pyflamegpu.HostFunctionCallback):
+class Host_Write_5(pyflamegpu.HostFunction):
     def run(self, FLAMEGPU):
         print("hostwrite5")
         a = FLAMEGPU.environment.getMacroPropertyUInt("a");
@@ -20,7 +20,7 @@ class Host_Write_5(pyflamegpu.HostFunctionCallback):
         b = FLAMEGPU.environment.getMacroPropertyUInt("b");
         b[0] = 21;
 
-class Host_Read_5(pyflamegpu.HostFunctionCallback):
+class Host_Read_5(pyflamegpu.HostFunction):
     def run(self, FLAMEGPU):
         print("hostread5")
         result = FLAMEGPU.environment.getMacroPropertyUInt("a");
@@ -42,7 +42,7 @@ FLAMEGPU_AGENT_FUNCTION(Agent_Read_Write_5, flamegpu::MessageNone, flamegpu::Mes
     return flamegpu::ALIVE;
 }
 """
-class Host_Agent_Read_5(pyflamegpu.HostFunctionCallback):
+class Host_Agent_Read_5(pyflamegpu.HostFunction):
     def run(self, FLAMEGPU):
         agt = FLAMEGPU.agent("test");
         pop = agt.getPopulationData();
@@ -56,11 +56,11 @@ class SubCUDAMacroEnvironmentTest(TestCase):
         m2 = pyflamegpu.ModelDescription("sub");
         # Define SubModel
         exit_always = ExitAlways()
-        m2.addExitConditionCallback(exit_always);
+        m2.addExitCondition(exit_always);
         m2.Environment().newMacroPropertyUInt("a");
         m2.Environment().newMacroPropertyUInt("b");
         hw5 = Host_Write_5();
-        m2.addStepFunctionCallback(hw5);
+        m2.addStepFunction(hw5);
         m2.newAgent("test");
         m = pyflamegpu.ModelDescription("host");
         # Define Model
@@ -71,7 +71,7 @@ class SubCUDAMacroEnvironmentTest(TestCase):
         senv.autoMap();
         m.newLayer().addSubModel(sm);
         hr5 = Host_Read_5();
-        m.newLayer().addHostFunctionCallback(hr5);
+        m.newLayer().addHostFunction(hr5);
         pop = pyflamegpu.AgentVector(m.newAgent("test"), 1);
 
         sim = pyflamegpu.CUDASimulation(m);
@@ -83,7 +83,7 @@ class SubCUDAMacroEnvironmentTest(TestCase):
         m2 = pyflamegpu.ModelDescription("sub");
         # Define SubModel
         exit_always = ExitAlways()
-        m2.addExitConditionCallback(exit_always);
+        m2.addExitCondition(exit_always);
         m2.Environment().newMacroPropertyUInt("a");
         m2.Environment().newMacroPropertyUInt("b");
         af = m2.newAgent("test").newRTCFunction("t", Agent_Write_5);
@@ -99,7 +99,7 @@ class SubCUDAMacroEnvironmentTest(TestCase):
         sm.bindAgent("test", "test");
         m.newLayer().addSubModel(sm);
         hr5 = Host_Read_5();
-        m.newLayer().addHostFunctionCallback(hr5);
+        m.newLayer().addHostFunction(hr5);
         pop = pyflamegpu.AgentVector(agt, 1);
 
         sim = pyflamegpu.CUDASimulation(m);
@@ -111,11 +111,11 @@ class SubCUDAMacroEnvironmentTest(TestCase):
         m2 = pyflamegpu.ModelDescription("sub");
         # Define SubModel
         exit_always = ExitAlways()
-        m2.addExitConditionCallback(exit_always);
+        m2.addExitCondition(exit_always);
         m2.Environment().newMacroPropertyUInt("a");
         m2.Environment().newMacroPropertyUInt("b");
         hr5 = Host_Read_5();
-        m2.addStepFunctionCallback(hr5);
+        m2.addStepFunction(hr5);
         m2.newAgent("test");
         m = pyflamegpu.ModelDescription("host");
         # Define Model
@@ -126,7 +126,7 @@ class SubCUDAMacroEnvironmentTest(TestCase):
         senv = sm.SubEnvironment();
         senv.autoMap();
         hw5 = Host_Write_5();
-        m.newLayer().addHostFunctionCallback(hw5);
+        m.newLayer().addHostFunction(hw5);
         m.newLayer().addSubModel(sm);
         pop = pyflamegpu.AgentVector(agt, 1);
 
@@ -139,7 +139,7 @@ class SubCUDAMacroEnvironmentTest(TestCase):
         m2 = pyflamegpu.ModelDescription("sub");
         # Define SubModel
         exit_always = ExitAlways()
-        m2.addExitConditionCallback(exit_always);
+        m2.addExitCondition(exit_always);
         m2.Environment().newMacroPropertyUInt("a");
         m2.Environment().newMacroPropertyUInt("b");
         agt = m2.newAgent("test");
@@ -148,7 +148,7 @@ class SubCUDAMacroEnvironmentTest(TestCase):
         af = agt.newRTCFunction("arw", Agent_Read_Write_5);
         m2.newLayer().addAgentFunction(af);
         har5 = Host_Agent_Read_5();
-        m2.addStepFunctionCallback(har5);
+        m2.addStepFunction(har5);
         m = pyflamegpu.ModelDescription("host");
         # Define Model
         m.Environment().newMacroPropertyUInt("a");
@@ -159,7 +159,7 @@ class SubCUDAMacroEnvironmentTest(TestCase):
         senv.autoMap();
         sm.bindAgent("test", "test");
         hw5 = Host_Write_5();
-        m.newLayer().addHostFunctionCallback(hw5);
+        m.newLayer().addHostFunction(hw5);
         m.newLayer().addSubModel(sm);
         pop = pyflamegpu.AgentVector(agt, 1);
 
