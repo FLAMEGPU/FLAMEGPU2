@@ -1288,7 +1288,7 @@ FLAMEGPU_STEP_FUNCTION(HostAgentBirthAutoSync_step_resize_up) {
     // Check the size has changed correctly
     ASSERT_EQ(av.size(), AGENT_COUNT + 8u);
     // Test again (need to test each with it's own update)
-    for (int i = 0; i < static_cast<int>(AGENT_COUNT + 3); ++i) {
+    for (int i = 0; i < static_cast<int>(AGENT_COUNT + 8); ++i) {
         if (static_cast<unsigned int>(i) < AGENT_COUNT) {
             ASSERT_EQ(av[i].getVariable<int>("int"), i);
         } else if (static_cast<unsigned int>(i) < AGENT_COUNT + 4u) {
