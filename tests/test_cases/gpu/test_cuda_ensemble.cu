@@ -248,6 +248,13 @@ FLAMEGPU_AGENT_FUNCTION(simulateAgentFn, flamegpu::MessageNone, flamegpu::Messag
     FLAMEGPU->setVariable<int>("counter", FLAMEGPU->getVariable<int>("counter") + 1);
     return flamegpu::ALIVE;
 }
+const char* simulateAgentFn_src = R"###(
+FLAMEGPU_AGENT_FUNCTION(simulateAgentFn, flamegpu::MessageNone, flamegpu::MessageNone) {
+    // Increment agent's counter by 1.
+    FLAMEGPU->setVariable<int>("counter", FLAMEGPU->getVariable<int>("counter") + 1);
+    return flamegpu::ALIVE;
+}
+)###";
 FLAMEGPU_INIT_FUNCTION(simulateInit) {
     // Generate a basic pop
     const uint32_t POPULATION_TO_GENERATE = FLAMEGPU->environment.getProperty<uint32_t>("POPULATION_TO_GENERATE");
@@ -287,6 +294,50 @@ TEST(TestCUDAEnsemble, simulate) {
     flamegpu::RunPlanVector plans(model, planCount);
     for (uint32_t idx = 0; idx < plans.size(); idx++) {
         auto &plan = plans[idx];
+        plan.setSteps(idx + 1);  // Can't have 0 steps without exit condition
+        // Increment the expected result based on the number of steps.
+        expectedResult += (idx + 1) * populationSize;
+    }
+    // Create an ensemble
+    flamegpu::CUDAEnsemble ensemble(model);
+    // Make it quiet to avoid outputting during the test suite
+    ensemble.Config().verbosity = Verbosity::Quiet;
+    // Simulate the ensemble,
+    EXPECT_NO_THROW(ensemble.simulate(plans));
+    // Get the sum of sums from the atomic.
+    uint64_t atomicResult = testSimulateSumOfSums.load();
+    // Compare against the epxected value
+    EXPECT_EQ(atomicResult, expectedResult);
+
+    // An exception should be thrown if the Plan and Ensemble are for different models.
+    flamegpu::ModelDescription modelTwo("two");
+    flamegpu::RunPlanVector modelTwoPlans(modelTwo, 1);
+    EXPECT_THROW(ensemble.simulate(modelTwoPlans), flamegpu::exception::InvalidArgument);
+    // Exceptions can also be thrown if output_directory cannot be created, but I'm unsure how to reliably test this cross platform.
+}
+TEST(TestCUDAEnsemble, simulate_rtc) {
+    // Reset the atomic sum of sums to 0. Just in case.
+    testSimulateSumOfSums = 0;
+    // Number of simulations to run.
+    constexpr uint32_t planCount = 2u;
+    constexpr uint32_t populationSize = 32u;
+    // Create a model containing atleast one agent type and function.
+    flamegpu::ModelDescription model("test");
+    // Environmental constant for initial population
+    model.Environment().newProperty<uint32_t>("POPULATION_TO_GENERATE", populationSize, true);
+    // Agent(s)
+    flamegpu::AgentDescription agent = model.newAgent("Agent");
+    agent.newVariable<uint32_t>("counter", 0);
+    agent.newRTCFunction("simulateAgentFn", simulateAgentFn_src);
+    // Control flow
+    model.newLayer().addAgentFunction("Agent", "simulateAgentFn");
+    model.addInitFunction(simulateInit);
+    model.addExitFunction(simulateExit);
+    // Crete a small runplan, using a different number of steps per sim.
+    uint64_t expectedResult = 0;
+    flamegpu::RunPlanVector plans(model, planCount);
+    for (uint32_t idx = 0; idx < plans.size(); idx++) {
+        auto& plan = plans[idx];
         plan.setSteps(idx + 1);  // Can't have 0 steps without exit condition
         // Increment the expected result based on the number of steps.
         expectedResult += (idx + 1) * populationSize;
@@ -491,6 +542,14 @@ FLAMEGPU_AGENT_FUNCTION(elapsedAgentFn, flamegpu::MessageNone, flamegpu::Message
     FLAMEGPU->setVariable<int>("counter", FLAMEGPU->getVariable<int>("counter") + 1);
     return flamegpu::ALIVE;
 }
+const char * elapsedAgentFn_src = R"###(
+// Agent function used to check the ensemble runs.
+FLAMEGPU_AGENT_FUNCTION(elapsedAgentFn, flamegpu::MessageNone, flamegpu::MessageNone) {
+    // Increment agent's counter by 1.
+    FLAMEGPU->setVariable<int>("counter", FLAMEGPU->getVariable<int>("counter") + 1);
+    return flamegpu::ALIVE;
+}
+)###";
 FLAMEGPU_INIT_FUNCTION(elapsedInit) {
     // Generate a basic pop
     const uint32_t POPULATION_TO_GENERATE = FLAMEGPU->environment.getProperty<uint32_t>("POPULATION_TO_GENERATE");
@@ -516,6 +575,39 @@ TEST(TestCUDAEnsemble, getEnsembleElapsedTime) {
     agent.newFunction("elapsedAgentFn", elapsedAgentFn);
     // Control flow
     model.newLayer().addAgentFunction(elapsedAgentFn);
+    model.addInitFunction(elapsedInit);
+    model.addStepFunction(elapsedStep);
+    // Create a single run.
+    auto plans = flamegpu::RunPlanVector(model, 1);
+    plans[0].setSteps(1);
+    // Create an ensemble
+    flamegpu::CUDAEnsemble ensemble(model);
+    // Make it quiet to avoid outputting during the test suite
+    ensemble.Config().verbosity = Verbosity::Quiet;
+    // Get the elapsed seconds before the sim has been executed
+    EXPECT_NO_THROW(ensemble.getEnsembleElapsedTime());
+    // Assert that it is LE zero.
+    EXPECT_LE(ensemble.getEnsembleElapsedTime(), 0.);
+    // Simulate the ensemble,
+    EXPECT_NO_THROW(ensemble.simulate(plans));
+    // Get the elapsed seconds before the sim has been executed
+    double elapsedSeconds = 0.f;
+    EXPECT_NO_THROW(elapsedSeconds = ensemble.getEnsembleElapsedTime());
+    // Ensure the elapsed time is larger than a threshold.
+    double threshold = sleepDurationSeconds * 0.8;
+    EXPECT_GE(elapsedSeconds, threshold);
+}
+TEST(TestCUDAEnsemble, getEnsembleElapsedTime_rtc) {
+    // Create a model containing atleast one agent type and function.
+    flamegpu::ModelDescription model("test");
+    // Environmental constant for initial population
+    model.Environment().newProperty<uint32_t>("POPULATION_TO_GENERATE", 1, true);
+    // Agent(s)
+    flamegpu::AgentDescription agent = model.newAgent("Agent");
+    agent.newVariable<uint32_t>("counter", 0);
+    agent.newRTCFunction("elapsedAgentFn", elapsedAgentFn_src);
+    // Control flow
+    model.newLayer().addAgentFunction("Agent", "elapsedAgentFn");
     model.addInitFunction(elapsedInit);
     model.addStepFunction(elapsedStep);
     // Create a single run.
@@ -661,6 +753,47 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDASimulation) {
     agent.newFunction("simulateAgentFn", simulateAgentFn);
     // Control flow
     model.newLayer().addAgentFunction(simulateAgentFn);
+    model.addInitFunction(simulateInit);
+    // Crete a small runplan, using a different number of steps per sim.
+    uint64_t expectedResult = 0;
+    flamegpu::RunPlanVector plans(model, planCount);
+    for (uint32_t idx = 0; idx < plans.size(); idx++) {
+        auto &plan = plans[idx];
+        plan.setSteps(idx + 1);  // Can't have 0 steps without exit condition
+        // Increment the expected result based on the number of steps.
+        expectedResult += (idx + 1) * populationSize;
+    }
+
+    // Create and use but do not destroy a CUDASimulation, so it can be used to check for device reset issues later
+    flamegpu::CUDASimulation simulation(model);
+    simulation.SimulationConfig().steps = 1;
+    simulation.simulate();
+
+    // Create an ensemble
+    flamegpu::CUDAEnsemble ensemble(model);
+    // Make it quiet to avoid outputting during the test suite
+    ensemble.Config().verbosity = Verbosity::Quiet;
+    ensemble.Config().out_format = "";  // Suppress warning
+    // Simulate the ensemble,
+    EXPECT_NO_THROW(ensemble.simulate(plans));
+
+    // At this point, the cudaSim should still be usable (and dtor-able()
+    EXPECT_NO_THROW(simulation.step());
+}
+TEST(TestCUDAEnsemble, SimualteWithExistingCUDASimulation_rtc) {
+    // Number of simulations to run.
+    constexpr uint32_t planCount = 2u;
+    constexpr uint32_t populationSize = 32u;
+    // Create a model containing atleast one agent type and function.
+    flamegpu::ModelDescription model("test");
+    // Environmental constant for initial population
+    model.Environment().newProperty<uint32_t>("POPULATION_TO_GENERATE", populationSize, true);
+    // Agent(s)
+    flamegpu::AgentDescription agent = model.newAgent("Agent");
+    agent.newVariable<uint32_t>("counter", 0);
+    agent.newRTCFunction("simulateAgentFn", simulateAgentFn_src);
+    // Control flow
+    model.newLayer().addAgentFunction("Agent", "simulateAgentFn");
     model.addInitFunction(simulateInit);
     // Crete a small runplan, using a different number of steps per sim.
     uint64_t expectedResult = 0;
@@ -898,7 +1031,59 @@ TEST(TestCUDAEnsemble, TruncationOff_Exit) {
     std::filesystem::remove_all("test_truncate");
 }
 
+TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc_rtc) {
+    // Allocate some arbitraty device memory.
+    int * d_int = nullptr;
+    gpuErrchk(cudaMalloc(&d_int, sizeof(int)));
+    // Validate that the ptr is a valid device pointer
+    cudaPointerAttributes attributes = {};
+    gpuErrchk(cudaPointerGetAttributes(&attributes, d_int));
+    EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
 
+    // Add extra layer of scope, so the ensemble get's dtor'd incase the dtor triggers a reset
+    {
+        // Number of simulations to run.
+        constexpr uint32_t planCount = 2u;
+        constexpr uint32_t populationSize = 32u;
+        // Create a model containing atleast one agent type and function.
+        flamegpu::ModelDescription model("test");
+        // Environmental constant for initial population
+        model.Environment().newProperty<uint32_t>("POPULATION_TO_GENERATE", populationSize, true);
+        // Agent(s)
+        flamegpu::AgentDescription agent = model.newAgent("Agent");
+        agent.newVariable<uint32_t>("counter", 0);
+        agent.newRTCFunction("simulateAgentFn", simulateAgentFn_src);
+        // Control flow
+        model.newLayer().addAgentFunction("Agent", "simulateAgentFn");
+        model.addInitFunction(simulateInit);
+        // Crete a small runplan, using a different number of steps per sim.
+        uint64_t expectedResult = 0;
+        flamegpu::RunPlanVector plans(model, planCount);
+        for (uint32_t idx = 0; idx < plans.size(); idx++) {
+            auto &plan = plans[idx];
+            plan.setSteps(idx + 1);  // Can't have 0 steps without exit condition
+            // Increment the expected result based on the number of steps.
+            expectedResult += (idx + 1) * populationSize;
+        }
+        // Create an ensemble
+        flamegpu::CUDAEnsemble ensemble(model);
+        // Make it quiet to avoid outputting during the test suite
+        ensemble.Config().verbosity = Verbosity::Quiet;
+        ensemble.Config().out_format = "";  // Suppress warning
+        // Simulate the ensemble,
+        EXPECT_NO_THROW(ensemble.simulate(plans));
+    }
+
+    // At this point, the manually allocated data should still be valid, i.e. cudaMemoryTypeDevice
+    gpuErrchk(cudaPointerGetAttributes(&attributes, d_int));
+    EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
+
+    // Free explicit device memory, if it was valid (to get the correct error)
+    if (attributes.type == cudaMemoryTypeDevice) {
+        gpuErrchk(cudaFree(d_int));
+    }
+    d_int = nullptr;
+}
 }  // namespace test_cuda_ensemble
 }  // namespace tests
 }  // namespace flamegpu
