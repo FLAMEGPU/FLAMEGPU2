@@ -166,6 +166,7 @@ cmake --build . --target all
 | `BUILD_SWIG_PYTHON_VENV` | `ON`/`OFF`        | Use a python `venv` when building the python Swig target. Default `ON`. Python package `venv` required     |
 | `BUILD_TESTS`            | `ON`/`OFF`        | Build the C++/CUDA test suite. Default `OFF`.                                                              |
 | `BUILD_TESTS_DEV`        | `ON`/`OFF`        | Build the reduced-scope development test suite. Default `OFF`                                              |
+| `USE_GTEST_DISCOVER`     | `ON`/`OFF`        | Run individual CUDA C++ tests as independent `ctest` tests. This dramatically increases test suite runtime. Default `OFF`. |
 | `VISUALISATION`          | `ON`/`OFF`        | Enable Visualisation. Default `OFF`.                                                                       |
 | `VISUALISATION_ROOT`     | `path/to/vis`     | Provide a path to a local copy of the visualisation repository.                                            |
 | `USE_NVTX`               | `ON`/`OFF`        | Enable NVTX markers for improved profiling. Default `OFF`                                                  |
@@ -244,7 +245,26 @@ Several environmental variables are used or required by FLAME GPU 2.
 
 ## Running the Test Suite(s)
 
-To run the CUDA/C++ test suite:
+### CUDA C++ Test Suites
+
+The test suite for the CUDA/C++ library can be executed using CTest, or by manually running the test executable(s).
+
+ can be used to orchestrate running multiple test suites for different aspects of FLAME GPU 2.
+
+The test suite can be executed using [CTest](https://cmake.org/cmake/help/latest/manual/ctest.1.html) by running `ctest`, or `ctest -VV` for verbose output of sub-tests, from the the build directory.
+
+More verbose CTest output for the GoogleTest based CUDA C++ test suite(s) can be enabled by configuring CMake with `USE_GTEST_DISCOVER` set to `ON`.
+This however will dramatically increase test suite execution time.
+
+1. Configure CMake to build the desired tests suites as desired, using `BUILD_TESTS=ON`, `BUILD_TESTS_DEV=ON` and optionally `USE_GTEST_DISCOVER=ON`.
+2. Build the `tests`, `tests_dev` targets as required
+3. Run the test suites via ctest, using `-vv` for more-verbose output. Multiple tests can be ran concurrently using `-j <jobs>`. Use `-R <regex>` to only run matching tests.
+
+    ```bash
+    ctest -vv -j 8
+    ```
+
+To run the CUDA/C++ test suite(s) manually, which allows use of `--gtest_filter`:
 
 1. Configure CMake with `BUILD_TESTS=ON`
 2. Build the `tests` target
@@ -253,6 +273,8 @@ To run the CUDA/C++ test suite:
     ```bash
     ./bin/Release/tests
     ```
+
+### Python Testing via pytest
 
 To run the python test suite:
 
@@ -263,7 +285,7 @@ To run the python test suite:
     If using Bash (linux, bash for windows)
 
     ```bash
-    source lib/Release/lib/Release/python/venv/bin/activate
+    source lib/Release/python/venv/bin/activate
     ```
 
     If using `cmd`:
