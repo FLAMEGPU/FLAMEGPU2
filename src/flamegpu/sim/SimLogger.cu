@@ -80,7 +80,7 @@ void SimLogger::start() {
             }
             if (export_step) {
                 const std::filesystem::path step_path = p_out_directory/std::filesystem::path(run_plans[target_log].getOutputSubdirectory())/std::filesystem::path(std::to_string(target_log)+"."+out_format);
-                const auto step_logger = io::LoggerFactory::createLogger(step_path.generic_string(), false, false);
+                const auto step_logger = io::LoggerFactory::createLogger(step_path.generic_string(), false, true);
                 step_logger->log(run_logs[target_log], run_plans[target_log], true, false, export_step_time, false);
             }
             // Continue

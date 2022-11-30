@@ -1,5 +1,6 @@
 #include <thread>
 #include <chrono>
+#include <filesystem>
 
 #include "flamegpu/flamegpu.h"
 
@@ -746,6 +747,157 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc) {
     }
     d_int = nullptr;
 }
+TEST(TestCUDAEnsemble, ArgParse_truncate) {
+    ModelDescription m("test");
+    m.newAgent("agent");
+    CUDAEnsemble c(m);
+    EXPECT_EQ(c.getConfig().truncate_log_files, false);
+    const char* argv[2] = { "prog.exe", "--truncate" };
+    c.initialise(sizeof(argv) / sizeof(char*), argv);
+    EXPECT_EQ(c.getConfig().truncate_log_files, true);
+}
+TEST(TestCUDAEnsemble, TruncationOn_Step) {
+    ModelDescription m("test");
+    m.newAgent("agent");
+    StepLoggingConfig slc(m);
+    CUDAEnsemble e(m);
+    e.Config().truncate_log_files = true;
+    e.Config().out_directory = "test_truncate";
+    e.Config().out_format = "json";
+    e.setStepLog(slc);
+    RunPlanVector rpv(m, 1);
+    rpv.setOutputSubdirectory("test2");
+    // Create an empty file at the output location
+    std::filesystem::create_directories("test_truncate/test2");
+    {
+        std::ofstream os("test_truncate/test2/0.json", std::ios_base::trunc);
+        os << "test";
+    }
+    // Sanity check on the file we created
+    {
+        std::ifstream is("test_truncate/test2/0.json");
+        char word[5];
+        is.getline(word, 5);
+        EXPECT_EQ(std::string("test"), std::string(word));
+    }
+    // Run ensemble
+    EXPECT_NO_THROW(e.simulate(rpv));
+    // Read back the file, check it nolonger has contents "test"
+    {
+        std::ifstream is("test_truncate/test2/0.json");
+        char word[5];
+        is.getline(word, 5);
+        EXPECT_NE(std::string("test"), std::string(word));
+    }
+    // Cleanup
+    std::filesystem::remove_all("test_truncate");
+}
+TEST(TestCUDAEnsemble, TruncationOn_Exit) {
+    ModelDescription m("test");
+    m.newAgent("agent");
+    LoggingConfig slc(m);
+    CUDAEnsemble e(m);
+    e.Config().truncate_log_files = true;
+    e.Config().out_directory = "test_truncate";
+    e.Config().out_format = "json";
+    e.setExitLog(slc);
+    RunPlanVector rpv(m, 1);
+    rpv.setOutputSubdirectory("test2");
+    // Create an empty file at the output location
+    std::filesystem::create_directories("test_truncate/test2");
+    {
+        std::ofstream os("test_truncate/test2/exit.json", std::ios_base::trunc);
+        os << "test";
+    }
+    // Sanity check on the file we created
+    {
+        std::ifstream is("test_truncate/test2/exit.json");
+        char word[5];
+        is.getline(word, 5);
+        EXPECT_EQ(std::string("test"), std::string(word));
+    }
+    // Run ensemble
+    EXPECT_NO_THROW(e.simulate(rpv));
+    // Read back the file, check it nolonger has contents "test"
+    {
+        std::ifstream is("test_truncate/test2/exit.json");
+        char word[5];
+        is.getline(word, 5);
+        EXPECT_NE(std::string("test"), std::string(word));
+    }
+    // Cleanup
+    std::filesystem::remove_all("test_truncate");
+}
+TEST(TestCUDAEnsemble, TruncationOff_Step) {
+    ModelDescription m("test");
+    m.newAgent("agent");
+    StepLoggingConfig slc(m);
+    CUDAEnsemble e(m);
+    e.Config().truncate_log_files = false;
+    e.Config().out_directory = "test_truncate";
+    e.Config().out_format = "json";
+    e.setStepLog(slc);
+    RunPlanVector rpv(m, 1);
+    rpv.setOutputSubdirectory("test2");
+    std::filesystem::create_directories("test_truncate/test2");
+    {
+        std::ofstream os("test_truncate/test2/0.json", std::ios_base::trunc);
+        os << "test";
+    }
+    // Create an empty file at the output location
+    std::filesystem::path path = "test_truncate/test2/0.json";
+    // Run ensemble
+    EXPECT_THROW(e.simulate(rpv), exception::FileAlreadyExists);
+    // Cleanup
+    std::filesystem::remove_all("test_truncate");
+}
+TEST(TestCUDAEnsemble, TruncationOff_Step2) {
+    ModelDescription m("test");
+    m.newAgent("agent");
+    StepLoggingConfig slc(m);
+    CUDAEnsemble e(m);
+    e.Config().truncate_log_files = false;
+    e.Config().out_directory = "test_truncate";
+    e.Config().out_format = "json";
+    e.setStepLog(slc);
+    RunPlanVector rpv(m, 2);
+    rpv[1].setOutputSubdirectory("test2");
+    std::filesystem::create_directories("test_truncate/test2");
+    {
+        std::ofstream os("test_truncate/test2/1.json", std::ios_base::trunc);
+        os << "test";
+    }
+    // Create an empty file at the output location
+    std::filesystem::path path = "test_truncate/test2/1.json";
+    // Run ensemble
+    EXPECT_THROW(e.simulate(rpv), exception::FileAlreadyExists);
+    // Cleanup
+    std::filesystem::remove_all("test_truncate");
+}
+TEST(TestCUDAEnsemble, TruncationOff_Exit) {
+    ModelDescription m("test");
+    m.newAgent("agent");
+    LoggingConfig slc(m);
+    CUDAEnsemble e(m);
+    e.Config().truncate_log_files = false;
+    e.Config().out_directory = "test_truncate";
+    e.Config().out_format = "json";
+    e.setExitLog(slc);
+    RunPlanVector rpv(m, 1);
+    rpv.setOutputSubdirectory("test2");
+    std::filesystem::create_directories("test_truncate/test2");
+    {
+        std::ofstream os("test_truncate/test2/exit.json", std::ios_base::trunc);
+        os << "test";
+    }
+    // Create an empty file at the output location
+    std::filesystem::path path = "test_truncate/test2/exit.json";
+    // Run ensemble
+    EXPECT_THROW(e.simulate(rpv), exception::FileAlreadyExists);
+    // Cleanup
+    std::filesystem::remove_all("test_truncate");
+}
+
 
 }  // namespace test_cuda_ensemble
 }  // namespace tests

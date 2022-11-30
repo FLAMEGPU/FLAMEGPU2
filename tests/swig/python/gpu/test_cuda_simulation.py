@@ -194,6 +194,14 @@ class TestSimulation(TestCase):
         c.initialise(argv)
         assert c.SimulationConfig().verbosity == pyflamegpu.Verbosity_Verbose
 
+    def test_initalise_truncate(self):
+        m = pyflamegpu.ModelDescription("test_initialise_truncate")
+        c = pyflamegpu.CUDASimulation(m)
+        assert c.SimulationConfig().truncate_log_files == False
+        argv = [ "prog.exe", "--truncate"]
+        c.initialise(argv)
+        assert c.SimulationConfig().truncate_log_files == True
+
     SetGetFn = """
     FLAMEGPU_AGENT_FUNCTION(SetGetFn, flamegpu::MessageNone, flamegpu::MessageNone) {
         int i = FLAMEGPU->getVariable<int>("test");

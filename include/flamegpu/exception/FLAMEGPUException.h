@@ -399,6 +399,10 @@ DERIVED_FLAMEGPUException(VersionMismatch, "Versions do not match");
  */
 DERIVED_FLAMEGPUException(InvalidFilePath, "File does not exist.");
 /**
+ * Defines an error reported when an output file already exists, so would be overwritten
+ */
+DERIVED_FLAMEGPUException(FileAlreadyExists, "File already existst.");
+/**
  * Defines an exception indicating that the flamegpu::util::detail::Timer has been used incorrectly.
  */
 DERIVED_FLAMEGPUException(TimerException, "Invalid use of Timer");

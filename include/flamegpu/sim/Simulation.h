@@ -54,7 +54,7 @@ class Simulation {
         std::string step_log_file;
         std::string exit_log_file;
         std::string common_log_file;
-        bool truncate_log_files = true;
+        bool truncate_log_files = false;
         uint64_t random_seed;
         unsigned int steps = 1;
         flamegpu::Verbosity verbosity = Verbosity::Default;
