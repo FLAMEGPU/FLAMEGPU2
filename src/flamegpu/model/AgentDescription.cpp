@@ -160,6 +160,4 @@ void AgentDescription::setSortPeriod(const unsigned int sortPeriod) {
     agent->sortPeriod = sortPeriod;
 }
 
-
-
 }  // namespace flamegpu

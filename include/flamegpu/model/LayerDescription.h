@@ -138,7 +138,7 @@ class LayerDescription : public CLayerDescription {
      * Adds an agent function to this layer
      * The agent function will be called during this stage of model execution
      * @param a Agent function as defined using FLAMEGPU_AGENT_FUNCTION notation
-     * @tparam AgentFunction Struct containing agent function definition
+     * @tparam AgentFn Struct containing agent function definition
      * @throw exception::InvalidAgentFunc If the agent function does not exist within the model hierarchy
      * @throw exception::InvalidAgentFunc If the agent function has already been added to the layer
      * @throw exception::InvalidLayerMember If the layer already contains a SubModel
@@ -146,8 +146,8 @@ class LayerDescription : public CLayerDescription {
      * @note The agent function must first be added to an Agent
      * @see AgentDescription::newFunction(const std::string &, AgentFunction)
      */
-    template<typename AgentFunction>
-    void addAgentFunction(AgentFunction a = AgentFunction());
+    template<typename AgentFn>
+    void addAgentFunction(AgentFn a = AgentFn());
     /**
      * Adds an agent function to this layer
      * The agent function will be called during this stage of model execution
@@ -157,6 +157,11 @@ class LayerDescription : public CLayerDescription {
      * @throw exception::InvalidLayerMember If the layer already contains a SubModel
      * @throw exception::InvalidLayerMember If the agent function outputs to a message list output to by an existing agent function of the layer
      * @throw exception::InvalidLayerMember If the agent function outputs an agent in the same agent state as an existing agent function's input state (or vice versa)
+     */
+    void addAgentFunction(const CAgentFunctionDescription& afd);
+    /**
+     * @copydoc LayerDescription::addAgentFunction(const CAgentFunctionDescription&)
+     * @note This additional version is required, to stop the template form of this method being used
      */
     void addAgentFunction(const AgentFunctionDescription &afd);
     /**
@@ -232,11 +237,19 @@ class LayerDescription : public CLayerDescription {
      */
     inline void addHostFunctionCallback(HostFunctionCallback *func_callback);
 #endif
+    /**
+     * @param index Index of the function to return
+     * @return A mutable reference to the agent function at the provided index
+     * @throw exception::OutOfBoundsException When index exceeds number of agent functions in the layer
+     * @see LayerDescription::getAgentFunctionsCount()
+     * @note Functions are stored in a set, so order may change as new functions are added
+     */
+    AgentFunctionDescription AgentFunction(unsigned int index);
 };
 
 
-template<typename AgentFunction>
-void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
+template<typename AgentFn>
+void LayerDescription::addAgentFunction(AgentFn /*af*/) {
     if (layer->sub_model) {
         THROW exception::InvalidLayerMember("A layer containing agent functions and/or host functions, may not also contain a submodel, "
             "in LayerDescription::addAgentFunction()\n");
@@ -245,7 +258,7 @@ void LayerDescription::addAgentFunction(AgentFunction /*af*/) {
         THROW exception::InvalidLayerMember("A layer containing host functions, may not also contain agent functions, "
             "in LayerDescription::addAgentFunction()\n");
     }
-    AgentFunctionWrapper * func_compare = AgentFunction::fnPtr();
+    AgentFunctionWrapper * func_compare = AgentFn::fnPtr();
     // Find the matching agent function in model hierarchy
     auto mdl = layer->model.lock();
     if (!mdl) {

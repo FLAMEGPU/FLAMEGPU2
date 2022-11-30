@@ -67,7 +67,10 @@ LayerDescription::LayerDescription(std::shared_ptr<LayerData> data)
 /**
  * Accessors
  */
-void LayerDescription::addAgentFunction(const AgentFunctionDescription &afd) {
+void LayerDescription::addAgentFunction(const AgentFunctionDescription& afd) {
+    addAgentFunction(CAgentFunctionDescription(afd));
+}
+void LayerDescription::addAgentFunction(const CAgentFunctionDescription &afd) {
     if (afd.function->model.lock() == layer->model.lock()) {
         auto m = layer->model.lock();
         // Find the same afd in the model hierarchy
@@ -252,6 +255,17 @@ void LayerDescription::_addHostFunctionCallback(HostFunctionCallback* func_callb
             THROW exception::InvalidHostFunc("Attempted to add same host function callback twice,"
                 "in LayerDescription::addHostFunctionCallback()");
         }
+}
+AgentFunctionDescription LayerDescription::AgentFunction(unsigned int index) {
+    if (index < layer->agent_functions.size()) {
+        auto it = layer->agent_functions.begin();
+        for (unsigned int i = 0; i < index; ++i)
+            ++it;
+        return AgentFunctionDescription(*it);
+    }
+    THROW exception::OutOfBoundsException("Index %d is out of bounds (only %d items exist) "
+        "in LayerDescription.getAgentFunction().",
+        index, layer->agent_functions.size());
 }
 
 }  // namespace flamegpu

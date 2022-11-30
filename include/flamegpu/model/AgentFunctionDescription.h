@@ -32,7 +32,7 @@ class CAgentFunctionDescription : public DependencyNode {
     /**
      * Accesses internals to validate function description before adding to layer
      */
-    friend void LayerDescription::addAgentFunction(const AgentFunctionDescription&);
+    friend void LayerDescription::addAgentFunction(const CAgentFunctionDescription&);
     /**
      * Accesses internals to validate function belongs to the same model as the DependencyGraph
      */
