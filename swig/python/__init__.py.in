@@ -28,6 +28,11 @@ if os.name == 'nt' and hasattr(os, 'add_dll_directory') and callable(getattr(os,
   except subprocess.CalledProcessError:
     print("@PYTHON_MODULE_NAME@ warning: %s was not found, if 'dll load failed' occurs it may be necessary to manually call os.add_dll_directory() prior to importing pyflamegpu."%(NVRTC_DLL_NAME), file=sys.stderr)
   
+# module version
+__version__ = '@FLAMEGPU_VERSION_PYTHON@'
+__dist_name__ = '@PYTHON_DISTRIBUTION_NAME@'
+# embed python version in env for detection by telemetry
+os.environ["FLAMEGPU_PYFLAMEGPU_VERSION"] = __version__
 
 del os, sys, pathlib, subprocess
 # Normal module stuff

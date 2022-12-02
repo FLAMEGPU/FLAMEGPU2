@@ -105,6 +105,7 @@ class TestCUDAEnsemble(TestCase):
         # assert mutableConfig.devices == std::set<int>()  # @todo - this will need to change
         assert mutableConfig.verbosity == pyflamegpu.Verbosity_Default
         assert mutableConfig.timing == False
+        assert mutableConfig.telemetry == False
         # Mutate the configuration
         mutableConfig.out_directory = "test"
         mutableConfig.out_format = "xml"
@@ -112,6 +113,7 @@ class TestCUDAEnsemble(TestCase):
         # mutableConfig.devices = std::set<int>({0}) # @todo - this will need to change.
         mutableConfig.verbosity = pyflamegpu.Verbosity_Verbose
         mutableConfig.timing = True
+        mutableConfig.telemetry = True
         # Check via the const ref, this should show the same value as config was a reference, not a copy.
         assert mutableConfig.out_directory == "test"
         assert mutableConfig.out_format == "xml"
@@ -119,6 +121,7 @@ class TestCUDAEnsemble(TestCase):
         # assert mutableConfig.devices == std::set<int>({0})  # @todo - this will need to change
         assert mutableConfig.verbosity == pyflamegpu.Verbosity_Verbose
         assert mutableConfig.timing == True
+        assert mutableConfig.telemetry == True
 
     @pytest.mark.skip(reason="--help cannot be tested due to exit()")
     def test_initialise_help(self):
@@ -654,4 +657,3 @@ class TestEnsembleVerbosity(TestCase):
         # Function will run prior to any test case in the class.
         # The capsys fixture is for capturing Pythons sys.stderr and sys.stdout
         self.capsys = capsys
-        

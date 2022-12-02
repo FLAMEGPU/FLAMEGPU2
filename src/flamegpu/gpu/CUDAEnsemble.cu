@@ -9,6 +9,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <filesystem>
+#include <map>
 
 #include "flamegpu/version.h"
 #include "flamegpu/model/ModelDescription.h"
@@ -22,6 +23,7 @@
 #include "flamegpu/sim/LogFrame.h"
 #include "flamegpu/sim/SimLogger.h"
 #include "flamegpu/util/detail/cuda.cuh"
+#include "flamegpu/io/Telemetry.h"
 
 namespace flamegpu {
 
@@ -222,6 +224,29 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
     }
     if (config.timing || config.verbosity >= Verbosity::Verbose) {
         printf("Ensemble time elapsed: %fs\n", ensemble_elapsed_time);
+    }
+
+    // Send Telemetry
+    if (config.telemetry) {
+        // Generate some payload items
+        std::map<std::string, std::string> payload_items;
+        payload_items["GPUDevices"] = flamegpu::util::detail::compute_capability::getDeviceNames(config.devices);
+        payload_items["SimTime(s)"] = std::to_string(ensemble_elapsed_time);
+        // generate telemetry data
+        std::string telemetry_data = flamegpu::io::Telemetry::generateTelemetryData("ensemble-run", payload_items);
+        // send
+        if (!flamegpu::io::Telemetry::sendTelemetryData(telemetry_data)) {
+            if ((config.verbosity > Verbosity::Quiet))
+                fprintf(stderr, "Warning: Usage statistics for CUDAEnsemble failed to send.\n");
+        }
+        // print
+        if ((config.verbosity >= Verbosity::Verbose)) {
+            fprintf(stdout, "Telemetry packet sent to '%s' json was: %s\n", flamegpu::io::Telemetry::TELEMETRY_ENDPOINT, telemetry_data.c_str());
+        }
+    } else {
+        // Occasional hinting of telemetry if not in use (and not Quiet and not testing mode)
+        if ((config.verbosity > Verbosity::Quiet))
+            flamegpu::io::Telemetry::hintTelemetryUsage();
     }
 
     // Free memory
@@ -428,6 +453,10 @@ void CUDAEnsemble::setExitLog(const LoggingConfig &exitConfig) {
 }
 const std::vector<RunLog> &CUDAEnsemble::getLogs() {
     return run_logs;
+}
+
+void CUDAEnsemble::shareUsageStatistics(bool telemetry_enabled) {
+    config.telemetry = telemetry_enabled;
 }
 
 }  // namespace flamegpu

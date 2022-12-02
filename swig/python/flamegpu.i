@@ -651,6 +651,13 @@ class ModelVis;
 // Don't flatnest this, range is explicitly not included incase of GC related issues.
 %include "flamegpu/util/nvtx.h"
 
+// Include Telemetry functions
+%ignore flamegpu::io::Telemetry::silenceTelemetryNotice;  // Ignore function as modificiation to the environment from cpp are not propogated to python environment
+%include "flamegpu/io/Telemetry.h"
+// create a concrete map with string string for use with telemetry payload
+namespace std {
+    %template(map_string_string) map<string, string>;
+}
 
 // %extend classes go after %includes, but before tempalates (that use them)
 // -----------------

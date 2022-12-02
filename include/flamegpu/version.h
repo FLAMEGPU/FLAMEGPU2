@@ -58,6 +58,12 @@ extern const char VERSION_STRING[];
  */
 extern const char VERSION_FULL[];
 
+/**
+ * FLAME GPU Build hash
+ * A uniquely generate hash created a cmake configure time
+ */
+extern const char BUILD_HASH[];
+
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_VERSION_H_

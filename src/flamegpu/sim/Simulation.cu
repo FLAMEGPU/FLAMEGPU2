@@ -115,6 +115,10 @@ void Simulation::applyConfig() {
     // Random is handled by derived class, as it relies on singletons being init
 }
 
+void Simulation::shareUsageStatistics(bool telemetry_enabled) {
+    config.telemetry = telemetry_enabled;
+}
+
 const ModelData& Simulation::getModelDescription() const {
     return *model;
 }

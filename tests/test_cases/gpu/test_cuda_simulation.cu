@@ -6,6 +6,8 @@
 #include "flamegpu/flamegpu.h"
 #include "flamegpu/util/detail/compute_capability.cuh"
 #include "helpers/device_initialisation.h"
+#include "flamegpu/util/Environment.h"
+#include "flamegpu/io/Telemetry.h"
 
 
 #include "gtest/gtest.h"
@@ -1197,7 +1199,45 @@ TEST(TestCUDASimulation, TruncationOn_exportData) {
     // Cleanup
     std::filesystem::remove("test_truncate.json");
 }
+// Test setting the telemetry value via runtime function call
+TEST(TestCUDASimulation, simulationTelemetryFunction) {
+    // Define a simple model - doesn't need to do anything
+    ModelDescription m(MODEL_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
+    CUDASimulation c(m);
+    const bool telemetry = c.SimulationConfig().telemetry;
+    ASSERT_FALSE(telemetry);    // Telemetry must be disabled during test suite (set in test main)
+    // set telemetry at runtime which will override any global/cmake values
+    c.shareUsageStatistics(true);
+    EXPECT_TRUE(c.SimulationConfig().telemetry);
+}
 
+// Test telemetry global variable.
+// If the global varibale is set to 'true' (or more specifically not a false value) then simulation dervived objects should set the telemetry value to true
+// There are various 'false' values that are supported to specifically disable telemetry
+// Not possible to test the cmake value as this may be changed by user but cmake var and environment var are respected equally
+// This test is also valid for Ensembles as it belongs to the generic Simulation class
+TEST(TestCUDASimulation, simulationTelemetryEnvironemt) {
+    // Define a simple model - doesn't need to do anything
+    ModelDescription m(MODEL_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
+    // Enable telemetry globally via "True" value
+    flamegpu::util::setEnvironmentVariable("FLAMEGPU_SHARE_USAGE_STATISTICS", "True");
+    CUDASimulation c(m);
+    EXPECT_TRUE(c.SimulationConfig().telemetry);  // Telemetry should have been enabled during initiaalisation due to global variable
+    // check telemetry global Off values priduce expected result
+    flamegpu::util::setEnvironmentVariable("FLAMEGPU_SHARE_USAGE_STATISTICS", "Off");
+    EXPECT_FALSE(flamegpu::io::Telemetry::globalTelemetryEnabled());
+    flamegpu::util::setEnvironmentVariable("FLAMEGPU_SHARE_USAGE_STATISTICS", "OFF");
+    EXPECT_FALSE(flamegpu::io::Telemetry::globalTelemetryEnabled());
+    flamegpu::util::setEnvironmentVariable("FLAMEGPU_SHARE_USAGE_STATISTICS", "FALSE");
+    EXPECT_FALSE(flamegpu::io::Telemetry::globalTelemetryEnabled());
+    flamegpu::util::setEnvironmentVariable("FLAMEGPU_SHARE_USAGE_STATISTICS", "0");
+    EXPECT_FALSE(flamegpu::io::Telemetry::globalTelemetryEnabled());
+    // Reset telemetry globally to Off
+    flamegpu::util::setEnvironmentVariable("FLAMEGPU_SHARE_USAGE_STATISTICS", "False");
+    ASSERT_FALSE(flamegpu::io::Telemetry::globalTelemetryEnabled());  // Dont continue unless telemetry has been disabled globally
+}
 }  // namespace test_cuda_simulation
 }  // namespace tests
 }  // namespace flamegpu

@@ -15,7 +15,7 @@ void timeCUDASimulationContextCreationTest();
  */
 bool getCUDASimulationContextCreationTestResult();
 
-#endif  // TESTS_HELPERS_DEVICE_INITIALISATION_H_
-
 }  // namespace tests
 }  // namespace flamegpu
+
+#endif  // TESTS_HELPERS_DEVICE_INITIALISATION_H_

@@ -33,6 +33,26 @@ enable_language(CUDA)
 # Ensure this is not an in-source build
 include(${FLAMEGPU_ROOT}/cmake/OutOfSourceOnly.cmake)
 
+# If FLAMEGPU_SHARE_USAGE_STATISTICS environment variable already exists then the default value can be set to based off this
+set (FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT ON)   # default value is on
+if (DEFINED ENV{FLAMEGPU_SHARE_USAGE_STATISTICS})
+    set (FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT ON)    # assume on unless meets condition below
+    # If user has explicitly set sharing to off then set default value to off
+    if("$ENV{FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT}" STREQUAL "FALSE")
+        set (FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT OFF)
+    elseif("$ENV{FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT}" STREQUAL "False")
+        set (FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT OFF)
+        elseif("$ENV{FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT}" STREQUAL "OFF")
+        set (FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT OFF)
+        elseif("$ENV{FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT}" STREQUAL "Off")
+        set (FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT OFF)
+    elseif("$ENV{FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT}" STREQUAL "0")
+        set (FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT OFF)
+    endif()
+endif()
+# Option to opt-in to sharing usage statistics
+option(FLAMEGPU_SHARE_USAGE_STATISTICS "Support for academic software is dependant on evidence of impact. Enabling this sends anonymous usage statistics so that we can continue to develop it under a free licence." ${FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT})
+
 # Option to enable/disable runtime checks which may impact performance
 # This will primarily prevent device code from reporting errors
 option(SEATBELTS "Enable runtime checks which harm performance for release/profile builds.\nThis should only be disabled after a model is known to be correct." ON)
@@ -79,6 +99,8 @@ else()
     endif()
 endif()
 
+
+
 # Specify source files for the static library
 # Can't do this automatically, as CMake wouldn't know when to regen (as CMakeLists.txt would be unchanged)
 # version.h is automatically generated so does not exist prior to configure time
@@ -98,6 +120,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/io/LoggerFactory.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/XMLLogger.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/JSONLogger.h
+	${FLAMEGPU_ROOT}/include/flamegpu/io/Telemetry.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUException.h
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUDeviceException.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/exception/FLAMEGPUDeviceException_device.cuh
@@ -205,6 +228,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/RandomManager.cuh    
     ${FLAMEGPU_ROOT}/include/flamegpu/util/Any.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/cleanup.h
+	${FLAMEGPU_ROOT}/include/flamegpu/util/Environment.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/nvtx.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/StringPair.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/type_decode.h
@@ -282,6 +306,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateWriter.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLStateReader.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLStateWriter.cpp
+	${FLAMEGPU_ROOT}/src/flamegpu/io/Telemetry.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLLogger.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONLogger.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/HostEnvironment.cu
@@ -289,6 +314,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/RandomManager.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/HostRandom.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/cleanup.cu
+	${FLAMEGPU_ROOT}/src/flamegpu/util/Environment.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/util/detail/compute_capability.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/detail/wddm.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/detail/JitifyCache.cu
@@ -381,6 +407,19 @@ EnableFLAMEGPUCompilerWarnings(TARGET "${PROJECT_NAME}")
 CommonCompilerSettings(TARGET "${PROJECT_NAME}")
 # Set the cuda gencodes, potentially using the user-provided CUDA_ARCH
 SetCUDAGencodes(TARGET "${PROJECT_NAME}")
+
+# Telemetry (perform this check here are not in common as it only effects the library build)
+if (FLAMEGPU_SHARE_USAGE_STATISTICS)
+    # If on, then set pre-processor
+    target_compile_definitions(${PROJECT_NAME} PRIVATE FLAMEGPU_SHARE_USAGE_STATISTICS=1)
+else()
+    message(STATUS, "FLAMEGPU_SHARE_USAGE_STATISTICS is not selected! \n\n"
+    "Support for academic software is dependant on evidence of impact. \n"
+    "Enabling this option sends minimal anonymous usage statistics so \n"
+    "that we can continue to develop the software under a free licence.\n"
+    "See our documentation for more information of what we collect and \n"
+    "why: https://docs.flamegpu.com/guide/telemetry.html")
+endif()
 
 # enable "fpic" for linux to allow shared libraries to be build from the static library (required for swig)
 set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)

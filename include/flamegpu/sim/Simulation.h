@@ -10,6 +10,7 @@
 #include "flamegpu/defines.h"
 #include "flamegpu/sim/AgentInterface.h"
 #include "flamegpu/util/Any.h"
+#include "flamegpu/io/Telemetry.h"
 
 
 namespace flamegpu {
@@ -33,7 +34,7 @@ class Simulation {
      * General simulation runner specific config
      */
     struct Config {
-        Config() : random_seed(static_cast<uint64_t>(time(nullptr))) {
+        Config() : random_seed(static_cast<uint64_t>(time(nullptr))), telemetry(flamegpu::io::Telemetry::globalTelemetryEnabled()) {
         }
         void operator=(const Config &other) {
             input_file = other.input_file;
@@ -46,6 +47,7 @@ class Simulation {
             verbosity = other.verbosity;
             timing = other.timing;
             silence_unknown_args = other.silence_unknown_args;
+            telemetry = other.telemetry;
 #ifdef VISUALISATION
             console_mode = other.console_mode;
 #endif
@@ -60,6 +62,7 @@ class Simulation {
         flamegpu::Verbosity verbosity = Verbosity::Default;
         bool timing = false;
         bool silence_unknown_args = false;
+        bool telemetry = false;
 #ifdef VISUALISATION
         bool console_mode = false;
 #else
@@ -128,6 +131,12 @@ class Simulation {
     const Config &getSimulationConfig() const;
 
     void applyConfig();
+
+    /**
+     * Opts in to sending telemtry data by updating the telemetry value in the simulation config at runtime.
+     * The previous value will have been set by the CMake variable FLAMEGPU_SHARE_USAGE_STATISTICS
+     */
+    void shareUsageStatistics(bool telemetry_enabled = true);
 
  protected:
     /**

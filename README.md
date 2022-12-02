@@ -157,25 +157,25 @@ cmake --build . --target all
 
 #### CMake Configuration Options
 
-| Option                   | Value             | Description                                                                                                |
-| ------------------------ | ----------------- | ---------------------------------------------------------------------------------------------------------- |
-| `CMAKE_BUILD_TYPE`       | `Release`/`Debug`/`MinSizeRel`/`RelWithDebInfo` | Select the build configuration for single-target generators such as `make`   |
-| `SEATBELTS`              | `ON`/`OFF`        | Enable / Disable additional runtime checks which harm performance but increase usability. Default `ON`     |
-| `CUDA_ARCH`              | `"52 60 70 80"`   | Select [CUDA Compute Capabilities](https://developer.nvidia.com/cuda-gpus) to build/optimise for, as a space or `;` separated list. Defaults to `""` |
-| `BUILD_SWIG_PYTHON`      | `ON`/`OFF`        | Enable Python target `pyflamegpu` via Swig. Default `OFF`. Python packages `setuptools`, `build` & `wheel` required |
-| `BUILD_SWIG_PYTHON_VENV` | `ON`/`OFF`        | Use a python `venv` when building the python Swig target. Default `ON`. Python package `venv` required     |
-| `BUILD_TESTS`            | `ON`/`OFF`        | Build the C++/CUDA test suite. Default `OFF`.                                                              |
-| `BUILD_TESTS_DEV`        | `ON`/`OFF`        | Build the reduced-scope development test suite. Default `OFF`                                              |
-| `USE_GTEST_DISCOVER`     | `ON`/`OFF`        | Run individual CUDA C++ tests as independent `ctest` tests. This dramatically increases test suite runtime. Default `OFF`. |
-| `VISUALISATION`          | `ON`/`OFF`        | Enable Visualisation. Default `OFF`.                                                                       |
-| `VISUALISATION_ROOT`     | `path/to/vis`     | Provide a path to a local copy of the visualisation repository.                                            |
-| `USE_NVTX`               | `ON`/`OFF`        | Enable NVTX markers for improved profiling. Default `OFF`                                                  |
-| `WARNINGS_AS_ERRORS`     | `ON`/`OFF`        | Promote compiler/tool warnings to errors are build time. Default `OFF`                                     |
-| `EXPORT_RTC_SOURCES`     | `ON`/`OFF`        | At runtime, export dynamic RTC files to disk. Useful for debugging RTC models. Default `OFF`               |
-| `RTC_DISK_CACHE`         | `ON`/`OFF`        | Enable/Disable caching of RTC functions to disk. Default `ON`.                                             |
-| `VERBOSE_PTXAS`          | `ON`/`OFF`        | Enable verbose PTXAS output during compilation. Default `OFF`.                                             |
-| `CURAND_ENGINE`          | `XORWOW`/`PHILOX`/`MRG` | Select the CUDA random engine. Default `XORWOW`                                                      |
-| `USE_GLM`                | `ON`/`OFF`        | Experimental feature for GLM type support in RTC models. Default `OFF`.                                    |
+| Option                            | Value             | Description                                                                                                |
+| --------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------- |
+| `CMAKE_BUILD_TYPE`                | `Release`/`Debug`/`MinSizeRel`/`RelWithDebInfo` | Select the build configuration for single-target generators such as `make`   |
+| `SEATBELTS`                       | `ON`/`OFF`        | Enable / Disable additional runtime checks which harm performance but increase usability. Default `ON`     |
+| `CUDA_ARCH`                       | `"52 60 70 80"`   | Select [CUDA Compute Capabilities](https://developer.nvidia.com/cuda-gpus) to build/optimise for, as a space or `;` separated list. Defaults to `""` |
+| `BUILD_SWIG_PYTHON`               | `ON`/`OFF`        | Enable Python target `pyflamegpu` via Swig. Default `OFF`. Python packages `setuptools`, `build` & `wheel` required |
+| `BUILD_SWIG_PYTHON_VENV`          | `ON`/`OFF`        | Use a python `venv` when building the python Swig target. Default `ON`. Python package `venv` required     |
+| `BUILD_TESTS`                     | `ON`/`OFF`        | Build the C++/CUDA test suite. Default `OFF`.                                                              |
+| `BUILD_TESTS_DEV`                 | `ON`/`OFF`        | Build the reduced-scope development test suite. Default `OFF`                                              |
+| `VISUALISATION`                   | `ON`/`OFF`        | Enable Visualisation. Default `OFF`.                                                                       |
+| `VISUALISATION_ROOT`              | `path/to/vis`     | Provide a path to a local copy of the visualisation repository.                                            |
+| `USE_NVTX`                        | `ON`/`OFF`        | Enable NVTX markers for improved profiling. Default `OFF`                                                  |
+| `WARNINGS_AS_ERRORS`              | `ON`/`OFF`        | Promote compiler/tool warnings to errors are build time. Default `OFF`                                     |
+| `EXPORT_RTC_SOURCES`              | `ON`/`OFF`        | At runtime, export dynamic RTC files to disk. Useful for debugging RTC models. Default `OFF`               |
+| `RTC_DISK_CACHE`                  | `ON`/`OFF`        | Enable/Disable caching of RTC functions to disk. Default `ON`.                                             |
+| `VERBOSE_PTXAS`                   | `ON`/`OFF`        | Enable verbose PTXAS output during compilation. Default `OFF`.                                             |
+| `CURAND_ENGINE`                   | `XORWOW`/`PHILOX`/`MRG` | Select the CUDA random engine. Default `XORWOW`                                                      |
+| `USE_GLM`                         | `ON`/`OFF`        | Experimental feature for GLM type support in RTC models. Default `OFF`.                                    |
+| `FLAMEGPU_SHARE_USAGE_STATISTICS` | `ON`/`OFF`        | Share usage statistics ([telemetry](https://docs.flamegpu.com/guide/telemetry)) to support evidencing usage/impact of the software. Default `ON`. |
 
 <!-- Additional options which users can find if they need them.
 | `BUILD_FLAMEGPU` | `ON`/`OFF` | Build the main FLAMEGPU static library target. Default `ON` |
@@ -305,6 +305,10 @@ To run the python test suite:
     ```bash
     python3 -m pytest ../tests/swig/python
     ```
+
+## Usage Statistics
+
+By default the library will collect and send anonymous usage data. You can disable this is various ways which are [documented](https://docs.flamegpu.com/guide/telemetry).
 
 ## Contributing
 

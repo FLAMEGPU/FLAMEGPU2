@@ -51,6 +51,7 @@ TEST(TestCUDAEnsemble, EnsembleConfig) {
     EXPECT_EQ(immutableConfig.devices, std::set<int>());  // @todo - this will need to change.
     EXPECT_EQ(immutableConfig.verbosity, Verbosity::Default);
     EXPECT_EQ(immutableConfig.timing, false);
+    EXPECT_EQ(immutableConfig.telemetry, false);
     // Mutate the config. Note we cannot mutate the return from getConfig, and connot test this as it is a compialtion failure (requires ctest / standalone .cpp file)
     mutableConfig.out_directory = std::string("test");
     mutableConfig.out_format = std::string("xml");
@@ -58,6 +59,7 @@ TEST(TestCUDAEnsemble, EnsembleConfig) {
     mutableConfig.devices = std::set<int>({0});
     mutableConfig.verbosity = Verbosity::Verbose;
     mutableConfig.timing = true;
+    mutableConfig.telemetry = true;
     // Check via the const ref, this should show the same value as config was a reference, not a copy.
     EXPECT_EQ(immutableConfig.out_directory, "test");
     EXPECT_EQ(immutableConfig.out_format, "xml");
@@ -65,6 +67,7 @@ TEST(TestCUDAEnsemble, EnsembleConfig) {
     EXPECT_EQ(immutableConfig.devices, std::set<int>({0}));  // @todo - this will need to change.
     EXPECT_EQ(immutableConfig.verbosity, Verbosity::Verbose);
     EXPECT_EQ(immutableConfig.timing, true);
+    EXPECT_EQ(immutableConfig.telemetry, true);
 }
 // This test causes `exit` so cannot be used.
 /* TEST(TestCUDAEnsemble, DISABLED_initialise_help) {

@@ -16,6 +16,9 @@ set(FLAMEGPU_VERSION_PRERELEASE "${CMAKE_MATCH_1}")
 
 # @todo - validate that these have been found correctly via regex? Although it should get caught by the below validation, but errors could be better.
 
+# Generate a unique build hash
+string(RANDOM LENGTH 36 FLAMEGPU_BUILD_HASH)
+
 # Validate the major version
 if(FLAMEGPU_VERSION_MAJOR LESS 0)
     message(FATAL_ERROR "FLAMEGPU_VERSION_MAJOR (${FLAMEGPU_VERSION_MAJOR}) must be a non negative integer")

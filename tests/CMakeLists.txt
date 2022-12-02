@@ -80,6 +80,7 @@ SET(TESTS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_CUDAEventTimer.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_SteadyClockTimer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_cxxname.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_environment.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_rtc_device_api.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_rtc_multi_thread_device.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/exception/test_rtc_device_exception.cu
