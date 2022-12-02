@@ -39,13 +39,12 @@ std::string generateTelemetryData(std::string event_name, std::map<std::string, 
     std::string appID = TELEMETRY_APP_ID;
     std::string buildHash = flamegpu::BUILD_HASH;
 
-    // add app version by checking to see if python run 
+    // add app version by checking to see if python run
     if (flamegpu::util::hasEnvironmentVariable("FLAMEGPU_PYFLAMEGPU_VERSION")) {
         std::string py_version = "pyflamegpu" + std::string(flamegpu::VERSION_STRING);
-        payload_items["appVersion"] = py_version;                                                                      // e.g. 'pyflamegpu2.0.0-alpha.3' (graphed in Telemetry deck)
-        payload_items["appPythonVersionFull"] = flamegpu::util::getEnvironmentVariable("FLAMEGPU_PYFLAMEGPU_VERSION"); // e.g. '2.0.0a3+cuda116' 
-    }
-    else {
+        payload_items["appVersion"] = py_version;                                                                       // e.g. 'pyflamegpu2.0.0-alpha.3' (graphed in Telemetry deck)
+        payload_items["appPythonVersionFull"] = flamegpu::util::getEnvironmentVariable("FLAMEGPU_PYFLAMEGPU_VERSION");  // e.g. '2.0.0a3+cuda116'
+    } else {
         // Not python environment
         payload_items["appVersion"] = flamegpu::VERSION_STRING;  // e.g. '2.0.0-alpha.3' (graphed in Telemetry deck)
     }

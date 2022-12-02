@@ -45,7 +45,6 @@ GTEST_API_ int main(int argc, char **argv) {
         if (verbose) {
             fprintf(stdout, "Telemetry packet sent to '%s' json was: %s\n", flamegpu::io::Telemetry::TELEMETRY_ENDPOINT, telemetry_data.c_str());
         }
-
     }
     // Reset all cuda devices for memcheck / profiling purposes.
     int devices = 0;
