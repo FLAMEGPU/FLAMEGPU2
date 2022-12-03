@@ -105,7 +105,9 @@ std::string generateTelemetryData(std::string event_name, std::map<std::string, 
     // murder the formatting into a single compact line
     telemetry_data.erase(std::remove(telemetry_data.begin(), telemetry_data.end(), '\n'), telemetry_data.cend());  // Remove newlines and replace with space
     telemetry_data.erase(std::remove(telemetry_data.begin(), telemetry_data.end(), '\t'), telemetry_data.cend());  // Remove tabs and replace with space
-    telemetry_data.erase(std::remove_if(telemetry_data.begin(), telemetry_data.end(), std::isspace), telemetry_data.end());  // Remove spaces
+    telemetry_data.erase(std::remove_if(telemetry_data.begin(), telemetry_data.end(), [](char c) {
+            return std::isspace(static_cast<unsigned char>(c));
+        }), telemetry_data.end());  // Remove spaces
     size_t pos = 0;
     while ((pos = telemetry_data.find("\"", pos)) != std::string::npos) {   // Use escape characters
         telemetry_data.replace(pos, 1, "\\\"");

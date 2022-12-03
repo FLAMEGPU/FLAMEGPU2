@@ -10,7 +10,7 @@ namespace test_environment {
 // Check that the environmetn helper functions
 TEST(TestEnvironment, TestEnvironment) {
     EXPECT_FALSE(flamegpu::io::Telemetry::globalTelemetryEnabled());                  // Should have been disabled globally
-    EXPECT_TRUE(flamegpu::util::hasEnvironmentVariable("SILENCE_TELEMETRY_NOTICE"));  // Should have been set globally
+    EXPECT_TRUE(flamegpu::util::hasEnvironmentVariable("FLAMEGPU_SILENCE_TELEMETRY_NOTICE"));  // Should have been set globally
 }
 // Check that the test environment varibale for expected variables
 TEST(TestEnvironment, TestEnvironmentHelpers) {
