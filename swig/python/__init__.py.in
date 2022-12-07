@@ -31,8 +31,6 @@ if os.name == 'nt' and hasattr(os, 'add_dll_directory') and callable(getattr(os,
 # module version
 __version__ = '@FLAMEGPU_VERSION_PYTHON@'
 __dist_name__ = '@PYTHON_DISTRIBUTION_NAME@'
-# embed python version in env for detection by telemetry
-os.environ["FLAMEGPU_PYFLAMEGPU_VERSION"] = __version__
 
 del os, sys, pathlib, subprocess
 # Normal module stuff

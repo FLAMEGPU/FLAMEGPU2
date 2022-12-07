@@ -44,15 +44,15 @@ std::string generateTelemetryData(std::string event_name, std::map<std::string, 
     std::string appID = TELEMETRY_APP_ID;
     std::string buildHash = flamegpu::BUILD_HASH;
 
-    // add app version by checking to see if python run
-    if (flamegpu::util::hasEnvironmentVariable("FLAMEGPU_PYFLAMEGPU_VERSION")) {
+    // Differentiate pyflamegpu in the payload via the SWIG compiler macro, which we only define when building for pyflamegpu. 
+    // A user could potenitally static link against a build using that macro, but that's not a use-case we are currently concerned with.
+    #ifdef SWIG
         std::string py_version = "pyflamegpu" + std::string(flamegpu::VERSION_STRING);
-        payload_items["appVersion"] = py_version;                                                                       // e.g. 'pyflamegpu2.0.0-alpha.3' (graphed in Telemetry deck)
-        payload_items["appPythonVersionFull"] = flamegpu::util::getEnvironmentVariable("FLAMEGPU_PYFLAMEGPU_VERSION");  // e.g. '2.0.0a3+cuda116'
-    } else {
-        // Not python environment
+        payload_items["appVersion"] = py_version;  // e.g. 'pyflamegpu2.0.0-alpha.3' (graphed in Telemetry deck)
+    #else  // SWIG 
         payload_items["appVersion"] = flamegpu::VERSION_STRING;  // e.g. '2.0.0-alpha.3' (graphed in Telemetry deck)
-    }
+    #endif  // SWIG
+    
     // other version strings
     payload_items["appVersionFull"] = flamegpu::VERSION_FULL;
     payload_items["majorSystemVersion"] = std::to_string(flamegpu::VERSION_MAJOR);        // e.g. '2' (graphed in Telemetry deck)
