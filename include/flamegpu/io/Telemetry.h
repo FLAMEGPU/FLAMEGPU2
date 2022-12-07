@@ -14,10 +14,6 @@ namespace Telemetry {
  * The telemetry endpoint in which data is sent. This is via the TelemetryDeck web service.
  */
 extern const char TELEMETRY_ENDPOINT[];
-/**
- * The TelemetryDeckweb service app ID
- */
-extern const char TELEMETRY_APP_ID[];
 
 /**
  * The probability that a user will be shown a notice regardiung enabling usage statictics and supporting the software

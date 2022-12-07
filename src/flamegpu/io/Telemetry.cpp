@@ -21,7 +21,12 @@ namespace io {
 namespace Telemetry {
 
 const char TELEMETRY_ENDPOINT[] = "https://nom.telemetrydeck.com/v1/";
+
+namespace {
+
 const char TELEMETRY_APP_ID[] = "94AC5E3F-F674-4E29-BF87-DAF4BA7F8F79";
+
+} // Anonymous namespace
 
 std::string generateTelemetryData(std::string event_name, std::map<std::string, std::string> payload_items) {
     const std::string var_testmode = "$TEST_MODE";
