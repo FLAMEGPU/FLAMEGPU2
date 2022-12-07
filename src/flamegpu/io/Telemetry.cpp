@@ -118,6 +118,10 @@ std::string generateTelemetryData(std::string event_name, std::map<std::string, 
 }
 
 bool sendTelemetryData(std::string telemetry_data) {
+    // Maximum duration curl to attempt to connect to the endpoint
+    const float CURL_CONNECT_TIMEOUT = 2.0;
+    // Maximum total duration for the curl call, including connection and payload
+    const float CURL_MAX_TIME = 4.0;
     // Silent curl command (-s) and redirect response output to null
     std::string null;
 #if _WIN32
@@ -125,7 +129,7 @@ bool sendTelemetryData(std::string telemetry_data) {
 #else
     null = "/dev/null";
 #endif
-    std::string curl_command = "curl -s -o " + null + " -X POST \"" + std::string(TELEMETRY_ENDPOINT) + "\" -H \"Content-Type: application/json; charset=utf-8\" --data-raw \"" + telemetry_data + "\"";
+    std::string curl_command = "curl -s -o " + null + " --connect-timeout " + std::to_string(CURL_CONNECT_TIMEOUT) + " --max-time " + std::to_string(CURL_MAX_TIME) +  " -X POST \"" + std::string(TELEMETRY_ENDPOINT) + "\" -H \"Content-Type: application/json; charset=utf-8\" --data-raw \"" + telemetry_data + "\"";
 
     // capture the return value
     if (std::system(curl_command.c_str()) != EXIT_SUCCESS)
