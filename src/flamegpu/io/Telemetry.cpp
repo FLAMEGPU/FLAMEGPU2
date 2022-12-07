@@ -26,7 +26,7 @@ namespace {
 
 const char TELEMETRY_APP_ID[] = "94AC5E3F-F674-4E29-BF87-DAF4BA7F8F79";
 
-} // Anonymous namespace
+}  // Anonymous namespace
 
 std::string generateTelemetryData(std::string event_name, std::map<std::string, std::string> payload_items) {
     const std::string var_testmode = "$TEST_MODE";
@@ -44,15 +44,15 @@ std::string generateTelemetryData(std::string event_name, std::map<std::string, 
     std::string appID = TELEMETRY_APP_ID;
     std::string buildHash = flamegpu::BUILD_HASH;
 
-    // Differentiate pyflamegpu in the payload via the SWIG compiler macro, which we only define when building for pyflamegpu. 
+    // Differentiate pyflamegpu in the payload via the SWIG compiler macro, which we only define when building for pyflamegpu.
     // A user could potenitally static link against a build using that macro, but that's not a use-case we are currently concerned with.
     #ifdef SWIG
         std::string py_version = "pyflamegpu" + std::string(flamegpu::VERSION_STRING);
         payload_items["appVersion"] = py_version;  // e.g. 'pyflamegpu2.0.0-alpha.3' (graphed in Telemetry deck)
-    #else  // SWIG 
+    #else  // SWIG
         payload_items["appVersion"] = flamegpu::VERSION_STRING;  // e.g. '2.0.0-alpha.3' (graphed in Telemetry deck)
     #endif  // SWIG
-    
+
     // other version strings
     payload_items["appVersionFull"] = flamegpu::VERSION_FULL;
     payload_items["majorSystemVersion"] = std::to_string(flamegpu::VERSION_MAJOR);        // e.g. '2' (graphed in Telemetry deck)
@@ -65,7 +65,9 @@ std::string generateTelemetryData(std::string event_name, std::map<std::string, 
     // OS
 #ifdef _WIN32
     payload_items["operatingSystem"] = "Windows";
-#elif __GNUC__ >= 4
+#elif __linux__
+    payload_items["operatingSystem"] = "Linux";
+#elif __unix__
     payload_items["operatingSystem"] = "Unix";
 #else
     payload_items["operatingSystem"] = "Other";
@@ -91,7 +93,7 @@ std::string generateTelemetryData(std::string event_name, std::map<std::string, 
         first = false;
     }
 
-    // create the telkemtry json package
+    // create the telemetry json package
     std::string telemetry_data = R"json(
     [{
         "isTestMode": "$TEST_MODE",

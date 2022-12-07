@@ -1242,6 +1242,9 @@ void CUDASimulation::simulate() {
         std::map<std::string, std::string> payload_items;
         payload_items["GPUDevices"] = flamegpu::util::detail::compute_capability::getDeviceName(deviceInitialised);
         payload_items["SimTime(s)"] = std::to_string(elapsedSecondsSimulation);
+        #if defined(__CUDACC_VER_MAJOR__) && defined(__CUDACC_VER_MINOR__) && defined(__CUDACC_VER_PATCH__)
+            payload_items["NVCCVersion"] = std::to_string(__CUDACC_VER_MAJOR__) + "." + std::to_string(__CUDACC_VER_MINOR__) + "." + std::to_string(__CUDACC_VER_BUILD__);
+        #endif
         // generate telemtry data
         std::string telemetry_data = flamegpu::io::Telemetry::generateTelemetryData("simulation-run", payload_items);
         // send
