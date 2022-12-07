@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "flamegpu/defines.h"
-#include "flamegpu/io/Telemetry.h"
 
 namespace flamegpu {
 
@@ -27,7 +26,7 @@ class CUDAEnsemble {
      * Execution config for running a CUDAEnsemble
      */
     struct EnsembleConfig {
-        EnsembleConfig(): telemetry(flamegpu::io::Telemetry::globalTelemetryEnabled()) {}
+        EnsembleConfig();
         /**
          * Directory to store output data (primarily logs)
          * Defaults to "" (the working directory, no subdirectory)

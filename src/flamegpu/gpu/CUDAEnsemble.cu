@@ -27,6 +27,8 @@
 
 namespace flamegpu {
 
+CUDAEnsemble::EnsembleConfig::EnsembleConfig(): telemetry(flamegpu::io::Telemetry::globalTelemetryEnabled()) {}
+
 
 CUDAEnsemble::CUDAEnsemble(const ModelDescription& _model, int argc, const char** argv)
     : model(_model.model->clone()) {
