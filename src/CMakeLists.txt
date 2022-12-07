@@ -99,8 +99,6 @@ else()
     endif()
 endif()
 
-
-
 # Specify source files for the static library
 # Can't do this automatically, as CMake wouldn't know when to regen (as CMakeLists.txt would be unchanged)
 # version.h is automatically generated so does not exist prior to configure time
@@ -228,7 +226,6 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/utility/RandomManager.cuh    
     ${FLAMEGPU_ROOT}/include/flamegpu/util/Any.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/cleanup.h
-	${FLAMEGPU_ROOT}/include/flamegpu/util/Environment.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/nvtx.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/StringPair.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/type_decode.h
@@ -314,7 +311,6 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/RandomManager.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/utility/HostRandom.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/cleanup.cu
-	${FLAMEGPU_ROOT}/src/flamegpu/util/Environment.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/util/detail/compute_capability.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/detail/wddm.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/util/detail/JitifyCache.cu
@@ -416,7 +412,7 @@ else()
     message(STATUS, "FLAMEGPU_SHARE_USAGE_STATISTICS is not selected! \n\n"
     "Support for academic software is dependant on evidence of impact. \n"
     "Enabling this option sends minimal anonymous usage statistics so \n"
-    "that we can continue to develop the software under a free licence.\n"
+    "that we can continue to develop the software under a FOSS licence.\n"
     "See our documentation for more information of what we collect and \n"
     "why: https://docs.flamegpu.com/guide/telemetry.html")
 endif()

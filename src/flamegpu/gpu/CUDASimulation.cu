@@ -1246,10 +1246,10 @@ void CUDASimulation::simulate() {
             payload_items["NVCCVersion"] = std::to_string(__CUDACC_VER_MAJOR__) + "." + std::to_string(__CUDACC_VER_MINOR__) + "." + std::to_string(__CUDACC_VER_BUILD__);
         #endif
         // generate telemtry data
-        std::string telemetry_data = flamegpu::io::Telemetry::generateTelemetryData("simulation-run", payload_items);
+        std::string telemetry_data = flamegpu::io::Telemetry::generateData("simulation-run", payload_items);
         // send
-        if (!flamegpu::io::Telemetry::sendTelemetryData(telemetry_data)) {
-            if ((getSimulationConfig().verbosity > Verbosity::Quiet))
+        if (!flamegpu::io::Telemetry::sendData(telemetry_data)) {
+            if ((getSimulationConfig().verbosity > Verbosity::Verbose))
                 fprintf(stderr, "Warning: Usage statistics for CUDASimulation failed to send.\n");
         }
         // print
@@ -1259,7 +1259,7 @@ void CUDASimulation::simulate() {
     } else {
         // Occasional hinting of telemetry if not in use (and not Quiet and not testing mode)
         if ((getSimulationConfig().verbosity > Verbosity::Quiet))
-            flamegpu::io::Telemetry::hintTelemetryUsage();
+            flamegpu::io::Telemetry::encourageUsage();
     }
 
     // Export logs

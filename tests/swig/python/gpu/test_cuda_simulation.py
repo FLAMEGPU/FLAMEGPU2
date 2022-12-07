@@ -630,7 +630,8 @@ class TestSimulationTelemetry(TestCase):
         telemetry = c.SimulationConfig().telemetry
         assert not(telemetry)    # Telemetry must be disabled during test suite (set in test main)
         # set telemetry at runtime which will override any global/cmake values
-        c.shareUsageStatistics(True)
+        c.SimulationConfig().telemetry = True
+
         assert c.SimulationConfig().telemetry
 
     def test_simulation_telemetry_environemt(self):

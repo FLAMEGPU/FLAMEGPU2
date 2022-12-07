@@ -59,10 +59,9 @@ extern const char VERSION_STRING[];
 extern const char VERSION_FULL[];
 
 /**
- * FLAME GPU Build hash
- * A uniquely generate hash created a cmake configure time
+ * A randomly generated string created once per CMake build directory/configuration, for use with telemetry to approximate unique users without any PII (if telemetry is enabled).
  */
-extern const char BUILD_HASH[];
+extern const char TELEMETRY_RANDOM_ID[];
 
 }  // namespace flamegpu
 

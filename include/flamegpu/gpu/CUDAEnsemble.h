@@ -146,11 +146,6 @@ class CUDAEnsemble {
      * Return the list of logs collected from the last call to simulate()
      */
     const std::vector<RunLog> &getLogs();
-    /**
-     * Opts in to sending telemtry data by updating the telemetry value in the simulation config at runtime.
-     * The previous value will have been set by the CMake variable FLAMEGPU_SHARE_USAGE_STATISTICS
-     */
-    void shareUsageStatistics(bool telemetry_enabled = true);
 
  private:
     /**

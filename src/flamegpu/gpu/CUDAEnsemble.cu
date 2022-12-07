@@ -27,7 +27,8 @@
 
 namespace flamegpu {
 
-CUDAEnsemble::EnsembleConfig::EnsembleConfig(): telemetry(flamegpu::io::Telemetry::globalTelemetryEnabled()) {}
+CUDAEnsemble::EnsembleConfig::EnsembleConfig()
+    : telemetry(flamegpu::io::Telemetry::isEnabled()) {}
 
 
 CUDAEnsemble::CUDAEnsemble(const ModelDescription& _model, int argc, const char** argv)
@@ -238,20 +239,22 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
             payload_items["NVCCVersion"] = std::to_string(__CUDACC_VER_MAJOR__) + "." + std::to_string(__CUDACC_VER_MINOR__) + "." + std::to_string(__CUDACC_VER_BUILD__);
         #endif
         // generate telemetry data
-        std::string telemetry_data = flamegpu::io::Telemetry::generateTelemetryData("ensemble-run", payload_items);
+        std::string telemetry_data = flamegpu::io::Telemetry::generateData("ensemble-run", payload_items);
         // send
-        if (!flamegpu::io::Telemetry::sendTelemetryData(telemetry_data)) {
-            if ((config.verbosity > Verbosity::Quiet))
+        if (!flamegpu::io::Telemetry::sendData(telemetry_data)) {
+            if ((config.verbosity > Verbosity::Verbose)) {
                 fprintf(stderr, "Warning: Usage statistics for CUDAEnsemble failed to send.\n");
+            }
         }
         // print
         if ((config.verbosity >= Verbosity::Verbose)) {
             fprintf(stdout, "Telemetry packet sent to '%s' json was: %s\n", flamegpu::io::Telemetry::TELEMETRY_ENDPOINT, telemetry_data.c_str());
         }
     } else {
-        // Occasional hinting of telemetry if not in use (and not Quiet and not testing mode)
-        if ((config.verbosity > Verbosity::Quiet))
-            flamegpu::io::Telemetry::hintTelemetryUsage();
+        // Encourage users who have opted out to opt back in, unless suppressed.
+        if ((config.verbosity > Verbosity::Quiet)) {
+            flamegpu::io::Telemetry::encourageUsage();
+        }
     }
 
     // Free memory
@@ -458,10 +461,6 @@ void CUDAEnsemble::setExitLog(const LoggingConfig &exitConfig) {
 }
 const std::vector<RunLog> &CUDAEnsemble::getLogs() {
     return run_logs;
-}
-
-void CUDAEnsemble::shareUsageStatistics(bool telemetry_enabled) {
-    config.telemetry = telemetry_enabled;
 }
 
 }  // namespace flamegpu

@@ -16,9 +16,13 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/model/EnvironmentData.h"
-
+#include "flamegpu/io/Telemetry.h"
 
 namespace flamegpu {
+
+Simulation::Config::Config()
+    : random_seed(static_cast<uint64_t>(time(nullptr)))
+    , telemetry(flamegpu::io::Telemetry::isEnabled()) { }
 
 Simulation::Simulation(const std::shared_ptr<const ModelData> &_model)
     : model(_model->clone())
@@ -113,10 +117,6 @@ void Simulation::applyConfig() {
     // Call derived class config stuff first
     applyConfig_derived();
     // Random is handled by derived class, as it relies on singletons being init
-}
-
-void Simulation::shareUsageStatistics(bool telemetry_enabled) {
-    config.telemetry = telemetry_enabled;
 }
 
 const ModelData& Simulation::getModelDescription() const {

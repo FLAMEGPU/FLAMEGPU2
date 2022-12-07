@@ -9,43 +9,105 @@
 #include <cstdio>
 #include <cctype>
 
-
 #include "flamegpu/version.h"
-#include "flamegpu/exception/FLAMEGPUException.h"
-#include "flamegpu/util/Environment.h"
-
-
 
 namespace flamegpu {
 namespace io {
-namespace Telemetry {
-
-const char TELEMETRY_ENDPOINT[] = "https://nom.telemetrydeck.com/v1/";
 
 namespace {
+    // the FLAMEGPU2 telemetry app id.
+    const char TELEMETRY_APP_ID[] = "94AC5E3F-F674-4E29-BF87-DAF4BA7F8F79";
 
-const char TELEMETRY_APP_ID[] = "94AC5E3F-F674-4E29-BF87-DAF4BA7F8F79";
+    // Flag tracking if telemetry is enabled, initialised subject to preproc and env vars in initialiseFromEnvironmentIfNeeded
+    static bool enabled = false;
+    // Flag indicating if users have suppressed telemetry warnings
+    static bool suppressed = false;
+    // Flag indicating if these anon namespace statics have been enabled or not
+    static bool initialised = false;
+    // Flag indicating if the user has been notified / encouraged to enable usage statistics or not
+    static bool haveNotified = false;
 
-}  // Anonymous namespace
+    /*
+     * Initialise namespace scoped static variables based from environment variables, if not done already.
+     This is done in a method to avoid potential UB with initialisation order of static members and the system environment, which maybe undefined based on SO posts / is not just a direct mapping.
+    */
+    void initialiseFromEnvironmentIfNeeded() {
+        if (!initialised) {
+            // Enabled by default
+            enabled = true;
+            // If the environment var is set, check if its false-y and if so set to fales.
+            char * env_FLAMEGPU_SHARE_USAGE_STATISTICS = std::getenv("FLAMEGPU_SHARE_USAGE_STATISTICS");
+            if(env_FLAMEGPU_SHARE_USAGE_STATISTICS != NULL) {
+                std::string v = std::string(env_FLAMEGPU_SHARE_USAGE_STATISTICS);
+                std::transform(v.begin(), v.end(), v.begin(), [](unsigned char c){ return std::tolower(c); });
+                if (v == "0" || v == "false" || v == "off" ) {
+                    enabled = false;
+                }
+            } else {
+                // if the environment variable is not specified, use the value from the preprocessor
+                #ifdef FLAMEGPU_SHARE_USAGE_STATISTICS
+                    printf("FLAMEGPU_SHARE_USAGE_STATISTICS defined\n");
+                    enabled = true;
+                #else
+                    printf("FLAMEGPU_SHARE_USAGE_STATISTICS not defined\n");
+                    enabled = false;
+                #endif
+            }
+            printf("@todo - deal with default suppression status / way of not \n");
+            printf("@todo - telemetry test environment. FLAMEGPU_TELEMETRY_TEST_MODE\n");
+            // initialise the suppression status, false by default, unless FLAMEGPU_SUPPRESS_TELEMETRY_NOTICE is enabled.
 
-std::string generateTelemetryData(std::string event_name, std::map<std::string, std::string> payload_items) {
+
+            // Mark this as initialised.
+            initialised = true;
+        }
+    }
+
+}  // anonymous namespace
+
+void Telemetry::enable() {
+    // Initialise from the env var is needed. A ctor might be nicer.
+    initialiseFromEnvironmentIfNeeded();
+    // set to enabled.
+    enabled = true;
+}
+
+void Telemetry::disable() {
+    // initialise from the env var if needed
+    initialiseFromEnvironmentIfNeeded();
+    // set to disabled.
+    enabled = false;
+}
+
+bool Telemetry::isEnabled() {
+    // initialise from the env var if needed
+    initialiseFromEnvironmentIfNeeded();
+    // return if it is enabled or not.
+    return enabled;
+}
+
+
+void Telemetry::suppressNotice() {
+    // initialise from the env var if needed
+    initialiseFromEnvironmentIfNeeded();
+    // set the suppressed flag in the anon namespace
+    suppressed = true;
+}
+
+std::string Telemetry::generateData(std::string event_name, std::map<std::string, std::string> payload_items) {
     const std::string var_testmode = "$TEST_MODE";
     const std::string var_appID = "$APP_ID";
-    const std::string var_buildHash = "$BUILD_HASH";
+    const std::string var_telemetryRandomID = "$TELEMETRY_RANDOM_ID";
     const std::string var_eventName = "$EVENT_TYPE";
     const std::string var_payload = "$PAYLOAD";
 
     // check ENV for test variable FLAMEGPU_TEST_ENVIRONMENT
-    std::string testmode;
-    if (flamegpu::util::isTestEnvironment())
-        testmode = "true";
-    else
-        testmode = "false";
+    std::string testmode = "false";// isTestEnvironment ? "true" : "false"; @todo
     std::string appID = TELEMETRY_APP_ID;
-    std::string buildHash = flamegpu::BUILD_HASH;
+    std::string telemetryRandomID = flamegpu::TELEMETRY_RANDOM_ID;
 
     // Differentiate pyflamegpu in the payload via the SWIG compiler macro, which we only define when building for pyflamegpu.
-    // A user could potenitally static link against a build using that macro, but that's not a use-case we are currently concerned with.
+    // A user could potentially static link against a build using that macro, but that's not a use-case we are currently concerned with.
     #ifdef SWIG
         std::string py_version = "pyflamegpu" + std::string(flamegpu::VERSION_STRING);
         payload_items["appVersion"] = py_version;  // e.g. 'pyflamegpu2.0.0-alpha.3' (graphed in Telemetry deck)
@@ -55,9 +117,9 @@ std::string generateTelemetryData(std::string event_name, std::map<std::string, 
 
     // other version strings
     payload_items["appVersionFull"] = flamegpu::VERSION_FULL;
-    payload_items["majorSystemVersion"] = std::to_string(flamegpu::VERSION_MAJOR);        // e.g. '2' (graphed in Telemetry deck)
+    payload_items["majorSystemVersion"] = std::to_string(flamegpu::VERSION_MAJOR); // e.g. '2' (graphed in Telemetry deck)
     std::string major_minor_patch = std::to_string(flamegpu::VERSION_MAJOR) + "." + std::to_string(flamegpu::VERSION_MINOR) + "." + std::to_string(flamegpu::VERSION_PATCH);
-    payload_items["majorMinorSystemVersion"] = major_minor_patch;                         // e.g. '2.0.0' (graphed in Telemetry deck)
+    payload_items["majorMinorSystemVersion"] = major_minor_patch; // e.g. '2.0.0' (graphed in Telemetry deck)
     payload_items["appVersionPatch"] = std::to_string(flamegpu::VERSION_PATCH);
     payload_items["appVersionPreRelease"] = flamegpu::VERSION_PRERELEASE;
     payload_items["buildNumber"] = flamegpu::VERSION_BUILDMETADATA;  // e.g. '0553592f' (graphed in Telemetry deck)
@@ -72,7 +134,7 @@ std::string generateTelemetryData(std::string event_name, std::map<std::string, 
 #else
     payload_items["operatingSystem"] = "Other";
 #endif
-    // VIS
+    // visualiastion status
 #ifdef VISUALISATION
     payload_items["Visualisation"] = "true";
 #else
@@ -98,7 +160,7 @@ std::string generateTelemetryData(std::string event_name, std::map<std::string, 
     [{
         "isTestMode": "$TEST_MODE",
         "appID": "$APP_ID",
-        "clientUser": "$BUILD_HASH",
+        "clientUser": "$TELEMETRY_RANDOM_ID",
         "sessionID": "",
         "type" : "$EVENT_TYPE",
         "payload" : [$PAYLOAD]
@@ -106,29 +168,31 @@ std::string generateTelemetryData(std::string event_name, std::map<std::string, 
     // update the placeholders
     telemetry_data.replace(telemetry_data.find(var_testmode), var_testmode.length(), testmode);
     telemetry_data.replace(telemetry_data.find(var_appID), var_appID.length(), appID);
-    telemetry_data.replace(telemetry_data.find(var_buildHash), var_buildHash.length(), buildHash);
+    telemetry_data.replace(telemetry_data.find(var_telemetryRandomID), var_telemetryRandomID.length(), telemetryRandomID);
     telemetry_data.replace(telemetry_data.find(var_eventName), var_eventName.length(), event_name);
     telemetry_data.replace(telemetry_data.find(var_payload), var_payload.length(), payload);
-    // murder the formatting into a single compact line
-    telemetry_data.erase(std::remove(telemetry_data.begin(), telemetry_data.end(), '\n'), telemetry_data.end());  // Remove newlines and replace with space
-    telemetry_data.erase(std::remove(telemetry_data.begin(), telemetry_data.end(), '\t'), telemetry_data.end());  // Remove tabs and replace with space
+    // Remove newlines and replace with space
+    telemetry_data.erase(std::remove(telemetry_data.begin(), telemetry_data.end(), '\n'), telemetry_data.end());
+    // Remove tabs and replace with space
+    telemetry_data.erase(std::remove(telemetry_data.begin(), telemetry_data.end(), '\t'), telemetry_data.end());
+     // Remove spaces
     telemetry_data.erase(std::remove_if(telemetry_data.begin(), telemetry_data.end(), [](char c) {
             return std::isspace(static_cast<unsigned char>(c));
-        }), telemetry_data.end());  // Remove spaces
+        }), telemetry_data.end());
+    // Use escape characters
     size_t pos = 0;
-    while ((pos = telemetry_data.find("\"", pos)) != std::string::npos) {   // Use escape characters
+    while ((pos = telemetry_data.find("\"", pos)) != std::string::npos) {
         telemetry_data.replace(pos, 1, "\\\"");
         pos += 2;
     }
-
     return telemetry_data;
 }
 
-bool sendTelemetryData(std::string telemetry_data) {
+bool Telemetry::sendData(std::string telemetry_data) {
     // Maximum duration curl to attempt to connect to the endpoint
-    const float CURL_CONNECT_TIMEOUT = 2.0;
+    const float CURL_CONNECT_TIMEOUT = 0.5;
     // Maximum total duration for the curl call, including connection and payload
-    const float CURL_MAX_TIME = 4.0;
+    const float CURL_MAX_TIME = 1.0;
     // Silent curl command (-s) and redirect response output to null
     std::string null;
 #if _WIN32
@@ -137,42 +201,30 @@ bool sendTelemetryData(std::string telemetry_data) {
     null = "/dev/null";
 #endif
     std::string curl_command = "curl -s -o " + null + " --connect-timeout " + std::to_string(CURL_CONNECT_TIMEOUT) + " --max-time " + std::to_string(CURL_MAX_TIME) +  " -X POST \"" + std::string(TELEMETRY_ENDPOINT) + "\" -H \"Content-Type: application/json; charset=utf-8\" --data-raw \"" + telemetry_data + "\"";
-
+    printf("%s\n", curl_command.c_str());
+    exit(1);
     // capture the return value
-    if (std::system(curl_command.c_str()) != EXIT_SUCCESS)
+    if (std::system(curl_command.c_str()) != EXIT_SUCCESS) {
         return false;
+    }
 
     return true;
 }
 
-void hintTelemetryUsage() {
-    float random_normalised = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
-    // Dont print telemetry hints in test environment
-    if ((random_normalised < PROBABILITY_TELEMETERY_HINT) && !(flamegpu::util::isTestEnvironment()) && !(flamegpu::util::hasEnvironmentVariable("FLAMEGPU_SILENCE_TELEMETRY_NOTICE"))) {
-        fprintf(stdout, "NOTICE: The FLAME GPU software is reliant on evidence to support is continued development. Please "
-                        "consider enabling SHARE_USAGE_STATISTICS in your CMake options or calling 'shareUsageStatistics()' on "
-                        "your Simulation or Ensemble object. This message is randomly (p=%f) displayed but can be silenced "
-                        "using '--quiet' or by setting 'SILENCE_TELEMETRY_NOTICE' in your environment.\n", PROBABILITY_TELEMETERY_HINT);
+void Telemetry::encourageUsage() {
+    // Only print the usage encouragement notice if it has not already been encouraged, telemetry is not enabled and telemetry has not been suppressed.
+    if (!haveNotified && !suppressed && !isEnabled()) {
+        fprintf(stdout,
+            "NOTICE: The FLAME GPU software is reliant on evidence to support is continued development. Please "
+            "consider enabling FLAMEGPU_SHARE_USAGE_STATISTICS during CMake configuration, "
+            "setting FLAMEGPU_SHARE_USAGE_STATISTICS to true as an environment variable, "
+            "or setting the Simulation/Ensemble config telemetry property to true.\n"
+            "This message can be silenced by suppressing all output (--quiet), "
+            "calling flamegpu::io::suppressNotice, or defining a system environment variable FLAMEGPU_SUPPRESS_TELEMETRY_NOTICE\n");
+        // Set the flag that this has already been emitted once during execution of the current binary file, so it doesn't happen again.
+        haveNotified = true;
     }
 }
 
-bool silenceTelemetryNotice() {
-    return flamegpu::util::setEnvironmentVariable("FLAMEGPU_SILENCE_TELEMETRY_NOTICE", "True");
-}
-
-bool globalTelemetryEnabled() {
-    bool cmake_shared_usage_stats = false;
-#ifdef FLAMEGPU_SHARE_USAGE_STATISTICS
-    cmake_shared_usage_stats = true;
-#endif
-    std::string env_val_str = flamegpu::util::getEnvironmentVariable("FLAMEGPU_SHARE_USAGE_STATISTICS");
-    // Return false if explicitly disabled
-    if ((env_val_str == "0") || (env_val_str == "False") || (env_val_str == "FALSE") || (env_val_str == "Off") || (env_val_str == "OFF"))
-        return false;
-    // True if either are set
-    return (cmake_shared_usage_stats || flamegpu::util::hasEnvironmentVariable("FLAMEGPU_SHARE_USAGE_STATISTICS"));
-}
-
-}  // namespace Telemetry
 }  // namespace io
 }  // namespace flamegpu

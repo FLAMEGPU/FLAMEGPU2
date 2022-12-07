@@ -30,7 +30,6 @@ if os.name == 'nt' and hasattr(os, 'add_dll_directory') and callable(getattr(os,
   
 # module version
 __version__ = '@FLAMEGPU_VERSION_PYTHON@'
-__dist_name__ = '@PYTHON_DISTRIBUTION_NAME@'
 
 del os, sys, pathlib, subprocess
 # Normal module stuff

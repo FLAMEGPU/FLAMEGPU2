@@ -12,6 +12,6 @@ const char VERSION_STRING[] = {"@FLAMEGPU_VERSION_STRING@"};
 
 const char VERSION_FULL[] = {"@FLAMEGPU_VERSION_FULL@"};
 
-const char BUILD_HASH[] = {"@FLAMEGPU_BUILD_HASH@"};
+const char TELEMETRY_RANDOM_ID[] = {"@FLAMEGPU_TELEMETRY_RANDOM_ID@"};
 
 }  // namespace flamegpu

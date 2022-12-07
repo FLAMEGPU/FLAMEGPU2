@@ -1208,7 +1208,7 @@ TEST(TestCUDASimulation, simulationTelemetryFunction) {
     const bool telemetry = c.SimulationConfig().telemetry;
     ASSERT_FALSE(telemetry);    // Telemetry must be disabled during test suite (set in test main)
     // set telemetry at runtime which will override any global/cmake values
-    c.shareUsageStatistics(true);
+    c.SimulationConfig().telemetry = true;
     EXPECT_TRUE(c.SimulationConfig().telemetry);
 }
 
