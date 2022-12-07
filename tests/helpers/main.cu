@@ -30,10 +30,7 @@ GTEST_API_ int main(int argc, char **argv) {
     // send telemetry if it was enabled globally (dont bother nagging on test suite)
     if (share_usage) {
         std::map<std::string, std::string> telemetry_payload;
-        if (rtn)
-            telemetry_payload["TestOutcome"] = "Passed";
-        else
-            telemetry_payload["TestOutcome"] = "Failed";
+        telemetry_payload["TestOutcome"] = rtn ? "Passed" : "Failed";
         telemetry_payload["TestsPassed"] = std::to_string(::testing::UnitTest::GetInstance()->successful_test_count());
         telemetry_payload["TestsToRun"] = std::to_string(::testing::UnitTest::GetInstance()->test_to_run_count());
         telemetry_payload["TestsTotal"] = std::to_string(::testing::UnitTest::GetInstance()->total_test_count());
