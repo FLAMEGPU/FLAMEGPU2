@@ -86,7 +86,7 @@ class JitifyCache {
      * All kernels loaded after this will need to come from the on-disk cache or be compiled
      * @note Will only clear the cache files used by the current build (debug or release)
      */
-    void clearDiskCache();
+    static void clearDiskCache();
 
  private:
     /**

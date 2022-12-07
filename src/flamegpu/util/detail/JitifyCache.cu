@@ -560,7 +560,6 @@ void JitifyCache::clearMemoryCache() {
     cache.clear();
 }
 void JitifyCache::clearDiskCache() {
-    std::lock_guard<std::mutex> lock(cache_mutex);
     const std::filesystem::path tmp_dir = getTMP();
     for (const auto & entry : std::filesystem::directory_iterator(tmp_dir)) {
         if (std::filesystem::is_regular_file(entry.path())) {

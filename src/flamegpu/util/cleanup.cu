@@ -2,6 +2,7 @@
 
 #include <cuda_runtime.h>
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/util/detail/JitifyCache.h"
 
 namespace flamegpu {
 namespace util {
@@ -14,6 +15,10 @@ void cleanup() {
         gpuErrchk(cudaSetDevice(device));
         gpuErrchk(cudaDeviceReset());
     }
+}
+
+void clearRTCDiskCache() {
+    detail::JitifyCache::clearDiskCache();
 }
 
 }  // namespace util
