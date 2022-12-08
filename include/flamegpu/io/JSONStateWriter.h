@@ -28,7 +28,7 @@ class JSONStateWriter : public StateWriter {
      */
     JSONStateWriter(
         const std::string &model_name,
-        const std::shared_ptr<EnvironmentManager>& env_manager,
+        const std::shared_ptr<detail::EnvironmentManager>& env_manager,
         const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
         unsigned int iterations,
         const std::string &output_file,

@@ -31,7 +31,7 @@ class XMLStateReader : public StateReader {
     XMLStateReader(
         const std::string &model_name,
         const std::unordered_map<std::string, EnvironmentData::PropData> &env_desc,
-        std::unordered_map<std::string, util::Any> &env_init,
+        std::unordered_map<std::string, detail::Any> &env_init,
         util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
         const std::string &input_file,
         Simulation *sim_instance);

@@ -20,16 +20,16 @@
 #include <memory>
 #include <utility>
 
-#include "flamegpu/sim/AgentInterface.h"
+#include "flamegpu/simulation/detail/AgentInterface.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/runtime/HostAPI.h"
-#include "flamegpu/gpu/CUDASimulation.h"
-#include "flamegpu/gpu/CUDAAgent.h"
-#include "flamegpu/pop/DeviceAgentVector.h"
-#include "flamegpu/pop/DeviceAgentVector_impl.h"
-#include "flamegpu/sim/AgentLoggingConfig_Reductions.cuh"
-#include "flamegpu/sim/AgentLoggingConfig_SumReturn.h"
-#include "flamegpu/util/type_decode.h"
+#include "flamegpu/simulation/CUDASimulation.h"
+#include "flamegpu/simulation/detail/CUDAAgent.h"
+#include "flamegpu/runtime/agent/DeviceAgentVector.h"
+#include "flamegpu/runtime/agent/DeviceAgentVector_impl.h"
+#include "flamegpu/simulation/AgentLoggingConfig_Reductions.cuh"
+#include "flamegpu/simulation/AgentLoggingConfig_SumReturn.h"
+#include "flamegpu/detail/type_decode.h"
 
 namespace flamegpu {
 

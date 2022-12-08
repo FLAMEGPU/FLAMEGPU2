@@ -4,7 +4,7 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-#include "flamegpu/util/detail/curand.cuh"
+#include "flamegpu/detail/curand.cuh"
 #include "flamegpu/runtime/detail/SharedBlock.h"
 #include "flamegpu/defines.h"
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
@@ -30,7 +30,7 @@ typedef void(AgentFunctionWrapper)(
     const unsigned int popNo,
     const void *in_messagelist_metadata,
     const void *out_messagelist_metadata,
-    util::detail::curandState *d_rng,
+    detail::curandState *d_rng,
     unsigned int *scanFlag_agentDeath,
     unsigned int *scanFlag_messageOutput,
     unsigned int *scanFlag_agentOutput);  // Can't put __global__ in a typedef
@@ -66,7 +66,7 @@ __global__ void agent_function_wrapper(
     const unsigned int popNo,
     const void *in_messagelist_metadata,
     const void *out_messagelist_metadata,
-    util::detail::curandState *d_rng,
+    detail::curandState *d_rng,
     unsigned int *scanFlag_agentDeath,
     unsigned int *scanFlag_messageOutput,
     unsigned int *scanFlag_agentOutput) {

@@ -1,7 +1,7 @@
 #include "flamegpu/runtime/messaging/MessageSpatial3D/MessageSpatial3DHost.h"
 #include "flamegpu/runtime/messaging/MessageSpatial3D/MessageSpatial3DDevice.cuh"
-#include "flamegpu/util/detail/cuda.cuh"
-#include "flamegpu/gpu/CUDAScatter.cuh"
+#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #pragma warning(disable : 4706 4834)
@@ -13,7 +13,7 @@
 
 
 namespace flamegpu {
-MessageSpatial3D::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
+MessageSpatial3D::CUDAModelHandler::CUDAModelHandler(detail::CUDAMessage &a)
   : MessageSpecialisationHandler()
   , sim_message(a) {
     flamegpu::util::nvtx::Range range{"Spatial3D::CUDAModelHandler"};
@@ -54,7 +54,7 @@ __global__ void atomicHistogram3D(
     bin_sub_index[index] = bin_idx;
 }
 
-void MessageSpatial3D::CUDAModelHandler::init(CUDAScatter &, unsigned int, cudaStream_t stream) {
+void MessageSpatial3D::CUDAModelHandler::init(detail::CUDAScatter &, unsigned int, cudaStream_t stream) {
     allocateMetaDataDevicePtr(stream);
     // Set PBM to 0
     gpuErrchk(cudaMemsetAsync(hd_data.PBM, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
@@ -75,25 +75,25 @@ void MessageSpatial3D::CUDAModelHandler::allocateMetaDataDevicePtr(cudaStream_t 
 void MessageSpatial3D::CUDAModelHandler::freeMetaDataDevicePtr() {
     if (d_data != nullptr) {
         d_CUB_temp_storage_bytes = 0;
-        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_CUB_temp_storage));
-        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_histogram));
-        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(hd_data.PBM));
-        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_data));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_CUB_temp_storage));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_histogram));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(hd_data.PBM));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_data));
         d_CUB_temp_storage = nullptr;
         d_histogram = nullptr;
         hd_data.PBM = nullptr;
         d_data = nullptr;
         if (d_keys) {
             d_keys_vals_storage_bytes = 0;
-            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_keys));
-            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_vals));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_keys));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_vals));
             d_keys = nullptr;
             d_vals = nullptr;
         }
     }
 }
 
-void MessageSpatial3D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
+void MessageSpatial3D::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
     flamegpu::util::nvtx::Range range{"MessageSpatial3D::CUDAModelHandler::buildIndex"};
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count
@@ -128,7 +128,7 @@ void MessageSpatial3D::CUDAModelHandler::resizeCubTemp(cudaStream_t stream) {
     gpuErrchk(cub::DeviceScan::ExclusiveSum(nullptr, bytesCheck, hd_data.PBM, d_histogram, binCount + 1, stream));
     if (bytesCheck > d_CUB_temp_storage_bytes) {
         if (d_CUB_temp_storage) {
-            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_CUB_temp_storage));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_CUB_temp_storage));
         }
         d_CUB_temp_storage_bytes = bytesCheck;
         gpuErrchk(cudaMalloc(&d_CUB_temp_storage, d_CUB_temp_storage_bytes));
@@ -139,8 +139,8 @@ void MessageSpatial3D::CUDAModelHandler::resizeKeysVals(const unsigned int newSi
     size_t bytesCheck = newSize * sizeof(unsigned int);
     if (bytesCheck > d_keys_vals_storage_bytes) {
         if (d_keys) {
-            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_keys));
-            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_vals));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_keys));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_vals));
         }
         d_keys_vals_storage_bytes = bytesCheck;
         gpuErrchk(cudaMalloc(&d_keys, d_keys_vals_storage_bytes));
@@ -236,7 +236,7 @@ MessageSpatial3D::Data::Data(std::shared_ptr<const ModelData> model, const std::
     , minZ(NAN)
     , maxZ(NAN) {
     // MessageSpatial3D has x/y/z variables by default (x/y are inherited)
-    variables.emplace("z", Variable(std::array<typename type_decode<float>::type_t, 1>{}));
+    variables.emplace("z", Variable(std::array<typename detail::type_decode<float>::type_t, 1>{}));
 }
 MessageSpatial3D::Data::Data(std::shared_ptr<const ModelData> model, const Data &other)
     : MessageSpatial2D::Data(model, other)
@@ -252,7 +252,7 @@ MessageSpatial3D::Data::Data(std::shared_ptr<const ModelData> model, const Data 
 MessageSpatial3D::Data *MessageSpatial3D::Data::clone(const std::shared_ptr<const ModelData> &newParent) {
     return new Data(newParent, *this);
 }
-std::unique_ptr<MessageSpecialisationHandler> MessageSpatial3D::Data::getSpecialisationHander(CUDAMessage &owner) const {
+std::unique_ptr<MessageSpecialisationHandler> MessageSpatial3D::Data::getSpecialisationHander(detail::CUDAMessage &owner) const {
     return std::unique_ptr<MessageSpecialisationHandler>(new CUDAModelHandler(owner));
 }
 std::type_index MessageSpatial3D::Data::getType() const { return std::type_index(typeid(MessageSpatial3D)); }

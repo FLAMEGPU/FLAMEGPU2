@@ -10,16 +10,16 @@
 #endif
 
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/gpu/CUDAMessage.h"
-#include "flamegpu/gpu/CUDAScatter.cuh"
+#include "flamegpu/simulation/detail/CUDAMessage.h"
+#include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/util/nvtx.h"
 
 #include "flamegpu/runtime/messaging/MessageBucket/MessageBucketHost.h"
 // #include "flamegpu/runtime/messaging/MessageBucket/MessageBucketDevice.cuh"
-#include "flamegpu/util/detail/cuda.cuh"
+#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
-MessageBucket::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
+MessageBucket::CUDAModelHandler::CUDAModelHandler(detail::CUDAMessage &a)
     : MessageSpecialisationHandler()
     , sim_message(a) {
     flamegpu::util::nvtx::Range range{"MessageBucket::CUDAModelHandler::CUDAModelHandler"};
@@ -48,7 +48,7 @@ __global__ void atomicHistogram1D(
     bin_sub_index[index] = bin_idx;
 }
 
-void MessageBucket::CUDAModelHandler::init(CUDAScatter &, unsigned int, cudaStream_t stream) {
+void MessageBucket::CUDAModelHandler::init(detail::CUDAScatter &, unsigned int, cudaStream_t stream) {
     allocateMetaDataDevicePtr(stream);
     // Set PBM to 0
     gpuErrchk(cudaMemsetAsync(hd_data.PBM, 0x00000000, (bucketCount + 1) * sizeof(unsigned int), stream));
@@ -69,25 +69,25 @@ void MessageBucket::CUDAModelHandler::allocateMetaDataDevicePtr(cudaStream_t str
 void MessageBucket::CUDAModelHandler::freeMetaDataDevicePtr() {
     if (d_data != nullptr) {
         d_CUB_temp_storage_bytes = 0;
-        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_CUB_temp_storage));
-        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_histogram));
-        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(hd_data.PBM));
-        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_data));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_CUB_temp_storage));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_histogram));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(hd_data.PBM));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_data));
         d_CUB_temp_storage = nullptr;
         d_histogram = nullptr;
         hd_data.PBM = nullptr;
         d_data = nullptr;
         if (d_keys) {
             d_keys_vals_storage_bytes = 0;
-            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_keys));
-            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_vals));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_keys));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_vals));
             d_keys = nullptr;
             d_vals = nullptr;
         }
     }
 }
 
-void MessageBucket::CUDAModelHandler::buildIndex(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
+void MessageBucket::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
     flamegpu::util::nvtx::Range range{"MessageBucket::CUDAModelHandler::buildIndex"};
     // Cuda operations all occur within the stream, so only a final sync is required.s
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
@@ -121,7 +121,7 @@ void MessageBucket::CUDAModelHandler::resizeCubTemp() {
     gpuErrchk(cub::DeviceScan::ExclusiveSum(nullptr, bytesCheck, hd_data.PBM, d_histogram, bucketCount + 1));
     if (bytesCheck > d_CUB_temp_storage_bytes) {
         if (d_CUB_temp_storage) {
-            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_CUB_temp_storage));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_CUB_temp_storage));
         }
         d_CUB_temp_storage_bytes = bytesCheck;
         gpuErrchk(cudaMalloc(&d_CUB_temp_storage, d_CUB_temp_storage_bytes));
@@ -132,8 +132,8 @@ void MessageBucket::CUDAModelHandler::resizeKeysVals(const unsigned int newSize)
     size_t bytesCheck = newSize * sizeof(unsigned int);
     if (bytesCheck > d_keys_vals_storage_bytes) {
         if (d_keys) {
-            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_keys));
-            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_vals));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_keys));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_vals));
         }
         d_keys_vals_storage_bytes = bytesCheck;
         gpuErrchk(cudaMalloc(&d_keys, d_keys_vals_storage_bytes));
@@ -216,7 +216,7 @@ MessageBucket::Data::Data(std::shared_ptr<const ModelData> model, const Data &ot
 MessageBucket::Data *MessageBucket::Data::clone(const std::shared_ptr<const ModelData> &newParent) {
     return new Data(newParent, *this);
 }
-std::unique_ptr<MessageSpecialisationHandler> MessageBucket::Data::getSpecialisationHander(CUDAMessage &owner) const {
+std::unique_ptr<MessageSpecialisationHandler> MessageBucket::Data::getSpecialisationHander(detail::CUDAMessage &owner) const {
     return std::unique_ptr<MessageSpecialisationHandler>(new CUDAModelHandler(owner));
 }
 std::type_index MessageBucket::Data::getType() const { return std::type_index(typeid(MessageBucket)); }

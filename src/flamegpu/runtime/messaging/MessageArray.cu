@@ -1,11 +1,11 @@
 #include "flamegpu/runtime/messaging/MessageArray.h"
 #include "flamegpu/model/AgentDescription.h"  // Used by Move-Assign
-#include "flamegpu/gpu/CUDAMessage.h"
-#include "flamegpu/gpu/CUDAScatter.cuh"
+#include "flamegpu/simulation/detail/CUDAMessage.h"
+#include "flamegpu/simulation/detail/CUDAScatter.cuh"
 
 #include "flamegpu/runtime/messaging/MessageArray/MessageArrayHost.h"
 // #include "flamegpu/runtime/messaging/MessageArray/MessageArrayDevice.cuh"
-#include "flamegpu/util/detail/cuda.cuh"
+#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
 
@@ -14,7 +14,7 @@ namespace flamegpu {
  * Allocates memory on device for message list length
  * @param a Parent CUDAMessage, used to access message settings, data ptrs etc
  */
-MessageArray::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
+MessageArray::CUDAModelHandler::CUDAModelHandler(detail::CUDAMessage &a)
     : MessageSpecialisationHandler()
     , d_metadata(nullptr)
     , sim_message(a)
@@ -24,7 +24,7 @@ MessageArray::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
     hd_metadata.length = d.length;
 }
 
-void MessageArray::CUDAModelHandler::init(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
+void MessageArray::CUDAModelHandler::init(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
     allocateMetaDataDevicePtr(stream);
     // Allocate messages
     this->sim_message.resize(hd_metadata.length, scatter, stream, streamId);
@@ -50,17 +50,17 @@ void MessageArray::CUDAModelHandler::allocateMetaDataDevicePtr(cudaStream_t stre
 
 void MessageArray::CUDAModelHandler::freeMetaDataDevicePtr() {
     if (d_metadata != nullptr) {
-        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_metadata));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_metadata));
     }
     d_metadata = nullptr;
 
     if (d_write_flag) {
-        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_write_flag));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_write_flag));
     }
     d_write_flag = nullptr;
     d_write_flag_len = 0;
 }
-void MessageArray::CUDAModelHandler::buildIndex(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
+void MessageArray::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     // Zero the output arrays
     auto &read_list = this->sim_message.getReadList();
@@ -78,7 +78,7 @@ void MessageArray::CUDAModelHandler::buildIndex(CUDAScatter &scatter, unsigned i
         if (d_write_flag_len < MESSAGE_COUNT) {
             // Increase length
             if (d_write_flag) {
-                gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_write_flag));
+                gpuErrchk(flamegpu::detail::cuda::cudaFree(d_write_flag));
             }
             d_write_flag_len = static_cast<unsigned int>(MESSAGE_COUNT * 1.1f);
             gpuErrchk(cudaMalloc(&d_write_flag, sizeof(unsigned int) * d_write_flag_len));
@@ -150,7 +150,7 @@ MessageArray::Data::Data(std::shared_ptr<const ModelData> model, const Data &oth
 MessageArray::Data *MessageArray::Data::clone(const std::shared_ptr<const ModelData> &newParent) {
     return new Data(newParent, *this);
 }
-std::unique_ptr<MessageSpecialisationHandler> MessageArray::Data::getSpecialisationHander(CUDAMessage &owner) const {
+std::unique_ptr<MessageSpecialisationHandler> MessageArray::Data::getSpecialisationHander(detail::CUDAMessage &owner) const {
     return std::unique_ptr<MessageSpecialisationHandler>(new CUDAModelHandler(owner));
 }
 std::type_index MessageArray::Data::getType() const { return std::type_index(typeid(MessageArray)); }

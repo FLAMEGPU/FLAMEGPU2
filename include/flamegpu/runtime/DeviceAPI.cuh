@@ -12,8 +12,8 @@
 #else
 #include "dynamic/curve_rtc_dynamic.h"
 #endif  // !_RTC
-#include "flamegpu/runtime/utility/AgentRandom.cuh"
-#include "flamegpu/runtime/utility/DeviceEnvironment.cuh"
+#include "flamegpu/runtime/random/AgentRandom.cuh"
+#include "flamegpu/runtime/environment/DeviceEnvironment.cuh"
 #include "flamegpu/runtime/AgentFunction.cuh"
 #include "flamegpu/runtime/AgentFunctionCondition.cuh"
 #include "flamegpu/defines.h"
@@ -47,14 +47,14 @@ class ReadOnlyDeviceAPI {
         const detail::curve::CurveTable *,
 #endif
         const unsigned int,
-        util::detail::curandState *,
+        detail::curandState *,
         unsigned int *);
 
  public:
     /**
      * @param d_rng Pointer to the device random state buffer to be used
      */
-    __device__ ReadOnlyDeviceAPI(util::detail::curandState *&d_rng)
+    __device__ ReadOnlyDeviceAPI(detail::curandState *&d_rng)
         : random(AgentRandom(&d_rng[getIndex()]))
         , environment(DeviceEnvironment()) { }
     /**
@@ -155,7 +155,7 @@ class DeviceAPI {
         const unsigned int,
         const void *,
         const void *,
-        util::detail::curandState *,
+        detail::curandState *,
         unsigned int *,
         unsigned int *,
         unsigned int *);
@@ -239,7 +239,7 @@ class DeviceAPI {
      */
     __device__ DeviceAPI(
         id_t *&d_agent_output_nextID,
-        util::detail::curandState *&d_rng,
+        detail::curandState *&d_rng,
         unsigned int *&scanFlag_agentOutput,
         typename MessageIn::In &&message_in,
         typename MessageOut::Out &&message_out)

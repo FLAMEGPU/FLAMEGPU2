@@ -5,7 +5,7 @@
 #include <thread>
 #include <utility>
 
-#include "flamegpu/gpu/CUDASimulation.h"
+#include "flamegpu/simulation/CUDASimulation.h"
 #include "flamegpu/model/AgentData.h"
 #include "flamegpu/visualiser/FLAMEGPU_Visualisation.h"
 

@@ -12,9 +12,9 @@
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 
 namespace flamegpu {
+namespace detail {
 // forward declare classes from other modules
 class CUDAAgent;
-namespace detail {
 namespace curve {
 
 /**
@@ -90,7 +90,7 @@ class HostCurve {
     /**
      * Has access to call purge
      */
-    friend class flamegpu::CUDAAgent;
+    friend class detail::CUDAAgent;
     /**
      * Host and device storage of curve table
      */

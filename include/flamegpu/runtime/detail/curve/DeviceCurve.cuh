@@ -4,7 +4,7 @@
 #include "flamegpu/runtime/detail/SharedBlock.h"
 #include "flamegpu/runtime/detail/curve/Curve.cuh"
 #include "flamegpu/exception/FLAMEGPUDeviceException_device.cuh"
-#include "flamegpu/util/type_decode.h"
+#include "flamegpu/detail/type_decode.h"
 
 #ifdef FLAMEGPU_USE_GLM
 #ifdef __CUDACC__
@@ -268,11 +268,11 @@ __device__ __forceinline__ char* DeviceCurve::getVariablePtr(const char(&variabl
     if (cv == UNKNOWN_VARIABLE) {
         DTHROW("Curve variable with name '%s' was not found.\n", variableName);
         return nullptr;
-    } else if (sm()->curve_type_size[cv] != sizeof(typename type_decode<T>::type_t)) {
-        DTHROW("Curve variable with name '%s', type size mismatch %u != %llu.\n", variableName, sm()->curve_type_size[cv], sizeof(typename type_decode<T>::type_t));
+    } else if (sm()->curve_type_size[cv] != sizeof(typename detail::type_decode<T>::type_t)) {
+        DTHROW("Curve variable with name '%s', type size mismatch %u != %llu.\n", variableName, sm()->curve_type_size[cv], sizeof(typename detail::type_decode<T>::type_t));
         return nullptr;
-    } else if (!(sm()->curve_elements[cv] == type_decode<T>::len_t * N || (namespace_hash == Curve::variableHash("_environment") && N == 0))) {  // Special case, environment can avoid specifying N
-        DTHROW("Curve variable with name '%s', variable array length mismatch %u != %u.\n", variableName, sm()->curve_elements[cv], type_decode<T>::len_t);
+    } else if (!(sm()->curve_elements[cv] == detail::type_decode<T>::len_t * N || (namespace_hash == Curve::variableHash("_environment") && N == 0))) {  // Special case, environment can avoid specifying N
+        DTHROW("Curve variable with name '%s', variable array length mismatch %u != %u.\n", variableName, sm()->curve_elements[cv], detail::type_decode<T>::len_t);
         return nullptr;
     } else if (offset >= sm()->curve_type_size[cv] * sm()->curve_elements[cv] * sm()->curve_count[cv]) {  // Note : offset is basically index * sizeof(T)
         DTHROW("Curve variable with name '%s', offset exceeds buffer length  %u >= %u.\n", offset, sm()->curve_type_size[cv] * sm()->curve_elements[cv] * sm()->curve_count[cv]);
@@ -288,7 +288,7 @@ __device__ __forceinline__ char* DeviceCurve::getVariablePtr(const char(&variabl
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ T DeviceCurve::getVariable(const char(&variableName)[M], const VariableHash namespace_hash, const unsigned int agent_index, const unsigned int array_index) {
     using detail::sm;
-    const unsigned int buffer_offset = agent_index * static_cast<unsigned int>(sizeof(T)) * N + array_index * sizeof(typename type_decode<T>::type_t);
+    const unsigned int buffer_offset = agent_index * static_cast<unsigned int>(sizeof(T)) * N + array_index * sizeof(typename detail::type_decode<T>::type_t);
     T *value_ptr = reinterpret_cast<T*>(getVariablePtr<T, N>(variableName, namespace_hash, buffer_offset));
 
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
@@ -299,7 +299,7 @@ __device__ __forceinline__ T DeviceCurve::getVariable(const char(&variableName)[
 }
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ T DeviceCurve::getVariable_ldg(const char(&variableName)[M], const VariableHash namespace_hash, const unsigned int agent_index, const unsigned int array_index) {
-    const unsigned int buffer_offset = agent_index * static_cast<unsigned int>(sizeof(T)) * N + array_index * sizeof(typename type_decode<T>::type_t);
+    const unsigned int buffer_offset = agent_index * static_cast<unsigned int>(sizeof(T)) * N + array_index * sizeof(typename detail::type_decode<T>::type_t);
     T *value_ptr = reinterpret_cast<T*>(getVariablePtr<T, N>(variableName, namespace_hash, buffer_offset));
 
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
@@ -310,7 +310,7 @@ __device__ __forceinline__ T DeviceCurve::getVariable_ldg(const char(&variableNa
 }
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ void DeviceCurve::setVariable(const char(&variableName)[M], const VariableHash namespace_hash, const T variable, const unsigned int agent_index, const unsigned int array_index) {
-    const unsigned int buffer_offset = agent_index * static_cast<unsigned int>(sizeof(T)) * N + array_index * sizeof(typename type_decode<T>::type_t);
+    const unsigned int buffer_offset = agent_index * static_cast<unsigned int>(sizeof(T)) * N + array_index * sizeof(typename detail::type_decode<T>::type_t);
     T* value_ptr = reinterpret_cast<T*>(getVariablePtr<T, N>(variableName, namespace_hash, buffer_offset));
 
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS

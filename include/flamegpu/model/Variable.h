@@ -9,7 +9,7 @@
 #include <cstring>
 #include <vector>
 
-#include "flamegpu/pop/detail/MemoryVector.h"
+#include "flamegpu/simulation/detail/MemoryVector.h"
 
 namespace flamegpu {
 

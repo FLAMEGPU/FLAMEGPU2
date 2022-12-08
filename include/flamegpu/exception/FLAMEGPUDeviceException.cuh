@@ -4,7 +4,7 @@
 #include <string>
 #include <type_traits>
 
-#include "flamegpu/gpu/CUDAScanCompaction.h"
+#include "flamegpu/simulation/detail/CUDAScanCompaction.h"
 
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 
@@ -40,12 +40,12 @@ class DeviceExceptionManager {
      * 1 per stream
      * nullptr until used
      */
-    DeviceExceptionBuffer *d_buffer[CUDAScanCompaction::MAX_STREAMS];
+    DeviceExceptionBuffer *d_buffer[detail::CUDAScanCompaction::MAX_STREAMS];
     /**
      * Host buffers to copy error buffers back to
      * 1 per stream
      */
-    DeviceExceptionBuffer hd_buffer[CUDAScanCompaction::MAX_STREAMS];
+    DeviceExceptionBuffer hd_buffer[detail::CUDAScanCompaction::MAX_STREAMS];
 };
 }  // namespace exception
 }  // namespace flamegpu

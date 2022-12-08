@@ -8,9 +8,9 @@
 #include "flamegpu/runtime/detail/curve/HostCurve.cuh"
 
 
-#include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/util/nvtx.h"
-#include "flamegpu/util/detail/cuda.cuh"
+#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
 namespace detail {
@@ -36,7 +36,7 @@ HostCurve::HostCurve()
 }
 HostCurve::~HostCurve() {
     if (d_curve_table) {
-        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_curve_table));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_curve_table));
         d_curve_table = nullptr;
     }
 }

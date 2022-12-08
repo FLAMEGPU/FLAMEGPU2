@@ -10,9 +10,10 @@
 #include "flamegpu/util/StringPair.h"
 
 namespace flamegpu {
-
-class AgentVector;
+namespace detail {
 class EnvironmentManager;
+}  // namespace detail
+class AgentVector;
 class Simulation;
 
 namespace io {
@@ -35,7 +36,7 @@ class StateWriter {
      * @param _sim_instance Instance of the simulation (for configuration data IO)
      */
     StateWriter(const std::string &_model_name,
-        const std::shared_ptr<EnvironmentManager>& _env_manager,
+        const std::shared_ptr<detail::EnvironmentManager>& _env_manager,
         const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &_model_state,
         const unsigned int _iterations,
         const std::string &output_file,
@@ -67,7 +68,7 @@ class StateWriter {
     unsigned int iterations;
     std::string outputFile;
     const std::string model_name;
-    const std::shared_ptr<EnvironmentManager> env_manager;
+    const std::shared_ptr<detail::EnvironmentManager> env_manager;
     const Simulation *sim_instance;
 };
 }  // namespace io

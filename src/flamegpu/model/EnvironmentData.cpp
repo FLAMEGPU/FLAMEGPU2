@@ -6,7 +6,7 @@ EnvironmentData::EnvironmentData(std::shared_ptr<const ModelData> _model)
     : model(_model) {
     // Add CUDASimulation specific environment members
     // We do this here, to not break comparing different model description hierarchies before/after CUDASimulation creation
-    properties.emplace("_stepCount", PropData(false, util::Any(0u)));
+    properties.emplace("_stepCount", PropData(false, detail::Any(0u)));
 }
 
 EnvironmentData::EnvironmentData(std::shared_ptr<const ModelData> _model, const EnvironmentData& other)

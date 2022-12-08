@@ -12,9 +12,9 @@
 #include "tinyxml2/tinyxml2.h"              // downloaded from https:// github.com/leethomason/tinyxml2, the list of xml parsers : http:// lars.ruoff.free.fr/xmlcpp/
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/gpu/CUDASimulation.h"
-#include "flamegpu/pop/AgentVector.h"
-#include "flamegpu/runtime/utility/EnvironmentManager.cuh"
+#include "flamegpu/simulation/CUDASimulation.h"
+#include "flamegpu/simulation/AgentVector.h"
+#include "flamegpu/simulation/detail/EnvironmentManager.cuh"
 
 namespace flamegpu {
 namespace io {
@@ -64,7 +64,7 @@ namespace io {
 
 XMLStateWriter::XMLStateWriter(
     const std::string &model_name,
-    const std::shared_ptr<EnvironmentManager>& env_manager,
+    const std::shared_ptr<detail::EnvironmentManager>& env_manager,
     const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model,
     const unsigned int iterations,
     const std::string &output_file,

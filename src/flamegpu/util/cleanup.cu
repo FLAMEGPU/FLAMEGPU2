@@ -1,8 +1,8 @@
 #include "flamegpu/util/cleanup.h"
 
 #include <cuda_runtime.h>
-#include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
-#include "flamegpu/util/detail/JitifyCache.h"
+#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/JitifyCache.h"
 
 namespace flamegpu {
 namespace util {

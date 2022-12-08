@@ -8,7 +8,7 @@
 #include <typeindex>
 #include <unordered_map>
 
-#include "flamegpu/util/Any.h"
+#include "flamegpu/detail/Any.h"
 #include "flamegpu/model/ModelData.h"
 
 namespace flamegpu {
@@ -25,7 +25,7 @@ struct EnvironmentData {
      */
     // friend class CUDASimulation;
 
-    // friend class SimRunner;
+    // friend class detail::SimRunner;
     // friend unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans);
     /**
      * Holds all of the properties required to add a value to EnvironmentManager
@@ -35,11 +35,11 @@ struct EnvironmentData {
          * @param _is_const Is the property constant
          * @param _data The data to initially fill the property with
          */
-        PropData(bool _is_const, const util::Any& _data)
+        PropData(bool _is_const, const detail::Any& _data)
             : isConst(_is_const)
             , data(_data) { }
         bool isConst;
-        const util::Any data;
+        const detail::Any data;
         bool operator==(const PropData& rhs) const {
             if (this == &rhs)
                 return true;
