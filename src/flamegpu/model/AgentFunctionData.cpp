@@ -3,7 +3,7 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
-#include "flamegpu/util/detail/cxxname.hpp"
+#include "flamegpu/detail/cxxname.hpp"
 
 namespace flamegpu {
 
@@ -58,22 +58,22 @@ AgentFunctionData::AgentFunctionData(const std::shared_ptr<const ModelData> &_mo
             if (_m != _model->messages.end()) {
                 message_input = _m->second;
             }
-        } else if (util::detail::cxxname::getUnqualifiedName(other.message_in_type) != util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(std::type_index(typeid(MessageNone))))) {
+        } else if (detail::cxxname::getUnqualifiedName(other.message_in_type) != detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(std::type_index(typeid(MessageNone))))) {
             THROW exception::InvalidMessageType(
                 "Function '%s' is missing bound input message of type '%s', type provided was '%s'.", other.name.c_str(),
-                util::detail::cxxname::getUnqualifiedName(other.message_in_type).c_str(),
-                util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(std::type_index(typeid(MessageNone)))).c_str());
+                detail::cxxname::getUnqualifiedName(other.message_in_type).c_str(),
+                detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(std::type_index(typeid(MessageNone)))).c_str());
         }
         if (auto a = other.message_output.lock()) {
             auto _m = _model->messages.find(a->name);
             if (_m != _model->messages.end()) {
                 message_output = _m->second;
             }
-        } else if (util::detail::cxxname::getUnqualifiedName(other.message_out_type) != util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(std::type_index(typeid(MessageNone))))) {
+        } else if (detail::cxxname::getUnqualifiedName(other.message_out_type) != detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(std::type_index(typeid(MessageNone))))) {
             THROW exception::InvalidMessageType(
                 "Function '%s' is missing bound output message of type '%s', type provided was '%s'.", other.name.c_str(),
-                util::detail::cxxname::getUnqualifiedName(other.message_out_type).c_str(),
-                util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(std::type_index(typeid(MessageNone)))).c_str());
+                detail::cxxname::getUnqualifiedName(other.message_out_type).c_str(),
+                detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(std::type_index(typeid(MessageNone)))).c_str());
         }
         if (auto a = other.agent_output.lock()) {
             auto _a = _model->agents.find(a->name);

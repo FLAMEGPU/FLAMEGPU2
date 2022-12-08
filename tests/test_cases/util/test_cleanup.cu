@@ -2,7 +2,7 @@
 
 #include <vector>
 #include "flamegpu/util/cleanup.h"
-#include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/flamegpu.h"
 
 #include "gtest/gtest.h"

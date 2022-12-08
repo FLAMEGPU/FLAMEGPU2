@@ -1,7 +1,7 @@
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 
-#include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
-#include "flamegpu/util/detail/cuda.cuh"
+#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/cuda.cuh"
 
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 
@@ -16,13 +16,13 @@ DeviceExceptionManager::DeviceExceptionManager()
 }
 DeviceExceptionManager::~DeviceExceptionManager() {
     for (auto &i : d_buffer) {
-        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(i));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(i));
     }
 }
 DeviceExceptionBuffer *DeviceExceptionManager::getDevicePtr(const unsigned int streamId, const cudaStream_t stream) {
-    if (streamId >= CUDAScanCompaction::MAX_STREAMS) {
+    if (streamId >= detail::CUDAScanCompaction::MAX_STREAMS) {
         THROW exception::OutOfBoundsException("Stream id %u is out of bounds, %u >= %u, "
-        "in FLAMEGPUDeviceException::getDevicePtr()\n", streamId, streamId, CUDAScanCompaction::MAX_STREAMS);
+        "in FLAMEGPUDeviceException::getDevicePtr()\n", streamId, streamId, detail::CUDAScanCompaction::MAX_STREAMS);
     }
     // It may be better to move this (and the memsets) out to a separate up-front reset call in the future.
     if (!d_buffer[streamId]) {
@@ -37,9 +37,9 @@ DeviceExceptionBuffer *DeviceExceptionManager::getDevicePtr(const unsigned int s
     return d_buffer[streamId];
 }
 void DeviceExceptionManager::checkError(const std::string &function, const unsigned int streamId, const cudaStream_t stream) {
-    if (streamId >= CUDAScanCompaction::MAX_STREAMS) {
+    if (streamId >= detail::CUDAScanCompaction::MAX_STREAMS) {
         THROW exception::OutOfBoundsException("Stream id %u is out of bounds, %u >= %u, "
-        "in FLAMEGPUDeviceException::checkError()\n", streamId, streamId, CUDAScanCompaction::MAX_STREAMS);
+        "in FLAMEGPUDeviceException::checkError()\n", streamId, streamId, detail::CUDAScanCompaction::MAX_STREAMS);
     }
     if (d_buffer[streamId]) {
         // Grab buffer from device
@@ -55,7 +55,7 @@ void DeviceExceptionManager::checkError(const std::string &function, const unsig
         }
     } else {
         THROW exception::OutOfBoundsException("FLAMEGPUDeviceExceptionBuffer for stream %u has not been allocated, "
-        "in FLAMEGPUDeviceException::checkError()\n", streamId, streamId, CUDAScanCompaction::MAX_STREAMS);
+        "in FLAMEGPUDeviceException::checkError()\n", streamId, streamId, detail::CUDAScanCompaction::MAX_STREAMS);
     }
 }
 std::string DeviceExceptionManager::getLocationString(const DeviceExceptionBuffer &b) {

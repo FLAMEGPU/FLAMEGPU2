@@ -2,7 +2,7 @@
 
 #include "flamegpu/visualiser/AgentVis.h"
 
-#include "flamegpu/gpu/CUDAAgent.h"
+#include "flamegpu/simulation/detail/CUDAAgent.h"
 #include "flamegpu/model/AgentData.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/visualiser/color/ColorFunction.h"
@@ -13,7 +13,7 @@
 namespace flamegpu {
 namespace visualiser {
 
-AgentVisData::AgentVisData(CUDAAgent &_agent, const std::shared_ptr<AutoPalette>& autopalette)
+AgentVisData::AgentVisData(detail::CUDAAgent &_agent, const std::shared_ptr<AutoPalette>& autopalette)
     : owned_auto_palette(nullptr)
     , agent(_agent)
     , agentData(std::const_pointer_cast<const AgentData>(_agent.getAgentDescription().agent)) {

@@ -88,8 +88,8 @@ void AddGet_SetGet_array_vec_test() {
     std::array<T, ARRAY_TEST_LEN> b;
     std::array<T, ARRAY_TEST_LEN> c;
     for (int i = 0; i < ARRAY_TEST_LEN; ++i) {
-        b[i] = T(static_cast<typename type_decode<T>::type_t>(i));
-        c[i] = T(static_cast<typename type_decode<T>::type_t>(ARRAY_TEST_LEN - i));
+        b[i] = T(static_cast<typename detail::type_decode<T>::type_t>(i));
+        c[i] = T(static_cast<typename detail::type_decode<T>::type_t>(ARRAY_TEST_LEN - i));
     }
     ed.newProperty<T, ARRAY_TEST_LEN>("a", b);
     std::array<T, ARRAY_TEST_LEN> a;
@@ -140,8 +140,8 @@ void AddGet_SetGet_array_element_vec_test() {
     std::array<T, ARRAY_TEST_LEN> b;
     std::array<T, ARRAY_TEST_LEN> c;
     for (int i = 0; i < ARRAY_TEST_LEN; ++i) {
-        b[i] = T(static_cast<typename type_decode<T>::type_t>(i));
-        c[i] = T(static_cast<typename type_decode<T>::type_t>(ARRAY_TEST_LEN - i));
+        b[i] = T(static_cast<typename detail::type_decode<T>::type_t>(i));
+        c[i] = T(static_cast<typename detail::type_decode<T>::type_t>(ARRAY_TEST_LEN - i));
     }
     ed.newProperty<T, ARRAY_TEST_LEN>("a", b);
     for (int i = 0; i < ARRAY_TEST_LEN; ++i) {

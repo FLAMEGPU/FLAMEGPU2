@@ -5,8 +5,9 @@
 #include "flamegpu/runtime/messaging/MessageNone.h"
 
 namespace flamegpu {
-
+namespace detail {
 class CUDAMessage;
+}  // namespace detail
 
 /**
  * Provides specialisation behaviour for messages between agent functions
@@ -18,14 +19,14 @@ class MessageNone::CUDAModelHandler : public MessageSpecialisationHandler {
     /**
      * Constructor
      */
-    explicit CUDAModelHandler(CUDAMessage &a)
+    explicit CUDAModelHandler(detail::CUDAMessage &a)
         : MessageSpecialisationHandler()
         , sim_message(a)
     { }
     /**
      * Owning CUDAMessage
      */
-    CUDAMessage &sim_message;
+    detail::CUDAMessage &sim_message;
 };
 
 }  // namespace flamegpu

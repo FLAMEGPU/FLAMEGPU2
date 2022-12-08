@@ -23,7 +23,7 @@ class MessageBucket::CUDAModelHandler : public MessageSpecialisationHandler {
     *
     * @param a Parent CUDAMessage, used to access message settings, data ptrs etc
     */
-    explicit CUDAModelHandler(CUDAMessage &a);
+    explicit CUDAModelHandler(detail::CUDAMessage &a);
     /**
     * Destructor
     * Frees all allocated memory
@@ -36,7 +36,7 @@ class MessageBucket::CUDAModelHandler : public MessageSpecialisationHandler {
     * @param streamId Index of stream specific structures used
      * @param stream The CUDAStream to use for CUDA operations
     */
-    void init(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) override;
+    void init(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) override;
     /**
      * Reconstructs the partition boundary matrix
      * This should be called before reading newly output messages
@@ -44,7 +44,7 @@ class MessageBucket::CUDAModelHandler : public MessageSpecialisationHandler {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream The CUDAStream to use for CUDA operations
      */
-    void buildIndex(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) override;
+    void buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) override;
     /**
     * Allocates memory for the constructed index.
     * The memory allocation is checked by build index.
@@ -108,7 +108,7 @@ class MessageBucket::CUDAModelHandler : public MessageSpecialisationHandler {
     /**
     * Owning CUDAMessage, provides access to message storage etc
     */
-    CUDAMessage &sim_message;
+    detail::CUDAMessage &sim_message;
 };
 
 /**
@@ -130,7 +130,7 @@ struct MessageBucket::Data : public MessageBruteForce::Data {
     IntT upperBound;
     virtual ~Data() = default;
 
-    std::unique_ptr<MessageSpecialisationHandler> getSpecialisationHander(CUDAMessage &owner) const override;
+    std::unique_ptr<MessageSpecialisationHandler> getSpecialisationHander(detail::CUDAMessage &owner) const override;
 
     /**
     * Used internally to validate that the corresponding Message type is attached via the agent function shim.

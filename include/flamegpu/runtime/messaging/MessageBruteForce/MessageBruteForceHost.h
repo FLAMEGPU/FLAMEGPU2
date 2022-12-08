@@ -8,12 +8,12 @@
 #include <vector>
 
 #include "flamegpu/model/Variable.h"
-#include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 
 #include "flamegpu/runtime/messaging/MessageNone/MessageNoneHost.h"
 #include "flamegpu/runtime/messaging/MessageBruteForce.h"
 #include "flamegpu/runtime/messaging/MessageSortingType.h"
-#include "flamegpu/util/type_decode.h"
+#include "flamegpu/detail/type_decode.h"
 
 namespace flamegpu {
 
@@ -28,7 +28,7 @@ class MessageBruteForce::CUDAModelHandler : public MessageSpecialisationHandler 
      * Allocates memory on device for message list length
      * @param a Parent CUDAMessage, used to access message settings, data ptrs etc
      */
-    explicit CUDAModelHandler(CUDAMessage &a)
+    explicit CUDAModelHandler(detail::CUDAMessage &a)
         : MessageSpecialisationHandler()
         , d_metadata(nullptr)
         , sim_message(a) { }
@@ -45,14 +45,14 @@ class MessageBruteForce::CUDAModelHandler : public MessageSpecialisationHandler 
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream The CUDAStream to use for CUDA operations
      */
-    void init(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) override;
+    void init(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) override;
     /**
      * Updates the length of the messagelist stored on device
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream The CUDAStream to use for CUDA operations
      */
-    void buildIndex(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) override;
+    void buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) override;
     /**
      * Allocates memory for the constructed index.
      * The memory allocation is checked by build index.
@@ -79,7 +79,7 @@ class MessageBruteForce::CUDAModelHandler : public MessageSpecialisationHandler 
     /**
      * Owning CUDAMessage, provides access to message storage etc
      */
-    CUDAMessage &sim_message;
+    detail::CUDAMessage &sim_message;
 };
 
 /**
@@ -129,7 +129,7 @@ struct MessageBruteForce::Data {
      */
     Data(const Data &other) = delete;
 
-    virtual std::unique_ptr<MessageSpecialisationHandler> getSpecialisationHander(CUDAMessage &owner) const;
+    virtual std::unique_ptr<MessageSpecialisationHandler> getSpecialisationHander(detail::CUDAMessage &owner) const;
 
     /**
      * Used internally to validate that the corresponding Message type is attached via the agent function shim.
@@ -334,9 +334,9 @@ void MessageBruteForce::CDescription::newVariable(const std::string& variable_na
             "in MessageDescription::newVariable().");
     }
     // Array length 0 makes no sense
-    static_assert(type_decode<T>::len_t * N > 0, "A variable cannot have 0 elements.");
+    static_assert(detail::type_decode<T>::len_t * N > 0, "A variable cannot have 0 elements.");
     if (message->variables.find(variable_name) == message->variables.end()) {
-        message->variables.emplace(variable_name, Variable(std::array<typename type_decode<T>::type_t, type_decode<T>::len_t * N>{}));
+        message->variables.emplace(variable_name, Variable(std::array<typename detail::type_decode<T>::type_t, detail::type_decode<T>::len_t * N>{}));
         return;
     }
     THROW exception::InvalidMessageVar("Message ('%s') already contains variable '%s', "
@@ -355,8 +355,8 @@ void MessageBruteForce::CDescription::newVariableArray(const std::string& variab
             "in MessageDescription::newVariable().");
     }
     if (message->variables.find(variable_name) == message->variables.end()) {
-        std::vector<typename type_decode<T>::type_t> temp(static_cast<size_t>(type_decode<T>::len_t * length));
-        message->variables.emplace(variable_name, Variable(type_decode<T>::len_t * length, temp));
+        std::vector<typename detail::type_decode<T>::type_t> temp(static_cast<size_t>(detail::type_decode<T>::len_t * length));
+        message->variables.emplace(variable_name, Variable(detail::type_decode<T>::len_t * length, temp));
         return;
     }
     THROW exception::InvalidMessageVar("Message ('%s') already contains variable '%s', "

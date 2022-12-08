@@ -10,9 +10,9 @@
 #include <cerrno>
 
 #include "flamegpu/exception/FLAMEGPUException.h"
-#include "flamegpu/pop/AgentVector.h"
+#include "flamegpu/simulation/AgentVector.h"
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/gpu/CUDASimulation.h"
+#include "flamegpu/simulation/CUDASimulation.h"
 #include "flamegpu/util/StringPair.h"
 
 namespace flamegpu {
@@ -21,7 +21,7 @@ namespace io {
 JSONStateReader::JSONStateReader(
     const std::string &model_name,
     const std::unordered_map<std::string, EnvironmentData::PropData> &env_desc,
-    std::unordered_map<std::string, util::Any> &env_init,
+    std::unordered_map<std::string, detail::Any> &env_init,
     util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
     const std::string &input,
     Simulation *sim_instance)
@@ -36,7 +36,7 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
     std::string lastKey;
     std::string filename;
     const std::unordered_map<std::string, EnvironmentData::PropData> env_desc;
-    std::unordered_map<std::string, util::Any> &env_init;
+    std::unordered_map<std::string, detail::Any> &env_init;
     /**
      * Used for setting agent values
      */
@@ -57,7 +57,7 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
  public:
     JSONStateReader_impl(const std::string &_filename,
         const std::unordered_map<std::string, EnvironmentData::PropData> &_env_desc,
-        std::unordered_map<std::string, util::Any> &_env_init,
+        std::unordered_map<std::string, detail::Any> &_env_init,
         util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &_model_state)
         : filename(_filename)
         , env_desc(_env_desc)
@@ -78,7 +78,7 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
             }
             if (current_variable_array_index == 0) {
                 // New property, create buffer with default value and add to map
-                if (!env_init.emplace(lastKey, util::Any(it->second.data)).second) {
+                if (!env_init.emplace(lastKey, detail::Any(it->second.data)).second) {
                     THROW exception::RapidJSONError("Input file contains environment property '%s' multiple times, "
                         "in JSONStateReader::parse()\n", lastKey.c_str());
                 }

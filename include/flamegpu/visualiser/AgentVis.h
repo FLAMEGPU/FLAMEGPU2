@@ -16,7 +16,9 @@
 
 namespace flamegpu {
 struct AgentData;
+namespace detail {
 class CUDAAgent;
+}  // namespace detail
 
 namespace visualiser {
 struct Palette;
@@ -32,7 +34,7 @@ struct AgentVisData {
      * @note Agent states only receive colors from the autopalette when AgentVis::State() is called for each state
      * @note By default, all states share the same color from the autopalette
      */
-    explicit AgentVisData(CUDAAgent& agent, const std::shared_ptr<AutoPalette>& autopalette = nullptr);
+    explicit AgentVisData(detail::CUDAAgent& agent, const std::shared_ptr<AutoPalette>& autopalette = nullptr);
     /**
      * Link to the currently active auto_palette
      */
@@ -53,7 +55,7 @@ struct AgentVisData {
     /**
      * CUDAAgent being rendered
      */
-    CUDAAgent& agent;
+    detail::CUDAAgent& agent;
     /**
      * Agent description hierarchy being rendered
      */

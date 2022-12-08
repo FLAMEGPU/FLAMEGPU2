@@ -12,13 +12,13 @@
 #include "flamegpu/runtime/messaging.h"
 #include "flamegpu/runtime/messaging/MessageSpatial2D/MessageSpatial2DHost.h"
 #include "flamegpu/runtime/messaging/MessageSpatial2D/MessageSpatial2DDevice.cuh"
-#include "flamegpu/gpu/CUDAMessage.h"
-#include "flamegpu/gpu/CUDAScatter.cuh"
+#include "flamegpu/simulation/detail/CUDAMessage.h"
+#include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/util/nvtx.h"
-#include "flamegpu/util/detail/cuda.cuh"
+#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
-MessageSpatial2D::CUDAModelHandler::CUDAModelHandler(CUDAMessage &a)
+MessageSpatial2D::CUDAModelHandler::CUDAModelHandler(detail::CUDAMessage &a)
     : MessageSpecialisationHandler()
     , sim_message(a) {
     flamegpu::util::nvtx::Range range{"MessageSpatial2D::CUDAModelHandler::CUDAModelHandler"};
@@ -55,7 +55,7 @@ __global__ void atomicHistogram2D(
     bin_sub_index[index] = bin_idx;
 }
 
-void MessageSpatial2D::CUDAModelHandler::init(CUDAScatter &, unsigned int, cudaStream_t stream) {
+void MessageSpatial2D::CUDAModelHandler::init(detail::CUDAScatter &, unsigned int, cudaStream_t stream) {
     allocateMetaDataDevicePtr(stream);
     // Set PBM to 0
     gpuErrchk(cudaMemsetAsync(hd_data.PBM, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
@@ -76,25 +76,25 @@ void MessageSpatial2D::CUDAModelHandler::allocateMetaDataDevicePtr(cudaStream_t 
 void MessageSpatial2D::CUDAModelHandler::freeMetaDataDevicePtr() {
     if (d_data != nullptr) {
         d_CUB_temp_storage_bytes = 0;
-        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_CUB_temp_storage));
-        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_histogram));
-        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(hd_data.PBM));
-        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_data));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_CUB_temp_storage));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_histogram));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(hd_data.PBM));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_data));
         d_CUB_temp_storage = nullptr;
         d_histogram = nullptr;
         hd_data.PBM = nullptr;
         d_data = nullptr;
         if (d_keys) {
             d_keys_vals_storage_bytes = 0;
-            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_keys));
-            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_vals));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_keys));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_vals));
             d_keys = nullptr;
             d_vals = nullptr;
         }
     }
 }
 
-void MessageSpatial2D::CUDAModelHandler::buildIndex(CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
+void MessageSpatial2D::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
     flamegpu::util::nvtx::Range range{"MessageSpatial2D::CUDAModelHandler::buildIndex"};
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count
@@ -128,7 +128,7 @@ void MessageSpatial2D::CUDAModelHandler::resizeCubTemp(cudaStream_t stream) {
     gpuErrchk(cub::DeviceScan::ExclusiveSum(nullptr, bytesCheck, hd_data.PBM, d_histogram, binCount + 1, stream));
     if (bytesCheck > d_CUB_temp_storage_bytes) {
         if (d_CUB_temp_storage) {
-            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_CUB_temp_storage));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_CUB_temp_storage));
         }
         d_CUB_temp_storage_bytes = bytesCheck;
         gpuErrchk(cudaMalloc(&d_CUB_temp_storage, d_CUB_temp_storage_bytes));
@@ -139,8 +139,8 @@ void MessageSpatial2D::CUDAModelHandler::resizeKeysVals(const unsigned int newSi
     size_t bytesCheck = newSize * sizeof(unsigned int);
     if (bytesCheck > d_keys_vals_storage_bytes) {
         if (d_keys) {
-            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_keys));
-            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_vals));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_keys));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_vals));
         }
         d_keys_vals_storage_bytes = bytesCheck;
         gpuErrchk(cudaMalloc(&d_keys, d_keys_vals_storage_bytes));
@@ -259,8 +259,8 @@ MessageSpatial2D::Data::Data(std::shared_ptr<const ModelData> model, const std::
     , maxX(NAN)
     , maxY(NAN) {
     // MessageSpatial2D has x/y variables by default
-    variables.emplace("x", Variable(std::array<typename type_decode<float>::type_t, 1>{}));
-    variables.emplace("y", Variable(std::array<typename type_decode<float>::type_t, 1>{}));
+    variables.emplace("x", Variable(std::array<typename detail::type_decode<float>::type_t, 1>{}));
+    variables.emplace("y", Variable(std::array<typename detail::type_decode<float>::type_t, 1>{}));
 }
 MessageSpatial2D::Data::Data(std::shared_ptr<const ModelData> model, const Data &other)
     : MessageBruteForce::Data(model, other)
@@ -288,7 +288,7 @@ MessageSpatial2D::Data::Data(std::shared_ptr<const ModelData> model, const Data 
 MessageSpatial2D::Data *MessageSpatial2D::Data::clone(const std::shared_ptr<const ModelData> &newParent) {
     return new Data(newParent, *this);
 }
-std::unique_ptr<MessageSpecialisationHandler> MessageSpatial2D::Data::getSpecialisationHander(CUDAMessage &owner) const {
+std::unique_ptr<MessageSpecialisationHandler> MessageSpatial2D::Data::getSpecialisationHander(detail::CUDAMessage &owner) const {
     return std::unique_ptr<MessageSpecialisationHandler>(new CUDAModelHandler(owner));
 }
 std::type_index MessageSpatial2D::Data::getType() const { return std::type_index(typeid(MessageSpatial2D)); }

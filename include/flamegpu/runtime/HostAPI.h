@@ -9,19 +9,21 @@
 #include <vector>
 #include <memory>
 
-#include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
-#include "flamegpu/runtime/utility/HostRandom.cuh"
-#include "flamegpu/runtime/utility/HostEnvironment.cuh"
+#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/runtime/random/HostRandom.cuh"
+#include "flamegpu/runtime/environment/HostEnvironment.cuh"
 #include "flamegpu/runtime/HostAPI_macros.h"
-#include "flamegpu/runtime/HostNewAgentAPI.h"
-#include "flamegpu/util/detail/cuda.cuh"
+#include "flamegpu/runtime/agent/HostNewAgentAPI.h"
+#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
-
+namespace detail {
+class CUDAFatAgent;
 class CUDAScatter;
+class CUDAMacroEnvironment;
+}  // namespace detail
 class CUDASimulation;
 class HostAgentAPI;
-class CUDAMacroEnvironment;
 
 /**
  * @brief    A flame gpu api class for use by host functions only
@@ -36,7 +38,7 @@ class HostAPI {
     /**
      * CUDAFatAgent::assignIDs() makes use of resizeTempStorage()
      */
-    friend class CUDAFatAgent;
+    friend class detail::CUDAFatAgent;
 
  public:
     // Typedefs repeated from CUDASimulation
@@ -50,14 +52,14 @@ class HostAPI {
      * Stores reference of CUDASimulation
      */
      explicit HostAPI(CUDASimulation&_agentModel,
-          RandomManager &rng,
-          CUDAScatter &scatter,
-          const AgentOffsetMap &agentOffsets,
-          AgentDataMap &agentData,
-          const std::shared_ptr<EnvironmentManager> &env,
-          CUDAMacroEnvironment &macro_env,
-          unsigned int streamId,
-         cudaStream_t stream);
+        detail::RandomManager &rng,
+        detail::CUDAScatter &scatter,
+        const AgentOffsetMap &agentOffsets,
+        AgentDataMap &agentData,
+        const std::shared_ptr<detail::EnvironmentManager> &env,
+        detail::CUDAMacroEnvironment &macro_env,
+        unsigned int streamId,
+        cudaStream_t stream);
     /**
      * Frees held device memory
      */
@@ -101,7 +103,7 @@ class HostAPI {
     /**
      * Cuda scatter singleton
      */
-    CUDAScatter &scatter;
+    detail::CUDAScatter &scatter;
     /**
      * Stream index for stream-specific resources
      */
@@ -116,7 +118,7 @@ template<typename T>
 void HostAPI::resizeOutputSpace(const unsigned int items) {
     if (sizeof(T) * items > d_output_space_size) {
         if (d_output_space_size) {
-            gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_output_space));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_output_space));
         }
         gpuErrchk(cudaMalloc(&d_output_space, sizeof(T) * items));
         d_output_space_size = sizeof(T) * items;

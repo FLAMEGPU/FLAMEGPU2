@@ -9,17 +9,17 @@
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/pop/AgentVector.h"
-#include "flamegpu/gpu/CUDASimulation.h"
+#include "flamegpu/simulation/AgentVector.h"
+#include "flamegpu/simulation/CUDASimulation.h"
 #include "flamegpu/util/StringPair.h"
-#include "flamegpu/runtime/utility/EnvironmentManager.cuh"
+#include "flamegpu/simulation/detail/EnvironmentManager.cuh"
 
 namespace flamegpu {
 namespace io {
 
 JSONStateWriter::JSONStateWriter(
     const std::string &model_name,
-    const std::shared_ptr<EnvironmentManager> &env_manager,
+    const std::shared_ptr<detail::EnvironmentManager> &env_manager,
     const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>&model,
     const unsigned int iterations,
     const std::string &output_file,

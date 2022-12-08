@@ -403,7 +403,7 @@ DERIVED_FLAMEGPUException(InvalidFilePath, "File does not exist.");
  */
 DERIVED_FLAMEGPUException(FileAlreadyExists, "File already existst.");
 /**
- * Defines an exception indicating that the flamegpu::util::detail::Timer has been used incorrectly.
+ * Defines an exception indicating that the flamegpu::detail::Timer has been used incorrectly.
  */
 DERIVED_FLAMEGPUException(TimerException, "Invalid use of Timer");
 /**

@@ -4,8 +4,8 @@
 
 #include "tinyxml2/tinyxml2.h"              // downloaded from https:// github.com/leethomason/tinyxml2, the list of xml parsers : http:// lars.ruoff.free.fr/xmlcpp/
 
-#include "flamegpu/sim/RunPlan.h"
-#include "flamegpu/sim/LogFrame.h"
+#include "flamegpu/simulation/RunPlan.h"
+#include "flamegpu/simulation/LogFrame.h"
 
 namespace flamegpu {
 namespace io {
@@ -282,7 +282,7 @@ void XMLLogger::writeCommonLogFrame(tinyxml2::XMLDocument &doc, tinyxml2::XMLEle
     }
 }
 
-void XMLLogger::writeAny(tinyxml2::XMLElement *pElement, const util::Any &value, const unsigned int elements) const {
+void XMLLogger::writeAny(tinyxml2::XMLElement *pElement, const detail::Any &value, const unsigned int elements) const {
     std::stringstream ss;
     // Loop through elements, to construct csv string
     for (unsigned int el = 0; el < elements; ++el) {

@@ -7,7 +7,7 @@
 #include <regex>
 
 #include "flamegpu/model/AgentFunctionDescription.h"
-#include "flamegpu/util/detail/cxxname.hpp"
+#include "flamegpu/detail/cxxname.hpp"
 
 namespace flamegpu {
 
@@ -207,8 +207,8 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
     auto a = mdl->messages.find(message_name);
     if (a != mdl->messages.end()) {
         // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
-        auto message_in_classname = util::detail::cxxname::getUnqualifiedName(this->function->message_in_type);
-        auto demangledClassName = util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
+        auto message_in_classname = detail::cxxname::getUnqualifiedName(this->function->message_in_type);
+        auto demangledClassName = detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
         if (message_in_classname == demangledClassName) {
             this->function->message_input = a->second;
         } else {
@@ -243,8 +243,8 @@ void AgentFunctionDescription::setMessageInput(MessageBruteForce::CDescription m
     if (a != mdl->messages.end()) {
         if (a->second == message.message) {
             // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
-            auto message_in_classname = util::detail::cxxname::getUnqualifiedName(this->function->message_in_type);
-            auto demangledClassName = util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
+            auto message_in_classname = detail::cxxname::getUnqualifiedName(this->function->message_in_type);
+            auto demangledClassName = detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
             if (message_in_classname == demangledClassName) {
                 this->function->message_input = a->second;
             } else {
@@ -285,8 +285,8 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
     auto a = mdl->messages.find(message_name);
     if (a != mdl->messages.end()) {
         // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
-        auto message_out_classname = util::detail::cxxname::getUnqualifiedName(this->function->message_out_type);
-        auto demangledClassName = util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
+        auto message_out_classname = detail::cxxname::getUnqualifiedName(this->function->message_out_type);
+        auto demangledClassName = detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
         if (message_out_classname == demangledClassName) {
             this->function->message_output = a->second;
             if (this->function->message_output_optional) {
@@ -330,8 +330,8 @@ void AgentFunctionDescription::setMessageOutput(MessageBruteForce::CDescription 
     if (a != mdl->messages.end()) {
         if (a->second == message.message) {
             // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
-            auto message_out_classname = util::detail::cxxname::getUnqualifiedName(this->function->message_out_type);
-            auto demangledClassName = util::detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
+            auto message_out_classname = detail::cxxname::getUnqualifiedName(this->function->message_out_type);
+            auto demangledClassName = detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
             if (message_out_classname == demangledClassName) {
                 this->function->message_output = a->second;
                 if (this->function->message_output_optional) {

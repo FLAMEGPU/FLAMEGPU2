@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <map>
 
-#include "flamegpu/gpu/CUDASimulation.h"
+#include "flamegpu/simulation/CUDASimulation.h"
 #include "gtest/gtest.h"
 #include "helpers/device_initialisation.h"
 #include "flamegpu/io/Telemetry.h"

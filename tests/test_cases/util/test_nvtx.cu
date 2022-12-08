@@ -1,5 +1,5 @@
 #include "flamegpu/util/nvtx.h"
-#include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 
 #include "gtest/gtest.h"
 

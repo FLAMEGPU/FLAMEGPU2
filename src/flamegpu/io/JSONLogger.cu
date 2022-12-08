@@ -7,8 +7,8 @@
 #include <fstream>
 #include <string>
 
-#include "flamegpu/sim/RunPlan.h"
-#include "flamegpu/sim/LogFrame.h"
+#include "flamegpu/simulation/RunPlan.h"
+#include "flamegpu/simulation/LogFrame.h"
 
 namespace flamegpu {
 namespace io {
@@ -26,7 +26,7 @@ void JSONLogger::log(const RunLog &log, bool logConfig, bool logSteps, bool logE
 }
 
 template<typename T>
-void JSONLogger::writeAny(T &writer, const util::Any &value, const unsigned int elements) const {
+void JSONLogger::writeAny(T &writer, const detail::Any &value, const unsigned int elements) const {
     // Output value
     if (elements > 1) {
         writer.StartArray();

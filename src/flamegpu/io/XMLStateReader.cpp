@@ -14,9 +14,9 @@
 #include <tuple>
 #include "tinyxml2/tinyxml2.h"              // downloaded from https:// github.com/leethomason/tinyxml2, the list of xml parsers : http:// lars.ruoff.free.fr/xmlcpp/
 #include "flamegpu/exception/FLAMEGPUException.h"
-#include "flamegpu/pop/AgentVector.h"
+#include "flamegpu/simulation/AgentVector.h"
 #include "flamegpu/model/AgentDescription.h"
-#include "flamegpu/gpu/CUDASimulation.h"
+#include "flamegpu/simulation/CUDASimulation.h"
 
 namespace flamegpu {
 namespace io {
@@ -67,7 +67,7 @@ namespace io {
 XMLStateReader::XMLStateReader(
     const std::string &model_name,
     const std::unordered_map<std::string, EnvironmentData::PropData> &env_desc,
-    std::unordered_map<std::string, util::Any>&env_init,
+    std::unordered_map<std::string, detail::Any>&env_init,
     util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
     const std::string &input,
     Simulation *sim_instance)
@@ -207,7 +207,7 @@ int XMLStateReader::parse() {
             unsigned int el = 0;
             while (getline(ss, token, ',')) {
                 if (el == 0) {
-                    if (!env_init.emplace(std::string(key), util::Any(it->second.data)).second) {
+                    if (!env_init.emplace(std::string(key), detail::Any(it->second.data)).second) {
                         THROW exception::TinyXMLError("Input file contains environment property '%s' multiple times, "
                             "in XMLStateReader::parse()\n", key);
                     }

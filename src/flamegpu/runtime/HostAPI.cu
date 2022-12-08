@@ -1,20 +1,20 @@
 #include "flamegpu/runtime/HostAPI.h"
-#include "flamegpu/runtime/HostAgentAPI.cuh"
+#include "flamegpu/runtime/agent/HostAgentAPI.cuh"
 #include "flamegpu/model/ModelDescription.h"
-#include "flamegpu/sim/Simulation.h"
+#include "flamegpu/simulation/Simulation.h"
 #include "flamegpu/util/nvtx.h"
-#include "flamegpu/gpu/CUDASimulation.h"
-#include "flamegpu/util/detail/cuda.cuh"
+#include "flamegpu/simulation/CUDASimulation.h"
+#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
 
 HostAPI::HostAPI(CUDASimulation &_agentModel,
-    RandomManager& rng,
-    CUDAScatter &_scatter,
+    detail::RandomManager& rng,
+    detail::CUDAScatter &_scatter,
     const AgentOffsetMap &_agentOffsets,
     AgentDataMap &_agentData,
-    const std::shared_ptr<EnvironmentManager>& env,
-    CUDAMacroEnvironment &macro_env,
+    const std::shared_ptr<detail::EnvironmentManager>& env,
+    detail::CUDAMacroEnvironment &macro_env,
     const unsigned int _streamId,
     cudaStream_t _stream)
     : random(rng)
@@ -31,7 +31,7 @@ HostAPI::HostAPI(CUDASimulation &_agentModel,
 HostAPI::~HostAPI() {
     // @todo - cuda is not allowed in destructor
     if (d_output_space_size) {
-        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_output_space));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_output_space));
         d_output_space_size = 0;
     }
 }

@@ -570,7 +570,7 @@ class ModelVis;
 // Include Telemetry functions
 %include "flamegpu/io/Telemetry.h"
 
-%include "flamegpu/sim/AgentInterface.h"
+%include "flamegpu/simulation/detail/AgentInterface.h"
 
 %include "flamegpu/runtime/HostFunctionCallback.h"
 
@@ -606,48 +606,48 @@ class ModelVis;
 %include "flamegpu/model/SubAgentDescription.h"
 %include "flamegpu/model/SubEnvironmentDescription.h"
 
-%include "flamegpu/runtime/utility/RandomManager.cuh"
+%include "flamegpu/simulation/detail/RandomManager.cuh"
 
 // Include Simulation and CUDASimulation
 %feature("flatnested");     // flat nested on to ensure Config is included
-%include "flamegpu/sim/Simulation.h"
-%include "flamegpu/gpu/CUDASimulation.h"
+%include "flamegpu/simulation/Simulation.h"
+%include "flamegpu/simulation/CUDASimulation.h"
 %feature("flatnested", ""); // flat nested off
 
 %feature("flatnested");     // flat nested on to ensure Config is included
-%include "flamegpu/gpu/CUDAEnsemble.h"
+%include "flamegpu/simulation/CUDAEnsemble.h"
 %feature("flatnested", ""); // flat nested off
 
 %include "flamegpu/runtime/AgentFunction_shim.cuh"
 %include "flamegpu/runtime/AgentFunctionCondition_shim.cuh"
 
 // These are essentially nested classes that have been split out. 
-%include "flamegpu/pop/AgentVector_Agent.h"
-%include "flamegpu/pop/AgentVector.h"
-%include "flamegpu/pop/AgentInstance.h"
-%include "flamegpu/pop/DeviceAgentVector_impl.h"
-%include "flamegpu/pop/DeviceAgentVector.h"
+%include "flamegpu/simulation/AgentVector_Agent.h"
+%include "flamegpu/simulation/AgentVector.h"
+%include "flamegpu/runtime/agent/AgentInstance.h"
+%include "flamegpu/runtime/agent/DeviceAgentVector_impl.h"
+%include "flamegpu/runtime/agent/DeviceAgentVector.h"
 
 // Must wrap these prior to HostAPI where they are used to avoid issues with no default constructors etc.
-%include "flamegpu/runtime/utility/HostRandom.cuh"
+%include "flamegpu/runtime/random/HostRandom.cuh"
 
 %nodefaultctor flamegpu::HostMacroProperty_swig;
-%include "flamegpu/runtime/utility/HostMacroProperty.cuh"
-%include "flamegpu/runtime/utility/HostEnvironment.cuh"
+%include "flamegpu/runtime/environment/HostMacroProperty.cuh"
+%include "flamegpu/runtime/environment/HostEnvironment.cuh"
 
-%include "flamegpu/runtime/HostNewAgentAPI.h"
-%include "flamegpu/runtime/HostAgentAPI.cuh"
+%include "flamegpu/runtime/agent/HostNewAgentAPI.h"
+%include "flamegpu/runtime/agent/HostAgentAPI.cuh"
 %include "flamegpu/runtime/HostAPI.h" 
 
 // Include logging implementations
-%include "flamegpu/sim/LoggingConfig.h"
-%include "flamegpu/sim/AgentLoggingConfig.h"
-%include "flamegpu/sim/AgentLoggingConfig_SumReturn.h"
-%include "flamegpu/sim/LogFrame.h"  // Includes RunLog. 
+%include "flamegpu/simulation/LoggingConfig.h"
+%include "flamegpu/simulation/AgentLoggingConfig.h"
+%include "flamegpu/simulation/AgentLoggingConfig_SumReturn.h"
+%include "flamegpu/simulation/LogFrame.h"  // Includes RunLog. 
 
 // Include ensemble implementations
-%include "flamegpu/sim/RunPlan.h"
-%include "flamegpu/sim/RunPlanVector.h"
+%include "flamegpu/simulation/RunPlan.h"
+%include "flamegpu/simulation/RunPlanVector.h"
 
 // Include public utility headers
 %include "flamegpu/util/cleanup.h"

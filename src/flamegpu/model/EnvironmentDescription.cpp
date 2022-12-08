@@ -38,7 +38,7 @@ EnvironmentDescription::EnvironmentDescription(std::shared_ptr<EnvironmentData> 
  * Accessors
  */
 void EnvironmentDescription::newProperty(const std::string &name, const char *ptr, size_t length, bool isConst, flamegpu::size_type elements, const std::type_index &type) {
-    environment->properties.emplace(name, EnvironmentData::PropData(isConst, util::Any(ptr, length, type, elements)));
+    environment->properties.emplace(name, EnvironmentData::PropData(isConst, detail::Any(ptr, length, type, elements)));
 }
 
 }  // namespace flamegpu

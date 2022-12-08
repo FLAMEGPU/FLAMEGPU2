@@ -1,11 +1,11 @@
 #include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h"
 #include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceDevice.cuh"
 #include "flamegpu/model/AgentDescription.h"  // Used by Move-Assign
-#include "flamegpu/gpu/CUDAMessage.h"
-#include "flamegpu/util/detail/cuda.cuh"
+#include "flamegpu/simulation/detail/CUDAMessage.h"
+#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
-void MessageBruteForce::CUDAModelHandler::init(CUDAScatter &, unsigned int, cudaStream_t stream) {
+void MessageBruteForce::CUDAModelHandler::init(detail::CUDAScatter &, unsigned int, cudaStream_t stream) {
     allocateMetaDataDevicePtr(stream);
     // Allocate messages
     hd_metadata.length = 0;  // This value should already be 0
@@ -21,12 +21,12 @@ void MessageBruteForce::CUDAModelHandler::allocateMetaDataDevicePtr(cudaStream_t
 
 void MessageBruteForce::CUDAModelHandler::freeMetaDataDevicePtr() {
     if (d_metadata != nullptr) {
-        gpuErrchk(flamegpu::util::detail::cuda::cudaFree(d_metadata));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_metadata));
     }
     d_metadata = nullptr;
 }
 
-void MessageBruteForce::CUDAModelHandler::buildIndex(CUDAScatter &, unsigned int, cudaStream_t stream) {
+void MessageBruteForce::CUDAModelHandler::buildIndex(detail::CUDAScatter &, unsigned int, cudaStream_t stream) {
     unsigned int newLength = this->sim_message.getMessageCount();
     if (newLength != hd_metadata.length) {
         hd_metadata.length = newLength;
@@ -78,7 +78,7 @@ bool MessageBruteForce::Data::operator!=(const MessageBruteForce::Data& rhs) con
     return !operator==(rhs);
 }
 
-std::unique_ptr<MessageSpecialisationHandler> MessageBruteForce::Data::getSpecialisationHander(CUDAMessage &owner) const {
+std::unique_ptr<MessageSpecialisationHandler> MessageBruteForce::Data::getSpecialisationHander(detail::CUDAMessage &owner) const {
     return std::unique_ptr<MessageSpecialisationHandler>(new MessageBruteForce::CUDAModelHandler(owner));
 }
 

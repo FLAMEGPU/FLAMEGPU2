@@ -12,14 +12,17 @@ endif()
 # Define the source files early, prior to projects.
 # Prepare source files for the tests target
 SET(TESTS_SRC
-    # ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_func_pointer.cu # Does not currently build
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_compute_capability.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_cuda.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_wddm.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_dependency_versions.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_multi_thread_device.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_CUDAEventTimer.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_SteadyClockTimer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_cxxname.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_rtc_multi_thread_device.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/exception/test_device_exception.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_simulation.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_simulation_concurrency.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_ensemble.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_gpu_validation.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_subagent.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/gpu/test_cuda_submacroenvironment.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/exception/test_rtc_device_exception.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_io.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_logging.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_logging_exceptions.cu
@@ -33,38 +36,44 @@ SET(TESTS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_layer.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_subagent.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_subenvironment.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/pop/test_agent_vector.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/pop/test_agent_instance.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/pop/test_device_agent_vector.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_host_functions.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_RunPlan.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/sim/test_RunPlanVector.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_device_environment.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/simulation/test_cuda_simulation.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/simulation/test_cuda_simulation_concurrency.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/simulation/test_cuda_ensemble.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/simulation/test_gpu_validation.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/simulation/detail/test_cuda_subagent.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/simulation/detail/test_cuda_submacroenvironment.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/simulation/test_agent_vector.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/simulation/test_agent_instance.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/simulation/test_host_functions.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/simulation/test_RunPlan.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/simulation/test_RunPlanVector.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_function_conditions.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_random.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_agent_state_transition.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_device_agent_creation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_device_api.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_device_environment.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_device_macro_property.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_environment_manager.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_api.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_agent_sort.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_agent_creation.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_environment.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_macro_property.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_host_random.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_spatial_agent_sort.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_min.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_max.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_sum.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_reduce.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_count.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_transform_reduce.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_histogram_even.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_mean_standarddeviation.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/host_reduction/test_misc.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_subenvironment_manager.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_rtc_device_api.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/environment/test_host_environment.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/environment/test_host_macro_property.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/environment/test_subenvironment_manager.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/environment/test_device_environment.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/environment/test_device_macro_property.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/environment/test_environment_manager.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/random/test_agent_random.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/random/test_host_random.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/agent/test_device_agent_vector.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/agent/test_host_agent_sort.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/agent/test_host_agent_creation.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/agent/test_device_agent_creation.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/agent/detail/test_spatial_agent_sort.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/agent/detail/test_agent_state_transition.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/agent/host_reduction/test_min.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/agent/host_reduction/test_max.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/agent/host_reduction/test_sum.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/agent/host_reduction/test_reduce.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/agent/host_reduction/test_count.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/agent/host_reduction/test_transform_reduce.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/agent/host_reduction/test_histogram_even.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/agent/host_reduction/test_mean_standarddeviation.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/agent/host_reduction/test_misc.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_messaging.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_spatial_2d.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_spatial_3d.cu
@@ -75,18 +84,7 @@ SET(TESTS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_bucket.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_append_truncate.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_cleanup.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_compute_capability.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_cuda.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_wddm.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_nvtx.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_dependency_versions.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_multi_thread_device.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_CUDAEventTimer.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_SteadyClockTimer.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_cxxname.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/test_rtc_device_api.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_rtc_multi_thread_device.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/exception/test_rtc_device_exception.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/test_namespaces/test_namespaces.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/test_namespaces/test_rtc_namespaces.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/test_version.cpp

@@ -10,10 +10,10 @@
 
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/model/ModelDescription.h"
-#include "flamegpu/pop/AgentVector.h"
-#include "flamegpu/pop/AgentInstance.h"
+#include "flamegpu/simulation/AgentVector.h"
+#include "flamegpu/runtime/agent/AgentInstance.h"
 #include "flamegpu/model/AgentData.h"
-#include "flamegpu/util/type_decode.h"
+#include "flamegpu/detail/type_decode.h"
 
 namespace flamegpu {
 
@@ -331,10 +331,10 @@ void AgentDescription::newVariable(const std::string &variable_name, const std::
             "in AgentDescription::newVariable().");
     }
     // Array length 0 makes no sense
-    static_assert(type_decode<T>::len_t * N > 0, "A variable cannot have 0 elements.");
+    static_assert(detail::type_decode<T>::len_t * N > 0, "A variable cannot have 0 elements.");
     if (agent->variables.find(variable_name) == agent->variables.end()) {
-        const std::array<typename type_decode<T>::type_t, type_decode<T>::len_t * N> *casted_default =
-        reinterpret_cast<const std::array<typename type_decode<T>::type_t, type_decode<T>::len_t* N>*>(&default_value);
+        const std::array<typename detail::type_decode<T>::type_t, detail::type_decode<T>::len_t * N> *casted_default =
+        reinterpret_cast<const std::array<typename detail::type_decode<T>::type_t, detail::type_decode<T>::len_t* N>*>(&default_value);
         agent->variables.emplace(variable_name, Variable(*casted_default));
         return;
     }
@@ -370,11 +370,11 @@ void AgentDescription::newVariableArray(const std::string& variable_name, const 
             length, static_cast<unsigned int>(default_value.size()));
     }
     if (agent->variables.find(variable_name) == agent->variables.end()) {
-        std::vector<typename type_decode<T>::type_t> temp(static_cast<size_t>(type_decode<T>::len_t * length));
+        std::vector<typename detail::type_decode<T>::type_t> temp(static_cast<size_t>(detail::type_decode<T>::len_t * length));
         if (default_value.size()) {
-            memcpy(temp.data(), default_value.data(), sizeof(typename type_decode<T>::type_t) * type_decode<T>::len_t * length);
+            memcpy(temp.data(), default_value.data(), sizeof(typename detail::type_decode<T>::type_t) * detail::type_decode<T>::len_t * length);
         }
-        agent->variables.emplace(variable_name, Variable(type_decode<T>::len_t* length, temp));
+        agent->variables.emplace(variable_name, Variable(detail::type_decode<T>::len_t* length, temp));
         return;
     }
     THROW exception::InvalidAgentVar("Agent ('%s') already contains variable '%s', "
