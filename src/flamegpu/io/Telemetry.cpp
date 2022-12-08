@@ -44,7 +44,7 @@ namespace {
             s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) { return !std::isspace(ch); }).base(), s.end());
 
             // Transform the input to lower case
-            std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c){ return std::tolower(c); });
+            std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c){ return static_cast<unsigned char>(std::tolower(c)); });
             // If it's a falsey option, set it to falesy.
             if (s == "0" || s == "false" || s == "off") {
                 rtn = false;
@@ -144,6 +144,9 @@ bool Telemetry::isTestMode() {
 
 
 std::string Telemetry::generateData(std::string event_name, std::map<std::string, std::string> payload_items) {
+    // Initialise from the env var is needed. A ctor might be nicer.
+    initialiseFromEnvironmentIfNeeded();
+
     const std::string var_testmode = "$TEST_MODE";
     const std::string var_appID = "$APP_ID";
     const std::string var_telemetryRandomID = "$TELEMETRY_RANDOM_ID";
@@ -238,6 +241,9 @@ std::string Telemetry::generateData(std::string event_name, std::map<std::string
 }
 
 bool Telemetry::sendData(std::string telemetry_data) {
+    // Initialise from the env var is needed. A ctor might be nicer.
+    initialiseFromEnvironmentIfNeeded();
+
     // Maximum duration curl to attempt to connect to the endpoint
     const float CURL_CONNECT_TIMEOUT = 0.5;
     // Maximum total duration for the curl call, including connection and payload
