@@ -256,8 +256,6 @@ bool Telemetry::sendData(std::string telemetry_data) {
     null = "/dev/null";
 #endif
     std::string curl_command = "curl -s -o " + null + " --connect-timeout " + std::to_string(CURL_CONNECT_TIMEOUT) + " --max-time " + std::to_string(CURL_MAX_TIME) +  " -X POST \"" + std::string(TELEMETRY_ENDPOINT) + "\" -H \"Content-Type: application/json; charset=utf-8\" --data-raw \"" + telemetry_data + "\"";
-    printf("%s\n", curl_command.c_str());
-    exit(1);
     // capture the return value
     if (std::system(curl_command.c_str()) != EXIT_SUCCESS) {
         return false;
