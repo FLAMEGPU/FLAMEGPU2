@@ -35,18 +35,18 @@ namespace {
      */
     bool cmakeStrToBool(const char * input) {
         // Assume truthy
-        bool rtn = true; 
-        if(input != NULL) {
+        bool rtn = true;
+        if (input != NULL) {
             std::string s = std::string(input);
             // Trim leading whitespace
             s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) { return !std::isspace(ch); }));
             // Trim trailing whitespace
             s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) { return !std::isspace(ch); }).base(), s.end());
-            
+
             // Transform the input to lower case
             std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c){ return std::tolower(c); });
             // If it's a falsey option, set it to falesy.
-            if (s == "0" || s == "false" || s == "off" ) {
+            if (s == "0" || s == "false" || s == "off") {
                 rtn = false;
             }
         }
@@ -63,7 +63,7 @@ namespace {
             enabled = true;
             // If the sharing environment var is set, parse it following cmake boolean logic
             char * env_FLAMEGPU_SHARE_USAGE_STATISTICS = std::getenv("FLAMEGPU_SHARE_USAGE_STATISTICS");
-            if(env_FLAMEGPU_SHARE_USAGE_STATISTICS != NULL) {
+            if (env_FLAMEGPU_SHARE_USAGE_STATISTICS != NULL) {
                 enabled = cmakeStrToBool(env_FLAMEGPU_SHARE_USAGE_STATISTICS);
             } else {
                 // if the environment variable is not specified, use the value from the preprocessor
@@ -76,7 +76,7 @@ namespace {
             // Parse env and cmake variables to find the default value for suppression.
             suppressed = false;
             char * env_FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE = std::getenv("FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE");
-            if(env_FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE != NULL) {
+            if (env_FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE != NULL) {
                 suppressed = cmakeStrToBool(env_FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE);
             } else {
                 // if the environment variable is not specified, use the value from the preprocessor
@@ -86,11 +86,10 @@ namespace {
                     suppressed = false;
                 #endif
             }
-
             // Parse env and cmake variables to find the default value for test dev mode. .
             testMode = false;
             char * env_FLAMEGPU_TELEMETRY_TEST_MODE = std::getenv("FLAMEGPU_TELEMETRY_TEST_MODE");
-            if(env_FLAMEGPU_TELEMETRY_TEST_MODE != NULL) {
+            if (env_FLAMEGPU_TELEMETRY_TEST_MODE != NULL) {
                 testMode = cmakeStrToBool(env_FLAMEGPU_TELEMETRY_TEST_MODE);
             } else {
                 // if the environment variable is not specified, use the value from the preprocessor
@@ -100,7 +99,6 @@ namespace {
                     testMode = false;
                 #endif
             }
-
             // Mark this as initialised.
             initialised = true;
         }
@@ -168,9 +166,9 @@ std::string Telemetry::generateData(std::string event_name, std::map<std::string
 
     // other version strings
     payload_items["appVersionFull"] = flamegpu::VERSION_FULL;
-    payload_items["majorSystemVersion"] = std::to_string(flamegpu::VERSION_MAJOR); // e.g. '2' (graphed in Telemetry deck)
+    payload_items["majorSystemVersion"] = std::to_string(flamegpu::VERSION_MAJOR);  // e.g. '2' (graphed in Telemetry deck)
     std::string major_minor_patch = std::to_string(flamegpu::VERSION_MAJOR) + "." + std::to_string(flamegpu::VERSION_MINOR) + "." + std::to_string(flamegpu::VERSION_PATCH);
-    payload_items["majorMinorSystemVersion"] = major_minor_patch; // e.g. '2.0.0' (graphed in Telemetry deck)
+    payload_items["majorMinorSystemVersion"] = major_minor_patch;  // e.g. '2.0.0' (graphed in Telemetry deck)
     payload_items["appVersionPatch"] = std::to_string(flamegpu::VERSION_PATCH);
     payload_items["appVersionPreRelease"] = flamegpu::VERSION_PRERELEASE;
     payload_items["buildNumber"] = flamegpu::VERSION_BUILDMETADATA;  // e.g. '0553592f' (graphed in Telemetry deck)

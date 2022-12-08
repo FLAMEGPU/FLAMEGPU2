@@ -1234,7 +1234,7 @@ TEST(TestCUDASimulation, simulationConfigTelemetry) {
     // disable on the config object, check that it is false.
     c.SimulationConfig().telemetry = false;
     EXPECT_FALSE(c.SimulationConfig().telemetry);
-    
+
     // Flip it back to true once again, just incase it was true originally.
     c.SimulationConfig().telemetry = true;
     EXPECT_TRUE(c.SimulationConfig().telemetry);

@@ -27,4 +27,4 @@ TEST(TestTelemetry, suppressNotice) {
 
 }  // namespace test_telemetry
 }  // namespace tests
-}  // namespace flamegpu 
+}  // namespace flamegpu

@@ -13,16 +13,14 @@ class CUDAEnsemble;
 namespace io {
 
 /**
- * Class for interacting with the telemetry, using static methods. 
+ * Class for interacting with the telemetry, using static methods.
  * This is a class rather than a namespace to prevent users from directly calling some methods which must be accessible from CUDASimulation and CUDAEnsemble.
 */
 class Telemetry {
     // Mark friend classes to allow access to methods not intended for users to call directly.
     friend class flamegpu::CUDASimulation;
     friend class flamegpu::CUDAEnsemble;
-
  public:
-
 /**
  * Opt-in to sending anonymous usage telemetry information, if currently disabled.
  * This controls the default value used for CUDASimulation and CUDAEnsemble configuration objects, which can then independently be opted out.
@@ -36,8 +34,8 @@ static void enable();
 static void disable();
 
 /**
- * Get the current enabled/disabled status of telemetry. 
- * If the system environment variable FLAMEGPU_SHARE_USAGE_STATISTICS is defined, and is false-y (0, false, False, FALSE, off, Off, OFF) it will be disabled by default. 
+ * Get the current enabled/disabled status of telemetry.
+ * If the system environment variable FLAMEGPU_SHARE_USAGE_STATISTICS is defined, and is false-y (0, false, False, FALSE, off, Off, OFF) it will be disabled by default.
  * Otherwise, the CMake FLAMEGPU_SHARE_USAGE_STATISTICS option will be used, which defaults to On/True.
  * Otherwise, if the define was not specified at build time, it will default to enabled.
  * @return if telemetry is currently enabled or disabled.
@@ -45,15 +43,14 @@ static void disable();
 static bool isEnabled();
 
 /**
- * If telemetry is not enabled, a notice will be emitted to encourage users to enable this as a way to support FLAMEGPU development, once per application run. This method can be called to disable that message from being printed. 
+ * If telemetry is not enabled, a notice will be emitted to encourage users to enable this as a way to support FLAMEGPU development, once per application run. This method can be called to disable that message from being printed.
  * I.e. this is used within the test suite(s).
  */
 static void suppressNotice();
 
- private: 
-
+ private:
 /*
- * The remote endpoint which telemetry is pushed to. 
+ * The remote endpoint which telemetry is pushed to.
  */
 constexpr static char TELEMETRY_ENDPOINT[] = "https://nom.telemetrydeck.com/v1/";
 
@@ -68,7 +65,7 @@ constexpr static char TELEMETRY_ENDPOINT[] = "https://nom.telemetrydeck.com/v1/"
 static std::string generateData(std::string event_name, std::map<std::string, std::string> payload_items);
 
 /**
- * Sends telemetry data in the form as the provided json to the TelemetryDeck web service. 
+ * Sends telemetry data in the form as the provided json to the TelemetryDeck web service.
  * @param telemetry_data json data to send
  * @return false if failed for any reason (including inability to reach host)
  */
@@ -86,7 +83,6 @@ static void encourageUsage();
  * @return if telemetry is currently in test mode or not.
  */
 static bool isTestMode();
-
 };
 }  // namespace io
 }  // namespace flamegpu
