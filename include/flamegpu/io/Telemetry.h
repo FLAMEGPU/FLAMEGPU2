@@ -58,7 +58,7 @@ constexpr static char TELEMETRY_ENDPOINT[] = "https://nom.telemetrydeck.com/v1/"
  * Generates the telemetry data packet as a string.
  * Function is used by sendTelemetryData but is useful for returning the actual json for transparency.
  * See documentation for data which is sent and why
- * @param event_name the name of the event to record. This will either be "simulation-run, ensemble-run, googletest-run, pythontest-run"
+ * @param event_name the name of the event to record. This will either be "simulation-run, ensemble-run"
  * @param payload_items a map of key value items to embed in the payload of the telemetry packet
  * @return The json string that should be sent via sendTelemetryData
  */
