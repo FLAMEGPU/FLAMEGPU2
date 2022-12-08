@@ -58,6 +58,11 @@ extern const char VERSION_STRING[];
  */
 extern const char VERSION_FULL[];
 
+/**
+ * A randomly generated string created once per CMake build directory/configuration, for use with telemetry to approximate unique users without any PII (if telemetry is enabled).
+ */
+extern const char TELEMETRY_RANDOM_ID[];
+
 }  // namespace flamegpu
 
 #endif  // INCLUDE_FLAMEGPU_VERSION_H_

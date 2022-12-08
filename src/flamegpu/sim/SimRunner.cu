@@ -87,6 +87,7 @@ void SimRunner::start() {
             simulation->SimulationConfig().verbosity = Verbosity::Default;
             if (verbosity == Verbosity::Quiet)  // Use quiet verbosity for sims if set in ensemble but never verbose
                 simulation->SimulationConfig().verbosity = Verbosity::Quiet;
+            simulation->SimulationConfig().telemetry = false;   // Never any telemtry for indiviual runs inside an ensemble
             simulation->SimulationConfig().timing = false;
             simulation->CUDAConfig().device_id = this->device_id;
             simulation->CUDAConfig().is_ensemble = true;

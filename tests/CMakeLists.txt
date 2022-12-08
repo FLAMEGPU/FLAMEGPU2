@@ -20,6 +20,7 @@ SET(TESTS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_io.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_logging.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_logging_exceptions.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_telemetry.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_environment_description.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_model.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/model/test_agent.cu

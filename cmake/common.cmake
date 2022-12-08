@@ -21,7 +21,7 @@ include(${FLAMEGPU_ROOT}/cmake/CheckBinaryDirPathForSpaces.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cuda_arch.cmake)
 
 # Ensure that other dependencies are downloaded and available. 
-# As flamegpu is a static library, linking only only occurs at consumption not generation, so dependent targets must also know of PRIVATE shared library dependencies such as tinyxml2 and rapidjson, as well any intentionalyl public dependencies (for include dirs)
+# As flamegpu is a static library, linking only only occurs at consumption not generation, so dependent targets must also know of PRIVATE shared library dependencies such as tinyxml2 and rapidjson, as well any intentionally public dependencies (for include dirs)
 include(${CMAKE_CURRENT_LIST_DIR}/dependencies/Thrust.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/dependencies/Jitify.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/dependencies/Tinyxml2.cmake)

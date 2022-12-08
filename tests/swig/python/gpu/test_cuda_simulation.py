@@ -1,4 +1,5 @@
 import pytest
+import os
 from unittest import TestCase
 from pyflamegpu import *
 from random import randint
@@ -614,4 +615,36 @@ class TestSimulationVerbosity(TestCase):
         # Function will run prior to any test case in the class.
         # The capsys fixture is for capturing Pythons sys.stderr and sys.stdout
         self.capsys = capsys
+
+    def test_config_telemetry(self):
+        """
+        Tests the telemetry options to ensure that they are respected.
+        Does not test the actual sending of telemetry.
+        """
+
+        # Get if telemetry is enabled or not
+        telemetryIsEnabled = pyflamegpu.Telemetry.isEnabled()
+        # This should be false in the test suite.
+        assert telemetryIsEnabled == False
+
+        # Define a simple model - doesn't need to do anything
+        m = pyflamegpu.ModelDescription("tes_simulation_telemetry_function")
+        a = m.newAgent("Agent")
+
+        # Create a simulation, checking the default value matches the enabled/disabled setting
+        c = pyflamegpu.CUDASimulation(m);
+        assert c.SimulationConfig().telemetry == telemetryIsEnabled;
+
+        # Enable the telemetry config option, and check that it is correct.
+        c.SimulationConfig().telemetry = True
+        assert True == c.SimulationConfig().telemetry
+
+        # disable on the config object, check that it is false.
+        c.SimulationConfig().telemetry = False
+        assert False == c.SimulationConfig().telemetry
         
+        # Flip it back to true once again, just incase it was true originally.
+        c.SimulationConfig().telemetry = True
+        assert True == c.SimulationConfig().telemetry
+
+    

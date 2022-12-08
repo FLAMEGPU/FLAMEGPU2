@@ -51,6 +51,7 @@ TEST(TestCUDAEnsemble, EnsembleConfig) {
     EXPECT_EQ(immutableConfig.devices, std::set<int>());  // @todo - this will need to change.
     EXPECT_EQ(immutableConfig.verbosity, Verbosity::Default);
     EXPECT_EQ(immutableConfig.timing, false);
+    EXPECT_EQ(immutableConfig.telemetry, false);
     // Mutate the config. Note we cannot mutate the return from getConfig, and connot test this as it is a compialtion failure (requires ctest / standalone .cpp file)
     mutableConfig.out_directory = std::string("test");
     mutableConfig.out_format = std::string("xml");
@@ -58,6 +59,7 @@ TEST(TestCUDAEnsemble, EnsembleConfig) {
     mutableConfig.devices = std::set<int>({0});
     mutableConfig.verbosity = Verbosity::Verbose;
     mutableConfig.timing = true;
+    mutableConfig.telemetry = true;
     // Check via the const ref, this should show the same value as config was a reference, not a copy.
     EXPECT_EQ(immutableConfig.out_directory, "test");
     EXPECT_EQ(immutableConfig.out_format, "xml");
@@ -65,6 +67,7 @@ TEST(TestCUDAEnsemble, EnsembleConfig) {
     EXPECT_EQ(immutableConfig.devices, std::set<int>({0}));  // @todo - this will need to change.
     EXPECT_EQ(immutableConfig.verbosity, Verbosity::Verbose);
     EXPECT_EQ(immutableConfig.timing, true);
+    EXPECT_EQ(immutableConfig.telemetry, true);
 }
 // This test causes `exit` so cannot be used.
 /* TEST(TestCUDAEnsemble, DISABLED_initialise_help) {
@@ -1084,6 +1087,26 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc_rtc) {
     }
     d_int = nullptr;
 }
+
+TEST(TestCUDASimulation, simulationTelemetryConfig) {
+    // Define a simple model - doesn't need to do anything
+    flamegpu::ModelDescription model("test");
+    // Get if telemetry is enabled or not
+    bool telemetryIsEnabled = flamegpu::io::Telemetry::isEnabled();
+    // Create a ensemble, chceking the default value matches the enabled/disabled setting
+    flamegpu::CUDAEnsemble ensemble(model);
+    EXPECT_EQ(ensemble.Config().telemetry, telemetryIsEnabled);
+    // Enable the telemetry config option, and check that it is correct.
+    ensemble.Config().telemetry = true;
+    EXPECT_TRUE(ensemble.Config().telemetry);
+    // disable on the config object, check that it is false.
+    ensemble.Config().telemetry = false;
+    EXPECT_FALSE(ensemble.Config().telemetry);
+    // Flip it back to true once again, just incase it was true originally.
+    ensemble.Config().telemetry = true;
+    EXPECT_TRUE(ensemble.Config().telemetry);
+}
+
 }  // namespace test_cuda_ensemble
 }  // namespace tests
 }  // namespace flamegpu

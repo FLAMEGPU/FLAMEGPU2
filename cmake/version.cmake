@@ -16,6 +16,15 @@ set(FLAMEGPU_VERSION_PRERELEASE "${CMAKE_MATCH_1}")
 
 # @todo - validate that these have been found correctly via regex? Although it should get caught by the below validation, but errors could be better.
 
+# Generate a random string as a probably unique? build / configuration id to be used for telemetry, as a vague way to track independent configuration directories / users. 
+# It is far from perfect, but better than nothing.
+# Only do this if we do not alreayd have a cached  variable containning one, to avoid re-configures generating a new id. It will not differentiate between differnt users of the same pyflamegpu wheel.
+if (NOT DEFINED FLAMEGPU_TELEMETRY_RANDOM_ID)
+    string(RANDOM LENGTH 36 FLAMEGPU_TELEMETRY_RANDOM_ID)
+    # Promote the value to the cache as internal
+    set(FLAMEGPU_TELEMETRY_RANDOM_ID "${FLAMEGPU_TELEMETRY_RANDOM_ID}" CACHE INTERNAL "Random string used for telemetry to roughly count unique CMake configuration/build directories, rather than any PII-based tracking." FORCE)
+endif()
+
 # Validate the major version
 if(FLAMEGPU_VERSION_MAJOR LESS 0)
     message(FATAL_ERROR "FLAMEGPU_VERSION_MAJOR (${FLAMEGPU_VERSION_MAJOR}) must be a non negative integer")

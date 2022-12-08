@@ -11,7 +11,6 @@
 #include "flamegpu/sim/AgentInterface.h"
 #include "flamegpu/util/Any.h"
 
-
 namespace flamegpu {
 
 class AgentVector;
@@ -33,8 +32,7 @@ class Simulation {
      * General simulation runner specific config
      */
     struct Config {
-        Config() : random_seed(static_cast<uint64_t>(time(nullptr))) {
-        }
+        Config();
         void operator=(const Config &other) {
             input_file = other.input_file;
             step_log_file = other.step_log_file;
@@ -46,6 +44,7 @@ class Simulation {
             verbosity = other.verbosity;
             timing = other.timing;
             silence_unknown_args = other.silence_unknown_args;
+            telemetry = other.telemetry;
 #ifdef VISUALISATION
             console_mode = other.console_mode;
 #endif
@@ -60,6 +59,7 @@ class Simulation {
         flamegpu::Verbosity verbosity = Verbosity::Default;
         bool timing = false;
         bool silence_unknown_args = false;
+        bool telemetry = false;
 #ifdef VISUALISATION
         bool console_mode = false;
 #else

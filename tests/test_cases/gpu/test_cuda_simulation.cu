@@ -6,6 +6,7 @@
 #include "flamegpu/flamegpu.h"
 #include "flamegpu/util/detail/compute_capability.cuh"
 #include "helpers/device_initialisation.h"
+#include "flamegpu/io/Telemetry.h"
 
 
 #include "gtest/gtest.h"
@@ -1196,6 +1197,47 @@ TEST(TestCUDASimulation, TruncationOn_exportData) {
     }
     // Cleanup
     std::filesystem::remove("test_truncate.json");
+}
+// Test setting the telemetry value via runtime function call
+TEST(TestCUDASimulation, simulationTelemetryFunction) {
+    // Define a simple model - doesn't need to do anything
+    ModelDescription m(MODEL_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
+    CUDASimulation c(m);
+    const bool telemetry = c.SimulationConfig().telemetry;
+    ASSERT_FALSE(telemetry);    // Telemetry must be disabled during test suite (set in test main)
+    // set telemetry at runtime which will override any global/cmake values
+    c.SimulationConfig().telemetry = true;
+    EXPECT_TRUE(c.SimulationConfig().telemetry);
+}
+
+// Test telemetry global variable.
+// If the global varibale is set to 'true' (or more specifically not a false value) then simulation dervived objects should set the telemetry value to true
+// There are various 'false' values that are supported to specifically disable telemetry
+// Not possible to test the cmake value as this may be changed by user but cmake var and environment var are respected equally
+TEST(TestCUDASimulation, simulationConfigTelemetry) {
+    // Define a simple model - doesn't need to do anything
+    ModelDescription m(MODEL_NAME);
+    AgentDescription a = m.newAgent(AGENT_NAME);
+
+    // Get if telemetry is enabled or not
+    bool telemetryIsEnabled = flamegpu::io::Telemetry::isEnabled();
+
+    // Create a simulation, checking the default value matches the enabled/disabled setting
+    CUDASimulation c(m);
+    EXPECT_EQ(c.SimulationConfig().telemetry, telemetryIsEnabled);
+
+    // Enable the telemetry config option, and check that it is correct.
+    c.SimulationConfig().telemetry = true;
+    EXPECT_TRUE(c.SimulationConfig().telemetry);
+
+    // disable on the config object, check that it is false.
+    c.SimulationConfig().telemetry = false;
+    EXPECT_FALSE(c.SimulationConfig().telemetry);
+
+    // Flip it back to true once again, just incase it was true originally.
+    c.SimulationConfig().telemetry = true;
+    EXPECT_TRUE(c.SimulationConfig().telemetry);
 }
 
 }  // namespace test_cuda_simulation

@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <string>
+#include <map>
 
 #include "flamegpu/util/detail/curand.cuh"
 #include "flamegpu/model/AgentFunctionData.cuh"
@@ -28,6 +29,7 @@
 #include "flamegpu/sim/RunPlan.h"
 #include "flamegpu/version.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
+#include "flamegpu/io/Telemetry.h"
 #ifdef VISUALISATION
 #include "flamegpu/visualiser/FLAMEGPU_Visualisation.h"
 #endif
@@ -1233,6 +1235,32 @@ void CUDASimulation::simulate() {
         fprintf(stdout, "Total Processing time: %.6f s\n", elapsedSecondsSimulation);
     }
     processExitLog();
+
+    // Send Telemetry
+    if (getSimulationConfig().telemetry) {
+        // Generate some payload items
+        std::map<std::string, std::string> payload_items;
+        payload_items["GPUDevices"] = flamegpu::util::detail::compute_capability::getDeviceName(deviceInitialised);
+        payload_items["SimTime(s)"] = std::to_string(elapsedSecondsSimulation);
+        #if defined(__CUDACC_VER_MAJOR__) && defined(__CUDACC_VER_MINOR__) && defined(__CUDACC_VER_PATCH__)
+            payload_items["NVCCVersion"] = std::to_string(__CUDACC_VER_MAJOR__) + "." + std::to_string(__CUDACC_VER_MINOR__) + "." + std::to_string(__CUDACC_VER_BUILD__);
+        #endif
+        // generate telemtry data
+        std::string telemetry_data = flamegpu::io::Telemetry::generateData("simulation-run", payload_items);
+        // send
+        if (!flamegpu::io::Telemetry::sendData(telemetry_data)) {
+            if ((getSimulationConfig().verbosity > Verbosity::Verbose))
+                fprintf(stderr, "Warning: Usage statistics for CUDASimulation failed to send.\n");
+        }
+        // print
+        if ((getSimulationConfig().verbosity >= Verbosity::Verbose)) {
+            fprintf(stdout, "Telemetry packet sent to '%s' json was: %s\n", flamegpu::io::Telemetry::TELEMETRY_ENDPOINT, telemetry_data.c_str());
+        }
+    } else {
+        // Occasional hinting of telemetry if not in use (and not Quiet and not testing mode)
+        if ((getSimulationConfig().verbosity > Verbosity::Quiet))
+            flamegpu::io::Telemetry::encourageUsage();
+    }
 
     // Export logs
     if (!SimulationConfig().step_log_file.empty())

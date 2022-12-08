@@ -9,6 +9,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <filesystem>
+#include <map>
 
 #include "flamegpu/version.h"
 #include "flamegpu/model/ModelDescription.h"
@@ -22,8 +23,12 @@
 #include "flamegpu/sim/LogFrame.h"
 #include "flamegpu/sim/SimLogger.h"
 #include "flamegpu/util/detail/cuda.cuh"
+#include "flamegpu/io/Telemetry.h"
 
 namespace flamegpu {
+
+CUDAEnsemble::EnsembleConfig::EnsembleConfig()
+    : telemetry(flamegpu::io::Telemetry::isEnabled()) {}
 
 
 CUDAEnsemble::CUDAEnsemble(const ModelDescription& _model, int argc, const char** argv)
@@ -222,6 +227,34 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
     }
     if (config.timing || config.verbosity >= Verbosity::Verbose) {
         printf("Ensemble time elapsed: %fs\n", ensemble_elapsed_time);
+    }
+
+    // Send Telemetry
+    if (config.telemetry) {
+        // Generate some payload items
+        std::map<std::string, std::string> payload_items;
+        payload_items["GPUDevices"] = flamegpu::util::detail::compute_capability::getDeviceNames(config.devices);
+        payload_items["SimTime(s)"] = std::to_string(ensemble_elapsed_time);
+        #if defined(__CUDACC_VER_MAJOR__) && defined(__CUDACC_VER_MINOR__) && defined(__CUDACC_VER_PATCH__)
+            payload_items["NVCCVersion"] = std::to_string(__CUDACC_VER_MAJOR__) + "." + std::to_string(__CUDACC_VER_MINOR__) + "." + std::to_string(__CUDACC_VER_BUILD__);
+        #endif
+        // generate telemetry data
+        std::string telemetry_data = flamegpu::io::Telemetry::generateData("ensemble-run", payload_items);
+        // send
+        if (!flamegpu::io::Telemetry::sendData(telemetry_data)) {
+            if ((config.verbosity > Verbosity::Verbose)) {
+                fprintf(stderr, "Warning: Usage statistics for CUDAEnsemble failed to send.\n");
+            }
+        }
+        // print
+        if ((config.verbosity >= Verbosity::Verbose)) {
+            fprintf(stdout, "Telemetry packet sent to '%s' json was: %s\n", flamegpu::io::Telemetry::TELEMETRY_ENDPOINT, telemetry_data.c_str());
+        }
+    } else {
+        // Encourage users who have opted out to opt back in, unless suppressed.
+        if ((config.verbosity > Verbosity::Quiet)) {
+            flamegpu::io::Telemetry::encourageUsage();
+        }
     }
 
     // Free memory

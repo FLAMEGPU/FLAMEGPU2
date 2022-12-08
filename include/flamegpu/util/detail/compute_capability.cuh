@@ -2,6 +2,8 @@
 #define INCLUDE_FLAMEGPU_UTIL_DETAIL_COMPUTE_CAPABILITY_CUH_
 
 #include <vector>
+#include <string>
+#include <set>
 
 #include "flamegpu/gpu/detail/CUDAErrorChecking.cuh"
 
@@ -51,6 +53,20 @@ std::vector<int> getNVRTCSupportedComputeCapabilties();
  * @return the best compute capability to use (the largest value LE target), or 0 if none are appropriate.
  */
 int selectAppropraiteComputeCapability(const int target, const std::vector<int>& architectures);
+
+/**
+ * Get the device name reported by CUDA runtime API
+ * @param deviceIndex the index of the device to be queried
+ * @return string representing the device name E.g. "NVIDIA GeForce RTX3080"
+ */
+const std::string getDeviceName(int deviceIndex);
+
+/**
+ * Get the device names reported by CUDA runtime API
+ * @param set<int> of device id's to be queried
+ * @return comma seperated string of device names E.g. "NVIDIA GeForce RTX3080, NVIDIAGe Force RTX3070"
+ */
+const std::string getDeviceNames(std::set<int> devices);
 }  // namespace compute_capability
 }  // namespace detail
 }  // namespace util

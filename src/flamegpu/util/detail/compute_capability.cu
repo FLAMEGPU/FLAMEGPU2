@@ -102,6 +102,55 @@ int compute_capability::selectAppropraiteComputeCapability(const int target, con
     return maxArch;
 }
 
+
+const std::string compute_capability::getDeviceName(int deviceIndex) {
+    // Throw an exception if the deviceIndex is negative.
+    if (deviceIndex < 0) {
+        THROW exception::InvalidCUDAdevice();
+    }
+
+    // Ensure deviceIndex is valid.
+    int deviceCount = 0;
+    gpuErrchk(cudaGetDeviceCount(&deviceCount));
+    if (deviceIndex >= deviceCount) {
+        // Throw an excpetion if the device index is bad.
+        THROW exception::InvalidCUDAdevice();
+    }
+    // Load device properties
+    cudaDeviceProp prop;
+    cudaGetDeviceProperties(&prop, deviceIndex);
+
+    return std::string(prop.name);
+}
+
+const std::string compute_capability::getDeviceNames(std::set<int> devices) {
+    std::string device_names;
+    bool first = true;
+    for (int device_id : devices) {
+        // Throw an exception if the deviceIndex is negative.
+        if (device_id < 0) {
+            THROW exception::InvalidCUDAdevice();
+        }
+
+        // Ensure deviceIndex is valid.
+        int deviceCount = 0;
+        gpuErrchk(cudaGetDeviceCount(&deviceCount));
+        if (device_id >= deviceCount) {
+            // Throw an excpetion if the device index is bad.
+            THROW exception::InvalidCUDAdevice();
+        }
+        // Load device properties
+        cudaDeviceProp prop;
+        cudaGetDeviceProperties(&prop, device_id);
+        if (!first)
+            device_names.append(", ");
+        device_names.append(prop.name);
+        first = false;
+    }
+    return device_names;
+}
+
+
 }  // namespace detail
 }  // namespace util
 }  // namespace flamegpu

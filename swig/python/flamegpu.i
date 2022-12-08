@@ -567,6 +567,9 @@ class ModelVis;
 %include "flamegpu/version.h" // provides FLAMEGPU_VERSION etc
 %include "flamegpu/runtime/HostAPI_macros.h" // Used in LayerDesc, LayerData, HostFuncDesc
 
+// Include Telemetry functions
+%include "flamegpu/io/Telemetry.h"
+
 %include "flamegpu/sim/AgentInterface.h"
 
 %include "flamegpu/runtime/HostFunctionCallback.h"
@@ -651,6 +654,10 @@ class ModelVis;
 // Don't flatnest this, range is explicitly not included incase of GC related issues.
 %include "flamegpu/util/nvtx.h"
 
+// create a concrete map with string string for use with telemetry payload
+namespace std {
+    %template(map_string_string) map<string, string>;
+}
 
 // %extend classes go after %includes, but before tempalates (that use them)
 // -----------------

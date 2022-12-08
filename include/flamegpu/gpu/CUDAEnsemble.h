@@ -26,6 +26,7 @@ class CUDAEnsemble {
      * Execution config for running a CUDAEnsemble
      */
     struct EnsembleConfig {
+        EnsembleConfig();
         /**
          * Directory to store output data (primarily logs)
          * Defaults to "" (the working directory, no subdirectory)
@@ -86,6 +87,8 @@ class CUDAEnsemble {
 #else
         const bool block_standby = false;
 #endif
+
+        bool telemetry = false;
     };
     /**
      * Initialise CUDA Ensemble
