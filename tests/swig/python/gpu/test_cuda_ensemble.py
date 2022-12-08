@@ -657,3 +657,21 @@ class TestEnsembleVerbosity(TestCase):
         # Function will run prior to any test case in the class.
         # The capsys fixture is for capturing Pythons sys.stderr and sys.stdout
         self.capsys = capsys
+
+    def test_config_telemetry(self):
+        # Define a simple model - doesn't need to do anything
+        model = pyflamegpu.ModelDescription("test")
+        # Get if telemetry is enabled or not
+        telemetryIsEnabled = pyflamegpu.Telemetry.isEnabled()
+        # Create a ensemble, chceking the default value matches the enabled/disabled setting
+        ensemble = pyflamegpu.CUDAEnsemble(model)
+        assert ensemble.Config().telemetry == telemetryIsEnabled
+        # Enable the telemetry config option, and check that it is correct.
+        ensemble.Config().telemetry = True
+        assert True == ensemble.Config().telemetry
+        # disable on the config object, check that it is false.
+        ensemble.Config().telemetry = False
+        assert False == ensemble.Config().telemetry
+        # Flip it back to true once again, just incase it was true originally.
+        ensemble.Config().telemetry = True
+        assert True == ensemble.Config().telemetry

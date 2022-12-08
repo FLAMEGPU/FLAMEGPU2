@@ -80,6 +80,13 @@ static bool sendData(std::string telemetry_data);
  */
 static void encourageUsage();
 
+/**
+ * Get the current test mode status of telemetry, which will be false unless the system environment variable FLAMEGPU_TELEMETRY_TEST_MODE is defined and not a false-y value, or if the CMake option FLAMEGPU_TELEMETRY_TEST_MODE was set to ON.
+ * Otherwise, if the define was not specified at build time, it will default to enabled.
+ * @return if telemetry is currently in test mode or not.
+ */
+static bool isTestMode();
+
 };
 }  // namespace io
 }  // namespace flamegpu

@@ -615,49 +615,36 @@ class TestSimulationVerbosity(TestCase):
         # Function will run prior to any test case in the class.
         # The capsys fixture is for capturing Pythons sys.stderr and sys.stdout
         self.capsys = capsys
-        
-class TestSimulationTelemetry(TestCase):
-    """
-    Tests the telemetry options to ensure that they are respected.
-    Does not test the actual sending of telemetry.
-    """
 
-    def tes_simulation_telemetry_function(self):
+    def test_config_telemetry(self):
+        """
+        Tests the telemetry options to ensure that they are respected.
+        Does not test the actual sending of telemetry.
+        """
+
+        # Get if telemetry is enabled or not
+        telemetryIsEnabled = pyflamegpu.Telemetry.isEnabled()
+        # This should be false in the test suite.
+        assert telemetryIsEnabled == False
+
         # Define a simple model - doesn't need to do anything
         m = pyflamegpu.ModelDescription("tes_simulation_telemetry_function")
         a = m.newAgent("Agent")
-        c = pyflamegpu.CUDASimulation(m)
-        telemetry = c.SimulationConfig().telemetry
-        assert not(telemetry)    # Telemetry must be disabled during test suite (set in test main)
-        # set telemetry at runtime which will override any global/cmake values
+
+        # Create a simulation, checking the default value matches the enabled/disabled setting
+        c = pyflamegpu.CUDASimulation(m);
+        assert c.SimulationConfig().telemetry == telemetryIsEnabled;
+
+        # Enable the telemetry config option, and check that it is correct.
         c.SimulationConfig().telemetry = True
+        assert True == c.SimulationConfig().telemetry
 
-        assert c.SimulationConfig().telemetry
+        # disable on the config object, check that it is false.
+        c.SimulationConfig().telemetry = False
+        assert False == c.SimulationConfig().telemetry
+        
+        # Flip it back to true once again, just incase it was true originally.
+        c.SimulationConfig().telemetry = True
+        assert True == c.SimulationConfig().telemetry
 
-    def test_simulation_telemetry_environemt(self):
-        """
-        Test telemetry global variable.
-        If the global variable is set to 'true' (or more specifically not a false value) then simulation derived objects should set the telemetry value to true.
-        There are various 'false' values that are supported to specifically disable telemetry.
-        Not possible to test the cmake value as this may be changed by user but cmake var and environment var are respected equally.
-        This test is also valid for Ensembles as it belongs to the generic Simulation class.
-        """
-        # Define a simple model - doesn't need to do anything
-        m = pyflamegpu.ModelDescription("tes_simulation_telemetry_function")
-        a = m.newAgent("Agent")
-        # Enable telemetry globally via "True" value
-        os.environ["FLAMEGPU_SHARE_USAGE_STATISTICS"] = "True"
-        c = pyflamegpu.CUDASimulation(m)
-        assert c.SimulationConfig().telemetry  # Telemetry should have been enabled during initialisation due to global variable
-        # check telemetry global Off values produce expected result
-        os.environ["FLAMEGPU_SHARE_USAGE_STATISTICS"] = "Off"
-        assert not(pyflamegpu.globalTelemetryEnabled())
-        os.environ["FLAMEGPU_SHARE_USAGE_STATISTICS"] = "OFF"
-        assert not(pyflamegpu.globalTelemetryEnabled())
-        os.environ["FLAMEGPU_SHARE_USAGE_STATISTICS"] = "FALSE"
-        assert not(pyflamegpu.globalTelemetryEnabled())
-        os.environ["FLAMEGPU_SHARE_USAGE_STATISTICS"] = "0"
-        assert not(pyflamegpu.globalTelemetryEnabled())
-        # Reset telemetry globally to False
-        os.environ["FLAMEGPU_SHARE_USAGE_STATISTICS"] = "False"
-        assert not(pyflamegpu.globalTelemetryEnabled())  # Dont continue unless telemetry has been disabled globally
+    

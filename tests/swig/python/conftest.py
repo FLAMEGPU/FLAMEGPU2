@@ -10,12 +10,10 @@ def pytest_sessionstart(session):
     a result of running tests.
     """
     # Get the global telemetry value (either set in cmake or env) and store in session for later
-    session.telemetry  = pyflamegpu.globalTelemetryEnabled()
-    # Disable any global telemetry to prevent telemetry for every simulation in test suite
-    os.environ['FLAMEGPU_SHARE_USAGE_STATISTICS'] = 'False'
-    # Silence telemetry notice warning in test suite
-    os.environ['FLAMEGPU_SILENCE_TELEMETRY_NOTICE'] = 'True'
-
+    session.telemetry  = pyflamegpu.Telemetry.isEnabled()
+    pyflamegpu.Telemetry.disable()
+    pyflamegpu.Telemetry.suppressNotice()
+    print("disabling telemetry!!!")
 
 def pytest_sessionfinish(session, exitstatus):
     """
@@ -24,29 +22,30 @@ def pytest_sessionfinish(session, exitstatus):
     environment variable.
     """
     # ensure session has telemetry value set by pytest_sessionstart
-    if not hasattr(session, "telemetry"):
-        print("'telemetry' value not found in session.")
-        return
-    # if telemetry was enabled prior to testing then send telemetry data
-    if session.telemetry:
-        telemetry_payload =  {}
-        # store outcome in payload
-        if exitstatus in [0, 5]: # pass, no tests collected
-            telemetry_payload["TestOutcome"] = "Passed"
-        else:
-            telemetry_payload["TestOutcome"] = f"Failed(code={exitstatus})"
-        # get the terminal reporter to query pass and fails
-        terminalreporter = session.config.pluginmanager.get_plugin('terminalreporter')
-        # store test details in payload
-        telemetry_payload['TestsCollected'] = str(len(session.items))
-        telemetry_payload['TestsPassed'] = str(len(terminalreporter.stats.get('passed', [])))
-        telemetry_payload['TestsFailed']=  str(len(terminalreporter.stats.get('failed', [])))
-        telemetry_payload['TestsSkipped']=  str(len(terminalreporter.stats.get('skipped', [])))
-        telemetry_payload['TestsDeselected']=  str(len(terminalreporter.stats.get('deselected', [])))
-        # generate telemetry data (convert dict to map<string, string>)
-        telemetry_data = pyflamegpu.generateTelemetryData("pytest-run", pyflamegpu.map_string_string(telemetry_payload))
-        # send telemetry
-        pyflamegpu.sendTelemetryData(telemetry_data)
-        # print
-        if session.config.getoption("verbose") > 0:
-            print(f"\nTelemetry packet sent to '{pyflamegpu.TELEMETRY_ENDPOINT}' json was: {telemetry_data}\n")
+    print("@todo - phoning home test results?")
+    # if not hasattr(session, "telemetry"):
+    #     print("'telemetry' value not found in session.")
+    #     return
+    # # if telemetry was enabled prior to testing then send telemetry data
+    # if session.telemetry:
+    #     telemetry_payload =  {}
+    #     # store outcome in payload
+    #     if exitstatus in [0, 5]: # pass, no tests collected
+    #         telemetry_payload["TestOutcome"] = "Passed"
+    #     else:
+    #         telemetry_payload["TestOutcome"] = f"Failed(code={exitstatus})"
+    #     # get the terminal reporter to query pass and fails
+    #     terminalreporter = session.config.pluginmanager.get_plugin('terminalreporter')
+    #     # store test details in payload
+    #     telemetry_payload['TestsCollected'] = str(len(session.items))
+    #     telemetry_payload['TestsPassed'] = str(len(terminalreporter.stats.get('passed', [])))
+    #     telemetry_payload['TestsFailed']=  str(len(terminalreporter.stats.get('failed', [])))
+    #     telemetry_payload['TestsSkipped']=  str(len(terminalreporter.stats.get('skipped', [])))
+    #     telemetry_payload['TestsDeselected']=  str(len(terminalreporter.stats.get('deselected', [])))
+    #     # generate telemetry data (convert dict to map<string, string>)
+    #     telemetry_data = pyflamegpu.generateTelemetryData("pytest-run", pyflamegpu.map_string_string(telemetry_payload))
+    #     # send telemetry
+    #     pyflamegpu.sendTelemetryData(telemetry_data)
+    #     # print
+    #     if session.config.getoption("verbose") > 0:
+    #         print(f"\nTelemetry packet sent to '{pyflamegpu.TELEMETRY_ENDPOINT}' json was: {telemetry_data}\n")

@@ -166,6 +166,7 @@ cmake --build . --target all
 | `BUILD_SWIG_PYTHON_VENV`          | `ON`/`OFF`        | Use a python `venv` when building the python Swig target. Default `ON`. Python package `venv` required     |
 | `BUILD_TESTS`                     | `ON`/`OFF`        | Build the C++/CUDA test suite. Default `OFF`.                                                              |
 | `BUILD_TESTS_DEV`                 | `ON`/`OFF`        | Build the reduced-scope development test suite. Default `OFF`                                              |
+| `USE_GTEST_DISCOVER`              | `ON`/`OFF`        | Run individual CUDA C++ tests as independent `ctest` tests. This dramatically increases test suite runtime. Default `OFF`. |
 | `VISUALISATION`                   | `ON`/`OFF`        | Enable Visualisation. Default `OFF`.                                                                       |
 | `VISUALISATION_ROOT`              | `path/to/vis`     | Provide a path to a local copy of the visualisation repository.                                            |
 | `USE_NVTX`                        | `ON`/`OFF`        | Enable NVTX markers for improved profiling. Default `OFF`                                                  |
@@ -176,13 +177,13 @@ cmake --build . --target all
 | `CURAND_ENGINE`                   | `XORWOW`/`PHILOX`/`MRG` | Select the CUDA random engine. Default `XORWOW`                                                      |
 | `USE_GLM`                         | `ON`/`OFF`        | Experimental feature for GLM type support in RTC models. Default `OFF`.                                    |
 | `FLAMEGPU_SHARE_USAGE_STATISTICS` | `ON`/`OFF`        | Share usage statistics ([telemetry](https://docs.flamegpu.com/guide/telemetry)) to support evidencing usage/impact of the software. Default `ON`. |
+| `FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE` | `ON`/`OFF` | Suppress notice encouraging telemetry to be enabled, which is emitted once per binary execution if telemetry is disabled. Defaults to `OFF`, or the value of a system environment variable of the same name. |
+| `FLAMEGPU_TELEMETRY_TEST_MODE` | `ON`/`OFF` | Submit telemetry values to the test mode of TelemetryDeck. Intended for use during development of FLAMEGPU rather than use. Defaults to `OFF`, or the value of a system environment variable of the same name.|
 
 <!-- Additional options which users can find if they need them.
 | `BUILD_FLAMEGPU` | `ON`/`OFF` | Build the main FLAMEGPU static library target. Default `ON` |
 | `BUILD_API_DOCUMENTATION` | `ON`/`OFF` | Build the documentation target. Default `ON` |
-
 | `BUILD_ALL_EXAMPLES` | `ON`/`OFF` | Build the suite of example models. Default `ON` |
-
 | `BUILD_EXAMPLE_*` | `ON`/`OFF` | Build individual examples as required, if `BUILD_ALL_EXAMPLES` is `OFF`. Default `OFF` |
  -->
 
@@ -242,6 +243,9 @@ Several environmental variables are used or required by FLAME GPU 2.
 + `FLAMEGPU_INC_DIR` - When RTC compilation is required, if the location of the `include` directory cannot be found it must be specified using the `FLAMEGPU_INC_DIR` environment variable.
 + `FLAMEGPU_TMP_DIR` - FLAME GPU may cache some files to a temporary directory on the system, using the temporary directory returned by [`std::filesystem::temp_directory_path`](https://en.cppreference.com/w/cpp/filesystem/temp_directory_path). The location can optionally be overridden using the `FLAMEGPU_TMP_DIR` environment variable.
 + `FLAMEGPU_RTC_INCLUDE_DIRS` - A list of include directories that should be provided to the RTC compiler, these should be separated using `;` (Windows) or `:` (Linux). If this variable is not found, the working directory will be used as a default.
++ `FLAMEGPU_SHARE_USAGE_STATISTICS` - Enable / Disable sending of telemetry data, when set to `ON` or `OFF` respectively.
++ `FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE` - Enable / Disable a once per execution notice encouraging the use of telemetry, if telemetry is disabled, when set to `ON` or `OFF` respectively.
++ `FLAMEGPU_TELEMETRY_TEST_MODE` - Enable / Disable sending telemetry data to a test endpoint, for FLAMEGPU develepoment to separate user statistics from developer statistics. Set to `ON` or `OFF`.
 
 ## Running the Test Suite(s)
 
@@ -306,9 +310,28 @@ To run the python test suite:
     python3 -m pytest ../tests/swig/python
     ```
 
-## Usage Statistics
+## Usage Statistics (Telemetry)
 
-By default the library will collect and send anonymous usage data. You can disable this is various ways which are [documented](https://docs.flamegpu.com/guide/telemetry).
+Support for academic software is dependant on evidence of impact. Without evidence it is difficult/impossible to justify investment to add features and provide maintenance. We collect a minimal amount of anonymous usage data so that we can gather usage statistics that enable us to continue to develop the software under a free and permissible licence.
+
+Information is collected when a simulation, ensemble or test suite run have completed.
+
+The [TelemetryDeck](https://telemetrydeck.com/) service is used to store telemetry data. 
+All data is sent to their API endpoint of https://nom.telemetrydeck.com/v1/ via https. For more details please review the [TelmetryDeck privacy policy](https://telemetrydeck.com/privacy/).
+
+We do not collect any personal data such as usernames, email addresses or machine identifiers.
+
+More information can be found in the [FLAMEGPU documentation](https://docs.flamegpu.com/guide/telemetry).
+
+Telemetry is enabled by default, but can be opted out by:
+
++ Setting an environment variable `FLAMEGPU_SHARE_USAGE_STATISTICS` to `OFF`, `false` or `0` (case insensitive).
+  + If this is set during the first CMake configuration it will be used for all subsequent CMake configurations until the CMake Cache is cleared, or it is manually changed.
+  + If this is set during simulation, ensemble or test execution (i.e. runtime) it will also be respected
++ Setting the `FLAMEGPU_SHARE_USAGE_STATISTICS` CMake option to `OFF` or another false-like CMake value, which will default telemetry to be off for executions.
++ Programmatically overriding the default value by:
+  + Calling `flamegpu::io::Telemetry::disable()` or `pyflamegpu.Telemetry.disable()` prior to the construction of any `Simulation`, `CUDASimulation` or `CUDAEnsemble` objects.
+  + Setting the `telemetry` config property of a `Simulation.Config`, `CUDASimulation.SimulationConfig` or `CUDAEnsemble.EnsembleConfig` to `false`.
 
 ## Contributing
 

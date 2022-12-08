@@ -33,25 +33,34 @@ enable_language(CUDA)
 # Ensure this is not an in-source build
 include(${FLAMEGPU_ROOT}/cmake/OutOfSourceOnly.cmake)
 
-# If FLAMEGPU_SHARE_USAGE_STATISTICS environment variable already exists then the default value can be set to based off this
-set (FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT ON)   # default value is on
-if (DEFINED ENV{FLAMEGPU_SHARE_USAGE_STATISTICS})
-    set (FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT ON)    # assume on unless meets condition below
-    # If user has explicitly set sharing to off then set default value to off
-    if("$ENV{FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT}" STREQUAL "FALSE")
-        set (FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT OFF)
-    elseif("$ENV{FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT}" STREQUAL "False")
-        set (FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT OFF)
-        elseif("$ENV{FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT}" STREQUAL "OFF")
-        set (FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT OFF)
-        elseif("$ENV{FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT}" STREQUAL "Off")
-        set (FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT OFF)
-    elseif("$ENV{FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT}" STREQUAL "0")
-        set (FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT OFF)
-    endif()
+# option to opt-out of sharing usage statistics, reads from the env var FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT first which is treated as a cmake bool if it is defined.
+set (FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT ON)
+# If the environment variable is defined and not truth-y, turn it off.
+if (DEFINED ENV{FLAMEGPU_SHARE_USAGE_STATISTICS} AND NOT "$ENV{FLAMEGPU_SHARE_USAGE_STATISTICS}")
+    set (FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT OFF)
 endif()
 # Option to opt-in to sharing usage statistics
 option(FLAMEGPU_SHARE_USAGE_STATISTICS "Support for academic software is dependant on evidence of impact. Enabling this sends anonymous usage statistics so that we can continue to develop it under a free licence." ${FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT})
+unset(FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT)
+
+# dependet option to suppress the telemetry notice if telemetry is off.
+set (FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE_DEFAULT OFF)
+# If the environment variable is defined and is truth-y, turn it on.
+if (DEFINED ENV{FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE} AND "$ENV{FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE}")
+    set (FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE_DEFAULT ON)
+endif()
+cmake_dependent_option(FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE "Suppress notice encouraging telemetry to be enabled, which is emitted once per binary execution if telemetry is disabled." ${FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE_DEFAULT} "FLAMEGPU_SHARE_USAGE_STATISTICS" ${FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE_DEFAULT} )
+unset(FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE_DEFAULT)
+
+# advanced developer option to switch telemetery to a test mode, which is reported separately on telemetry hub.
+set (FLAMEGPU_TELEMETRY_TEST_MODE_DEFAULT OFF)
+# If the environment variable is defined and is truth-y, turn it on.
+if (DEFINED ENV{FLAMEGPU_TELEMETRY_TEST_MODE} AND "$ENV{FLAMEGPU_TELEMETRY_TEST_MODE}")
+    set (FLAMEGPU_TELEMETRY_TEST_MODE_DEFAULT ON)
+endif()
+cmake_dependent_option(FLAMEGPU_TELEMETRY_TEST_MODE "Intended for use during development of FLAMEGPU rather than use" ${FLAMEGPU_TELEMETRY_TEST_MODE_DEFAULT} "FLAMEGPU_SHARE_USAGE_STATISTICS" ${FLAMEGPU_TELEMETRY_TEST_MODE_DEFAULT} )
+mark_as_advanced(FLAMEGPU_TELEMETRY_TEST_MODE)
+unset(FLAMEGPU_TELEMETRY_TEST_MODE_DEFAULT)
 
 # Option to enable/disable runtime checks which may impact performance
 # This will primarily prevent device code from reporting errors
@@ -415,6 +424,18 @@ else()
     "that we can continue to develop the software under a FOSS licence.\n"
     "See our documentation for more information of what we collect and \n"
     "why: https://docs.flamegpu.com/guide/telemetry.html")
+endif()
+
+# If telemetry notice suppression is enabled, forward it to the compiler. 
+if (FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE)
+    # If on, then set pre-processor
+    target_compile_definitions(${PROJECT_NAME} PRIVATE FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE=1)
+endif()
+
+# If telemetry test mode is enabled, forward it to the compiler. 
+if (FLAMEGPU_TELEMETRY_TEST_MODE)
+    # If on, then set pre-processor
+    target_compile_definitions(${PROJECT_NAME} PRIVATE FLAMEGPU_TELEMETRY_TEST_MODE=1)
 endif()
 
 # enable "fpic" for linux to allow shared libraries to be build from the static library (required for swig)

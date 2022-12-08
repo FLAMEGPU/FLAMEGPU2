@@ -1087,6 +1087,26 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc_rtc) {
     }
     d_int = nullptr;
 }
+
+TEST(TestCUDASimulation, simulationTelemetryConfig) {
+    // Define a simple model - doesn't need to do anything
+    flamegpu::ModelDescription model("test");
+    // Get if telemetry is enabled or not
+    bool telemetryIsEnabled = flamegpu::io::Telemetry::isEnabled();
+    // Create a ensemble, chceking the default value matches the enabled/disabled setting
+    flamegpu::CUDAEnsemble ensemble(model);
+    EXPECT_EQ(ensemble.Config().telemetry, telemetryIsEnabled);
+    // Enable the telemetry config option, and check that it is correct.
+    ensemble.Config().telemetry = true;
+    EXPECT_TRUE(ensemble.Config().telemetry);
+    // disable on the config object, check that it is false.
+    ensemble.Config().telemetry = false;
+    EXPECT_FALSE(ensemble.Config().telemetry);
+    // Flip it back to true once again, just incase it was true originally.
+    ensemble.Config().telemetry = true;
+    EXPECT_TRUE(ensemble.Config().telemetry);
+}
+
 }  // namespace test_cuda_ensemble
 }  // namespace tests
 }  // namespace flamegpu
