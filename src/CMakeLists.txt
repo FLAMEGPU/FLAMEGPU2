@@ -33,6 +33,9 @@ enable_language(CUDA)
 # Ensure this is not an in-source build
 include(${FLAMEGPU_ROOT}/cmake/OutOfSourceOnly.cmake)
 
+# include for dependent modules
+include(CMakeDependentOption)
+
 # option to opt-out of sharing usage statistics, reads from the env var FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT first which is treated as a cmake bool if it is defined.
 set (FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT ON)
 # If the environment variable is defined and not truth-y, turn it off.
