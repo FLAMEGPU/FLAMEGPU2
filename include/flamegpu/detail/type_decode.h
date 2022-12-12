@@ -1,9 +1,21 @@
 #ifndef INCLUDE_FLAMEGPU_DETAIL_TYPE_DECODE_H_
 #define INCLUDE_FLAMEGPU_DETAIL_TYPE_DECODE_H_
 
+#if defined(FLAMEGPU_USE_GLM) || defined(GLM_VERSION)
+#ifndef GLM_VERSION
+#ifdef __CUDACC__
+#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+#pragma nv_diag_suppress = esa_on_defaulted_function_ignored
+#else
+#pragma diag_suppress = esa_on_defaulted_function_ignored
+#endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
+#endif  // __CUDACC__
+#include <glm/glm.hpp>
+#endif
+#endif
+
 namespace flamegpu {
 namespace detail {
-
 /**
  * This struct allows us to natively decode GLM types to their type + length
  */
@@ -16,16 +28,6 @@ struct type_decode {
 };
 
 #if defined(FLAMEGPU_USE_GLM) || defined(GLM_VERSION)
-#ifndef GLM_VERSION
-#ifdef __CUDACC__
-#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-#pragma nv_diag_suppress = esa_on_defaulted_function_ignored
-#else
-#pragma diag_suppress = esa_on_defaulted_function_ignored
-#endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
-#endif  // __CUDACC__
-#include <glm/glm.hpp>
-#endif
 /**
  * GLM specialisation, only enabled if GLM is present
  */

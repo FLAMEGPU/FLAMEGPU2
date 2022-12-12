@@ -3,8 +3,8 @@
 #include <string>
 #include <memory>
 
-#include "LayerDescription.h"
-#include "DependencyNode.h"
+#include "flamegpu/model/LayerDescription.h"
+#include "flamegpu/model/DependencyNode.h"
 
 namespace flamegpu {
 

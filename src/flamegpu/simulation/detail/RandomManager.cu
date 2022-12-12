@@ -3,7 +3,7 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
-#include<ctime>
+#include <ctime>
 
 #include <cassert>
 #include <cstdio>
