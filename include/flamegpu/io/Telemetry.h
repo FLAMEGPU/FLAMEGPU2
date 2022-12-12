@@ -48,7 +48,7 @@ static bool isEnabled();
  */
 static void suppressNotice();
 
- private:
+ protected:
 /*
  * The remote endpoint which telemetry is pushed to.
  */
