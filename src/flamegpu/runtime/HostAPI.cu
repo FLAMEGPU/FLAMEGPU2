@@ -45,7 +45,7 @@ HostAgentAPI HostAPI::agent(const std::string &agent_name, const std::string &st
     if (state == agt->second.end()) {
         THROW exception::InvalidAgentState("Agent '%s' in model description hierarchy does not contain state '%s'.\n", agent_name.c_str(), state_name.c_str());
     }
-    return HostAgentAPI(*this, agentModel.getAgent(agent_name), state_name, agentOffsets.at(agent_name), state->second);
+    return HostAgentAPI(*this, agentModel.getCUDAAgent(agent_name), state_name, agentOffsets.at(agent_name), state->second);
 }
 
 /**

@@ -53,9 +53,17 @@ class CUDASimulation : public Simulation {
      * Requires internal access to scan/scatter singletons
      */
     friend class HostAgentAPI;
+    friend class HostAPI;
+    /**
+     * Requires internal access to getCUDAAgent()
+     */
     friend class detail::SimRunner;
     friend class CUDAEnsemble;
 #ifdef FLAMEGPU_VISUALISATION
+    /**
+     * Requires internal access to getCUDAAgent()
+     */
+    friend class visualiser::ModelVis;
     friend struct visualiser::ModelVisData;
 #endif
     /**
@@ -251,17 +259,6 @@ class CUDASimulation : public Simulation {
     std::vector<T> getEnvironmentPropertyArray(const std::string& property_name);
 #endif
     /**
-     * Returns the manager for the specified agent
-     * @todo remove? this is mostly internal methods that modeller doesn't need access to
-     */
-    detail::CUDAAgent& getCUDAAgent(const std::string &agent_name) const;
-    detail::AgentInterface &getAgent(const std::string &name) override;
-    /**
-     * Returns the manager for the specified agent
-     * @todo remove? this is mostly internal methods that modeller doesn't need access to
-     */
-    detail::CUDAMessage& getCUDAMessage(const std::string &message_name) const;
-    /**
      * @return A mutable reference to the cuda model specific configuration struct
      * @see Simulation::applyConfig() Should be called afterwards to apply changes
      */
@@ -372,6 +369,14 @@ class CUDASimulation : public Simulation {
     void printHelp_derived() override;
 
  private:
+    /**
+     * Returns the manager for the specified agent
+     */
+    detail::CUDAAgent& getCUDAAgent(const std::string& agent_name) const;
+    /**
+     * Returns the manager for the specified message
+     */
+    detail::CUDAMessage& getCUDAMessage(const std::string& message_name) const;
     /**
      * Reinitalises random generation for this model and all submodels
      * @param seed New random seed (this updates stored seed in config)

@@ -123,7 +123,6 @@ class Simulation {
     virtual void getPopulationData(AgentVector& population, const std::string& state_name = ModelData::DEFAULT_STATE) = 0;
 
     virtual const RunLog &getRunLog() const = 0;
-    virtual detail::AgentInterface &getAgent(const std::string &name) = 0;
 
     Config &SimulationConfig();
     const Config &getSimulationConfig() const;
