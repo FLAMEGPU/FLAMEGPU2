@@ -1379,7 +1379,6 @@ void CUDASimulation::getPopulationData(AgentVector& population, const std::strin
     it->second->getPopulationData(population, state_name);
     gpuErrchk(cudaDeviceSynchronize());
 }
-
 detail::CUDAAgent& CUDASimulation::getCUDAAgent(const std::string& agent_name) const {
     CUDAAgentMap::const_iterator it;
     it = agent_map.find(agent_name);
@@ -1391,21 +1390,6 @@ detail::CUDAAgent& CUDASimulation::getCUDAAgent(const std::string& agent_name) c
 
     return *(it->second);
 }
-
-detail::AgentInterface& CUDASimulation::getAgent(const std::string& agent_name) {
-    // Ensure singletons have been initialised
-    initialiseSingletons();
-
-    auto it = agent_map.find(agent_name);
-
-    if (it == agent_map.end()) {
-        THROW exception::InvalidCudaAgent("CUDA agent ('%s') not found, in CUDASimulation::getAgent().",
-            agent_name.c_str());
-    }
-
-    return *(it->second);
-}
-
 detail::CUDAMessage& CUDASimulation::getCUDAMessage(const std::string& message_name) const {
     CUDAMessageMap::const_iterator it;
     it = message_map.find(message_name);

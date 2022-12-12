@@ -291,36 +291,6 @@ TEST(TestCUDASimulation, SetGetPopulationData_InvalidAgent) {
     EXPECT_THROW(c.setPopulationData(pop), exception::InvalidAgent);
     EXPECT_THROW(c.getPopulationData(pop), exception::InvalidAgent);
 }
-TEST(TestCUDASimulation, GetAgent) {
-    ModelDescription m(MODEL_NAME);
-    AgentDescription a = m.newAgent(AGENT_NAME);
-    m.newLayer(LAYER_NAME).addAgentFunction(a.newFunction(FUNCTION_NAME, SetGetFn));
-    a.newVariable<int>(VARIABLE_NAME);
-    AgentVector pop(a, static_cast<unsigned int>(AGENT_COUNT));
-    for (int _i = 0; _i < AGENT_COUNT; ++_i) {
-        AgentVector::Agent i = pop[_i];
-        i.setVariable<int>(VARIABLE_NAME, _i);
-    }
-    CUDASimulation c(m);
-    c.SimulationConfig().steps = 1;
-    c.setPopulationData(pop);
-    c.simulate();
-    detail::AgentInterface &agent = c.getAgent(AGENT_NAME);
-    for (int _i = 0; _i < AGENT_COUNT; ++_i) {
-        int host = 0;
-        cudaMemcpy(&host, reinterpret_cast<int*>(agent.getStateVariablePtr(ModelData::DEFAULT_STATE, VARIABLE_NAME)) + _i, sizeof(int), cudaMemcpyDeviceToHost);
-        EXPECT_EQ(host, _i * MULTIPLIER);
-        host = _i * 2;
-        cudaMemcpy(reinterpret_cast<int*>(agent.getStateVariablePtr(ModelData::DEFAULT_STATE, VARIABLE_NAME)) + _i, &host, sizeof(int), cudaMemcpyHostToDevice);
-    }
-    c.simulate();
-    agent = c.getAgent(AGENT_NAME);
-    for (int _i = 0; _i < AGENT_COUNT; ++_i) {
-        int host = 0;
-        cudaMemcpy(&host, reinterpret_cast<int*>(agent.getStateVariablePtr(ModelData::DEFAULT_STATE, VARIABLE_NAME)) + _i, sizeof(int), cudaMemcpyDeviceToHost);
-        EXPECT_EQ(host, _i * 2 * MULTIPLIER);
-    }
-}
 
 TEST(TestCUDASimulation, Step) {
     // Test that step does a single step
