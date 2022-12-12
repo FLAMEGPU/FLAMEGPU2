@@ -59,6 +59,7 @@ jobs:
     # Define job-wide env constants, and promote matrix elements to env constants for portable steps.
     env:
       # Workflow specific constants for building a specific example
+      # Note this assumes the example exists in cpp, rather than cpp_rtc subdirectory
       INDIVIDUAL_EXAMPLE: "game_of_life"
       # Compute the wheelhouse name which should be unique within the matrix. This must be unique per build matrix/job combination
       ARTIFACT_NAME: wheel-windows-${{ matrix.cudacxx.cuda }}-${{matrix.python}}-${{ matrix.VISUALISATION }}-${{ matrix.config.name }}-${{ matrix.cudacxx.os }}
@@ -151,7 +152,7 @@ jobs:
 
     - name: Configure Individual example
       if: ${{ env.INDIVIDUAL_EXAMPLE != '' }}
-      working-directory: examples/${{ env.INDIVIDUAL_EXAMPLE }}
+      working-directory: examples/cpp/${{ env.INDIVIDUAL_EXAMPLE }}
       run: >
         cmake . -B "${{ env.BUILD_DIR }}" 
         -G "${{ env.HOSTCXX }}" -A x64
@@ -163,6 +164,6 @@ jobs:
     
     - name: Build Individual example
       if: ${{ env.INDIVIDUAL_EXAMPLE != '' }}
-      working-directory: examples/${{ env.INDIVIDUAL_EXAMPLE }}/${{ env.BUILD_DIR }}
+      working-directory: examples/cpp/${{ env.INDIVIDUAL_EXAMPLE }}/${{ env.BUILD_DIR }}
       run: cmake --build . --config ${{ env.CONFIG }} --target ${{ env.INDIVIDUAL_EXAMPLE }} --verbose -j `nproc`
 

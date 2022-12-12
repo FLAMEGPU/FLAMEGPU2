@@ -49,6 +49,7 @@ jobs:
     # Define job-wide env constants, and promote matrix elements to env constants for portable steps.
     env:
       # Workflow specific constants for building a specific example
+      # Note this assumes the example exists in cpp, rather than cpp_rtc subdirectory
       INDIVIDUAL_EXAMPLE: "game_of_life"
       # Define constants
       BUILD_DIR: "build"
@@ -157,7 +158,7 @@ jobs:
 
     - name: Configure Individual example
       if: ${{ env.INDIVIDUAL_EXAMPLE != '' }}
-      working-directory: examples/${{ env.INDIVIDUAL_EXAMPLE }}
+      working-directory: examples/cpp/${{ env.INDIVIDUAL_EXAMPLE }}
       run: >
         cmake . -B "${{ env.BUILD_DIR }}"
         -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"

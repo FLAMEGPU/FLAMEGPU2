@@ -2,26 +2,20 @@
 cmake_minimum_required(VERSION 3.18...3.25 FATAL_ERROR)
 
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
-get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../.. REALPATH)
+get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../.. REALPATH)
 
 # Handle CMAKE_CUDA_ARCHITECTURES gracefully
 include(${FLAMEGPU_ROOT}/cmake/CUDAArchitectures.cmake)
-flamegpu_init_cuda_architectures(PROJECT boids_rtc_spatial3D)
+flamegpu_init_cuda_architectures(PROJECT rtc_boids_spatial3D)
 
 # Name the project and enable required languages
-project(boids_rtc_spatial3D CXX CUDA)
+project(rtc_boids_spatial3D CXX CUDA)
 
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
 
 # Define output location of binary files
-if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-    # If top level project
-    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/)
-else()
-    # If called via add_subdirectory()
-    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../../bin/${CMAKE_BUILD_TYPE}/)
-endif()
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/)
 
 # Prepare list of source files
 # Can't do this automatically, as CMake wouldn't know when to regen (as CMakeLists.txt would be unchanged)
