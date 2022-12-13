@@ -1,7 +1,11 @@
 # Doxygen
 find_package(Doxygen OPTIONAL_COMPONENTS mscgen dia dot)
 if(DOXYGEN_FOUND)
-	option(FLAMEGPU_BUILD_API_DOCUMENTATION "Enable building documentation (requires Doxygen)" ON)
+    include(CMakeDependentOption)
+    option(FLAMEGPU_BUILD_API_DOCUMENTATION "Enable building documentation (requires Doxygen)" ON)
+    # option to hide / not hide the detail namespace from the docs, developers can enable it if they want detail docs / the actual docs website might require this due to breathe/exhale not respecting doxygen exclude correctly and not having an equivalent option.
+    cmake_dependent_option(FLAMEGPU_API_DOCUMENTATION_EXCLUDE_DETAIL "Exclude the detail namespace from doxygen documentation" ON "FLAMEGPU_BUILD_API_DOCUMENTATION" ON)
+    mark_as_advanced(FLAMEGPU_API_DOCUMENTATION_EXCLUDE_DETAIL)
 else()
 	if(CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
 		message(FATAL_ERROR 
@@ -70,8 +74,11 @@ function(flamegpu_create_doxygen_target FLAMEGPU_ROOT DOXY_OUT_DIR XML_PATH)
             endif()
         endif()
         # Ignore some namespaces where forward declarationss lead to empty namespaces in the docs.
-        # @todo - optionally don't block detail, for developer docs
-        set(DOXYGEN_EXCLUDE_SYMBOLS "jitify" "tinyxml2" "detail")
+        set(DOXYGEN_EXCLUDE_SYMBOLS "jitify" "tinyxml2")
+        # Ignore detail too if the advanced option is enabled, this is currently required for API docs due to exhale/breathe issues.
+        if(FLAMEGPU_API_DOCUMENTATION_EXCLUDE_DETAIL)
+            list(APPEND DOXYGEN_EXCLUDE_SYMBOLS "detail")
+        endif()
         # These are required for expanding FLAMEGPUException definition macros to be documented
         set(DOXYGEN_ENABLE_PREPROCESSING  YES)
         set(DOXYGEN_MACRO_EXPANSION       YES)
