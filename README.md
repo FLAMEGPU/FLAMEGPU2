@@ -306,10 +306,10 @@ To run the python test suite:
     . lib\Release\python\venv\Scripts\activate.ps1
     ```
 
-4. Run `pytest` on the `tests/swig/python` directory. This may take some time.
+4. Run `pytest` on the `tests/python` directory. This may take some time.
 
     ```bash
-    python3 -m pytest ../tests/swig/python
+    python3 -m pytest ../tests/python
     ```
 
 ## Usage Statistics (Telemetry)

@@ -265,6 +265,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/StaticAssert.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/SteadyClockTimer.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/Timer.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/detail/TestSuiteTelemetry.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/JitifyCache.h
 )
 SET(SRC_FLAMEGPU
@@ -340,6 +341,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/detail/compute_capability.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/detail/wddm.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/detail/JitifyCache.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/detail/TestSuiteTelemetry.cpp
 )
 SET(SRC_DYNAMIC
     ${DYNAMIC_VERSION_SRC_DEST}

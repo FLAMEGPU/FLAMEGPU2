@@ -9,4 +9,4 @@ IF NOT "%2"=="" (
 )
 cd ../../%build_dir%/lib/%config%/python/venv/Scripts
 call activate.bat
-cd ../../../../../../tests/swig
+cd ../../../../../../tests/python

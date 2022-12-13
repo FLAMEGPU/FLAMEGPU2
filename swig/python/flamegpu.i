@@ -43,6 +43,8 @@
 %{
 // Include the main library header, that should subsequently make all other required (public) headers available.
 #include "flamegpu/flamegpu.h"
+// Also include TestSuiteTelemetyr header, which is not intended to be public. 
+#include "flamegpu/detail/TestSuiteTelemetry.h"
 // #include "flamegpu/runtime/HostFunctionCallback.h"
 using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, but swig just dumps stuff into the global namespace. 
 %}
@@ -653,6 +655,19 @@ class ModelVis;
 %include "flamegpu/util/cleanup.h"
 // Don't flatnest this, range is explicitly not included incase of GC related issues.
 %include "flamegpu/util/nvtx.h"
+
+// Include the detail'd telemetry test reporting, this is not intended to be user facing but must be wrapped so it can be called by pytest.
+// Due to swig's ignoring / renaming, we have to uningnore detail, rename, then reignore detail (I think)
+
+// unignore detail
+%rename("%s") flamegpu::detail;
+// Rename test suite telemetry detail/private api function, prior to ignoring detail. 
+// Because of how _ prefixes are handeled, this must be called via pyflamegpu._pyflamegpu.__TestSuiteTelemetry_sendResults()
+%rename (__TestSuiteTelemetry) flamegpu::detail::TestSuiteTelemetry;
+%include "flamegpu/detail/TestSuiteTelemetry.h"
+// Ignore detail agian? 
+%ignore flamegpu::detail;
+
 
 // create a concrete map with string string for use with telemetry payload
 namespace std {
