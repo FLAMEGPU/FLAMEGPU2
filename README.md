@@ -24,7 +24,7 @@ This includes a number of key Agent-based Modelling (ABM) building blocks such a
 ## Project Status
 <!-- Remove this section once it is no longer in pre-release / alpha state -->
 
-FLAME GPU 2 is currently in an pre-release (alpha) state, and although we hope there will not be significant changes to the API prior to a stable release there may be breaking changes as we fix issues, adjust the API and improve performance.
+FLAME GPU 2 is currently in an pre-release (release candidate) state, and although we hope there will not be significant changes to the API prior to a stable release there may be breaking changes as we fix issues, adjust the API and improve performance.
 The use of native Python agent functions (agent functions expressed as Python syntax which are transpiled to C++) is currently supported (see examples) but classed as an *experimental* feature.
 
 If you encounter issues while using FLAME GPU, please provide bug reports, feedback or ask questions via [GitHub Issues](https://github.com/FLAMEGPU/FLAMEGPU2/issues) and [Discussions](https://github.com/FLAMEGPU/FLAMEGPU2/discussions).

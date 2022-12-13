@@ -39,7 +39,7 @@ static constexpr unsigned int VERSION_PATCH = flamegpu::VERSION % 1000;
  * Namespaced FLAME GPU version Prerelease component
  * A set of . separated pre-release components as a string, following the semver rules for comparison.
  */
-static constexpr char VERSION_PRERELEASE[] = "alpha.3";
+static constexpr char VERSION_PRERELEASE[] = "rc";
 
 /**
  * Namespaced FLAME GPU version build metadata component
