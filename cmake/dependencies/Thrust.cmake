@@ -8,11 +8,10 @@ include(FetchContent)
 cmake_policy(SET CMP0079 NEW)
 
 # Set the minimum supported cub/thrust version, and the version to fetch
-# Thrust version must be >= 1.9.10 for good cmake integration. 
-# Thrust 1.9.8 is a miniumum as it includes a bugfix that was causing issues.
-set(MIN_REQUIRED_THRUST_VERSION 1.11.0)
+# Thrust version must be >= 1.9.10 for good cmake integration, and >= 1.16.0 to avoid windows.h related issues and CMake Thrust version handling logic.
+set(MIN_REQUIRED_THRUST_VERSION 1.16.0)
 set(MIN_REQUIRED_CUB_VERSION ${MIN_REQUIRED_THRUST_VERSION})
-set(THRUST_DOWNLOAD_VERSION 1.14.0)
+set(THRUST_DOWNLOAD_VERSION 1.17.2)
 
 # Use the FindCUDATooklit package (CMake > 3.17) to get the CUDA version and CUDA include directories for cub/thrust location hints
 find_package(CUDAToolkit REQUIRED)

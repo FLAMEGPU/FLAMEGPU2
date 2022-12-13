@@ -6,6 +6,10 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  # Or on pull_requests which mutate this CI workflow, using pr rather than push:branch to ensure that the merged state will be OK, as that is what is important here.
+  pull_request:
+    paths:
+      - ".github/workflows/Draft-Release.yml"
   # Or trigger on manual dispatch. This will not produce a release, but will perform the thorough build. 
   workflow_dispatch:
 
@@ -22,9 +26,9 @@ defaults:
 # + Thorough Windows builds
 #   + Oldest and newest cuda, lots of arch, vis off, tests on
 # + Wheel producing manylinux builds
-#   + CUDA 11.0 and 11.2, py 3.7-10, vis on/off, py only.
+#   + CUDA 11.0 and 11.2, py 3.7-11, vis on/off, py only.
 # + Wheel producing Windows builds
-#   + CUDA 11.0 and 11.2, py 3.7-10, vis on/off, py only.
+#   + CUDA 11.0 and 11.2, py 3.7-11, vis on/off, py only.
 # + Draft github release workflow.
 
 jobs:
@@ -38,11 +42,11 @@ jobs:
         # CUDA_ARCH values are reduced compared to wheels due to CI memory issues while compiling the test suite.
         cudacxx:
           - cuda: "11.8"
-            cuda_arch: "35;60;90"
+            cuda_arch: "35;90"
             hostcxx: gcc-9
             os: ubuntu-20.04
           - cuda: "11.0"
-            cuda_arch: "35;60;80"
+            cuda_arch: "35;80"
             hostcxx: gcc-8
             os: ubuntu-20.04
         python:
@@ -98,7 +102,6 @@ jobs:
       with:
         python-version: ${{ env.PYTHON }}
 
-    # @todo - is some/all of this still required when using select Python?
     - name: Install python dependencies
       if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       run: |
@@ -184,11 +187,11 @@ jobs:
         # CUDA_ARCH values are reduced compared to wheels due to CI memory issues while compiling the test suite.
         cudacxx:
           - cuda: "11.8.0"
-            cuda_arch: "35;60;90"
+            cuda_arch: "35;90"
             hostcxx: "Visual Studio 16 2019"
             os: windows-2019
           - cuda: "11.0.3"
-            cuda_arch: "35;60;80"
+            cuda_arch: "35;80"
             hostcxx: "Visual Studio 16 2019"
             os: windows-2019
         python: 
@@ -236,6 +239,14 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ env.PYTHON }}
+    
+    - name: Install python dependencies
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
+      run: |
+        python3 -m pip install --upgrade wheel build setuptools
+
+    - name: Add custom problem matchers for annotations
+      run: echo "::add-matcher::.github/problem-matchers.json"
 
     # Must pass -G -A for windows, and -DPython3_ROOT_DIR/-DPYTHON3_EXECUTABLE as a github action workaround
     - name: Configure cmake
@@ -501,6 +512,14 @@ jobs:
       with:
         python-version: ${{ env.PYTHON }}
 
+    - name: Install python dependencies
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
+      run: |
+        python3 -m pip install --upgrade wheel build setuptools
+
+    - name: Add custom problem matchers for annotations
+      run: echo "::add-matcher::.github/problem-matchers.json"
+
     # Must pass -G -A for windows, and -DPython3_ROOT_DIR/-DPYTHON3_EXECUTABLE as a github action workaround
     - name: Configure cmake
       run: >
@@ -541,7 +560,7 @@ jobs:
       - build-windows
       - wheel-manylinux2014
       - wheel-windows
-    if: ${{ success() && startsWith(github.ref, 'refs/tags/v') && github.event_name != 'workflow_dispatch' }}
+    if: ${{ success() && startsWith(github.ref, 'refs/tags/v') && github.event_name != 'workflow_dispatch' && github.event_name != 'pull_request' }}
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
