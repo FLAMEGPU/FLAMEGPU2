@@ -20,6 +20,145 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 -->
+## [2.0.0-rc] - 2022-12-13
+
+### Added
++ `CUDASimulation::simulate()` can now be passed a RunPlan. ([#678](https://github.com/FLAMEGPU/FLAMEGPU2/issues/678))
++ CUDA 11.7 is now included in CI builds ([#761](https://github.com/FLAMEGPU/FLAMEGPU2/issues/761), [#856](https://github.com/FLAMEGPU/FLAMEGPU2/issues/856))
++ `CUDASimulation::setEnvironmentProperty()`, `CUDASimulation::getEnvironmentProperty()` ([#760](https://github.com/FLAMEGPU/FLAMEGPU2/pull/760))
++ Added `HostAgentAPI` mean and standard deviation operators. ([#764](https://github.com/FLAMEGPU/FLAMEGPU2/pull/764), [#766](https://github.com/FLAMEGPU/FLAMEGPU2/pull/766))
++ Added file IO support for all config struct members. ([#768](https://github.com/FLAMEGPU/FLAMEGPU2/issues/768))
++ Added uniform random range support for floating-point types. ([#776](https://github.com/FLAMEGPU/FLAMEGPU2/issues/776))
++ Added getOffsetX/Y/Z() to the iterated message for array message types. ([#781](https://github.com/FLAMEGPU/FLAMEGPU2/pull/781))
++ Added VonNeumann neighbourhood iteration to `MessageArray2D` and `MessageArray3D`. ([#783](https://github.com/FLAMEGPU/FLAMEGPU2/pull/783))
++ Added wrapped iteration access to `MessageSpatial2D` and `MessageSpatial3D`. ([#185](https://github.com/FLAMEGPU/FLAMEGPU2/issues/185))
++ Log files can now be configured to include timing data. ([#799](https://github.com/FLAMEGPU/FLAMEGPU2/pull/799))
++ RTC users may now specify include paths. ([#801](https://github.com/FLAMEGPU/FLAMEGPU2/pull/801))
++ Added annotations to CI ([#480](https://github.com/FLAMEGPU/FLAMEGPU2/issues/480))
++ Added three levels of error-reporting to choose from when using `CUDAEnsemble`. ([#839](https://github.com/FLAMEGPU/FLAMEGPU2/pull/839))
++ Added `VERBOSE_PTXAS` CMake option. ([#851](https://github.com/FLAMEGPU/FLAMEGPU2/pull/851))
++ Visual Studio 2022 is now included in CI builds ([#866](https://github.com/FLAMEGPU/FLAMEGPU2/pull/866))
++ Visualiser: Agent array variables can now be used to control agent color. ([#876](https://github.com/FLAMEGPU/FLAMEGPU2/pull/876), [FLAMEGPU/FLAMEGPU2-visualiser#90](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser/pull/90))
++ Visualiser: Added two low-poly stock models (`PYRAMID`, `ARROWHEAD`). ([FLAMEGPU/FLAMEGPU2-visualiser#91](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser/pull/91))
++ Visualiser: Agents can now be represented by Keyframe pair animated models. ([#904](https://github.com/FLAMEGPU/FLAMEGPU2/pull/904), [FLAMEGPU/FLAMEGPU2-visualiser#16](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser/issues/16))
++ Added Pedestrian Navigation example in a standalone repository (from FLAME GPU 1). ([Example](https://github.com/FLAMEGPU/FLAMEGPU2-pedestrian_navigation-example))
++ Added support for agent functions and function conditions to be written in a "pure python" syntax. ([#882](https://github.com/FLAMEGPU/FLAMEGPU2/pull/882), [#910](https://github.com/FLAMEGPU/FLAMEGPU2/pull/910), [#917](https://github.com/FLAMEGPU/FLAMEGPU2/pull/917))
++ Added "pure python" wrapped boids example. ([#882](https://github.com/FLAMEGPU/FLAMEGPU2/pull/882), [#940](https://github.com/FLAMEGPU/FLAMEGPU2/pull/940), [#958](https://github.com/FLAMEGPU/FLAMEGPU2/pull/958))
++ Visualiser: User interfaces can now be defined to control environment properties via visualisations. ([#911](https://github.com/FLAMEGPU/FLAMEGPU2/pull/911), [FLAMEGPU/FLAMEGPU2-visualiser#100](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser/pull/100))
++ A warning is now emitted when configuring CMake for Visual Studio 2022 if the build path contains a space. ([#934](https://github.com/FLAMEGPU/FLAMEGPU2/pull/934))
++ Python 3.11 is now included in CI builds and wheel generation. ([#944](https://github.com/FLAMEGPU/FLAMEGPU2/pull/944))
++ Сompute Capability 90 (Hopper) has been added to the list of default CUDA architectures. ([#954](https://github.com/FLAMEGPU/FLAMEGPU2/pull/954))
++ CUDAEnsemble now prevents standby during execution (on Windows), this can be disabled. ([#930](https://github.com/FLAMEGPU/FLAMEGPU2/pull/930))
++ Added `util::cleanup()` for triggering `cudaDeviceReset()`. ([974](https://github.com/FLAMEGPU/FLAMEGPU2/pull/974), also see [#950](https://github.com/FLAMEGPU/FLAMEGPU2/pull/950))
++ Message list persistence can now be configured per message type. ([#973](https://github.com/FLAMEGPU/FLAMEGPU2/pull/973))
++ `pyflamegpu_swig` build target now depends on `flamegpu` headers. ([#981](https://github.com/FLAMEGPU/FLAMEGPU2/pull/981))
++ Added `RunPlan::operator==()`, `RunPlanVector::operator==()` and `RunPlanVector::at()`. ([#983](https://github.com/FLAMEGPU/FLAMEGPU2/pull/983))
++ Added `--truncate` argument to CUDASimulation and CUDAEnsemble, allowing output files to truncate (defaults to off) ([#992](https://github.com/FLAMEGPU/FLAMEGPU2/pull/992))
++ Added CTest support for test suite execution ([#285](https://github.com/FLAMEGPU/FLAMEGPU2/pull/285))
++ Added `util::clearRTCDiskCache()` for clearing JitifyCache on-disk ([#999](https://github.com/FLAMEGPU/FLAMEGPU2/pull/999))
++ Added Telemetry allowing the collection of usage metrics, this can be disabled via several methods ([#987](https://github.com/FLAMEGPU/FLAMEGPU2/pull/987), [#991](https://github.com/FLAMEGPU/FLAMEGPU2/pull/991)), ([#1013](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1013))
+
+### Changed (Breaking)
++ Removed redundant length argument from many Python methods. ([#831](https://github.com/FLAMEGPU/FLAMEGPU2/issues/831), [#872](https://github.com/FLAMEGPU/FLAMEGPU2/pull/872))
++ Replaced default random engine with `std::mt19937_64`. ([#754](https://github.com/FLAMEGPU/FLAMEGPU2/issues/754))
++ `CUDASimulation::initialise()` now allows you set defaults, matching the behaviour of `CUDAEnsemble`. ([#755](https://github.com/FLAMEGPU/FLAMEGPU2/issues/755))
++ Renamed `ModelVis::addStaticModel()` to `ModelVis::newStaticModel()`. ([#911](https://github.com/FLAMEGPU/FLAMEGPU2/pull/911))
++ Default CUDA random engine changed to PHILOX (from XORWOW). ([#873](https://github.com/FLAMEGPU/FLAMEGPU2/pull/873))
++ Renamed `DeviceAPI::getThreadIndex()` to `DeviceAPI::getIndex()`. ([#943](https://github.com/FLAMEGPU/FLAMEGPU2/pull/943))
++ Missing pip packages are nolonger automatically installed during CMake configure. ([#935](https://github.com/FLAMEGPU/FLAMEGPU2/pull/935))
++ `cudaDeviceReset()` is nolonger automatically triggered at `CUDASimulation`/`CUDAEnsemble` exit. ([#950](https://github.com/FLAMEGPU/FLAMEGPU2/pull/950))
++ Unrecognised runtime args will nolonger cause program exit. ([#967](https://github.com/FLAMEGPU/FLAMEGPU2/pull/967))
++ JSON output now outputs NaN/Inf values as string. ([#969](https://github.com/FLAMEGPU/FLAMEGPU2/pull/969))
++ Removed references from return values throughout model description API. ([#952](https://github.com/FLAMEGPU/FLAMEGPU2/pull/952), [#978](https://github.com/FLAMEGPU/FLAMEGPU2/pull/978), [#980](https://github.com/FLAMEGPU/FLAMEGPU2/pull/980), [#1004](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1004))
++ Message lists nolonger persist (by default) between iterations. ([#973](https://github.com/FLAMEGPU/FLAMEGPU2/pull/973))
++ Renamed `RunPlanVector::setPropertyUniformDistibution()` to `RunPlanVector::setPropertyLerpRange()` ([#983](https://github.com/FLAMEGPU/FLAMEGPU2/pull/983))
++ Replaced NVTX macros with constexpr + namespaced methods ([#990](https://github.com/FLAMEGPU/FLAMEGPU2/pull/990))
++ CUDAEnsemble now raises an exception of log files already exist (previous behaviour would append) ([#818](https://github.com/FLAMEGPU/FLAMEGPU2/issues/818), [#992](https://github.com/FLAMEGPU/FLAMEGPU2/pull/992))
++ Removed 'Callback' from Python API host function method/class names [#997](https://github.com/FLAMEGPU/FLAMEGPU2/pull/997)
++ Renamed `CUDAMessage::getMessageDescription()` to `getMessageData()` [#996](https://github.com/FLAMEGPU/FLAMEGPU2/pull/996)
++ CMake variables were updated to begin `FLAMEGPU_` ([#991](https://github.com/FLAMEGPU/FLAMEGPU2/pull/991))
++ Removed `cuda_arch` CMake variable, `CMAKE_CUDA_ARCHITECTURES` should now be used instead ([#991](https://github.com/FLAMEGPU/FLAMEGPU2/pull/991))
++ Improved organisation of files within include/src/tests ([#1007](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1007), [#1012](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1012))
++ Removed `CUDASimulation::getAgent()`, `getCUDAAgent()`, `getCUDAMessage()` from the public API. ([#1007](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1007))
++ Improved organisation/naming of examples ([#1010](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1010))
++ Thrust/CUB minimum supported version increased to 1.16.0, from 1.14.0 due for improved windows support and bugfixes. 1.17.2 is fetched via CMake if a compatible thrust/cub is not found. ([#1008](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1008))
+
+### Changed
++ Suppress note emitted by GCC >= 10 on ppc64le about changes since GCC 5. ([#757](https://github.com/FLAMEGPU/FLAMEGPU2/issues/757))
++ Improved how input file loading errors and warnings are handled. ([#752](https://github.com/FLAMEGPU/FLAMEGPU2/issues/752), [#759](https://github.com/FLAMEGPU/FLAMEGPU2/pull/759), [#810](https://github.com/FLAMEGPU/FLAMEGPU2/pull/810))
++ Visualiser: Updated FreeType dependency, hopefully improving download stability. ([FLAMEGPU/FLAMEGPU2-visualiser#86](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser/pull/86))
++ Improve API docs for FLAMEGPU macros. ([#787](https://github.com/FLAMEGPU/FLAMEGPU2/pull/787))
++ Agent sorting has been extended to submodels and agents with coordinates in array variables. ([#805](https://github.com/FLAMEGPU/FLAMEGPU2/pull/805), [#854](https://github.com/FLAMEGPU/FLAMEGPU2/pull/854))
++ `USE_GLM` type checking is now able to convert GLM types to base type/length. ([#809](https://github.com/FLAMEGPU/FLAMEGPU2/issues/809))
++ Greatly reduced default stream usage, improving `CUDAEnsemble` performance. ([#838](https://github.com/FLAMEGPU/FLAMEGPU2/pull/838), [#843](https://github.com/FLAMEGPU/FLAMEGPU2/pull/843))
++ NVRTC is now passed the maximum supports GPU architecture flag. ([#844](https://github.com/FLAMEGPU/FLAMEGPU2/issues/844))
++ Curve is now stored in shared_memory, improving register usage in CUDA 11.3+. ([#560](https://github.com/FLAMEGPU/FLAMEGPU2/issues/560), [#571](https://github.com/FLAMEGPU/FLAMEGPU2/issues/571))
++ NVRTC is now passed the maximum supports GPU architecture flag. ([#844](https://github.com/FLAMEGPU/FLAMEGPU2/issues/844))
++ `-lineinfo` is now passed to the `MinSizeRel` and `RelWithDebInfo` build configurations. ([#798](https://github.com/FLAMEGPU/FLAMEGPU2/issues/798))
++ Various test improvements. ([#860](https://github.com/FLAMEGPU/FLAMEGPU2/pull/860), [#902](https://github.com/FLAMEGPU/FLAMEGPU2/pull/902), [#908](https://github.com/FLAMEGPU/FLAMEGPU2/pull/908), [#1002](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1002), [#1000](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1000))
++ Improved how `CUDAEnsemble` reports failure to find CUDA device to match `CUDASimulation`. ([#858](https://github.com/FLAMEGPU/FLAMEGPU2/issues/858))
++ Ubuntu CI has been updated to use Ubuntu 22.04 / GCC 11 ([#877](https://github.com/FLAMEGPU/FLAMEGPU2/pull/877))
++ Improved granularity of pyflamegpu incremental builds. ([#887](https://github.com/FLAMEGPU/FLAMEGPU2/pull/887))
++ Improved error message when multiple agents write to the same array message element. ([#895](https://github.com/FLAMEGPU/FLAMEGPU2/pull/895))
++ CI now uses CUDA 11.8 as "latest" ([#924](https://github.com/FLAMEGPU/FLAMEGPU2/pull/924))
++ Visualisation headers are now always linted, regardless of whether enabled at CMake type. ([#919](https://github.com/FLAMEGPU/FLAMEGPU2/pull/919))
++ Boids examples were updated to demonstrate visualisation UIs. ([#911](https://github.com/FLAMEGPU/FLAMEGPU2/pull/911))
++ CUDA random engine may now be selected during CMake configuration. ([#873](https://github.com/FLAMEGPU/FLAMEGPU2/pull/873))
++ Updated pinned versions of external GitHub Actions. ([#945](https://github.com/FLAMEGPU/FLAMEGPU2/pull/945))
++ Renamed Python boids examples. ([#940](https://github.com/FLAMEGPU/FLAMEGPU2/pull/940))
++ Removed redundant references from function argument throughout API. ([#946](https://github.com/FLAMEGPU/FLAMEGPU2/pull/946))
++ Unified generic `size_type` to a library-wide version. ([#948](https://github.com/FLAMEGPU/FLAMEGPU2/pull/948))
++ Improved granularity of verbosity levels. ([960](https://github.com/FLAMEGPU/FLAMEGPU2/pull/960))
++ Added `silence_unknown_args` to runtime arg parsing so that users are nolonger required to filter out bespoke args. ([#967](https://github.com/FLAMEGPU/FLAMEGPU2/pull/967))
++ Removed resolved issues from README.md. ([#994](https://github.com/FLAMEGPU/FLAMEGPU2/pull/994))
++ Removed outdated comment from version.h. ([#985](https://github.com/FLAMEGPU/FLAMEGPU2/pull/985))
+
+### Removed
++ Removed redundant mutexes around RTC kernel launches. ([#469](https://github.com/FLAMEGPU/FLAMEGPU2/issues/469))
++ CUDA 10.x is nolonger supported ([#611](https://github.com/FLAMEGPU/FLAMEGPU2/issues/611), [FLAMEGPU/FLAMEGPU2-visualiser#89](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser/pull/89))
++ C++ 14 is nolonger supported ([#611](https://github.com/FLAMEGPU/FLAMEGPU2/issues/611), [FLAMEGPU/FLAMEGPU2-visualiser#89](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser/pull/89))
++ Remove unused RTCSafeCudaMemcpyToSymbol/Address methods. ([#878](https://github.com/FLAMEGPU/FLAMEGPU2/pull/878))
++ Python 3.6 wheels are nolonger generated by Release CI. ([#925](https://github.com/FLAMEGPU/FLAMEGPU2/pull/925))
++ Removed boids_bruteforce_dependency_graph example. ([#937](https://github.com/FLAMEGPU/FLAMEGPU2/pull/937))
+
+### Fixed
++ Python interface support for `CUDAEnsembleConfig::devices`. ([#682](https://github.com/FLAMEGPU/FLAMEGPU2/issues/682))
++ `CUDAFatAgent` supports agents with no variables. ([#492](https://github.com/FLAMEGPU/FLAMEGPU2/issues/492))
++ `DeviceAgentVector` can nolonger be passed out of scope. ([#522](https://github.com/FLAMEGPU/FLAMEGPU2/issues/522))
++ `EnvironmentManager::setProperty()`, `EnvironmentManager::getProperty()` did not check length. ([#760](https://github.com/FLAMEGPU/FLAMEGPU2/pull/760))
++ Logging could divide by zero when calculating standard deviation on empty agent population. ([#763](https://github.com/FLAMEGPU/FLAMEGPU2/pull/763))
++ Updated Jitify dependency (fixes memory leak, improves GLM support). ([#756](https://github.com/FLAMEGPU/FLAMEGPU2/issues/756), [#813](https://github.com/FLAMEGPU/FLAMEGPU2/pull/813))
++ Corrected a sugar growback bug within the SugarScape example. ([#784](https://github.com/FLAMEGPU/FLAMEGPU2/issues/784))
++ `MessageArray3D` Moore iterator could lead to compilation failure. ([#785](https://github.com/FLAMEGPU/FLAMEGPU2/issues/785))
++ Visualiser: Did not account for agent populations shrinking. ([FLAMEGPU/FLAMEGPU2-visualiser#785](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser/pull/87))
++ `EnvironmentManager::setProperty()` had length check misplaced under `USE_GLM`. ([#791](https://github.com/FLAMEGPU/FLAMEGPU2/issues/791))
++ `CUDAEnsemble` logs did not include `RunPlan` details as intended. ([#799](https://github.com/FLAMEGPU/FLAMEGPU2/pull/799))
++ XML exit log contained redundant block. ([#799](https://github.com/FLAMEGPU/FLAMEGPU2/pull/799))
++ Final step log is nolonger double logged. ([#799](https://github.com/FLAMEGPU/FLAMEGPU2/pull/799))
++ Greatly improve RTC compile times by specifying known headers ([#811](https://github.com/FLAMEGPU/FLAMEGPU2/pull/811))
++ `RunPlan::setProperty()` would fail silently. ([#814](https://github.com/FLAMEGPU/FLAMEGPU2/pull/814))
++ Internal environment property used for tracking steps was being mapped to submodels. ([#815](https://github.com/FLAMEGPU/FLAMEGPU2/issues/815))
++ `RunPlanVector::setPropertyUniformDistribution()` was rounding floating-point values. ([#823](https://github.com/FLAMEGPU/FLAMEGPU2/pull/823))
++ `cbrt()` was incorrectly used in place of `sqrtf()` in Circles example. ([#829](https://github.com/FLAMEGPU/FLAMEGPU2/pull/829))
++ Visualiser: `AgentStateVis::setColour()` did not support `StaticColor`. ([#830](https://github.com/FLAMEGPU/FLAMEGPU2/pull/830))
++ Various CMake improvements ([#804](https://github.com/FLAMEGPU/FLAMEGPU2/pull/804), [#836](https://github.com/FLAMEGPU/FLAMEGPU2/pull/836), [#897](https://github.com/FLAMEGPU/FLAMEGPU2/pull/897), [FLAMEGPU/FLAMEGPU2-visualiser#95](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser/pull/95), [#914](https://github.com/FLAMEGPU/FLAMEGPU2/pull/914), [#921](https://github.com/FLAMEGPU/FLAMEGPU2/pull/921), [#991](https://github.com/FLAMEGPU/FLAMEGPU2/pull/991), [#1014](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1014))
++ Updated CI to support new CUDA repository GPG keys. ([#841](https://github.com/FLAMEGPU/FLAMEGPU2/pull/841))
++ `DeviceMacroProperty::operator+=(double)` did not support SM < 60. ([#847](https://github.com/FLAMEGPU/FLAMEGPU2/issues/847))
++ Spatial agent sorting did not support agents outside the default state. ([#861](https://github.com/FLAMEGPU/FLAMEGPU2/issues/861))
++ `AgentStateVis::setColor()` did not validate suitability of agent variable. ([#875](https://github.com/FLAMEGPU/FLAMEGPU2/pull/875))
++ Improved how NVRTC's dll is located by pyflamegpu on Windows. ([#450](https://github.com/FLAMEGPU/FLAMEGPU2/issues/450))
++ `CUDAEnsemble` progress printing nolonger goes backwards. ([#901](https://github.com/FLAMEGPU/FLAMEGPU2/issues/901))
++ `visualiser::DiscreteColor` was not support by the Python API. ([#922](https://github.com/FLAMEGPU/FLAMEGPU2/pull/922))
++ Corrected typographic error inside `CITATION.cff`. ([#929](https://github.com/FLAMEGPU/FLAMEGPU2/pull/929))
++ Python API did not correctly support `CUDASimulation::setEnvironmentProperty()`. ([#915](https://github.com/FLAMEGPU/FLAMEGPU2/pull/916), [#912](https://github.com/FLAMEGPU/FLAMEGPU2/issues/912))
++ A warning is nolonger emit by `CUDAEnsemble` if the default config is not updated. ([#949](https://github.com/FLAMEGPU/FLAMEGPU2/pull/949))
++ Replaced occurrences of `CUDAAgentModel` with `CUDASimulation` in comments and NVTX ranges. ([#951](https://github.com/FLAMEGPU/FLAMEGPU2/pull/951))
++ Corrected issues with Python packaging. ([#962](https://github.com/FLAMEGPU/FLAMEGPU2/pull/962), [#964](https://github.com/FLAMEGPU/FLAMEGPU2/pull/964))
++ Messaging internal data structures are now correctly reset at `CUDASimulation` reset. ([#972](https://github.com/FLAMEGPU/FLAMEGPU2/pull/972))
++ Removed redundant code from `CUDAFatAgent::addSubAgent()`, which could lead to spurious device initialisation. ([#968](https://github.com/FLAMEGPU/FLAMEGPU2/pull/968))
++ Improve precision of included headers to fix GCC11 builds. ([#988](https://github.com/FLAMEGPU/FLAMEGPU2/pull/988))
++ `__disown__()` is now automatically triggered when Python Host functions/conditions are attached to a model. ([#975](https://github.com/FLAMEGPU/FLAMEGPU2/pull/975), [#997](https://github.com/FLAMEGPU/FLAMEGPU2/pull/997))
+
 
 ## [2.0.0-alpha.2] - 2021-12-09
 
@@ -107,7 +246,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initial alpha release of FLAME GPU 2.0.0, a CUDA C++ / python3 library for agent based simulations
 
-[Unreleased]: https://github.com/FLAMEGPU/FLAMEGPU/compare/v2.0.0-alpha...HEAD
-<!-- [2.0.0-alpha.2]: https://github.com/FLAMEGPU/FLAMEGPU/compare/v2.0.0-alpha.1...v2.0.0-alpha.2 -->
-[2.0.0-alpha.1]: https://github.com/FLAMEGPU/FLAMEGPU/compare/v2.0.0-alpha...v2.0.0-alpha.1
-[2.0.0-alpha]: https://github.com/FLAMEGPU/FLAMEGPU/releases/tag/v2.0.0-alpha
+[Unreleased]: https://github.com/FLAMEGPU/FLAMEGPU2/compare/v2.0.0-rc...HEAD
+[2.0.0-rc]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc
+[2.0.0-alpha.2]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-alpha.2
+[2.0.0-alpha.1]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-alpha.1
+[2.0.0-alpha]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-alpha
