@@ -953,7 +953,6 @@ void wrapped_3d_test(const float x_offset, const float y_offset, const float z_o
     // Recover the results and check they match what was expected
     cudaSimulation.getPopulationData(population);
     // Validate each agent has same result
-    const unsigned int badCount = population[0].getVariable<unsigned int>("badCount");
     for (AgentVector::Agent ai : population) {
         EXPECT_EQ(0.0f, ai.getVariable<float>("result_x"));
         EXPECT_EQ(0.0f, ai.getVariable<float>("result_y"));
