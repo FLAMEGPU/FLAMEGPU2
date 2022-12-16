@@ -11,11 +11,21 @@
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #pragma warning(disable : 4706 4834)
-#include <cub/cub.cuh>
-#pragma warning(pop)
+#endif  // _MSC_VER
+#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+#pragma nv_diag_suppress 1719
 #else
+#pragma diag_suppress 1719
+#endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
 #include <cub/cub.cuh>
-#endif
+#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+#pragma nv_diag_default 1719
+#else
+#pragma diag_default 1719
+#endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif  // _MSC_VER
 
 namespace flamegpu {
 namespace detail {
