@@ -26,9 +26,9 @@ defaults:
 # + Thorough Windows builds
 #   + Oldest and newest cuda, lots of arch, vis off, tests on
 # + Wheel producing manylinux builds
-#   + CUDA 11.0 and 11.2, py 3.7-11, vis on/off, py only.
+#   + CUDA 11.2 and 12.0, py 3.7-11, vis on/off, py only.
 # + Wheel producing Windows builds
-#   + CUDA 11.0 and 11.2, py 3.7-11, vis on/off, py only.
+#   + CUDA 11.2 and 12.0, py 3.7-11, vis on/off, py only.
 # + Draft github release workflow.
 
 jobs:
@@ -41,12 +41,16 @@ jobs:
       matrix:
         # CUDA_ARCH values are reduced compared to wheels due to CI memory issues while compiling the test suite.
         cudacxx:
+          - cuda: "12.0"
+            cuda_arch: "50-real;90-real;90-virtual;"
+            hostcxx: gcc-11
+            os: ubuntu-22.04
           - cuda: "11.8"
-            cuda_arch: "35;90"
+            cuda_arch: "35-real;90-real;90-virtual"
             hostcxx: gcc-9
             os: ubuntu-20.04
           - cuda: "11.0"
-            cuda_arch: "35;80"
+            cuda_arch: "35-real;80-real;80-virtual"
             hostcxx: gcc-8
             os: ubuntu-20.04
         python:
@@ -186,12 +190,16 @@ jobs:
       matrix:
         # CUDA_ARCH values are reduced compared to wheels due to CI memory issues while compiling the test suite.
         cudacxx:
+          - cuda: "12.0.0"
+            cuda_arch: "50-real;90-real;90-virtual"
+            hostcxx: "Visual Studio 17 2022"
+            os: windows-2022
           - cuda: "11.8.0"
-            cuda_arch: "35;90"
+            cuda_arch: "35-real;90-real;90-virtual"
             hostcxx: "Visual Studio 16 2019"
             os: windows-2019
           - cuda: "11.0.3"
-            cuda_arch: "35;80"
+            cuda_arch: "35-real;80-real;80-virtual"
             hostcxx: "Visual Studio 16 2019"
             os: windows-2019
         python: 
@@ -294,13 +302,13 @@ jobs:
       # optional exclude: can be partial, include: must be specific
       matrix:
         cudacxx:
-          - cuda: "11.2"
-            cuda_arch: "35;52;60;70;80"
-            hostcxx: devtoolset-9
+          - cuda: "12.0"
+            cuda_arch: "50-real;60-real;70-real;80-real;90-real;90-virtual"
+            hostcxx: devtoolset-10
             os: ubuntu-20.04
-          - cuda: "11.0"
-            cuda_arch: "35;52;60;70;80"
-            hostcxx: devtoolset-8
+          - cuda: "11.2"
+            cuda_arch: "35-real;50-real;60-real;70-real;80-real;80-virtual"
+            hostcxx: devtoolset-9
             os: ubuntu-20.04
         python: 
           - "3.11"
@@ -450,12 +458,12 @@ jobs:
       # optional exclude: can be partial, include: must be specific
       matrix:
         cudacxx:
-          - cuda: "11.2.2"
-            cuda_arch: "35;52;60;70;80"
+          - cuda: "12.0.0"
+            cuda_arch: "50-real;60-real;70-real;80-real;90-real;90-virtual"
             hostcxx: "Visual Studio 16 2019"
             os: windows-2019
-          - cuda: "11.0.3"
-            cuda_arch: "35;52;60;70;80"
+          - cuda: "11.2.2"
+            cuda_arch: "35-real;50-real;60-real;70-real;80-real;80-virtual"
             hostcxx: "Visual Studio 16 2019"
             os: windows-2019
         python: 
