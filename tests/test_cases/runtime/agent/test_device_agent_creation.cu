@@ -753,7 +753,7 @@ TEST(DeviceAgentCreationTest, Optional_Output_SameState_WithAgentFunctionConditi
     EXPECT_EQ(population_b.size(), AGENT_COUNT / 2 + AGENT_COUNT / 4);
     unsigned int is_1 = 0;
     for (AgentVector::Agent ai : population_a) {
-        if (ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id"), 1.0f) {
+        if (ai.getVariable<float>("x") - ai.getVariable<unsigned int>("id") == 1.0f) {
             is_1++;
             ASSERT_EQ(ai.getVariable<unsigned int>("id") % 2, 1u);
         }
