@@ -37,6 +37,26 @@ jobs:
             cuda_arch: "35"
             hostcxx: "Visual Studio 17 2022"
             os: windows-2022
+          - cuda: "11.6.0"
+            cuda_arch: "35"
+            hostcxx: "Visual Studio 16 2019"
+            os: windows-2019
+          - cuda: "11.5.2"
+            cuda_arch: "35"
+            hostcxx: "Visual Studio 16 2019"
+            os: windows-2019
+          - cuda: "11.4.4"
+            cuda_arch: "35"
+            hostcxx: "Visual Studio 16 2019"
+            os: windows-2019
+          - cuda: "11.3.1"
+            cuda_arch: "35"
+            hostcxx: "Visual Studio 16 2019"
+            os: windows-2019
+          - cuda: "11.2.2"
+            cuda_arch: "35"
+            hostcxx: "Visual Studio 16 2019"
+            os: windows-2019
           - cuda: "11.0.3"
             cuda_arch: "35"
             hostcxx: "Visual Studio 16 2019"
@@ -48,7 +68,7 @@ jobs:
             config: "Release"
             SEATBELTS: "ON"
         VISUALISATION: 
-          - "ON"
+          # - "ON"
           - "OFF"
 
         exclude:
@@ -70,7 +90,7 @@ jobs:
       # Define constants
       BUILD_DIR: "build"
       # Tests are off for regular builds, but if initiated by a workflow dispatch then they are enabled. Horribly json terriarry to achieve
-      FLAMEGPU_BUILD_TESTS: ${{ fromJSON('{true:"ON",false:"OFF"}')[github.event_name == 'workflow_dispatch' && matrix.VISUALISATION == 'OFF'] }}
+      FLAMEGPU_BUILD_TESTS: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.VISUALISATION == 'OFF'] }}
       # Conditional based on matrix via awkward almost ternary
       FLAMEGPU_BUILD_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
       # Port matrix options to environment, for more portability.

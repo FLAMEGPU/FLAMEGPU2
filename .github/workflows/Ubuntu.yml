@@ -37,6 +37,34 @@ jobs:
             cuda_arch: "35"
             hostcxx: gcc-11
             os: ubuntu-22.04
+          - cuda: "11.7"
+            cuda_arch: "35"
+            hostcxx: gcc-10
+            os: ubuntu-22.04
+          - cuda: "11.6"
+            cuda_arch: "35"
+            hostcxx: gcc-9
+            os: ubuntu-20.04
+          - cuda: "11.5"
+            cuda_arch: "35"
+            hostcxx: gcc-9
+            os: ubuntu-20.04
+          - cuda: "11.4"
+            cuda_arch: "35"
+            hostcxx: gcc-9
+            os: ubuntu-20.04
+          - cuda: "11.3"
+            cuda_arch: "35"
+            hostcxx: gcc-9
+            os: ubuntu-20.04
+          - cuda: "11.2"
+            cuda_arch: "35"
+            hostcxx: gcc-9
+            os: ubuntu-20.04
+          - cuda: "11.1"
+            cuda_arch: "35"
+            hostcxx: gcc-9
+            os: ubuntu-20.04
           - cuda: "11.0"
             cuda_arch: "35"
             hostcxx: gcc-8
@@ -48,7 +76,7 @@ jobs:
             config: "Release"
             SEATBELTS: "ON"
         VISUALISATION: 
-          - "ON"
+          # - "ON"
           - "OFF"
 
         exclude:
