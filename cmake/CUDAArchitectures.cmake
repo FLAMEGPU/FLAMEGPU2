@@ -205,10 +205,13 @@ function(flamegpu_set_cuda_architectures)
                     endif()
                 endforeach()
             else()
-                # If nvcc help output parsing failed, just use an informed guess option from CUDA 11.8
+                # If nvcc help output parsing failed, just use an informed guess option from CUDA 12.0
                 set(default_archs "35;50;60;70;80")
                 if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.8)
                     list(APPEND default_archs "90")
+                endif()
+                if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 12.0)
+                    list(REMOVE_ITEM default_archs "35")
                 endif()
                 message(AUTHOR_WARNING
                     "  ${CMAKE_CURRENT_FUNCTION} failed to parse NVCC --help output for default architecture generation\n"

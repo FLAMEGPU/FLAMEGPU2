@@ -29,6 +29,10 @@ jobs:
       # optional exclude: can be partial, include: must be specific
       matrix:
         cudacxx:
+          - cuda: "12.0"
+            cuda_arch: "50"
+            hostcxx: gcc-12
+            os: ubuntu-22.04
           - cuda: "11.8"
             cuda_arch: "35"
             hostcxx: gcc-11

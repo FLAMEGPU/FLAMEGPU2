@@ -282,7 +282,8 @@ class MessageSpatial2D::In {
              * @note Does not compare _parent
              */
             __device__ bool operator==(const Message& rhs) const {
-                return this->relative_cell == rhs.relative_cell
+                return this->relative_cell[0] == rhs.relative_cell[0]
+                    && this->relative_cell[1] == rhs.relative_cell[1]
                     && this->cell_index_max == rhs.cell_index_max
                     && this->cell_index == rhs.cell_index;
             }

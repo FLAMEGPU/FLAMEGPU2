@@ -540,27 +540,8 @@ set_property(TARGET ${PROJECT_NAME}  PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
 # Link against dependency targets / directories.
 
-# SYSTEM includes prevent warnings from 3rd party includes where possible. This is implied by target_link_libraries if it is an imported target.
-if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    # CUB (and thrust) cause many compiler warnings at high levels, including Wreorder. 
-    # CUB:CUB does not use -isystem to prevent the automatic -I<cuda_path>/include  from being more important, and the CUDA disributed CUB being used. 
-    # Instead, if possible we pass the include directory directly rather than using the imported target.
-    # And also pass {CUDAToolkit_INCLUDE_DIRS}/../include" as isystem so the include order is correct for isystem to work (a workaround for a workaround). The `../` is required to prevent cmake from removing the duplicate path.
-
-    # Include CUB via isystem if possible (via _CUB_INCLUDE_DIR which may be subject to change), otherwise use it via target_link_libraries.
-    # If we used the system CUB, via find_package (CUDA 11.3+ package the config) then this convoluted approach could be avoided. 
-    if(DEFINED _CUB_INCLUDE_DIR)
-        target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC "${_CUB_INCLUDE_DIR}")
-    else()
-        target_link_libraries(${PROJECT_NAME} PUBLIC CUB::CUB)
-    endif()
-    target_include_directories(${PROJECT_NAME}  SYSTEM PUBLIC "${CUDAToolkit_INCLUDE_DIRS}/../include")  
-else()
-    # MSVC just includes cub via the CUB::CUB target as no isystem to worry about.
-    target_link_libraries(${PROJECT_NAME} PUBLIC CUB::CUB)
-endif()
-
-# Thrust uses isystem if available
+# Cub and thrust targets are not imported targets, so they do not use -isystem, so warnings must be suppressed as pragmas as requied. This is due to nvcc magic preventing isystem from being reliable with them. 
+target_link_libraries(${PROJECT_NAME} PUBLIC CUB::CUB)
 target_link_libraries(${PROJECT_NAME} PUBLIC Thrust::Thrust)
 
 # tinyxml2 static library

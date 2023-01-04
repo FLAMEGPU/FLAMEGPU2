@@ -8,7 +8,7 @@ include(FetchContent)
 cmake_policy(SET CMP0079 NEW)
 
 # Set the minimum supported cub/thrust version, and the version to fetch
-# Thrust version must be >= 1.9.10 for good cmake integration, and >= 1.16.0 to avoid windows.h related issues and CMake Thrust version handling logic.
+# Thrust minimum version to 1.16 to avoid windows.h related issues and pull in bug fixes, but fetch the most recent 1.x release otherwise (at the time of writing).
 set(MIN_REQUIRED_THRUST_VERSION 1.16.0)
 set(MIN_REQUIRED_CUB_VERSION ${MIN_REQUIRED_THRUST_VERSION})
 set(THRUST_DOWNLOAD_VERSION 1.17.2)
@@ -37,11 +37,37 @@ if(Thrust_FOUND AND Thrust_VERSION VERSION_GREATER_EQUAL MIN_REQUIRED_THRUST_VER
     find_package(CUB CONFIG REQUIRED HINTS ${CUDAToolkit_INCLUDE_DIRS} ${CUDAToolkit_LIBRARY_DIR}/cmake)
 # Otherwise unfind Thrust/CUB.
 else()
-    # As CONFIG mode was used, only <PackageName>_DIR should need deleting for latter calls to find_package to work.
-    unset(Thrust_DIR CACHE)
-    unset(Thrust_DIR)
-    unset(CUB_DIR CACHE)
+    # Unset a number of thrust / cub cache variables so that re-finding behaves as intended.
+    unset(THRUST_DIR)
+    unset(THRUST_DIR CACHE)
+    unset(THRUST_DEVICE_SYSTEM_OPTIONS)
+    unset(THRUST_DEVICE_SYSTEM_OPTIONS CACHE)
+    unset(THRUST_HOST_SYSTEM_OPTIONS)
+    unset(THRUST_HOST_SYSTEM_OPTIONS CACHE)
+    unset(THRUST_VERSION)
+    unset(THRUST_VERSION CACHE)
+    unset(THRUST_VERSION_COUNT)
+    unset(THRUST_VERSION_COUNT CACHE)
+    unset(THRUST_VERSION_MAJOR)
+    unset(THRUST_VERSION_MAJOR CACHE)
+    unset(THRUST_VERSION_MINOR)
+    unset(THRUST_VERSION_MINOR CACHE)
+    unset(THRUST_VERSION_PATCH)
+    unset(THRUST_VERSION_PATCH CACHE)
+    unset(THRUST_VERSION_TWEAK)
+    unset(THRUST_VERSION_TWEAK CACHE)
+    unset(_THRUST_CMAKE_DIR)
+    unset(_THRUST_CMAKE_DIR CACHE)
+    unset(_THRUST_INCLUDE_DIR)
+    unset(_THRUST_INCLUDE_DIR CACHE) # This is the most important one for Thrust 2.0, which just THRUST_DIR was insufficient for.
+    unset(_THRUST_QUIET)
+    unset(_THRUST_QUIET CACHE)
+    unset(_THRUST_QUIET_FLAG)
+    unset(_THRUST_QUIET_FLAG CACHE)
     unset(CUB_DIR)
+    unset(CUB_DIR CACHE)
+    unset(_CUB_INCLUDE_DIR)
+    unset(_CUB_INCLUDE_DIR CACHE)
 endif()
 
 # If thrust/cub do need downloading, fetch them, and find them.
@@ -60,25 +86,29 @@ if(FETCH_THRUST_CUB)
     # Fetch and populate the content if required.
     FetchContent_GetProperties(thrust)
     if(NOT thrust_POPULATED)
+        message(STATUS "Fetching Thrust ${THRUST_DOWNLOAD_VERSION}")
         FetchContent_Populate(thrust)
-        # Add thrusts' expected location to the prefix path.
-        set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${thrust_SOURCE_DIR}/thrust/cmake")
-        # Set the location for where to find cub (ideally)
-        set(EXPECTED_CUB_CONFIG_LOCATION "${thrust_SOURCE_DIR}/cub/cmake/")
-        # Thrust includes CUB as a git submodule, at ${thrust_SOURCE_DIR}/dependencies/cub, with a symlink pointing to it from ${thrust_SOURCE_DIR/cub}. 
-        # Under windows, git by default cannot create symlinks (it can be enabled when installing if the user has sufficient priviledges, but this cannot be relied upon)
-        # Instead, we check if CUB is accessible via the symlink, otherwise we check the expected dependency location.
-        # This may need some adjusting for future Thrust versions (potentially)
-        if(EXISTS "${EXPECTED_CUB_CONFIG_LOCATION}" AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-            # Use the symlinked "default" location
-            set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${thrust_SOURCE_DIR}/cub/cmake")
-        else()
-            # Otherwise, use the non-symlinked location.
-            set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${thrust_SOURCE_DIR}/dependencies/cub/cub/cmake/")
-        endif()
-        # Use find_package for thrust and cub, which are required.
-        find_package(Thrust REQUIRED CONFIG)
-        find_package(CUB REQUIRED CONFIG)
+        # Use find_package for thrust, only looking for the fetched version.
+        # This creates a non-system target due to nvcc magic to avoid the cuda toolkit version being used instead, so warnings are not suppressable.
+        find_package(Thrust REQUIRED CONFIG
+            PATHS ${thrust_SOURCE_DIR}
+            NO_CMAKE_PATH
+            NO_CMAKE_ENVIRONMENT_PATH
+            NO_SYSTEM_ENVIRONMENT_PATH
+            NO_CMAKE_PACKAGE_REGISTRY
+            NO_CMAKE_SYSTEM_PATH)
+        # Use find_package for cub, only looking for the fetched version.
+        # This creates a non-system target due to nvcc magic to avoid the cuda toolkit version being used instead, so warnings are not suppressable.
+        # Look in the symlinked and non-symlinked locations, preferring non symlinked due to windows (and the symlink being removed from 2.0)
+        find_package(CUB REQUIRED CONFIG
+            PATHS
+                ${thrust_SOURCE_DIR}/dependencies/cub/cub/cmake/
+                ${thrust_SOURCE_DIR}/cub/cmake
+            NO_CMAKE_PATH
+            NO_CMAKE_ENVIRONMENT_PATH
+            NO_SYSTEM_ENVIRONMENT_PATH
+            NO_CMAKE_PACKAGE_REGISTRY
+            NO_CMAKE_SYSTEM_PATH)
     endif()
     # Mark some CACHE vars as advnaced for a cleaner CMake GUI
     mark_as_advanced(FETCHCONTENT_QUIET)

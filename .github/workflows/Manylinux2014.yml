@@ -33,6 +33,10 @@ jobs:
       # optional exclude: can be partial, include: must be specific
       matrix:
         cudacxx:
+          - cuda: "12.0"
+            cuda_arch: "50"
+            hostcxx: devtoolset-10
+            os: ubuntu-20.04
           - cuda: "11.2"
             cuda_arch: "35"
             hostcxx: devtoolset-9

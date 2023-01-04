@@ -52,13 +52,19 @@ if(NOT COMMAND flamegpu_set_high_warning_level)
             # Only set W4 for MSVC, WAll is more like Wall, Wextra and Wpedantic
             target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler /W4>")
             target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:/W4>")
+            # Reorder errors for device code are caused by some cub/thrust versions (< 2.1.0?), but can be suppressed by pragmas successfully in 11.5+ under windows
+            if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.5.0)
+                target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--Wreorder>")
+            endif()
         else()
             # Assume using GCC/Clang which Wall is relatively sane for. 
             target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wall$<COMMA>-Wsign-compare>")
             target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wall>")
             target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wsign-compare>")
-            # CUB 1.9.10 prevents Wreorder being usable on windows, so linux only. Cannot suppress via diag_suppress pragmas.
-            target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--Wreorder>")
+            # Reorder errors for device code are caused by some cub/thrust versions (< 2.1.0?), but can be suppressed by pragmas successfully in 11.3+ under linux
+            if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.3.0)
+                target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--Wreorder>")
+            endif()
             # Add warnings which suggest the use of override
             # Disabled, as cpplint occasionally disagrees with gcc concerning override
             # target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wsuggest-override>")
@@ -160,6 +166,10 @@ if(NOT COMMAND flamegpu_enable_warnings_as_errors)
                 target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:/WX>")
                 # Device link warnings as errors, CMake 3.18+
                 target_link_options(${EWAS_TARGET} PRIVATE "$<DEVICE_LINK:SHELL:-Xcompiler /WX>")
+                # Add reorder to Werror, this is usable with workign nv/diag_suppress pragmas for cub/thrust from CUDA 11.5+ under windows
+                if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.5.0)
+                    target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror reorder>")
+                endif()
             else()
                 # Linux specific options
                 target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Werror>")
@@ -168,8 +178,10 @@ if(NOT COMMAND flamegpu_enable_warnings_as_errors)
                 target_link_options(${EWAS_TARGET} PRIVATE "$<DEVICE_LINK:SHELL:-Xcompiler -Werror>")
                 # Add cross-execution-space-call. This is blocked under msvc by a jitify related bug (untested > CUDA 10.1): https://github.com/NVIDIA/jitify/issues/62
                 target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror cross-execution-space-call>")
-                # Add reorder to Werror. This is blocked under msvc by cub/thrust and the lack of isystem on msvc. Appears unable to suppress the warning via diag_suppress pragmas.
-                target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror reorder>")
+                # Add reorder to Werror, this is usable with workign nv/diag_suppress pragmas for cub/thrust from CUDA 11.3+ under linux
+                if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.3.0)
+                    target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror reorder>")
+                endif()
             endif()
             # Platform/host-compiler indifferent options:
             # Generic WError settings for nvcc

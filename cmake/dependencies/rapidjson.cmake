@@ -25,7 +25,13 @@ if(NOT rapidjson_POPULATED)
     OUTPUT_QUIET
     )
     set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${rapidjson_SOURCE_DIR}")
-    find_package(RapidJSON REQUIRED)
+    find_package(RapidJSON REQUIRED
+        PATHS ${rapidjson_SOURCE_DIR}
+            NO_CMAKE_PATH
+            NO_CMAKE_ENVIRONMENT_PATH
+            NO_SYSTEM_ENVIRONMENT_PATH
+            NO_CMAKE_PACKAGE_REGISTRY
+            NO_CMAKE_SYSTEM_PATH)
     # Include path is ${RapidJSON_INCLUDE_DIRS}
 
     # Create a namespaced alias target
