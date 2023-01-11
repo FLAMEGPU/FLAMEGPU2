@@ -240,15 +240,15 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
         #endif
         // generate telemetry data
         std::string telemetry_data = flamegpu::io::Telemetry::generateData("ensemble-run", payload_items);
-        // send
-        if (!flamegpu::io::Telemetry::sendData(telemetry_data)) {
-            if ((config.verbosity > Verbosity::Verbose)) {
+        // send the telemetry packet
+        bool telemetrySuccess = flamegpu::io::Telemetry::sendData(telemetry_data);
+        // If verbose, print either a successful send, or a misc warning.
+        if (config.verbosity >= Verbosity::Verbose) {
+            if (telemetrySuccess) {
+                fprintf(stdout, "Telemetry packet sent to '%s' json was: %s\n", flamegpu::io::Telemetry::TELEMETRY_ENDPOINT, telemetry_data.c_str());
+            } else {
                 fprintf(stderr, "Warning: Usage statistics for CUDAEnsemble failed to send.\n");
             }
-        }
-        // print
-        if ((config.verbosity >= Verbosity::Verbose)) {
-            fprintf(stdout, "Telemetry packet sent to '%s' json was: %s\n", flamegpu::io::Telemetry::TELEMETRY_ENDPOINT, telemetry_data.c_str());
         }
     } else {
         // Encourage users who have opted out to opt back in, unless suppressed.

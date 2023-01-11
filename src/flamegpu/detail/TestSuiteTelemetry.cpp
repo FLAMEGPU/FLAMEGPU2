@@ -17,11 +17,15 @@ bool TestSuiteTelemetry::sendResults(std::string reportName, std::string outcome
     // generate telemetry data
     std::string telemetry_data = flamegpu::io::Telemetry::generateData(reportName, telemetry_payload);
     // send telemetry
-    flamegpu::io::Telemetry::sendData(telemetry_data);
+    bool telemetrySuccess = flamegpu::io::Telemetry::sendData(telemetry_data);
     // print telemetry payload to the user if requested
     if (verbose) {
-        fprintf(stdout, "Telemetry packet sent to '%s' json was: %s\n", flamegpu::io::Telemetry::TELEMETRY_ENDPOINT, telemetry_data.c_str());
-        fflush(stdout);
+        if (telemetrySuccess) {
+            fprintf(stdout, "Telemetry packet sent to '%s' json was: %s\n", flamegpu::io::Telemetry::TELEMETRY_ENDPOINT, telemetry_data.c_str());
+            fflush(stdout);
+        } else {
+            fprintf(stderr, "Warning: Usage statistics for Test suite failed to send.\n");
+        }
     }
     return true;
 }
