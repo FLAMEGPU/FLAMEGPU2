@@ -273,7 +273,7 @@ void Telemetry::encourageUsage() {
             "setting FLAMEGPU_SHARE_USAGE_STATISTICS to true as an environment variable, "
             "or setting the Simulation/Ensemble config telemetry property to true.\n"
             "This message can be silenced by suppressing all output (--quiet), "
-            "calling flamegpu::io::suppressNotice, or defining a system environment variable FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE\n");
+            "calling flamegpu::io::Telemetry::suppressNotice, or defining a system environment variable FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE\n");
         // Set the flag that this has already been emitted once during execution of the current binary file, so it doesn't happen again.
         haveNotified = true;
     }

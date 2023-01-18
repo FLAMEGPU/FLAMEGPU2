@@ -479,12 +479,12 @@ if (FLAMEGPU_SHARE_USAGE_STATISTICS)
     # If on, then set pre-processor
     target_compile_definitions(${PROJECT_NAME} PRIVATE FLAMEGPU_SHARE_USAGE_STATISTICS=1)
 else()
-    message(STATUS, "FLAMEGPU_SHARE_USAGE_STATISTICS is not selected! \n\n"
-    "Support for academic software is dependant on evidence of impact. \n"
-    "Enabling this option sends minimal anonymous usage statistics so \n"
-    "that we can continue to develop the software under a FOSS licence.\n"
-    "See our documentation for more information of what we collect and \n"
-    "why: https://docs.flamegpu.com/guide/telemetry.html")
+    message(STATUS "FLAMEGPU_SHARE_USAGE_STATISTICS is not selected. \n\n"
+    "   Support for academic software is dependant on evidence of impact. \n"
+    "   Enabling this option sends minimal anonymous usage statistics so \n"
+    "   that we can continue to develop the software under a FOSS licence.\n"
+    "   See our documentation for more information of what we collect and \n"
+    "   why: https://docs.flamegpu.com/guide/telemetry")
 endif()
 
 # If telemetry notice suppression is enabled, forward it to the compiler. 
