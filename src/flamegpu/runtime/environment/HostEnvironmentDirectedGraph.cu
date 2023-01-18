@@ -120,4 +120,13 @@ std::pair<id_t, id_t> HostEnvironmentDirectedGraph::getEdgeSourceDestination(con
     const std::array<id_t, 2> t = getEdgeProperty<id_t, 2>(GRAPH_SOURCE_DEST_VARIABLE_NAME, edge_index);
     return std::pair<id_t, id_t>{t[1], t[0]};
 }
+#ifdef FLAMEGPU_ADVANCED_API
+std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> HostEnvironmentDirectedGraph::getCUDABuffers() {
+    if (const auto dg = directed_graph.lock()) {
+        return dg;
+    } else {
+        THROW exception::ExpiredWeakPtr("Graph nolonger exists, weak pointer could not be locked, in HostEnvironmentDirectedGraph::setEdgeSourceDestination()\n");
+    }
+}
+#endif
 }  // namespace flamegpu
