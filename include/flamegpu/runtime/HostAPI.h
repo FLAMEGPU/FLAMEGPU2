@@ -85,6 +85,13 @@ class HostAPI {
      */
     unsigned int getStepCounter() const;
 
+#ifdef FLAMEGPU_ADVANCED_API
+    /**
+     * Returns the cudaStream_t assigned to the current instance of HostAPI (and it's child objects)
+     */
+    cudaStream_t getCUDAStream() { return stream; }
+#endif
+
  private:
     template<typename T>
     void resizeOutputSpace(unsigned int items = 1);

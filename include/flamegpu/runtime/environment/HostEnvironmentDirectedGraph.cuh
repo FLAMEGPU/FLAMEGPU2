@@ -233,6 +233,13 @@ class HostEnvironmentDirectedGraph {
     template<typename T>
     std::vector<T> getEdgePropertyArray(const std::string& property_name, unsigned int edge_index) const;
 #endif
+#ifdef FLAMEGPU_ADVANCED_API
+    /**
+     * Returns a shared_ptr to the CUDAEnvironmentDirectedGraphBuffers object which allows direct access to the graph's buffers
+     * @note You may need to manually call markForRebuild() if you update edge source/dest pairs, to ensure the CSR/CSC are rebuilt
+     */
+    std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> getCUDABuffers();
+#endif
 };
 
 template<typename T>
