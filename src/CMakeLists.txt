@@ -90,6 +90,10 @@ option(FLAMEGPU_RTC_EXPORT_SOURCES "Export RTC source files to disk at runtime" 
 option(FLAMEGPU_ENABLE_GLM "Experimental: Make GLM available to flamegpu2 projects on the include path" OFF)
 mark_as_advanced(FLAMEGPU_ENABLE_GLM)
 
+# Option to make put glm on the include path
+option(FLAMEGPU_ENABLE_ADVANCED_API "Enable advanced API functionality (C++ only), providing access to internal sim components for high-performance extensions." OFF)
+mark_as_advanced(FLAMEGPU_ENABLE_ADVANCED_API)
+
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
 # Include the doxygen cmake logic.
@@ -523,6 +527,11 @@ if (FLAMEGPU_ENABLE_GLM)
     else()
         message(WARNING "FLAMEGPU_ENABLE_GLM enabled, but glm was not found")
     endif()
+endif() 
+
+# Activate advanced API macro
+if (FLAMEGPU_ENABLE_ADVANCED_API)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC FLAMEGPU_ADVANCED_API)
 endif()  
 
 
