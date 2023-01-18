@@ -122,6 +122,7 @@ void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func, const C
             // Copy data to rtc header cache
             auto &rtc_header = cuda_agent.getRTCHeader(func.name);
             memcpy(rtc_header.getMessageInVariableCachePtr(mmp.first.c_str()), &d_ptr, sizeof(void*));
+            rtc_header.setMessageInVariableCount(mmp.first, this->getMessageCount());
         }
     }
 }
@@ -155,6 +156,7 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
             // Copy data to rtc header cache
             auto& rtc_header = cuda_agent.getRTCHeader(func.name);
             memcpy(rtc_header.getMessageOutVariableCachePtr(mmp.first.c_str()), &d_ptr, sizeof(void*));
+            rtc_header.setMessageOutVariableCount(mmp.first, this->getMessageCount());
         }
     }
 

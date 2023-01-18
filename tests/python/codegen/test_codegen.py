@@ -381,6 +381,77 @@ FLAMEGPU->message_out.setVariable<double>("d", d);
 FLAMEGPU->message_out.setVariable<int>("i", i);
 """
 
+py_fgpu_graph_fns = """\
+fgraph = pyflamegpu.environment.getDirectedGraph("fgraph")
+
+# Fetch the ID of the vertex at index 0
+vertex_id = fgraph.getVertexID(0)
+# Fetch the index of the vertex with ID 1
+vertex_index = fgraph.getVertexIndex(1)
+
+# Access a property of vertex with ID 1
+bar_0 = fgraph.getVertexPropertyFloatArray2("bar", 0)
+
+# Fetch the source and destination indexes from the edge at index 0
+source_index = fgraph.getEdgeSource(0)
+destination_index = fgraph.getEdgeDestination(0)
+
+# Fetch the index of the edge from vertex ID 1 to vertex ID 2
+edge_index = fgraph.getEdgeIndex(1, 2)
+
+# Access a property of edge with source ID 1, destination ID 2
+foo2 = fgraph.getEdgePropertyInt("foo", edge_index);
+"""
+cpp_fgpu_graph_fns = """\
+auto fgraph = FLAMEGPU->environment.getDirectedGraph("fgraph");
+auto vertex_id = fgraph.getVertexID(0);
+auto vertex_index = fgraph.getVertexIndex(1);
+auto bar_0 = fgraph.getVertexProperty<float, 2>("bar", 0);
+auto source_index = fgraph.getEdgeSource(0);
+auto destination_index = fgraph.getEdgeDestination(0);
+auto edge_index = fgraph.getEdgeIndex(1, 2);
+auto foo2 = fgraph.getEdgeProperty<int>("foo", edge_index);
+"""
+
+py_fgpu_for_graph_in_fns = """\
+# Iterate the edges joining the vertex with ID 1
+fgraph = pyflamegpu.environment.getDirectedGraph("fgraph")
+for edge in fgraph.inEdges(vertex_index):
+    # Read the current edges' source vertex index
+    src_vertex_index = edge.getEdgeSource()
+    # Read a property from the edge
+    foo = edge.getPropertyInt("foo")
+    bar = edge.getPropertyFloatArray2("bar", 0)
+"""
+cpp_fgpu_for_graph_in_fns = """\
+auto fgraph = FLAMEGPU->environment.getDirectedGraph("fgraph");
+for (const auto& edge : fgraph.inEdges(vertex_index)){
+    auto src_vertex_index = edge.getEdgeSource();
+    auto foo = edge.getProperty<int>("foo");
+    auto bar = edge.getProperty<float, 2>("bar", 0);
+}
+"""
+
+py_fgpu_for_graph_out_fns = """\
+# Iterate the edges leaving the vertex with ID 1
+fgraph = pyflamegpu.environment.getDirectedGraph("fgraph")
+for edge in fgraph.outEdges(vertex_index):
+    # Read the current edges' destination vertex index
+    dest_vertex_index = edge.getEdgeDestination()
+    # Read a property from the edge
+    foo = edge.getPropertyInt("foo")
+    bar = edge.getPropertyFloatArray2("bar", 0)
+"""
+cpp_fgpu_for_graph_out_fns = """\
+auto fgraph = FLAMEGPU->environment.getDirectedGraph("fgraph");
+for (const auto& edge : fgraph.outEdges(vertex_index)){
+    auto dest_vertex_index = edge.getEdgeDestination();
+    auto foo = edge.getProperty<int>("foo");
+    auto bar = edge.getProperty<float, 2>("bar", 0);
+}
+"""
+
+
 py_fgpu_macro_env_permitted = """\
 @pyflamegpu.agent_function
 def func(message_in: pyflamegpu.MessageNone, message_out: pyflamegpu.MessageNone) :
@@ -631,7 +702,7 @@ class CodeGenTest(unittest.TestCase):
         self._checkExpected(py_for_range_arg2, cpp_for_range_arg2)
         self._checkExpected(py_for_range_arg3, cpp_for_range_arg3)   
         # check that non range function loops are rejected
-        self._checkException(py_for_unsupported, "Range based for loops only support message iteration using 'message_in' iterator")
+        self._checkException(py_for_unsupported, "Range based for loops only support message iteration using 'message_in' or directed graph iterator")
        
     def test_while_else(self):
         self._checkException(py_while_else, "While else not supported")
@@ -851,6 +922,11 @@ class CodeGenTest(unittest.TestCase):
         self._checkExpected(py_fgpu_msg_output, cpp_fgpu_msg_output)
         # Test message output with unknown function
         self._checkException("message_out.unsupported()", "Function 'unsupported' does not exist") 
+        
+    def test_fgpu_graph(self):
+        self._checkExpected(py_fgpu_graph_fns, cpp_fgpu_graph_fns)
+        self._checkExpected(py_fgpu_for_graph_in_fns, cpp_fgpu_for_graph_in_fns)
+        self._checkExpected(py_fgpu_for_graph_out_fns, cpp_fgpu_for_graph_out_fns)
         
     # random
     

@@ -3,6 +3,7 @@
 #include "flamegpu/model/SubModelData.h"
 #include "flamegpu/model/SubEnvironmentData.h"
 #include "flamegpu/model/EnvironmentDescription.h"
+#include "flamegpu/model/EnvironmentDirectedGraphData.cuh"
 
 namespace flamegpu {
 
@@ -34,6 +35,13 @@ std::string CSubEnvironmentDescription::getMacroPropertyMapping(const std::strin
         return v->second;
     THROW exception::InvalidAgentState("SubEnvironment macro property '%s', either does not exist or has not been mapped yet, "
         "in SubEnvironmentDescription::getMacroPropertyMapping()\n", sub_property_name.c_str());
+}
+std::string CSubEnvironmentDescription::getDirectedGraphMapping(const std::string& sub_graph_name) const {
+    const auto v = subenvironment->directed_graphs.find(sub_graph_name);
+    if (v != subenvironment->directed_graphs.end())
+        return v->second;
+    THROW exception::InvalidEnvGraph("SubEnvironment directed graph '%s', either does not exist or has not been mapped yet, "
+        "in SubEnvironmentDescription::getDirectedGraphMapping()\n", sub_graph_name.c_str());
 }
 
 /**
@@ -164,20 +172,75 @@ void SubEnvironmentDescription::mapMacroProperty(const std::string& sub_property
     // Macro properties match, create mapping
     subenvironment->macro_properties.emplace(sub_property_name, master_property_name);
 }
+void SubEnvironmentDescription::mapDirectedGraph(const std::string& sub_graph_name, const std::string& master_graph_name) {
+    // Neither are reserved properties
+    if (!sub_graph_name.empty() && sub_graph_name[0] == '_') {
+        THROW exception::ReservedName("Sub-model environment directed graph '%s is internal and cannot be mapped, "
+            "in SubEnvironmentDescription::mapDirectedGraph()\n", sub_graph_name.c_str());
+    }
+    if (!master_graph_name.empty() && master_graph_name[0] == '_') {
+        THROW exception::ReservedName("Master-model environment directed graph '%s is internal and cannot be mapped, "
+            "in SubEnvironmentDescription::mapDirectedGraph()\n", master_graph_name.c_str());
+    }
+    // Sub directed graph exists
+    auto subEnv = subenvironment->subEnvironment.lock();
+    if (!subEnv) {
+        THROW exception::InvalidParent("SubEnvironment pointer has expired, "
+            "in SubEnvironmentDescription::mapDirectedGraph()\n");
+    }
+    const auto subProp = subEnv->directed_graphs.find(sub_graph_name);
+    if (subProp == subEnv->directed_graphs.end()) {
+        const auto parent = subenvironment->parent.lock();
+        THROW exception::InvalidEnvProperty("SubModel '%s's Environment does not contain directed graph '%s', "
+            "in SubEnvironmentDescription::mapDirectedGraph()\n", parent ? parent->submodel->name.c_str() : "?", sub_graph_name.c_str());
+    }
+    // Master macro property exists
+    auto masterEnv = subenvironment->masterEnvironment.lock();
+    if (!masterEnv) {
+        THROW exception::InvalidParent("MasterEnvironment pointer has expired, "
+            "in SubEnvironmentDescription::mapDirectedGraph()\n");
+    }
+    const auto masterProp = masterEnv->directed_graphs.find(master_graph_name);
+    if (masterProp == masterEnv->directed_graphs.end()) {
+        THROW exception::InvalidEnvGraph("MasterEnvironment does not contain directed graph '%s', "
+            "in SubEnvironmentDescription::mapDirectedGraph()\n", sub_graph_name.c_str());
+    }
+    // Sub macro property has not been bound yet
+    if (subenvironment->directed_graphs.find(sub_graph_name) != subenvironment->directed_graphs.end()) {
+        const auto parent = subenvironment->parent.lock();
+        THROW exception::InvalidEnvGraph("SubModel '%s's Environment directed graph '%s' has already been mapped, "
+            "in SubEnvironmentDescription::mapDirectedGraph()\n", parent ? parent->submodel->name.c_str() : "?", sub_graph_name.c_str());
+    }
+    // Master macro property has already been bound
+    for (auto& v : subenvironment->directed_graphs) {
+        if (v.second == master_graph_name) {
+            THROW exception::InvalidEnvGraph("MasterEnvironment directed graph '%s' has already been mapped, "
+                "in SubEnvironmentDescription::mapDirectedGraph()\n", master_graph_name.c_str());
+        }
+    }
+    // Check macro properties are the same
+    if (*subProp->second != *masterProp->second) {
+        THROW exception::InvalidEnvGraph("Directed graphs are not identical, '%s' != '%s', "
+            "in SubEnvironmentDescription::mapMacroProperty()\n", master_graph_name.c_str(), sub_graph_name.c_str());
+    }
+    // Directed graphs match, create mapping
+    subenvironment->directed_graphs.emplace(sub_graph_name, master_graph_name);
+}
 
 
 void SubEnvironmentDescription::autoMap() {
     autoMapProperties();
     autoMapMacroProperties();
+    autoMapDirectedGraphs();
 }
 void SubEnvironmentDescription::autoMapProperties() {
-    // Sub property exists
+    // Sub env exists
     auto subEnv = subenvironment->subEnvironment.lock();
     if (!subEnv) {
         THROW exception::InvalidParent("SubEnvironment pointer has expired, "
             "in SubEnvironmentDescription::autoMapProperties()\n");
     }
-    // Master property exists
+    // Master env exists
     auto masterEnv = subenvironment->masterEnvironment.lock();
     if (!masterEnv) {
         THROW exception::InvalidParent("MasterEnvironment pointer has expired, "
@@ -201,13 +264,13 @@ void SubEnvironmentDescription::autoMapProperties() {
     }
 }
 void SubEnvironmentDescription::autoMapMacroProperties() {
-    // Sub property exists
+    // Sub env exists
     auto subEnv = subenvironment->subEnvironment.lock();
     if (!subEnv) {
         THROW exception::InvalidParent("SubEnvironment pointer has expired, "
             "in SubEnvironmentDescription::autoMapMacroProperties()\n");
     }
-    // Master property exists
+    // Master env exists
     auto masterEnv = subenvironment->masterEnvironment.lock();
     if (!masterEnv) {
         THROW exception::InvalidParent("MasterEnvironment pointer has expired, "
@@ -224,6 +287,33 @@ void SubEnvironmentDescription::autoMapMacroProperties() {
             if ((subProp.second.type == masterProp->second.type) &&
                 (subProp.second.elements == masterProp->second.elements)) {
                 subenvironment->macro_properties.emplace(subProp.first, masterProp->first);  // Doesn't actually matter, both strings are equal
+            }
+        }
+    }
+}
+void SubEnvironmentDescription::autoMapDirectedGraphs() {
+    // Sub env exists
+    auto subEnv = subenvironment->subEnvironment.lock();
+    if (!subEnv) {
+        THROW exception::InvalidParent("SubEnvironment pointer has expired, "
+            "in SubEnvironmentDescription::autoMapDirectedGraphs()\n");
+    }
+    // Master env exists
+    auto masterEnv = subenvironment->masterEnvironment.lock();
+    if (!masterEnv) {
+        THROW exception::InvalidParent("MasterEnvironment pointer has expired, "
+            "in SubEnvironmentDescription::autoMapDirectedGraphs()\n");
+    }
+    for (auto& subGraph : subEnv->directed_graphs) {
+        // If it's a reserved environment property, don't map it
+        if (subGraph.first[0] == '_')
+            continue;
+        auto masterGraph = masterEnv->directed_graphs.find(subGraph.first);
+        // If there exists variable with same name in both environments
+        if (masterGraph != masterEnv->directed_graphs.end()) {
+            // Check properties are the same
+            if (*subGraph.second == *masterGraph->second) {
+                subenvironment->directed_graphs.emplace(subGraph.first, masterGraph->first);  // Doesn't actually matter, both strings are equal
             }
         }
     }

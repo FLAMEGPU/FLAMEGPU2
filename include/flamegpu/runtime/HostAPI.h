@@ -46,6 +46,7 @@ class HostAPI {
     typedef std::unordered_map<std::string, AgentDataBuffer> AgentDataBufferStateMap;
     typedef std::unordered_map<std::string, VarOffsetStruct> AgentOffsetMap;
     typedef std::unordered_map<std::string, AgentDataBufferStateMap> AgentDataMap;
+    typedef std::unordered_map<std::string, std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>> CUDADirectedGraphMap;
 
     /**
      * Initailises pointers to 0
@@ -58,6 +59,7 @@ class HostAPI {
         AgentDataMap &agentData,
         const std::shared_ptr<detail::EnvironmentManager> &env,
         const std::shared_ptr<detail::CUDAMacroEnvironment> &macro_env,
+        CUDADirectedGraphMap &directed_graph_map,
         unsigned int streamId,
         cudaStream_t stream);
     /**
@@ -108,6 +110,13 @@ class HostAPI {
      * If the simulation is not part of an ensemble, UINT_MAX will be returned
      */
     unsigned int getEnsembleRunIndex() const;
+
+#ifdef FLAMEGPU_ADVANCED_API
+    /**
+     * Returns the cudaStream_t assigned to the current instance of HostAPI (and it's child objects)
+     */
+    cudaStream_t getCUDAStream() { return stream; }
+#endif
 
  private:
     template<typename T>

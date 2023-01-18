@@ -17,6 +17,9 @@
 
 namespace flamegpu {
 
+class CEnvironmentDirectedGraphDescription;
+class EnvironmentDirectedGraphDescription;
+
 class CEnvironmentDescription {
     /**
      * Data store class for this description, constructs instances of this class
@@ -101,6 +104,14 @@ class CEnvironmentDescription {
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      */
     bool getConst(const std::string &name) const;
+    /**
+     * Returns an existing directed graph
+     *
+     * Directed graphs are environmental graph structures which can hold properties on their vertices and edges
+     * Agent's can traverse the graph structure and assign messages to the graph using related communication strategies
+     * @param graph_name The name used to refer to the graph throughout the model
+     */
+    CEnvironmentDirectedGraphDescription getDirectedGraph(const std::string& graph_name) const;
 
  protected:
     /**
@@ -135,6 +146,7 @@ class EnvironmentDescription : public CEnvironmentDescription {
      */
     EnvironmentDescription& operator=(const EnvironmentDescription& other_env) = default;
     EnvironmentDescription& operator=(EnvironmentDescription&& other_env) = default;
+
     /**
      * Adds a new environment property
      * @param name name used for accessing the property
@@ -200,6 +212,22 @@ class EnvironmentDescription : public CEnvironmentDescription {
     template<typename T>
     void newMacroProperty_swig(const std::string& name, flamegpu::size_type I = 1, flamegpu::size_type J = 1, flamegpu::size_type K = 1, flamegpu::size_type W = 1);
 #endif
+    /**
+     * Define a new directed graph
+     *
+     * Directed graphs are environmental graph structures which can hold properties on their vertices and edges
+     * Agent's can traverse the graph structure and assign messages to the graph using related communication strategies
+     * @param graph_name The name used to refer to the graph throughout the model
+     */
+    EnvironmentDirectedGraphDescription newDirectedGraph(const std::string &graph_name);
+    /**
+     * Returns an existing directed graph
+     *
+     * Directed graphs are environmental graph structures which can hold properties on their vertices and edges
+     * Agent's can traverse the graph structure and assign messages to the graph using related communication strategies
+     * @param graph_name The name used to refer to the graph throughout the model
+     */
+    EnvironmentDirectedGraphDescription getDirectedGraph(const std::string& graph_name);
     /**
      * Sets an environment property
      * @param name name used for accessing the property

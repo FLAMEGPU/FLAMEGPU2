@@ -14,26 +14,44 @@ namespace util {
 typedef std::pair<std::string, std::string> StringPair;
 
 /**
- * Hash function so that StringPair can be used as a key in a map
+ * Compare function so that StringPair can be used in a map
  */
-struct StringPairHash {
-    size_t operator()(const std::pair<std::string, std::string>& k) const {
-        return std::hash<std::string>()(k.first) ^
-            (std::hash<std::string>()(k.second) << 1);
+template<typename T1, typename T2>
+struct PairCompare {
+    bool operator() (const std::pair<T1, T2>& lhs, const std::pair<T1, T2>& rhs) const {
+        if (lhs.first == rhs.first)
+            return lhs.second < rhs.second;
+        return lhs.first < rhs.first;
     }
 };
+typedef PairCompare<std::string, std::string> StringPairCompare;
+/**
+ * Hash function so that StringPair can be used as a key in an unordered map
+ */
+template<typename T1, typename T2>
+struct PairHash {
+    size_t operator()(const std::pair<T1, T2>& k) const {
+        return std::hash<T1>()(k.first) ^
+            (std::hash<T2>()(k.second) << 1);
+    }
+};
+typedef PairHash<std::string, std::string> StringPairHash;
 
 /**
  * Ordered map with StringPair as the key type
  */
+template<typename A, typename B, typename T>
+using PairMap = std::map<std::pair<A, B>, T, PairCompare<A, B>>;
 template<typename T>
-using StringPairMap = std::map<StringPair, T, StringPairHash>;
+using StringPairMap = PairMap<std::string, std::string, T>;
 
 /**
  * Unordered map with StringPair as the key type
  */
+template<typename A, typename B, typename T>
+using PairUnorderedMap = std::unordered_map<std::pair<A, B>, T, PairHash<A, B>>;
 template<typename T>
-using StringPairUnorderedMap = std::unordered_map<StringPair, T, StringPairHash>;
+using StringPairUnorderedMap = PairUnorderedMap<std::string, std::string, T>;
 
 }  // namespace util
 }  // namespace flamegpu

@@ -13,6 +13,7 @@
 #include "flamegpu/model/SubModelData.h"
 #include "flamegpu/model/SubAgentData.h"
 #include "flamegpu/runtime/HostAPI.h"
+#include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
 #include "flamegpu/simulation/detail/CUDAScanCompaction.h"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/detail/compute_capability.cuh"
@@ -30,6 +31,7 @@
 #include "flamegpu/simulation/RunPlan.h"
 #include "flamegpu/version.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
+#include "flamegpu/model/SubEnvironmentData.h"
 #include "flamegpu/io/Telemetry.h"
 #ifdef FLAMEGPU_VISUALISATION
 #include "flamegpu/visualiser/FLAMEGPU_Visualisation.h"
@@ -206,6 +208,7 @@ CUDASimulation::~CUDASimulation() {
     agent_map.clear();
     message_map.clear();
     submodel_map.clear();
+    directed_graph_map.clear();
     host_api.reset();
     macro_env->free();
 #ifdef FLAMEGPU_VISUALISATION
@@ -245,6 +248,10 @@ void CUDASimulation::initFunctions() {
             ca.second->resetPopulationVecs();
         }
         processHostAgentCreation(0);
+        // If we have host layer functions, a static graph may need updating
+        for (auto& [name, sg] : directed_graph_map) {
+            sg->syncDevice_async(singletons->scatter, 0, getStream(0));
+        }
     }
 
     // Record, store and output the elapsed time of the step.
@@ -1082,14 +1089,18 @@ void CUDASimulation::layerHostFunctions(const std::shared_ptr<LayerData>& layer,
         flamegpu::util::nvtx::Range hostfncallback_range{"hostFunc_swig"};
         stepFn->run(this->host_api.get());
     }
-    // If we have host layer functions, we might have host agent creation
     if (layer->host_functions.size() || (layer->host_functions_callbacks.size())) {
+        // If we have host layer functions, we might have host agent creation
         // Sync any device vectors, before performing host agent creation
         for (auto& ca : agent_map) {
             ca.second->resetPopulationVecs();
         }
         // @todo - What is the most appropriate stream to use here?
         processHostAgentCreation(0);
+        // If we have host layer functions, a static graph may need updating
+        for (auto& [name, sg] : directed_graph_map) {
+            sg->syncDevice_async(singletons->scatter, 0, getStream(0));
+        }
     }
 }
 
@@ -1112,6 +1123,10 @@ void CUDASimulation::stepStepFunctions() {
             ca.second->resetPopulationVecs();
         }
         processHostAgentCreation(0);
+        // If we have host layer functions, a static graph may need updating
+        for (auto& [name, sg] : directed_graph_map) {
+            sg->syncDevice_async(singletons->scatter, 0, getStream(0));
+        }
     }
 }
 
@@ -1154,6 +1169,10 @@ bool CUDASimulation::stepExitConditions() {
         // If we have exit conditions functions, we might have host agent creation
         if (model->exitConditions.size() || model->exitConditionCallbacks.size()) {
             processHostAgentCreation(0);
+        }
+        // If we have host layer functions, a static graph may need updating
+        for (auto& [name, sg] : directed_graph_map) {
+            sg->syncDevice_async(singletons->scatter, 0, getStream(0));
         }
 
         #ifdef FLAMEGPU_VISUALISATION
@@ -1562,7 +1581,7 @@ void CUDASimulation::initialiseSingletons() {
         cudaStream_t stream_0 = getStream(0);
 
         // Pass created RandomManager to host api
-        host_api = std::make_unique<HostAPI>(*this, singletons->rng, singletons->scatter, agentOffsets, agentData, singletons->environment, macro_env, 0, stream_0);  // Host fns are currently all serial
+        host_api = std::make_unique<HostAPI>(*this, singletons->rng, singletons->scatter, agentOffsets, agentData, singletons->environment, macro_env, directed_graph_map, 0, stream_0);  // Host fns are currently all serial
 
         for (auto &cm : message_map) {
             cm.second->init(singletons->scatter, 0, stream_0);
@@ -1570,15 +1589,36 @@ void CUDASimulation::initialiseSingletons() {
 
         // Populate the environment properties
         if (!submodel) {
+            for (const auto &it : model->environment->directed_graphs) {
+                // insert into map using value_type and store a reference to the map pair
+                directed_graph_map.emplace(it.first, std::make_shared<detail::CUDAEnvironmentDirectedGraphBuffers>(*it.second));
+            }
             macro_env->init(stream_0);
         } else {
+            for (const auto& it : model->environment->directed_graphs) {
+                const auto sub_it = submodel->subenvironment->directed_graphs.find(it.first);
+                if (sub_it != submodel->subenvironment->directed_graphs.end()) {
+                    // if is linked to parent graph, instead store that graph's ptr
+                    // insert into map using value_type and store a reference to the map pair
+                    const auto master_graph_it = mastermodel->directed_graph_map.find(sub_it->second);
+                    if (master_graph_it != mastermodel->directed_graph_map.end()) {
+                        directed_graph_map.emplace(it.first, master_graph_it->second);
+                    } else {
+                        THROW exception::UnknownInternalError("Failed to find master model '%s's directed graph '%s' when intialising submodel '%s', this should not happen, please report this as a bug.\n",
+                            mastermodel->model->name.c_str(), sub_it->second.c_str(), this->model->name.c_str());
+                    }
+                } else {
+                    // insert into map using value_type and store a reference to the map pair
+                    directed_graph_map.emplace(it.first, std::make_shared<detail::CUDAEnvironmentDirectedGraphBuffers>(*it.second));
+                }
+            }
             macro_env->init(*submodel->subenvironment, mastermodel->macro_env, stream_0);
         }
 
         // Populate device strings
-        for (const auto &[agent_name, agent] : model->agents) {
+        for (const auto& [agent_name, agent] : model->agents) {
             singletons->strings.registerDeviceString(agent_name);
-            for (const auto &state_name : agent->states) {
+            for (const auto& state_name : agent->states) {
                 singletons->strings.registerDeviceString(state_name);
             }
         }
@@ -1635,18 +1675,18 @@ void CUDASimulation::initialiseRTC() {
                 // check rtc source to see if this is a RTC function
                 if (!it_f->second->rtc_source.empty()) {
                     // create CUDA agent RTC function by calling addInstantitateRTCFunction on CUDAAgent with AgentFunctionData
-                    a_it->second->addInstantitateRTCFunction(*it_f->second, singletons->environment, macro_env);
+                    a_it->second->addInstantitateRTCFunction(*it_f->second, singletons->environment, macro_env, directed_graph_map);
                 } else {
                     // Init curve for non-rtc functions
-                    a_it->second->addInstantitateFunction(*it_f->second, singletons->environment, macro_env);
+                    a_it->second->addInstantitateFunction(*it_f->second, singletons->environment, macro_env, directed_graph_map);
                 }
                 // check rtc source to see if the function condition is an rtc condition
                 if (!it_f->second->rtc_condition_source.empty()) {
                     // create CUDA agent RTC function condition by calling addInstantitateRTCFunction on CUDAAgent with AgentFunctionData
-                    a_it->second->addInstantitateRTCFunction(*it_f->second, singletons->environment, macro_env, true);
+                    a_it->second->addInstantitateRTCFunction(*it_f->second, singletons->environment, macro_env, directed_graph_map, true);
                 } else if (it_f->second->condition) {
                     // Init curve for non-rtc function conditionss
-                    a_it->second->addInstantitateFunction(*it_f->second, singletons->environment, macro_env, true);
+                    a_it->second->addInstantitateFunction(*it_f->second, singletons->environment, macro_env, directed_graph_map, true);
                 }
             }
         }

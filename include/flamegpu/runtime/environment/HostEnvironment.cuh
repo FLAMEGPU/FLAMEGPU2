@@ -16,6 +16,8 @@
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
 #include "flamegpu/runtime/environment/HostMacroProperty.cuh"
+#include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
+#include "flamegpu/runtime/environment/HostEnvironmentDirectedGraph.cuh"
 
 namespace flamegpu {
 
@@ -31,14 +33,14 @@ class HostEnvironment {
      * This class can only be constructed by HostAPI
      */
     friend class HostAPI;
+    typedef std::unordered_map<std::string, std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>> CUDADirectedGraphMap;
 
  protected:
     /**
      * Constructor, to be called by HostAPI
      */
-    explicit HostEnvironment(CUDASimulation &_simulation, cudaStream_t _stream,
-                             std::shared_ptr<detail::EnvironmentManager> env,
-                             std::shared_ptr<detail::CUDAMacroEnvironment> _macro_env);
+    explicit HostEnvironment(CUDASimulation &_simulation, std::shared_ptr<detail::EnvironmentManager> env, std::shared_ptr<detail::CUDAMacroEnvironment> _macro_env,
+        CUDADirectedGraphMap& _directed_graph_map, detail::CUDAScatter& _scatter, unsigned int _streamID, cudaStream_t _stream);
     /**
      * Provides access to EnvironmentManager singleton
      */
@@ -47,6 +49,10 @@ class HostEnvironment {
      * Provides access to macro properties for the instance
      */
     const std::shared_ptr<detail::CUDAMacroEnvironment> macro_env;
+    /**
+     * Provides access to directed graphs for the instance
+     */
+    CUDADirectedGraphMap& directed_graph_map;
     /**
      * Access to instance id of the CUDASimulation
      * This is used to augment all variable names
@@ -57,7 +63,15 @@ class HostEnvironment {
      */
     CUDASimulation& simulation;
     /**
-     * CUDAStream for memcpys
+     * CUDA scatter singleton
+     */
+    detail::CUDAScatter& scatter;
+    /**
+     * CUDA stream index used for cuda stream resources.
+     */
+    const unsigned int streamID;
+    /**
+     * CUDA stream used for cuda operations.
      */
     const cudaStream_t stream;
 
@@ -180,6 +194,11 @@ class HostEnvironment {
      * @note This method supports raw binary files (.bin)
      */
     void exportMacroProperty(const std::string& property_name, const std::string& file_path, bool pretty_print = true) const;
+    /**
+     * Returns an interface for accessing the named directed graph
+     * @param name The name of the environment directed graph to return
+     */
+    HostEnvironmentDirectedGraph getDirectedGraph(const std::string& name) const;
 };
 
 /**
