@@ -174,8 +174,8 @@ cmake --build . --target all
 | `FLAMEGPU_RTC_EXPORT_SOURCES`        | `ON`/`OFF`                  | At runtime, export dynamic RTC files to disk. Useful for debugging RTC models. Default `OFF`               |
 | `FLAMEGPU_RTC_DISK_CACHE`            | `ON`/`OFF`                  | Enable/Disable caching of RTC functions to disk. Default `ON`.                                             |
 | `FLAMEGPU_VERBOSE_PTXAS`             | `ON`/`OFF`                  | Enable verbose PTXAS output during compilation. Default `OFF`.                                             |
-| `FLAMEGPU_CURAND_ENGINE`             | `XORWOW` / `PHILOX` / `MRG` | Select the CUDA random engine. Default `XORWOW`                                                      |
-| `FLAMEGPU_USE_GLM`                   | `ON`/`OFF`                  | Experimental feature for GLM type support in RTC models. Default `OFF`.                                    |
+| `FLAMEGPU_CURAND_ENGINE`             | `XORWOW` / `PHILOX` / `MRG` | Select the CUDA random engine. Default `XORWOW`                                                            |
+| `FLAMEGPU_ENABLE_GLM`                | `ON`/`OFF`                  | Experimental feature for GLM type support in RTC models. Default `OFF`.                                    |
 | `FLAMEGPU_SHARE_USAGE_STATISTICS`    | `ON`/`OFF`                  | Share usage statistics ([telemetry](https://docs.flamegpu.com/guide/telemetry)) to support evidencing usage/impact of the software. Default `ON`. |
 | `FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE` | `ON`/`OFF`                  | Suppress notice encouraging telemetry to be enabled, which is emitted once per binary execution if telemetry is disabled. Defaults to `OFF`, or the value of a system environment variable of the same name. |
 | `FLAMEGPU_TELEMETRY_TEST_MODE`       | `ON`/`OFF`                  | Submit telemetry values to the test mode of TelemetryDeck. Intended for use during development of FLAMEGPU rather than use. Defaults to `OFF`, or the value of a system environment variable of the same name.|
