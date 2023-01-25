@@ -133,6 +133,10 @@ jobs:
     - name: Add custom problem matchers for annotations
       run: echo "::add-matcher::.github/problem-matchers.json"
 
+    # This patches a bug where ManyLinux doesn't generate buildnumber as git dir is owned by diff user
+    - name: Enable git safe-directory
+      run: git config --global --add safe.directory $GITHUB_WORKSPACE
+
     - name: Configure cmake
       run: >
         cmake . -B "${{ env.BUILD_DIR }}"

@@ -147,6 +147,10 @@ jobs:
         make
         sudo make install
 
+    # This pre-emptively patches a bug where ManyLinux didn't generate buildnumber as git dir was owned by diff user
+    - name: Enable git safe-directory
+      run: git config --global --add safe.directory $GITHUB_WORKSPACE
+
     - name: Configure cmake
       run: >
         cmake . -B "${{ env.BUILD_DIR }}"
@@ -256,6 +260,10 @@ jobs:
     - name: Add custom problem matchers for annotations
       run: echo "::add-matcher::.github/problem-matchers.json"
 
+    # This pre-emptively patches a bug where ManyLinux didn't generate buildnumber as git dir was owned by diff user
+    - name: Enable git safe-directory
+      run: git config --global --add safe.directory $GITHUB_WORKSPACE
+      
     # Must pass -G -A for windows, and -DPython3_ROOT_DIR/-DPYTHON3_EXECUTABLE as a github action workaround
     - name: Configure cmake
       run: >
@@ -403,6 +411,10 @@ jobs:
         make
         make install
 
+    # This patches a bug where ManyLinux doesn't generate buildnumber as git dir is owned by diff user
+    - name: Enable git safe-directory
+      run: git config --global --add safe.directory $GITHUB_WORKSPACE
+
     # Unlike other builds manylinux, uses static glew as it has been built and installed.
     - name: Configure cmake
       run: >
@@ -527,6 +539,10 @@ jobs:
 
     - name: Add custom problem matchers for annotations
       run: echo "::add-matcher::.github/problem-matchers.json"
+
+    # This pre-emptively patches a bug where ManyLinux didn't generate buildnumber as git dir was owned by diff user
+    - name: Enable git safe-directory
+      run: git config --global --add safe.directory $GITHUB_WORKSPACE
 
     # Must pass -G -A for windows, and -DPython3_ROOT_DIR/-DPYTHON3_EXECUTABLE as a github action workaround
     - name: Configure cmake
