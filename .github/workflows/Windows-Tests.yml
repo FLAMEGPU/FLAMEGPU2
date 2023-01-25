@@ -74,6 +74,10 @@ jobs:
     - name: Add custom problem matchers for annotations
       run: echo "::add-matcher::.github/problem-matchers.json"
 
+    # This pre-emptively patches a bug from ManyLinux where git dir is owned by diff user, blocking buildnumber generation
+    - name: Enable git safe-directory
+      run: git config --global --add safe.directory $GITHUB_WORKSPACE
+
     # Must pass -G -A for windows, and -DPython3_ROOT_DIR/-DPYTHON3_EXECUTABLE as a github action workaround
     - name: Configure cmake
       run: >
