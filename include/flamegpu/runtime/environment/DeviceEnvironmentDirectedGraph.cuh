@@ -70,6 +70,11 @@ class DeviceEnvironmentDirectedGraph {
              */
             __device__ Edge& operator++() { ++edge_index; return *this; }
             /**
+             * Returns the index of the current edge within the graph's full list of edges
+             * @note Edge indexes are not constant, they can change if edges are updated causing the graph's CSR to be rebuilt
+             */
+            __device__ unsigned int getIndex() const { return edge_index; }
+            /**
              * Returns the value for the current edge attached to the named property
              * @param property_name Name of the property
              * @tparam T type of the property
@@ -254,6 +259,11 @@ class DeviceEnvironmentDirectedGraph {
             __device__ Edge& operator++() {
                 edge_index = _parent.graph_ipbm_edges[++ipbm_index];
                 return *this; }
+            /**
+             * Returns the index of the current edge within the graph's full list of edges
+             * @note Edge indexes are not constant, they can change if edges are updated causing the graph's CSR to be rebuilt
+             */
+            __device__ unsigned int getIndex() const { return edge_index; }
             /**
              * Returns the value for the current edge attached to the named property
              * @param property_name Name of the property
