@@ -6,6 +6,7 @@
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/runtime/detail/curve/HostCurve.cuh"
+#include "flamegpu/detail/cuda.cuh"
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #pragma warning(disable : 4706 4834)
@@ -16,6 +17,7 @@
 #pragma diag_suppress 1719
 #endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
 #include <cub/cub.cuh>
+
 #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
 #pragma nv_diag_default 1719
 #else
@@ -128,8 +130,8 @@ void CUDAEnvironmentDirectedGraphBuffers::allocateEdgeBuffers(const size_type co
 void CUDAEnvironmentDirectedGraphBuffers::deallocateVertexBuffers() {
     for (auto& v : vertex_buffers) {
         if (v.second.d_ptr) {
-            gpuErrchk(cudaFree(v.second.d_ptr));
-            gpuErrchk(cudaFree(v.second.d_ptr_swap));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(v.second.d_ptr));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(v.second.d_ptr_swap));
             v.second.d_ptr = nullptr;
         }
         if (v.second.h_ptr) {
@@ -138,15 +140,15 @@ void CUDAEnvironmentDirectedGraphBuffers::deallocateVertexBuffers() {
         }
     }
     if (d_pbm) {
-        gpuErrchk(cudaFree(d_pbm));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_pbm));
         d_pbm = nullptr;
     }
     if (d_pbm_swap) {
-        gpuErrchk(cudaFree(d_pbm_swap));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_pbm_swap));
         d_pbm_swap = nullptr;
     }
     if (d_ipbm) {
-        gpuErrchk(cudaFree(d_ipbm));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_ipbm));
         d_ipbm = nullptr;
     }
     vertex_count = 0;
@@ -154,8 +156,8 @@ void CUDAEnvironmentDirectedGraphBuffers::deallocateVertexBuffers() {
 void CUDAEnvironmentDirectedGraphBuffers::deallocateEdgeBuffers() {
     for (auto& e : edge_buffers) {
         if (e.second.d_ptr) {
-            gpuErrchk(cudaFree(e.second.d_ptr));
-            gpuErrchk(cudaFree(e.second.d_ptr_swap));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(e.second.d_ptr));
+            gpuErrchk(flamegpu::detail::cuda::cudaFree(e.second.d_ptr_swap));
             e.second.d_ptr = nullptr;
         }
         if (e.second.h_ptr) {
@@ -164,23 +166,23 @@ void CUDAEnvironmentDirectedGraphBuffers::deallocateEdgeBuffers() {
         }
     }
     if (d_keys) {
-        gpuErrchk(cudaFree(d_keys));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_keys));
         d_keys = nullptr;
     }
     if (d_vals) {
-        gpuErrchk(cudaFree(d_vals));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_vals));
         d_vals = nullptr;
     }
     if (d_keys_swap) {
-        gpuErrchk(cudaFree(d_keys_swap));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_keys_swap));
         d_keys_swap = nullptr;
     }
     if (d_vals_swap) {
-        gpuErrchk(cudaFree(d_vals_swap));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_vals_swap));
         d_vals_swap = nullptr;
     }
     if (d_ipbm_edges) {
-        gpuErrchk(cudaFree(d_ipbm_edges));
+        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_ipbm_edges));
         d_ipbm_edges = nullptr;
     }
     edge_count = 0;
