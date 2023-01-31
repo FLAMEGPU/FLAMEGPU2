@@ -29,6 +29,7 @@ void HostEnvironmentDirectedGraph::importGraph(const std::string& in_file) {
     }
     if (const auto dg = directed_graph.lock()) {
         io::JSONGraphReader::loadAdjacencyLike(in_file, dg, stream);
+        dg->markForRebuild();
     } else {
         THROW exception::ExpiredWeakPtr("Graph nolonger exists, weak pointer could not be locked, in HostEnvironmentDirectedGraph::importGraph()\n");
     }
