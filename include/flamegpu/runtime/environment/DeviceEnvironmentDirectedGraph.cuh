@@ -257,6 +257,7 @@ class DeviceEnvironmentDirectedGraph {
              * @return Returns itself
              */
             __device__ Edge& operator++() {
+                // @todo This may not exit safely it SEATBELTS has left graph_ipbm_edges=nullptr?
                 edge_index = _parent.graph_ipbm_edges[++ipbm_index];
                 return *this; }
             /**
@@ -431,12 +432,16 @@ __device__ DeviceEnvironmentDirectedGraph::OutEdgeFilter::OutEdgeFilter(const de
     }
 #endif
     unsigned int* pbm = detail::curve::DeviceCurve::getEnvironmentDirectedGraphPBM(graph_hash);
+#if !defined(SEATBELTS) || SEATBELTS
+    if (!pbm) return;
+#endif
     bucket_begin = pbm[vertexID];
     bucket_end = pbm[vertexID + 1];
 }
 __device__ DeviceEnvironmentDirectedGraph::InEdgeFilter::InEdgeFilter(const detail::curve::Curve::VariableHash _graph_hash, const id_t& vertexID)
     : bucket_begin(0)
     , bucket_end(0)
+    , graph_ipbm_edges(nullptr)
     , graph_hash(_graph_hash) {
 #if !defined(SEATBELTS) || SEATBELTS
     // Vertex "_id" always exists
@@ -447,6 +452,9 @@ __device__ DeviceEnvironmentDirectedGraph::InEdgeFilter::InEdgeFilter(const deta
     }
 #endif
     unsigned int* ipbm = detail::curve::DeviceCurve::getEnvironmentDirectedGraphIPBM(graph_hash);
+#if !defined(SEATBELTS) || SEATBELTS
+    if (!ipbm) return;
+#endif
     bucket_begin = ipbm[vertexID];
     bucket_end = ipbm[vertexID + 1];
     // Grab and store a copy of the PBM edgelist pointer
