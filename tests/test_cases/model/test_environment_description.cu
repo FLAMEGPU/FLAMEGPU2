@@ -431,7 +431,8 @@ TEST(EnvironmentDescriptionTest, ExceptionPropertyRange_uint64_t) {
 }
 #ifdef FLAMEGPU_USE_GLM
 TEST(EnvironmentDescriptionTest, Exception_array_glm) {
-    EnvironmentDescription ed;
+    ModelDescription model("test");
+    EnvironmentDescription ed = model.Environment();
     std::array<float, 15> b;
     ed.newProperty<float, 15>("a", b);
     {
