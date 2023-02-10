@@ -32,8 +32,6 @@ void FLAMEGPUException::setLocation(const char *_file, const unsigned int _line)
 
 
 std::string FLAMEGPUException::parseArgs(const char * format, va_list argp) {
-    if (!argp)
-        return format;
     std::string rtn = format;
     // Create a copy of the va_list, as vsnprintf can invalidate elements of argp and find the required buffer length
     va_list argpCopy;

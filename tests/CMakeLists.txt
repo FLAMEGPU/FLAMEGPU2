@@ -21,6 +21,7 @@ SET(TESTS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_SteadyClockTimer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_cxxname.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_rtc_multi_thread_device.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/exception/test_flamegpu_exception.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/exception/test_device_exception.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/exception/test_rtc_device_exception.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/io/test_io.cu
