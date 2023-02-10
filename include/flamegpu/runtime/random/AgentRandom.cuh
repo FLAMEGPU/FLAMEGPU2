@@ -78,7 +78,14 @@ __forceinline__ __device__ float AgentRandom::uniform() const {
 }
 template<>
 __forceinline__ __device__ double AgentRandom::uniform() const {
-    return curand_uniform_double(d_random_state);
+    // curand naturally generates the range (0, 1], we want [0, 1)
+    // Conversion of High-Period Random Numbers to Floating Point - Jurgen A Doornik
+    // Based on: https://www.doornik.com/research/randomdouble.pdf
+    const uint32_t iRan1 = curand(d_random_state);
+    const uint32_t iRan2 = curand(d_random_state);
+    constexpr double M_RAN_INVM32 = 2.32830643653869628906e-010;
+    constexpr double M_RAN_INVM52 = 2.22044604925031308085e-016;
+    return (static_cast<int>(iRan1)*M_RAN_INVM32 + (0.5 + M_RAN_INVM52 / 2) + static_cast<int>((iRan2) & 0x000FFFFF) * M_RAN_INVM52);
 }
 
 /**
