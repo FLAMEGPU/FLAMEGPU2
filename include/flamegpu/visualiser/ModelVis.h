@@ -181,6 +181,23 @@ class ModelVis {
      */
     void setViewClips(const float &nearClip, const float &farClip);
     /**
+     * Sets whether the visualisation should use an orthographic (or perspective) projection
+     * This value defaults to false
+     *
+     * Orthographic projection can be toggled during the visualisation by pressing 'F9'
+     * Orthographic projection is used for 2D models, whereby depth should not affect scale
+     * @param isOrtho True if the visualisation should use an orthographic projection
+     */
+    void setOrthographic(const bool& isOrtho);
+    /**
+     * Sets initial zoom modifier for the orthographic projection
+     * This value defaults to 1.0
+     * This setting has no impact on perspective projection mode
+     * This value must be greater than 0.001, which is the maximum/closest zoom supported.
+     * @param zoomMod The initial zoom modifier
+     */
+    void setOrthographicZoomModifier(const float& zoomMod);
+    /**
 	 * Sets the Step count overlay as visible or not
 	 * This value defaults to true
 	 * @param showStep True if the count should be shown

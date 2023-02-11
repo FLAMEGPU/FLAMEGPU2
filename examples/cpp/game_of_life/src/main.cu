@@ -122,6 +122,8 @@ int main(int argc, const char ** argv) {
         visualisation.setInitialCameraLocation(SQRT_AGENT_COUNT / 2.0f, SQRT_AGENT_COUNT / 2.0f, 450.0f);
         visualisation.setInitialCameraTarget(SQRT_AGENT_COUNT / 2.0f, SQRT_AGENT_COUNT / 2.0f, 0.0f);
         visualisation.setCameraSpeed(0.001f * SQRT_AGENT_COUNT);
+        visualisation.setOrthographic(true);
+        visualisation.setOrthographicZoomModifier(1.409f);
         visualisation.setViewClips(0.01f, 2500);
         visualisation.setClearColor(0.6f, 0.6f, 0.6f);
         auto agt = visualisation.addAgent("cell");

@@ -197,6 +197,13 @@ void ModelVis::setViewClips(const float &nearClip, const float &farClip) {
     data->modelCfg.nearFarClip[1] = farClip;
 }
 
+void ModelVis::setOrthographic(const bool& isOrtho) {
+    data->modelCfg.isOrtho = isOrtho;
+}
+void ModelVis::setOrthographicZoomModifier(const float& zoomMod) {
+    data->modelCfg.orthoZoom = zoomMod;
+}
+
 void ModelVis::setStepVisible(const bool& showStep) {
     data->modelCfg.stepVisible = showStep;
 }

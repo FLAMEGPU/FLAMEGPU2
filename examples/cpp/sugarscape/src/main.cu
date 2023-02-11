@@ -369,7 +369,10 @@ int main(int argc, const char ** argv) {
         visualisation.setInitialCameraLocation(GRID_WIDTH / 2.0f, GRID_HEIGHT / 2.0f, 225.0f);
         visualisation.setInitialCameraTarget(GRID_WIDTH / 2.0f, GRID_HEIGHT /2.0f, 0.0f);
         visualisation.setCameraSpeed(0.001f * GRID_WIDTH);
+        visualisation.setOrthographic(true);
+        visualisation.setOrthographicZoomModifier(0.365f);
         visualisation.setViewClips(0.1f, 5000);
+
         auto agt = visualisation.addAgent("agent");
         // Position vars are named x, y, z; so they are used by default
         agt.setModel(flamegpu::visualiser::Stock::Models::CUBE);  // 5 unwanted faces!
