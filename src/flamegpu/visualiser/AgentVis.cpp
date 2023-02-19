@@ -43,8 +43,13 @@ void AgentVisData::initBindings(std::unique_ptr<FLAMEGPU_Visualisation>& vis) {
         // For each agent state, give the visualiser
         // vis config
         AgentStateConfig& vc = defaultConfig;  // Default to parent if child hasn't been configured
-        if (states.find(state) != states.end()) {
-            vc = states.at(state)->config;
+        const auto state_it = states.find(state);
+        if (state_it != states.end()) {
+            if (!state_it->second->visible) {
+                // Skip agent states marked hidden
+                continue;
+            }
+            vc = state_it->second->config;
         }
         vis->addAgentState(agentData->name, state, vc, core_tex_buffers, vc.tex_buffers);
     }
@@ -52,6 +57,13 @@ void AgentVisData::initBindings(std::unique_ptr<FLAMEGPU_Visualisation>& vis) {
 bool AgentVisData::requestBufferResizes(std::unique_ptr<FLAMEGPU_Visualisation>& vis, bool force) {
     unsigned int agents_requested = 0;
     for (auto& state : agentData->states) {
+        const auto state_it = states.find(state);
+        if (state_it != states.end()) {
+            if (!state_it->second->visible) {
+                // Skip agent states marked hidden
+                continue;
+            }
+        }
         auto& state_map = agent.state_map.at(state);
         vis->requestBufferResizes(agentData->name, state, state_map->getSize(), force);
         agents_requested += state_map->getSize();
@@ -61,8 +73,13 @@ bool AgentVisData::requestBufferResizes(std::unique_ptr<FLAMEGPU_Visualisation>&
 void AgentVisData::updateBuffers(std::unique_ptr<FLAMEGPU_Visualisation>& vis) {
     for (auto& state : agentData->states) {
         AgentStateConfig& state_config = defaultConfig;  // Default to parent if child hasn't been configured
-        if (states.find(state) != states.end()) {
-            state_config = states.at(state)->config;
+        const auto state_it = states.find(state);
+        if (state_it != states.end()) {
+            if (!state_it->second->visible) {
+                // Skip agent states marked hidden
+                continue;
+            }
+            state_config = state_it->second->config;
         }
         auto& state_data_map = agent.state_map.at(state);
         // Update buffer pointers inside the map

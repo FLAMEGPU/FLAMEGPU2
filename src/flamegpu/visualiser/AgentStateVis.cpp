@@ -87,6 +87,9 @@ void AgentStateVis::clearColor() {
     data->config.tex_buffers.erase(TexBufferConfig::Color);
     data->config.color_shader_src = "";
 }
+void AgentStateVis::setVisible(bool isVisible) {
+    data->visible = isVisible;
+}
 
 }  // namespace visualiser
 }  // namespace flamegpu
