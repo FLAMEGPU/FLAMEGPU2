@@ -39,6 +39,10 @@ struct AgentStateVisData {
      * Holds a boolean for each option (or group of options), to decide whether they should be updated if the default is changed
      */
     AgentStateConfigFlags configFlags;
+    /**
+     * If false, rendering of the agent state will be skipped
+     */
+    bool visible = true;
 };
 
 /**
@@ -99,6 +103,12 @@ class AgentStateVis {
      * largest
      */
     void setModelScale(float maxLen);
+    /**
+     * Set whether this agent state is visible
+     * Defaults to true
+     * @param isVisible If false the agent state will not be included in the visualisation
+     */
+    void setVisible(bool isVisible);
     /**
      * Set a custom colour function
      */
