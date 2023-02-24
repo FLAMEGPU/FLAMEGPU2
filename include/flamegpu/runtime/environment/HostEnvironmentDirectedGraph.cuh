@@ -239,6 +239,18 @@ class HostEnvironmentDirectedGraph {
      * @note You may need to manually call markForRebuild() if you update edge source/dest pairs, to ensure the CSR/CSC are rebuilt
      */
     std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> getCUDABuffers();
+    /**
+     * Force rebuild the internal graph structure
+     * This causes edges to be sorted
+     */
+    void rebuild() {
+        if (const auto dg = directed_graph.lock()) {
+            dg->mark_for_rebuild();
+            dg->syncDevice_async(scatter, streamid, stream);
+        } else {
+            THROW exception::ExpiredWeakPtr("Graph nolonger exists, weak pointer could not be locked, in HostEnvironmentDirectedGraph::rebuild()\n");
+        }
+    }
 #endif
 };
 
