@@ -245,8 +245,8 @@ class HostEnvironmentDirectedGraph {
      */
     void rebuild() {
         if (const auto dg = directed_graph.lock()) {
-            dg->mark_for_rebuild();
-            dg->syncDevice_async(scatter, streamid, stream);
+            dg->markForRebuild();
+            dg->syncDevice_async(scatter, streamID, stream);
         } else {
             THROW exception::ExpiredWeakPtr("Graph nolonger exists, weak pointer could not be locked, in HostEnvironmentDirectedGraph::rebuild()\n");
         }
