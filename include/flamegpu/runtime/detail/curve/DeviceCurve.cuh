@@ -115,8 +115,8 @@ class DeviceCurve {
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
              sm()->curve_type_size[idx] = d_curve_table->type_size[idx];
              sm()->curve_elements[idx] = d_curve_table->elements[idx];
-             sm()->curve_count[idx] = d_curve_table->count[idx];
 #endif
+             sm()->curve_count[idx] = d_curve_table->count[idx];
          }
     }
     ////
