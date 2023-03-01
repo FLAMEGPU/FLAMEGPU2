@@ -942,7 +942,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getDirectedGraphPBMImpl << "            }\n";
             } else { ++ct; }
         }
-        getDirectedGraphPBMImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getDirectedGraphPBMImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getDirectedGraphPBMImpl << "            DTHROW(\"Directed graph PBM was not found during getEnvironmentDirectedGraphPBM().\\n\");\n";
         getDirectedGraphPBMImpl << "#endif\n";
         getDirectedGraphPBMImpl << "            return {};\n";
@@ -960,7 +960,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getDirectedGraphIPBMImpl << "            }\n";
             } else { ++ct; }
         }
-        getDirectedGraphIPBMImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getDirectedGraphIPBMImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getDirectedGraphIPBMImpl << "            DTHROW(\"Directed graph IPBM was not found during getEnvironmentDirectedGraphIPBM().\\n\");\n";
         getDirectedGraphIPBMImpl << "#endif\n";
         getDirectedGraphIPBMImpl << "            return {};\n";
@@ -978,7 +978,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getDirectedGraphIPBMEdgesImpl << "            }\n";
             } else { ++ct; }
         }
-        getDirectedGraphIPBMEdgesImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getDirectedGraphIPBMEdgesImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getDirectedGraphIPBMEdgesImpl << "            DTHROW(\"Directed graph IPBM edge list was not found during getEnvironmentDirectedGraphIPBMEdges().\\n\");\n";
         getDirectedGraphIPBMEdgesImpl << "#endif\n";
         getDirectedGraphIPBMEdgesImpl << "            return {};\n";
@@ -992,7 +992,7 @@ void CurveRTCHost::initHeaderGetters() {
             RTCVariableProperties props = element.second;
             if (props.read) {
                 getGraphVertexPropertyImpl << "            if (strings_equal(name, \"" << element.first.second << "\") && graphHash == " << Curve::variableRuntimeHash(element.first.first) << ") {\n";
-                getGraphVertexPropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                getGraphVertexPropertyImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
                 getGraphVertexPropertyImpl << "                if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
                 getGraphVertexPropertyImpl << "                    DTHROW(\"Directed graph vertex property '%s' type mismatch during getProperty().\\n\", name);\n";
                 getGraphVertexPropertyImpl << "                    return {};\n";
@@ -1005,7 +1005,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getGraphVertexPropertyImpl << "            }\n";
             } else { ++ct; }
         }
-        getGraphVertexPropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getGraphVertexPropertyImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getGraphVertexPropertyImpl << "            DTHROW(\"Directed graph vertex property '%s' was not found during getProperty().\\n\", name);\n";
         getGraphVertexPropertyImpl << "#endif\n";
         getGraphVertexPropertyImpl << "            return {};\n";
@@ -1019,7 +1019,7 @@ void CurveRTCHost::initHeaderGetters() {
             RTCVariableProperties props = element.second;
             if (props.read) {
                 getGraphEdgePropertyImpl << "            if (strings_equal(name, \"" << element.first.second << "\") && graphHash == " << Curve::variableRuntimeHash(element.first.first) << ") {\n";
-                getGraphEdgePropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                getGraphEdgePropertyImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
                 getGraphEdgePropertyImpl << "                if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
                 getGraphEdgePropertyImpl << "                    DTHROW(\"Directed graph edge property '%s' type mismatch during getProperty().\\n\", name);\n";
                 getGraphEdgePropertyImpl << "                    return {};\n";
@@ -1032,7 +1032,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getGraphEdgePropertyImpl << "            }\n";
             } else { ++ct; }
         }
-        getGraphEdgePropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getGraphEdgePropertyImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getGraphEdgePropertyImpl << "            DTHROW(\"Directed graph edge property '%s' was not found during getProperty().\\n\", name);\n";
         getGraphEdgePropertyImpl << "#endif\n";
         getGraphEdgePropertyImpl << "            return {};\n";
@@ -1164,7 +1164,7 @@ void CurveRTCHost::initHeaderGetters() {
             RTCVariableProperties props = element.second;
             if (props.read && props.elements > 1) {
                 getGraphVertexArrayPropertyImpl << "          if (strings_equal(name, \"" << element.first.second << "\") && graphHash == " << Curve::variableRuntimeHash(element.first.first) << ") {\n";
-                getGraphVertexArrayPropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                getGraphVertexArrayPropertyImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
                 getGraphVertexArrayPropertyImpl << "              const unsigned int t_index = type_decode<T>::len_t * array_index + type_decode<T>::len_t;\n";
                 getGraphVertexArrayPropertyImpl << "              if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
                 getGraphVertexArrayPropertyImpl << "                  DTHROW(\"Directed graph vertex array property '%s' type mismatch during getProperty().\\n\", name);\n";
@@ -1181,7 +1181,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getGraphVertexArrayPropertyImpl << "           };\n";
             } else { ++ct; }
         }
-        getGraphVertexArrayPropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getGraphVertexArrayPropertyImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getGraphVertexArrayPropertyImpl << "           DTHROW(\"Directed graph vertex array property '%s' was not found during getProperty().\\n\", name);\n";
         getGraphVertexArrayPropertyImpl << "#endif\n";
         getGraphVertexArrayPropertyImpl << "           return {};\n";
@@ -1197,7 +1197,7 @@ void CurveRTCHost::initHeaderGetters() {
             RTCVariableProperties props = element.second;
             if (props.read && props.elements > 1) {
                 getGraphEdgeArrayPropertyImpl << "          if (strings_equal(name, \"" << element.first.second << "\") && graphHash == " << Curve::variableRuntimeHash(element.first.first) << ") {\n";
-                getGraphEdgeArrayPropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+                getGraphEdgeArrayPropertyImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
                 getGraphEdgeArrayPropertyImpl << "              const unsigned int t_index = type_decode<T>::len_t * array_index + type_decode<T>::len_t;\n";
                 getGraphEdgeArrayPropertyImpl << "              if(sizeof(type_decode<T>::type_t) != " << element.second.type_size << ") {\n";
                 getGraphEdgeArrayPropertyImpl << "                  DTHROW(\"Directed graph edge array property '%s' type mismatch during getProperty().\\n\", name);\n";
@@ -1214,7 +1214,7 @@ void CurveRTCHost::initHeaderGetters() {
                 getGraphEdgeArrayPropertyImpl << "           };\n";
             } else { ++ct; }
         }
-        getGraphEdgeArrayPropertyImpl << "#if !defined(SEATBELTS) || SEATBELTS\n";
+        getGraphEdgeArrayPropertyImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getGraphEdgeArrayPropertyImpl << "           DTHROW(\"Directed graph edge array property '%s' was not found during getProperty().\\n\", name);\n";
         getGraphEdgeArrayPropertyImpl << "#endif\n";
         getGraphEdgeArrayPropertyImpl << "           return {};\n";

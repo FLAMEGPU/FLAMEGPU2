@@ -423,7 +423,7 @@ __device__ DeviceEnvironmentDirectedGraph::OutEdgeFilter::OutEdgeFilter(const de
     : bucket_begin(0)
     , bucket_end(0)
     , graph_hash(_graph_hash) {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Vertex "_id" always exists
     const unsigned int VERTEX_COUNT = detail::curve::DeviceCurve::getVariableCount("_id", graph_hash ^ detail::curve::Curve::variableHash("_environment_directed_graph_vertex"));
     if (vertexID >= VERTEX_COUNT) {
@@ -432,7 +432,7 @@ __device__ DeviceEnvironmentDirectedGraph::OutEdgeFilter::OutEdgeFilter(const de
     }
 #endif
     unsigned int* pbm = detail::curve::DeviceCurve::getEnvironmentDirectedGraphPBM(graph_hash);
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (!pbm) return;
 #endif
     bucket_begin = pbm[vertexID];
@@ -443,7 +443,7 @@ __device__ DeviceEnvironmentDirectedGraph::InEdgeFilter::InEdgeFilter(const deta
     , bucket_end(0)
     , graph_ipbm_edges(nullptr)
     , graph_hash(_graph_hash) {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Vertex "_id" always exists
     const unsigned int VERTEX_COUNT = detail::curve::DeviceCurve::getVariableCount("_id", graph_hash ^ detail::curve::Curve::variableHash("_environment_directed_graph_vertex"));
     if (vertexID >= VERTEX_COUNT) {
@@ -452,7 +452,7 @@ __device__ DeviceEnvironmentDirectedGraph::InEdgeFilter::InEdgeFilter(const deta
     }
 #endif
     unsigned int* ipbm = detail::curve::DeviceCurve::getEnvironmentDirectedGraphIPBM(graph_hash);
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (!ipbm) return;
 #endif
     bucket_begin = ipbm[vertexID];
@@ -463,7 +463,7 @@ __device__ DeviceEnvironmentDirectedGraph::InEdgeFilter::InEdgeFilter(const deta
 
 template<typename T, unsigned int N>
 __device__ T DeviceEnvironmentDirectedGraph::OutEdgeFilter::Edge::getProperty(const char(&property_name)[N]) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (edge_index >= _parent.bucket_end) {
         DTHROW("Edge index exceeds bin length, unable to get property '%s'.\n", property_name);
         return {};
@@ -475,7 +475,7 @@ __device__ T DeviceEnvironmentDirectedGraph::OutEdgeFilter::Edge::getProperty(co
 }
 template<typename T, flamegpu::size_type N, unsigned int M> __device__
 T DeviceEnvironmentDirectedGraph::OutEdgeFilter::Edge::getProperty(const char(&property_name)[M], const unsigned int& element_index) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (edge_index >= _parent.bucket_end) {
         DTHROW("Edge index exceeds bin length, unable to get property '%s'.\n", property_name);
         return {};
@@ -487,7 +487,7 @@ T DeviceEnvironmentDirectedGraph::OutEdgeFilter::Edge::getProperty(const char(&p
 }
 template<typename T, unsigned int N>
 __device__ T DeviceEnvironmentDirectedGraph::InEdgeFilter::Edge::getProperty(const char(&property_name)[N]) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     const unsigned int EDGE_COUNT = detail::curve::DeviceCurve::getVariableCount("_source_dest", _parent.graph_hash ^ detail::curve::Curve::variableHash("_environment_directed_graph_edge"));
     if (edge_index >= EDGE_COUNT) {
         DTHROW("Edge index exceeds edge count, unable to get property '%s'.\n", property_name);
@@ -500,7 +500,7 @@ __device__ T DeviceEnvironmentDirectedGraph::InEdgeFilter::Edge::getProperty(con
 }
 template<typename T, flamegpu::size_type N, unsigned int M> __device__
 T DeviceEnvironmentDirectedGraph::InEdgeFilter::Edge::getProperty(const char(&property_name)[M], const unsigned int& element_index) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     const unsigned int EDGE_COUNT = detail::curve::DeviceCurve::getVariableCount("_source_dest", _parent.graph_hash ^ detail::curve::Curve::variableHash("_environment_directed_graph_edge"));
     if (edge_index >= EDGE_COUNT) {
         DTHROW("Edge index exceeds edge count, unable to get property '%s'.\n", property_name);
@@ -518,7 +518,7 @@ __device__ __forceinline__ id_t DeviceEnvironmentDirectedGraph::InEdgeFilter::Ed
     return getProperty<id_t, 2>("_source_dest", 1);
 }
 __device__ __forceinline__ id_t DeviceEnvironmentDirectedGraph::getVertexID(const unsigned int vertex_index) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     const unsigned int VERTEX_COUNT = detail::curve::DeviceCurve::getVariableCount("_id", graph_hash ^ detail::curve::Curve::variableHash("_environment_directed_graph_vertex"));
     if (vertex_index >= VERTEX_COUNT) {
         DTHROW("Vertex index (%u) exceeds vertex count (%u), unable to get vertex ID.\n", vertex_index, VERTEX_COUNT);
@@ -529,7 +529,7 @@ __device__ __forceinline__ id_t DeviceEnvironmentDirectedGraph::getVertexID(cons
 }
 template<typename T, unsigned int M>
 __device__ __forceinline__ T DeviceEnvironmentDirectedGraph::getVertexProperty(const char(&property_name)[M], const unsigned int vertex_index) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     const unsigned int VERTEX_COUNT = detail::curve::DeviceCurve::getVariableCount(property_name, graph_hash ^ detail::curve::Curve::variableHash("_environment_directed_graph_vertex"));
     if (vertex_index >= VERTEX_COUNT) {
         DTHROW("Vertex index (%u) exceeds vertex count (%u), unable to get property '%s'.\n", vertex_index, VERTEX_COUNT, property_name);
@@ -540,7 +540,7 @@ __device__ __forceinline__ T DeviceEnvironmentDirectedGraph::getVertexProperty(c
 }
 template<typename T, flamegpu::size_type N, unsigned int M>
 __device__ __forceinline__ T DeviceEnvironmentDirectedGraph::getVertexProperty(const char(&property_name)[M], const unsigned int vertex_index, const unsigned int element_index) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     const unsigned int VERTEX_COUNT = detail::curve::DeviceCurve::getVariableCount(property_name, graph_hash ^ detail::curve::Curve::variableHash("_environment_directed_graph_vertex"));
     if (vertex_index >= VERTEX_COUNT) {
         DTHROW("Vertex index (%u) exceeds vertex count (%u), unable to get property '%s'.\n", vertex_index, VERTEX_COUNT, property_name);
@@ -551,7 +551,7 @@ __device__ __forceinline__ T DeviceEnvironmentDirectedGraph::getVertexProperty(c
 }
 
 __device__ __forceinline__ id_t DeviceEnvironmentDirectedGraph::getEdgeSource(const unsigned int edge_index) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     const unsigned int EDGE_COUNT = detail::curve::DeviceCurve::getVariableCount("_source_dest", graph_hash ^ detail::curve::Curve::variableHash("_environment_directed_graph_edge"));
     if (edge_index >= EDGE_COUNT) {
         DTHROW("Edge index (%u) exceeds edge count (%u), unable to get edge source vertex.\n", edge_index, EDGE_COUNT);
@@ -561,7 +561,7 @@ __device__ __forceinline__ id_t DeviceEnvironmentDirectedGraph::getEdgeSource(co
     return getEdgeProperty<id_t, 2>("_source_dest", edge_index, 1);
 }
 __device__ __forceinline__ id_t DeviceEnvironmentDirectedGraph::getEdgeDestination(const unsigned int edge_index) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     const unsigned int EDGE_COUNT = detail::curve::DeviceCurve::getVariableCount("_source_dest", graph_hash ^ detail::curve::Curve::variableHash("_environment_directed_graph_edge"));
     if (edge_index >= EDGE_COUNT) {
         DTHROW("Edge index (%u) exceeds edge count (%u), unable to get edge destination vertex.\n", edge_index, EDGE_COUNT);
@@ -572,7 +572,7 @@ __device__ __forceinline__ id_t DeviceEnvironmentDirectedGraph::getEdgeDestinati
 }
 template<typename T, unsigned int M>
 __device__ __forceinline__ T DeviceEnvironmentDirectedGraph::getEdgeProperty(const char(&property_name)[M], const unsigned int edge_index) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     const unsigned int EDGE_COUNT = detail::curve::DeviceCurve::getVariableCount("_source_dest", graph_hash ^ detail::curve::Curve::variableHash("_environment_directed_graph_edge"));
     if (edge_index >= EDGE_COUNT) {
         DTHROW("Edge index (%u) exceeds edge count (%u), unable to get property '%s'.\n", edge_index, EDGE_COUNT, property_name);
@@ -583,7 +583,7 @@ __device__ __forceinline__ T DeviceEnvironmentDirectedGraph::getEdgeProperty(con
 }
 template<typename T, flamegpu::size_type N, unsigned int M>
 __device__ __forceinline__ T DeviceEnvironmentDirectedGraph::getEdgeProperty(const char(&property_name)[M], const unsigned int edge_index, const unsigned int element_index) const {
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     const unsigned int EDGE_COUNT = detail::curve::DeviceCurve::getVariableCount("_source_dest", graph_hash ^ detail::curve::Curve::variableHash("_environment_directed_graph_edge"));
     if (edge_index >= EDGE_COUNT) {
         DTHROW("Edge index (%u) exceeds edge count (%u), unable to get property '%s'.\n", edge_index, EDGE_COUNT, property_name);

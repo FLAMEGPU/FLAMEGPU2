@@ -121,7 +121,7 @@ __device__ __forceinline__ ReadOnlyDeviceMacroProperty<T, I, J, K, W> ReadOnlyDe
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W, unsigned int N>
 __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W> DeviceEnvironment::getMacroProperty(const char(&name)[N]) const {
     char* d_ptr = detail::curve::DeviceCurve::getEnvironmentMacroProperty<T, I, J, K, W>(name);
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (!d_ptr) {
         return DeviceMacroProperty<T, I, J, K, W>(nullptr, nullptr);
     }
@@ -134,7 +134,7 @@ __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W> DeviceEnvironment:
 template<unsigned int M>
 __device__ __forceinline__ DeviceEnvironmentDirectedGraph ReadOnlyDeviceEnvironment::getDirectedGraph(const char(&name)[M]) const {
     const detail::curve::Curve::VariableHash graph_hash = detail::curve::Curve::variableHash(name);
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Seatbelts check that the graph exists, by looking for mandatory vertex _id property
     // Rather than it failing at property lookup time
     if (detail::curve::DeviceCurve::getVariableIndex((graph_hash ^ detail::curve::Curve::variableHash("_environment_directed_graph_vertex")) + detail::curve::Curve::variableHash("_id"))
@@ -149,7 +149,7 @@ __device__ __forceinline__ DeviceEnvironmentDirectedGraph ReadOnlyDeviceEnvironm
 template<unsigned int M>
 __device__ __forceinline__ DeviceEnvironmentDirectedGraph ReadOnlyDeviceEnvironment::getDirectedGraph(const char(&name)[M]) const {
     const detail::curve::Curve::VariableHash graph_hash = detail::curve::Curve::variableHash(name);
-#if !defined(SEATBELTS) || SEATBELTS
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Seatbelts check that the graph exists, by requesting it's hash
     if (detail::curve::DeviceCurve::getGraphHash(name) == detail::curve::DeviceCurve::UNKNOWN_GRAPH) {
         DTHROW("Environment directed graph with name '%s' was not found\n", name);
