@@ -40,7 +40,7 @@ void ModelVisData::updateBuffers(const unsigned int& sc) {
         }
         // Block the sim when we first get agents, until vis has resized buffers, incase vis is being slow to init
         if (has_agents && (sc == 0 || sc == UINT_MAX)) {
-            while (!visualiser->isReady()) {
+            while (!visualiser->buffersReady()) {
                 // Do nothing, just spin until ready
                 std::this_thread::yield();
             }
@@ -55,6 +55,13 @@ void ModelVisData::updateBuffers(const unsigned int& sc) {
             a.second->updateBuffers(visualiser);
         }
         visualiser->releaseMutex();
+        // Block the sim again, until vis is fully ready
+        if (has_agents && (sc == 0 || sc == UINT_MAX)) {
+            while (!visualiser->isReady()) {
+                // Do nothing, just spin until ready
+                std::this_thread::yield();
+            }
+        }
     }
 }
 void ModelVisData::updateRandomSeed() {
