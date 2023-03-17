@@ -49,6 +49,36 @@ __device__ __forceinline__ flamegpu::AGENT_STATUS funcName ## _impl::operator()(
 #endif
 
 /**
+ * Separate Declaration (DECL), Definition (DEF) version
+ * @note This version prevents inlining, hence should be used sparingly as it may impact performance
+ */
+#ifndef __CUDACC_RTC__
+#define FLAMEGPU_AGENT_FUNCTION_DECL(funcName, message_in, message_out)\
+struct funcName ## _impl {\
+    __device__ flamegpu::AGENT_STATUS operator()(flamegpu::DeviceAPI<message_in, message_out> *FLAMEGPU) const;\
+    static constexpr flamegpu::AgentFunctionWrapper *fnPtr() { return &flamegpu::agent_function_wrapper<funcName ## _impl, message_in, message_out>; }\
+    static std::type_index inType() { return std::type_index(typeid(message_in)); }\
+    static std::type_index outType() { return std::type_index(typeid(message_out)); }\
+};\
+extern funcName ## _impl funcName;
+
+#define FLAMEGPU_AGENT_FUNCTION_DEF(funcName, message_in, message_out)\
+funcName ## _impl funcName;\
+__device__ flamegpu::AGENT_STATUS funcName ## _impl::operator()(flamegpu::DeviceAPI<message_in, message_out> *FLAMEGPU) const
+#else
+#define FLAMEGPU_AGENT_FUNCTION_DECL(funcName, message_in, message_out)\
+struct funcName ## _impl {\
+    __device__ flamegpu::AGENT_STATUS operator()(flamegpu::DeviceAPI<message_in, message_out> *FLAMEGPU) const;\
+    static constexpr flamegpu::AgentFunctionWrapper *fnPtr() { return &flamegpu::agent_function_wrapper<funcName ## _impl, message_in, message_out>; }\
+}; \
+extern funcName ## _impl funcName;
+
+#define FLAMEGPU_AGENT_FUNCTION_DEF(funcName, message_in, message_out)\
+funcName ## _impl funcName; \
+__device__ flamegpu::AGENT_STATUS funcName ## _impl::operator()(flamegpu::DeviceAPI<message_in, message_out> *FLAMEGPU) const
+#endif
+
+/**
  * Macro so users can define their own device functions
  */
 #define FLAMEGPU_DEVICE_FUNCTION __device__ __forceinline__
