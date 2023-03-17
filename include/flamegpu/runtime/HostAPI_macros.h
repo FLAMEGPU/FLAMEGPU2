@@ -45,10 +45,15 @@ typedef FLAMEGPU_HOST_FUNCTION_POINTER FLAMEGPU_EXIT_FUNCTION_POINTER;
  * flamegpu::FLAMEGPU_HOST_FUNCTION_POINTER SomeHostFunction = SomeHostFunction_impl;
  * @endcode
  */
-#define FLAMEGPU_HOST_FUNCTION(funcName) \
+#define FLAMEGPU_HOST_FUNCTION_DECL(funcName) \
+extern flamegpu::FLAMEGPU_HOST_FUNCTION_POINTER funcName;
+
+#define FLAMEGPU_HOST_FUNCTION_DEF(funcName) \
 void funcName ## _impl(flamegpu::HostAPI* FLAMEGPU); \
-flamegpu::FLAMEGPU_HOST_FUNCTION_POINTER funcName = funcName ## _impl;\
+flamegpu::FLAMEGPU_HOST_FUNCTION_POINTER funcName = funcName ## _impl; \
 void funcName ## _impl(flamegpu::HostAPI* FLAMEGPU)
+
+#define FLAMEGPU_HOST_FUNCTION(funcName) FLAMEGPU_HOST_FUNCTION_DEF(funcName)
 
 /**
  * Return type for FLAMEGPU conditions
