@@ -63,6 +63,10 @@ struct ModelVisData {
      */
     bool env_registered = false;
     /**
+     * Marked true when first agent data has been passed to vis
+     */
+    bool has_first_agents = true;
+    /**
      * Updates all agent renders from corresponding
      * @param sc Step count, the step count value shown in visualisation HUD
      */
