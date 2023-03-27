@@ -902,5 +902,53 @@ TEST(TestMessage_Bucket, DISABLED_ArrayVariable_glm) { }
 TEST(TestRTCMessage_Bucket, DISABLED_ArrayVariable_glm) { }
 #endif
 
+FLAMEGPU_AGENT_FUNCTION(ArrayOut_OddStep, MessageNone, MessageBucket) {
+    if (FLAMEGPU->getStepCounter()%2 == 0) {
+        const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
+        FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 0, index * 3);
+        FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 1, index * 7);
+        FLAMEGPU->message_out.setVariable<unsigned int, 3>("v", 2, index * 11);
+        FLAMEGPU->message_out.setKey(index);
+    }
+    return ALIVE;
+}
+FLAMEGPU_HOST_FUNCTION(create_agents_step_zero) {
+    if (FLAMEGPU->getStepCounter() == 1) {
+        auto agent = FLAMEGPU->agent(AGENT_NAME);
+        for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+            auto ai = agent.newAgent();
+            ai.setVariable<unsigned int>("index", i);
+        }
+    }
+}
+TEST(TestMessage_Bucket, buffer_not_init) {
+    // This tests that a bug is fixed
+    // The bug occurred when a message list, yet to have messages output to it was used as a message input
+    // This requires no agents at the first message output function during the second iteration
+    // It does 4 iterations to ensure PBM is reset too.
+    ModelDescription m(MODEL_NAME);
+    MessageBucket::Description message = m.newMessage<MessageBucket>(MESSAGE_NAME);
+    message.setBounds(0, AGENT_COUNT);
+    message.newVariable<unsigned int, 3>("v");
+    AgentDescription a = m.newAgent(AGENT_NAME);
+    a.newVariable<unsigned int>("index");
+    a.newVariable<unsigned int, 3>("message_read", { UINT_MAX, UINT_MAX, UINT_MAX });
+    AgentFunctionDescription fo = a.newFunction(OUT_FUNCTION_NAME, ArrayOut_OddStep);
+    fo.setMessageOutput(message);
+    fo.setMessageOutputOptional(true);
+    AgentFunctionDescription fi = a.newFunction(IN_FUNCTION_NAME, ArrayIn);
+    fi.setMessageInput(message);
+    LayerDescription lo = m.newLayer(OUT_LAYER_NAME);
+    lo.addAgentFunction(fo);
+    LayerDescription la = m.newLayer();
+    la.addHostFunction(create_agents_step_zero);
+    LayerDescription li = m.newLayer(IN_LAYER_NAME);
+    li.addAgentFunction(fi);
+    // Set pop in model
+    CUDASimulation c(m);
+    c.SimulationConfig().steps = 4;
+    EXPECT_NO_THROW(c.simulate());
+}
+
 }  // namespace test_message_bucket
 }  // namespace flamegpu

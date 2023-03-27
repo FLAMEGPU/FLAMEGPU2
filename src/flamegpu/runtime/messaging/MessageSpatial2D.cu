@@ -107,6 +107,11 @@ void MessageSpatial2D::CUDAModelHandler::freeMetaDataDevicePtr() {
 void MessageSpatial2D::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
     flamegpu::util::nvtx::Range range{"MessageSpatial2D::CUDAModelHandler::buildIndex"};
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
+    if (!MESSAGE_COUNT) {
+        gpuErrchk(cudaMemsetAsync(hd_data.PBM, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
+        gpuErrchk(cudaStreamSynchronize(stream));
+        return;
+    }
     resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count
     {  // Build atomic histogram
         gpuErrchk(cudaMemsetAsync(d_histogram, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
