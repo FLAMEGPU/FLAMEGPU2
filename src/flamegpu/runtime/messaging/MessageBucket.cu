@@ -101,6 +101,11 @@ void MessageBucket::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, u
     flamegpu::util::nvtx::Range range{"MessageBucket::CUDAModelHandler::buildIndex"};
     // Cuda operations all occur within the stream, so only a final sync is required.s
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
+    if (!MESSAGE_COUNT) {
+        gpuErrchk(cudaMemsetAsync(hd_data.PBM, 0x00000000, (bucketCount + 1) * sizeof(unsigned int), stream));
+        gpuErrchk(cudaStreamSynchronize(stream));
+        return;
+    }
     resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count
     {  // Build atomic histogram
         gpuErrchk(cudaMemsetAsync(d_histogram, 0x00000000, (bucketCount + 1) * sizeof(unsigned int), stream));

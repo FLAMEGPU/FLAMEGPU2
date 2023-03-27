@@ -979,5 +979,60 @@ TEST(Spatial3DMessageTest, Wrapped_OutOfBounds) {
 #else
 TEST(Spatial3DMessageTest, DISABLED_Wrapped_OutOfBounds) { }
 #endif
+FLAMEGPU_AGENT_FUNCTION(out_mandatory3D_OddStep, MessageNone, MessageSpatial3D) {
+    if (FLAMEGPU->getStepCounter() % 2 == 0) {
+        FLAMEGPU->message_out.setLocation(
+            FLAMEGPU->getVariable<float>("x"),
+            FLAMEGPU->getVariable<float>("y"),
+            FLAMEGPU->getVariable<float>("z"));
+    }
+    return ALIVE;
+}
+FLAMEGPU_HOST_FUNCTION(create_agents_step_zero) {
+    if (FLAMEGPU->getStepCounter() == 1) {
+        auto agent = FLAMEGPU->agent("agent");
+        std::mt19937_64 rng;
+        std::uniform_real_distribution<float> dist(0.0f, 5.0f);
+        for (unsigned int i = 0; i < 2049; ++i) {
+            auto instance = agent.newAgent();
+            float pos[3] = { dist(rng), dist(rng), dist(rng) };
+            instance.setVariable<float>("x", pos[0]);
+            instance.setVariable<float>("y", pos[1]);
+            instance.setVariable<float>("z", pos[2]);
+        }
+    }
+}
+TEST(Spatial3DMessageTest, buffer_not_init) {
+    // This tests that a bug is fixed
+    // The bug occurred when a message list, yet to have messages output to it was used as a message input
+    // This requires no agents at the first message output function during the second iteration
+    // It does 4 iterations to ensure PBM is reset too.
+    ModelDescription m("model");
+    MessageSpatial3D::Description message = m.newMessage<MessageSpatial3D>("location");
+    message.setMin(0, 0, 0);
+    message.setMax(5, 5, 5);
+    message.setRadius(1);
+    AgentDescription agent = m.newAgent("agent");
+    agent.newVariable<float>("x");
+    agent.newVariable<float>("y");
+    agent.newVariable<float>("z");
+    agent.newVariable<unsigned int>("count");  // Store the distance moved here, for validation
+    agent.newVariable<unsigned int>("badCount");  // Store how many messages are out of range
+    AgentFunctionDescription fo = agent.newFunction("out", out_mandatory3D_OddStep);
+    fo.setMessageOutput(message);
+    fo.setMessageOutputOptional(true);
+    AgentFunctionDescription fi = agent.newFunction("in", in3D);
+    fi.setMessageInput(message);
+    LayerDescription lo = m.newLayer();
+    lo.addAgentFunction(fo);
+    LayerDescription la = m.newLayer();
+    la.addHostFunction(create_agents_step_zero);
+    LayerDescription li = m.newLayer();
+    li.addAgentFunction(fi);
+    // Set pop in model
+    CUDASimulation c(m);
+    c.SimulationConfig().steps = 4;
+    EXPECT_NO_THROW(c.simulate());
+}
 }  // namespace test_message_spatial3d
 }  // namespace flamegpu

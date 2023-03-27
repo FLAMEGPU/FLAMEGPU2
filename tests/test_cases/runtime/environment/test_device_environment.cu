@@ -503,7 +503,7 @@ FLAMEGPU_AGENT_FUNCTION(get_array_glm, MessageNone, MessageNone) {
 TEST_F(DeviceEnvironmentTest, Get_array_glm) {
     // Setup agent fn
     ms->agent.newVariable<glm::vec3>("k");
-    AgentFunctionDescription& deviceFn = ms->agent.newFunction("device_function", get_array_glm);
+    AgentFunctionDescription deviceFn = ms->agent.newFunction("device_function", get_array_glm);
     LayerDescription devicefn_layer = ms->model.newLayer("devicefn_layer");
     devicefn_layer.addAgentFunction(deviceFn);
     // Setup environment
