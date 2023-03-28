@@ -1,5 +1,8 @@
 #ifndef INCLUDE_FLAMEGPU_SIMULATION_CUDASIMULATION_H_
 #define INCLUDE_FLAMEGPU_SIMULATION_CUDASIMULATION_H_
+
+#include <cuda.h>
+
 #include <atomic>
 #include <memory>
 #include <vector>
@@ -618,6 +621,16 @@ class CUDASimulation : public Simulation {
      * @param _model The agent model hierarchy to check
      */
     static bool detectPureRTC(const std::shared_ptr<const ModelData>& _model);
+
+#if __CUDACC_VER_MAJOR__ >= 12
+    /**
+     * The unique ID for the CUDA context used for stream creation for this instance. This is only available in CUDA 12+.
+     * This is used to ensure that streams can safely be destroyed in CUDA 12, even if the device has been reset.
+     * Cannot just use the CUcontext itself, as the handle is the same for the primary context after a reset, and the existing CUDA 11 check on the context being the active primary context no longer prevents issues in CUDA 12 for multi-gpu machines. 
+     * Cannot use cuStream querying methods, as it is UB to specify an invalid stream to these methods, resulting in segfaults
+     */
+    std::uint64_t cudaContextID;
+#endif  // __CUDACC_VER_MAJOR__ >= 12
 
  protected:
     /**

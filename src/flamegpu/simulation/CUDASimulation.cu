@@ -69,6 +69,9 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model)
     , singletons(nullptr)
     , singletonsInitialised(false)
     , rtcInitialised(false)
+#if __CUDACC_VER_MAJOR__ >= 12
+    , cudaContextID(std::numeric_limits<std::uint64_t>::max())
+#endif  // __CUDACC_VER_MAJOR__ >= 12
     , isPureRTC(detectPureRTC(model)) {
     initOffsetsAndMap();
     // Register the signal handler.
@@ -124,6 +127,9 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
     , singletons(nullptr)
     , singletonsInitialised(false)
     , rtcInitialised(false)
+#if __CUDACC_VER_MAJOR__ >= 12
+    , cudaContextID(std::numeric_limits<std::uint64_t>::max())
+#endif  // __CUDACC_VER_MAJOR__ >= 12
     , isPureRTC(master_model->isPureRTC) {
     initOffsetsAndMap();
     // Ensure submodel is valid
@@ -1488,6 +1494,11 @@ void CUDASimulation::applyConfig_derived() {
     // Call cudaFree to initialise the context early
     gpuErrchk(cudaFree(nullptr));
 
+    // Get the unique ID of the current cuda context, to prevent unsafe stream destruction post flamegpu::cleanup for CUDA 12+
+#if __CUDACC_VER_MAJOR__ >= 12
+    this->cudaContextID = flamegpu::detail::cuda::cuGetCurrentContextUniqueID();
+#endif  // __CUDACC_VER_MAJOR__ >= 12
+
     // Apply changes to submodels
     for (auto &sm : submodel_map) {
         // We're not actually going to use this value, but it might be useful there later
@@ -1908,11 +1919,17 @@ void CUDASimulation::destroyStreams() {
     }
     /*
     This method is called by ~CUDASimulation(), which may be after a device reset and / or CUDA shutdown (if static, or if GC'd by python implementation)
-    cudaStreamDestroy and cudaStreamQuery under linux with CUDA 11.8 (and potentialy others) would occasionally segfault after a reset, so it's error code could not be relied on to check if the cudaStream was valid for the current primary context or not.
-    Instead, we can use the cudaDriverAPI to check the primary context is correct / valid for the device, and if it is attempt to destory the stream. If it is not, we can assume the device has been reset or CUDA has been shutdown, so the stream has already been destroyed.
+    cudaStreamDestroy and cudaStreamQuery under linux with CUDA 11.8 (and potentialy others) would occasionally segfault after a reset, as passing invalid stream handles to various methods is UB, so these methods cannot be used to check for safe destruction.
+    The Driver API equivalents include the same UB.
+    Instead, we can use the CUDA driver API to check the primary context is correct / valid for the device, and if it is attempt to destory the stream, which works for CUDA 11.x.
+    CUDA 12.x however claims the ctx is active for the specified device, even after a reset. Getting the active context returns the same handle after a reset, so we cannot store and compare CUcontexts, but CUDA 12 does include a new method to get the unique ID for a context which we can store and check is a match.
     */
-    bool ctxIsActive = flamegpu::detail::cuda::cuDevicePrimaryContextIsActive(deviceInitialised);
-    if (ctxIsActive) {
+    bool safeToDestroySreams = flamegpu::detail::cuda::cuDevicePrimaryContextIsActive(deviceInitialised);
+    #if __CUDACC_VER_MAJOR__ >= 12
+        std::uint64_t currentContextID = flamegpu::detail::cuda::cuGetCurrentContextUniqueID();
+        safeToDestroySreams = safeToDestroySreams && currentContextID == this->cudaContextID;
+    #endif  // __CUDACC_VER_MAJOR__ >= 12
+    if (safeToDestroySreams) {
         // Destroy streams.
         for (auto stream : streams) {
             gpuErrchk(cudaStreamDestroy(stream));
