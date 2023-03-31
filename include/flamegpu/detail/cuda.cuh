@@ -8,6 +8,7 @@
  */
 #include <cuda_runtime.h>
 #include <cuda.h>
+#include <limits>
 #include "flamegpu/exception/FLAMEGPUException.h"
 
 namespace flamegpu {
@@ -99,6 +100,30 @@ inline bool cuDevicePrimaryContextIsActive(int ordinal) {
     // If we could not return the active state, return false.
     return false;
 }
+
+#if __CUDACC_VER_MAJOR__ >= 12
+/**
+ * use the CUDA 12+ driver api to get the unique id of the current CUDA context, with error checking.
+ * This method will silenlty consume any cuda errors, as it is expected to (potentially) be called during CUDA shutdown.
+ * @return the unique id for the CUDA context
+ */
+inline std::uint64_t cuGetCurrentContextUniqueID() {
+    static_assert(sizeof(unsigned long long int) == sizeof(std::uint64_t));  // NOLINT
+    CUresult cuErr = CUDA_SUCCESS;
+    // Get the handle to the current context
+    CUcontext ctx = NULL;
+    cuErr = cuCtxGetCurrent(&ctx);
+    if (cuErr == CUDA_SUCCESS) {
+        // Getand return the unique id
+        unsigned long long int ctxid = std::numeric_limits<std::uint64_t>::max();  // NOLINT
+        cuErr = cuCtxGetId(ctx, &ctxid);
+        if (cuErr == CUDA_SUCCESS) {
+            return static_cast<std::uint64_t>(ctxid);
+        }
+    }
+    return std::numeric_limits<std::uint64_t>::max();
+}
+#endif  // __CUDACC_VER_MAJOR__ >= 12
 
 }  // namespace cuda
 }  // namespace detail
