@@ -40,6 +40,13 @@ class HostRandom {
     template<typename T>
     inline T logNormal(T mean, T stddev) const;
     /**
+     * Returns a poisson distributed unsigned int according to the provided mean (default 1.0).
+     * @param mean The mean of the distribution
+     * @note Available as signed and unsigned: char, short, int, long long (default unsigned int)
+     */
+    template<typename T = unsigned int>
+    inline unsigned int poisson(double mean = 1.0f) const;
+    /**
      * Returns an integer uniformly distributed in the inclusive range [min, max]
      * or
      * Returns a floating point value uniformly distributed in the inclusive-exclusive range [min, max)
@@ -90,6 +97,13 @@ template<typename T>
 inline T HostRandom::uniform(const T min, const T max) const {
     static_assert(detail::StaticAssert::_Is_IntType<T>::value, "Invalid template argument for HostRandom::uniform(T lowerBound, T max)");
     std::uniform_int_distribution<T> dist(min, max);
+    return rng.getDistribution<T>(dist);
+}
+
+template<typename T>
+inline unsigned int HostRandom::poisson(const double mean) const {
+    static_assert(detail::StaticAssert::_Is_IntType<T>::value, "Invalid template argument for HostRandom::poisson(double mean)");
+    std::poisson_distribution<T> dist(mean);
     return rng.getDistribution<T>(dist);
 }
 
