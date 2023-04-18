@@ -86,6 +86,16 @@ option(FLAMEGPU_RTC_DISK_CACHE "Enable caching of RTC kernels to disk by default
 # Option to enable/disable logging of dynamic RTC files to disk
 option(FLAMEGPU_RTC_EXPORT_SOURCES "Export RTC source files to disk at runtime" OFF)
 
+# Option to enable / disable linting of the flamegpu target by default, so repos which consume this repository via add_subdir do not create the lint_flamegpu target or include it in all_lint by default.
+# Defaults to OFF unless this, or FLAMEGPU_ROOT is the top level project.
+# cmake_dependent option wouldn't cooperate.
+set(FLAMEGPU_ENABLE_LINT_FLAMEGPU_DEFAULT OFF)
+if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_LIST_DIR}" OR "${CMAKE_SOURCE_DIR}" STREQUAL "${FLAMEGPU_ROOT}")
+    set(FLAMEGPU_ENABLE_LINT_FLAMEGPU_DEFAULT ON)
+endif()
+option(FLAMEGPU_ENABLE_LINT_FLAMEGPU "Enable creation of the lint_flamegpu target" ${FLAMEGPU_ENABLE_LINT_FLAMEGPU_DEFAULT})
+unset(FLAMEGPU_ENABLE_LINT_FLAMEGPU_DEFAULT)
+
 # Option to make put glm on the include path
 option(FLAMEGPU_ENABLE_GLM "Experimental: Make GLM available to flamegpu2 projects on the include path" OFF)
 mark_as_advanced(FLAMEGPU_ENABLE_GLM)
@@ -588,13 +598,15 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
 
-# Flag the new linter target and the files to be linted. Ensure vis sources are linted even if vis is not enabled (mostly for CI)
-if (FLAMEGPU_VISUALISATION)
-    # If vis is enabled, just use ALL_SRC
-    flamegpu_new_linter_target(${PROJECT_NAME} "${ALL_SRC}")
-else()
-    # If vis is not enabled, pass in the vis source files too.
-    flamegpu_new_linter_target(${PROJECT_NAME} "${ALL_SRC};${SRC_INCLUDE_VISUALISER};${SRC_FLAMEGPU_VISUALISER}")
+# Flag the new linter target and the files to be linted, if enabled. Ensure vis sources are linted even if vis is not enabled (mostly for CI)
+if(FLAMEGPU_ENABLE_LINT_FLAMEGPU)
+    if (FLAMEGPU_VISUALISATION)
+        # If vis is enabled, just use ALL_SRC
+        flamegpu_new_linter_target(${PROJECT_NAME} "${ALL_SRC}")
+    else()
+        # If vis is not enabled, pass in the vis source files too.
+        flamegpu_new_linter_target(${PROJECT_NAME} "${ALL_SRC};${SRC_INCLUDE_VISUALISER};${SRC_FLAMEGPU_VISUALISER}")
+    endif()
 endif()
 # Put within FLAMEGPU filter
 flamegpu_set_target_folder(${PROJECT_NAME} "FLAMEGPU")
