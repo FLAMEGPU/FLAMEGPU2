@@ -81,7 +81,7 @@ function(flamegpu_new_linter_target NAME SRC)
     endif()
     # Add the lint_ target
     add_custom_target(
-        "lint_${PROJECT_NAME}"
+        "lint_${NAME}"
         COMMAND ${CPPLINT_EXECUTABLE} ${CPPLINT_ARGS}
         ${SRC}
     )
@@ -95,6 +95,6 @@ function(flamegpu_new_linter_target NAME SRC)
     # Put within Lint filter
     if (CMAKE_USE_FOLDERS)
         set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-        set_property(TARGET "lint_${PROJECT_NAME}" PROPERTY FOLDER "Lint")
+        set_property(TARGET "lint_${NAME}" PROPERTY FOLDER "Lint")
     endif ()
 endfunction()
