@@ -88,7 +88,7 @@ TEST(TestCleanup, CUDASimulationRTC) {
     // Define a model and a pop.
     ModelDescription model(MODEL_NAME);
     AgentDescription agent = model.newAgent(AGENT_NAME);
-    flamegpu::AgentFunctionDescription func = agent.newRTCFunction("rtc_alive", rtc_alive);
+    flamegpu::AgentFunctionDescription aliveDesc = agent.newRTCFunction("rtc_alive", rtc_alive);
     model.addInitFunction(initfn);
     model.addExecutionRoot(aliveDesc);
     model.generateLayers();
