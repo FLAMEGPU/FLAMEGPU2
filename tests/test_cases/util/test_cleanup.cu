@@ -24,6 +24,12 @@ FLAMEGPU_AGENT_FUNCTION(alive, MessageNone, MessageNone) {
     return ALIVE;
 }
 
+const char* rtc_alive = R"###(
+FLAMEGPU_AGENT_FUNCTION(rtc_alive, flamegpu::MessageNone, flamegpu::MessageNone) {
+    return flamegpu::ALIVE;
+}
+)###";
+
 // Test the getting of a device's compute capability.
 TEST(TestCleanup, Explicit) {
     // Allocate some arbitraty device memory.
@@ -54,6 +60,35 @@ TEST(TestCleanup, CUDASimulation) {
     ModelDescription model(MODEL_NAME);
     AgentDescription agent = model.newAgent(AGENT_NAME);
     flamegpu::AgentFunctionDescription aliveDesc = agent.newFunction("alive", alive);
+    model.addInitFunction(initfn);
+    model.addExecutionRoot(aliveDesc);
+    model.generateLayers();
+
+    // Instanciate a cudaSimulation, using new so that we can explcitly trigger the dtor. First check that it works as intended
+    flamegpu::CUDASimulation * simulation = new flamegpu::CUDASimulation(model);
+    simulation->SimulationConfig().steps = 1;
+    simulation->simulate();
+
+    EXPECT_NO_THROW(delete simulation);
+    simulation = nullptr;
+
+    // Then try again with a cleanup in the middle. This is to effectively test what happens cleanup is used in the same scope
+    simulation = new flamegpu::CUDASimulation(model);
+    simulation->SimulationConfig().steps = 1;
+    simulation->simulate();
+    // cleanup
+    EXPECT_NO_THROW(flamegpu::util::cleanup());
+    // Explicitly trigger the dtor. At thsi point any device code the simulation used is invalid, so any device-touching part of simulation will fail.
+    EXPECT_NO_THROW(delete simulation);
+    simulation = nullptr;
+}
+
+// Test cleaning up with a CUDASim in scope, i.e. the dtor will fire after the CUDASim. E.g. this test that a CUDASimulation can be used in the main method.
+TEST(TestCleanup, CUDASimulationRTC) {
+    // Define a model and a pop.
+    ModelDescription model(MODEL_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
+    flamegpu::AgentFunctionDescription func = agent.newRTCFunction("rtc_alive", rtc_alive);
     model.addInitFunction(initfn);
     model.addExecutionRoot(aliveDesc);
     model.generateLayers();
