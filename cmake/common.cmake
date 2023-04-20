@@ -290,7 +290,7 @@ function(flamegpu_copy_runtime_dependencies)
             flamegpu_visualiser_get_runtime_depenencies(vis_runtime_dependencies)
             # For each runtime dependency (dll)
             foreach(vis_runtime_dependency ${vis_runtime_dependencies})
-                # Add a post build comamnd which copies the dll to the directory of the binary if needed.
+                # Add a post build command which copies the dll to the directory of the binary if needed.
                 add_custom_command(
                     TARGET "${FCRD_TARGET}" POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -356,6 +356,61 @@ function(flamegpu_add_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
 
     # Define which source files are required for the target executable
     add_executable(${NAME} ${SRC})
+
+    # Add an application icon file on windows
+    flamegpu_configure_rc_file(TARGET "${NAME}")
+    # Set target level warnings.
+    flamegpu_enable_compiler_warnings(TARGET "${NAME}")
+    # Apply common compiler settings
+    flamegpu_common_compiler_settings(TARGET "${NAME}")
+    # Set C++17 using modern CMake options
+    flamegpu_target_cxx17(TARGET "${NAME}")    
+
+    # Enable RDC for the target
+    set_property(TARGET ${NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
+
+    # Link against the flamegpu static library target.
+    target_link_libraries(${NAME} PRIVATE flamegpu)
+    # Workaround for incremental rebuilds on MSVC, where device link was not being performed.
+    # https://github.com/FLAMEGPU/FLAMEGPU2/issues/483
+    if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.1")
+        # Provide the absolute path to the lib file, rather than the relative version cmake provides.
+        target_link_libraries(${NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE:flamegpu>")
+    endif()
+
+    # Add post-build commands to copy runtime dependencies to the targets output location
+    flamegpu_copy_runtime_dependencies(TARGET "${NAME}")
+    
+    # Flag the new linter target and the files to be linted, and pass optional exclusions filters (regex)
+    flamegpu_new_linter_target(${NAME} "${SRC}" EXCLUDE_FILTERS "${FLAMEGPU_ADD_EXECUTABLE_LINT_EXCLUDE_FILTERS}")
+    
+    # Setup IDE (Visual Studio) filters
+    flamegpu_setup_source_groups(SRC ${SRC})
+
+    # Put within Examples filter
+    if(IS_EXAMPLE)
+        flamegpu_set_target_folder(${NAME} "Examples")
+    endif()
+endfunction()
+
+
+# Function to mask some of the steps to create a static library which links against the FLAMEGPU static library, i.e. to allow testable simulation implementations
+function(flamegpu_add_library NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
+    # Parse optional arugments.
+    cmake_parse_arguments(
+        FLAMEGPU_ADD_EXECUTABLE
+        ""
+        ""
+        "LINT_EXCLUDE_FILTERS"
+        ${ARGN})
+
+    # If the library does not exist as a target, add it.
+    if (NOT TARGET flamegpu)
+        add_subdirectory("${FLAMEGPU_ROOT}/src" "${PROJECT_ROOT}/FLAMEGPU")
+    endif()
+
+    # Define which source files are required for the target executable
+    add_library(${NAME} STATIC ${SRC})
 
     # Add an application icon file on windows
     flamegpu_configure_rc_file(TARGET "${NAME}")
