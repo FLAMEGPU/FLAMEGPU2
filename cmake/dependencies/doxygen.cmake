@@ -2,7 +2,12 @@
 find_package(Doxygen OPTIONAL_COMPONENTS mscgen dia dot)
 if(DOXYGEN_FOUND)
     include(CMakeDependentOption)
-    option(FLAMEGPU_BUILD_API_DOCUMENTATION "Enable building documentation (requires Doxygen)" ON)
+    set(FLAMEGPU_BUILD_API_DOCUMENTATION_DEFAULT OFF)
+    if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_LIST_DIR}" OR "${CMAKE_SOURCE_DIR}" STREQUAL "${FLAMEGPU_ROOT}")
+        set(FLAMEGPU_BUILD_API_DOCUMENTATION_DEFAULT ON)
+    endif()
+    option(FLAMEGPU_BUILD_API_DOCUMENTATION "Enable building documentation (requires Doxygen)" ${FLAMEGPU_BUILD_API_DOCUMENTATION_DEFAULT})
+
     # option to hide / not hide the detail namespace from the docs, developers can enable it if they want detail docs / the actual docs website might require this due to breathe/exhale not respecting doxygen exclude correctly and not having an equivalent option.
     cmake_dependent_option(FLAMEGPU_API_DOCUMENTATION_EXCLUDE_DETAIL "Exclude the detail namespace from doxygen documentation" ON "FLAMEGPU_BUILD_API_DOCUMENTATION" ON)
     mark_as_advanced(FLAMEGPU_API_DOCUMENTATION_EXCLUDE_DETAIL)
