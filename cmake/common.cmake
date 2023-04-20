@@ -172,9 +172,9 @@ function(flamegpu_common_compiler_settings)
 
     # Ensure that a target has been passed, and that it is a valid target.
     if(NOT CCS_TARGET)
-        message( FATAL_ERROR "flamegpu_common_compiler_settings: 'TARGET' argument required")
+        message( FATAL_ERROR "${CMAKE_CURRENT_FUNCTION}: 'TARGET' argument required")
     elseif(NOT TARGET ${CCS_TARGET} )
-        message( FATAL_ERROR "flamegpu_common_compiler_settings: TARGET '${CCS_TARGET}' is not a valid target")
+        message( FATAL_ERROR "${CMAKE_CURRENT_FUNCTION}: TARGET '${CCS_TARGET}' is not a valid target")
     endif()
 
     # Enable -lineinfo for Release builds, for improved profiling output.
@@ -225,63 +225,65 @@ function(flamegpu_common_compiler_settings)
     
 endfunction()
 
-# Function to mask some of the steps to create an executable which links against the static library
-function(flamegpu_add_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
-    # @todo - correctly set PUBLIC/PRIVATE/INTERFACE for executables created with this utility function
-
-    # Parse optional arugments.
+function(flamegpu_configure_rc_file)
     cmake_parse_arguments(
-        FLAMEGPU_ADD_EXECUTABLE
+        FCRF
         ""
+        "TARGET"
         ""
-        "LINT_EXCLUDE_FILTERS"
-        ${ARGN})
-
-    # If the library does not exist as a target, add it.
-    if (NOT TARGET flamegpu)
-        add_subdirectory("${FLAMEGPU_ROOT}/src" "${PROJECT_ROOT}/FLAMEGPU")
+        ${ARGN}
+    )
+    if(NOT FCRF_TARGET)
+        message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION}: 'TARGET' argument required.")
+    elseif(NOT TARGET ${FCRF_TARGET})
+        message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION}: TARGET '${FCRF_TARGET}' is not a valid target")
     endif()
-
     if(WIN32)
-      # configure a rc file to set application icon
-      set (FLAMEGPU_ICON_PATH ${FLAMEGPU_ROOT}/cmake/flamegpu.ico)
-      set (PYFLAMEGPU_ICON_PATH ${FLAMEGPU_ROOT}/cmake/pyflamegpu.ico)
-      configure_file(
-        ${FLAMEGPU_ROOT}/cmake/application_icon.rc.in
-        application_icon.rc
-        @ONLY)
-      SET(SRC ${SRC} application_icon.rc)
+        # configure a rc file to set application icon
+        set (FLAMEGPU_ICON_PATH ${FLAMEGPU_ROOT}/cmake/flamegpu.ico)
+        set (PYFLAMEGPU_ICON_PATH ${FLAMEGPU_ROOT}/cmake/pyflamegpu.ico)
+        configure_file(
+            ${FLAMEGPU_ROOT}/cmake/application_icon.rc.in
+            application_icon.rc
+            @ONLY)
+        target_sources(${FCRF_TARGET} PRIVATE application_icon.rc)
     endif()
+endfunction()
 
-    # Define which source files are required for the target executable
-    add_executable(${NAME} ${SRC})
-
-    # Set target level warnings.
-    flamegpu_enable_compiler_warnings(TARGET "${NAME}")
-    # Apply common compiler settings
-    flamegpu_common_compiler_settings(TARGET "${NAME}")
-    
-    # Set C++17 using modern CMake options
-    target_compile_features(${NAME} PUBLIC cxx_std_17)
-    target_compile_features(${NAME} PUBLIC cuda_std_17)
-    set_property(TARGET ${NAME} PROPERTY CXX_EXTENSIONS OFF)
-    set_property(TARGET ${NAME} PROPERTY CUDA_EXTENSIONS OFF)
-    set_property(TARGET ${NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
-    set_property(TARGET ${NAME} PROPERTY CUDA_STANDARD_REQUIRED ON)
-
-    # Enable RDC for the target
-    set_property(TARGET ${NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-
-    # Link against the flamegpu static library target.
-    target_link_libraries(${NAME} PRIVATE flamegpu)
-    # Workaround for incremental rebuilds on MSVC, where device link was not being performed.
-    # https://github.com/FLAMEGPU/FLAMEGPU2/issues/483
-    if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.1")
-        # Provide the absolute path to the lib file, rather than the relative version cmake provides.
-        target_link_libraries(${NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE:flamegpu>")
+function(flamegpu_target_cxx17)
+    cmake_parse_arguments(
+        FTC
+        ""
+        "TARGET"
+        ""
+        ${ARGN}
+    )
+    if(NOT FTC_TARGET)
+        message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION}: 'TARGET' argument required.")
+    elseif(NOT TARGET ${FTC_TARGET})
+        message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION}: TARGET '${FTC_TARGET}' is not a valid target")
     endif()
-        
-    # Activate visualisation if requested
+    target_compile_features(${FTC_TARGET} PUBLIC cxx_std_17)
+    target_compile_features(${FTC_TARGET} PUBLIC cuda_std_17)
+    set_property(TARGET ${FTC_TARGET} PROPERTY CXX_EXTENSIONS OFF)
+    set_property(TARGET ${FTC_TARGET} PROPERTY CUDA_EXTENSIONS OFF)
+    set_property(TARGET ${FTC_TARGET} PROPERTY CXX_STANDARD_REQUIRED ON)
+    set_property(TARGET ${FTC_TARGET} PROPERTY CUDA_STANDARD_REQUIRED ON)
+endfunction()
+
+function(flamegpu_copy_runtime_dependencies) 
+    cmake_parse_arguments(
+        FCRD
+        ""
+        "TARGET"
+        ""
+        ${ARGN}
+    )
+    if(NOT FCRD_TARGET)
+        message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION}: 'TARGET' argument required.")
+    elseif(NOT TARGET ${FCRD_TARGET})
+        message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION}: TARGET '${FCRD_TARGET}' is not a valid target")
+    endif()
     if (FLAMEGPU_VISUALISATION)
         # Copy DLLs / other Runtime dependencies
         if(COMMAND flamegpu_visualiser_get_runtime_depenencies)
@@ -290,19 +292,29 @@ function(flamegpu_add_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
             foreach(vis_runtime_dependency ${vis_runtime_dependencies})
                 # Add a post build comamnd which copies the dll to the directory of the binary if needed.
                 add_custom_command(
-                    TARGET "${NAME}" POST_BUILD
+                    TARGET "${FCRD_TARGET}" POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
                         "${vis_runtime_dependency}"
-                        $<TARGET_FILE_DIR:${NAME}>
+                        $<TARGET_FILE_DIR:${FCRD_TARGET}>
                 )
             endforeach()
             unset(vis_runtime_dependencies)
         endif()
     endif()
+endfunction()
 
-    # Flag the new linter target and the files to be linted, and pass optional exclusions filters (regex)
-    flamegpu_new_linter_target(${NAME} "${SRC}" EXCLUDE_FILTERS "${FLAMEGPU_ADD_EXECUTABLE_LINT_EXCLUDE_FILTERS}")
-    
+function(flamegpu_setup_source_groups)
+    cmake_parse_arguments(
+        FSSG
+        ""
+        ""
+        "SRC"
+        ${ARGN}
+    )
+    if(NOT FSSG_SRC)
+        message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION}: 'SRC' argument required.")
+    endif()
+
     # Setup Visual Studio (and eclipse) filters
     #src/.h    
     escape_regex("${CMAKE_CURRENT_SOURCE_DIR}" CURRENT_SOURCE_DIR_ESCAPE)
@@ -325,7 +337,55 @@ function(flamegpu_add_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     list(FILTER T_SRC EXCLUDE REGEX "^${CURRENT_SOURCE_DIR_ESCAPE}/src")
     list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh|rc)$")
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX src FILES ${T_SRC})
+endfunction()
 
+# Function to mask some of the steps to create an executable which links against the static library
+function(flamegpu_add_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
+    # Parse optional arugments.
+    cmake_parse_arguments(
+        FLAMEGPU_ADD_EXECUTABLE
+        ""
+        ""
+        "LINT_EXCLUDE_FILTERS"
+        ${ARGN})
+
+    # If the library does not exist as a target, add it.
+    if (NOT TARGET flamegpu)
+        add_subdirectory("${FLAMEGPU_ROOT}/src" "${PROJECT_ROOT}/FLAMEGPU")
+    endif()
+
+    # Define which source files are required for the target executable
+    add_executable(${NAME} ${SRC})
+
+    # Add an application icon file on windows
+    flamegpu_configure_rc_file(TARGET "${NAME}")
+    # Set target level warnings.
+    flamegpu_enable_compiler_warnings(TARGET "${NAME}")
+    # Apply common compiler settings
+    flamegpu_common_compiler_settings(TARGET "${NAME}")
+    # Set C++17 using modern CMake options
+    flamegpu_target_cxx17(TARGET "${NAME}")    
+
+    # Enable RDC for the target
+    set_property(TARGET ${NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
+
+    # Link against the flamegpu static library target.
+    target_link_libraries(${NAME} PRIVATE flamegpu)
+    # Workaround for incremental rebuilds on MSVC, where device link was not being performed.
+    # https://github.com/FLAMEGPU/FLAMEGPU2/issues/483
+    if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.1")
+        # Provide the absolute path to the lib file, rather than the relative version cmake provides.
+        target_link_libraries(${NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE:flamegpu>")
+    endif()
+
+    # Add post-build commands to copy runtime dependencies to the targets output location
+    flamegpu_copy_runtime_dependencies(TARGET "${NAME}")
+    
+    # Flag the new linter target and the files to be linted, and pass optional exclusions filters (regex)
+    flamegpu_new_linter_target(${NAME} "${SRC}" EXCLUDE_FILTERS "${FLAMEGPU_ADD_EXECUTABLE_LINT_EXCLUDE_FILTERS}")
+    
+    # Setup IDE (Visual Studio) filters
+    flamegpu_setup_source_groups(SRC ${SRC})
 
     # Put within Examples filter
     if(IS_EXAMPLE)
