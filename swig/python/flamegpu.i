@@ -967,6 +967,9 @@ TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(uniform, flamegpu::HostRandom::uniformNoRan
 TEMPLATE_VARIABLE_INSTANTIATE_INTS(uniform, flamegpu::HostRandom::uniformRange)
 TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(normal, flamegpu::HostRandom::normal)
 TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(logNormal, flamegpu::HostRandom::logNormal)
+TEMPLATE_VARIABLE_INSTANTIATE_INTS(poisson, flamegpu::HostRandom::poisson)
+// Default typeless should be unsigned int
+%template(poisson) flamegpu::HostRandom::poisson<uint32_t>;
 
 // Extend the python to add the pure python class decorators
 %pythoncode %{

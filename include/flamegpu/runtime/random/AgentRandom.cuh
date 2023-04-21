@@ -43,6 +43,12 @@ class AgentRandom {
     template<typename T>
     __forceinline__ __device__ T logNormal(T mean, T stddev) const;
     /**
+     * Returns a poisson distributed unsigned int according to the provided mean (default 1.0).
+     * @param mean The mean of the distribution
+     * @note This implementation uses CURAND's "simple Device API" which is considered the least robust but is more efficient when generating Poisson-distributed random numbers for many different lambdas.
+     */
+    __forceinline__ __device__ unsigned int poisson(double mean = 1.0f) const;
+    /**
      * Returns an integer uniformly distributed in the inclusive range [min, max]
      * or
      * Returns a floating point value uniformly distributed in the exclusive-inclusive range (min, max]
@@ -109,6 +115,12 @@ __forceinline__ __device__ float AgentRandom::logNormal(const float mean, const 
 template<>
 __forceinline__ __device__ double AgentRandom::logNormal(const double mean, const double stddev) const {
     return curand_log_normal_double(d_random_state, mean, stddev);
+}
+/**
+ * Poisson
+ */
+__forceinline__ __device__ unsigned int AgentRandom::poisson(const double mean) const {
+    return curand_poisson(d_random_state, mean);
 }
 /**
 * Uniform Range
