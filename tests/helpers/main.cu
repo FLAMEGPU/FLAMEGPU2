@@ -43,7 +43,7 @@ GTEST_API_ int main(int argc, char **argv) {
         // re-enable telemetry so this will actually send.
         flamegpu::io::Telemetry::enable();
         // Submit the test results, do not handle the result and silently fail if needed
-        std::string outcome = rtn ? "Passed" : "Failed";
+        std::string outcome = rtn == EXIT_SUCCESS ? "Passed" : "Failed";
         flamegpu::detail::TestSuiteTelemetry::sendResults("googletest-run"
             , outcome
             , ::testing::UnitTest::GetInstance()->total_test_count()

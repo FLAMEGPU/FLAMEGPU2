@@ -8,6 +8,7 @@
 #include <iostream>
 #include <cstdio>
 #include <cctype>
+#include <sstream>
 
 #include "flamegpu/version.h"
 
@@ -255,9 +256,18 @@ bool Telemetry::sendData(std::string telemetry_data) {
 #else
     null = "/dev/null";
 #endif
-    std::string curl_command = "curl -s -o " + null + " --connect-timeout " + std::to_string(CURL_CONNECT_TIMEOUT) + " --max-time " + std::to_string(CURL_MAX_TIME) +  " -X POST \"" + std::string(TELEMETRY_ENDPOINT) + "\" -H \"Content-Type: application/json; charset=utf-8\" --data-raw \"" + telemetry_data + "\"";
+    std::stringstream curl_command;
+    curl_command << "curl";
+    curl_command << " -s";
+    curl_command << " -o " << null;
+    curl_command << " --connect-timeout " << std::to_string(CURL_CONNECT_TIMEOUT);
+    curl_command << " --max-time " << std::to_string(CURL_MAX_TIME);
+    curl_command << " -X POST \"" << std::string(TELEMETRY_ENDPOINT) << "\"";
+    curl_command << " -H \"Content-Type: application/json; charset=utf-8\"";
+    curl_command << " --data-raw \"" << telemetry_data + "\"";
+    curl_command << " > " << null << " 2>&1";
     // capture the return value
-    if (std::system(curl_command.c_str()) != EXIT_SUCCESS) {
+    if (std::system(curl_command.str().c_str()) != EXIT_SUCCESS) {
         return false;
     }
 
