@@ -313,12 +313,54 @@ class FLAMEGPURuntimeException : public std::exception {
     std::string str_str;
 };
 %}
-
+%inline %{
+    #include <sstream>
+    // Python include for stacktrace frames
+    #include <frameobject.h>
+%}
 // swig director exceptions (handle python callback exceptions as C++ exceptions not Runtime errors)
 %feature("director:except") {
-  if ($error != NULL) {
-    throw Swig::DirectorMethodException();
-  }
+    if ($error != NULL) {
+        PyObject *type, *value, *traceback;
+        PyErr_Fetch(&type, &value, &traceback);
+        PyErr_NormalizeException(&type, &value, &traceback);
+        PyObject *hostfn = swig_get_self();
+        std::stringstream err_msg;
+        err_msg << "\n";
+        // Type
+        PyObject* type_obj_name = PyObject_GetAttrString(type, "__name__");
+        PyObject *type_str = PyObject_Str(type_obj_name);
+        const char *pTypeStr = PyUnicode_AsUTF8(type_str);
+        // Director Obj Type        
+        PyObject* hostfn_type = PyObject_Type(hostfn);
+        PyObject* hostfn_type_name = PyObject_GetAttrString(hostfn_type, "__name__");
+        PyObject *hostfn_str = PyObject_Str(hostfn_type_name);
+        const char *pHostFnTypeStr = PyUnicode_AsUTF8(hostfn_str);
+        err_msg << pTypeStr << " was thrown during host function '" << pHostFnTypeStr << "':\n";
+        // Trace
+        PyTracebackObject* traceRoot = (PyTracebackObject*)traceback;
+        PyFrameObject* frame = traceRoot->tb_frame;
+        PyCodeObject* code = frame->f_code;
+        int lineNr = PyFrame_GetLineNumber(frame);
+        const char *sFileName = PyUnicode_AsUTF8(code->co_filename);
+        err_msg << sFileName << "(" << lineNr << "): \n";
+        // Message
+        PyObject *value_str = PyObject_Str(value);
+        const char *pStrErrorMessage = PyUnicode_AsUTF8(value_str);
+        err_msg << pStrErrorMessage << "\n";
+        // Cleanup
+        Py_DECREF(type_obj_name);
+        Py_DECREF(hostfn_type_name);
+        Py_DECREF(hostfn_type);
+        Py_DECREF(hostfn_str);
+        Py_DECREF(type_str);
+        Py_DECREF(value_str);
+        Py_DECREF(type);
+        Py_DECREF(value);
+        Py_DECREF(traceback);
+        // Propagate exception
+        throw Swig::DirectorMethodException(err_msg.str().c_str());
+    }
 }
 
 %exception {
