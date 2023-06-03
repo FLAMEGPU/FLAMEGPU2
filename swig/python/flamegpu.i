@@ -315,8 +315,14 @@ class FLAMEGPURuntimeException : public std::exception {
 %}
 %inline %{
     #include <sstream>
-    // Python include for stacktrace frames
-    #include <frameobject.h>
+    // Python include for stacktrace frames pre Python 3.11
+    #if PY_VERSION_HEX < 0x030900B1
+        #include <frameobject.h>
+        static inline PyCodeObject* PyFrame_GetCode(PyFrameObject *frame) {
+            Py_INCREF(frame->f_code);
+            return frame->f_code;
+        }
+    #endif
 %}
 // swig director exceptions (handle python callback exceptions as C++ exceptions not Runtime errors)
 %feature("director:except") {
@@ -340,8 +346,8 @@ class FLAMEGPURuntimeException : public std::exception {
         // Trace
         PyTracebackObject* traceRoot = (PyTracebackObject*)traceback;
         PyFrameObject* frame = traceRoot->tb_frame;
-        PyCodeObject* code = frame->f_code;
         int lineNr = PyFrame_GetLineNumber(frame);
+        PyCodeObject* code = PyFrame_GetCode(frame);
         const char *sFileName = PyUnicode_AsUTF8(code->co_filename);
         err_msg << sFileName << "(" << lineNr << "): \n";
         // Message
@@ -349,15 +355,14 @@ class FLAMEGPURuntimeException : public std::exception {
         const char *pStrErrorMessage = PyUnicode_AsUTF8(value_str);
         err_msg << pStrErrorMessage << "\n";
         // Cleanup
+        PyErr_Restore(type, value, traceback);
+        Py_DECREF(code);
         Py_DECREF(type_obj_name);
         Py_DECREF(hostfn_type_name);
         Py_DECREF(hostfn_type);
         Py_DECREF(hostfn_str);
         Py_DECREF(type_str);
         Py_DECREF(value_str);
-        Py_DECREF(type);
-        Py_DECREF(value);
-        Py_DECREF(traceback);
         // Propagate exception
         throw Swig::DirectorMethodException(err_msg.str().c_str());
     }
