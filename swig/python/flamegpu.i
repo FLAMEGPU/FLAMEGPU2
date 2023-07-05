@@ -1176,3 +1176,10 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(poisson, flamegpu::HostRandom::poisson)
 #else
     #define SEATBELTS false
 #endif
+
+#ifdef FLAMEGPU_USE_GLM
+    #undef FLAMEGPU_USE_GLM
+    #define GLM true
+#else
+    #define GLM false
+#endif

@@ -152,12 +152,12 @@ std::string getFLAMEGPUIncludeDir(std::string &env_var_used) {
                     break;
                 }
             } catch (...) { }
-            // Throw if the value is not empty, but it does not exist. Outside the try catch excplicityly.
+            // Throw if the value is not empty, but it does not exist. Outside the try catch explicitly.
             THROW flamegpu::exception::InvalidFilePath("Error environment variable %s (%s) does not contain flamegpu/flamegpu.h. Please correct this environment variable.", env_var.c_str(), env_value.c_str());
         }
     }
 
-    // If no appropriate environmental variables were found, check upwards for N levels (assuming the default filestructure is in use)
+    // If no appropriate environmental variables were found, check upwards for N levels (assuming the default file structure is in use)
     if (include_dir_str.empty()) {
         // Start with the current working directory
         std::filesystem::path test_dir(".");
@@ -209,13 +209,54 @@ break_flamegpu_inc_dir_loop:
     return include_dir_str;
 }
 
+#ifdef FLAMEGPU_USE_GLM
+/**
+ * Get the GLM include directory via the environment variables.
+ * @return the GLM include directory.
+ */
+std::string getGLMIncludeDir() {
+    const std::string env_var = "FLAMEGPU_GLM_INC_DIR";
+    const std::string test_file = "glm/glm.hpp";
+    // Check the environment variable to see whether glm/glm.hpp exists
+    {
+        // If the environment variable exists
+        std::string env_value = std::getenv(env_var.c_str()) ? std::getenv(env_var.c_str()) : "";
+        // If it's a value, check if the path exists, and if any expected files are found.
+        if (!env_value.empty()) {
+            std::filesystem::path check_file = std::filesystem::path(env_value) / test_file;
+            // Use try catch to suppress file permission exceptions etc
+            try {
+                if (std::filesystem::exists(check_file)) {
+                    return env_value;
+                }
+            }
+            catch (...) {}
+            // Throw if the value is not empty, but it does not exist. Outside the try catch explicitly.
+            THROW flamegpu::exception::InvalidFilePath("Error environment variable %s (%s) does not contain %s. Please correct this environment variable.", env_var.c_str(), env_value.c_str(), test_file.c_str());
+        }
+    }
+
+    // If no appropriate environmental variables were found, check the compile time path to GLM
+    std::filesystem::path check_file = std::filesystem::path(FLAMEGPU_GLM_PATH) / test_file;
+    // Use try catch to suppress file permission exceptions etc
+    try {
+        if (std::filesystem::exists(check_file)) {
+            return FLAMEGPU_GLM_PATH;
+        }
+    }
+    catch (...) {}
+    // Throw if header wasn't found. Outside the try catch explicitly.
+    THROW flamegpu::exception::InvalidAgentFunc("Error compiling runtime agent function: Unable to automatically determine location of GLM include directory and %s environment variable not set", env_var.c_str());
+}
+#endif
+
 /**
  * Confirm that include directory version header matches the version of the static library.
  * This only compares up to the pre-release version number. Build metadata is only used for the RTC cache.
  * @param flamegpuIncludeDir path to the flamegpu include directory to check.
  * @return boolean indicator of success.
  */
-bool confirmFLAMEGPUHeaderVersion(const std::string flamegpuIncludeDir, const std::string envVariable) {
+bool confirmFLAMEGPUHeaderVersion(const std::string &flamegpuIncludeDir, const std::string &envVariable) {
     static bool header_version_confirmed = false;
 
     if (!header_version_confirmed) {
@@ -293,7 +334,8 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
 #ifdef FLAMEGPU_USE_GLM
     // GLM headers increase build time ~5x, so only enable glm if user is using it
     if (kernel_src.find("glm") != std::string::npos) {
-        options.push_back(std::string("-I") + FLAMEGPU_GLM_PATH);
+        static const std::string glm_include_dir = getGLMIncludeDir();
+        options.push_back(std::string("-I") + glm_include_dir);
         options.push_back(std::string("-DFLAMEGPU_USE_GLM"));
     }
 #endif

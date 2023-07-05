@@ -156,19 +156,47 @@ set(PYTHON_CODEGEN_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/codegen/codegen.py
 )
 
-# cleanup the flamegpu include file paths, so they're relative (begin `include/`) and seperated by `", "`
+# cleanup the flamegpu include file paths, so they're relative (begin `include/`) and separated by `", "`
 foreach(FLAMEGPU_INC_FILE IN LISTS FLAMEGPU_INCLUDE)
   file(RELATIVE_PATH FLAMEGPU_INC_FILE_CLEAN "${FLAMEGPU_ROOT}" "${FLAMEGPU_INC_FILE}")
   set(FLAMEGPU_INCLUDE_CLEAN "${FLAMEGPU_INCLUDE_CLEAN}'${FLAMEGPU_INC_FILE_CLEAN}', ")
   unset(FLAMEGPU_INC_FILE_CLEAN)
 endforeach()
 
-# cleanup code generator module files, so they're seperated by `", "` (file list is already using relative paths)
+# cleanup code generator module files, so they're separated by `", "` (file list is already using relative paths)
 foreach(PYTHON_CODEGEN_FILE IN LISTS PYTHON_CODEGEN_SRC_FILES)
   file(RELATIVE_PATH PYTHON_CODEGEN_FILE_CLEAN "${CMAKE_CURRENT_SOURCE_DIR}" "${PYTHON_CODEGEN_FILE}")
   set(FLAMEGPU_CODEGEN_INCLUDE_CLEAN "${FLAMEGPU_CODEGEN_INCLUDE_CLEAN}'${FPYTHON_CODEGEN_FILE_CLEAN}', ")
   unset(PYTHON_CODEGEN_FILE_CLEAN)
 endforeach()
+
+# Locate and cleanup GLM include files, so they're separated by `", "`
+if(FLAMEGPU_ENABLE_GLM)
+    FetchContent_GetProperties(glm POPULATED glm_POPULATED SOURCE_DIR glm_SOURCE_DIR)
+    if (glm_POPULATED)
+        # Locate the root header to find the header directory
+        find_path(glm_ROOT
+        NAMES
+            glm/glm.hpp
+        PATHS
+            ${glm_SOURCE_DIR}
+        NO_CACHE
+        )
+        # Build a list of all files in include dir
+        FILE(GLOB_RECURSE glm_INC_FILES "${glm_ROOT}glm/*")
+        # Add license to that list
+        list(APPEND glm_INC_FILES "${glm_ROOT}copying.txt")
+        # Clean, add separator and setup file copy
+        unset(glm_POPULATED)
+        unset(glm_SOURCE_DIR)
+        foreach(glm_INC_FILE IN LISTS glm_INC_FILES)
+          file(RELATIVE_PATH glm_INC_FILE_CLEAN "${glm_ROOT}" "${glm_INC_FILE}")
+          set(GLM_INCLUDE_CLEAN "${GLM_INCLUDE_CLEAN}'glm/${glm_INC_FILE_CLEAN}', ") # This var is used by setup.py template
+        endforeach()
+    else()
+        message(FATAL_ERROR "Python cmake can't find glm")
+    endif()
+endif()
 
 # Build a list of OS specific python package_data entries.
 set(FLAMEGPU_PYTHON_PACKAGE_DATA_OS_SPECIFIC "")
@@ -232,7 +260,7 @@ flamegpu_search_python_module(wheel)
 flamegpu_search_python_module(build)
 
 ## ------
-# Define custom commands to produce files in the current cmake directory, a custom target which the user invokes to build the python wheel with appropraite dependencies configured, and any post-build steps required.
+# Define custom commands to produce files in the current cmake directory, a custom target which the user invokes to build the python wheel with appropriate dependencies configured, and any post-build steps required.
 ## ------
 set(PYTHON_FLAMEGPU_LIB_OUTPUT_MODULE_DIR "${PYTHON_LIB_OUTPUT_DIRECTORY}/src/${PYTHON_MODULE_NAME}")
 # Only expliclty create the directory under linux, msbuild emits warnings and is fine without.
@@ -258,7 +286,7 @@ foreach(FLAMEGPU_INC_FILE IN LISTS FLAMEGPU_INCLUDE)
 endforeach()
 
 # Create the codegen directory, and copy the codegen files in.
-# Only expliclty create the directory under linux, msbuild emits warnings and is fine without.
+# Only explicitly create the directory under linux, msbuild emits warnings and is fine without.
 if(NOT WIN32)
   add_custom_command(
     OUTPUT "${PYTHON_FLAMEGPU_LIB_OUTPUT_MODULE_DIR}/codegen"
@@ -267,7 +295,7 @@ if(NOT WIN32)
   list(APPEND PYTHON_MODULE_TARGET_NAME_DEPENDS "${PYTHON_FLAMEGPU_LIB_OUTPUT_MODULE_DIR}/codegen")
 endif()
 
-# Copy each codegen file into the pthon module directory, and append the filename to the list of python wheel dependencies.
+# Copy each codegen file into the python module directory, and append the filename to the list of python wheel dependencies.
 foreach(PYTHON_CODEGEN_FILE IN LISTS PYTHON_CODEGEN_SRC_FILES)
   file(RELATIVE_PATH PYTHON_CODEGEN_FILE_CLEAN "${CMAKE_CURRENT_SOURCE_DIR}" "${PYTHON_CODEGEN_FILE}")
   set(PYTHON_FLAMEGPU_LIB_OUTPUT_CODEGEN_FILE "${PYTHON_FLAMEGPU_LIB_OUTPUT_MODULE_DIR}/${PYTHON_CODEGEN_FILE_CLEAN}")
@@ -280,6 +308,24 @@ foreach(PYTHON_CODEGEN_FILE IN LISTS PYTHON_CODEGEN_SRC_FILES)
   list(APPEND PYTHON_MODULE_TARGET_NAME_DEPENDS "${PYTHON_FLAMEGPU_LIB_OUTPUT_CODEGEN_FILE}")
   unset(PYTHON_FLAMEGPU_LIB_OUTPUT_CODEGEN_FILE)
 endforeach()
+
+# Copy GLM files into the python module directory and append the filename to the list of python wheel dependencies.
+if(FLAMEGPU_ENABLE_GLM)
+    foreach(glm_INC_FILE IN LISTS glm_INC_FILES)
+      file(RELATIVE_PATH glm_INC_FILE_CLEAN "${glm_ROOT}" "${glm_INC_FILE}")
+      set(PYTHON_FLAMEGPU_LIB_OUTPUT_glm_FILE "${PYTHON_FLAMEGPU_LIB_OUTPUT_MODULE_DIR}/glm/${glm_INC_FILE_CLEAN}")
+      add_custom_command(
+        OUTPUT "${PYTHON_FLAMEGPU_LIB_OUTPUT_glm_FILE}"
+        DEPENDS ${glm_INC_FILE}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${glm_INC_FILE} ${PYTHON_FLAMEGPU_LIB_OUTPUT_glm_FILE}
+        COMMENT "Copying ${glm_INC_FILE} to ${PYTHON_FLAMEGPU_LIB_OUTPUT_glm_FILE}"
+      )
+      list(APPEND PYTHON_MODULE_TARGET_NAME_DEPENDS "${PYTHON_FLAMEGPU_LIB_OUTPUT_glm_FILE}")
+      unset(PYTHON_FLAMEGPU_LIB_OUTPUT_glm_FILE)
+    endforeach()
+    unset(glm_ROOT)
+    unset(glm_INC_FILES)
+endif()
 
 # Copy the visualisation dlls if required, this must occur before the wheel is built
 if (FLAMEGPU_VISUALISATION)

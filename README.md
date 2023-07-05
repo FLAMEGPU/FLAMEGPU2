@@ -175,7 +175,7 @@ cmake --build . --target all
 | `FLAMEGPU_RTC_DISK_CACHE`            | `ON`/`OFF`                  | Enable/Disable caching of RTC functions to disk. Default `ON`.                                             |
 | `FLAMEGPU_VERBOSE_PTXAS`             | `ON`/`OFF`                  | Enable verbose PTXAS output during compilation. Default `OFF`.                                             |
 | `FLAMEGPU_CURAND_ENGINE`             | `XORWOW` / `PHILOX` / `MRG` | Select the CUDA random engine. Default `XORWOW`                                                            |
-| `FLAMEGPU_ENABLE_GLM`                | `ON`/`OFF`                  | Experimental feature for GLM type support in RTC models. Default `OFF`.                                    |
+| `FLAMEGPU_ENABLE_GLM`                | `ON`/`OFF`                  | Experimental feature for GLM type support within models. Default `OFF`.                                    |
 | `FLAMEGPU_SHARE_USAGE_STATISTICS`    | `ON`/`OFF`                  | Share usage statistics ([telemetry](https://docs.flamegpu.com/guide/telemetry)) to support evidencing usage/impact of the software. Default `ON`. |
 | `FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE` | `ON`/`OFF`                  | Suppress notice encouraging telemetry to be enabled, which is emitted once per binary execution if telemetry is disabled. Defaults to `OFF`, or the value of a system environment variable of the same name. |
 | `FLAMEGPU_TELEMETRY_TEST_MODE`       | `ON`/`OFF`                  | Submit telemetry values to the test mode of TelemetryDeck. Intended for use during development of FLAMEGPU rather than use. Defaults to `OFF`, or the value of a system environment variable of the same name.|
@@ -247,7 +247,8 @@ Several environmental variables are used or required by FLAME GPU 2.
 | `FLAMEGPU_RTC_INCLUDE_DIRS`          | A list of include directories that should be provided to the RTC compiler, these should be separated using `;` (Windows) or `:` (Linux). If this variable is not found, the working directory will be used as a default. |
 | `FLAMEGPU_SHARE_USAGE_STATISTICS`    | Enable / Disable sending of telemetry data, when set to `ON` or `OFF` respectively. |
 | `FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE` | Enable / Disable a once per execution notice encouraging the use of telemetry, if telemetry is disabled, when set to `ON` or `OFF` respectively. |
-| `FLAMEGPU_TELEMETRY_TEST_MODE`       | Enable / Disable sending telemetry data to a test endpoint, for FLAMEGPU develepoment to separate user statistics from developer statistics. Set to `ON` or `OFF`. |
+| `FLAMEGPU_TELEMETRY_TEST_MODE`       | Enable / Disable sending telemetry data to a test endpoint, for FLAMEGPU development to separate user statistics from developer statistics. Set to `ON` or `OFF`. |
+| `FLAMEGPU_GLM_INC_DIR`                        | When RTC compilation is required and GLM support has been enabled, if the location of the GLM include directory cannot be found it must be specified using the `FLAMEGPU_GLM_INC_DIR` environment variable. |
 
 ## Running the Test Suite(s)
 

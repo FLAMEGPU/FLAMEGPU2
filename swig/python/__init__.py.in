@@ -4,7 +4,7 @@ if not "FLAMEGPU_INC_DIR" in os.environ or not "FLAMEGPU2_INC_DIR" in os.environ
     os.environ["FLAMEGPU_INC_DIR"] = str(pathlib.Path(__file__).resolve().parent / "include")
 else:
   print("@PYTHON_MODULE_NAME@ warning: env var 'FLAMEGPU_INC_DIR' is present, RTC headers may be incorrect.", file=sys.stderr)
-
+  
 # Some Windows users have dll load failed, because Python can't find nvrtc
 # It appears due to a combination of Python and Anaconda versions
 # Python 3.8+ requires DLL loads to be manually specified with os.add_dll_directory()
@@ -31,7 +31,15 @@ if os.name == 'nt' and hasattr(os, 'add_dll_directory') and callable(getattr(os,
 # module version
 __version__ = '@FLAMEGPU_VERSION_PYTHON@'
 
-del os, sys, pathlib, subprocess
 # Normal module stuff
 __all__ = ["@PYTHON_MODULE_NAME@"]
 from .@PYTHON_MODULE_NAME@ import *
+
+# GLM delayed so we can check whether it was enabled
+if GLM:
+    if not "FLAMEGPU_GLM_INC_DIR" in os.environ or not "FLAMEGPU_GLM_INC_DIR" in os.environ:
+        os.environ["FLAMEGPU_GLM_INC_DIR"] = str(pathlib.Path(__file__).resolve().parent / "glm")
+    else:
+      print("@PYTHON_MODULE_NAME@ warning: env var 'FLAMEGPU_GLM_INC_DIR' is present, GLM include path may be incorrect.", file=sys.stderr)
+      
+del os, sys, pathlib, subprocess
