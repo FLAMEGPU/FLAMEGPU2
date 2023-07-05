@@ -477,8 +477,7 @@ class CodeGenerator:
                     self.RaiseError(t, f"Message input variable '{self._input_message_var}' does not have a supported function '{t.attr}'") 
 
             # message input iterator arg
-            elif self._message_iterator_var:
-                if t.value.id == self._message_iterator_var:
+            elif self._message_iterator_var and t.value.id == self._message_iterator_var:
                     self.write(f"{self._message_iterator_var}.")
                     # check for legit FGPU function calls and translate
                     if t.attr in self.fgpu_input_msg_iter_var_funcs:     
