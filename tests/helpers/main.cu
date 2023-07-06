@@ -51,7 +51,7 @@ GTEST_API_ int main(int argc, char **argv) {
             , ::testing::UnitTest::GetInstance()->disabled_test_count()
             , ::testing::UnitTest::GetInstance()->successful_test_count()
             , ::testing::UnitTest::GetInstance()->failed_test_count()
-            , verbose);
+            , verbose, false);
     }
     return rtn;
 }

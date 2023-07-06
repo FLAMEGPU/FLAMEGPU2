@@ -5,7 +5,7 @@
 namespace flamegpu {
 namespace detail {
 
-bool TestSuiteTelemetry::sendResults(std::string reportName, std::string outcome, unsigned int total, unsigned int selected, unsigned int skipped, unsigned int passed, unsigned int failed, bool verbose) {
+bool TestSuiteTelemetry::sendResults(std::string reportName, std::string outcome, unsigned int total, unsigned int selected, unsigned int skipped, unsigned int passed, unsigned int failed, bool verbose, bool isSWIG) {
     // Construct the payload
     std::map<std::string, std::string> telemetry_payload;
     telemetry_payload["TestOutcome"] = outcome;
@@ -15,7 +15,7 @@ bool TestSuiteTelemetry::sendResults(std::string reportName, std::string outcome
     telemetry_payload["TestsPassed"] = std::to_string(passed);
     telemetry_payload["TestsFailed"] = std::to_string(failed);
     // generate telemetry data
-    std::string telemetry_data = flamegpu::io::Telemetry::generateData(reportName, telemetry_payload);
+    std::string telemetry_data = flamegpu::io::Telemetry::generateData(reportName, telemetry_payload, isSWIG);
     // send telemetry
     bool telemetrySuccess = flamegpu::io::Telemetry::sendData(telemetry_data);
     // print telemetry payload to the user if requested

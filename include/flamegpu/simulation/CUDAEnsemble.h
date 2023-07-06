@@ -98,7 +98,13 @@ class CUDAEnsemble {
      * @param argc Runtime argument count
      * @param argv Runtime argument list ptr
      */
-    explicit CUDAEnsemble(const ModelDescription& model, int argc = 0, const char** argv = nullptr);
+    explicit CUDAEnsemble(const ModelDescription& model, int argc = 0, const char** argv = nullptr)
+#ifdef SWIG
+        : CUDAEnsemble(model, argc, argv, true)
+#else
+        : CUDAEnsemble(model, argc, argv, false)
+#endif
+    { }
     /**
      * Inverse operation of constructor
      */
@@ -149,6 +155,12 @@ class CUDAEnsemble {
 
  private:
     /**
+     * @copydoc CUDAEnsemble(const ModelDescription&, int, const char**)
+     * @param _isSWIG Flag denoting whether it's a Python build of FLAMEGPU
+     * @see CUDAEnsemble(const ModelDescription&, int, const char**)
+     */
+    CUDAEnsemble(const ModelDescription& model, int argc, const char** argv, bool _isSWIG);
+    /**
      * Print command line interface help
      */
     void printHelp(const char *executable);
@@ -180,6 +192,10 @@ class CUDAEnsemble {
      * Runtime of previous call to simulate() in seconds, initially 0.
      */
     double ensemble_elapsed_time = 0.;
+    /**
+     * If true, the model is using SWIG Python interface
+     **/
+    const bool isSWIG;
 };
 
 }  // namespace flamegpu

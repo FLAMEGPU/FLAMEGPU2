@@ -31,8 +31,9 @@ CUDAEnsemble::EnsembleConfig::EnsembleConfig()
     : telemetry(flamegpu::io::Telemetry::isEnabled()) {}
 
 
-CUDAEnsemble::CUDAEnsemble(const ModelDescription& _model, int argc, const char** argv)
-    : model(_model.model->clone()) {
+CUDAEnsemble::CUDAEnsemble(const ModelDescription& _model, int argc, const char** argv, bool _isSWIG)
+    : model(_model.model->clone())
+    , isSWIG(_isSWIG) {
     initialise(argc, argv);
 }
 CUDAEnsemble::~CUDAEnsemble() {
@@ -186,7 +187,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
                     step_log_config, exit_log_config,
                     d, j,
                     config.verbosity, config.error_level == EnsembleConfig::Fast,
-                    run_logs, log_export_queue, log_export_queue_mutex, log_export_queue_cdn, fast_err_detail, TOTAL_RUNNERS);
+                    run_logs, log_export_queue, log_export_queue_mutex, log_export_queue_cdn, fast_err_detail, TOTAL_RUNNERS, isSWIG);
             }
         }
     }
@@ -239,7 +240,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
             payload_items["NVCCVersion"] = std::to_string(__CUDACC_VER_MAJOR__) + "." + std::to_string(__CUDACC_VER_MINOR__) + "." + std::to_string(__CUDACC_VER_BUILD__);
         #endif
         // generate telemetry data
-        std::string telemetry_data = flamegpu::io::Telemetry::generateData("ensemble-run", payload_items);
+        std::string telemetry_data = flamegpu::io::Telemetry::generateData("ensemble-run", payload_items, isSWIG);
         // send the telemetry packet
         bool telemetrySuccess = flamegpu::io::Telemetry::sendData(telemetry_data);
         // If verbose, print either a successful send, or a misc warning.

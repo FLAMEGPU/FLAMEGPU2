@@ -60,9 +60,10 @@ constexpr static char TELEMETRY_ENDPOINT[] = "https://nom.telemetrydeck.com/v1/"
  * See documentation for data which is sent and why
  * @param event_name the name of the event to record. This will either be "simulation-run, ensemble-run"
  * @param payload_items a map of key value items to embed in the payload of the telemetry packet
+ * @param isSWIG True if a swig build of flamegpu
  * @return The json string that should be sent via sendTelemetryData
  */
-static std::string generateData(std::string event_name, std::map<std::string, std::string> payload_items);
+static std::string generateData(std::string event_name, std::map<std::string, std::string> payload_items, bool isSWIG);
 
 /**
  * Sends telemetry data in the form as the provided json to the TelemetryDeck web service.

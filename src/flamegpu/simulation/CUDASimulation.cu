@@ -49,13 +49,13 @@ namespace {
     }
 }  // anonymous namespace
 
-CUDASimulation::CUDASimulation(const ModelDescription& _model, int argc, const char** argv)
-    : CUDASimulation(_model.model) {
+CUDASimulation::CUDASimulation(const ModelDescription& _model, int argc, const char** argv, bool _isSWIG)
+    : CUDASimulation(_model.model, _isSWIG) {
     if (argc && argv) {
         initialise(argc, argv);
     }
 }
-CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model)
+CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model, bool _isSWIG)
     : Simulation(_model)
     , step_count(0)
     , elapsedSecondsSimulation(0.)
@@ -72,7 +72,8 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model)
 #if __CUDACC_VER_MAJOR__ >= 12
     , cudaContextID(std::numeric_limits<std::uint64_t>::max())
 #endif  // __CUDACC_VER_MAJOR__ >= 12
-    , isPureRTC(detectPureRTC(model)) {
+    , isPureRTC(detectPureRTC(model))
+    , isSWIG(_isSWIG) {
     initOffsetsAndMap();
     // Register the signal handler.
     detail::SignalHandlers::registerSignalHandlers();
@@ -130,7 +131,8 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
 #if __CUDACC_VER_MAJOR__ >= 12
     , cudaContextID(std::numeric_limits<std::uint64_t>::max())
 #endif  // __CUDACC_VER_MAJOR__ >= 12
-    , isPureRTC(master_model->isPureRTC) {
+    , isPureRTC(master_model->isPureRTC)
+    , isSWIG(master_model->isSWIG) {
     initOffsetsAndMap();
     // Ensure submodel is valid
     if (submodel_desc->submodel->exitConditions.empty() && submodel_desc->submodel->exitConditionCallbacks.empty() && submodel_desc->max_steps == 0) {
@@ -1202,7 +1204,7 @@ void CUDASimulation::simulate() {
     if (visualisation) {
         visualisation->updateBuffers();
     }
-    visualiser::ModelVis mv(visualisation);
+    visualiser::ModelVis mv(visualisation, isSWIG);
     #endif
 
     // Run the required number of simulation steps.
@@ -1252,7 +1254,7 @@ void CUDASimulation::simulate() {
             payload_items["NVCCVersion"] = std::to_string(__CUDACC_VER_MAJOR__) + "." + std::to_string(__CUDACC_VER_MINOR__) + "." + std::to_string(__CUDACC_VER_BUILD__);
         #endif
         // generate telemtry data
-        std::string telemetry_data = flamegpu::io::Telemetry::generateData("simulation-run", payload_items);
+        std::string telemetry_data = flamegpu::io::Telemetry::generateData("simulation-run", payload_items, isSWIG);
         bool telemetrySuccess = flamegpu::io::Telemetry::sendData(telemetry_data);
         // If verbose, print either a successful send, or a misc warning.
         if (getSimulationConfig().verbosity >= Verbosity::Verbose) {
@@ -1449,7 +1451,7 @@ void CUDASimulation::applyConfig_derived() {
     // Handle console_mode
 #ifdef FLAMEGPU_VISUALISATION
     if (visualisation) {
-        visualiser::ModelVis mv(visualisation);
+        visualiser::ModelVis mv(visualisation, isSWIG);
         if (getSimulationConfig().console_mode) {
             mv.deactivate();
         } else {
@@ -1650,7 +1652,7 @@ const CUDASimulation::Config &CUDASimulation::getCUDAConfig() const {
 visualiser::ModelVis CUDASimulation::getVisualisation() {
     if (!visualisation)
         visualisation = std::make_shared<visualiser::ModelVisData>(*this);
-    return visualiser::ModelVis(visualisation);
+    return visualiser::ModelVis(visualisation, isSWIG);
 }
 #endif
 

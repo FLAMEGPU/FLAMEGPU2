@@ -23,9 +23,10 @@ class TestSuiteTelemetry : private flamegpu::io::Telemetry {
  * @param skipped The number of skipped or disabled tests
  * @param passed The number of successful tests
  * @param verbose flag indicating if the telemetry packet should be printed to stdout or not.
+ * @param isSWIG flag indicates whether this was called from a Python build of FLAMEGPU.
  * @return success of the telemetry push request
 */
-static bool sendResults(std::string reportName, std::string outcome, unsigned int total, unsigned int selected, unsigned int skipped, unsigned int passed, unsigned int failed, bool verbose);
+static bool sendResults(std::string reportName, std::string outcome, unsigned int total, unsigned int selected, unsigned int skipped, unsigned int passed, unsigned int failed, bool verbose, bool isSWIG);
 };
 
 }  // namespace detail

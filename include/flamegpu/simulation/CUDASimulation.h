@@ -119,13 +119,27 @@ class CUDASimulation : public Simulation {
      * @param argc Runtime argument count
      * @param argv Runtime argument list ptr
      */
-    explicit CUDASimulation(const ModelDescription& model, int argc = 0, const char** argv = nullptr);
+    explicit CUDASimulation(const ModelDescription& model, int argc = 0, const char** argv = nullptr)
+#ifdef SWIG
+        : CUDASimulation(model, argc, argv, true)
+#else
+        : CUDASimulation(model, argc, argv, false)
+#endif
+    { }
 
  private:
     /**
-     * Alt constructor used by CUDAEnsemble
+     * @copydoc CUDASimulation(const ModelDescription&, int, const char**)
+     * @param _isSWIG Flag denoting whether it's a Python build of FLAMEGPU
+     * @see CUDASimulation(const ModelDescription&, int, const char**)
      */
-    explicit CUDASimulation(const std::shared_ptr<const ModelData> &model);
+    CUDASimulation(const ModelDescription& model, int argc, const char** argv, bool _isSWIG);
+    /**
+     * Alt constructor used by CUDAEnsemble
+     * @param model The model description to initialise the runner to execute
+     * @param _isSWIG Flag denoting whether it's a Python build of FLAMEGPU
+     */
+    CUDASimulation(const std::shared_ptr<const ModelData> &model, bool _isSWIG);
     /**
      * Private constructor, used to initialise submodels
      * Allocates CUDASubAgents, and handles mappings
@@ -637,6 +651,10 @@ class CUDASimulation : public Simulation {
      * If true, the model is pureRTC, and hence does not use non-RTC curve
      */
     const bool isPureRTC;
+    /**
+     * If true, the model is using SWIG Python interface
+     **/
+    const bool isSWIG;
 };
 
 template<typename T>
