@@ -324,14 +324,16 @@ foreach(PYTHON_CODEGEN_FILE IN LISTS PYTHON_CODEGEN_SRC_FILES)
 endforeach()
 
 # Define a custom target, with the name intended to be invoked by users (i.e. pyflamegpu)
-# This copies the generated .pyd/.so file produces by swig into the appropriate directory, and byuilds the wheel.
+# This copies the generated .pyd/.so file produces by swig into the appropriate directory, and builds the wheel.
 # Ideally the .pyd/so copy would be a custom_command which specifies the OUTPUT, but this is not possible due to TARGET genex's not being available for use in OUTPUTS or BYPRODUCTS, which is unlikely to be fixed in CMake.
 add_custom_target(${PYTHON_MODULE_TARGET_NAME}
   ALL
   # Copy the python .pyd/.so file to the working dir
   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PYTHON_SWIG_TARGET_NAME}> ${PYTHON_MODULE_NAME}/$<TARGET_FILE_NAME:${PYTHON_SWIG_TARGET_NAME}>
+  # Delete the venv to avoid incremental builds breaking (windows)
+  COMMAND ${CMAKE_COMMAND} -E rm -r -f -- ${PYTHON_LIB_OUTPUT_DIRECTORY}/venv ${PYTHON_LIB_OUTPUT_DIRECTORY}/build
   # Build the wheel in the working dir
-  COMMAND ${Python3_EXECUTABLE} -m build --wheel 
+  COMMAND ${Python3_EXECUTABLE} -m build --wheel
   WORKING_DIRECTORY ${PYTHON_LIB_OUTPUT_DIRECTORY}
   BYPRODUCTS
     ${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}
