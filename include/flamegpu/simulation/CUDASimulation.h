@@ -93,6 +93,7 @@ class CUDASimulation : public Simulation {
     struct Config {
         friend class detail::SimRunner;
         friend class CUDASimulation;
+        friend class HostAPI;
         /**
          * GPU to execute model on
          * Defaults to device 0, this is most performant device as detected by CUDA
@@ -109,6 +110,11 @@ class CUDASimulation : public Simulation {
          * Internal property set by SimRunner to adjust some features required for ensemble performance
          */
         bool is_ensemble = false;
+        /**
+         * Internal property set by SimRunner, identifies the 0-index of the ensemble run within the RunPlanVector
+         * Defaults to UINT_MAX when not part of an ensemble
+         */
+        unsigned int ensemble_run_id = UINT_MAX;
     };
     /**
      * Initialise cuda runner
