@@ -82,7 +82,7 @@ struct ModelVisData {
  */
 class ModelVis {
  public:
-    explicit ModelVis(std::shared_ptr<ModelVisData> data);
+    explicit ModelVis(std::shared_ptr<ModelVisData> data, bool _isSWIG);
     /**
      * Default destructor behaviour
      * Defined explicitly, so that header include does not require including FLAMEGPU_Visualisation for std::unique_ptr destruction.
@@ -251,12 +251,7 @@ class ModelVis {
     /**
      * Sets the visualisation running in a background thread
      */
-    void activate() {
-#ifdef SWIG
-        data->modelCfg.isPython = true;
-#endif
-        _activate();
-    }
+    void activate();
     /**
      * Kills the background thread
      * Does nothing visualisation is not running
@@ -274,12 +269,7 @@ class ModelVis {
     bool isRunning() const;
 
  private:
-    /**
-     * Private version called by public version
-     * Public version is defined inline so swig can get a different version
-     */
-    void _activate();
-
+    const bool isSWIG;
     std::shared_ptr<ModelVisData> data;
 };
 

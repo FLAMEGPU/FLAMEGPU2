@@ -53,6 +53,7 @@ class SimRunner {
      * @param log_export_queue_cdn The condition is notified every time a log has been added to the queue
      * @param fast_err_detail Structure to store error details on fast failure for main thread rethrow
      * @param _total_runners Total number of runners executing
+     * @param _isSWIG Flag denoting whether it's a Python build of FLAMEGPU
      */
     SimRunner(const std::shared_ptr<const ModelData> _model,
         std::atomic<unsigned int> &_err_ct,
@@ -69,7 +70,8 @@ class SimRunner {
         std::mutex &log_export_queue_mutex,
         std::condition_variable &log_export_queue_cdn,
         ErrorDetail &fast_err_detail,
-        unsigned int _total_runners);
+        unsigned int _total_runners,
+        bool _isSWIG);
     /**
      * Each sim runner takes it's own clone of model description hierarchy, so it can manipulate environment without conflict
      */
@@ -148,6 +150,10 @@ class SimRunner {
      * If fail_fast is true, on error details will be stored here so an exception can be thrown from the main thread
      */
     ErrorDetail& fast_err_detail;
+    /**
+     * If true, the model is using SWIG Python interface
+     **/
+    const bool isSWIG;
 };
 
 }  // namespace detail

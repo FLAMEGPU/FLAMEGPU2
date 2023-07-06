@@ -144,7 +144,7 @@ bool Telemetry::isTestMode() {
 }
 
 
-std::string Telemetry::generateData(std::string event_name, std::map<std::string, std::string> payload_items) {
+std::string Telemetry::generateData(std::string event_name, std::map<std::string, std::string> payload_items, bool isSWIG) {
     // Initialise from the env var is needed. A ctor might be nicer.
     initialiseFromEnvironmentIfNeeded();
 
@@ -161,12 +161,12 @@ std::string Telemetry::generateData(std::string event_name, std::map<std::string
 
     // Differentiate pyflamegpu in the payload via the SWIG compiler macro, which we only define when building for pyflamegpu.
     // A user could potentially static link against a build using that macro, but that's not a use-case we are currently concerned with.
-    #ifdef SWIG
+    if (isSWIG) {
         std::string py_version = "pyflamegpu" + std::string(flamegpu::VERSION_STRING);
         payload_items["appVersion"] = py_version;  // e.g. 'pyflamegpu2.0.0-alpha.3' (graphed in Telemetry deck)
-    #else  // SWIG
+    } else {
         payload_items["appVersion"] = flamegpu::VERSION_STRING;  // e.g. '2.0.0-alpha.3' (graphed in Telemetry deck)
-    #endif  // SWIG
+    }
 
     // other version strings
     payload_items["appVersionFull"] = flamegpu::VERSION_FULL;

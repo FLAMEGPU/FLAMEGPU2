@@ -58,4 +58,5 @@ def pytest_sessionfinish(session, exitstatus):
                 , skipped
                 , passed
                 , failed
-                , session.config.getoption("verbose") > 0)
+                , session.config.getoption("verbose") > 0
+                , True) # True this was from Python

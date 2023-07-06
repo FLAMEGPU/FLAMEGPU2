@@ -71,8 +71,9 @@ void ModelVisData::updateRandomSeed() {
     }
 }
 
-ModelVis::ModelVis(std::shared_ptr<ModelVisData> _data)
-    : data(std::move(_data)) { }
+ModelVis::ModelVis(std::shared_ptr<ModelVisData> _data, bool _isSWIG)
+    : isSWIG(_isSWIG)
+    , data(std::move(_data)) { }
 
 void ModelVis::setAutoPalette(const Palette& palette) {
     data->autoPalette = std::make_shared<AutoPalette>(palette);
@@ -115,9 +116,11 @@ AgentVis ModelVis::Agent(const std::string &agent_name) {
 }
 
 // Below methods are related to executing the visualiser
-void ModelVis::_activate() {
+void ModelVis::activate() {
     // Only execute if background thread is not active
     if ((!data->visualiser || !data->visualiser->isRunning()) && !data->model.getSimulationConfig().console_mode) {
+        // Send Python status to the visualiser
+        data->modelCfg.isPython = isSWIG;
         // Init visualiser
         data->visualiser = std::make_unique<FLAMEGPU_Visualisation>(data->modelCfg);  // Window resolution
         data->visualiser->setRandomSeed(data->model.getSimulationConfig().random_seed);

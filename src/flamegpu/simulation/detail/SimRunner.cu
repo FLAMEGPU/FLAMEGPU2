@@ -30,7 +30,8 @@ SimRunner::SimRunner(const std::shared_ptr<const ModelData> _model,
     std::mutex &_log_export_queue_mutex,
     std::condition_variable &_log_export_queue_cdn,
     ErrorDetail &_fast_err_detail,
-    const unsigned int _total_runners)
+    const unsigned int _total_runners,
+    bool _isSWIG)
       : model(_model->clone())
       , run_id(0)
       , device_id(_device_id)
@@ -47,7 +48,8 @@ SimRunner::SimRunner(const std::shared_ptr<const ModelData> _model,
       , log_export_queue(_log_export_queue)
       , log_export_queue_mutex(_log_export_queue_mutex)
       , log_export_queue_cdn(_log_export_queue_cdn)
-      , fast_err_detail(_fast_err_detail) {
+      , fast_err_detail(_fast_err_detail)
+      , isSWIG(_isSWIG) {
     this->thread = std::thread(&SimRunner::start, this);
     // Attempt to name the thread
 #ifdef _MSC_VER
@@ -81,7 +83,7 @@ void SimRunner::start() {
                 memcpy(prop.data.ptr, ovrd.second.ptr, prop.data.length);
             }
             // Set simulation device
-            std::unique_ptr<CUDASimulation> simulation = std::unique_ptr<CUDASimulation>(new CUDASimulation(model));
+            std::unique_ptr<CUDASimulation> simulation = std::unique_ptr<CUDASimulation>(new CUDASimulation(model, isSWIG));
             // Copy steps and seed from runplan
             simulation->SimulationConfig().steps = plans[run_id].getSteps();
             simulation->SimulationConfig().random_seed = plans[run_id].getRandomSimulationSeed();
