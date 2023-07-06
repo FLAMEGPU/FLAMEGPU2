@@ -15,6 +15,7 @@
 #include "flamegpu/runtime/HostAPI_macros.h"
 #include "flamegpu/runtime/agent/HostNewAgentAPI.h"
 #include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/simulation/CUDASimulation.h"
 
 namespace flamegpu {
 namespace detail {
@@ -22,7 +23,6 @@ class CUDAFatAgent;
 class CUDAScatter;
 class CUDAMacroEnvironment;
 }  // namespace detail
-class CUDASimulation;
 class HostAgentAPI;
 
 /**
@@ -82,6 +82,26 @@ class HostAPI {
      * @return the current step count, 0 indexed unsigned.
      */
     unsigned int getStepCounter() const;
+
+#ifdef SWIG
+    /**
+     * Returns the current simulation's CUDA config struct
+     */
+    CUDASimulation::Config getCUDAConfig() const { return agentModel.getCUDAConfig(); }
+    /**
+     * Returns the current simulation's simulation config struct
+     */
+    Simulation::Config getSimulationConfig() const { return agentModel.getSimulationConfig(); }
+#else
+    /**
+     * Returns the current simulation's CUDA config struct
+     */
+    const CUDASimulation::Config &getCUDAConfig() const { return agentModel.getCUDAConfig(); }
+    /**
+     * Returns the current simulation's simulation config struct
+     */
+    const Simulation::Config &getSimulationConfig() const { return agentModel.getSimulationConfig(); }
+#endif
 
  private:
     template<typename T>
