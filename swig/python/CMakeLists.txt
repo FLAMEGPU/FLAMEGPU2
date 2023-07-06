@@ -204,7 +204,7 @@ configure_file(
 	${PYTHON_LIB_TEMP_DIRECTORY}/__init__.py.in
 	@ONLY)
 file(GENERATE
-	OUTPUT ${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/__init__.py
+	OUTPUT ${PYTHON_LIB_OUTPUT_DIRECTORY}/src/${PYTHON_MODULE_NAME}/__init__.py
 	INPUT ${PYTHON_LIB_TEMP_DIRECTORY}/__init__.py.in)
 
 # Function to find if python module MODULE_NAME is available, and error if it is not available.
@@ -234,7 +234,7 @@ flamegpu_search_python_module(build)
 ## ------
 # Define custom commands to produce files in the current cmake directory, a custom target which the user invokes to build the python wheel with appropraite dependencies configured, and any post-build steps required.
 ## ------
-set(PYTHON_FLAMEGPU_LIB_OUTPUT_MODULE_DIR "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}")
+set(PYTHON_FLAMEGPU_LIB_OUTPUT_MODULE_DIR "${PYTHON_LIB_OUTPUT_DIRECTORY}/src/${PYTHON_MODULE_NAME}")
 # Only expliclty create the directory under linux, msbuild emits warnings and is fine without.
 if(NOT WIN32)
   add_custom_command(
@@ -305,7 +305,7 @@ if (FLAMEGPU_VISUALISATION)
 endif()
 
 # Define a custom commmand to copy the swig generated .py file to the correct destination for wheel generation. This output is then appended to the list of dependencies for the target which builds the wheel.
-set(PYTHON_FLAMEGPU_LIB_OUTPUT_MODULE_PY "${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}/${PYTHON_MODULE_NAME}.py")
+set(PYTHON_FLAMEGPU_LIB_OUTPUT_MODULE_PY "${PYTHON_LIB_OUTPUT_DIRECTORY}/src/${PYTHON_MODULE_NAME}/${PYTHON_MODULE_NAME}.py")
 set(PYTHON_FLAMEGPU_TEMP_MODULE_PY ${PYTHON_LIB_TEMP_DIRECTORY}/${PYTHON_MODULE_NAME}/${PYTHON_MODULE_NAME}.py)
 add_custom_command(
   OUTPUT ${PYTHON_FLAMEGPU_LIB_OUTPUT_MODULE_PY}
@@ -329,16 +329,16 @@ endforeach()
 add_custom_target(${PYTHON_MODULE_TARGET_NAME}
   ALL
   # Copy the python .pyd/.so file to the working dir
-  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PYTHON_SWIG_TARGET_NAME}> ${PYTHON_MODULE_NAME}/$<TARGET_FILE_NAME:${PYTHON_SWIG_TARGET_NAME}>
+  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PYTHON_SWIG_TARGET_NAME}> src/${PYTHON_MODULE_NAME}/$<TARGET_FILE_NAME:${PYTHON_SWIG_TARGET_NAME}>
   # Build the wheel in the working dir
   COMMAND ${Python3_EXECUTABLE} -m build --wheel 
   WORKING_DIRECTORY ${PYTHON_LIB_OUTPUT_DIRECTORY}
   BYPRODUCTS
-    ${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}
-    ${PYTHON_LIB_OUTPUT_DIRECTORY}/build
-    ${PYTHON_LIB_OUTPUT_DIRECTORY}/dist
-    ${PYTHON_LIB_OUTPUT_DIRECTORY}/${PYTHON_MODULE_NAME}.egg-info
-    ${PYTHON_LIB_OUTPUT_DIRECTORY}/setup.py
+    ${PYTHON_LIB_OUTPUT_DIRECTORY}/src/${PYTHON_MODULE_NAME}
+    ${PYTHON_LIB_OUTPUT_DIRECTORY}/src/build
+    ${PYTHON_LIB_OUTPUT_DIRECTORY}/src/dist
+    ${PYTHON_LIB_OUTPUT_DIRECTORY}/src/${PYTHON_MODULE_NAME}.egg-info
+    ${PYTHON_LIB_OUTPUT_DIRECTORY}/src/setup.py
   DEPENDS ${PYTHON_MODULE_TARGET_NAME_DEPENDS}
   SOURCES ${PYTHON_MODULE_TARGET_NAME_SOURCES}
   COMMENT "Copying ${PYTHON_MODULE_NAME}.pyd/.so and Building ${PYTHON_MODULE_NAME} Wheel"

@@ -21,7 +21,8 @@ setup(
   url='https://github.com/FLAMEGPU/FLAMEGPU2',
   distclass=BinaryDistribution,
   cmdclass={'install': InstallPlatlib},
-  packages=find_namespace_packages(),
+  packages=find_namespace_packages(where='src'),
+  package_dir={"": "src"},
   include_package_data=True,
   classifiers=[
   'Development Status :: 3 - Alpha',
