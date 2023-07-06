@@ -48,13 +48,11 @@ HostAgentAPI HostAPI::agent(const std::string &agent_name, const std::string &st
     return HostAgentAPI(*this, agentModel.getCUDAAgent(agent_name), state_name, agentOffsets.at(agent_name), state->second);
 }
 
-/**
- * Access the current stepCount
- * Sepearate implementation to avoid dependency loop with cuda agent model.
- * @return the current step count, 0 indexed unsigned.
- */
 unsigned int HostAPI::getStepCounter() const {
     return agentModel.getStepCounter();
+}
+unsigned int HostAPI::getEnsembleRunIndex() const {
+    return agentModel.getCUDAConfig().ensemble_run_id;
 }
 
 }  // namespace flamegpu

@@ -103,6 +103,12 @@ class HostAPI {
     const Simulation::Config &getSimulationConfig() const { return agentModel.getSimulationConfig(); }
 #endif
 
+    /**
+     * Returns the 0-index of the simulation run within the ensembles RunPlanVector
+     * If the simulation is not part of an ensemble, UINT_MAX will be returned
+     */
+    unsigned int getEnsembleRunIndex() const;
+
  private:
     template<typename T>
     void resizeOutputSpace(unsigned int items = 1);
