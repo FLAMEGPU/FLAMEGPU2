@@ -107,6 +107,10 @@ class CUDASimulation : public Simulation {
 
      private:
         /**
+         * Internal property set by Submodels to adjust some features required by submodels
+         */
+        bool is_submodel = false;
+        /**
          * Internal property set by SimRunner to adjust some features required for ensemble performance
          */
         bool is_ensemble = false;
