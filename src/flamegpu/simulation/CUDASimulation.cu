@@ -179,7 +179,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
     // Submodels all run quiet/not verbose by default
     SimulationConfig().verbosity = Verbosity::Default;
     SimulationConfig().steps = submodel_desc->max_steps;
-    CUDAConfig().is_ensemble = true;
+    CUDAConfig().is_submodel = true;
 
     // Determine which agents will be spatially sorted
     this->determineAgentsToSort();
@@ -533,7 +533,7 @@ bool CUDASimulation::step() {
     initialiseSingletons();
 
     // Time the individual step, using a CUDAEventTimer if possible, else a steadyClockTimer.
-    std::unique_ptr<detail::Timer> stepTimer = getDriverAppropriateTimer(getCUDAConfig().is_ensemble);
+    std::unique_ptr<detail::Timer> stepTimer = getDriverAppropriateTimer(getCUDAConfig().is_ensemble || getCUDAConfig().is_submodel);
     stepTimer->start();
 
     // Init any unset agent IDs
@@ -1172,7 +1172,7 @@ void CUDASimulation::simulate() {
     initialiseSingletons();
 
     // Create the event timing object, using an appropriate timer implementation.
-    std::unique_ptr<detail::Timer> simulationTimer = getDriverAppropriateTimer(getCUDAConfig().is_ensemble);
+    std::unique_ptr<detail::Timer> simulationTimer = getDriverAppropriateTimer(getCUDAConfig().is_ensemble || getCUDAConfig().is_submodel);
     simulationTimer->start();
 
     // Create as many streams as required
@@ -1250,8 +1250,8 @@ void CUDASimulation::simulate() {
     }
     processExitLog();
 
-    // Send Telemetry
-    if (getSimulationConfig().telemetry) {
+    // Send Telemetry if not submodel
+    if (getSimulationConfig().telemetry && !getCUDAConfig().is_submodel) {
         // Generate some payload items
         std::map<std::string, std::string> payload_items;
         payload_items["GPUDevices"] = flamegpu::detail::compute_capability::getDeviceName(deviceInitialised);
