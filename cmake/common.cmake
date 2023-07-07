@@ -304,24 +304,25 @@ function(flamegpu_add_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     flamegpu_new_linter_target(${NAME} "${SRC}" EXCLUDE_FILTERS "${FLAMEGPU_ADD_EXECUTABLE_LINT_EXCLUDE_FILTERS}")
     
     # Setup Visual Studio (and eclipse) filters
-    #src/.h
+    #src/.h    
+    escape_regex("${CMAKE_CURRENT_SOURCE_DIR}" CURRENT_SOURCE_DIR_ESCAPE)
     set(T_SRC "${SRC}")
-    list(FILTER T_SRC INCLUDE REGEX "^${CMAKE_CURRENT_SOURCE_DIR}/src")
+    list(FILTER T_SRC INCLUDE REGEX "^${CURRENT_SOURCE_DIR_ESCAPE}/src")
     list(FILTER T_SRC INCLUDE REGEX ".*\.(h|hpp|cuh)$")
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX headers FILES ${T_SRC})
     #src/.cpp
     set(T_SRC "${SRC}")
-    list(FILTER T_SRC INCLUDE REGEX "^${CMAKE_CURRENT_SOURCE_DIR}/src")
+    list(FILTER T_SRC INCLUDE REGEX "^${CURRENT_SOURCE_DIR_ESCAPE}/src")
     list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX src FILES ${T_SRC})
     #./.h
     set(T_SRC "${SRC}")
-    list(FILTER T_SRC EXCLUDE REGEX "^${CMAKE_CURRENT_SOURCE_DIR}/src")
+    list(FILTER T_SRC EXCLUDE REGEX "^${CURRENT_SOURCE_DIR_ESCAPE}/src")
     list(FILTER T_SRC INCLUDE REGEX ".*\.(h|hpp|cuh)$")
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX headers FILES ${T_SRC})
     #./.cpp
     set(T_SRC "${SRC}")
-    list(FILTER T_SRC EXCLUDE REGEX "^${CMAKE_CURRENT_SOURCE_DIR}/src")
+    list(FILTER T_SRC EXCLUDE REGEX "^${CURRENT_SOURCE_DIR_ESCAPE}/src")
     list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh|rc)$")
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX src FILES ${T_SRC})
 

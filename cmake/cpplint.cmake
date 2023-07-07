@@ -2,6 +2,7 @@
 include_guard(GLOBAL)
 
 include(${CMAKE_CURRENT_LIST_DIR}/SetTargetFolder.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/EscapeRegex.cmake)
 
 # Find CPPLINT, storing in a variable CPPLINT_EXECUTABLE
 find_file(CPPLINT_EXECUTABLE NAMES cpplint cpplint.exe)
@@ -49,7 +50,8 @@ function(flamegpu_new_linter_target NAME SRC)
         "EXCLUDE_FILTERS"
         ${ARGN})
     # Don't lint external files
-    list(FILTER SRC EXCLUDE REGEX "^${FLAMEGPU_ROOT}/externals/.*")
+    escape_regex("${FLAMEGPU_ROOT}" FLAMEGPU_ROOT_ESCAPE)
+    list(FILTER SRC EXCLUDE REGEX "^${FLAMEGPU_ROOT_ESCAPE}/externals/.*")
     # Don't lint user provided list of regular expressions.
     foreach(EXCLUDE_FILTER ${NEW_LINTER_TARGET_EXCLUDE_FILTERS})
         list(FILTER SRC EXCLUDE REGEX "${EXCLUDE_FILTER}")
