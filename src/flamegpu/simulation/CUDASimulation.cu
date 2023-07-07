@@ -226,6 +226,9 @@ void CUDASimulation::initFunctions() {
     std::unique_ptr<detail::Timer> initFunctionsTimer(new detail::SteadyClockTimer());
     initFunctionsTimer->start();
 
+    // Ensure singletons have been initialised
+    initialiseSingletons();
+
     // Execute normal init functions
     for (auto &initFn : model->initFunctions) {
         initFn(this->host_api.get());
@@ -255,6 +258,9 @@ void CUDASimulation::exitFunctions() {
     flamegpu::util::nvtx::Range range{"CUDASimulation::exitFunctions"};
     std::unique_ptr<detail::Timer> exitFunctionsTimer(new detail::SteadyClockTimer());
     exitFunctionsTimer->start();
+
+    // Ensure singletons have been initialised
+    initialiseSingletons();
 
     // Execute exit functions
     for (auto &exitFn : model->exitFunctions) {
