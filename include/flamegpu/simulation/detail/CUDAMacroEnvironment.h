@@ -33,6 +33,7 @@ class CurveRTCHost;
  * This class is CUDASimulation's internal handler for macro environment functionality
  */
 class CUDAMacroEnvironment {
+ public:
     /**
      * Used to group items required by properties
      */
@@ -70,11 +71,7 @@ class CUDAMacroEnvironment {
         bool is_sub;
         // ptrdiff_t rtc_offset;  // This is set by buildRTCOffsets();
     };
-    const CUDASimulation& cudaSimulation;
-    std::map<std::string, MacroEnvProp> properties;
-    std::map<std::string, std::weak_ptr<HostMacroProperty_MetaData>> host_cache;
 
- public:
     /**
      * Normal constructor
      * @param description Agent description of the agent
@@ -95,7 +92,7 @@ class CUDAMacroEnvironment {
      * @param stream The CUDAStream to use for CUDA operations
      * @note This must be called after the master model CUDAMacroEnvironment has init
      */
-    void init(const SubEnvironmentData& mapping, const CUDAMacroEnvironment& master_macro_env, cudaStream_t stream);
+    void init(const SubEnvironmentData& mapping, std::shared_ptr<const detail::CUDAMacroEnvironment> master_macro_env, cudaStream_t stream);
     /**
      * Release all CUDA allocations, and unregisters CURVE variables
      */
@@ -160,6 +157,16 @@ class CUDAMacroEnvironment {
     template<typename T>
     HostMacroProperty_swig<T> getProperty_swig(const std::string& name);
 #endif
+    /**
+     * Returns the full map of macro environment properties
+     * Used for IO
+     */
+    const std::map<std::string, MacroEnvProp>& getPropertiesMap() const;
+
+ private:
+    const CUDASimulation& cudaSimulation;
+    std::map<std::string, MacroEnvProp> properties;
+    std::map<std::string, std::weak_ptr<HostMacroProperty_MetaData>> host_cache;
 };
 
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>

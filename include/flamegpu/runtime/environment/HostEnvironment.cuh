@@ -36,7 +36,7 @@ class HostEnvironment {
     /**
      * Constructor, to be called by HostAPI
      */
-    explicit HostEnvironment(unsigned int instance_id, const std::shared_ptr<detail::EnvironmentManager> &env, detail::CUDAMacroEnvironment &_macro_env);
+    explicit HostEnvironment(unsigned int instance_id, const std::shared_ptr<detail::EnvironmentManager> &env, const std::shared_ptr<detail::CUDAMacroEnvironment>& _macro_env);
     /**
      * Provides access to EnvironmentManager singleton
      */
@@ -44,7 +44,7 @@ class HostEnvironment {
     /**
      * Provides access to macro properties for the instance
      */
-    detail::CUDAMacroEnvironment& macro_env;
+    const std::shared_ptr<detail::CUDAMacroEnvironment> macro_env;
     /**
      * Access to instance id of the CUDASimulation
      * This is used to augment all variable names
@@ -219,13 +219,13 @@ std::vector<T> HostEnvironment::getPropertyArray(const std::string& name) const 
 
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 HostMacroProperty<T, I, J, K, W> HostEnvironment::getMacroProperty(const std::string& name) const {
-    return macro_env.getProperty<T, I, J, K, W>(name);
+    return macro_env->getProperty<T, I, J, K, W>(name);
 }
 
 #ifdef SWIG
 template<typename T>
 HostMacroProperty_swig<T> HostEnvironment::getMacroProperty_swig(const std::string& name) const {
-    return macro_env.getProperty_swig<T>(name);
+    return macro_env->getProperty_swig<T>(name);
 }
 #endif
 }  // namespace flamegpu

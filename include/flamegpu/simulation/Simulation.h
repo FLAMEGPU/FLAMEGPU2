@@ -6,6 +6,7 @@
 #include <ctime>
 #include <utility>
 #include <unordered_map>
+#include <vector>
 
 #include "flamegpu/defines.h"
 #include "flamegpu/simulation/detail/AgentInterface.h"
@@ -14,6 +15,7 @@
 namespace flamegpu {
 namespace detail {
 class EnvironmentManager;
+class CUDAMacroEnvironment;
 }  // namespace detail
 class AgentVector;
 class HostAPI;
@@ -150,6 +152,7 @@ class Simulation {
      * Returns the environment manager
      */
     virtual std::shared_ptr<detail::EnvironmentManager> getEnvironment() const = 0;
+    virtual std::shared_ptr<const detail::CUDAMacroEnvironment> getMacroEnvironment() const = 0;
 
     /**
      * returns the width of the widest layer in model.
@@ -182,6 +185,10 @@ class Simulation {
      * Initial environment items if they have been loaded from file, prior to device selection
      */
     std::unordered_map<std::string, detail::Any> env_init;
+    /**
+     * Initial macro environment items if they have been loaded from file, prior to device selection
+     */
+    std::unordered_map<std::string, std::vector<char>> macro_env_init;
     /**
      * the width of the widest layer in the concrete version of the model (calculated once)
      */

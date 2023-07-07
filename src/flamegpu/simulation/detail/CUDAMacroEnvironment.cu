@@ -35,7 +35,7 @@ void CUDAMacroEnvironment::init(cudaStream_t stream) {
     gpuErrchk(cudaStreamSynchronize(stream));
 }
 
-void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, const CUDAMacroEnvironment &master_macro_env, cudaStream_t stream) {
+void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, std::shared_ptr<const detail::CUDAMacroEnvironment> master_macro_env, cudaStream_t stream) {
     // Map local properties
     for (auto& prop : properties) {
         if (!prop.second.d_ptr) {
@@ -54,8 +54,8 @@ void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, const CUDAMac
                     gpuErrchk(cudaMemsetAsync(prop.second.d_ptr, 0, buffer_size, stream));
             } else {
                 // If it's a mapped sub macro property
-                auto mmp = master_macro_env.properties.find(sub->second);
-                if (mmp != master_macro_env.properties.end()
+                auto mmp = master_macro_env->properties.find(sub->second);
+                if (mmp != master_macro_env->properties.end()
                     && mmp->second.d_ptr
                     && mmp->second.elements == prop.second.elements
                     && mmp->second.type == prop.second.type) {
@@ -96,6 +96,9 @@ void CUDAMacroEnvironment::unmapRTCVariables(detail::curve::CurveRTCHost& curve_
     for (const auto &p : properties) {
         curve_header.unregisterEnvMacroProperty(p.first.c_str());
     }
+}
+const std::map<std::string, CUDAMacroEnvironment::MacroEnvProp>& CUDAMacroEnvironment::getPropertiesMap() const {
+    return properties;
 }
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 void CUDAMacroEnvironment::resetFlagsAsync(const std::vector<cudaStream_t> &streams) {

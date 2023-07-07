@@ -61,7 +61,8 @@ void Simulation::applyConfig() {
         }
 
         env_init.clear();
-        io::StateReader *read__ = io::StateReaderFactory::createReader(model->name, model->environment->properties, env_init, pops, config.input_file.c_str(), this);
+        macro_env_init.clear();
+        io::StateReader *read__ = io::StateReaderFactory::createReader(model->name, model->environment->properties, env_init, model->environment->macro_properties, macro_env_init, pops, config.input_file.c_str(), this);
         if (read__) {
             read__->parse();
             for (auto &agent : pops) {
@@ -140,7 +141,7 @@ void Simulation::exportData(const std::string &path, bool prettyPrint) {
         }
     }
 
-    io::StateWriter *write__ = io::StateWriterFactory::createWriter(model->name, getEnvironment(), pops, getStepCounter(), path, this);
+    io::StateWriter *write__ = io::StateWriterFactory::createWriter(model->name, getEnvironment(), pops, getMacroEnvironment(), getStepCounter(), path, this);
     write__->writeStates(prettyPrint);
 }
 void Simulation::exportLog(const std::string &path, bool steps, bool exit, bool stepTime, bool exitTime, bool prettyPrint) {
@@ -186,8 +187,10 @@ int Simulation::checkArgs(int argc, const char** argv) {
                     }
                 }
                 env_init.clear();
+                macro_env_init.clear();
                 const auto &env_desc = model->environment->properties;  // For some reason this method returns a copy, not a reference
-                io::StateReader *read__ = io::StateReaderFactory::createReader(model->name, env_desc, env_init, pops, config.input_file.c_str(), this);
+                const auto &macro_env_desc = model->environment->macro_properties;  // For some reason this method returns a copy, not a reference
+                io::StateReader *read__ = io::StateReaderFactory::createReader(model->name, env_desc, env_init, macro_env_desc, macro_env_init, pops, config.input_file.c_str(), this);
                 if (read__) {
                     try {
                         read__->parse();

@@ -57,7 +57,7 @@ class HostAPI {
         const AgentOffsetMap &agentOffsets,
         AgentDataMap &agentData,
         const std::shared_ptr<detail::EnvironmentManager> &env,
-        detail::CUDAMacroEnvironment &macro_env,
+        const std::shared_ptr<detail::CUDAMacroEnvironment> &macro_env,
         unsigned int streamId,
         cudaStream_t stream);
     /**

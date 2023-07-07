@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <string>
 #include <map>
+#include <numeric>
 
 #include "flamegpu/detail/curand.cuh"
 #include "flamegpu/model/AgentFunctionData.cuh"
@@ -62,7 +63,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model, b
     , elapsedSecondsInitFunctions(0.)
     , elapsedSecondsExitFunctions(0.)
     , elapsedSecondsRTCInitialisation(0.)
-    , macro_env(*_model->environment, *this)
+    , macro_env(std::make_shared<detail::CUDAMacroEnvironment>(*_model->environment, *this))
     , config({})
     , run_log(std::make_unique<RunLog>())
     , streams(std::vector<cudaStream_t>())
@@ -122,7 +123,7 @@ bool CUDASimulation::detectPureRTC(const std::shared_ptr<const ModelData>& _mode
 CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_desc, CUDASimulation *master_model)
     : Simulation(submodel_desc, master_model)
     , step_count(0)
-    , macro_env(*submodel_desc->submodel->environment, *this)
+    , macro_env(std::make_shared<detail::CUDAMacroEnvironment>(*submodel_desc->submodel->environment, *this))
     , run_log(std::make_unique<RunLog>())
     , streams(std::vector<cudaStream_t>())
     , singletons(nullptr)
@@ -206,7 +207,7 @@ CUDASimulation::~CUDASimulation() {
     message_map.clear();
     submodel_map.clear();
     host_api.reset();
-    macro_env.free();
+    macro_env->free();
 #ifdef FLAMEGPU_VISUALISATION
     visualisation.reset();  // Might want to force destruct this, as user could hold a ModelVis that has shared ptr
 #endif
@@ -1056,7 +1057,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Reset macro-environment read-write flags
     // Note this does not synchronise threads, it relies on synchronizeAllStreams() post host fns
-    macro_env.resetFlagsAsync(streams);
+    macro_env->resetFlagsAsync(streams);
 #endif
 
     // Synchronise  after the host layer functions to ensure that the device is up to date? This can potentially be removed.
@@ -1565,9 +1566,9 @@ void CUDASimulation::initialiseSingletons() {
 
         // Populate the environment properties
         if (!submodel) {
-            macro_env.init(stream_0);
+            macro_env->init(stream_0);
         } else {
-            macro_env.init(*submodel->subenvironment, mastermodel->macro_env, stream_0);
+            macro_env->init(*submodel->subenvironment, mastermodel->macro_env, stream_0);
         }
 
         // Propagate singleton init to submodels
@@ -1595,6 +1596,7 @@ void CUDASimulation::initialiseSingletons() {
     }
     // Populate the environment properties
     initEnvironmentMgr();
+    initMacroEnvironment();
 
     // Ensure there are enough streams to execute the layer.
     // Taking into consideration if in-layer concurrency is disabled or not.
@@ -1796,6 +1798,33 @@ void CUDASimulation::initEnvironmentMgr() {
     // Clear init
     env_init.clear();
 }
+void CUDASimulation::initMacroEnvironment() {
+    const auto &mp_map = macro_env->getPropertiesMap();
+    if (mp_map.size() && !mp_map.begin()->second.d_ptr) {
+        THROW exception::UnknownInternalError("CUDASimulation::initMacroEnvironment() called before macro environment initialised.");
+    }
+    const cudaStream_t stream = getStream(0);
+    // Set any properties loaded from file during arg parse stage
+    for (const auto &[name, buff] : macro_env_init) {
+        const auto it =  mp_map.find(name);
+        if (it == mp_map.end()) {
+            THROW exception::InvalidEnvProperty("Macro environment init data contains unexpected property '%s', "
+                "in CUDASimulation::initMacroEnvironment()\n", name.c_str());
+        }
+        // @todo Not tracking type to validate that here?
+        const unsigned int elements = std::accumulate(it->second.elements.begin(), it->second.elements.end(), 1, std::multiplies<unsigned int>());
+        if (elements * it->second.type_size != buff.size()) {
+            THROW exception::InvalidEnvProperty("Macro environment init data contains property '%s' with buffer length mismatch '%u' != '%u', "
+                "this should have been caught during file parsing, "
+                "in CUDASimulation::initMacroEnvironment()\n", name.c_str(), static_cast<unsigned int>(buff.size()), elements * it->second.type_size);
+        } else {
+            gpuErrchk(cudaMemcpyAsync(it->second.d_ptr, buff.data(), buff.size() * sizeof(char), cudaMemcpyHostToDevice, stream));
+        }
+    }
+    gpuErrchk(cudaStreamSynchronize(stream));
+    // Clear init
+    macro_env_init.clear();
+}
 void CUDASimulation::resetLog() {
     // Track previous device id, so we can avoid costly request for device properties if not required
     static int previous_device_id = -1;
@@ -1957,6 +1986,9 @@ std::shared_ptr<detail::EnvironmentManager> CUDASimulation::getEnvironment() con
     if (singletons)
         return singletons->environment;
     return nullptr;
+}
+std::shared_ptr<const detail::CUDAMacroEnvironment> CUDASimulation::getMacroEnvironment() const {
+    return macro_env;
 }
 void CUDASimulation::assignAgentIDs() {
     flamegpu::util::nvtx::Range range{"CUDASimulation::assignAgentIDs"};

@@ -11,6 +11,7 @@
 #include "flamegpu/io/XMLStateReader.h"
 #include <sstream>
 #include <algorithm>
+#include <numeric>
 #include <tuple>
 #include "tinyxml2/tinyxml2.h"              // downloaded from https:// github.com/leethomason/tinyxml2, the list of xml parsers : http:// lars.ruoff.free.fr/xmlcpp/
 #include "flamegpu/exception/FLAMEGPUException.h"
@@ -67,11 +68,13 @@ namespace io {
 XMLStateReader::XMLStateReader(
     const std::string &model_name,
     const std::unordered_map<std::string, EnvironmentData::PropData> &env_desc,
-    std::unordered_map<std::string, detail::Any>&env_init,
+    std::unordered_map<std::string, detail::Any> &env_init,
+    const std::unordered_map<std::string, EnvironmentData::MacroPropData>& macro_env_desc,
+    std::unordered_map<std::string, std::vector<char>> &macro_env_init,
     util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
     const std::string &input,
     Simulation *sim_instance)
-    : StateReader(model_name, env_desc, env_init, model_state, input, sim_instance) {}
+    : StateReader(model_name, env_desc, env_init, macro_env_desc, macro_env_init, model_state, input, sim_instance) {}
 
 std::string XMLStateReader::getInitialState(const std::string &agent_name) const {
     for (const auto &i : model_state) {
@@ -212,8 +215,8 @@ int XMLStateReader::parse() {
                             "in XMLStateReader::parse()\n", key);
                     }
                 } else if (el >= it->second.data.elements) {
-                    THROW exception::RapidJSONError("Input file contains environment property '%s' with %u elements expected %u,"
-                        "in XMLStateReader::parse()\n", key, el, it->second.data.elements);
+                    THROW exception::RapidJSONError("Input file contains environment property '%s' too many elements, expected %u,"
+                        "in XMLStateReader::parse()\n", key, it->second.data.elements);
                 }
                 const auto ei_it = env_init.find(key);
                 if (val_type == std::type_index(typeid(float))) {
@@ -248,6 +251,66 @@ int XMLStateReader::parse() {
         }
     } else if (sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet) {
         fprintf(stderr, "Warning: Input file '%s' does not contain environment node.\n", inputFile.c_str());
+    }
+
+    // Read macro environment data
+    pElement = pRoot->FirstChildElement("macro_environment");
+    if (pElement) {
+        for (auto envElement = pElement->FirstChildElement(); envElement; envElement = envElement->NextSiblingElement()) {
+            const char *key = envElement->Value();
+            std::stringstream ss(envElement->GetText());
+            std::string token;
+            const auto it = macro_env_desc.find(std::string(key));
+            if (it == macro_env_desc.end()) {
+                THROW exception::TinyXMLError("Input file contains unrecognised macro environment property '%s',"
+                    "in XMLStateReader::parse()\n", key);
+            }
+            const std::type_index val_type = it->second.type;
+            const unsigned int elements = std::accumulate(it->second.elements.begin(), it->second.elements.end(), 1, std::multiplies<unsigned int>());
+            unsigned int el = 0;
+            while (getline(ss, token, ',')) {
+                if (el == 0) {
+                    if (!macro_env_init.emplace(std::string(key), std::vector<char>(elements * it->second.type_size)).second) {
+                        THROW exception::TinyXMLError("Input file contains macro environment property '%s' multiple times, "
+                            "in XMLStateReader::parse()\n", key);
+                    }
+                } else if (el >= elements) {
+                    THROW exception::RapidJSONError("Input file contains macro environment property '%s' too many elements, expected %u,"
+                        "in XMLStateReader::parse()\n", key, elements);
+                }
+                auto &mei = macro_env_init.at(key);
+                if (val_type == std::type_index(typeid(float))) {
+                    static_cast<float*>(static_cast<void*>(mei.data()))[el++] = stof(token);
+                } else if (val_type == std::type_index(typeid(double))) {
+                    static_cast<double*>(static_cast<void*>(mei.data()))[el++] = stod(token);
+                } else if (val_type == std::type_index(typeid(int64_t))) {
+                    static_cast<int64_t*>(static_cast<void*>(mei.data()))[el++] = stoll(token);
+                } else if (val_type == std::type_index(typeid(uint64_t))) {
+                    static_cast<uint64_t*>(static_cast<void*>(mei.data()))[el++] = stoull(token);
+                } else if (val_type == std::type_index(typeid(int32_t))) {
+                    static_cast<int32_t*>(static_cast<void*>(mei.data()))[el++] = static_cast<int32_t>(stoll(token));
+                } else if (val_type == std::type_index(typeid(uint32_t))) {
+                    static_cast<uint32_t*>(static_cast<void*>(mei.data()))[el++] = static_cast<uint32_t>(stoull(token));
+                } else if (val_type == std::type_index(typeid(int16_t))) {
+                    static_cast<int16_t*>(static_cast<void*>(mei.data()))[el++] = static_cast<int16_t>(stoll(token));
+                } else if (val_type == std::type_index(typeid(uint16_t))) {
+                    static_cast<uint16_t*>(static_cast<void*>(mei.data()))[el++] = static_cast<uint16_t>(stoull(token));
+                } else if (val_type == std::type_index(typeid(int8_t))) {
+                    static_cast<int8_t*>(static_cast<void*>(mei.data()))[el++] = static_cast<int8_t>(stoll(token));
+                } else if (val_type == std::type_index(typeid(uint8_t))) {
+                    static_cast<uint8_t*>(static_cast<void*>(mei.data()))[el++] = static_cast<uint8_t>(stoull(token));
+                } else {
+                    THROW exception::TinyXMLError("Model contains macro environment property '%s' of unsupported type '%s', "
+                        "in XMLStateReader::parse()\n", key, val_type.name());
+                }
+            }
+            if (el != elements && sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet) {
+                fprintf(stderr, "Warning: Macro environment property '%s' expects '%u' elements, input file '%s' contains '%u' elements.\n",
+                    key, elements, inputFile.c_str(), el);
+            }
+        }
+    } else if (sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet) {
+        fprintf(stderr, "Warning: Input file '%s' does not contain macro environment node.\n", inputFile.c_str());
     }
 
     // Count how many of each agent are in the file and resize state lists

@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/model/ModelDescription.h"
@@ -12,6 +13,7 @@
 namespace flamegpu {
 namespace detail {
 class EnvironmentManager;
+class CUDAMacroEnvironment;
 }  // namespace detail
 class AgentVector;
 class Simulation;
@@ -31,21 +33,24 @@ class StateWriter {
      * @param _model_name Name from the model description hierarchy of the model to be exported
      * @param _env_manager Environment manager containing env property data for this sim instance
      * @param _model_state Map of AgentVector to read the agent data from per agent, key should be agent name
+     * @param _macro_env Macro environment of the model
      * @param _iterations The value from the step counter at the time of export.
      * @param output_file Filename of the input file (This will be used to determine which reader to return)
      * @param _sim_instance Instance of the simulation (for configuration data IO)
      */
-    StateWriter(const std::string &_model_name,
-        const std::shared_ptr<detail::EnvironmentManager>& _env_manager,
+    StateWriter(std::string _model_name,
+        std::shared_ptr<detail::EnvironmentManager> _env_manager,
         const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &_model_state,
+        std::shared_ptr<const detail::CUDAMacroEnvironment> _macro_env,
         const unsigned int _iterations,
-        const std::string &output_file,
+        std::string output_file,
         const Simulation *_sim_instance)
     : model_state(_model_state)
     , iterations(_iterations)
-    , outputFile(output_file)
-    , model_name(_model_name)
-    , env_manager(_env_manager)
+    , outputFile(std::move(output_file))
+    , model_name(std::move(_model_name))
+    , env_manager(std::move(_env_manager))
+    , macro_env(std::move(_macro_env))
     , sim_instance(_sim_instance) {}
     /**
      * Virtual destructor for correct inheritance behaviour
@@ -69,6 +74,7 @@ class StateWriter {
     std::string outputFile;
     const std::string model_name;
     const std::shared_ptr<detail::EnvironmentManager> env_manager;
+    const std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env;
     const Simulation *sim_instance;
 };
 }  // namespace io

@@ -84,10 +84,74 @@ FLAMEGPU_STEP_FUNCTION(RESET_ENV) {
     FLAMEGPU->environment.setProperty<double>("double_inf", {});
     FLAMEGPU->environment.setProperty<double>("double_inf_neg", {});
 }
+FLAMEGPU_INIT_FUNCTION(INIT_MACRO_ENV) {
+    auto macro_float_3_3_3 = FLAMEGPU->environment.getMacroProperty<float, 3, 3, 3>("macro_float_3_3_3");
+    int i = 0;
+    for (int x = 0; x < 3; ++x) {
+        for (int y = 0; y < 3; ++y) {
+            for (int z = 0; z < 3; ++z) {
+                macro_float_3_3_3[x][y][z] = static_cast<float>(i++);
+            }
+        }
+    }
+    auto macro_int_4_3_2_3 = FLAMEGPU->environment.getMacroProperty<int, 4, 3, 2, 3>("macro_int_4_3_2_3");
+    i = 0;
+    for (int x = 0; x < 4; ++x) {
+        for (int y = 0; y < 3; ++y) {
+            for (int z = 0; z < 2; ++z) {
+                for (int w = 0; w < 3; ++w) {
+                    macro_int_4_3_2_3[x][y][z][w] = 120 + i++;
+                }
+            }
+        }
+    }
+    auto macro_uint = FLAMEGPU->environment.getMacroProperty<unsigned int>("macro_uint");
+    macro_uint = 12;
+}
+FLAMEGPU_STEP_FUNCTION(VALIDATE_MACRO_ENV) {
+    const auto macro_float_3_3_3 = FLAMEGPU->environment.getMacroProperty<float, 3, 3, 3>("macro_float_3_3_3");
+    int i = 0;
+    for (int x = 0; x < 3; ++x) {
+        for (int y = 0; y < 3; ++y) {
+            for (int z = 0; z < 3; ++z) {
+                EXPECT_EQ(static_cast<float>(macro_float_3_3_3[x][y][z]), static_cast<float>(i++));
+            }
+        }
+    }
+    auto macro_int_4_3_2_3 = FLAMEGPU->environment.getMacroProperty<int, 4, 3, 2, 3>("macro_int_4_3_2_3");
+    i = 0;
+    for (int x = 0; x < 4; ++x) {
+        for (int y = 0; y < 3; ++y) {
+            for (int z = 0; z < 2; ++z) {
+                for (int w = 0; w < 3; ++w) {
+                    EXPECT_EQ(static_cast<int>(macro_int_4_3_2_3[x][y][z][w]), 120 + i++);
+                }
+            }
+        }
+    }
+    auto macro_uint = FLAMEGPU->environment.getMacroProperty<unsigned int>("macro_uint");
+    EXPECT_EQ(static_cast<unsigned int>(macro_uint), 12u);
+}
+FLAMEGPU_STEP_FUNCTION(RESET_MACRO_ENV) {
+    auto macro_float_3_3_3 = FLAMEGPU->environment.getMacroProperty<float, 3, 3, 3>("macro_float_3_3_3");
+    macro_float_3_3_3.zero();
+    auto macro_int_4_3_2_3 = FLAMEGPU->environment.getMacroProperty<int, 4, 3, 2, 3>("macro_int_4_3_2_3");
+    macro_int_4_3_2_3.zero();
+    auto macro_uint = FLAMEGPU->environment.getMacroProperty<unsigned int>("macro_uint");
+    macro_uint.zero();
+}
 
 class MiniSim {
+    std::string test_file;
+
  public:
+    ~MiniSim() {
+        // Cleanup
+        if (!test_file.empty())
+            ::remove(test_file.c_str());
+    }
     void run(const std::string &test_file_name) {
+        this->test_file = test_file_name;
         // Assertions for limits
         ASSERT_TRUE(std::numeric_limits<float>::has_quiet_NaN);
         ASSERT_TRUE(std::numeric_limits<float>::has_signaling_NaN);
@@ -163,6 +227,12 @@ class MiniSim {
             e.newProperty<double>("double_inf", std::numeric_limits<double>::infinity());
             e.newProperty<double>("double_inf_neg", -std::numeric_limits<double>::infinity());
         }
+        {
+            EnvironmentDescription e = model.Environment();
+            e.newMacroProperty<float, 3, 3, 3>("macro_float_3_3_3");
+            e.newMacroProperty<int, 4, 3, 2, 3>("macro_int_4_3_2_3");
+            e.newMacroProperty<unsigned int>("macro_uint");
+        }
         AgentVector pop_a_out(a, 5);
         for (unsigned int i = 0; i < 5; ++i) {
             auto agent = pop_a_out[i];
@@ -200,10 +270,14 @@ class MiniSim {
             agent.setVariable<int8_t, 3>("int8_t", { static_cast<int8_t>(9), static_cast<int8_t>(i), static_cast<int8_t>(1) });
             agent.setVariable<uint8_t, 3>("uint8_t", { static_cast<uint8_t>(10), static_cast<uint8_t>(i), static_cast<uint8_t>(1) });
         }
+        model.addInitFunction(INIT_MACRO_ENV);
         model.newLayer().addHostFunction(VALIDATE_ENV);
+        model.newLayer().addHostFunction(VALIDATE_MACRO_ENV);
         model.newLayer().addHostFunction(RESET_ENV);
+        model.newLayer().addHostFunction(RESET_MACRO_ENV);
         {  // Run export
             CUDASimulation am(model);
+            am.initFunctions();
             am.setPopulationData(pop_a_out);
             am.setPopulationData(pop_b_out, "2");  // Create them in the not initial state
             // Set config files for export too
@@ -319,6 +393,7 @@ class MiniSim {
             CUDASimulation am(model);
             // Step once, this checks and clears env vars
             validate_has_run = false;
+            am.initFunctions();
             am.step();
             ASSERT_TRUE(validate_has_run);
             // Reload env vars from file
@@ -420,6 +495,11 @@ class MiniSim {
                 EXPECT_TRUE(int8_t_t_array);
                 EXPECT_TRUE(uint8_t_array);
             }
+            // Validate env
+            validate_has_run = false;
+            am.initFunctions();
+            am.step();
+            ASSERT_TRUE(validate_has_run);
         }
         // Cleanup
         ASSERT_EQ(::remove(test_file_name.c_str()), 0);
@@ -444,9 +524,13 @@ class IOTest : public testing::Test {
 };
 
 TEST_F(IOTest, XML_WriteRead) {
+    // Avoid fail if previous run didn't cleanup properly
+    ::remove(XML_FILE_NAME);
     ms->run(XML_FILE_NAME);
 }
 TEST_F(IOTest, JSON_WriteRead) {
+    // Avoid fail if previous run didn't cleanup properly
+    ::remove(JSON_FILE_NAME);
     ms->run(JSON_FILE_NAME);
 }
 FLAMEGPU_HOST_FUNCTION(DoNothing) {

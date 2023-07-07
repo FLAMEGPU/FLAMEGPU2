@@ -14,7 +14,7 @@ HostAPI::HostAPI(CUDASimulation &_agentModel,
     const AgentOffsetMap &_agentOffsets,
     AgentDataMap &_agentData,
     const std::shared_ptr<detail::EnvironmentManager>& env,
-    detail::CUDAMacroEnvironment &macro_env,
+    const std::shared_ptr<detail::CUDAMacroEnvironment>& macro_env,
     const unsigned int _streamId,
     cudaStream_t _stream)
     : random(rng)

@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "flamegpu/util/StringPair.h"
 #include "flamegpu/model/EnvironmentData.h"
@@ -29,7 +30,9 @@ class StateReader {
      * Agent data will be read into 'model_state'
      * @param _model_name Name from the model description hierarchy of the model to be loaded
      * @param _env_desc Environment description for validating property data on load
-     * @param _env_init Dictionary of loaded values map:<{name, index}, value>
+     * @param _env_init Dictionary of loaded values map:<name, value>
+     * @param _macro_env_desc Macro environment description for validating property data on load
+     * @param _macro_env_init Dictionary of loaded values map:<name, value>
      * @param _model_state Map of AgentVector to load the agent data into per agent, key should be agent name
      * @param input Filename of the input file (This will be used to determine which reader to return)
      * @param _sim_instance Instance of the simulation (for configuration data IO)
@@ -38,6 +41,8 @@ class StateReader {
         const std::string& _model_name,
         const std::unordered_map<std::string, EnvironmentData::PropData>& _env_desc,
         std::unordered_map<std::string, detail::Any>& _env_init,
+        const std::unordered_map<std::string, EnvironmentData::MacroPropData>& _macro_env_desc,
+        std::unordered_map<std::string, std::vector<char>>& _macro_env_init,
         util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>& _model_state,
         const std::string& input,
         Simulation* _sim_instance)
@@ -46,6 +51,8 @@ class StateReader {
     , model_name(_model_name)
     , env_desc(_env_desc)
     , env_init(_env_init)
+    , macro_env_desc(_macro_env_desc)
+    , macro_env_init(_macro_env_init)
     , sim_instance(_sim_instance) {}
     /**
      * Virtual destructor for correct inheritance behaviour
@@ -63,11 +70,13 @@ class StateReader {
     virtual int parse() = 0;
 
  protected:
-    util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>& model_state;
+    util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state;
     std::string inputFile;
     const std::string model_name;
     const std::unordered_map<std::string, EnvironmentData::PropData> &env_desc;
     std::unordered_map<std::string, detail::Any>& env_init;
+    const std::unordered_map<std::string, EnvironmentData::MacroPropData> &macro_env_desc;
+    std::unordered_map<std::string, std::vector<char>>& macro_env_init;
     Simulation *sim_instance;
 };
 }  // namespace io

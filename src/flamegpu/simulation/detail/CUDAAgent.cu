@@ -450,7 +450,7 @@ void CUDAAgent::clearFunctionCondition(const std::string &state) {
     fat_agent->setConditionState(fat_index, state, 0);
 }
 
-void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager> &env, const CUDAMacroEnvironment &macro_env, bool function_condition) {
+void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager> &env, std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env, bool function_condition) {
     // Generate the dynamic curve header
     detail::curve::CurveRTCHost &curve_header = *rtc_header_map.emplace(function_condition ? func.name + "_condition" : func.name, std::make_unique<detail::curve::CurveRTCHost>()).first->second;
 
@@ -500,7 +500,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const 
     }
 
     // Set Environment macro properties in curve
-    macro_env.mapRTCVariables(curve_header);
+    macro_env->mapRTCVariables(curve_header);
 
     std::string header_filename = std::string(func.rtc_func_name).append("_impl");
     if (function_condition)
@@ -558,7 +558,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const 
     }
 }
 
-void CUDAAgent::addInstantitateFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager>& env, const CUDAMacroEnvironment& macro_env, bool function_condition) {
+void CUDAAgent::addInstantitateFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager>& env, std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env, bool function_condition) {
     // Generate the host curve instance
     std::unique_ptr<detail::curve::HostCurve> curve = std::make_unique<detail::curve::HostCurve>();
 
@@ -600,7 +600,7 @@ void CUDAAgent::addInstantitateFunction(const AgentFunctionData& func, const std
     }
 
     // Set Environment macro properties in curve
-    macro_env.registerCurveVariables(*curve);
+    macro_env->registerCurveVariables(*curve);
 
     // switch between normal agent function and agent function condition, and add to map
     const std::string key_name = function_condition ? func.name + "_condition" : func.name;
