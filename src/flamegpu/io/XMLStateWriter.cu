@@ -1,13 +1,6 @@
-
-/**
- * @file
- * @author
- * @date
- * @brief
- *
- * \todo longer description
- */
 #include "flamegpu/io/XMLStateWriter.h"
+
+#include <numeric>
 #include <sstream>
 #include "tinyxml2/tinyxml2.h"              // downloaded from https:// github.com/leethomason/tinyxml2, the list of xml parsers : http:// lars.ruoff.free.fr/xmlcpp/
 #include "flamegpu/exception/FLAMEGPUException.h"
@@ -66,10 +59,11 @@ XMLStateWriter::XMLStateWriter(
     const std::string &model_name,
     const std::shared_ptr<detail::EnvironmentManager>& env_manager,
     const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model,
+    std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env,
     const unsigned int iterations,
     const std::string &output_file,
     const Simulation *_sim_instance)
-    : StateWriter(model_name, env_manager, model, iterations, output_file, _sim_instance) {}
+    : StateWriter(model_name, env_manager, model, macro_env, iterations, output_file, _sim_instance) {}
 
 int XMLStateWriter::writeStates(bool prettyPrint) {
     tinyxml2::XMLDocument doc;
@@ -206,6 +200,81 @@ int XMLStateWriter::writeStates(bool prettyPrint) {
                 }
             pListElement->SetText(ss.str().c_str());
             pElement->InsertEndChild(pListElement);
+        }
+    }
+    pRoot->InsertEndChild(pElement);
+
+
+    pElement = doc.NewElement("macro_environment");
+    if (macro_env) {
+        const std::map<std::string, detail::CUDAMacroEnvironment::MacroEnvProp>& m_properties = macro_env->getPropertiesMap();
+        // Calculate largest buffer in map
+        size_t max_len = 0;
+        for (const auto& [_, prop] : m_properties) {
+            max_len = std::max(max_len, std::accumulate(prop.elements.begin(), prop.elements.end(), 1, std::multiplies<unsigned int>()) * prop.type_size);
+        }
+        if (max_len) {
+            // Allocate temp buffer
+            char* const t_buffer = static_cast<char*>(malloc(max_len));
+            // Write out each array (all are written out as 1D arrays for simplicity given variable dimensions)
+            for (const auto& [name, prop] : m_properties) {
+                // Copy data
+                const size_t element_ct = std::accumulate(prop.elements.begin(), prop.elements.end(), 1, std::multiplies<unsigned int>());
+                gpuErrchk(cudaMemcpy(t_buffer, prop.d_ptr, element_ct * prop.type_size, cudaMemcpyDeviceToHost));
+
+                tinyxml2::XMLElement* pListElement = doc.NewElement(name.c_str());
+                pListElement->SetAttribute("type", prop.type.name());
+
+                // Loop through dimensions to construct dimensions string
+                // Clip trailing 1 dimensions
+                std::stringstream ss;
+                size_t sum = 1;
+                for (size_t j = 0; j < prop.elements.size(); ++j) {
+                    ss << prop.elements[j];
+                    sum *= prop.elements[j];
+                    if (sum == element_ct)
+                        break;
+                    ss << ",";
+                }
+                pListElement->SetAttribute("dimensions", ss.str().c_str());
+                ss.str("");
+                ss.clear();
+
+                // Output elements
+                // Loop through elements, to construct csv string
+                for (size_t i = 0; i < element_ct; ++i) {
+                    if (prop.type == std::type_index(typeid(float))) {
+                        ss << *reinterpret_cast<const float*>(t_buffer + i * sizeof(float));
+                    } else if (prop.type == std::type_index(typeid(double))) {
+                        ss << *reinterpret_cast<const double*>(t_buffer + i * sizeof(double));
+                    } else if (prop.type == std::type_index(typeid(int64_t))) {
+                        ss << *reinterpret_cast<const int64_t*>(t_buffer + i * sizeof(int64_t));
+                    } else if (prop.type == std::type_index(typeid(uint64_t))) {
+                        ss << *reinterpret_cast<const uint64_t*>(t_buffer + i * sizeof(uint64_t));
+                    } else if (prop.type == std::type_index(typeid(int32_t))) {
+                        ss << *reinterpret_cast<const int32_t*>(t_buffer + i * sizeof(int32_t));
+                    } else if (prop.type == std::type_index(typeid(uint32_t))) {
+                        ss << *reinterpret_cast<const uint32_t*>(t_buffer + i * sizeof(uint32_t));
+                    } else if (prop.type == std::type_index(typeid(int16_t))) {
+                        ss << *reinterpret_cast<const int16_t*>(t_buffer + i * sizeof(int16_t));
+                    } else if (prop.type == std::type_index(typeid(uint16_t))) {
+                        ss << *reinterpret_cast<const uint16_t*>(t_buffer + i * sizeof(uint16_t));
+                    } else if (prop.type == std::type_index(typeid(int8_t))) {
+                        ss << static_cast<int32_t>(*reinterpret_cast<const int8_t*>(t_buffer + i * sizeof(int8_t)));  // Char outputs weird if being used as an integer
+                    } else if (prop.type == std::type_index(typeid(uint8_t))) {
+                        ss << static_cast<uint32_t>(*reinterpret_cast<const uint8_t*>(t_buffer + i * sizeof(uint8_t)));  // Char outputs weird if being used as an integer
+                    } else {
+                        THROW exception::TinyXMLError("Model contains macro environment property '%s' of unsupported type '%s', "
+                            "in XMLStateWriter::writeStates()\n", name.c_str(), prop.type.name());
+                    }
+                    if (i + 1 != element_ct)
+                        ss << ",";
+                }
+                pListElement->SetText(ss.str().c_str());
+                pElement->InsertEndChild(pListElement);
+            }
+            // Release temp buffer
+            free(t_buffer);
         }
     }
     pRoot->InsertEndChild(pElement);

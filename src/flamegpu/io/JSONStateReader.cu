@@ -8,6 +8,7 @@
 #include <string>
 #include <unordered_map>
 #include <cerrno>
+#include <numeric>
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/simulation/AgentVector.h"
@@ -22,21 +23,25 @@ JSONStateReader::JSONStateReader(
     const std::string &model_name,
     const std::unordered_map<std::string, EnvironmentData::PropData> &env_desc,
     std::unordered_map<std::string, detail::Any> &env_init,
+    const std::unordered_map<std::string, EnvironmentData::MacroPropData>& macro_env_desc,
+    std::unordered_map<std::string, std::vector<char>>& macro_env_init,
     util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
     const std::string &input,
     Simulation *sim_instance)
-    : StateReader(model_name, env_desc, env_init, model_state, input, sim_instance) {}
+    : StateReader(model_name, env_desc, env_init, macro_env_desc, macro_env_init, model_state, input, sim_instance) {}
 /**
  * This is the main sax style parser for the json state
  * It stores it's current position within the hierarchy with mode, lastKey and current_variable_array_index
  */
 class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, JSONStateReader_impl>  {
-    enum Mode{ Nop, Root, Config, Stats, SimCfg, CUDACfg, Environment, Agents, Agent, State, AgentInstance, VariableArray };
+    enum Mode{ Nop, Root, Config, Stats, SimCfg, CUDACfg, Environment, MacroEnvironment, Agents, Agent, State, AgentInstance, VariableArray };
     std::stack<Mode> mode;
     std::string lastKey;
     std::string filename;
     const std::unordered_map<std::string, EnvironmentData::PropData> env_desc;
     std::unordered_map<std::string, detail::Any> &env_init;
+    const std::unordered_map<std::string, EnvironmentData::MacroPropData> macro_env_desc;
+    std::unordered_map<std::string, std::vector<char>> &macro_env_init;
     /**
      * Used for setting agent values
      */
@@ -58,10 +63,14 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
     JSONStateReader_impl(const std::string &_filename,
         const std::unordered_map<std::string, EnvironmentData::PropData> &_env_desc,
         std::unordered_map<std::string, detail::Any> &_env_init,
+        const std::unordered_map<std::string, EnvironmentData::MacroPropData> & _macro_env_desc,
+        std::unordered_map<std::string, std::vector<char>> & _macro_env_init,
         util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &_model_state)
         : filename(_filename)
         , env_desc(_env_desc)
         , env_init(_env_init)
+        , macro_env_desc(_macro_env_desc)
+        , macro_env_init(_macro_env_init)
         , model_state(_model_state) { }
     template<typename T>
     bool processValue(const T val) {
@@ -111,6 +120,50 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
                 static_cast<uint8_t*>(const_cast<void*>(ei_it->second.ptr))[current_variable_array_index++] = static_cast<uint8_t>(val);
             } else {
                 THROW exception::RapidJSONError("Model contains environment property '%s' of unsupported type '%s', "
+                    "in JSONStateReader::parse()\n", lastKey.c_str(), val_type.name());
+            }
+        } else if (mode.top() == MacroEnvironment) {
+            const auto it = macro_env_desc.find(lastKey);
+            if (it == macro_env_desc.end()) {
+                THROW exception::RapidJSONError("Input file contains unrecognised macro environment property '%s',"
+                    "in JSONStateReader::parse()\n", lastKey.c_str());
+            }
+            const unsigned int macro_prop_elements = std::accumulate(it->second.elements.begin(), it->second.elements.end(), 1, std::multiplies<unsigned int>());
+            if (current_variable_array_index == 0) {
+                // New property, create buffer with default value and add to map
+                if (!macro_env_init.emplace(lastKey, std::vector<char>(macro_prop_elements * it->second.type_size)).second) {
+                    THROW exception::RapidJSONError("Input file contains environment property '%s' multiple times, "
+                        "in JSONStateReader::parse()\n", lastKey.c_str());
+                }
+            } else if (current_variable_array_index >= macro_prop_elements) {
+                THROW exception::RapidJSONError("Input file contains environment property '%s' with %u elements expected %u,"
+                    "in JSONStateReader::parse()\n", lastKey.c_str(), current_variable_array_index, macro_prop_elements);
+            }
+            // Retrieve the linked any and replace the value
+            auto &mei = macro_env_init.at(lastKey);
+            const std::type_index val_type = it->second.type;
+            if (val_type == std::type_index(typeid(float))) {
+                static_cast<float*>(static_cast<void*>(mei.data()))[current_variable_array_index++] = static_cast<float>(val);
+            } else if (val_type == std::type_index(typeid(double))) {
+                static_cast<double*>(static_cast<void*>(mei.data()))[current_variable_array_index++] = static_cast<double>(val);
+            } else if (val_type == std::type_index(typeid(int64_t))) {
+                static_cast<int64_t*>(static_cast<void*>(mei.data()))[current_variable_array_index++] = static_cast<int64_t>(val);
+            } else if (val_type == std::type_index(typeid(uint64_t))) {
+                static_cast<uint64_t*>(static_cast<void*>(mei.data()))[current_variable_array_index++] = static_cast<uint64_t>(val);
+            } else if (val_type == std::type_index(typeid(int32_t))) {
+                static_cast<int32_t*>(static_cast<void*>(mei.data()))[current_variable_array_index++] = static_cast<int32_t>(val);
+            } else if (val_type == std::type_index(typeid(uint32_t))) {
+                static_cast<uint32_t*>(static_cast<void*>(mei.data()))[current_variable_array_index++] = static_cast<uint32_t>(val);
+            } else if (val_type == std::type_index(typeid(int16_t))) {
+                static_cast<int16_t*>(static_cast<void*>(mei.data()))[current_variable_array_index++] = static_cast<int16_t>(val);
+            } else if (val_type == std::type_index(typeid(uint16_t))) {
+                static_cast<uint16_t*>(static_cast<void*>(mei.data()))[current_variable_array_index++] = static_cast<uint16_t>(val);
+            } else if (val_type == std::type_index(typeid(int8_t))) {
+                static_cast<int8_t*>(static_cast<void*>(mei.data()))[current_variable_array_index++] = static_cast<int8_t>(val);
+            } else if (val_type == std::type_index(typeid(uint8_t))) {
+                static_cast<uint8_t*>(static_cast<void*>(mei.data()))[current_variable_array_index++] = static_cast<uint8_t>(val);
+            } else {
+                THROW exception::RapidJSONError("Model contains macro environment property '%s' of unsupported type '%s', "
                     "in JSONStateReader::parse()\n", lastKey.c_str(), val_type.name());
             }
         } else if (mode.top() == AgentInstance) {
@@ -192,6 +245,8 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
                 mode.push(Stats);
             } else if (lastKey == "environment") {
                 mode.push(Environment);
+            } else if (lastKey == "macro_environment") {
+                mode.push(MacroEnvironment);
             } else if (lastKey == "agents") {
                 mode.push(Agents);
             } else {
@@ -236,6 +291,8 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
             mode.push(VariableArray);
         } else if (mode.top() == Environment) {
             mode.push(VariableArray);
+        } else if (mode.top() == MacroEnvironment) {
+            mode.push(VariableArray);
         } else if (mode.top() == Agent) {
             current_state = lastKey;
             mode.push(State);
@@ -254,6 +311,14 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
                     THROW exception::RapidJSONError("Input file contains environment property '%s' with %u elements expected %u,"
                         "in JSONStateReader::parse()\n", lastKey.c_str(), current_variable_array_index, prop.data.elements);
                 }
+            } else if (mode.top() == MacroEnvironment) {
+                // Confirm macro env array had correct number of elements
+                const auto macro_prop = macro_env_desc.at(lastKey);
+                const unsigned int macro_prop_elements = std::accumulate(macro_prop.elements.begin(), macro_prop.elements.end(), 1, std::multiplies<unsigned int>());
+                if (current_variable_array_index != macro_prop_elements) {
+                    THROW exception::RapidJSONError("Input file contains environment macro property '%s' with %u elements expected %u,"
+                        "in JSONStateReader::parse()\n", lastKey.c_str(), current_variable_array_index, macro_prop_elements);
+                }
             }
             current_variable_array_index = 0;
         } else {
@@ -268,7 +333,7 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
  * It also reads the config blocks, so that device can be init before we do environment
  */
 class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, JSONStateReader_impl>  {
-    enum Mode{ Nop, Root, Config, Stats, SimCfg, CUDACfg, Environment, Agents, Agent, State, AgentInstance, VariableArray };
+    enum Mode{ Nop, Root, Config, Stats, SimCfg, CUDACfg, Environment, MacroEnvironment, Agents, Agent, State, AgentInstance, VariableArray };
     std::stack<Mode> mode;
     std::string lastKey;
     unsigned int currentIndex = 0;
@@ -374,6 +439,8 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
                 mode.push(Stats);
             } else if (lastKey == "environment") {
                 mode.push(Environment);
+            } else if (lastKey == "macro_environment") {
+                mode.push(MacroEnvironment);
             } else if (lastKey == "agents") {
                 mode.push(Agents);
             } else {
@@ -414,6 +481,8 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
             mode.push(VariableArray);
         } else if (mode.top() == Environment) {
             mode.push(VariableArray);
+        } else if (mode.top() == MacroEnvironment) {
+            mode.push(VariableArray);
         } else if (mode.top() == Agent) {
             current_state = lastKey;
             mode.push(State);
@@ -437,7 +506,7 @@ int JSONStateReader::parse() {
         THROW exception::RapidJSONError("Unable to open file '%s' for reading.\n", inputFile.c_str());
     }
     JSONStateReader_agentsize_counter agentcounter(inputFile, sim_instance);
-    JSONStateReader_impl handler(inputFile, env_desc, env_init, model_state);
+    JSONStateReader_impl handler(inputFile, env_desc, env_init, macro_env_desc, macro_env_init, model_state);
     std::string filestring = std::string((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     rapidjson::StringStream filess(filestring.c_str());
     rapidjson::Reader reader;

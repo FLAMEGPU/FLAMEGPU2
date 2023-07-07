@@ -208,7 +208,7 @@ class CUDAAgent : public AgentInterface {
      * @param function_condition If true then this function will instantiate a function condition rather than an agent function
      * @throw exception::InvalidAgentFunc thrown if the user supplied agent function has compilation errors
      */
-    void addInstantitateRTCFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager>& env, const CUDAMacroEnvironment& macro_env, bool function_condition = false);
+    void addInstantitateRTCFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager>& env, std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env, bool function_condition = false);
     /**
      * Instantiates the curve instance for an (non-RTC) Agent function (or agent function condition) from agent function data description containing the source.
      *
@@ -218,7 +218,7 @@ class CUDAAgent : public AgentInterface {
      * @param macro_env Object containing environment macro properties for the simulation instance
      * @param function_condition If true then this function will instantiate a function condition rather than an agent function
      */
-    void addInstantitateFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager>& env, const CUDAMacroEnvironment& macro_env, bool function_condition = false);
+    void addInstantitateFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager>& env, std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env, bool function_condition = false);
     /**
      * Returns the jitify kernel instantiation of the agent function.
      * Will throw an exception::InvalidAgentFunc excpetion if the function name does not have a valid instantiation

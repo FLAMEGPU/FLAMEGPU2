@@ -445,7 +445,7 @@ class CUDASimulation : public Simulation {
     /**
      * Macro env property storage
      */
-    detail::CUDAMacroEnvironment macro_env;
+    std::shared_ptr<detail::CUDAMacroEnvironment> macro_env;
     /**
      * Internal model config
      */
@@ -574,6 +574,10 @@ class CUDASimulation : public Simulation {
      */
     void initEnvironmentMgr();
     /**
+     * Common method for initialising macro environment properties from macro_env_init
+     */
+    void initMacroEnvironment();
+    /**
      * Flag indicating that the model has been initialsed
      */
     bool singletonsInitialised;
@@ -617,6 +621,7 @@ class CUDASimulation : public Simulation {
 
  private:
     std::shared_ptr<detail::EnvironmentManager> getEnvironment() const override;
+    std::shared_ptr<const detail::CUDAMacroEnvironment> getMacroEnvironment() const override;
     void assignAgentIDs();
     /**
      * Set to false whenever an agent population is imported from outside

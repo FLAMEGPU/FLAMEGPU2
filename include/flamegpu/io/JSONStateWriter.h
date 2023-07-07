@@ -10,6 +10,9 @@
 #include "flamegpu/util/StringPair.h"
 
 namespace flamegpu {
+namespace detail {
+class CUDAMacroEnvironment;
+}
 namespace io {
 /**
  * JSON format StateWriter
@@ -22,6 +25,7 @@ class JSONStateWriter : public StateWriter {
      * @param model_name Name from the model description hierarchy of the model to be exported
      * @param env_manager Environment manager containing env property data for this sim instance
      * @param model_state Map of AgentVector to read the agent data from per agent, key should be agent name
+     * @param macro_env Macro environment of the model
      * @param iterations The value from the step counter at the time of export.
      * @param output_file Filename of the input file (This will be used to determine which reader to return)
      * @param sim_instance Instance of the Simulation object (This is used for setting/getting config)
@@ -30,6 +34,7 @@ class JSONStateWriter : public StateWriter {
         const std::string &model_name,
         const std::shared_ptr<detail::EnvironmentManager>& env_manager,
         const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
+        std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env,
         unsigned int iterations,
         const std::string &output_file,
         const Simulation *sim_instance);

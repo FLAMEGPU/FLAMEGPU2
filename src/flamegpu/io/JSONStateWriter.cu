@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <numeric>
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/model/AgentDescription.h"
@@ -13,18 +14,19 @@
 #include "flamegpu/simulation/CUDASimulation.h"
 #include "flamegpu/util/StringPair.h"
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
+#include "flamegpu/simulation/detail/CUDAMacroEnvironment.h"
 
 namespace flamegpu {
 namespace io {
-
 JSONStateWriter::JSONStateWriter(
     const std::string &model_name,
     const std::shared_ptr<detail::EnvironmentManager> &env_manager,
     const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>&model,
+    std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env,
     const unsigned int iterations,
     const std::string &output_file,
     const Simulation *_sim_instance)
-    : StateWriter(model_name, env_manager, model, iterations, output_file, _sim_instance) {}
+    : StateWriter(model_name, env_manager, model, macro_env, iterations, output_file, _sim_instance) {}
 
 template<typename T>
 void JSONStateWriter::doWrite(T &writer) {
@@ -151,6 +153,60 @@ void JSONStateWriter::doWrite(T &writer) {
                 // Value is an array
                 writer.EndArray();
             }
+        }
+    }
+    writer.EndObject();
+
+    // Macro Environment
+    writer.Key("macro_environment");
+    writer.StartObject();
+    if (macro_env) {
+        const std::map<std::string, detail::CUDAMacroEnvironment::MacroEnvProp>& m_properties = macro_env->getPropertiesMap();
+        // Calculate largest buffer in map
+        size_t max_len = 0;
+        for (const auto& [_, prop] : m_properties) {
+            max_len = std::max(max_len, std::accumulate(prop.elements.begin(), prop.elements.end(), 1, std::multiplies<unsigned int>()) * prop.type_size);
+        }
+        if (max_len) {
+            // Allocate temp buffer
+            char* const t_buffer = static_cast<char*>(malloc(max_len));
+            // Write out each array (all are written out as 1D arrays for simplicity given variable dimensions)
+            for (const auto& [name, prop] : m_properties) {
+                // Copy data
+                const size_t element_ct = std::accumulate(prop.elements.begin(), prop.elements.end(), 1, std::multiplies<unsigned int>());
+                gpuErrchk(cudaMemcpy(t_buffer, prop.d_ptr, element_ct * prop.type_size, cudaMemcpyDeviceToHost));
+                writer.Key(name.c_str());
+                writer.StartArray();
+                for (size_t i = 0; i < element_ct; ++i) {
+                    if (prop.type == std::type_index(typeid(float))) {
+                        writer.Double(*reinterpret_cast<const float*>(t_buffer + i * sizeof(float)));
+                    } else if (prop.type == std::type_index(typeid(double))) {
+                        writer.Double(*reinterpret_cast<const double*>(t_buffer + i * sizeof(double)));
+                    } else if (prop.type == std::type_index(typeid(int64_t))) {
+                        writer.Int64(*reinterpret_cast<const int64_t*>(t_buffer + i * sizeof(int64_t)));
+                    } else if (prop.type == std::type_index(typeid(uint64_t))) {
+                        writer.Uint64(*reinterpret_cast<const uint64_t*>(t_buffer + i * sizeof(uint64_t)));
+                    } else if (prop.type == std::type_index(typeid(int32_t))) {
+                        writer.Int(*reinterpret_cast<const int32_t*>(t_buffer + i * sizeof(int32_t)));
+                    } else if (prop.type == std::type_index(typeid(uint32_t))) {
+                        writer.Uint(*reinterpret_cast<const uint32_t*>(t_buffer + i * sizeof(uint32_t)));
+                    } else if (prop.type == std::type_index(typeid(int16_t))) {
+                        writer.Int(*reinterpret_cast<const int16_t*>(t_buffer + i * sizeof(int16_t)));
+                    } else if (prop.type == std::type_index(typeid(uint16_t))) {
+                        writer.Uint(*reinterpret_cast<const uint16_t*>(t_buffer + i * sizeof(uint16_t)));
+                    } else if (prop.type == std::type_index(typeid(int8_t))) {
+                        writer.Int(static_cast<int32_t>(*reinterpret_cast<const int8_t*>(t_buffer + i * sizeof(int8_t))));  // Char outputs weird if being used as an integer
+                    } else if (prop.type == std::type_index(typeid(uint8_t))) {
+                        writer.Uint(static_cast<uint32_t>(*reinterpret_cast<const uint8_t*>(t_buffer + i * sizeof(uint8_t))));  // Char outputs weird if being used as an integer
+                    } else {
+                        THROW exception::RapidJSONError("Model contains macro environment property '%s' of unsupported type '%s', "
+                            "in JSONStateWriter::writeStates()\n", name.c_str(), prop.type.name());
+                    }
+                }
+                writer.EndArray();
+            }
+            // Release temp buffer
+            free(t_buffer);
         }
     }
     writer.EndObject();
