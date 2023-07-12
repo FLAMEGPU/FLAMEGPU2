@@ -162,6 +162,13 @@ class CUDAMacroEnvironment {
      * Used for IO
      */
     const std::map<std::string, MacroEnvProp>& getPropertiesMap() const;
+    /**
+     * Return the metadata, if setup, for the named macro property
+     *
+     * @param property_name Name of the macro property to load
+     * @return nullptr if not currently cached
+     */
+    std::shared_ptr<HostMacroProperty_MetaData> getHostPropertyMetadata(const std::string property_name);
 
  private:
     const CUDASimulation& cudaSimulation;

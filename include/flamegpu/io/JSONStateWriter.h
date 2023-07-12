@@ -52,7 +52,7 @@ class JSONStateWriter : public StateWriter {
     void writeConfig(const Simulation *sim_instance) override;
     void writeStats(unsigned int iterations) override;
     void writeEnvironment(const std::shared_ptr<const detail::EnvironmentManager>& env_manager) override;
-    void writeMacroEnvironment(const std::shared_ptr<const detail::CUDAMacroEnvironment>& macro_env) override;
+    void writeMacroEnvironment(const std::shared_ptr<const detail::CUDAMacroEnvironment>& macro_env, std::initializer_list<std::string> filter = {}) override;
     void writeAgents(const util::StringPairUnorderedMap<std::shared_ptr<const AgentVector>>& agents_map) override;
 
  private:

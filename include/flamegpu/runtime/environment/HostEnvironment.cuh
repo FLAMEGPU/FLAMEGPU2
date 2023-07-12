@@ -36,7 +36,9 @@ class HostEnvironment {
     /**
      * Constructor, to be called by HostAPI
      */
-    explicit HostEnvironment(unsigned int instance_id, const std::shared_ptr<detail::EnvironmentManager> &env, const std::shared_ptr<detail::CUDAMacroEnvironment>& _macro_env);
+    explicit HostEnvironment(CUDASimulation &_simulation, cudaStream_t _stream,
+                             std::shared_ptr<detail::EnvironmentManager> env,
+                             std::shared_ptr<detail::CUDAMacroEnvironment> _macro_env);
     /**
      * Provides access to EnvironmentManager singleton
      */
@@ -50,6 +52,14 @@ class HostEnvironment {
      * This is used to augment all variable names
      */
     const unsigned int instance_id;
+    /**
+     * The relevant simulation, required for importing macro properties
+     */
+    CUDASimulation& simulation;
+    /**
+     * CUDAStream for memcpys
+     */
+    const cudaStream_t stream;
 
  public:
     /**
@@ -155,6 +165,21 @@ class HostEnvironment {
     template<typename T>
     HostMacroProperty_swig<T> getMacroProperty_swig(const std::string& name) const;
 #endif
+    /**
+     * Import macro property data from file
+     * @param property_name Name of the macro property to import
+     * @param file_path Path to file containing macro property data (.json, .xml, .bin)
+     * @note This method supports raw binary files (.bin)
+     */
+    void importMacroProperty(const std::string& property_name, const std::string& file_path) const;
+    /**
+     * Export macro property data to file
+     * @param property_name Name of the macro property to import
+     * @param file_path Path to file to export macro property data (.json, .xml. bin)
+     * @param pretty_print Print in readable or minified format (if available)
+     * @note This method supports raw binary files (.bin)
+     */
+    void exportMacroProperty(const std::string& property_name, const std::string& file_path, bool pretty_print = true) const;
 };
 
 /**

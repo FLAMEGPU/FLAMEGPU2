@@ -33,14 +33,26 @@ struct HostMacroProperty_MetaData {
     }
     /**
      * Download data
+     * @note Only works first time
+     * @see force_download()
      */
     void download() {
         if (!h_base_ptr) {
-            h_base_ptr = static_cast<char*>(malloc(elements * type_size));
-            gpuErrchk(cudaMemcpyAsync(h_base_ptr, d_base_ptr, elements * type_size, cudaMemcpyDeviceToHost, stream));
-            gpuErrchk(cudaStreamSynchronize(stream));
-            has_changed = false;
+            force_download();
         }
+    }
+
+    /**
+     * Downloads data from device to host (allocating host buffer if required)
+     * Sets has_changed flag to false, as host is current to device
+     */
+    void force_download() {
+        if (!h_base_ptr) {
+            h_base_ptr = static_cast<char*>(malloc(elements * type_size));
+        }
+        gpuErrchk(cudaMemcpyAsync(h_base_ptr, d_base_ptr, elements * type_size, cudaMemcpyDeviceToHost, stream));
+        gpuErrchk(cudaStreamSynchronize(stream));
+        has_changed = false;
     }
     /**
      * Upload data

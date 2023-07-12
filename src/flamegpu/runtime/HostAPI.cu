@@ -18,7 +18,7 @@ HostAPI::HostAPI(CUDASimulation &_agentModel,
     const unsigned int _streamId,
     cudaStream_t _stream)
     : random(rng)
-    , environment(_agentModel.getInstanceID(), env, macro_env)
+    , environment(_agentModel, _stream, env, macro_env)
     , agentModel(_agentModel)
     , d_output_space(nullptr)
     , d_output_space_size(0)
