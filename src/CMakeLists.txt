@@ -332,6 +332,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/random/HostRandom.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateReader.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateWriter.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/StateReader.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLStateReader.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLStateWriter.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLLogger.cu

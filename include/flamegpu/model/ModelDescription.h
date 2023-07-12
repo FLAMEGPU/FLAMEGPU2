@@ -37,6 +37,8 @@ class ModelDescription {
     friend class RunPlanVector;
     friend class RunPlan;
     friend class LoggingConfig;
+    friend class XMLStateReader;
+    friend class JSONStateReader;
  public:
     /**
      * Constructor

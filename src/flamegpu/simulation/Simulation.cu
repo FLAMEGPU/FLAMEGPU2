@@ -62,9 +62,13 @@ void Simulation::applyConfig() {
 
         env_init.clear();
         macro_env_init.clear();
-        io::StateReader *read__ = io::StateReaderFactory::createReader(model->name, model->environment->properties, env_init, model->environment->macro_properties, macro_env_init, pops, config.input_file.c_str(), this);
+        io::StateReader *read__ = io::StateReaderFactory::createReader(config.input_file);
         if (read__) {
-            read__->parse();
+            read__->parse(config.input_file, model, config.verbosity);
+            read__->getFullModelState(config, env_init, macro_env_init, pops);
+            if (auto cuda_sim = dynamic_cast<CUDASimulation*>(this)) {
+                read__->getCUDAConfig(cuda_sim->CUDAConfig());
+            }
             for (auto &agent : pops) {
                 setPopulationData(*agent.second, agent.first.second);
             }
@@ -190,12 +194,14 @@ int Simulation::checkArgs(int argc, const char** argv) {
                 }
                 env_init.clear();
                 macro_env_init.clear();
-                const auto &env_desc = model->environment->properties;  // For some reason this method returns a copy, not a reference
-                const auto &macro_env_desc = model->environment->macro_properties;  // For some reason this method returns a copy, not a reference
-                io::StateReader *read__ = io::StateReaderFactory::createReader(model->name, env_desc, env_init, macro_env_desc, macro_env_init, pops, config.input_file.c_str(), this);
+                io::StateReader *read__ = io::StateReaderFactory::createReader(config.input_file);
                 if (read__) {
                     try {
-                        read__->parse();
+                        read__->parse(config.input_file, model, config.verbosity);
+                        read__->getFullModelState(config, env_init, macro_env_init, pops);
+                        if (auto cuda_sim = dynamic_cast<CUDASimulation*>(this)) {
+                            read__->getCUDAConfig(cuda_sim->CUDAConfig());
+                        }
                     } catch (const std::exception &e) {
                         fprintf(stderr, "Loading input file '%s' failed!\nDetail: %s", config.input_file.c_str(), e.what());
                         return false;

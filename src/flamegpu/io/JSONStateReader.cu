@@ -12,23 +12,14 @@
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/simulation/AgentVector.h"
-#include "flamegpu/model/AgentDescription.h"
+#include "flamegpu/model/AgentData.h"
+#include "flamegpu/model/EnvironmentData.h"
 #include "flamegpu/simulation/CUDASimulation.h"
 #include "flamegpu/util/StringPair.h"
 
 namespace flamegpu {
 namespace io {
 
-JSONStateReader::JSONStateReader(
-    const std::string &model_name,
-    const std::unordered_map<std::string, EnvironmentData::PropData> &env_desc,
-    std::unordered_map<std::string, detail::Any> &env_init,
-    const std::unordered_map<std::string, EnvironmentData::MacroPropData>& macro_env_desc,
-    std::unordered_map<std::string, std::vector<char>>& macro_env_init,
-    util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
-    const std::string &input,
-    Simulation *sim_instance)
-    : StateReader(model_name, env_desc, env_init, macro_env_desc, macro_env_init, model_state, input, sim_instance) {}
 /**
  * This is the main sax style parser for the json state
  * It stores it's current position within the hierarchy with mode, lastKey and current_variable_array_index
@@ -38,14 +29,11 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
     std::stack<Mode> mode;
     std::string lastKey;
     std::string filename;
-    const std::unordered_map<std::string, EnvironmentData::PropData> env_desc;
+    const std::shared_ptr<const ModelData>& model;
     std::unordered_map<std::string, detail::Any> &env_init;
-    const std::unordered_map<std::string, EnvironmentData::MacroPropData> macro_env_desc;
     std::unordered_map<std::string, std::vector<char>> &macro_env_init;
-    /**
-     * Used for setting agent values
-     */
-    util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>&model_state;
+    util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &agents_map;
+    Verbosity verbosity;
     /**
      * Tracks current position reading variable array
      */
@@ -61,17 +49,18 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
 
  public:
     JSONStateReader_impl(const std::string &_filename,
-        const std::unordered_map<std::string, EnvironmentData::PropData> &_env_desc,
+        const std::shared_ptr<const ModelData> &_model,
         std::unordered_map<std::string, detail::Any> &_env_init,
-        const std::unordered_map<std::string, EnvironmentData::MacroPropData> & _macro_env_desc,
         std::unordered_map<std::string, std::vector<char>> & _macro_env_init,
-        util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &_model_state)
+        util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &_agents_map,
+        Verbosity _verbosity)
         : filename(_filename)
-        , env_desc(_env_desc)
+        , model(_model)
         , env_init(_env_init)
-        , macro_env_desc(_macro_env_desc)
         , macro_env_init(_macro_env_init)
-        , model_state(_model_state) { }
+        , agents_map(_agents_map)
+        , verbosity(_verbosity) { }
+
     template<typename T>
     bool processValue(const T val) {
         Mode isArray = Nop;
@@ -80,8 +69,8 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
             mode.pop();
         }
         if (mode.top() == Environment) {
-            const auto it = env_desc.find(lastKey);
-            if (it == env_desc.end()) {
+            const auto it = model->environment->properties.find(lastKey);
+            if (it == model->environment->properties.end()) {
                 THROW exception::RapidJSONError("Input file contains unrecognised environment property '%s',"
                     "in JSONStateReader::parse()\n", lastKey.c_str());
             }
@@ -123,8 +112,8 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
                     "in JSONStateReader::parse()\n", lastKey.c_str(), val_type.name());
             }
         } else if (mode.top() == MacroEnvironment) {
-            const auto it = macro_env_desc.find(lastKey);
-            if (it == macro_env_desc.end()) {
+            const auto it = model->environment->macro_properties.find(lastKey);
+            if (it == model->environment->macro_properties.end()) {
                 THROW exception::RapidJSONError("Input file contains unrecognised macro environment property '%s',"
                     "in JSONStateReader::parse()\n", lastKey.c_str());
             }
@@ -167,7 +156,7 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
                     "in JSONStateReader::parse()\n", lastKey.c_str(), val_type.name());
             }
         } else if (mode.top() == AgentInstance) {
-            const std::shared_ptr<AgentVector> &pop = model_state.at({current_agent, current_state});
+            const std::shared_ptr<AgentVector> &pop = agents_map.at({current_agent, current_state});
             AgentVector::Agent instance = pop->back();
             char *data = static_cast<char*>(const_cast<void*>(static_cast<std::shared_ptr<const AgentVector>>(pop)->data(lastKey)));
             const VariableMap& agentVariables = pop->getVariableMetaData();
@@ -265,9 +254,9 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
             mode.push(Agent);
         } else if (mode.top() == State) {
             mode.push(AgentInstance);
-            auto f = model_state.find({ current_agent, current_state });
-            if (f == model_state.end()) {
-                THROW exception::RapidJSONError("Input file '%s' contains data for agent:state combination '%s:%s' not found in model description hierarchy.\n", filename.c_str());
+            auto f = agents_map.find({ current_agent, current_state });
+            if (f == agents_map.end()) {
+                THROW exception::RapidJSONError("Input file '%s' contains data for agent:state combination '%s:%s' not found in model description hierarchy.\n", filename.c_str(), current_agent.c_str(), current_state.c_str());
             }
             f->second->push_back();
         } else {
@@ -306,14 +295,14 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
             mode.pop();
             if (mode.top() == Environment) {
                 // Confirm env array had correct number of elements
-                const auto prop = env_desc.at(lastKey);
+                const auto prop = model->environment->properties.at(lastKey);
                 if (current_variable_array_index != prop.data.elements) {
                     THROW exception::RapidJSONError("Input file contains environment property '%s' with %u elements expected %u,"
                         "in JSONStateReader::parse()\n", lastKey.c_str(), current_variable_array_index, prop.data.elements);
                 }
             } else if (mode.top() == MacroEnvironment) {
                 // Confirm macro env array had correct number of elements
-                const auto macro_prop = macro_env_desc.at(lastKey);
+                const auto macro_prop = model->environment->macro_properties.at(lastKey);
                 const unsigned int macro_prop_elements = std::accumulate(macro_prop.elements.begin(), macro_prop.elements.end(), 1, std::multiplies<unsigned int>());
                 if (current_variable_array_index != macro_prop_elements) {
                     THROW exception::RapidJSONError("Input file contains environment macro property '%s' with %u elements expected %u,"
@@ -341,17 +330,22 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
     std::string current_agent = "";
     std::string current_state = "";
     util::StringPairUnorderedMap<unsigned int> agentstate_counts;
-    Simulation *sim_instance;
-    CUDASimulation *cudamodel_instance;
+    std::unordered_map<std::string, std::any> &simulation_config;
+    std::unordered_map<std::string, std::any> &cuda_config;
+    Verbosity verbosity;
 
  public:
      util::StringPairUnorderedMap<unsigned int> getAgentCounts() const {
         return agentstate_counts;
     }
-    explicit JSONStateReader_agentsize_counter(const std::string &_filename, Simulation *_sim_instance)
+    explicit JSONStateReader_agentsize_counter(const std::string &_filename,
+        std::unordered_map<std::string, std::any> &_simulation_config,
+        std::unordered_map<std::string, std::any> &_cuda_config,
+        Verbosity _verbosity)
         : filename(_filename)
-        , sim_instance(_sim_instance)
-        , cudamodel_instance(dynamic_cast<CUDASimulation*>(_sim_instance)) { }
+        , simulation_config(_simulation_config)
+        , cuda_config(_cuda_config)
+        , verbosity(_verbosity) { }
 
     template<typename T>
     bool processValue(const T val) {
@@ -361,38 +355,32 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
             mode.pop();
         }
         if (mode.top() == SimCfg) {
-            if (sim_instance) {
-                if (lastKey == "truncate_log_files") {
-                    sim_instance->SimulationConfig().truncate_log_files = static_cast<bool>(val);
-                } else if (lastKey == "random_seed") {
-                    sim_instance->SimulationConfig().random_seed = static_cast<uint64_t>(val);
-                } else if (lastKey == "steps") {
-                    sim_instance->SimulationConfig().steps = static_cast<unsigned int>(val);
-                } else if (lastKey == "timing") {
-                    sim_instance->SimulationConfig().timing = static_cast<bool>(val);
-                } else if (lastKey == "verbosity") {
-                    sim_instance->SimulationConfig().verbosity = static_cast<flamegpu::Verbosity>(val);
-                } else if (lastKey == "console_mode") {
+            if (lastKey == "truncate_log_files") {
+                simulation_config.emplace(lastKey, static_cast<bool>(val));
+            } else if (lastKey == "random_seed") {
+                simulation_config.emplace(lastKey, static_cast<uint64_t>(val));
+            } else if (lastKey == "steps") {
+                simulation_config.emplace(lastKey, static_cast<unsigned int>(val));
+            } else if (lastKey == "timing") {
+                simulation_config.emplace(lastKey, static_cast<bool>(val));
+            } else if (lastKey == "verbosity") {
+                simulation_config.emplace(lastKey, static_cast<flamegpu::Verbosity>(val));
+            } else if (lastKey == "console_mode") {
 #ifdef FLAMEGPU_VISUALISATION
-                    sim_instance->SimulationConfig().console_mode = static_cast<bool>(val);
+                simulation_config.emplace(lastKey, static_cast<bool>(val));
 #else
-                    if (static_cast<bool>(val) == false) {
-                        fprintf(stderr, "Warning: Cannot disable 'console_mode' with input file '%s', FLAMEGPU2 library has not been built with visualisation support enabled.\n", filename.c_str());
-                    }
+                fprintf(stderr, "Warning: Cannot configure 'console_mode' with input file '%s', FLAMEGPU2 library has not been built with visualisation support enabled.\n", filename.c_str());
 #endif
-                } else {
-                    THROW exception::RapidJSONError("Unexpected simulation config item '%s' in input file '%s'.\n", lastKey.c_str(), filename.c_str());
-                }
+            } else {
+                THROW exception::RapidJSONError("Unexpected simulation config item '%s' in input file '%s'.\n", lastKey.c_str(), filename.c_str());
             }
         } else if (mode.top() == CUDACfg) {
-            if (cudamodel_instance) {
-                if (lastKey == "device_id") {
-                    cudamodel_instance->CUDAConfig().device_id = static_cast<unsigned int>(val);
-                } else if (lastKey == "inLayerConcurrency") {
-                    cudamodel_instance->CUDAConfig().inLayerConcurrency = static_cast<bool>(val);
-                } else {
-                    THROW exception::RapidJSONError("Unexpected CUDA config item '%s' in input file '%s'.\n", lastKey.c_str(), filename.c_str());
-                }
+            if (lastKey == "device_id") {
+                cuda_config.emplace(lastKey, static_cast<int>(val));
+            } else if (lastKey == "inLayerConcurrency") {
+                cuda_config.emplace(lastKey, static_cast<bool>(val));
+            } else {
+                THROW exception::RapidJSONError("Unexpected CUDA config item '%s' in input file '%s'.\n", lastKey.c_str(), filename.c_str());
             }
         }  else {
             // Not useful
@@ -412,19 +400,15 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
     bool Double(double d) { return processValue<double>(d); }
     bool String(const char*str, rapidjson::SizeType, bool) {
         if (mode.top() == SimCfg) {
-            if (sim_instance) {
-                if (lastKey == "input_file") {
-                    if (filename != str && str[0] != '\0')
-                        if (sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet)
-                            fprintf(stderr, "Warning: Input file '%s' refers to second input file '%s', this will not be loaded.\n", filename.c_str(), str);
-                    // sim_instance->SimulationConfig().input_file = str;
-                } else if (lastKey == "step_log_file") {
-                    sim_instance->SimulationConfig().step_log_file = str;
-                } else if (lastKey == "exit_log_file") {
-                    sim_instance->SimulationConfig().exit_log_file = str;
-                } else if (lastKey == "common_log_file") {
-                    sim_instance->SimulationConfig().common_log_file = str;
-                }
+            if (lastKey == "input_file") {
+                if (filename != str && str[0] != '\0')
+                    if (verbosity > Verbosity::Quiet)
+                        fprintf(stderr, "Warning: Input file '%s' refers to second input file '%s', this will not be loaded.\n", filename.c_str(), str);
+                // sim_instance->SimulationConfig().input_file = str;
+            } else if (lastKey == "step_log_file" ||
+                       lastKey == "exit_log_file" ||
+                       lastKey == "common_log_file") {
+                simulation_config.emplace(lastKey, std::string(str));
             }
         }
         return true;
@@ -500,36 +484,43 @@ class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<ra
     }
 };
 
-int JSONStateReader::parse() {
-    std::ifstream in(inputFile, std::ios::in | std::ios::binary);
+void JSONStateReader::parse(const std::string &input_file, const std::shared_ptr<const ModelData> &model, Verbosity verbosity) {
+    resetCache();
+
+    std::ifstream in(input_file, std::ios::in | std::ios::binary);
     if (!in) {
-        THROW exception::RapidJSONError("Unable to open file '%s' for reading.\n", inputFile.c_str());
+        THROW exception::RapidJSONError("Unable to open file '%s' for reading, in JSONStateReader::parse().", input_file.c_str());
     }
-    JSONStateReader_agentsize_counter agentcounter(inputFile, sim_instance);
-    JSONStateReader_impl handler(inputFile, env_desc, env_init, macro_env_desc, macro_env_init, model_state);
+    JSONStateReader_agentsize_counter agentcounter(input_file, simulation_config, cuda_config, verbosity);
+    JSONStateReader_impl handler(input_file, model, env_init, macro_env_init, agents_map, verbosity);
     std::string filestring = std::string((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     rapidjson::StringStream filess(filestring.c_str());
     rapidjson::Reader reader;
     // First parse the file and simply count the size of agent list
     rapidjson::ParseResult pr1 = reader.Parse<rapidjson::kParseNanAndInfFlag, rapidjson::StringStream, flamegpu::io::JSONStateReader_agentsize_counter>(filess, agentcounter);
     if (pr1.Code() != rapidjson::ParseErrorCode::kParseErrorNone) {
-        THROW exception::RapidJSONError("Whilst parsing input file '%s', RapidJSON returned error: %s\n", inputFile.c_str(), rapidjson::GetParseError_En(pr1.Code()));
+        THROW exception::RapidJSONError("Whilst parsing input file '%s', RapidJSON returned error: %s\n", input_file.c_str(), rapidjson::GetParseError_En(pr1.Code()));
     }
     const util::StringPairUnorderedMap<unsigned int> agentCounts = agentcounter.getAgentCounts();
     // Use this to preallocate the agent statelists
-    for (auto &agt : agentCounts) {
-        auto f = model_state.find(agt.first);
-        if (f!= model_state.end())
-            f->second->reserve(agt.second);
+    for (auto &it : agentCounts) {
+        const auto& agent = model->agents.find(it.first.first);
+        if (agent == model->agents.end() || agent->second->states.find(it.first.second) == agent->second->states.end()) {
+            THROW exception::InvalidAgentState("Agent '%s' with state '%s', found in input file '%s', is not part of the model description hierarchy, "
+                "in JSONStateReader::parse()\n Ensure the input file is for the correct model.\n", it.first.first.c_str(), it.first.second.c_str(), input_file.c_str());
+        }
+        auto [_it, _] = agents_map.emplace(it.first, std::make_shared<AgentVector>(*agent->second));
+        _it->second->reserve(it.second);
     }
     // Reset the string stream
     filess = rapidjson::StringStream(filestring.c_str());
     // Read in the file data
     rapidjson::ParseResult pr2 = reader.Parse<rapidjson::kParseNanAndInfFlag, rapidjson::StringStream, flamegpu::io::JSONStateReader_impl>(filess, handler);
     if (pr2.Code() != rapidjson::ParseErrorCode::kParseErrorNone) {
-        THROW exception::RapidJSONError("Whilst parsing input file '%s', RapidJSON returned error: %s\n", inputFile.c_str(), rapidjson::GetParseError_En(pr1.Code()));
+        THROW exception::RapidJSONError("Whilst parsing input file '%s', RapidJSON returned error: %s\n", input_file.c_str(), rapidjson::GetParseError_En(pr1.Code()));
     }
-    return 0;
+    // Mark input as loaded
+    this->input_filepath = input_file;
 }
 
 }  // namespace io
