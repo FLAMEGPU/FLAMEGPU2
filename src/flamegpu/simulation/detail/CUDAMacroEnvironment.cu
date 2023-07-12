@@ -17,7 +17,8 @@ CUDAMacroEnvironment::CUDAMacroEnvironment(const EnvironmentData& description, c
     }
 }
 
-void CUDAMacroEnvironment::init(cudaStream_t stream) {
+void CUDAMacroEnvironment::init(cudaStream_t _stream) {
+    this->stream = _stream;
     for (auto &prop : properties) {
         if (!prop.second.d_ptr) {
             size_t buffer_size = prop.second.type_size
@@ -29,13 +30,14 @@ void CUDAMacroEnvironment::init(cudaStream_t stream) {
             buffer_size += sizeof(unsigned int);  // Extra uint is used as read-write flag by seatbelts
 #endif
             gpuErrchk(cudaMalloc(&prop.second.d_ptr, buffer_size));
-            gpuErrchk(cudaMemsetAsync(prop.second.d_ptr, 0, buffer_size, stream));
+            gpuErrchk(cudaMemsetAsync(prop.second.d_ptr, 0, buffer_size, _stream));
         }
     }
-    gpuErrchk(cudaStreamSynchronize(stream));
+    gpuErrchk(cudaStreamSynchronize(_stream));
 }
 
-void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, std::shared_ptr<const detail::CUDAMacroEnvironment> master_macro_env, cudaStream_t stream) {
+void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, std::shared_ptr<const detail::CUDAMacroEnvironment> master_macro_env, cudaStream_t _stream) {
+    this->stream = _stream;
     // Map local properties
     for (auto& prop : properties) {
         if (!prop.second.d_ptr) {
@@ -51,7 +53,7 @@ void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, std::shared_p
                     buffer_size += sizeof(unsigned int);  // Extra uint is used as read-write flag by seatbelts
 #endif
                     gpuErrchk(cudaMalloc(&prop.second.d_ptr, buffer_size));
-                    gpuErrchk(cudaMemsetAsync(prop.second.d_ptr, 0, buffer_size, stream));
+                    gpuErrchk(cudaMemsetAsync(prop.second.d_ptr, 0, buffer_size, _stream));
             } else {
                 // If it's a mapped sub macro property
                 auto mmp = master_macro_env->properties.find(sub->second);
@@ -69,7 +71,7 @@ void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, std::shared_p
             }
         }
     }
-    gpuErrchk(cudaStreamSynchronize(stream));
+    gpuErrchk(cudaStreamSynchronize(_stream));
 }
 void CUDAMacroEnvironment::free() {
     for (auto& prop : properties) {
@@ -131,14 +133,15 @@ bool CUDAMacroEnvironment::getDeviceReadFlag(const std::string& property_name) {
         * prop->second.elements[2]
         * prop->second.elements[3];
     unsigned int ret = 0;
-    gpuErrchk(cudaMemcpy(&ret, static_cast<char*>(prop->second.d_ptr) + buffer_size, sizeof(unsigned int), cudaMemcpyDeviceToHost));
+    gpuErrchk(cudaMemcpyAsync(&ret, static_cast<char*>(prop->second.d_ptr) + buffer_size, sizeof(unsigned int), cudaMemcpyDeviceToHost, stream));
+    gpuErrchk(cudaStreamSynchronize(stream));
     return (ret & 1u << 0);
 }
 bool CUDAMacroEnvironment::getDeviceWriteFlag(const std::string& property_name) {
     const auto prop = properties.find(property_name);
     if (prop == properties.end()) {
         THROW flamegpu::exception::InvalidEnvProperty("The environment macro property '%s' was not found, "
-            "in CUDAMacroEnvironment::getDeviceReadFlag()\n",
+            "in CUDAMacroEnvironment::getDeviceWriteFlag()\n",
             property_name.c_str());
     }
     const size_t buffer_size = prop->second.type_size
@@ -147,14 +150,15 @@ bool CUDAMacroEnvironment::getDeviceWriteFlag(const std::string& property_name) 
         * prop->second.elements[2]
         * prop->second.elements[3];
     unsigned int ret = 0;
-    gpuErrchk(cudaMemcpy(&ret, static_cast<char*>(prop->second.d_ptr) + buffer_size, sizeof(unsigned int), cudaMemcpyDeviceToHost));
+    gpuErrchk(cudaMemcpyAsync(&ret, static_cast<char*>(prop->second.d_ptr) + buffer_size, sizeof(unsigned int), cudaMemcpyDeviceToHost, stream));
+    gpuErrchk(cudaStreamSynchronize(stream));
     return (ret & 1u << 1);
 }
 unsigned int CUDAMacroEnvironment::getDeviceRWFlags(const std::string& property_name) {
     const auto prop = properties.find(property_name);
     if (prop == properties.end()) {
         THROW flamegpu::exception::InvalidEnvProperty("The environment macro property '%s' was not found, "
-            "in CUDAMacroEnvironment::getDeviceReadFlag()\n",
+            "in CUDAMacroEnvironment::getDeviceRWFlags()\n",
             property_name.c_str());
     }
     const size_t buffer_size = prop->second.type_size
@@ -163,7 +167,8 @@ unsigned int CUDAMacroEnvironment::getDeviceRWFlags(const std::string& property_
         * prop->second.elements[2]
         * prop->second.elements[3];
     unsigned int ret = 0;
-    gpuErrchk(cudaMemcpy(&ret, static_cast<char*>(prop->second.d_ptr) + buffer_size, sizeof(unsigned int), cudaMemcpyDeviceToHost));
+    gpuErrchk(cudaMemcpyAsync(&ret, static_cast<char*>(prop->second.d_ptr) + buffer_size, sizeof(unsigned int), cudaMemcpyDeviceToHost, stream));
+    gpuErrchk(cudaStreamSynchronize(stream));
     return ret;
 }
 #endif

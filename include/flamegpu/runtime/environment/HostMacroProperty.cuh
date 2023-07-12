@@ -15,7 +15,7 @@ struct HostMacroProperty_MetaData {
      * Constructor
      */
     HostMacroProperty_MetaData(void* _d_base_ptr, const std::array<unsigned int, 4>& _dims, size_t _type_size,
-        bool _device_read_flag, const std::string &name)
+        bool _device_read_flag, const std::string &name, cudaStream_t _stream)
         : h_base_ptr(nullptr)
         , d_base_ptr(static_cast<char*>(_d_base_ptr))
         , dims(_dims)
@@ -24,6 +24,7 @@ struct HostMacroProperty_MetaData {
         , has_changed(false)
         , device_read_flag(_device_read_flag)
         , property_name(name)
+        , stream(_stream)
     { }
     ~HostMacroProperty_MetaData() {
         upload();
@@ -36,7 +37,8 @@ struct HostMacroProperty_MetaData {
     void download() {
         if (!h_base_ptr) {
             h_base_ptr = static_cast<char*>(malloc(elements * type_size));
-            gpuErrchk(cudaMemcpy(h_base_ptr, d_base_ptr, elements * type_size, cudaMemcpyDeviceToHost));
+            gpuErrchk(cudaMemcpyAsync(h_base_ptr, d_base_ptr, elements * type_size, cudaMemcpyDeviceToHost, stream));
+            gpuErrchk(cudaStreamSynchronize(stream));
             has_changed = false;
         }
     }
@@ -52,7 +54,8 @@ struct HostMacroProperty_MetaData {
                     property_name.c_str());
             }
 #endif
-            gpuErrchk(cudaMemcpy(d_base_ptr, h_base_ptr, elements * type_size, cudaMemcpyHostToDevice));
+            gpuErrchk(cudaMemcpyAsync(d_base_ptr, h_base_ptr, elements * type_size, cudaMemcpyHostToDevice, stream));
+            gpuErrchk(cudaStreamSynchronize(stream));
             has_changed = false;
         }
     }
@@ -64,6 +67,7 @@ struct HostMacroProperty_MetaData {
     bool has_changed;
     bool device_read_flag;
     std::string property_name;
+    cudaStream_t stream;
 };
 
 /**
