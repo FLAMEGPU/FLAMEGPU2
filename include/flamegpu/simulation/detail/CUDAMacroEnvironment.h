@@ -167,6 +167,7 @@ class CUDAMacroEnvironment {
     const CUDASimulation& cudaSimulation;
     std::map<std::string, MacroEnvProp> properties;
     std::map<std::string, std::weak_ptr<HostMacroProperty_MetaData>> host_cache;
+    cudaStream_t stream = nullptr;
 };
 
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
@@ -205,7 +206,7 @@ HostMacroProperty<T, I, J, K, W> CUDAMacroEnvironment::getProperty(const std::st
         }
         host_cache.erase(cache);
     }
-    auto ret = std::make_shared<HostMacroProperty_MetaData>(prop->second.d_ptr, prop->second.elements, sizeof(T), read_flag, name);
+    auto ret = std::make_shared<HostMacroProperty_MetaData>(prop->second.d_ptr, prop->second.elements, sizeof(T), read_flag, name, stream);
     host_cache.emplace(name, ret);
     return HostMacroProperty<T, I, J, K, W>(ret);
 }
@@ -243,7 +244,7 @@ HostMacroProperty_swig<T> CUDAMacroEnvironment::getProperty_swig(const std::stri
         }
         host_cache.erase(cache);
     }
-    auto ret = std::make_shared<HostMacroProperty_MetaData>(prop->second.d_ptr, prop->second.elements, sizeof(T), read_flag, name);
+    auto ret = std::make_shared<HostMacroProperty_MetaData>(prop->second.d_ptr, prop->second.elements, sizeof(T), read_flag, name, stream);
     host_cache.emplace(name, ret);
     return HostMacroProperty_swig<T>(ret);
 }
