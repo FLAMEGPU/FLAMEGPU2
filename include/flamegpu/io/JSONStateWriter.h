@@ -1,13 +1,19 @@
 #ifndef INCLUDE_FLAMEGPU_IO_JSONSTATEWRITER_H_
 #define INCLUDE_FLAMEGPU_IO_JSONSTATEWRITER_H_
 
+#include <rapidjson/writer.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/stringbuffer.h>
+
 #include <memory>
 #include <string>
 #include <unordered_map>
 
+
 #include "flamegpu/io/StateWriter.h"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
+
 
 namespace flamegpu {
 namespace detail {
@@ -20,39 +26,44 @@ namespace io {
 class JSONStateWriter : public StateWriter {
  public:
     /**
-     * Returns a writer capable of writing model state to a JSON file
-     * Agent data will be read from 'model_state'
-     * @param model_name Name from the model description hierarchy of the model to be exported
-     * @param env_manager Environment manager containing env property data for this sim instance
-     * @param model_state Map of AgentVector to read the agent data from per agent, key should be agent name
-     * @param macro_env Macro environment of the model
-     * @param iterations The value from the step counter at the time of export.
-     * @param output_file Filename of the input file (This will be used to determine which reader to return)
-     * @param sim_instance Instance of the Simulation object (This is used for setting/getting config)
+     * Constructs a writer capable of writing model state to an JSON file
      */
-    JSONStateWriter(
-        const std::string &model_name,
-        const std::shared_ptr<detail::EnvironmentManager>& env_manager,
-        const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
-        std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env,
-        unsigned int iterations,
-        const std::string &output_file,
-        const Simulation *sim_instance);
+    JSONStateWriter();
     /**
-     * Actually perform the writing to file
-     * @return Always 0
-     * @param prettyPrint Whether to include indentation and line breaks to aide human reading
-     * @throws exception::RapidJSONError If export of the model state fails
-     */
-    int writeStates(bool prettyPrint) override;
+    * Returns true if beginWrite() has been called and writing is active
+    */
+    bool isWriting() override { return writer.get(); }
+    /**
+    * Starts writing to the specified file in the specified mode
+    * @param output_file Filename of the input file (This will be used to determine which reader to return)
+    * @param pretty_print Whether the output file should be "pretty" or minified.
+    * @throws Throws exception if beginWrite() is called a second time before endWrite() has been called
+    * @see endWrite()
+    */
+    void beginWrite(const std::string &output_file, bool pretty_print) override;
+    /**
+    * Saves the current file and ends the writing state
+    * @see beginWrite(const std::string &, bool)
+    * @throws Throws exception if file IO fails
+    * @throws Throws exception if beginWrite() has not been called so writing is not active
+    */
+    void endWrite() override;
+
+    void writeConfig(const Simulation *sim_instance) override;
+    void writeStats(unsigned int iterations) override;
+    void writeEnvironment(const std::shared_ptr<const detail::EnvironmentManager>& env_manager) override;
+    void writeMacroEnvironment(const std::shared_ptr<const detail::CUDAMacroEnvironment>& macro_env) override;
+    void writeAgents(const util::StringPairUnorderedMap<std::shared_ptr<const AgentVector>>& agents_map) override;
 
  private:
-    /**
-     * We cannot dynamic_cast between rapidjson::Writer and rapidjson::PrettyWriter
-     * So we use template instead of repeating the code
-     */
-    template<typename T>
-    void doWrite(T &writer);
+    bool config_written = false;
+    bool stats_written = false;
+    bool environment_written = false;
+    bool macro_environment_written = false;
+    bool agents_written = false;
+    std::string outputPath;
+    rapidjson::StringBuffer buffer;
+    std::unique_ptr<rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::UTF8<>, rapidjson::CrtAllocator, rapidjson::kWriteNanAndInfFlag>> writer;
 };
 }  // namespace io
 }  // namespace flamegpu

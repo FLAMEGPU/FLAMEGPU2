@@ -28,54 +28,61 @@ namespace io {
 class StateWriter {
  public:
     /**
-     * Returns a writer capable of writing model state to a specific format (this class is abstract)
-     * Agent data will be read from 'model_state'
-     * @param _model_name Name from the model description hierarchy of the model to be exported
-     * @param _env_manager Environment manager containing env property data for this sim instance
-     * @param _model_state Map of AgentVector to read the agent data from per agent, key should be agent name
-     * @param _macro_env Macro environment of the model
-     * @param _iterations The value from the step counter at the time of export.
-     * @param output_file Filename of the input file (This will be used to determine which reader to return)
-     * @param _sim_instance Instance of the simulation (for configuration data IO)
-     */
-    StateWriter(std::string _model_name,
-        std::shared_ptr<detail::EnvironmentManager> _env_manager,
-        const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &_model_state,
-        std::shared_ptr<const detail::CUDAMacroEnvironment> _macro_env,
-        const unsigned int _iterations,
-        std::string output_file,
-        const Simulation *_sim_instance)
-    : model_state(_model_state)
-    , iterations(_iterations)
-    , outputFile(std::move(output_file))
-    , model_name(std::move(_model_name))
-    , env_manager(std::move(_env_manager))
-    , macro_env(std::move(_macro_env))
-    , sim_instance(_sim_instance) {}
-    /**
      * Virtual destructor for correct inheritance behaviour
      */
     virtual ~StateWriter() {}
+    /**
+     * Returns true if beginWrite() has been called and writing is active
+     */
+    virtual bool isWriting() = 0;
+    /**
+     * Starts writing to the specified file in the specified mode
+     * @param output_file Filename of the input file (This will be used to determine which reader to return)
+     * @param pretty_print Whether the output file should be "pretty" or minified.
+     * @throws Throws exception if beginWrite() is called a second time before endWrite() has been called
+     * @see endWrite()
+     */
+    virtual void beginWrite(const std::string &output_file, bool pretty_print) = 0;
+    /**
+     * Saves the current file and ends the writing state
+     * @see beginWrite(const std::string &, bool)
+     * @throws Throws exception if file IO fails
+     * @throws Throws exception if beginWrite() has not been called so writing is not active
+     */
+    virtual void endWrite() = 0;
 
     // -----------------------------------------------------------------------
-    //  The interface
+    //  The Easy Interface
     // -----------------------------------------------------------------------
     /**
-     * Actually perform the file export
-     * @param prettyPrint Whether to include indentation and line breaks to aide human reading
-     * @return Returns a return code
-     * @todo: This should probably be the same return code between subclasses, and seems redundant with our exceptions as should never return fail.
+     * Export the full simulation state
+     * @param sim_instance Instance of the Simulation object (This is used for setting/getting config)
+     * @param iterations The value from the step counter at the time of export.
+     * @param env_manager Environment manager containing env property data for this sim instance
+     * @param macro_env Macro environment of the model
+     * @param agents_map Map of AgentVector to read the agent data from per agent, key should be agent name
+     * @throws Exceptions will be thrown on failure, specific to the subclass/problem
      */
-    virtual int writeStates(bool prettyPrint) = 0;
-
- protected:
-    const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> model_state{};
-    unsigned int iterations;
-    std::string outputFile;
-    const std::string model_name;
-    const std::shared_ptr<detail::EnvironmentManager> env_manager;
-    const std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env;
-    const Simulation *sim_instance;
+    void writeFullModelState(
+        const Simulation *sim_instance,
+        unsigned int iterations,
+        const std::shared_ptr<const detail::EnvironmentManager>& env_manager,
+        const std::shared_ptr<const detail::CUDAMacroEnvironment>& macro_env,
+        const util::StringPairUnorderedMap<std::shared_ptr<const AgentVector>>& agents_map) {
+        writeConfig(sim_instance);
+        writeStats(iterations);
+        writeEnvironment(env_manager);
+        writeMacroEnvironment(macro_env);
+        writeAgents(agents_map);
+    }
+    // -----------------------------------------------------------------------
+    //  The Advanced Interface
+    // -----------------------------------------------------------------------
+    virtual void writeConfig(const Simulation *sim_instance) = 0;
+    virtual void writeStats(unsigned int iterations) = 0;
+    virtual void writeEnvironment(const std::shared_ptr<const detail::EnvironmentManager>& env_manager) = 0;
+    virtual void writeMacroEnvironment(const std::shared_ptr<const detail::CUDAMacroEnvironment>& macro_env) = 0;
+    virtual void writeAgents(const util::StringPairUnorderedMap<std::shared_ptr<const AgentVector>>& agents_map) = 0;
 };
 }  // namespace io
 }  // namespace flamegpu
