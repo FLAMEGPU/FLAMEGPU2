@@ -3,13 +3,8 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
-#include <utility>
-#include <vector>
 
 #include "flamegpu/io/StateReader.h"
-#include "flamegpu/model/ModelDescription.h"
-#include "flamegpu/util/StringPair.h"
 
 namespace flamegpu {
 namespace io {
@@ -20,33 +15,12 @@ namespace io {
 class JSONStateReader : public StateReader {
  public:
     /**
-     * Constructs a reader capable of reading model state from JSON files
-     * Environment properties will be read into the Simulation instance pointed to by 'sim_instance_id'
-     * Agent data will be read into 'model_state'
-     * @param model_name Name from the model description hierarchy of the model to be loaded
-     * @param env_desc Environment description for validating property data on load
-     * @param env_init Dictionary of loaded values map:<name, value>
-     * @param macro_env_desc Macro environment description for validating property data on load
-     * @param macro_env_init Dictionary of loaded values map:<name, value>
-     * @param model_state Map of AgentVector to load the agent data into per agent, key should be agent name
-     * @param input_file Filename of the input file (This will be used to determine which reader to return)
-     * @param sim_instance Instance of the Simulation object (This is used for setting/getting config)
-     */
-    JSONStateReader(
-        const std::string &model_name,
-        const std::unordered_map<std::string, EnvironmentData::PropData> &env_desc,
-        std::unordered_map<std::string, detail::Any> &env_init,
-        const std::unordered_map<std::string, EnvironmentData::MacroPropData> &macro_env_desc,
-        std::unordered_map<std::string, std::vector<char>> &macro_env_init,
-        util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
-        const std::string &input_file,
-        Simulation *sim_instance);
-    /**
-     * Actual performs the XML parsing to load the model state
-     * @return Always 0
-     * @throws exception::RapidJSONError If parsing of the input file fails
-     */
-    int parse() override;
+    * Loads the specified XML file to an internal data-structure 
+    * @param input_file Path to file to be read
+    * @param model Model description to ensure file loaded is suitable
+    * @param verbosity Verbosity level to use during load
+    */
+    void parse(const std::string &input_file, const std::shared_ptr<const ModelData> &model, Verbosity verbosity) override;
 };
 }  // namespace io
 }  // namespace flamegpu

@@ -1,13 +1,3 @@
-
-/**
- * @file
- * @author
- * @date
- * @brief
- *
- * \todo longer description
- */
-
 #include "flamegpu/io/XMLStateReader.h"
 #include <sstream>
 #include <algorithm>
@@ -17,6 +7,7 @@
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/simulation/AgentVector.h"
 #include "flamegpu/model/AgentDescription.h"
+#include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/simulation/CUDASimulation.h"
 
 namespace flamegpu {
@@ -65,28 +56,7 @@ namespace io {
 }
 #endif
 
-XMLStateReader::XMLStateReader(
-    const std::string &model_name,
-    const std::unordered_map<std::string, EnvironmentData::PropData> &env_desc,
-    std::unordered_map<std::string, detail::Any> &env_init,
-    const std::unordered_map<std::string, EnvironmentData::MacroPropData>& macro_env_desc,
-    std::unordered_map<std::string, std::vector<char>> &macro_env_init,
-    util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
-    const std::string &input,
-    Simulation *sim_instance)
-    : StateReader(model_name, env_desc, env_init, macro_env_desc, macro_env_init, model_state, input, sim_instance) {}
-
-std::string XMLStateReader::getInitialState(const std::string &agent_name) const {
-    for (const auto &i : model_state) {
-        if (agent_name == i.first.first)
-            return i.second->getInitialState();
-    }
-    return ModelData::DEFAULT_STATE;
-}
-/**
-* \brief parses the xml file
-*/
-int XMLStateReader::parse() {
+void XMLStateReader::parse(const std::string &inputFile, const std::shared_ptr<const ModelData> &model, Verbosity verbosity) {
     tinyxml2::XMLDocument doc;
 
     tinyxml2::XMLError errorId = doc.LoadFile(inputFile.c_str());
@@ -101,90 +71,70 @@ int XMLStateReader::parse() {
     tinyxml2::XMLElement* pElement = pRoot->FirstChildElement("config");
     if (pElement) {
         // Sim config
-        if (sim_instance) {
-            tinyxml2::XMLElement *pSimCfgBlock = pElement->FirstChildElement("simulation");
+        tinyxml2::XMLElement *pSimCfgBlock = pElement->FirstChildElement("simulation");
+        if (pSimCfgBlock) {
             for (auto simCfgElement = pSimCfgBlock->FirstChildElement(); simCfgElement; simCfgElement = simCfgElement->NextSiblingElement()) {
                 std::string key = simCfgElement->Value();
                 std::string val = simCfgElement->GetText() ? simCfgElement->GetText() : "";
                 if (key == "input_file") {
                     if (inputFile != val && !val.empty())
-                        if (sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet)
+                        if (verbosity > Verbosity::Quiet)
                             fprintf(stderr, "Warning: Input file '%s' refers to second input file '%s', this will not be loaded.\n", inputFile.c_str(), val.c_str());
                     // sim_instance->SimulationConfig().input_file = val;
-                } else if (key == "step_log_file") {
-                    sim_instance->SimulationConfig().step_log_file = val;
-                } else if (key == "exit_log_file") {
-                    sim_instance->SimulationConfig().exit_log_file = val;
-                } else if (key == "common_log_file") {
-                    sim_instance->SimulationConfig().common_log_file = val;
-                } else if (key == "truncate_log_files") {
+                } else if (key == "step_log_file" ||
+                           key == "exit_log_file" ||
+                           key == "common_log_file") {
+                    simulation_config.emplace(key, val);
+                } else if (key == "truncate_log_files" ||
+#ifdef FLAMEGPU_VISUALISATION
+                           key == "console_mode" ||
+#endif
+                           key == "timing") {
                     for (auto& c : val)
                         c = static_cast<char>(::tolower(c));
                     if (val == "true") {
-                        sim_instance->SimulationConfig().truncate_log_files = true;
+                        simulation_config.emplace(key, true);
                     } else if (val == "false") {
-                        sim_instance->SimulationConfig().truncate_log_files = false;
+                        simulation_config.emplace(key, false);
                     } else {
-                        sim_instance->SimulationConfig().truncate_log_files = static_cast<bool>(stoll(val));
+                        simulation_config.emplace(key, static_cast<bool>(stoll(val)));
                     }
                 } else if (key == "random_seed") {
-                    sim_instance->SimulationConfig().random_seed = static_cast<uint64_t>(stoull(val));
+                    simulation_config.emplace(key, static_cast<uint64_t>(stoull(val)));
                 } else if (key == "steps") {
-                    sim_instance->SimulationConfig().steps = static_cast<unsigned int>(stoull(val));
+                    simulation_config.emplace(key, static_cast<unsigned int>(stoull(val)));
                 } else if (key == "verbosity") {
-                    sim_instance->SimulationConfig().verbosity = static_cast<flamegpu::Verbosity>(stoull(val));
-                } else if (key == "timing") {
-                    for (auto& c : val)
-                        c = static_cast<char>(::tolower(c));
-                    if (val == "true") {
-                        sim_instance->SimulationConfig().timing = true;
-                    } else if (val == "false") {
-                        sim_instance->SimulationConfig().timing = false;
-                    } else {
-                        sim_instance->SimulationConfig().timing = static_cast<bool>(stoll(val));
-                    }
-                } else if (key == "console_mode") {
-#ifdef FLAMEGPU_VISUALISATION
-                    for (auto& c : val)
-                        c = static_cast<char>(::tolower(c));
-                    if (val == "true") {
-                        sim_instance->SimulationConfig().console_mode = true;
-                    } else if (val == "false") {
-                        sim_instance->SimulationConfig().console_mode = false;
-                    } else {
-                        sim_instance->SimulationConfig().console_mode = static_cast<bool>(stoll(val));
-                    }
-#else
-                    if (val == "false") {
-                        if (sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet)
-                            fprintf(stderr, "Warning: Cannot disable 'console_mode' with input file '%s', FLAMEGPU2 library has not been built with visualisation support enabled.\n", inputFile.c_str());
-                    }
-#endif
-                }  else if (sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet) {
+                    simulation_config.emplace(key, static_cast<flamegpu::Verbosity>(stoull(val)));
+                }  else if (verbosity > Verbosity::Quiet) {
                     fprintf(stderr, "Warning: Input file '%s' contains unexpected simulation config property '%s'.\n", inputFile.c_str(), key.c_str());
                 }
+#ifndef FLAMEGPU_VISUALISATION
+                if (key == "console_mode") {
+                    if (verbosity > Verbosity::Quiet)
+                        fprintf(stderr, "Warning: Cannot configure 'console_mode' with input file '%s', FLAMEGPU2 library has not been built with visualisation support enabled.\n", inputFile.c_str());
+                }
+#endif
             }
         }
         // CUDA config
-        CUDASimulation *cudamodel_instance = dynamic_cast<CUDASimulation*>(sim_instance);
-        if (cudamodel_instance) {
-            tinyxml2::XMLElement *pCUDACfgBlock = pElement->FirstChildElement("cuda");
+        tinyxml2::XMLElement *pCUDACfgBlock = pElement->FirstChildElement("cuda");
+        if (pCUDACfgBlock) {
             for (auto cudaCfgElement = pCUDACfgBlock->FirstChildElement(); cudaCfgElement; cudaCfgElement = cudaCfgElement->NextSiblingElement()) {
                 std::string key = cudaCfgElement->Value();
                 std::string val = cudaCfgElement->GetText();
                 if (key == "device_id") {
-                    cudamodel_instance->CUDAConfig().device_id = static_cast<unsigned int>(stoull(val));
+                    cuda_config.emplace(key, static_cast<int>(stoull(val)));
                 } else if (key == "inLayerConcurrency") {
                     for (auto& c : val)
                         c = static_cast<char>(::tolower(c));
                     if (val == "true") {
-                        cudamodel_instance->CUDAConfig().inLayerConcurrency = true;
+                        cuda_config.emplace(key, true);
                     } else if (val == "false") {
-                        cudamodel_instance->CUDAConfig().inLayerConcurrency = false;
+                        cuda_config.emplace(key, false);
                     } else {
-                        cudamodel_instance->CUDAConfig().inLayerConcurrency = static_cast<bool>(stoll(val));
+                        cuda_config.emplace(key, static_cast<bool>(stoll(val)));
                     }
-                } else if (sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet) {
+                } else if (verbosity > Verbosity::Quiet) {
                     fprintf(stderr, "Warning: Input file '%s' contains unexpected cuda config property '%s'.\n", inputFile.c_str(), key.c_str());
                 }
             }
@@ -196,12 +146,13 @@ int XMLStateReader::parse() {
     // Read environment data
     pElement = pRoot->FirstChildElement("environment");
     if (pElement) {
+        auto& env_props = model->environment->properties;
         for (auto envElement = pElement->FirstChildElement(); envElement; envElement = envElement->NextSiblingElement()) {
             const char *key = envElement->Value();
             std::stringstream ss(envElement->GetText());
             std::string token;
-            const auto it = env_desc.find(std::string(key));
-            if (it == env_desc.end()) {
+            const auto it = env_props.find(std::string(key));
+            if (it == env_props.end()) {
                 THROW exception::TinyXMLError("Input file contains unrecognised environment property '%s',"
                     "in XMLStateReader::parse()\n", key);
             }
@@ -244,24 +195,25 @@ int XMLStateReader::parse() {
                         "in XMLStateReader::parse()\n", key, val_type.name());
                 }
             }
-            if (el != elements && sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet) {
+            if (el != elements && verbosity > Verbosity::Quiet) {
                 fprintf(stderr, "Warning: Environment array property '%s' expects '%u' elements, input file '%s' contains '%u' elements.\n",
                     key, elements, inputFile.c_str(), el);
             }
         }
-    } else if (sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet) {
+    } else if (verbosity > Verbosity::Quiet) {
         fprintf(stderr, "Warning: Input file '%s' does not contain environment node.\n", inputFile.c_str());
     }
 
     // Read macro environment data
     pElement = pRoot->FirstChildElement("macro_environment");
     if (pElement) {
+        auto& env_macro_props = model->environment->macro_properties;
         for (auto envElement = pElement->FirstChildElement(); envElement; envElement = envElement->NextSiblingElement()) {
             const char *key = envElement->Value();
             std::stringstream ss(envElement->GetText());
             std::string token;
-            const auto it = macro_env_desc.find(std::string(key));
-            if (it == macro_env_desc.end()) {
+            const auto it = env_macro_props.find(std::string(key));
+            if (it == env_macro_props.end()) {
                 THROW exception::TinyXMLError("Input file contains unrecognised macro environment property '%s',"
                     "in XMLStateReader::parse()\n", key);
             }
@@ -304,12 +256,12 @@ int XMLStateReader::parse() {
                         "in XMLStateReader::parse()\n", key, val_type.name());
                 }
             }
-            if (el != elements && sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet) {
+            if (el != elements && verbosity > Verbosity::Quiet) {
                 fprintf(stderr, "Warning: Macro environment property '%s' expects '%u' elements, input file '%s' contains '%u' elements.\n",
                     key, elements, inputFile.c_str(), el);
             }
         }
-    } else if (sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet) {
+    } else if (verbosity > Verbosity::Quiet) {
         fprintf(stderr, "Warning: Input file '%s' does not contain macro environment node.\n", inputFile.c_str());
     }
 
@@ -318,14 +270,19 @@ int XMLStateReader::parse() {
     for (pElement = pRoot->FirstChildElement("xagent"); pElement != nullptr; pElement = pElement->NextSiblingElement("xagent")) {
         std::string agent_name = pElement->FirstChildElement("name")->GetText();
         tinyxml2::XMLElement *state_element = pElement->FirstChildElement("state");
-        std::string state_name = state_element ? state_element->GetText() : getInitialState(agent_name);
+        std::string state_name = state_element ? state_element->GetText() : getInitialState(model, agent_name);
         cts[{agent_name, state_name}]++;
     }
-    // Resize state lists (greedy, all lists are resized to max size of state)
-    for (auto& it : model_state) {
-        auto f = cts.find(it.first);
-        if (f != cts.end())
-          it.second->reserve(f->second);
+
+    // Init state lists to correct size
+    for (const auto& it : cts) {
+        const auto& agent = model->agents.find(it.first.first);
+        if (agent == model->agents.end() || agent->second->states.find(it.first.second) == agent->second->states.end()) {
+            THROW exception::InvalidAgentState("Agent '%s' with state '%s', found in input file '%s', is not part of the model description hierarchy, "
+                "in XMLStateReader::parse()\n Ensure the input file is for the correct model.\n", it.first.first.c_str(), it.first.second.c_str(), inputFile.c_str());
+        }
+        auto [_it, _] = agents_map.emplace(it.first, std::make_shared<AgentVector>(*agent->second));
+        _it->second->reserve(it.second);
     }
 
     bool hasWarnedElements = false;
@@ -337,9 +294,9 @@ int XMLStateReader::parse() {
         const char* agentName = pNameElement->GetText();
         // Find agent state, use initial state if not set (means its old flame gpu 1 input file)
         tinyxml2::XMLElement* pStateElement = pElement->FirstChildElement("state");
-        const std::string agentState = pStateElement ? std::string(pStateElement->GetText()) : getInitialState(agentName);
-        const auto agentIt = model_state.find({ agentName, agentState });
-        if (agentIt == model_state.end()) {
+        const std::string agentState = pStateElement ? std::string(pStateElement->GetText()) : getInitialState(model, agentName);
+        const auto agentIt = agents_map.find({ agentName, agentState });
+        if (agentIt == agents_map.end()) {
             THROW exception::InvalidAgentState("Agent '%s' with state '%s', found in input file '%s', is not part of the model description hierarchy, "
                 "in XMLStateReader::parse()\n Ensure the input file is for the correct model.\n", agentName, agentState.c_str(), inputFile.c_str());
         }
@@ -398,12 +355,12 @@ int XMLStateReader::parse() {
                     }
                 }
                 // Warn if var is wrong length
-                if (el != var_data.elements && !hasWarnedElements && sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet) {
+                if (el != var_data.elements && !hasWarnedElements && verbosity > Verbosity::Quiet) {
                     fprintf(stderr, "Warning: Agent '%s' variable '%s' expects '%u' elements, input file '%s' contains '%u' elements.\n",
                         agentName, variable_name.c_str(), var_data.elements, inputFile.c_str(), el);
                     hasWarnedElements = true;
                 }
-            } else if (!hasWarnedMissingVar && variable_name.find('_', 0) != 0 && sim_instance->getSimulationConfig().verbosity > Verbosity::Quiet) {
+            } else if (!hasWarnedMissingVar && variable_name.find('_', 0) != 0 && verbosity > Verbosity::Quiet) {
                 fprintf(stderr, "Warning: Agent '%s' variable '%s' is missing from, input file '%s'.\n",
                     agentName, variable_name.c_str(), inputFile.c_str());
                 hasWarnedMissingVar = true;
@@ -411,8 +368,16 @@ int XMLStateReader::parse() {
         }
     }
 
-    return tinyxml2::XML_SUCCESS;
+    // Mark input as loaded
+    this->input_filepath = inputFile;
 }
 
+std::string XMLStateReader::getInitialState(const std::shared_ptr<const ModelData> &model, const std::string &agent_name) {
+    const auto& it = model->agents.find(agent_name);
+    if (it != model->agents.end()) {
+        return it->second->initial_state;
+    }
+    return ModelData::DEFAULT_STATE;
+}
 }  // namespace io
 }  // namespace flamegpu

@@ -4,12 +4,12 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <utility>
 #include <vector>
+#include <any>
 
 #include "flamegpu/util/StringPair.h"
-#include "flamegpu/model/EnvironmentData.h"
 #include "flamegpu/simulation/Simulation.h"
+#include "flamegpu/simulation/CUDASimulation.h"
 
 namespace flamegpu {
 
@@ -25,59 +25,60 @@ namespace io {
 class StateReader {
  public:
     /**
-     * Constructs a reader capable of reading model state from a specific format (this class is abstract)
-     * Environment properties will be read into the Simulation instance pointed to by 'sim_instance_id'
-     * Agent data will be read into 'model_state'
-     * @param _model_name Name from the model description hierarchy of the model to be loaded
-     * @param _env_desc Environment description for validating property data on load
-     * @param _env_init Dictionary of loaded values map:<name, value>
-     * @param _macro_env_desc Macro environment description for validating property data on load
-     * @param _macro_env_init Dictionary of loaded values map:<name, value>
-     * @param _model_state Map of AgentVector to load the agent data into per agent, key should be agent name
-     * @param input Filename of the input file (This will be used to determine which reader to return)
-     * @param _sim_instance Instance of the simulation (for configuration data IO)
-     */
-    StateReader(
-        const std::string& _model_name,
-        const std::unordered_map<std::string, EnvironmentData::PropData>& _env_desc,
-        std::unordered_map<std::string, detail::Any>& _env_init,
-        const std::unordered_map<std::string, EnvironmentData::MacroPropData>& _macro_env_desc,
-        std::unordered_map<std::string, std::vector<char>>& _macro_env_init,
-        util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>& _model_state,
-        const std::string& input,
-        Simulation* _sim_instance)
-    : model_state(_model_state)
-    , inputFile(input)
-    , model_name(_model_name)
-    , env_desc(_env_desc)
-    , env_init(_env_init)
-    , macro_env_desc(_macro_env_desc)
-    , macro_env_init(_macro_env_init)
-    , sim_instance(_sim_instance) {}
-    /**
      * Virtual destructor for correct inheritance behaviour
      */
     virtual ~StateReader() {}
 
+    /**
+     * Loads the file to an internal data-structure
+     * @param input_file Path to file to be read
+     * @param model Model description to ensure file loaded is suitable
+     * @param verbosity Verbosity level to use during load
+     */
+    virtual void parse(const std::string &input_file, const std::shared_ptr<const ModelData> &model, Verbosity verbosity) = 0;
+
     // -----------------------------------------------------------------------
-    //  The interface
+    //  The Easy Interface
     // -----------------------------------------------------------------------
     /**
-     * Actually perform the file load
-     * @return Returns a return code
-     * @todo: This should probably be the same return code between subclasses, and seems redundant with our exceptions as should never return fail.
+     * Grab the full simulation state from the input file
+     * @note CUDASimulation Config is not included and should be requested separately
      */
-    virtual int parse() = 0;
+    void getFullModelState(
+        Simulation::Config &s_cfg,
+        std::unordered_map<std::string, detail::Any> &environment_init,
+        std::unordered_map<std::string, std::vector<char>> &macro_environment_init,
+        util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &agents_init);
+
+    // -----------------------------------------------------------------------
+    //  The Advanced Interface
+    // -----------------------------------------------------------------------
+    /**
+     * Overwrite the provided simulation config with the one loaded from file
+     * @param cfg The config struct to be overwritten
+     * @throws If the parsed file did not contain a simulation config or a file has not been parsed
+     */
+    void getSimulationConfig(Simulation::Config &cfg);
+    /**
+    * Overwrite the provided CUDA config with the one loaded from file
+    * @param cfg The config struct to be overwritten
+    * @throws If the parsed file did not contain a CUDA config or a file has not been parsed
+    */
+    void getCUDAConfig(CUDASimulation::Config &cfg);
+    void getEnvironment(std::unordered_map<std::string, detail::Any> &environment_init);
+    void getMacroEnvironment(std::unordered_map<std::string, std::vector<char>> &macro_environment_init);
+    void getAgents(util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &agents_init);
 
  protected:
-    util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state;
-    std::string inputFile;
-    const std::string model_name;
-    const std::unordered_map<std::string, EnvironmentData::PropData> &env_desc;
-    std::unordered_map<std::string, detail::Any>& env_init;
-    const std::unordered_map<std::string, EnvironmentData::MacroPropData> &macro_env_desc;
-    std::unordered_map<std::string, std::vector<char>>& macro_env_init;
-    Simulation *sim_instance;
+    std::string input_filepath;
+
+    void resetCache();
+
+    std::unordered_map<std::string, std::any> simulation_config;
+    std::unordered_map<std::string, std::any> cuda_config;
+    std::unordered_map<std::string, detail::Any> env_init;
+    std::unordered_map<std::string, std::vector<char>> macro_env_init;
+    util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> agents_map;
 };
 }  // namespace io
 }  // namespace flamegpu
