@@ -81,7 +81,12 @@ class StateWriter {
     virtual void writeConfig(const Simulation *sim_instance) = 0;
     virtual void writeStats(unsigned int iterations) = 0;
     virtual void writeEnvironment(const std::shared_ptr<const detail::EnvironmentManager>& env_manager) = 0;
-    virtual void writeMacroEnvironment(const std::shared_ptr<const detail::CUDAMacroEnvironment>& macro_env) = 0;
+    /**
+     * Write the macro environment block
+     * @param macro_env The macro environment to pull properties from
+     * @param filter If provided, only named properties will be written. Note, if filter contains missing properties it will fail
+     */
+    virtual void writeMacroEnvironment(const std::shared_ptr<const detail::CUDAMacroEnvironment>& macro_env, std::initializer_list<std::string> filter = {}) = 0;
     virtual void writeAgents(const util::StringPairUnorderedMap<std::shared_ptr<const AgentVector>>& agents_map) = 0;
 };
 }  // namespace io

@@ -250,7 +250,7 @@ void XMLStateWriter::writeEnvironment(const std::shared_ptr<const detail::Enviro
 
     environment_written = true;
 }
-void XMLStateWriter::writeMacroEnvironment(const std::shared_ptr<const detail::CUDAMacroEnvironment>& macro_env) {
+void XMLStateWriter::writeMacroEnvironment(const std::shared_ptr<const detail::CUDAMacroEnvironment>& macro_env, std::initializer_list<std::string> filter) {
     if (!doc || !pRoot) {
         THROW exception::UnknownInternalError("beginWrite() must be called before writeMacroEnvironment(), in XMLStateWriter::writeMacroEnvironment()");
     } else if (macro_environment_written) {
@@ -260,6 +260,12 @@ void XMLStateWriter::writeMacroEnvironment(const std::shared_ptr<const detail::C
     tinyxml2::XMLElement *pElement = doc->NewElement("macro_environment");
     if (macro_env) {
         const std::map<std::string, detail::CUDAMacroEnvironment::MacroEnvProp>& m_properties = macro_env->getPropertiesMap();
+        for (const auto &_filter : filter) {
+            if (m_properties.find(_filter) == m_properties.end()) {
+                THROW exception::InvalidEnvProperty("Macro property '%s' specified in filter does not exist, in XMLStateWriter::writeMacroEnvironment()", _filter.c_str());
+            }
+        }
+        std::set<std::string> filter_set = filter;
         // Calculate largest buffer in map
         size_t max_len = 0;
         for (const auto& [_, prop] : m_properties) {
@@ -270,6 +276,8 @@ void XMLStateWriter::writeMacroEnvironment(const std::shared_ptr<const detail::C
             char* const t_buffer = static_cast<char*>(malloc(max_len));
             // Write out each array (all are written out as 1D arrays for simplicity given variable dimensions)
             for (const auto& [name, prop] : m_properties) {
+                if (!filter_set.empty() && filter_set.find(name) == filter_set.end())
+                    continue;
                 // Copy data
                 const size_t element_ct = std::accumulate(prop.elements.begin(), prop.elements.end(), 1, std::multiplies<unsigned int>());
                 gpuErrchk(cudaMemcpy(t_buffer, prop.d_ptr, element_ct * prop.type_size, cudaMemcpyDeviceToHost));

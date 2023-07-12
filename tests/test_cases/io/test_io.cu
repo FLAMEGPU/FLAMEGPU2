@@ -9,8 +9,11 @@ namespace flamegpu {
 
 namespace test_io {
 bool validate_has_run = false;
+// Used by MiniSim3 where file name is required during a host function
+const char* current_test_file_name = nullptr;
 const char *XML_FILE_NAME = "test.xml";
 const char *JSON_FILE_NAME = "test.json";
+const char *BIN_FILE_NAME = "test.bin";
 FLAMEGPU_STEP_FUNCTION(VALIDATE_ENV) {
     EXPECT_EQ(FLAMEGPU->environment.getProperty<float>("float"), 12.0f);
     EXPECT_EQ(FLAMEGPU->environment.getProperty<float>("float"), 12.0f);
@@ -132,13 +135,61 @@ FLAMEGPU_STEP_FUNCTION(VALIDATE_MACRO_ENV) {
     auto macro_uint = FLAMEGPU->environment.getMacroProperty<unsigned int>("macro_uint");
     EXPECT_EQ(static_cast<unsigned int>(macro_uint), 12u);
 }
+FLAMEGPU_STEP_FUNCTION(VALIDATE_MACRO_ENV2) {
+    const auto macro_float_3_3_3 = FLAMEGPU->environment.getMacroProperty<float, 3, 3, 3>("macro_float_3_3_3");
+    int i = 0;
+    for (int x = 0; x < 3; ++x) {
+        for (int y = 0; y < 3; ++y) {
+            for (int z = 0; z < 3; ++z) {
+                EXPECT_EQ(static_cast<float>(macro_float_3_3_3[x][y][z]), static_cast<float>(i++));
+            }
+        }
+    }
+    auto macro_int_4_3_2_3 = FLAMEGPU->environment.getMacroProperty<int, 4, 3, 2, 3>("macro_int_4_3_2_3");
+    i = 0;
+    for (int x = 0; x < 4; ++x) {
+        for (int y = 0; y < 3; ++y) {
+            for (int z = 0; z < 2; ++z) {
+                for (int w = 0; w < 3; ++w) {
+                    EXPECT_EQ(static_cast<int>(macro_int_4_3_2_3[x][y][z][w]), 0);
+                }
+            }
+        }
+    }
+    auto macro_uint = FLAMEGPU->environment.getMacroProperty<unsigned int>("macro_uint");
+    EXPECT_EQ(static_cast<unsigned int>(macro_uint), 0u);
+}
 FLAMEGPU_STEP_FUNCTION(RESET_MACRO_ENV) {
+    validate_has_run = true;
     auto macro_float_3_3_3 = FLAMEGPU->environment.getMacroProperty<float, 3, 3, 3>("macro_float_3_3_3");
     macro_float_3_3_3.zero();
     auto macro_int_4_3_2_3 = FLAMEGPU->environment.getMacroProperty<int, 4, 3, 2, 3>("macro_int_4_3_2_3");
     macro_int_4_3_2_3.zero();
     auto macro_uint = FLAMEGPU->environment.getMacroProperty<unsigned int>("macro_uint");
     macro_uint.zero();
+}
+FLAMEGPU_STEP_FUNCTION(EXPORT_MACRO_ENV) {
+    FLAMEGPU->environment.exportMacroProperty("macro_float_3_3_3", current_test_file_name);
+}
+FLAMEGPU_STEP_FUNCTION(IMPORT_MACRO_ENV) {
+    const auto macro_float_3_3_3 = FLAMEGPU->environment.getMacroProperty<float, 3, 3, 3>("macro_float_3_3_3");
+    int i = 0;
+    for (int x = 0; x < 3; ++x) {
+        for (int y = 0; y < 3; ++y) {
+            for (int z = 0; z < 3; ++z) {
+                EXPECT_EQ(static_cast<float>(macro_float_3_3_3[x][y][z]), 0);
+            }
+        }
+    }
+    FLAMEGPU->environment.importMacroProperty("macro_float_3_3_3", current_test_file_name);
+    i = 0;
+    for (int x = 0; x < 3; ++x) {
+        for (int y = 0; y < 3; ++y) {
+            for (int z = 0; z < 3; ++z) {
+                EXPECT_EQ(static_cast<float>(macro_float_3_3_3[x][y][z]), static_cast<float>(i++));
+            }
+        }
+    }
 }
 
 class MiniSim {
@@ -649,6 +700,75 @@ TEST(IOTest2, AgentID_FileInput_IDCollision) {
     EXPECT_THROW(sim.applyConfig(), exception::AgentIDCollision);
     // Cleanup
     ASSERT_EQ(::remove(JSON_FILE_NAME), 0);
+}
+
+
+class MiniSim3 {
+    std::string test_file;
+
+ public:
+    ~MiniSim3() {
+        // Cleanup
+        if (!test_file.empty())
+            ::remove(test_file.c_str());
+    }
+    void run(const char *test_file_name) {
+        current_test_file_name = test_file_name;
+        this->test_file = test_file_name;
+        // Model description
+        ModelDescription model("test_model");
+        AgentDescription a = model.newAgent("a");
+        {
+            EnvironmentDescription e = model.Environment();
+            e.newMacroProperty<float, 3, 3, 3>("macro_float_3_3_3");
+            e.newMacroProperty<int, 4, 3, 2, 3>("macro_int_4_3_2_3");
+            e.newMacroProperty<unsigned int>("macro_uint");
+        }
+        AgentVector pop(a, 1);
+        model.addInitFunction(INIT_MACRO_ENV);
+        model.newLayer().addHostFunction(EXPORT_MACRO_ENV);
+        model.newLayer().addHostFunction(RESET_MACRO_ENV);
+        model.newLayer().addHostFunction(IMPORT_MACRO_ENV);
+        model.newLayer().addHostFunction(VALIDATE_MACRO_ENV2);
+        {  // Validate env_vars
+           // Load model
+            CUDASimulation am(model);
+            // Step once, this checks and clears env vars
+            validate_has_run = false;
+            am.initFunctions();
+            am.step();
+            ASSERT_TRUE(validate_has_run);
+        }
+    }
+};
+
+class IOTest3 : public testing::Test {
+ protected:
+    void SetUp() override {
+        ms = new MiniSim3();
+    }
+
+    void TearDown() override {
+        delete ms;
+    }
+
+    MiniSim3 *ms = nullptr;
+};
+
+TEST_F(IOTest3, XML_EnvMacroPropertyWriteRead) {
+    // Avoid fail if previous run didn't cleanup properly
+    ::remove(XML_FILE_NAME);
+    ms->run(XML_FILE_NAME);
+}
+TEST_F(IOTest3, JSON_EnvMacroPropertyWriteRead) {
+    // Avoid fail if previous run didn't cleanup properly
+    ::remove(JSON_FILE_NAME);
+    ms->run(JSON_FILE_NAME);
+}
+TEST_F(IOTest3, BIN_EnvMacroPropertyWriteRead) {
+    // Avoid fail if previous run didn't cleanup properly
+    ::remove(BIN_FILE_NAME);
+    ms->run(BIN_FILE_NAME);
 }
 }  // namespace test_io
 }  // namespace flamegpu

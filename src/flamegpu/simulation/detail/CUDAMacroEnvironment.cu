@@ -102,6 +102,14 @@ void CUDAMacroEnvironment::unmapRTCVariables(detail::curve::CurveRTCHost& curve_
 const std::map<std::string, CUDAMacroEnvironment::MacroEnvProp>& CUDAMacroEnvironment::getPropertiesMap() const {
     return properties;
 }
+
+std::shared_ptr<HostMacroProperty_MetaData> CUDAMacroEnvironment::getHostPropertyMetadata(const std::string property_name) {
+    auto cache = host_cache.find(property_name);
+    if (cache != host_cache.end()) {
+        return cache->second.lock();
+    }
+    return nullptr;
+}
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 void CUDAMacroEnvironment::resetFlagsAsync(const std::vector<cudaStream_t> &streams) {
     unsigned int i = 0;
