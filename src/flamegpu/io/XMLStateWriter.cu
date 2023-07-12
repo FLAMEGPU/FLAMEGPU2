@@ -55,74 +55,94 @@ namespace io {
 }
 #endif
 
-XMLStateWriter::XMLStateWriter(
-    const std::string &model_name,
-    const std::shared_ptr<detail::EnvironmentManager>& env_manager,
-    const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model,
-    std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env,
-    const unsigned int iterations,
-    const std::string &output_file,
-    const Simulation *_sim_instance)
-    : StateWriter(model_name, env_manager, model, macro_env, iterations, output_file, _sim_instance) {}
+XMLStateWriter::XMLStateWriter()
+    : StateWriter() {}
+void XMLStateWriter::beginWrite(const std::string &output_file, bool pretty_print) {
+    this->outputPath = output_file;
+    this->prettyPrint = pretty_print;
+    if (doc || pRoot) {
+        THROW exception::UnknownInternalError("Writing already active, in XMLStateWriter::beginWrite()");
+    }
+    doc = std::make_unique<tinyxml2::XMLDocument>();
+    // Begin Json file
+    pRoot = doc->NewElement("states");
+    doc->InsertFirstChild(pRoot);
 
-int XMLStateWriter::writeStates(bool prettyPrint) {
-    tinyxml2::XMLDocument doc;
+    // Clear flags
+    this->config_written = false;
+    this->stats_written = false;
+    this->environment_written = false;
+    this->macro_environment_written = false;
+    this->agents_written = false;
+}
+void XMLStateWriter::endWrite() {
+    if (!doc || !pRoot) {
+        THROW exception::UnknownInternalError("Writing not active, in XMLStateWriter::endWrite()");
+    }
 
-    tinyxml2::XMLNode * pRoot = doc.NewElement("states");
-    doc.InsertFirstChild(pRoot);
+    // End Json file
+    tinyxml2::XMLError errorId = doc->SaveFile(outputPath.c_str(), !prettyPrint);
+    XMLCheckResult(errorId);
 
-    // Redundant for FLAMEGPU1 backwards compatibility
-    tinyxml2::XMLElement * pElement = doc.NewElement("itno");
-    pElement->SetText(iterations);
-    pRoot->InsertEndChild(pElement);
+    pRoot = nullptr;
+    doc.reset();
+}
+
+
+void XMLStateWriter::writeConfig(const Simulation *sim_instance) {
+    if (!doc || !pRoot) {
+        THROW exception::UnknownInternalError("beginWrite() must be called before writeConfig(), in XMLStateWriter::writeConfig()");
+    } else if (config_written) {
+        THROW exception::UnknownInternalError("writeConfig() can only be called once per write session, in XMLStateWriter::writeConfig()");
+    }
 
     // Output config elements
-    pElement = doc.NewElement("config");
+    tinyxml2::XMLElement *pElement = doc->NewElement("config");
     {
         // Sim config
-        tinyxml2::XMLElement *pSimCfg = doc.NewElement("simulation");
+        tinyxml2::XMLElement *pSimCfg = doc->NewElement("simulation");
         {
             const auto &sim_cfg = sim_instance->getSimulationConfig();
             tinyxml2::XMLElement *pListElement = nullptr;
             // Input file
-            pListElement = doc.NewElement("input_file");
+            pListElement = doc->NewElement("input_file");
             pListElement->SetText(sim_cfg.input_file.c_str());
             pSimCfg->InsertEndChild(pListElement);
             // Step log file
-            pListElement = doc.NewElement("step_log_file");
+            pListElement = doc->NewElement("step_log_file");
             pListElement->SetText(sim_cfg.step_log_file.c_str());
             pSimCfg->InsertEndChild(pListElement);
             // Exit log file
-            pListElement = doc.NewElement("exit_log_file");
+            pListElement = doc->NewElement("exit_log_file");
             pListElement->SetText(sim_cfg.exit_log_file.c_str());
             pSimCfg->InsertEndChild(pListElement);
             // Common log file
-            pListElement = doc.NewElement("common_log_file");
+            pListElement = doc->NewElement("common_log_file");
             pListElement->SetText(sim_cfg.common_log_file.c_str());
             pSimCfg->InsertEndChild(pListElement);
             // Truncate log files
-            pListElement = doc.NewElement("truncate_log_files");
+            pListElement = doc->NewElement("truncate_log_files");
             pListElement->SetText(sim_cfg.truncate_log_files);
             pSimCfg->InsertEndChild(pListElement);
             // Random seed
-            pListElement = doc.NewElement("random_seed");
+            pListElement = doc->NewElement("random_seed");
             pListElement->SetText(sim_cfg.random_seed);
             pSimCfg->InsertEndChild(pListElement);
             // Steps
-            pListElement = doc.NewElement("steps");
+            pListElement = doc->NewElement("steps");
             pListElement->SetText(sim_cfg.steps);
             pSimCfg->InsertEndChild(pListElement);
             // Verbose output
-            pListElement = doc.NewElement("verbosity");
+            pListElement = doc->NewElement("verbosity");
             pListElement->SetText(static_cast<unsigned int>(sim_cfg.verbosity));
             pSimCfg->InsertEndChild(pListElement);
             // Timing Output
-            pListElement = doc.NewElement("timing");
+            pListElement = doc->NewElement("timing");
             pListElement->SetText(sim_cfg.timing);
             pSimCfg->InsertEndChild(pListElement);
 #ifdef FLAMEGPU_VISUALISATION
             // Console Mode
-            pListElement = doc.NewElement("console_mode");
+            pListElement = doc->NewElement("console_mode");
             pListElement->SetText(sim_cfg.console_mode);
             pSimCfg->InsertEndChild(pListElement);
 #endif
@@ -131,16 +151,16 @@ int XMLStateWriter::writeStates(bool prettyPrint) {
 
         // Cuda config
         if (auto *cudamodel_instance = dynamic_cast<const CUDASimulation*>(sim_instance)) {
-            tinyxml2::XMLElement *pCUDACfg = doc.NewElement("cuda");
+            tinyxml2::XMLElement *pCUDACfg = doc->NewElement("cuda");
             {
                 const auto &cuda_cfg = cudamodel_instance->getCUDAConfig();
                 tinyxml2::XMLElement *pListElement = nullptr;
                 // Device ID
-                pListElement = doc.NewElement("device_id");
+                pListElement = doc->NewElement("device_id");
                 pListElement->SetText(cuda_cfg.device_id);
                 pCUDACfg->InsertEndChild(pListElement);
                 // inLayerConcurrency
-                pListElement = doc.NewElement("inLayerConcurrency");
+                pListElement = doc->NewElement("inLayerConcurrency");
                 pListElement->SetText(cuda_cfg.inLayerConcurrency);
                 pCUDACfg->InsertEndChild(pListElement);
             }
@@ -149,63 +169,95 @@ int XMLStateWriter::writeStates(bool prettyPrint) {
     }
     pRoot->InsertEndChild(pElement);
 
+    config_written = true;
+}
+void XMLStateWriter::writeStats(unsigned int iterations) {
+    if (!doc || !pRoot) {
+        THROW exception::UnknownInternalError("beginWrite() must be called before writeStats(), in XMLStateWriter::writeStats()");
+    } else if (stats_written) {
+        THROW exception::UnknownInternalError("writeStats() can only be called once per write session, in XMLStateWriter::writeStats()");
+    }
+
+    // Redundant for FLAMEGPU1 backwards compatibility
+    tinyxml2::XMLElement *pElement = doc->NewElement("itno");
+    pElement->SetText(iterations);
+    pRoot->InsertEndChild(pElement);
+
     // Output stats elements
-    pElement = doc.NewElement("stats");
+    pElement = doc->NewElement("stats");
     {
         tinyxml2::XMLElement *pListElement = nullptr;
         // Input file
-        pListElement = doc.NewElement("step_count");
+        pListElement = doc->NewElement("step_count");
         pListElement->SetText(iterations);
         pElement->InsertEndChild(pListElement);
     }
     pRoot->InsertEndChild(pElement);
 
-    pElement = doc.NewElement("environment");
+    stats_written = true;
+}
+
+void XMLStateWriter::writeEnvironment(const std::shared_ptr<const detail::EnvironmentManager>& env_manager) {
+    if (!doc || !pRoot) {
+        THROW exception::UnknownInternalError("beginWrite() must be called before writeEnvironment(), in XMLStateWriter::writeEnvironment()");
+    } else if (environment_written) {
+        THROW exception::UnknownInternalError("writeEnvironment() can only be called once per write session, in XMLStateWriter::writeEnvironment()");
+    }
+
+    tinyxml2::XMLElement *pElement = doc->NewElement("environment");
     if (env_manager) {
         const char* env_buffer = reinterpret_cast<const char*>(env_manager->getHostBuffer());
         // for each environment property
         for (auto &a : env_manager->getPropertiesMap()) {
-            tinyxml2::XMLElement* pListElement = doc.NewElement(a.first.c_str());
+            tinyxml2::XMLElement* pListElement = doc->NewElement(a.first.c_str());
             pListElement->SetAttribute("type", a.second.type.name());
-                // Output properties
-                std::stringstream ss;
-                // Loop through elements, to construct csv string
-                for (unsigned int el = 0; el < a.second.elements; ++el) {
-                    if (a.second.type == std::type_index(typeid(float))) {
-                        ss << *reinterpret_cast<const float*>(env_buffer + a.second.offset + (el * sizeof(float)));
-                    } else if (a.second.type == std::type_index(typeid(double))) {
-                        ss << *reinterpret_cast<const double*>(env_buffer + a.second.offset + (el * sizeof(double)));
-                    } else if (a.second.type == std::type_index(typeid(int64_t))) {
-                        ss << *reinterpret_cast<const int64_t*>(env_buffer + a.second.offset + (el * sizeof(int64_t)));
-                    } else if (a.second.type == std::type_index(typeid(uint64_t))) {
-                        ss << *reinterpret_cast<const uint64_t*>(env_buffer + a.second.offset + (el * sizeof(uint64_t)));
-                    } else if (a.second.type == std::type_index(typeid(int32_t))) {
-                        ss << *reinterpret_cast<const int32_t*>(env_buffer + a.second.offset + (el * sizeof(int32_t)));
-                    } else if (a.second.type == std::type_index(typeid(uint32_t))) {
-                        ss << *reinterpret_cast<const uint32_t*>(env_buffer + a.second.offset + (el * sizeof(uint32_t)));
-                    } else if (a.second.type == std::type_index(typeid(int16_t))) {
-                        ss << *reinterpret_cast<const int16_t*>(env_buffer + a.second.offset + (el * sizeof(int16_t)));
-                    } else if (a.second.type == std::type_index(typeid(uint16_t))) {
-                        ss << *reinterpret_cast<const uint16_t*>(env_buffer + a.second.offset + (el * sizeof(uint16_t)));
-                    } else if (a.second.type == std::type_index(typeid(int8_t))) {
-                        ss << static_cast<int32_t>(*reinterpret_cast<const int8_t*>(env_buffer + a.second.offset + (el * sizeof(int8_t))));  // Char outputs weird if being used as an integer
-                    } else if (a.second.type == std::type_index(typeid(uint8_t))) {
-                        ss << static_cast<uint32_t>(*reinterpret_cast<const uint8_t*>(env_buffer + a.second.offset + (el * sizeof(uint8_t))));  // Char outputs weird if being used as an integer
-                    } else {
-                        THROW exception::TinyXMLError("Model contains environment property '%s' of unsupported type '%s', "
-                            "in XMLStateWriter::writeStates()\n", a.first.c_str(), a.second.type.name());
-                    }
-                    if (el + 1 != a.second.elements)
-                        ss << ",";
+            // Output properties
+            std::stringstream ss;
+            // Loop through elements, to construct csv string
+            for (unsigned int el = 0; el < a.second.elements; ++el) {
+                if (a.second.type == std::type_index(typeid(float))) {
+                    ss << *reinterpret_cast<const float*>(env_buffer + a.second.offset + (el * sizeof(float)));
+                } else if (a.second.type == std::type_index(typeid(double))) {
+                    ss << *reinterpret_cast<const double*>(env_buffer + a.second.offset + (el * sizeof(double)));
+                } else if (a.second.type == std::type_index(typeid(int64_t))) {
+                    ss << *reinterpret_cast<const int64_t*>(env_buffer + a.second.offset + (el * sizeof(int64_t)));
+                } else if (a.second.type == std::type_index(typeid(uint64_t))) {
+                    ss << *reinterpret_cast<const uint64_t*>(env_buffer + a.second.offset + (el * sizeof(uint64_t)));
+                } else if (a.second.type == std::type_index(typeid(int32_t))) {
+                    ss << *reinterpret_cast<const int32_t*>(env_buffer + a.second.offset + (el * sizeof(int32_t)));
+                } else if (a.second.type == std::type_index(typeid(uint32_t))) {
+                    ss << *reinterpret_cast<const uint32_t*>(env_buffer + a.second.offset + (el * sizeof(uint32_t)));
+                } else if (a.second.type == std::type_index(typeid(int16_t))) {
+                    ss << *reinterpret_cast<const int16_t*>(env_buffer + a.second.offset + (el * sizeof(int16_t)));
+                } else if (a.second.type == std::type_index(typeid(uint16_t))) {
+                    ss << *reinterpret_cast<const uint16_t*>(env_buffer + a.second.offset + (el * sizeof(uint16_t)));
+                } else if (a.second.type == std::type_index(typeid(int8_t))) {
+                    ss << static_cast<int32_t>(*reinterpret_cast<const int8_t*>(env_buffer + a.second.offset + (el * sizeof(int8_t))));  // Char outputs weird if being used as an integer
+                } else if (a.second.type == std::type_index(typeid(uint8_t))) {
+                    ss << static_cast<uint32_t>(*reinterpret_cast<const uint8_t*>(env_buffer + a.second.offset + (el * sizeof(uint8_t))));  // Char outputs weird if being used as an integer
+                } else {
+                    THROW exception::TinyXMLError("Model contains environment property '%s' of unsupported type '%s', "
+                        "in XMLStateWriter::writeEnvironment()\n", a.first.c_str(), a.second.type.name());
                 }
+                if (el + 1 != a.second.elements)
+                    ss << ",";
+            }
             pListElement->SetText(ss.str().c_str());
             pElement->InsertEndChild(pListElement);
         }
     }
     pRoot->InsertEndChild(pElement);
 
+    environment_written = true;
+}
+void XMLStateWriter::writeMacroEnvironment(const std::shared_ptr<const detail::CUDAMacroEnvironment>& macro_env) {
+    if (!doc || !pRoot) {
+        THROW exception::UnknownInternalError("beginWrite() must be called before writeMacroEnvironment(), in XMLStateWriter::writeMacroEnvironment()");
+    } else if (macro_environment_written) {
+        THROW exception::UnknownInternalError("writeMacroEnvironment() can only be called once per write session, in XMLStateWriter::writeMacroEnvironment()");
+    }
 
-    pElement = doc.NewElement("macro_environment");
+    tinyxml2::XMLElement *pElement = doc->NewElement("macro_environment");
     if (macro_env) {
         const std::map<std::string, detail::CUDAMacroEnvironment::MacroEnvProp>& m_properties = macro_env->getPropertiesMap();
         // Calculate largest buffer in map
@@ -222,7 +274,7 @@ int XMLStateWriter::writeStates(bool prettyPrint) {
                 const size_t element_ct = std::accumulate(prop.elements.begin(), prop.elements.end(), 1, std::multiplies<unsigned int>());
                 gpuErrchk(cudaMemcpy(t_buffer, prop.d_ptr, element_ct * prop.type_size, cudaMemcpyDeviceToHost));
 
-                tinyxml2::XMLElement* pListElement = doc.NewElement(name.c_str());
+                tinyxml2::XMLElement* pListElement = doc->NewElement(name.c_str());
                 pListElement->SetAttribute("type", prop.type.name());
 
                 // Loop through dimensions to construct dimensions string
@@ -265,7 +317,7 @@ int XMLStateWriter::writeStates(bool prettyPrint) {
                         ss << static_cast<uint32_t>(*reinterpret_cast<const uint8_t*>(t_buffer + i * sizeof(uint8_t)));  // Char outputs weird if being used as an integer
                     } else {
                         THROW exception::TinyXMLError("Model contains macro environment property '%s' of unsupported type '%s', "
-                            "in XMLStateWriter::writeStates()\n", name.c_str(), prop.type.name());
+                            "in XMLStateWriter::writeMacroEnvironment()\n", name.c_str(), prop.type.name());
                     }
                     if (i + 1 != element_ct)
                         ss << ",";
@@ -279,29 +331,36 @@ int XMLStateWriter::writeStates(bool prettyPrint) {
     }
     pRoot->InsertEndChild(pElement);
 
-    unsigned int populationSize;
+    macro_environment_written = true;
+}
+void XMLStateWriter::writeAgents(const util::StringPairUnorderedMap<std::shared_ptr<const AgentVector>>& agents_map) {
+    if (!doc || !pRoot) {
+        THROW exception::UnknownInternalError("beginWrite() must be called before writeAgents(), in XMLStateWriter::writeAgents()");
+    } else if (agents_written) {
+        THROW exception::UnknownInternalError("writeAgents() can only be called once per write session, in XMLStateWriter::writeAgents()");
+    }
 
     // for each agent types
-    for (const auto &agent : model_state) {
+    for (const auto &[key, vec] : agents_map) {
         // For each agent state
-        const std::string &agent_name = agent.first.first;
-        const std::string &state_name = agent.first.second;
+        const std::string &agent_name = key.first;
+        const std::string &state_name = key.second;
 
-        populationSize = agent.second->size();
+        unsigned int populationSize = vec->size();
         if (populationSize) {
             for (unsigned int i = 0; i < populationSize; ++i) {
                 // Create vars block
-                tinyxml2::XMLElement * pXagentElement = doc.NewElement("xagent");
+                tinyxml2::XMLElement * pXagentElement = doc->NewElement("xagent");
 
-                AgentVector::Agent instance = agent.second->at(i);
-                const VariableMap &mm = agent.second->getVariableMetaData();
+                const AgentVector::CAgent instance = vec->at(i);
+                const VariableMap &mm = vec->getVariableMetaData();
 
                 // Add agent's name to block
-                tinyxml2::XMLElement * pXagentNameElement = doc.NewElement("name");
+                tinyxml2::XMLElement * pXagentNameElement = doc->NewElement("name");
                 pXagentNameElement->SetText(agent_name.c_str());
                 pXagentElement->InsertEndChild(pXagentNameElement);
                 // Add state's name to block
-                tinyxml2::XMLElement * pStateNameElement = doc.NewElement("state");
+                tinyxml2::XMLElement * pStateNameElement = doc->NewElement("state");
                 pStateNameElement->SetText(state_name.c_str());
                 pXagentElement->InsertEndChild(pStateNameElement);
 
@@ -309,7 +368,7 @@ int XMLStateWriter::writeStates(bool prettyPrint) {
                 for (auto iter_mm = mm.begin(); iter_mm != mm.end(); ++iter_mm) {
                     const std::string variable_name = iter_mm->first;
 
-                    tinyxml2::XMLElement* pListElement = doc.NewElement(variable_name.c_str());
+                    tinyxml2::XMLElement* pListElement = doc->NewElement(variable_name.c_str());
                     if (i == 0)
                         pListElement->SetAttribute("type", iter_mm->second.type.name());
 
@@ -339,7 +398,7 @@ int XMLStateWriter::writeStates(bool prettyPrint) {
                             ss << static_cast<uint32_t>(instance.getVariable<uint8_t>(variable_name, el));  // Char outputs weird if being used as an integer
                         } else {
                             THROW exception::TinyXMLError("Agent '%s' contains variable '%s' of unsupported type '%s', "
-                                "in XMLStateWriter::writeStates()\n", agent_name.c_str(), variable_name.c_str(), iter_mm->second.type.name());
+                                "in XMLStateWriter::writeFullModelState()\n", agent_name.c_str(), variable_name.c_str(), iter_mm->second.type.name());
                         }
                         if (el + 1 != iter_mm->second.elements)
                             ss << ",";
@@ -353,12 +412,7 @@ int XMLStateWriter::writeStates(bool prettyPrint) {
         }  // if state has agents
     }
 
-    tinyxml2::XMLError errorId = doc.SaveFile(outputFile.c_str(), !prettyPrint);
-    XMLCheckResult(errorId);
-
-    return tinyxml2::XML_SUCCESS;
+    agents_written = true;
 }
-
-
 }  // namespace io
 }  // namespace flamegpu

@@ -1,23 +1,15 @@
 #ifndef INCLUDE_FLAMEGPU_IO_STATEWRITERFACTORY_H_
 #define INCLUDE_FLAMEGPU_IO_STATEWRITERFACTORY_H_
 
-#include <memory>
 #include <string>
-#include <unordered_map>
-#include <utility>
 #include <algorithm>
+#include <filesystem>
 
 #include "flamegpu/io/StateWriter.h"
 #include "flamegpu/io/XMLStateWriter.h"
 #include "flamegpu/io/JSONStateWriter.h"
-#include "flamegpu/io/JSONLogger.h"
-#include "flamegpu/io/XMLLogger.h"
-#include "flamegpu/util/StringPair.h"
 
 namespace flamegpu {
-
-class AgentVector;
-
 namespace io {
 
 /**
@@ -29,29 +21,17 @@ class StateWriterFactory {
      * Returns a writer capable of writing model state to 'output_file'
      * Environment properties from the Simulation instance pointed to by 'sim_instance_id' will be used
      * Agent data will be read from 'model_state'
-     * @param model_name Name from the model description hierarchy of the model to be exported
-     * @param env_manager Environment manager containing env property data for this sim instance
-     * @param model_state Map of AgentVector to read the agent data from per agent, key should be agent name
-     * @param macro_env Macro environment of the model
-     * @param iterations The value from the step counter at the time of export.
      * @param output_file Filename of the input file (This will be used to determine which reader to return)
-     * @param sim_instance Instance of the Simulation object (This is used for setting/getting config)
      * @throws exception::UnsupportedFileType If the file extension does not match an appropriate reader
      */
     static StateWriter* createWriter(
-        const std::string& model_name,
-        const std::shared_ptr<detail::EnvironmentManager>& env_manager,
-        const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>>& model_state,
-        std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env,
-        const unsigned int iterations,
-        const std::string& output_file,
-        const Simulation* sim_instance) {
+        const std::string& output_file) {
         const std::string extension = std::filesystem::path(output_file).extension().string();
 
         if (extension == ".xml") {
-            return new XMLStateWriter(model_name, env_manager, model_state, macro_env, iterations, output_file, sim_instance);
+            return new XMLStateWriter();
         } else if (extension == ".json") {
-            return new JSONStateWriter(model_name, env_manager, model_state, macro_env, iterations, output_file, sim_instance);
+            return new JSONStateWriter();
         }
         THROW exception::UnsupportedFileType("File '%s' is not a type which can be written "
             "by StateWriterFactory::createWriter().",

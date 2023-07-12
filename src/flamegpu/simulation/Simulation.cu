@@ -132,7 +132,7 @@ void Simulation::exportData(const std::string &path, bool prettyPrint) {
         THROW exception::FileAlreadyExists("File '%s' already exists, in Simulation::exportData()", path.c_str());
     }
     // Build population vector
-    util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> pops;
+    util::StringPairUnorderedMap<std::shared_ptr<const AgentVector>> pops;
     for (auto &agent : model->agents) {
         for (auto &state : agent.second->states) {
             auto a = std::make_shared<AgentVector>(*agent.second);
@@ -141,8 +141,10 @@ void Simulation::exportData(const std::string &path, bool prettyPrint) {
         }
     }
 
-    io::StateWriter *write__ = io::StateWriterFactory::createWriter(model->name, getEnvironment(), pops, getMacroEnvironment(), getStepCounter(), path, this);
-    write__->writeStates(prettyPrint);
+    io::StateWriter* write__ = io::StateWriterFactory::createWriter(path);
+    write__->beginWrite(path, prettyPrint);
+    write__->writeFullModelState(this, getStepCounter(), getEnvironment(), getMacroEnvironment(), pops);
+    write__->endWrite();
 }
 void Simulation::exportLog(const std::string &path, bool steps, bool exit, bool stepTime, bool exitTime, bool prettyPrint) {
     if (!config.truncate_log_files && std::filesystem::exists(path)) {

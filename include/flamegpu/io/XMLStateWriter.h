@@ -8,7 +8,10 @@
 #include "flamegpu/io/StateWriter.h"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
-
+namespace tinyxml2 {
+class XMLDocument;
+class XMLNode;
+}
 namespace flamegpu {
 namespace io {
 /**
@@ -17,31 +20,46 @@ namespace io {
 class XMLStateWriter : public StateWriter {
  public:
     /**
-     * Returns a writer capable of writing model state to an XML file
-     * Agent data will be read from 'model_state'
-     * @param model_name Name from the model description hierarchy of the model to be exported
-     * @param env_manager Environment manager containing env property data for this sim instance
-     * @param model_state Map of AgentVector to read the agent data from per agent, key should be agent name
-     * @param macro_env Macro environment of the model
-     * @param iterations The value from the step counter at the time of export.
-     * @param output_file Filename of the input file (This will be used to determine which reader to return)
-     * @param sim_instance Instance of the Simulation object (This is used for setting/getting config)
+     * Constructs a writer capable of writing model state to an XML file
      */
-    XMLStateWriter(
-        const std::string &model_name,
-        const std::shared_ptr<detail::EnvironmentManager>& env_manager,
-        const util::StringPairUnorderedMap<std::shared_ptr<AgentVector>> &model_state,
-        std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env,
-        unsigned int iterations,
-        const std::string &output_file,
-        const Simulation *sim_instance);
+    XMLStateWriter();
     /**
-     * Actually perform the writing to file
-     * @param prettyPrint Whether to include indentation and line breaks to aide human reading
-     * @return Always tinyxml2::XML_SUCCESS
-     * @throws exception::TinyXMLError If export of the model state fails
+     * Returns true if beginWrite() has been called and writing is active
      */
-    int writeStates(bool prettyPrint) override;
+    bool isWriting() override { return doc || pRoot; }
+    /**
+     * Starts writing to the specified file in the specified mode
+     * @param output_file Filename of the input file (This will be used to determine which reader to return)
+     * @param pretty_print Whether the output file should be "pretty" or minified.
+     * @throws Throws exception if beginWrite() is called a second time before endWrite() has been called
+     * @see endWrite()
+     */
+    void beginWrite(const std::string &output_file, bool pretty_print) override;
+    /**
+     * Saves the current file and ends the writing state
+     * @see beginWrite(const std::string &, bool)
+     * @throws Throws exception if file IO fails
+     * @throws Throws exception if beginWrite() has not been called so writing is not active
+     */
+    void endWrite() override;
+
+    void writeConfig(const Simulation *sim_instance) override;
+    void writeStats(unsigned int iterations) override;
+    void writeEnvironment(const std::shared_ptr<const detail::EnvironmentManager>& env_manager) override;
+    void writeMacroEnvironment(const std::shared_ptr<const detail::CUDAMacroEnvironment>& macro_env) override;
+    void writeAgents(const util::StringPairUnorderedMap<std::shared_ptr<const AgentVector>>& agents_map) override;
+
+ private:
+    std::unique_ptr<tinyxml2::XMLDocument> doc;
+    tinyxml2::XMLNode* pRoot = nullptr;
+
+    bool config_written = false;
+    bool stats_written = false;
+    bool environment_written = false;
+    bool macro_environment_written = false;
+    bool agents_written = false;
+    std::string outputPath;
+    bool prettyPrint;
 };
 }  // namespace io
 }  // namespace flamegpu
