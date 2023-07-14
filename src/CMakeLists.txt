@@ -96,6 +96,9 @@ endif()
 option(FLAMEGPU_ENABLE_LINT_FLAMEGPU "Enable creation of the lint_flamegpu target" ${FLAMEGPU_ENABLE_LINT_FLAMEGPU_DEFAULT})
 unset(FLAMEGPU_ENABLE_LINT_FLAMEGPU_DEFAULT)
 
+# Option to enable/disable MPI support
+option(FLAMEGPU_ENABLE_MPI "Enable MPI support for distributed ensembles" OFF)
+
 # Option to enable GLM support and put GLM on the include path
 option(FLAMEGPU_ENABLE_GLM "Experimental: Make GLM available to flamegpu2 projects on the include path" OFF)
 mark_as_advanced(FLAMEGPU_ENABLE_GLM)
@@ -571,6 +574,18 @@ if (FLAMEGPU_VISUALISATION)
     target_link_libraries(${PROJECT_NAME} PUBLIC flamegpu_visualiser)
     flamegpu_set_target_folder(flamegpu_visualiser "FLAMEGPU")
     target_compile_definitions(${PROJECT_NAME} PUBLIC FLAMEGPU_VISUALISATION) 
+endif()
+
+# Activate MPI support (distributed ensembles)
+if (FLAMEGPU_ENABLE_MPI)
+    find_package(MPI REQUIRED)
+    if (MPI_CXX_FOUND)
+        # This sets up include directories and lib
+        target_link_libraries(${PROJECT_NAME} PUBLIC MPI::MPI_CXX)
+        target_compile_definitions(${PROJECT_NAME} PUBLIC FLAMEGPU_ENABLE_MPI)
+    else()
+        message(FATAL_ERROR "MPI C++ Support was not found!")
+    endif()
 endif()
 
 # Make GLM accessible via include. PUBLIC so this is usable by downstream projects
