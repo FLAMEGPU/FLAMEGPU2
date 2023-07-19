@@ -329,6 +329,98 @@ class MiniSim {
             am.step();
             ASSERT_TRUE(validate_has_run);
         }
+        {   // Run Import, but using run args
+            CUDASimulation am(model);
+            // Ensure config doesnt match
+
+            am.SimulationConfig().step_log_file = "";
+            am.SimulationConfig().exit_log_file = "";
+            am.SimulationConfig().common_log_file = "";
+            am.SimulationConfig().truncate_log_files = true;
+            am.SimulationConfig().random_seed = 0;
+            am.SimulationConfig().steps = 0;
+            am.SimulationConfig().verbosity = Verbosity::Verbose;
+            am.SimulationConfig().timing = false;
+#ifdef FLAMEGPU_VISUALISATION
+            am.SimulationConfig().console_mode = false;
+#endif
+            am.CUDAConfig().device_id = 1000;
+            am.CUDAConfig().inLayerConcurrency = true;
+            // Perform import
+            const char *argv[3] = { "prog.exe", "--in", test_file_name.c_str()};
+            EXPECT_NO_THROW(am.initialise(sizeof(argv) / sizeof(char*), argv));
+            // Validate config matches
+            EXPECT_EQ(am.getSimulationConfig().input_file, test_file_name);
+            EXPECT_EQ(am.getSimulationConfig().step_log_file, "step");
+            EXPECT_EQ(am.getSimulationConfig().exit_log_file, "exit");
+            EXPECT_EQ(am.getSimulationConfig().common_log_file, "common");
+            EXPECT_EQ(am.getSimulationConfig().truncate_log_files, false);
+            EXPECT_EQ(am.getSimulationConfig().random_seed, 654321u);
+            EXPECT_EQ(am.getSimulationConfig().steps, 123u);
+            EXPECT_EQ(am.getSimulationConfig().verbosity, Verbosity::Quiet);
+            EXPECT_EQ(am.getSimulationConfig().timing, true);
+#ifdef FLAMEGPU_VISUALISATION
+            EXPECT_EQ(am.getSimulationConfig().console_mode, true);
+#endif
+            EXPECT_EQ(am.getCUDAConfig().device_id, 0);
+            EXPECT_EQ(am.getCUDAConfig().inLayerConcurrency, false);
+            // Check population data
+            AgentVector pop_a_in(a, 5);
+            AgentVector pop_b_in(b, 5);
+            am.getPopulationData(pop_a_in);
+            am.getPopulationData(pop_b_in, "2");
+            // Valid agent none array vars
+            ASSERT_EQ(pop_a_in.size(), pop_a_out.size());
+            for (unsigned int i = 0; i < pop_a_in.size(); ++i) {
+                const auto agent_in = pop_a_in[i];
+                const auto agent_out = pop_a_out[i];
+                EXPECT_EQ(agent_in.getVariable<float>("float"), agent_out.getVariable<float>("float"));
+                EXPECT_EQ(agent_in.getVariable<double>("double"), agent_out.getVariable<double>("double"));
+                EXPECT_EQ(agent_in.getVariable<int64_t>("int64_t"), agent_out.getVariable<int64_t>("int64_t"));
+                EXPECT_EQ(agent_in.getVariable<uint64_t>("uint64_t"), agent_out.getVariable<uint64_t>("uint64_t"));
+                EXPECT_EQ(agent_in.getVariable<int32_t>("int32_t"), agent_out.getVariable<int32_t>("int32_t"));
+                EXPECT_EQ(agent_in.getVariable<uint32_t>("uint32_t"), agent_out.getVariable<uint32_t>("uint32_t"));
+                EXPECT_EQ(agent_in.getVariable<int16_t>("int16_t"), agent_out.getVariable<int16_t>("int16_t"));
+                EXPECT_EQ(agent_in.getVariable<uint16_t>("uint16_t"), agent_out.getVariable<uint16_t>("uint16_t"));
+                EXPECT_EQ(agent_in.getVariable<int8_t>("int8_t"), agent_out.getVariable<int8_t>("int8_t"));
+                EXPECT_EQ(agent_in.getVariable<uint8_t>("uint8_t"), agent_out.getVariable<uint8_t>("uint8_t"));
+                // Limit values
+                EXPECT_TRUE(std::isnan(agent_in.getVariable<float>("float_qnan")));
+                EXPECT_TRUE(std::isnan(agent_in.getVariable<float>("float_snan")));
+                EXPECT_EQ(agent_in.getVariable<float>("float_inf"), std::numeric_limits<float>::infinity());
+                EXPECT_EQ(agent_in.getVariable<float>("float_inf_neg"), -std::numeric_limits<float>::infinity());
+                EXPECT_TRUE(std::isnan(agent_in.getVariable<double>("double_qnan")));
+                EXPECT_TRUE(std::isnan(agent_in.getVariable<double>("double_snan")));
+                EXPECT_EQ(agent_in.getVariable<double>("double_inf"), std::numeric_limits<double>::infinity());
+                EXPECT_EQ(agent_in.getVariable<double>("double_inf_neg"), -std::numeric_limits<double>::infinity());
+            }
+            // Valid agent array vars
+            ASSERT_EQ(pop_b_in.size(), pop_b_out.size());
+            for (unsigned int i = 0; i < pop_b_in.size(); ++i) {
+                const auto agent_in = pop_b_in[i];
+                const auto agent_out = pop_b_out[i];
+                const bool float_array = agent_in.getVariable<float, 3>("float") == agent_out.getVariable<float, 3>("float");
+                const bool double_array = agent_in.getVariable<double, 3>("double") == agent_out.getVariable<double, 3>("double");
+                const bool int64_t_array = agent_in.getVariable<int64_t, 3>("int64_t") == agent_out.getVariable<int64_t, 3>("int64_t");
+                const bool uint64_t_array = agent_in.getVariable<uint64_t, 3>("uint64_t") == agent_out.getVariable<uint64_t, 3>("uint64_t");
+                const bool int32_t_array = agent_in.getVariable<int32_t, 3>("int32_t") == agent_out.getVariable<int32_t, 3>("int32_t");
+                const bool uint32_t_array = agent_in.getVariable<uint32_t, 3>("uint32_t") == agent_out.getVariable<uint32_t, 3>("uint32_t");
+                const bool int16_t_t_array = agent_in.getVariable<int16_t, 3>("int16_t") == agent_out.getVariable<int16_t, 3>("int16_t");
+                const bool uint16_t_t_array = agent_in.getVariable<uint16_t, 3>("uint16_t") == agent_out.getVariable<uint16_t, 3>("uint16_t");
+                const bool int8_t_t_array = agent_in.getVariable<int8_t, 3>("int8_t") == agent_out.getVariable<int8_t, 3>("int8_t");
+                const bool uint8_t_array = agent_in.getVariable<uint8_t, 3>("uint8_t") == agent_out.getVariable<uint8_t, 3>("uint8_t");
+                EXPECT_TRUE(float_array);
+                EXPECT_TRUE(double_array);
+                EXPECT_TRUE(int64_t_array);
+                EXPECT_TRUE(uint64_t_array);
+                EXPECT_TRUE(int32_t_array);
+                EXPECT_TRUE(uint32_t_array);
+                EXPECT_TRUE(int16_t_t_array);
+                EXPECT_TRUE(uint16_t_t_array);
+                EXPECT_TRUE(int8_t_t_array);
+                EXPECT_TRUE(uint8_t_array);
+            }
+        }
         // Cleanup
         ASSERT_EQ(::remove(test_file_name.c_str()), 0);
     }

@@ -196,7 +196,7 @@ int Simulation::checkArgs(int argc, const char** argv) {
                         return false;
                     }
                     for (auto &agent : pops) {
-                        setPopulationData(*agent.second);
+                        setPopulationData(*agent.second, agent.first.second);
                     }
                 }
             }
