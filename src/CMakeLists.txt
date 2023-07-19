@@ -189,6 +189,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/model/Variable.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/EnvironmentDirectedGraphData.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/model/EnvironmentDirectedGraphDescription.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/AbstractSimRunner.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/MemoryVector.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/GenericMemoryVector.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/CUDAScanCompaction.h
@@ -202,6 +203,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/CUDAFatAgentStateList.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/CUDAScatter.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/CUDAMacroEnvironment.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/MPISimRunner.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/SimRunner.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/SimLogger.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/AgentInterface.h
@@ -320,6 +322,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/model/HostFunctionDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/EnvironmentDirectedGraphData.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/model/EnvironmentDirectedGraphDescription.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/AbstractSimRunner.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CubTemporaryMemory.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CUDAScanCompaction.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CUDAMessageList.cu
@@ -332,6 +335,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CUDAMacroEnvironment.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/DeviceStrings.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/MPISimRunner.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/SimRunner.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/SimLogger.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/EnvironmentManager.cu

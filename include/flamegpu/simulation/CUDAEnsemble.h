@@ -22,6 +22,15 @@ struct RunLog;
  */
 class CUDAEnsemble {
  public:
+#ifdef FLAMEGPU_ENABLE_MPI
+    // Tags to different the MPI messages used in protocol
+    enum EnvelopeTag : int {
+        // Sent from worker to manager to request a job index to process
+        RequestJob = 0,
+        // Sent from manager to worker to assign a job index to process
+        AssignJob = 1,
+    };
+#endif
     /**
      * Execution config for running a CUDAEnsemble
      */
@@ -86,6 +95,14 @@ class CUDAEnsemble {
         bool block_standby = true;
 #else
         const bool block_standby = false;
+#endif
+        /**
+         * Allows MPI processing to be disabled for builds with MPI support
+         */
+#ifdef FLAMEGPU_ENABLE_MPI
+        bool mpi = true;
+#else
+        const bool mpi = false;
 #endif
 
         bool telemetry = false;

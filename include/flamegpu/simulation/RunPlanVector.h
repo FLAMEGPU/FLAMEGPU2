@@ -25,7 +25,7 @@ class EnvironmentDescription;
  */
 class RunPlanVector : private std::vector<RunPlan>  {
     friend class RunPlan;
-    friend class detail::SimRunner;
+    friend class detail::AbstractSimRunner;
     friend unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans);
 
  public:

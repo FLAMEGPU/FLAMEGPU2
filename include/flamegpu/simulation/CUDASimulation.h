@@ -37,7 +37,7 @@
 
 namespace flamegpu {
 namespace detail {
-class SimRunner;
+class AbstractSimRunner;
 class CUDAAgent;
 class CUDAMessage;
 }  // namespace detail
@@ -62,7 +62,7 @@ class CUDASimulation : public Simulation {
     /**
      * Requires internal access to getCUDAAgent()
      */
-    friend class detail::SimRunner;
+    friend class detail::AbstractSimRunner;
     friend class CUDAEnsemble;
 #ifdef FLAMEGPU_VISUALISATION
     /**
@@ -98,7 +98,7 @@ class CUDASimulation : public Simulation {
      * CUDA runner specific config
      */
     struct Config {
-        friend class detail::SimRunner;
+        friend class detail::AbstractSimRunner;
         friend class CUDASimulation;
         friend class HostAPI;
         /**

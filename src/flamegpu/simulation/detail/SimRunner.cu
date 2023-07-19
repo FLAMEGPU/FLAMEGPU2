@@ -1,16 +1,6 @@
 #include "flamegpu/simulation/detail/SimRunner.h"
 
-#include <utility>
-
-#include "flamegpu/model/ModelData.h"
-#include "flamegpu/simulation/CUDASimulation.h"
 #include "flamegpu/simulation/RunPlanVector.h"
-
-#ifdef _MSC_VER
-#include <windows.h>
-#else
-#include <pthread.h>
-#endif
 
 namespace flamegpu {
 namespace detail {
@@ -32,84 +22,32 @@ SimRunner::SimRunner(const std::shared_ptr<const ModelData> _model,
     ErrorDetail &_fast_err_detail,
     const unsigned int _total_runners,
     bool _isSWIG)
-      : model(_model->clone())
-      , run_id(0)
-      , device_id(_device_id)
-      , runner_id(_runner_id)
-      , total_runners(_total_runners)
-      , verbosity(_verbosity)
-      , fail_fast(_fail_fast)
-      , err_ct(_err_ct)
-      , next_run(_next_run)
-      , plans(_plans)
-      , step_log_config(std::move(_step_log_config))
-      , exit_log_config(std::move(_exit_log_config))
-      , run_logs(_run_logs)
-      , log_export_queue(_log_export_queue)
-      , log_export_queue_mutex(_log_export_queue_mutex)
-      , log_export_queue_cdn(_log_export_queue_cdn)
-      , fast_err_detail(_fast_err_detail)
-      , isSWIG(_isSWIG) {
-    this->thread = std::thread(&SimRunner::start, this);
-    // Attempt to name the thread
-#ifdef _MSC_VER
-    std::wstringstream thread_name;
-    thread_name << L"CUDASim D" << device_id << L"T" << runner_id;
-    // HRESULT hr =
-    SetThreadDescription(this->thread.native_handle(), thread_name.str().c_str());
-    // if (FAILED(hr)) {
-    //     fprintf(stderr, "Failed to name thread 'CUDASim D%dT%u'\n", device_id, runner_id);
-    // }
-#else
-    std::stringstream thread_name;
-    thread_name << "CUDASim D" << device_id << "T" << runner_id;
-    // int hr =
-    pthread_setname_np(this->thread.native_handle(), thread_name.str().c_str());
-    // if (hr) {
-    //     fprintf(stderr, "Failed to name thread 'CUDASim D%dT%u'\n", device_id, runner_id);
-    // }
-#endif
-}
+    : AbstractSimRunner(
+        _model,
+        _err_ct,
+        _next_run,
+        _plans,
+        _step_log_config,
+        _exit_log_config,
+        _device_id,
+        _runner_id,
+        _verbosity,
+        _run_logs,
+        _log_export_queue,
+        _log_export_queue_mutex,
+        _log_export_queue_cdn,
+        _fast_err_detail,
+        _total_runners,
+        _isSWIG)
+    , fail_fast(_fail_fast) { }
 
 
-void SimRunner::start() {
+void SimRunner::main() {
+    unsigned int run_id = 0;
     // While there are still plans to process
-    while ((this->run_id = next_run++) < plans.size()) {
+    while ((run_id = next_run++) < plans.size()) {
         try {
-            // Update environment (this might be worth moving into CUDASimulation)
-            auto &prop_map = model->environment->properties;
-            for (auto &ovrd : plans[run_id].property_overrides) {
-                auto &prop = prop_map.at(ovrd.first);
-                memcpy(prop.data.ptr, ovrd.second.ptr, prop.data.length);
-            }
-            // Set simulation device
-            std::unique_ptr<CUDASimulation> simulation = std::unique_ptr<CUDASimulation>(new CUDASimulation(model, isSWIG));
-            // Copy steps and seed from runplan
-            simulation->SimulationConfig().steps = plans[run_id].getSteps();
-            simulation->SimulationConfig().random_seed = plans[run_id].getRandomSimulationSeed();
-            simulation->SimulationConfig().verbosity = Verbosity::Default;
-            if (verbosity == Verbosity::Quiet)  // Use quiet verbosity for sims if set in ensemble but never verbose
-                simulation->SimulationConfig().verbosity = Verbosity::Quiet;
-            simulation->SimulationConfig().telemetry = false;   // Never any telemtry for indiviual runs inside an ensemble
-            simulation->SimulationConfig().timing = false;
-            simulation->CUDAConfig().device_id = this->device_id;
-            simulation->CUDAConfig().is_ensemble = true;
-            simulation->CUDAConfig().ensemble_run_id = run_id;
-            simulation->applyConfig();
-            // Set the step config directly, to bypass validation
-            simulation->step_log_config = step_log_config;
-            simulation->exit_log_config = exit_log_config;
-            // TODO Set population?
-            // Execute simulation
-            simulation->simulate();
-            // Store results in run_log (use placement new because const members)
-            run_logs[this->run_id] = simulation->getRunLog();
-            // Notify logger
-            {
-                std::lock_guard<std::mutex> lck(log_export_queue_mutex);
-                log_export_queue.push(this->run_id);
-            }
-            log_export_queue_cdn.notify_one();
+            runSimulation(run_id);
             // Print progress to console
             if (verbosity >= Verbosity::Default) {
                 const int progress = static_cast<int>(next_run.load()) - static_cast<int>(total_runners) + 1;

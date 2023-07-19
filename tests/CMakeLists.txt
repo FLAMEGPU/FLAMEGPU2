@@ -40,6 +40,7 @@ SET(TESTS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/simulation/test_cuda_simulation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/simulation/test_cuda_simulation_concurrency.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/simulation/test_cuda_ensemble.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/simulation/test_mpi_ensemble.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/simulation/test_gpu_validation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/simulation/detail/test_cuda_subagent.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/simulation/detail/test_cuda_submacroenvironment.cu
