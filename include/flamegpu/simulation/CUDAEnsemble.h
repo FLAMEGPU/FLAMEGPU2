@@ -27,8 +27,11 @@ class CUDAEnsemble {
     enum EnvelopeTag : int {
         // Sent from worker to manager to request a job index to process
         RequestJob = 0,
-        // Sent from manager to worker to assign a job index to process
+        // Sent from manager to worker to assign a job index to process in response to AssignJob
         AssignJob = 1,
+        // Sent from worker to manager to report an error during job execution
+        // If fail fast is enabled, following RequestJob will receive an exit job id (>=plans.size())
+        ReportError = 2,
     };
 #endif
     /**

@@ -28,7 +28,7 @@ MPISimRunner::MPISimRunner(const std::shared_ptr<const ModelData> _model,
     std::queue<unsigned int>& _log_export_queue,
     std::mutex& _log_export_queue_mutex,
     std::condition_variable& _log_export_queue_cdn,
-    ErrorDetail& _fast_err_detail,
+    std::vector<ErrorDetail>& _err_detail_local,
     const unsigned int _total_runners,
     bool _isSWIG)
     : AbstractSimRunner(
@@ -45,9 +45,10 @@ MPISimRunner::MPISimRunner(const std::shared_ptr<const ModelData> _model,
         _log_export_queue,
         _log_export_queue_mutex,
         _log_export_queue_cdn,
-        _fast_err_detail,
+        _err_detail_local,
         _total_runners,
-        _isSWIG) { }
+        _isSWIG)
+    { }
 
 
 void MPISimRunner::main() {
@@ -62,10 +63,18 @@ void MPISimRunner::main() {
                     break;
                 }
                 // MPI Worker's don't print progress
-            } catch(std::exception&) {
-                ++err_ct;
+            } catch(std::exception &e) {
+                // log_export_mutex is treated as our protection for race conditions on err_detail
+                std::lock_guard<std::mutex> lck(log_export_queue_mutex);
+                log_export_queue.push(UINT_MAX);
+                // Build the error detail (fixed len char array for string)
+                printf("Fail: run: %u device: %u, runner: %u\n", run_id, device_id, runner_id);
+                err_detail.push_back(ErrorDetail{run_id, static_cast<unsigned int>(device_id), runner_id, });
+                strncpy(err_detail.back().exception_string, e.what(), sizeof(ErrorDetail::exception_string)-1);
+                err_detail.back().exception_string[sizeof(ErrorDetail::exception_string) - 1] = '\0';
+                err_ct.store(static_cast<int>(err_detail.size()));
                 // Need to notify manager that run failed
-                if (next_run.exchange(Signal::RequestJob) >= plans.size()) {
+                if (next_run.exchange(Signal::RunFailed) >= plans.size()) {
                     break;
                 }
             }

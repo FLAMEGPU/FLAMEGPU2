@@ -26,7 +26,7 @@ AbstractSimRunner::AbstractSimRunner(const std::shared_ptr<const ModelData> _mod
     std::queue<unsigned int> &_log_export_queue,
     std::mutex &_log_export_queue_mutex,
     std::condition_variable &_log_export_queue_cdn,
-    ErrorDetail &_fast_err_detail,
+    std::vector<ErrorDetail> &_err_detail,
     const unsigned int _total_runners,
     bool _isSWIG)
       : model(_model->clone())
@@ -43,7 +43,7 @@ AbstractSimRunner::AbstractSimRunner(const std::shared_ptr<const ModelData> _mod
       , log_export_queue(_log_export_queue)
       , log_export_queue_mutex(_log_export_queue_mutex)
       , log_export_queue_cdn(_log_export_queue_cdn)
-      , fast_err_detail(_fast_err_detail)
+      , err_detail(_err_detail)
       , isSWIG(_isSWIG) {
 }
 void AbstractSimRunner::start() {

@@ -19,7 +19,7 @@ SimRunner::SimRunner(const std::shared_ptr<const ModelData> _model,
     std::queue<unsigned int> &_log_export_queue,
     std::mutex &_log_export_queue_mutex,
     std::condition_variable &_log_export_queue_cdn,
-    ErrorDetail &_fast_err_detail,
+    std::vector<ErrorDetail> &_err_detail,
     const unsigned int _total_runners,
     bool _isSWIG)
     : AbstractSimRunner(
@@ -36,7 +36,7 @@ SimRunner::SimRunner(const std::shared_ptr<const ModelData> _model,
         _log_export_queue,
         _log_export_queue_mutex,
         _log_export_queue_cdn,
-        _fast_err_detail,
+        _err_detail,
         _total_runners,
         _isSWIG)
     , fail_fast(_fail_fast) { }
@@ -60,13 +60,13 @@ void SimRunner::main() {
                 // Kill the other workers early
                 next_run += static_cast<unsigned int>(plans.size());
                 {
+                    // log_export_mutex is treated as our protection for race conditions on err_detail
                     std::lock_guard<std::mutex> lck(log_export_queue_mutex);
                     log_export_queue.push(UINT_MAX);
-                    // log_export_mutex is treated as our protection for race conditions on fast_err_detail
-                    fast_err_detail.run_id = run_id;
-                    fast_err_detail.device_id = device_id;
-                    fast_err_detail.runner_id = runner_id;
-                    fast_err_detail.exception_string = e.what();
+                    // Build the error detail (fixed len char array for string)
+                    err_detail.push_back(ErrorDetail{run_id, static_cast<unsigned int>(device_id), runner_id, });
+                    strncpy(err_detail.back().exception_string, e.what(), sizeof(ErrorDetail::exception_string)-1);
+                    err_detail.back().exception_string[sizeof(ErrorDetail::exception_string) - 1] = '\0';
                 }
                 return;
             } else {

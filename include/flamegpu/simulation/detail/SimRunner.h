@@ -51,7 +51,7 @@ class SimRunner : public AbstractSimRunner {
      * @param log_export_queue The queue of logs to exported to disk
      * @param log_export_queue_mutex This mutex must be locked to access log_export_queue
      * @param log_export_queue_cdn The condition is notified every time a log has been added to the queue
-     * @param fast_err_detail Structure to store error details on fast failure for main thread rethrow
+     * @param err_detail Structure to store error details on fast failure for main thread rethrow
      * @param _total_runners Total number of runners executing
      * @param _isSWIG Flag denoting whether it's a Python build of FLAMEGPU
      */
@@ -69,7 +69,7 @@ class SimRunner : public AbstractSimRunner {
         std::queue<unsigned int> &log_export_queue,
         std::mutex &log_export_queue_mutex,
         std::condition_variable &log_export_queue_cdn,
-        ErrorDetail &fast_err_detail,
+        std::vector<ErrorDetail> &err_detail,
         unsigned int _total_runners,
         bool _isSWIG);
     /**

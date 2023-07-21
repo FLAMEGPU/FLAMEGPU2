@@ -51,8 +51,6 @@ CUDAEnsemble::~CUDAEnsemble() {
 #endif
 }
 
-
-
 unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
 #ifdef _MSC_VER
     if (config.block_standby) {
@@ -118,7 +116,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                     }
                 }
                 // Exit
-                for (const auto& exit_path : exit_files) {
+                for (const auto &exit_path : exit_files) {
                     if (std::filesystem::exists(exit_path)) {
                         THROW exception::FileAlreadyExists("Exit log file '%s' already exists, in CUDAEnsemble::simulate()", exit_path.c_str());
                     }
@@ -133,19 +131,17 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
         // Create any missing directories
         try {
             std::filesystem::create_directories(config.out_directory);
-        }
-        catch (const std::exception& e) {
+        } catch (const std::exception &e) {
             THROW exception::InvalidArgument("Unable to use output directory '%s', in CUDAEnsemble::simulate(): %s", config.out_directory.c_str(), e.what());
         }
-        for (const auto& p : plans) {
+        for (const auto &p : plans) {
             const auto subdir = p.getOutputSubdirectory();
             if (!subdir.empty()) {
                 std::filesystem::path sub_path = config.out_directory;
                 try {
                     sub_path.append(subdir);
                     std::filesystem::create_directories(sub_path);
-                }
-                catch (const std::exception& e) {
+                } catch (const std::exception &e) {
                     THROW exception::InvalidArgument("Unable to use output subdirectory '%s', in CUDAEnsemble::simulate(): %s", sub_path.generic_string().c_str(), e.what());
                 }
             }
@@ -192,9 +188,6 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
     // Return to device 0 (or check original device first?)
     gpuErrchk(cudaSetDevice(0));
 
-    // Init runners, devices * concurrent runs
-    std::atomic<unsigned int> err_ct = { 0 };
-    std::vector<std::atomic<unsigned int>> next_runs;
     const unsigned int TOTAL_RUNNERS = static_cast<unsigned int>(devices.size()) * config.concurrent_runs;
 
     // Log Time (We can't use CUDA events here, due to device resets)
@@ -207,32 +200,41 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
     std::queue<unsigned int> log_export_queue;
     std::mutex log_export_queue_mutex;
     std::condition_variable log_export_queue_cdn;
-    detail::SimRunner::ErrorDetail fast_err_detail = {};
+#ifdef FLAMEGPU_ENABLE_MPI
+    // In OMP mode, Rank 0 will collect errors from all ranks
+    std::multimap<int, detail::AbstractSimRunner::ErrorDetail> err_detail = {};
+#endif
+    std::vector<detail::AbstractSimRunner::ErrorDetail> err_detail_local = {};
 
     // Init log worker
-    detail::SimLogger* log_worker = nullptr;
+    detail::SimLogger *log_worker = nullptr;
     if (!config.out_directory.empty()) {
         log_worker = new detail::SimLogger(run_logs, plans, config.out_directory, config.out_format, log_export_queue, log_export_queue_mutex, log_export_queue_cdn,
-            step_log_config.get(), exit_log_config.get(), step_log_config && step_log_config->log_timing, exit_log_config && exit_log_config->log_timing);
+        step_log_config.get(), exit_log_config.get(), step_log_config && step_log_config->log_timing, exit_log_config && exit_log_config->log_timing);
     }
 
+    // In OMP mode, only Rank 0 increments the error counter
+    unsigned int err_count = 0;
     if (config.mpi) {
 #ifdef FLAMEGPU_ENABLE_MPI
+        const MPI_Datatype MPI_ERROR_DETAIL = detail::AbstractSimRunner::createErrorDetailMPIDatatype();
         // Setup MPISimRunners
         detail::MPISimRunner** runners = static_cast<detail::MPISimRunner**>(malloc(sizeof(detail::MPISimRunner*) * TOTAL_RUNNERS));
-        next_runs = std::vector<std::atomic<unsigned int>>(TOTAL_RUNNERS);
-        for (auto& nr : next_runs) {
-            std::atomic_init(&nr, detail::MPISimRunner::Signal::RequestJob);
+        std::vector<std::atomic<unsigned int>> err_cts(TOTAL_RUNNERS);
+        std::vector<std::atomic<unsigned int>> next_runs(TOTAL_RUNNERS);
+        for (unsigned int i = 0; i < TOTAL_RUNNERS; ++i) {
+            std::atomic_init(&err_cts[i], UINT_MAX);
+            std::atomic_init(&next_runs[i], detail::MPISimRunner::Signal::RequestJob);
         }
         {
             unsigned int i = 0;
             for (auto& d : devices) {
                 for (unsigned int j = 0; j < config.concurrent_runs; ++j) {
-                    runners[i] = new detail::MPISimRunner(model, err_ct, next_runs[i], plans,
+                    runners[i] = new detail::MPISimRunner(model, err_cts[i], next_runs[i], plans,
                         step_log_config, exit_log_config,
                         d, j,
                         config.verbosity,
-                        run_logs, log_export_queue, log_export_queue_mutex, log_export_queue_cdn, fast_err_detail, TOTAL_RUNNERS, isSWIG);
+                        run_logs, log_export_queue, log_export_queue_mutex, log_export_queue_cdn, err_detail_local, TOTAL_RUNNERS, isSWIG);
                     runners[i]->start();
                     ++i;
                 }
@@ -248,14 +250,78 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
             int mpi_runners_fin = 1;  // Start at 1 because we have always already finished
             // Wait for all runs to have been assigned, and all MPI runners to have been notified of fin
             while (next_run < plans.size() || mpi_runners_fin < world_size) {
+                // Check whether MPI runners have reported an error
+                MPI_Iprobe(
+                    MPI_ANY_SOURCE,            // int source
+                    EnvelopeTag::ReportError,  // int tag
+                    MPI_COMM_WORLD,            // MPI_Comm communicator
+                    &flag,                     // int flag
+                    &status);
+                while (flag) {
+                    // Receive the message
+                    memset(&status, 0, sizeof(MPI_Status));
+                    detail::AbstractSimRunner::ErrorDetail e_detail;
+                    memset(&e_detail, 0, sizeof(detail::AbstractSimRunner::ErrorDetail));
+                    MPI_Recv(
+                        &e_detail,                // void* data
+                        1,                        // int count
+                        MPI_ERROR_DETAIL,         // MPI_Datatype datatype (can't use MPI_DATATYPE_NULL)
+                        MPI_ANY_SOURCE,           // int source
+                        EnvelopeTag::ReportError,  // int tag
+                        MPI_COMM_WORLD,           // MPI_Comm communicator
+                        &status);                 // MPI_Status*
+                    err_detail.emplace(status.MPI_SOURCE, e_detail);
+                    ++err_count;
+                    if (config.error_level == EnsembleConfig::Fast) {
+                        // Skip to end to kill workers
+                        next_run = plans.size();
+                    } else {
+                        // Progress flush
+                        if (config.verbosity >= Verbosity::Default && config.error_level != EnsembleConfig::Fast) {
+                            fprintf(stderr, "\rWarning: Run %u failed on rank %d, device %d, thread %u with exception: \n%s\n",
+                                e_detail.run_id, status.MPI_SOURCE, e_detail.device_id, e_detail.runner_id, e_detail.exception_string);
+                        }
+                    }
+                    // Check again
+                    MPI_Iprobe(MPI_ANY_SOURCE, EnvelopeTag::ReportError, MPI_COMM_WORLD, &flag, &status);
+                }
                 // Check whether local runners require a job assignment
-                for (auto &r : next_runs) {
+                for (unsigned int i = 0; i < next_runs.size(); ++i) {
+                    auto &r = next_runs[i];
                     unsigned int run_id = r.load();
                     if (run_id == detail::MPISimRunner::Signal::RunFailed) {
+                        // Fetch error detail
+                        detail::AbstractSimRunner::ErrorDetail e_detail;
+                        {
+                            // log_export_mutex is treated as our protection for race conditions on err_detail
+                            std::lock_guard<std::mutex> lck(log_export_queue_mutex);
+                            // Fetch corresponding error detail
+                            bool success = false;
+                            const unsigned int t_device_id = i / config.concurrent_runs;
+                            const unsigned int t_runner_id = i % config.concurrent_runs;
+                            for (auto it = err_detail_local.begin(); it != err_detail_local.end(); ++it) {
+                                if (it->runner_id == t_runner_id && it->device_id == t_device_id) {
+                                    e_detail = *it;
+                                    err_detail.emplace(world_rank, e_detail);
+                                    err_detail_local.erase(it);
+                                    success = true;
+                                    break;
+                                }
+                            }
+                            if (!success) {
+                                THROW exception::UnknownInternalError("Management thread failed to locate reported error from device %u runner %u, in CUDAEnsemble::simulate()", t_device_id, t_runner_id);
+                            }
+                        }
+                        ++err_count;
                         if (config.error_level == EnsembleConfig::Fast) {
-                            // @todo
+                            // Skip to end to kill workers
+                            next_run = plans.size();
                         } else {
-                            // @todo
+                            // Progress flush
+                            if (config.verbosity >= Verbosity::Default && config.error_level != EnsembleConfig::Fast) {
+                                fprintf(stderr, "\rWarning: Run %u failed on rank %d, device %d, thread %u with exception: \n%s\n",
+                                    e_detail.run_id, world_rank, e_detail.device_id, e_detail.runner_id, e_detail.exception_string);
+                            }
                         }
                         run_id = detail::MPISimRunner::Signal::RequestJob;
                     }
@@ -311,8 +377,43 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
             MPI_Status status;
             while (next_run < plans.size()) {
                 // Check whether local runners require a job assignment
-                for (auto& r : next_runs) {
-                    const unsigned int runner_status = r.load();
+                for (unsigned int i = 0; i < TOTAL_RUNNERS; ++i) {
+                    unsigned int runner_status = next_runs[i].load();
+                    if (runner_status == detail::MPISimRunner::Signal::RunFailed) {
+                        // Fetch the job id, increment local error counter
+                        const unsigned int failed_run_id = err_cts[i].exchange(UINT_MAX);
+                        ++err_count;
+                        // Fetch error detail
+                        detail::AbstractSimRunner::ErrorDetail e_detail;
+                        {
+                            // log_export_mutex is treated as our protection for race conditions on err_detail
+                            std::lock_guard<std::mutex> lck(log_export_queue_mutex);
+                            // Fetch corresponding error detail
+                            bool success = false;
+                            const unsigned int t_device_id = i / config.concurrent_runs;
+                            const unsigned int t_runner_id = i % config.concurrent_runs;
+                            for (auto it = err_detail_local.begin(); it != err_detail_local.end(); ++it) {
+                                if (it->runner_id == t_runner_id && it->device_id == t_device_id) {
+                                    e_detail = *it;
+                                    err_detail_local.erase(it);
+                                    success = true;
+                                    break;
+                                }
+                            }
+                            if (!success) {
+                                THROW exception::UnknownInternalError("Management thread failed to locate reported error from device %u runner %u, in CUDAEnsemble::simulate()", t_device_id, t_runner_id);
+                            }
+                        }
+                        // Notify 0 that an error occurred, with the error detail
+                        MPI_Send(
+                            &e_detail,                 // void* data
+                            1,                         // int count
+                            MPI_ERROR_DETAIL,          // MPI_Datatype datatype (can't use MPI_DATATYPE_NULL)
+                            0,                         // int destination
+                            EnvelopeTag::ReportError,  // int tag
+                            MPI_COMM_WORLD);           // MPI_Comm communicator
+                        runner_status = detail::MPISimRunner::Signal::RequestJob;
+                    }
                     if (runner_status == detail::MPISimRunner::Signal::RequestJob) {
                         // Send a job request to 0, these have no data
                         MPI_Send(
@@ -320,7 +421,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                             0,                        // int count
                             MPI_CHAR,                 // MPI_Datatype datatype (can't use MPI_DATATYPE_NULL)
                             0,                        // int destination
-                            EnvelopeTag::RequestJob,  // EnvelopeTag::RequestJob
+                            EnvelopeTag::RequestJob,  // int tag
                             MPI_COMM_WORLD);          // MPI_Comm communicator
                         // Wait for a job assignment from 0
                         memset(&status, 0, sizeof(MPI_Status));
@@ -337,7 +438,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                             break;
                         }
                         // Pass the job to runner that requested it
-                        r.store(next_run);
+                        next_runs[i].store(next_run);
                     }
                 }
                 std::this_thread::yield();
@@ -356,18 +457,18 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
 #endif
     } else {
         detail::SimRunner** runners = static_cast<detail::SimRunner**>(malloc(sizeof(detail::SimRunner*) * TOTAL_RUNNERS));
-        next_runs = std::vector<std::atomic<unsigned int>>(1);
-        std::atomic_init(&next_runs[0], 0u);
+        std::atomic<unsigned int> err_ct = { 0u };
+        std::atomic<unsigned int> next_runs = { 0u };
         // Setup SimRunners
         {
             unsigned int i = 0;
             for (auto& d : devices) {
                 for (unsigned int j = 0; j < config.concurrent_runs; ++j) {
-                    runners[i] = new detail::SimRunner(model, err_ct, next_runs[0], plans,
+                    runners[i] = new detail::SimRunner(model, err_ct, next_runs, plans,
                         step_log_config, exit_log_config,
                         d, j,
                         config.verbosity, config.error_level == EnsembleConfig::Fast,
-                        run_logs, log_export_queue, log_export_queue_mutex, log_export_queue_cdn, fast_err_detail, TOTAL_RUNNERS, isSWIG);
+                        run_logs, log_export_queue, log_export_queue_mutex, log_export_queue_cdn, err_detail_local, TOTAL_RUNNERS, isSWIG);
                     runners[i++]->start();
                 }
             }
@@ -377,8 +478,8 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
             runners[i]->join();
             delete runners[i];
         }
+        err_count = err_ct;
     }
-    next_runs.clear();
 
     // Notify logger to exit
     if (log_worker) {
@@ -402,12 +503,16 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
     ensemble_elapsed_time = ensemble_timer.getElapsedSeconds();
 
     // Ensemble has finished, print summary
-    if (config.verbosity > Verbosity::Quiet && (!config.mpi || world_rank == 0)) {
-        printf("\rCUDAEnsemble completed %u runs successfully!\n", static_cast<unsigned int>(plans.size() - err_ct));
-        if (err_ct)
-            printf("There were a total of %u errors.\n", err_ct.load());
+    if (config.verbosity > Verbosity::Quiet &&
+       (!config.mpi || world_rank == 0) &&
+       (config.error_level != EnsembleConfig::Fast || err_count == 0)) {
+        printf("\rCUDAEnsemble completed %u runs successfully!\n", static_cast<unsigned int>(plans.size() - err_count));
+        if (err_count)
+            printf("There were a total of %u errors.\n", err_count);
     }
-    if (config.timing || config.verbosity >= Verbosity::Verbose && (!config.mpi || world_rank == 0)) {
+    if ((config.timing || config.verbosity >= Verbosity::Verbose) &&
+       (!config.mpi || world_rank == 0) &&
+       (config.error_level != EnsembleConfig::Fast || err_count == 0)) {
         printf("Ensemble time elapsed: %fs\n", ensemble_elapsed_time);
     }
 
@@ -442,11 +547,19 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
         }
     }
 
-    if (config.error_level == EnsembleConfig::Fast && err_ct.load()) {
+    if (config.error_level == EnsembleConfig::Fast && err_count) {
+        if (config.mpi) {
+#ifdef FLAMEGPU_ENABLE_MPI
+            for (const auto &e : err_detail) {
+                THROW exception::EnsembleError("Run %u failed on rank %d, device %d, thread %u with exception: \n%s\n",
+                    e.second.run_id, e.first, e.second.device_id, e.second.runner_id, e.second.exception_string);
+            }
+#endif
+        }
         THROW exception::EnsembleError("Run %u failed on device %d, thread %u with exception: \n%s\n",
-            fast_err_detail.run_id, fast_err_detail.device_id, fast_err_detail.runner_id, fast_err_detail.exception_string.c_str());
-    } else if (config.error_level == EnsembleConfig::Slow && err_ct.load()) {
-        THROW exception::EnsembleError("%u/%u runs failed!\n.", err_ct.load(), static_cast<unsigned int>(plans.size()));
+            err_detail_local[0].run_id, err_detail_local[0].device_id, err_detail_local[0].runner_id, err_detail_local[0].exception_string);
+    } else if (config.error_level == EnsembleConfig::Slow && err_count) {
+        THROW exception::EnsembleError("%u/%u runs failed!\n.", err_count, static_cast<unsigned int>(plans.size()));
     }
 #ifdef _MSC_VER
     if (config.block_standby) {
@@ -455,7 +568,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
     }
 #endif
 
-    return err_ct.load();
+    return err_count;
 }
 
 void CUDAEnsemble::initialise(int argc, const char** argv) {
