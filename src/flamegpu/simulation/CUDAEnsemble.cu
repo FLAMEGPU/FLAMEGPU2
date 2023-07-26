@@ -112,13 +112,13 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                         step_path /= std::filesystem::path(plans[p].getOutputSubdirectory());
                     step_path /= std::filesystem::path(std::to_string(p) + "." + config.out_format);
                     if (std::filesystem::exists(step_path)) {
-                        THROW exception::FileAlreadyExists("Step log file '%s' already exists, in CUDAEnsemble::simulate()", step_path.c_str());
+                        THROW exception::FileAlreadyExists("Step log file '%s' already exists, in CUDAEnsemble::simulate()", step_path.generic_string().c_str());
                     }
                 }
                 // Exit
                 for (const auto &exit_path : exit_files) {
                     if (std::filesystem::exists(exit_path)) {
-                        THROW exception::FileAlreadyExists("Exit log file '%s' already exists, in CUDAEnsemble::simulate()", exit_path.c_str());
+                        THROW exception::FileAlreadyExists("Exit log file '%s' already exists, in CUDAEnsemble::simulate()", exit_path.generic_string().c_str());
                     }
                 }
             } else {
