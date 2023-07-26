@@ -1,6 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_SIMULATION_CUDAENSEMBLE_H_
 #define INCLUDE_FLAMEGPU_SIMULATION_CUDAENSEMBLE_H_
 
+#include <map>
 #include <string>
 #include <memory>
 #include <set>
@@ -171,7 +172,7 @@ class CUDAEnsemble {
     /**
      * Return the list of logs collected from the last call to simulate()
      */
-    const std::vector<RunLog> &getLogs();
+    const std::map<unsigned int, RunLog> &getLogs();
 
  private:
     /**
@@ -201,9 +202,9 @@ class CUDAEnsemble {
      */
     std::shared_ptr<const LoggingConfig> exit_log_config;
     /**
-     * Logs collected by simulate()
+     * Logs collected by simulate(), where the map's key corresponds to the index of the associated RunPlan
      */
-    std::vector<RunLog> run_logs;
+    std::map<unsigned int, RunLog> run_logs;
     /**
      * Model description hierarchy for the ensemble, a copy of this will be passed to every CUDASimulation
      */

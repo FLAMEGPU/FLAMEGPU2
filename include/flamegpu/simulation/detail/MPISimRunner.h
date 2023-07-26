@@ -6,9 +6,8 @@
 #include <mutex>
 #include <queue>
 #include <condition_variable>
-#include <thread>
 #include <vector>
-#include <string>
+#include <map>
 
 #include "flamegpu/simulation/detail/AbstractSimRunner.h"
 #include "flamegpu/defines.h"
@@ -50,10 +49,7 @@ class MPISimRunner : public AbstractSimRunner {
      * @param log_export_queue The queue of logs to exported to disk
      * @param log_export_queue_mutex This mutex must be locked to access log_export_queue
      * @param log_export_queue_cdn The condition is notified every time a log has been added to the queue
-     * @param err_detail Structure to store error details on fast failure for main thread rethrow
-     * @param err_detail_rank Structure to world rank tied to err_detail
-     * @param world_rank MPI world rank
-     * @param err_detail)local Structure to store error details on failure for main thread to handle
+     * @param err_detail_local Structure to store error details on failure for main thread to handle
      * @param _total_runners Total number of runners executing
      * @param _isSWIG Flag denoting whether it's a Python build of FLAMEGPU
      */
@@ -66,7 +62,7 @@ class MPISimRunner : public AbstractSimRunner {
         int _device_id,
         unsigned int _runner_id,
         flamegpu::Verbosity _verbosity,
-        std::vector<RunLog> &run_logs,
+        std::map<unsigned int, RunLog> &run_logs,
         std::queue<unsigned int> &log_export_queue,
         std::mutex &log_export_queue_mutex,
         std::condition_variable &log_export_queue_cdn,

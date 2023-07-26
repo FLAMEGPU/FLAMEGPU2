@@ -870,7 +870,7 @@ namespace std {
 %template(dependsOn) flamegpu::DependencyNode::dependsOn<flamegpu::DependencyNode>;
 
 %template(StepLogFrameList) std::list<flamegpu::StepLogFrame>;
-%template(RunLogVec) std::vector<flamegpu::RunLog>;
+%template(RunLogMap) std::map<unsigned int, flamegpu::RunLog>;
  
 // Instantiate template versions of agent functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::AgentDescription::newVariable)

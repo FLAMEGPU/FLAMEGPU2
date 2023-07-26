@@ -6,9 +6,8 @@
 #include <mutex>
 #include <queue>
 #include <condition_variable>
-#include <thread>
+#include <map>
 #include <vector>
-#include <string>
 
 #include "flamegpu/defines.h"
 #include "flamegpu/simulation/LogFrame.h"
@@ -65,7 +64,7 @@ class SimRunner : public AbstractSimRunner {
         unsigned int _runner_id,
         flamegpu::Verbosity _verbosity,
         bool _fail_fast,
-        std::vector<RunLog> &run_logs,
+        std::map<unsigned int, RunLog> &run_logs,
         std::queue<unsigned int> &log_export_queue,
         std::mutex &log_export_queue_mutex,
         std::condition_variable &log_export_queue_cdn,

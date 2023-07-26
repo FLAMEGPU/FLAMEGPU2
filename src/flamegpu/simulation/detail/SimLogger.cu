@@ -14,7 +14,7 @@
 namespace flamegpu {
 namespace detail {
 
-SimLogger::SimLogger(const std::vector<RunLog> &_run_logs,
+SimLogger::SimLogger(const std::map<unsigned int, RunLog> &_run_logs,
         const RunPlanVector &_run_plans,
         const std::string &_out_directory,
         const std::string &_out_format,
@@ -77,12 +77,12 @@ void SimLogger::start() {
             if (export_exit) {
                 const std::filesystem::path exit_path = p_out_directory / std::filesystem::path(run_plans[target_log].getOutputSubdirectory()) / std::filesystem::path("exit." + out_format);
                 const auto exit_logger = io::LoggerFactory::createLogger(exit_path.generic_string(), false, false);
-                exit_logger->log(run_logs[target_log], run_plans[target_log], false, true, false, export_exit_time);
+                exit_logger->log(run_logs.at(target_log), run_plans[target_log], false, true, false, export_exit_time);
             }
             if (export_step) {
                 const std::filesystem::path step_path = p_out_directory/std::filesystem::path(run_plans[target_log].getOutputSubdirectory())/std::filesystem::path(std::to_string(target_log)+"."+out_format);
                 const auto step_logger = io::LoggerFactory::createLogger(step_path.generic_string(), false, true);
-                step_logger->log(run_logs[target_log], run_plans[target_log], true, false, export_step_time, false);
+                step_logger->log(run_logs.at(target_log), run_plans[target_log], true, false, export_step_time, false);
             }
             // Continue
             ++logs_processed;

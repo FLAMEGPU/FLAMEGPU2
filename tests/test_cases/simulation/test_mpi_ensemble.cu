@@ -124,16 +124,14 @@ TEST_F(TestMPIEnsemble, local) {
     // Validate results
     // @note Best we can currently do is check logs of each runner have correct results
     // @note Ideally we'd validate between nodes to ensure all runs have been completed
-    const std::vector<RunLog> logs = ensemble.getLogs();
-    for (const auto &log : logs) {
+    const std::map<unsigned int, RunLog> logs = ensemble.getLogs();
+    for (const auto &[_, log] : logs) {
         const ExitLogFrame& exit_log = log.getExitLog();
-        // EXPECT_EQ(exit_log.getStepCount(), 10);
-        if (exit_log.getStepCount()) {  // Temp, currently every runner gets all logs but unhandled ones are empty
-            // Get a logged environment property
-            const int counter = exit_log.getEnvironmentProperty<int>("counter");
-            const int counter_init = exit_log.getEnvironmentProperty<int>("counter_init");  // @todo Can't access run index via RunLog
-            EXPECT_EQ(counter, counter_init + 10);
-        }
+        EXPECT_EQ(exit_log.getStepCount(), 10);
+        // Get a logged environment property
+        const int counter = exit_log.getEnvironmentProperty<int>("counter");
+        const int counter_init = exit_log.getEnvironmentProperty<int>("counter_init");  // @todo Can't access run index via RunLog
+        EXPECT_EQ(counter, counter_init + 10);
     }
 }
 TEST_F(TestMPIEnsemble, multi) {
@@ -169,8 +167,8 @@ TEST_F(TestMPIEnsemble, multi) {
     // Validate results
     // @note Best we can currently do is check logs of each runner have correct results
     // @note Ideally we'd validate between nodes to ensure all runs have been completed
-    const std::vector<RunLog> logs = ensemble.getLogs();
-    for (const auto &log : logs) {
+    const std::map<unsigned int, RunLog> logs = ensemble.getLogs();
+    for (const auto &[_, log] : logs) {
         const ExitLogFrame& exit_log = log.getExitLog();
         // EXPECT_EQ(exit_log.getStepCount(), 10);
         if (exit_log.getStepCount()) {  // Temp, currently every runner gets all logs but unhandled ones are empty

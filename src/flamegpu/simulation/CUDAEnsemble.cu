@@ -150,7 +150,6 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
     // Purge run logs, and resize ready for new runs
     // Resize means we can setup logs during execution out of order, without risk of list being reallocated
     run_logs.clear();
-    run_logs.resize(plans.size());
     // Workout how many devices and runner we will be executing
     int device_count = -1;
     cudaError_t cudaStatus = cudaGetDeviceCount(&device_count);
@@ -764,7 +763,7 @@ void CUDAEnsemble::setExitLog(const LoggingConfig &exitConfig) {
     // Set internal config
     exit_log_config = std::make_shared<LoggingConfig>(exitConfig);
 }
-const std::vector<RunLog> &CUDAEnsemble::getLogs() {
+const std::map<unsigned int, RunLog> &CUDAEnsemble::getLogs() {
     return run_logs;
 }
 

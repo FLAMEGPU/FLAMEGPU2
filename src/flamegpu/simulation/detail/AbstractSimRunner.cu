@@ -22,7 +22,7 @@ AbstractSimRunner::AbstractSimRunner(const std::shared_ptr<const ModelData> _mod
     int _device_id,
     unsigned int _runner_id,
     flamegpu::Verbosity _verbosity,
-    std::vector<RunLog> &_run_logs,
+    std::map<unsigned int, RunLog> &_run_logs,
     std::queue<unsigned int> &_log_export_queue,
     std::mutex &_log_export_queue_mutex,
     std::condition_variable &_log_export_queue_cdn,
@@ -100,11 +100,11 @@ void AbstractSimRunner::runSimulation(int plan_id) {
     // TODO Set population?
     // Execute simulation
     simulation->simulate();
-    // Store results in run_log (use placement new because const members)
-    run_logs[plan_id] = simulation->getRunLog();
-    // Notify logger
     {
         std::lock_guard<std::mutex> lck(log_export_queue_mutex);
+        // Store results in run_log
+        run_logs.emplace(plan_id, simulation->getRunLog());
+        // Notify logger
         log_export_queue.push(plan_id);
     }
     log_export_queue_cdn.notify_one();

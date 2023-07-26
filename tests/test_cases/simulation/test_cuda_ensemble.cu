@@ -473,8 +473,8 @@ TEST(TestCUDAEnsemble, setStepLog) {
     // Get the logs, checking the correct number are present.
     const auto &runLogs = ensemble.getLogs();
     EXPECT_EQ(runLogs.size(), plans.size());
-    for (auto &log : runLogs) {
-        auto &stepLogs = log.getStepLog();
+    for (const auto &[_, log] : runLogs) {
+        const auto &stepLogs = log.getStepLog();
         EXPECT_EQ(stepLogs.size(), 1 + 1);  // This is 1 + 1 due to the always present init log.
         uint32_t expectedStepCount = 0;
         for (const auto &stepLog : stepLogs) {
@@ -516,7 +516,7 @@ TEST(TestCUDAEnsemble, setExitLog) {
     // Get the logs, checking the correct number are present.
     const auto &runLogs = ensemble.getLogs();
     EXPECT_EQ(runLogs.size(), plans.size());
-    for (auto &log : runLogs) {
+    for (const auto &[_, log] : runLogs) {
         const auto &exitLog = log.getExitLog();
         ASSERT_EQ(exitLog.getStepCount(), 1u);
     }

@@ -433,7 +433,7 @@ TEST(LoggingTest, CUDAEnsembleSimulate) {
     {  // Check step log
         const auto &run_logs = sim.getLogs();
         i_id = 0;
-        for (auto &log : run_logs) {
+        for (const auto &[_, log] : run_logs) {
             {  // Check step log
                 auto &steps = log.getStepLog();
                 EXPECT_EQ(steps.size(), 6);  // init log, + 5 logs from 10 steps

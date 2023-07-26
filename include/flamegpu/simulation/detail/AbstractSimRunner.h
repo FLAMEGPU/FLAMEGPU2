@@ -1,12 +1,12 @@
 #ifndef INCLUDE_FLAMEGPU_SIMULATION_DETAIL_ABSTRACTSIMRUNNER_H_
 #define INCLUDE_FLAMEGPU_SIMULATION_DETAIL_ABSTRACTSIMRUNNER_H_
 
-#include <string>
 #include <thread>
 #include <mutex>
 #include <queue>
 #include <condition_variable>
 #include <vector>
+#include <map>
 #include <memory>
 
 #ifdef FLAMEGPU_ENABLE_MPI
@@ -88,7 +88,7 @@ class AbstractSimRunner {
         int _device_id,
         unsigned int _runner_id,
         flamegpu::Verbosity _verbosity,
-        std::vector<RunLog> &run_logs,
+        std::map<unsigned int, RunLog> &run_logs,
         std::queue<unsigned int> &log_export_queue,
         std::mutex &log_export_queue_mutex,
         std::condition_variable &log_export_queue_cdn,
@@ -162,9 +162,9 @@ class AbstractSimRunner {
      */
     const std::shared_ptr<const LoggingConfig> exit_log_config;
     /**
-     * Reference to the vector to store generated run logs
+     * Reference to the map to store generated run logs
      */
-    std::vector<RunLog> &run_logs;
+    std::map<unsigned int, RunLog> &run_logs;
     /**
      * The queue of logs to exported to disk
      */
