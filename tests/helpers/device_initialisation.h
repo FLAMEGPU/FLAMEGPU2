@@ -4,10 +4,16 @@
 namespace flamegpu {
 namespace tests {
 /**
- * Function to time the creation of the cuda context within the scope of FLAME GPU initialisation.
- * Must be run first to ensure a fresh context is being created, rather than within the google test suite which may be executed in a random order.
- */
-void timeCUDASimulationContextCreationTest();
+ *  Test that no cuda context is established prior to  CUDASimulation::applyConfig_derived().
+ *
+ * I.e. make sure that nothing occurs before device selection.
+ *
+ * This is performed by checking the cuda driver api current context is null, rather than the runtime api + timing based approach which was fluffy / driver updates improving context creation time would break the test.
+ *
+ * @note - This needs to be called first, and only once, hence it is not a true google test.
+ * @todo - It may be better places in it's own test binary, orchestrated via ctest to ensure it is first and only called once.
+*/
+void runCUDASimulationContextCreationTest();
 
 /**
  * Determine the success of the cuda context creation test.

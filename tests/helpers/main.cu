@@ -16,8 +16,8 @@ GTEST_API_ int main(int argc, char **argv) {
     flamegpu::io::Telemetry::disable();
     // Suppress the notice about telemetry.
     flamegpu::io::Telemetry::suppressNotice();
-    // Time the cuda agent model initialisation, to check it creates the context.
-    flamegpu::tests::timeCUDASimulationContextCreationTest();
+    // Check cuda context creation, once and only once prior to any CUDA call. This would be better in it's own test binary.
+    flamegpu::tests::runCUDASimulationContextCreationTest();
     // Run the main google test body
     printf("Running main() from %s\n", __FILE__);
     testing::InitGoogleTest(&argc, argv);
