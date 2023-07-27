@@ -1,38 +1,45 @@
 #include "helpers/device_initialisation.h"
+#include <cuda.h>
 #include <stdio.h>
-#include <chrono>
 #include "flamegpu/flamegpu.h"
 
 namespace flamegpu {
 namespace tests {
 namespace {
     // Boolean to store the result of the test, in an anonymous namespace (i.e. static)
-    bool _CUDASimulationContextCreationTime_result = false;
+    bool _CUDASimulationContextCreation_result = false;
 }  // namespace
-// Set a threshold value, which is large enough to account for context creation
-// Experimentally cudaFree(0); takes ~2us (nsys) without context creation,
-// while cudaFree(0) including context creation takes ~> 150ms in my linux titan v system.
-// This test is a little fluffy.
-const double CONTEXT_CREATION_ATLEAST_SECONDS = 0.050;  // atleast 50ms?
 
-/* Test that CUDASimulation::applyConfig_derived() is invoked prior to any cuda call which will invoke the CUDA
-Alternative is to use the driver API, call CuCtxGetCurrent(CuContext* pctx) immediatebly before applyConfig, and if pctx is the nullptr then the context had not yet been initialised?
-@note - This needs to be called first, and only once.
-*/
-void timeCUDASimulationContextCreationTest() {
+void runCUDASimulationContextCreationTest() {
     // Create a very simple model to enable creation of a CUDASimulation
     ModelDescription m("model");
     m.newAgent("agent");
     CUDASimulation c(m);
     c.CUDAConfig().device_id = 0;
     c.SimulationConfig().steps = 1;
-    // Time how long applyconfig takes, which should invoke cudaFree as the first cuda command, initialising the context.
-    auto t0 = std::chrono::high_resolution_clock::now();
+    // Use the CUDA driver api to check there is no current context (i.e. it is null), ignoring any cuda errors reported
+    CUresult cuErr = CUDA_SUCCESS;
+    CUcontext ctxBefore = NULL;
+    CUcontext ctxAfter = NULL;
+    cuErr = cuCtxGetCurrent(&ctxBefore);
+    if (cuErr != CUDA_SUCCESS && cuErr != CUDA_ERROR_NOT_INITIALIZED) {
+        const char *error_str;
+        cuGetErrorString(cuErr, &error_str);
+        fprintf(stderr, "CUDA Driver API error occurred during cuCtxGetCurrent at %s(%d): %s.\n", __FILE__, __LINE__, error_str);
+        return;
+    }
+    // Apply the config, which should establish a cuda context
     c.applyConfig();
-    auto t1 = std::chrono::high_resolution_clock::now();
-    auto time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-    // The test fails if applyconfig was too fast.
-    _CUDASimulationContextCreationTime_result = time_span.count() >= CONTEXT_CREATION_ATLEAST_SECONDS;
+    // Use the CUDA driver API to ensure there is now a non-null CUDA context established.
+    cuErr = cuCtxGetCurrent(&ctxAfter);
+    if (cuErr != CUDA_SUCCESS) {
+        const char *error_str;
+        cuGetErrorString(cuErr, &error_str);
+        fprintf(stderr, "CUDA Driver API error occurred during cuCtxGetCurrent at %s(%d): %s.\n", __FILE__, __LINE__, error_str);
+        return;
+    }
+    // the result is truthy if the before context was null, and the after context is non null
+    _CUDASimulationContextCreation_result = ctxBefore == NULL && ctxAfter != NULL;
     // Run the simulation.
     c.simulate();
 }
@@ -42,7 +49,7 @@ void timeCUDASimulationContextCreationTest() {
  * @note - there is no way to know if the test has not yet been ran, instead it reports false.
  */
 bool getCUDASimulationContextCreationTestResult() {
-    return _CUDASimulationContextCreationTime_result;
+    return _CUDASimulationContextCreation_result;
 }
 
 }  // namespace tests
