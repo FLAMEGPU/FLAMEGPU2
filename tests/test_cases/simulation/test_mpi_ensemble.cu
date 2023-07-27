@@ -31,8 +31,10 @@ FLAMEGPU_STEP_FUNCTION(model_step) {
 }
 FLAMEGPU_STEP_FUNCTION(throw_exception) {
     const int counter = FLAMEGPU->environment.getProperty<int>("counter");
+    const int init_counter = FLAMEGPU->environment.getProperty<int>("init_counter");
     if (FLAMEGPU->getStepCounter() == 1 && counter == 12) {
-        throw flamegpu::exception::VersionMismatch("Counter - %d", counter);
+        printf("exception counter: %u, init_counter: %u\n", counter, init_counter);
+        throw std::runtime_error("Exception thrown by host fn throw_exception()");
     }
 }
 class TestMPIEnsemble : public testing::Test {
@@ -66,8 +68,6 @@ class TestMPIEnsemble : public testing::Test {
             GTEST_SKIP() << "world_size<1, something went wrong.";
         }
         initModel();
-        initPlans();
-        initExitLoggingConfig();
     }
     void TearDown() override {
         if (ensemble) delete ensemble;
@@ -78,6 +78,7 @@ class TestMPIEnsemble : public testing::Test {
     void initModel() {
         model = new flamegpu::ModelDescription("MPITest");
         model->Environment().newProperty<int>("counter", -1);
+        model->Environment().newProperty<int>("init_counter", -1);
         model->newAgent("agent");
         model->newLayer().addHostFunction(model_step);
     }
@@ -88,12 +89,15 @@ class TestMPIEnsemble : public testing::Test {
         plans = new flamegpu::RunPlanVector(*model, 100);
         plans->setSteps(10);
         plans->setPropertyLerpRange<int>("counter", 0, 99);
+        plans->setPropertyLerpRange<int>("init_counter", 0, 99);
     }
     void initExitLoggingConfig() {
         exit_log_cfg = new flamegpu::LoggingConfig(*model);
         exit_log_cfg->logEnvironment("counter");
     }
     void initEnsemble() {
+        initPlans();
+        initExitLoggingConfig();
         ensemble = new flamegpu::CUDAEnsemble (*model);
         ensemble->Config().concurrent_runs = 1;
         if (group_size == world_size) {
@@ -115,15 +119,12 @@ class TestMPIEnsemble : public testing::Test {
         // Validate results
         // @note Best we can currently do is check logs of each runner have correct results
         // @note Ideally we'd validate between nodes to ensure all runs have been completed
-        const std::map<unsigned int, RunLog> logs = ensemble.getLogs();
+        const std::map<unsigned int, RunLog> logs = ensemble->getLogs();
         for (const auto &[index, log] : logs) {
             const ExitLogFrame& exit_log = log.getExitLog();
-            // EXPECT_EQ(exit_log.getStepCount(), 10);
-            if (exit_log.getStepCount()) {  // Temp, currently every runner gets all logs but unhandled ones are empty
-                // Get a logged environment property
-                const int counter = exit_log.getEnvironmentProperty<int>("counter");
-                EXPECT_EQ(counter, index + 10);
-            }
+            // Get a logged environment property
+            const int counter = exit_log.getEnvironmentProperty<int>("counter");
+            EXPECT_EQ(counter, index + 10);
         }
     }
     int world_rank = -1;
@@ -136,8 +137,34 @@ class TestMPIEnsemble : public testing::Test {
 };
 TEST_F(TestMPIEnsemble, success) {
     initEnsemble();
-    const unsigned int successful_runs = ensemble->simulate(*plans);
-    EXPECT_EQ(successful_runs, 100u);
+    // Capture stderr and stdout
+    testing::internal::CaptureStdout();
+    testing::internal::CaptureStderr();
+    const unsigned int err_count = ensemble->simulate(*plans);
+    EXPECT_EQ(err_count, 0u);
+    // Get stderr and stdout
+    std::string output = testing::internal::GetCapturedStdout();
+    std::string errors = testing::internal::GetCapturedStderr();
+    // Expect no warnings (stderr) but outputs on progress and timing
+    if (world_rank == 0) {
+        EXPECT_TRUE(output.find("CUDAEnsemble progress") != std::string::npos);   // E.g. CUDAEnsemble progress: 1/2
+        EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
+        EXPECT_TRUE(errors.empty());
+    } else {
+        EXPECT_TRUE(output.empty());
+        EXPECT_TRUE(errors.empty());
+    }
+
+    validateLogs();
+}
+TEST_F(TestMPIEnsemble, success_verbose) {
+    initEnsemble();
+    ensemble->Config().verbosity = Verbosity::Verbose;
+    // Capture stderr and stdout
+    testing::internal::CaptureStdout();
+    testing::internal::CaptureStderr();
+    const unsigned int err_count = ensemble->simulate(*plans);
+    EXPECT_EQ(err_count, 0u);
     // Get stderr and stdout
     std::string output = testing::internal::GetCapturedStdout();
     std::string errors = testing::internal::GetCapturedStderr();
@@ -158,25 +185,26 @@ TEST_F(TestMPIEnsemble, error_off) {
     model->newLayer().addHostFunction(throw_exception);
     initEnsemble();
     ensemble->Config().error_level = CUDAEnsemble::EnsembleConfig::Off;
-    const unsigned int successful_runs = 0;
-    EXPECT_NO_THROW(successful_runs = ensemble->simulate(*plans));
-    // With error off, we would expect to see run index 12 fail
-    // Therefore 99 returned instead of 100
-    EXPECT_EQ(successful_runs, 99u);
+    unsigned int err_count = 0;
+    // Capture stderr and stdout
+    testing::internal::CaptureStdout();
+    testing::internal::CaptureStderr();
+    EXPECT_NO_THROW(err_count = ensemble->simulate(*plans));
     // Get stderr and stdout
-    std::string output = testing::internal::GetCapturedStdout();
-    std::string errors = testing::internal::GetCapturedStderr();
-    // Expect no warnings (stderr) but outputs on progress and timing
-    // Get stderr and stdout
-    std::string output = testing::internal::GetCapturedStdout();
-    std::string errors = testing::internal::GetCapturedStderr();
+    const std::string output = testing::internal::GetCapturedStdout();
+    const std::string errors = testing::internal::GetCapturedStderr();
     // Expect no warnings (stderr) but outputs on progress and timing
     if (world_rank == 0) {
+        // With error off, we would expect to see run index 10 fail
+        // Therefore 1 returned instead of 0
+        EXPECT_EQ(err_count, 1u);
         EXPECT_TRUE(output.find("CUDAEnsemble progress") != std::string::npos);   // E.g. CUDAEnsemble progress: 1/2
         EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
-        EXPECT_TRUE(output.find("Ensemble time elapsed") != std::string::npos);   // E.g. Ensemble time elapsed: 0.006000s
-        EXPECT_TRUE(errors.empty());
+        EXPECT_TRUE(errors.find("Warning: Run 10 failed on rank ") != std::string::npos);  // E.g. Warning: Run 10 failed on rank 0, device 0, thread 0 with exception:
     } else {
+        // Capture stderr and stdout
+        // Only rank 0 returns the error count
+        EXPECT_EQ(err_count, 0u);
         EXPECT_TRUE(output.empty());
         EXPECT_TRUE(errors.empty());
     }
@@ -188,22 +216,29 @@ TEST_F(TestMPIEnsemble, error_slow) {
     model->newLayer().addHostFunction(throw_exception);
     initEnsemble();
     ensemble->Config().error_level = CUDAEnsemble::EnsembleConfig::Slow;
-    EXPECT_THROW(ensemble->simulate(*plans), flamegpu::exception::EnsembleError);
-    // @todo can't capture total number of successful/failed runs
-    // Get stderr and stdout
-    std::string output = testing::internal::GetCapturedStdout();
-    std::string errors = testing::internal::GetCapturedStderr();
+    // Capture stderr and stdout
+    testing::internal::CaptureStdout();
+    testing::internal::CaptureStderr();
     // Expect no warnings (stderr) but outputs on progress and timing
     if (world_rank == 0) {
+        EXPECT_THROW(ensemble->simulate(*plans), flamegpu::exception::EnsembleError);
+        // @todo can't capture total number of successful/failed runs
+        // Get stderr and stdout
+        const std::string output = testing::internal::GetCapturedStdout();
+        const std::string errors = testing::internal::GetCapturedStderr();
         EXPECT_TRUE(output.find("CUDAEnsemble progress") != std::string::npos);   // E.g. CUDAEnsemble progress: 1/2
         EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
-        EXPECT_TRUE(output.find("Ensemble time elapsed") != std::string::npos);   // E.g. Ensemble time elapsed: 0.006000s
-        EXPECT_TRUE(errors.empty());
+        EXPECT_TRUE(errors.find("Warning: Run 10 failed on rank ") != std::string::npos);  // E.g. Warning: Run 10 failed on rank 0, device 0, thread 0 with exception:
     } else {
+        // Only rank 0 raises exception
+        EXPECT_NO_THROW(ensemble->simulate(*plans));
+        // @todo can't capture total number of successful/failed runs
+        // Get stderr and stdout
+        const std::string output = testing::internal::GetCapturedStdout();
+        const std::string errors = testing::internal::GetCapturedStderr();
         EXPECT_TRUE(output.empty());
         EXPECT_TRUE(errors.empty());
     }
-
     // Existing logs should still validate
     validateLogs();
 }
@@ -211,18 +246,29 @@ TEST_F(TestMPIEnsemble, error_fast) {
     model->newLayer().addHostFunction(throw_exception);
     initEnsemble();
     ensemble->Config().error_level = CUDAEnsemble::EnsembleConfig::Fast;
-    EXPECT_THROW(ensemble->simulate(*plans), flamegpu::exception::EnsembleError);
-    // @todo can't capture total number of successful/failed runs
-    // Get stderr and stdout
-    std::string output = testing::internal::GetCapturedStdout();
-    std::string errors = testing::internal::GetCapturedStderr();
+    // Capture stderr and stdout
+    testing::internal::CaptureStdout();
+    testing::internal::CaptureStderr();
     // Expect no warnings (stderr) but outputs on progress and timing
     if (world_rank == 0) {
+        EXPECT_THROW(ensemble->simulate(*plans), flamegpu::exception::EnsembleError);
+        // @todo can't capture total number of successful/failed runs
+        // Get stderr and stdout
+        const std::string output = testing::internal::GetCapturedStdout();
+        const std::string errors = testing::internal::GetCapturedStderr();
         EXPECT_TRUE(output.find("CUDAEnsemble progress") != std::string::npos);   // E.g. CUDAEnsemble progress: 1/2
-        EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
-        EXPECT_TRUE(output.find("Ensemble time elapsed") != std::string::npos);   // E.g. Ensemble time elapsed: 0.006000s
+#ifdef _DEBUG
+        EXPECT_TRUE(errors.find("Run 10 failed on rank") != std::string::npos);   // E.g. Run 10 failed on rank 0, device 0, thread 0 with exception:
+#else
         EXPECT_TRUE(errors.empty());
+#endif
     } else {
+        // Only rank 0 raises exception
+        EXPECT_NO_THROW(ensemble->simulate(*plans));
+        // @todo can't capture total number of successful/failed runs
+        // Get stderr and stdout
+        const std::string output = testing::internal::GetCapturedStdout();
+        const std::string errors = testing::internal::GetCapturedStderr();
         EXPECT_TRUE(output.empty());
         EXPECT_TRUE(errors.empty());
     }
@@ -232,6 +278,7 @@ TEST_F(TestMPIEnsemble, error_fast) {
 }
 #else
 TEST(TestMPIEnsemble, DISABLED_success) { }
+TEST(TestMPIEnsemble, DISABLED_success_verbose) { }
 TEST(TestMPIEnsemble, DISABLED_error_off) { }
 TEST(TestMPIEnsemble, DISABLED_error_slow) { }
 TEST(TestMPIEnsemble, DISABLED_error_fast) { }
