@@ -26,7 +26,7 @@ FLAMEGPU_AGENT_FUNCTION(alive, MessageNone, MessageNone) {
 
 // Test the getting of a device's compute capability.
 TEST(TestCleanup, Explicit) {
-    // Allocate some arbitraty device memory.
+    // Allocate some arbitrary device memory.
     int * d_int = nullptr;
     gpuErrchk(cudaMalloc(&d_int, sizeof(int)));
     // Validate that the ptr is a valid device pointer

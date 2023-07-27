@@ -494,7 +494,8 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
 
 #ifdef FLAMEGPU_ENABLE_MPI
     if (config.mpi) {
-        MPI_Finalize();
+        // Ensure all workers have finished before exit
+        MPI_Barrier(MPI_COMM_WORLD);
     }
 #endif
     // Record and store the elapsed time
