@@ -33,6 +33,8 @@ class CUDAEnsemble {
         // Sent from worker to manager to report an error during job execution
         // If fail fast is enabled, following RequestJob will receive an exit job id (>=plans.size())
         ReportError = 2,
+        // Sent from worker to manager to report GPUs for telemetry
+        TelemetryDevices = 3,
     };
 #endif
     /**

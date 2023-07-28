@@ -66,7 +66,6 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
 #ifdef FLAMEGPU_ENABLE_MPI
     int world_rank = -1;
     int world_size = -1;
-    int finalize_size = -1;
     if (config.mpi) {
         int flag = 0;
         // MPI can only be init once, for certain test cases we do some initial MPI comms for setup
@@ -493,9 +492,57 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
     }
 
 #ifdef FLAMEGPU_ENABLE_MPI
+    std::string remote_device_names;
     if (config.mpi) {
         // Ensure all workers have finished before exit
         MPI_Barrier(MPI_COMM_WORLD);
+        if (config.telemetry) {
+            // All ranks should notify rank 0 of their GPU devices
+            if (world_rank == 0) {
+                int bufflen = 2048;
+                char* buff = static_cast<char*>(malloc(bufflen));
+                for (int i = 1; i < world_size; ++i) {
+                    // Receive a message from each rank
+                    MPI_Status status;
+                    memset(&status, 0, sizeof(MPI_Status));
+                    MPI_Probe(
+                        MPI_ANY_SOURCE,            // int source
+                        EnvelopeTag::TelemetryDevices,  // int tag
+                        MPI_COMM_WORLD,            // MPI_Comm communicator
+                        &status);
+                    int strlen = 0;
+                    // Ensure our receive buffer is long enough
+                    MPI_Get_count(&status, MPI_CHAR, &strlen);
+                    if (strlen > bufflen) {
+                        free(buff);
+                        bufflen = 2 * strlen;
+                        buff = static_cast<char*>(malloc(bufflen));
+                    }
+                    MPI_Recv(
+                        buff,                           // void* data
+                        strlen,                         // int count
+                        MPI_CHAR,                       // MPI_Datatype datatype (can't use MPI_DATATYPE_NULL)
+                        MPI_ANY_SOURCE,                 // int source
+                        EnvelopeTag::TelemetryDevices,  // int tag
+                        MPI_COMM_WORLD,                 // MPI_Comm communicator
+                        &status);                       // MPI_Status*
+                    remote_device_names.append(", ");
+                    remote_device_names.append(buff);
+                }
+                free(buff);
+            } else {
+                const std::string d_string = flamegpu::detail::compute_capability::getDeviceNames(config.devices);
+                // Send GPU count
+                MPI_Send(
+                    d_string.c_str(),               // void* data
+                    d_string.length() + 1,          // int count
+                    MPI_CHAR,                       // MPI_Datatype datatype
+                    0,                              // int destination
+                    EnvelopeTag::TelemetryDevices,  // int tag
+                    MPI_COMM_WORLD);                // MPI_Comm communicator
+            }
+            MPI_Barrier(MPI_COMM_WORLD);
+        }
     }
 #endif
     // Record and store the elapsed time
@@ -520,14 +567,23 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
     if (config.telemetry && (!config.mpi || world_rank == 0)) {
         // Generate some payload items
         std::map<std::string, std::string> payload_items;
+#ifndef FLAMEGPU_ENABLE_MPI
         payload_items["GPUDevices"] = flamegpu::detail::compute_capability::getDeviceNames(config.devices);
+#else
+        payload_items["GPUDevices"] = flamegpu::detail::compute_capability::getDeviceNames(config.devices) + remote_device_names;
+#endif
         payload_items["SimTime(s)"] = std::to_string(ensemble_elapsed_time);
-        #if defined(__CUDACC_VER_MAJOR__) && defined(__CUDACC_VER_MINOR__) && defined(__CUDACC_VER_BUILD__)
-            payload_items["NVCCVersion"] = std::to_string(__CUDACC_VER_MAJOR__) + "." + std::to_string(__CUDACC_VER_MINOR__) + "." + std::to_string(__CUDACC_VER_BUILD__);
-        #endif
+#if defined(__CUDACC_VER_MAJOR__) && defined(__CUDACC_VER_MINOR__) && defined(__CUDACC_VER_BUILD__)
+        payload_items["NVCCVersion"] = std::to_string(__CUDACC_VER_MAJOR__) + "." + std::to_string(__CUDACC_VER_MINOR__) + "." + std::to_string(__CUDACC_VER_BUILD__);
+#endif
         // Add the ensemble size to the ensemble telemetry payload
         payload_items["PlansSize"] = std::to_string(plans.size());
         payload_items["ConcurrentRuns"] = std::to_string(config.concurrent_runs);
+        // Add MPI details to the ensemble telemetry payload
+        payload_items["mpi"] = config.mpi ? "true" : "false";
+#ifdef FLAMEGPU_ENABLE_MPI
+        payload_items["mpi_world_size"] = std::to_string(world_size);
+#endif
         // generate telemetry data
         std::string telemetry_data = flamegpu::io::Telemetry::generateData("ensemble-run", payload_items, isSWIG);
         // send the telemetry packet
