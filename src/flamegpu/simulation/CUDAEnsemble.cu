@@ -236,7 +236,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector &plans) {
         std::map<std::string, std::string> payload_items;
         payload_items["GPUDevices"] = flamegpu::detail::compute_capability::getDeviceNames(config.devices);
         payload_items["SimTime(s)"] = std::to_string(ensemble_elapsed_time);
-        #if defined(__CUDACC_VER_MAJOR__) && defined(__CUDACC_VER_MINOR__) && defined(__CUDACC_VER_PATCH__)
+        #if defined(__CUDACC_VER_MAJOR__) && defined(__CUDACC_VER_MINOR__) && defined(__CUDACC_VER_BUILD__)
             payload_items["NVCCVersion"] = std::to_string(__CUDACC_VER_MAJOR__) + "." + std::to_string(__CUDACC_VER_MINOR__) + "." + std::to_string(__CUDACC_VER_BUILD__);
         #endif
         // Add the ensemble size to the ensemble telemetry payload
