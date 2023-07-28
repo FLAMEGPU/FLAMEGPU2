@@ -609,7 +609,7 @@ jobs:
         done
         echo "files: ${files}"
         # Set the list of files as the output for this step
-        echo "::set-output name=files::${files}"
+        echo "files=${files}" >> "$GITHUB_OUTPUT"
 
     # Extract information from the tag which is required for the draft github release
     - name: Process Tag
@@ -622,9 +622,9 @@ jobs:
         prerelease_label_len=$(echo ${prerelease_label} | wc -c)
         prerelease_flag=$([[ -z "${prerelease_label_len}" ]] && echo "" || echo "--prerelease")
         # set step outputs
-        echo "::set-output name=tag::${tag}"
-        echo "::set-output name=version::${version}"
-        echo "::set-output name=prerelease_flag::${prerelease_flag}"
+        echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+        echo "version=${version}" >> "$GITHUB_OUTPUT"
+        echo "prerelease_flag=${prerelease_flag}" >> "$GITHUB_OUTPUT"
 
     # Use the gh cli tool to create a draft release
     # @future - use --notes "notes string" or --notes-file file
