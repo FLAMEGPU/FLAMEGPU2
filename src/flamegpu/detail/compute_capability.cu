@@ -125,17 +125,23 @@ const std::string compute_capability::getDeviceName(int deviceIndex) {
 const std::string compute_capability::getDeviceNames(std::set<int> devices) {
     std::string device_names;
     bool first = true;
+    // Get the count of devices
+    int deviceCount = 0;
+    gpuErrchk(cudaGetDeviceCount(&deviceCount));
+    // If no devices were passed in, add each device to the set of devices.
+    if (devices.size() == 0) {
+        for (int i = 0; i < deviceCount; i++) {
+            devices.emplace_hint(devices.end(), i);
+        }
+    }
     for (int device_id : devices) {
         // Throw an exception if the deviceIndex is negative.
         if (device_id < 0) {
             THROW exception::InvalidCUDAdevice();
         }
-
         // Ensure deviceIndex is valid.
-        int deviceCount = 0;
-        gpuErrchk(cudaGetDeviceCount(&deviceCount));
         if (device_id >= deviceCount) {
-            // Throw an excpetion if the device index is bad.
+            // Throw an exception if the device index is bad.
             THROW exception::InvalidCUDAdevice();
         }
         // Load device properties
