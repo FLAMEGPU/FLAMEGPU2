@@ -406,7 +406,7 @@ void RunPlanVector::setProperty(const std::string &name, const flamegpu::size_ty
     }
     const unsigned int t_index = detail::type_decode<T>::len_t * index + detail::type_decode<T>::len_t;
     if (t_index > it->second.data.elements || t_index < index) {
-        throw exception::OutOfBoundsException("Environment property array index out of bounds "
+        THROW exception::OutOfBoundsException("Environment property array index out of bounds "
             "in RunPlanVector::setProperty()\n");
     }
     for (auto &i : *this) {
@@ -492,7 +492,7 @@ void RunPlanVector::setPropertyLerpRange(const std::string &name, const flamegpu
     }
     const unsigned int t_index = detail::type_decode<T>::len_t * index + detail::type_decode<T>::len_t;
     if (t_index > it->second.data.elements || t_index < index) {
-        throw exception::OutOfBoundsException("Environment property array index out of bounds "
+        THROW exception::OutOfBoundsException("Environment property array index out of bounds "
             "in RunPlanVector::setPropertyLerpRange()\n");
     }
     unsigned int ct = 0;
@@ -602,7 +602,7 @@ void RunPlanVector::setPropertyRandom(const std::string &name, const flamegpu::s
     }
     const unsigned int t_index = detail::type_decode<T>::len_t * index + detail::type_decode<T>::len_t;
     if (t_index > it->second.data.elements || t_index < index) {
-        throw exception::OutOfBoundsException("Environment property array index out of bounds "
+        THROW exception::OutOfBoundsException("Environment property array index out of bounds "
             "in RunPlanVector::setPropertyRandom()\n");
     }
     for (auto &i : *this) {

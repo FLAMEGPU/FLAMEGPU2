@@ -21,9 +21,9 @@ namespace io {
     switch (a_eResult) { \
     case tinyxml2::XML_ERROR_FILE_NOT_FOUND : \
     case tinyxml2::XML_ERROR_FILE_COULD_NOT_BE_OPENED : \
-        throw exception::InvalidInputFile("TinyXML error: File could not be opened.\n Error code: %d", a_eResult); \
+        THROW exception::InvalidInputFile("TinyXML error: File could not be opened.\n Error code: %d", a_eResult); \
     case tinyxml2::XML_ERROR_FILE_READ_ERROR : \
-        throw exception::InvalidInputFile("TinyXML error: File could not be read.\n Error code: %d", a_eResult); \
+        THROW exception::InvalidInputFile("TinyXML error: File could not be read.\n Error code: %d", a_eResult); \
     case tinyxml2::XML_ERROR_PARSING_ELEMENT : \
     case tinyxml2::XML_ERROR_PARSING_ATTRIBUTE : \
     case tinyxml2::XML_ERROR_PARSING_TEXT : \
@@ -32,25 +32,25 @@ namespace io {
     case tinyxml2::XML_ERROR_PARSING_DECLARATION : \
     case tinyxml2::XML_ERROR_PARSING_UNKNOWN : \
     case tinyxml2::XML_ERROR_PARSING : \
-        throw exception::TinyXMLError("TinyXML error: Error parsing file.\n Error code: %d", a_eResult); \
+        THROW exception::TinyXMLError("TinyXML error: Error parsing file.\n Error code: %d", a_eResult); \
     case tinyxml2::XML_ERROR_EMPTY_DOCUMENT : \
-        throw exception::TinyXMLError("TinyXML error: XML_ERROR_EMPTY_DOCUMENT\n Error code: %d", a_eResult); \
+        THROW exception::TinyXMLError("TinyXML error: XML_ERROR_EMPTY_DOCUMENT\n Error code: %d", a_eResult); \
     case tinyxml2::XML_ERROR_MISMATCHED_ELEMENT : \
-        throw exception::TinyXMLError("TinyXML error: XML_ERROR_MISMATCHED_ELEMENT\n Error code: %d", a_eResult); \
+        THROW exception::TinyXMLError("TinyXML error: XML_ERROR_MISMATCHED_ELEMENT\n Error code: %d", a_eResult); \
     case tinyxml2::XML_CAN_NOT_CONVERT_TEXT : \
-        throw exception::TinyXMLError("TinyXML error: XML_CAN_NOT_CONVERT_TEXT\n Error code: %d", a_eResult); \
+        THROW exception::TinyXMLError("TinyXML error: XML_CAN_NOT_CONVERT_TEXT\n Error code: %d", a_eResult); \
     case tinyxml2::XML_NO_TEXT_NODE : \
-        throw exception::TinyXMLError("TinyXML error: XML_NO_TEXT_NODE\n Error code: %d", a_eResult); \
+        THROW exception::TinyXMLError("TinyXML error: XML_NO_TEXT_NODE\n Error code: %d", a_eResult); \
     case tinyxml2::XML_ELEMENT_DEPTH_EXCEEDED : \
-        throw exception::TinyXMLError("TinyXML error: XML_ELEMENT_DEPTH_EXCEEDED\n Error code: %d", a_eResult); \
+        THROW exception::TinyXMLError("TinyXML error: XML_ELEMENT_DEPTH_EXCEEDED\n Error code: %d", a_eResult); \
     case tinyxml2::XML_ERROR_COUNT : \
-        throw exception::TinyXMLError("TinyXML error: XML_ERROR_COUNT\n Error code: %d", a_eResult); \
+        THROW exception::TinyXMLError("TinyXML error: XML_ERROR_COUNT\n Error code: %d", a_eResult); \
     case tinyxml2::XML_NO_ATTRIBUTE: \
-        throw exception::TinyXMLError("TinyXML error: XML_NO_ATTRIBUTE\n Error code: %d", a_eResult); \
+        THROW exception::TinyXMLError("TinyXML error: XML_NO_ATTRIBUTE\n Error code: %d", a_eResult); \
     case tinyxml2::XML_WRONG_ATTRIBUTE_TYPE : \
-        throw exception::TinyXMLError("TinyXML error: XML_WRONG_ATTRIBUTE_TYPE\n Error code: %d", a_eResult); \
+        THROW exception::TinyXMLError("TinyXML error: XML_WRONG_ATTRIBUTE_TYPE\n Error code: %d", a_eResult); \
     default: \
-        throw exception::TinyXMLError("TinyXML error: Unrecognised error code\n Error code: %d", a_eResult); \
+        THROW exception::TinyXMLError("TinyXML error: Unrecognised error code\n Error code: %d", a_eResult); \
     } \
 }
 #endif
