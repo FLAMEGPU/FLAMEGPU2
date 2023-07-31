@@ -389,7 +389,6 @@ TEST(AgentVectorTest, iterator_GLM) {
     // Iterate vector
     unsigned int i = 0;
     for (AgentVector::Agent instance : pop) {
-        auto a = instance.getVariable<glm::uvec3>("uvec3");
         ASSERT_EQ(instance.getVariable<glm::uvec3>("uvec3"), glm::uvec3(i + 3, i + 6, i));
         ++i;
     }
