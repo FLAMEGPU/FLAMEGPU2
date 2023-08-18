@@ -1,0 +1,23 @@
+name: Post Release
+# On publication of a release, or when manually triggerered
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+jobs:
+  # Trigger creation of the wheelhouse via an api call. PAT required.
+  trigger-wheelhouse-ci:
+    runs-on: ubuntu-latest
+    steps:
+      # Use gh to trigger the workflow_dispatch event on the appropriate workflow in another repository.
+      # This step may fail if the PAT is invalid or has expired
+      # If so, create a fine-grained pat with actions: write and permissions on the appropriate repository, storing it in the relevant secret on this repository.
+      - name: Trigger FLAMEGPU2-wheelhouse
+        env:
+          GH_TOKEN: ${{ secrets.WHEELHOUSE_TOKEN }}
+          REPO: "FLAMEGPU/FLAMEGPU2-wheelhouse"
+          WORKFLOW: "ci.yml"
+        run: |
+          gh workflow run ${WORKFLOW} -R ${REPO}
+          sleep 5
+          gh run watch -R ${REPO} $(gh run list -R ${REPO} -w ${WORKFLOW} -L1 --json databaseId --jq .[0].databaseId)
