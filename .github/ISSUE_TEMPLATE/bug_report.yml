@@ -1,0 +1,77 @@
+name: Bug report
+description: Report a problem with flamegpu2
+title: "[Bug]: "
+labels: ["triage required"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder:
+    validations:
+      required: true
+  - type: textarea
+    id: to-reproduce
+    attributes:
+      label: To Reproduce
+      description: Steps to reproduce the behaviour. If applicable, add screenshots to help explain your problem.
+      placeholder: | 
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behaviour
+    attributes:
+      label: Expected Behaviour
+      description: A clear and concise description of what you expected to happen.
+      placeholder:
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        Configuration (please complete the following information):
+  - type: input
+    id: configuration-os
+    attributes:
+      label: OS
+      description: 
+      placeholder: e.g. Ubuntu 22.04, Windows 11
+    validations:
+      required: false
+  - type: input
+    id: configuration-cuda
+    attributes:
+      label: CUDA Versions
+      description: 
+      placeholder: e.g. CUDA 11.0, CUDA 12.2
+    validations:
+      required: false
+  - type: input
+    id: configuration-gpus
+    attributes:
+      label: GPUs
+      description: 
+      placeholder: e.g. 3090, H100
+    validations:
+      required: false
+  - type: input
+    id: configuration-gpu-driver
+    attributes:
+      label: GPU Driver
+      description: 
+      placeholder: e.g. 535.86.10
+    validations:
+      required: false
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Information
+      description: Add any other context about the problem here.
+      placeholder:
+    validations:
+      required: false
