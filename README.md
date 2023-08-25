@@ -39,7 +39,7 @@ If you encounter issues while using FLAME GPU, please provide bug reports, feedb
 
 ## Installation
 
-Pre-compiled python wheels are available for installations from [Releases](https://github.com/FLAMEGPU/FLAMEGPU2/releases/).
+Pre-compiled python wheels are available for installation from [Releases](https://github.com/FLAMEGPU/FLAMEGPU2/releases/), and can also be installed via pip via [whl.flamegpu.com](https://whl.flamegpu.com). Wheels are not currently manylinux compliant.
 Please see the [latest release](https://github.com/FLAMEGPU/FLAMEGPU2/releases/latest) for more information on the available wheels and installation instructions.
 
 C++/CUDA installation is not currently available. Please refer to the section on [Building FLAME GPU](#Building-FLAME-GPU).
