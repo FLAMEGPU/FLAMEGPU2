@@ -14,7 +14,7 @@ jobs:
       # If so, create a fine-grained pat with actions: write and permissions on the appropriate repository, storing it in the relevant secret on this repository.
       - name: Trigger FLAMEGPU2-wheelhouse
         env:
-          GH_TOKEN: ${{ secrets.WHEELHOUSE_TOKEN }}
+          GH_TOKEN: ${{ secrets.WHEELHOUSE_TOKEN }}  # Note that this will periodically need to be renewed
           REPO: "FLAMEGPU/FLAMEGPU2-wheelhouse"
           WORKFLOW: "ci.yml"
         run: |
