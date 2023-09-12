@@ -426,8 +426,6 @@ source_group(TREE ${FLAMEGPU_ROOT}/include PREFIX external FILES ${T_SRC_EXTERNA
 
 # Create the library target and set various properties
 
-# @todo - correctly set PUBLIC/PRIVATE/INTERFACE for the flamegpu library target
-
 # Define which source files are required for the target executable
 add_library(${PROJECT_NAME} STATIC ${ALL_SRC})
 
