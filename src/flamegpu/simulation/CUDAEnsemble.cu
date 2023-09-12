@@ -199,7 +199,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
     std::mutex log_export_queue_mutex;
     std::condition_variable log_export_queue_cdn;
 #ifdef FLAMEGPU_ENABLE_MPI
-    // In OMP mode, Rank 0 will collect errors from all ranks
+    // In MPI mode, Rank 0 will collect errors from all ranks
     std::multimap<int, detail::AbstractSimRunner::ErrorDetail> err_detail = {};
 #endif
     std::vector<detail::AbstractSimRunner::ErrorDetail> err_detail_local = {};
@@ -211,7 +211,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
         step_log_config.get(), exit_log_config.get(), step_log_config && step_log_config->log_timing, exit_log_config && exit_log_config->log_timing);
     }
 
-    // In OMP mode, only Rank 0 increments the error counter
+    // In MPI mode, only Rank 0 increments the error counter
     unsigned int err_count = 0;
     if (config.mpi) {
 #ifdef FLAMEGPU_ENABLE_MPI
