@@ -263,9 +263,8 @@ TEST_F(TestMPIEnsemble, error_fast) {
         EXPECT_TRUE(errors.empty());
 #endif
     } else {
-        // Only rank 0 raises exception
+        // Only rank 0 raises exception and captures total number of successful/failed runs
         EXPECT_NO_THROW(ensemble->simulate(*plans));
-        // @todo can't capture total number of successful/failed runs
         // Get stderr and stdout
         const std::string output = testing::internal::GetCapturedStdout();
         const std::string errors = testing::internal::GetCapturedStderr();
