@@ -52,7 +52,7 @@ class AbstractSimRunner {
                                                              reinterpret_cast<char*>(&t.device_id) - t_ptr,
                                                              reinterpret_cast<char*>(&t.runner_id) - t_ptr,
                                                              reinterpret_cast<char*>(&t.exception_string) - t_ptr };
-            constexpr MPI_Datatype array_of_types[count] = {MPI_UNSIGNED, MPI_UNSIGNED, MPI_UNSIGNED, MPI_CHAR};
+            const MPI_Datatype array_of_types[count] = {MPI_UNSIGNED, MPI_UNSIGNED, MPI_UNSIGNED, MPI_CHAR};
             MPI_Type_create_struct(count, array_of_blocklengths, array_of_displacements, array_of_types, &rtn);
             MPI_Type_commit(&rtn);
         }
