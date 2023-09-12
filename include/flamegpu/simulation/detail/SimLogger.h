@@ -55,7 +55,7 @@ class SimLogger {
     void start();
     // External references
     /**
-     * Reference to the vector to store generate run logs
+     * Reference to the map to store generate run logs
      */
     const std::map<unsigned int, RunLog> &run_logs;
     /**
