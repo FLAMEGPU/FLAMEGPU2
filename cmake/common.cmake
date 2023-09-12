@@ -315,28 +315,48 @@ function(flamegpu_setup_source_groups)
         message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION}: 'SRC' argument required.")
     endif()
 
-    # Setup Visual Studio (and eclipse) filters
-    #src/.h    
+    # Get a regex escaped represenatation of the current source dir, for paths containg + etc.
     escape_regex("${CMAKE_CURRENT_SOURCE_DIR}" CURRENT_SOURCE_DIR_ESCAPE)
-    set(T_SRC "${SRC}")
-    list(FILTER T_SRC INCLUDE REGEX "^${CURRENT_SOURCE_DIR_ESCAPE}/src")
-    list(FILTER T_SRC INCLUDE REGEX ".*\.(h|hpp|cuh)$")
-    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX headers FILES ${T_SRC})
-    #src/.cpp
-    set(T_SRC "${SRC}")
-    list(FILTER T_SRC INCLUDE REGEX "^${CURRENT_SOURCE_DIR_ESCAPE}/src")
-    list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
-    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX src FILES ${T_SRC})
-    #./.h
-    set(T_SRC "${SRC}")
-    list(FILTER T_SRC EXCLUDE REGEX "^${CURRENT_SOURCE_DIR_ESCAPE}/src")
-    list(FILTER T_SRC INCLUDE REGEX ".*\.(h|hpp|cuh)$")
-    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX headers FILES ${T_SRC})
-    #./.cpp
-    set(T_SRC "${SRC}")
-    list(FILTER T_SRC EXCLUDE REGEX "^${CURRENT_SOURCE_DIR_ESCAPE}/src")
-    list(FILTER T_SRC EXCLUDE REGEX ".*\.(h|hpp|cuh|rc)$")
-    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX src FILES ${T_SRC})
+
+    # Convert all paths to abs paths, to remove any ../ components
+    set(ABS_SRC "")
+    foreach(FILEPATH IN LISTS SRC)
+        get_filename_component(ABS_FILEPATH ${FILEPATH} REALPATH)
+        list(APPEND ABS_SRC ${ABS_FILEPATH})
+        unset(ABS_FILEPATH)
+    endforeach()
+    
+    # Filter files which cannot be used with sourge_group(TREE) into separate lists.
+    set(SRC_GROUP_TREE_COMPATIBLE "${ABS_SRC}")
+    set(SRC_GROUP_MANUAL "${ABS_SRC}")
+    list(FILTER SRC_GROUP_TREE_COMPATIBLE INCLUDE REGEX "^${CURRENT_SOURCE_DIR_ESCAPE}/")
+    list(FILTER SRC_GROUP_MANUAL EXCLUDE REGEX "^${CURRENT_SOURCE_DIR_ESCAPE}/")
+    unset(ABS_SRC)
+
+    # Filter out header and source files separately for those which can use TREE
+    set(SRC_GROUP_TREE_COMPATIBLE_HEADERS "${SRC_GROUP_TREE_COMPATIBLE}")
+    list(FILTER SRC_GROUP_TREE_COMPATIBLE_HEADERS INCLUDE REGEX ".*\.(h|hpp|cuh)$")
+    set(SRC_GROUP_TREE_COMPATIBLE_SOURCES "${SRC_GROUP_TREE_COMPATIBLE}")
+    list(FILTER SRC_GROUP_TREE_COMPATIBLE_SOURCES EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
+    # Apply source group filters with TREE, using CMake's default "Header Files" and "Source Files" for consistency
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "Header Files" FILES ${SRC_GROUP_TREE_COMPATIBLE_HEADERS})
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "Source Files" FILES ${SRC_GROUP_TREE_COMPATIBLE_SOURCES})
+    # Clean up variables
+    unset(SRC_GROUP_TREE_COMPATIBLE_HEADERS)
+    unset(SRC_GROUP_TREE_COMPATIBLE_SOURCES)
+
+    # Filter out header and source files which CANNOT use TREE
+    set(SRC_GROUP_MANUAL_HEADERS "${SRC_GROUP_MANUAL}")
+    list(FILTER SRC_GROUP_MANUAL_HEADERS INCLUDE REGEX ".*\.(h|hpp|cuh)$")
+    set(SRC_GROUP_MANUAL_SOURCES "${SRC_GROUP_MANUAL}")
+    list(FILTER SRC_GROUP_MANUAL_SOURCES EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
+    # Apply source group filters WITHOUT TREE, using CMake's default "Header Files" and "Source Files" for consistency
+    # These will just be placed in the root of the folder, as we cannot have a ../ type setup in sources, so no point bothering with directories
+    source_group("Header Files" FILES ${SRC_GROUP_MANUAL_HEADERS})
+    source_group("Source Files" FILES ${SRC_GROUP_MANUAL_SOURCES})
+    # Clean up variables
+    unset(SRC_GROUP_MANUAL_HEADERS)
+    unset(SRC_GROUP_MANUAL_SOURCES)
 endfunction()
 
 # Function to mask some of the steps to create an executable which links against the static library
