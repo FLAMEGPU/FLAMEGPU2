@@ -499,8 +499,8 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
         if (config.telemetry) {
             // All ranks should notify rank 0 of their GPU devices
             if (world_rank == 0) {
-                int bufflen = 2048;
-                char* buff = static_cast<char*>(malloc(bufflen));
+                int bufflen = 256;  // Length of name string in cudaDeviceProp
+                char *buff = static_cast<char*>(malloc(bufflen));
                 for (int i = 1; i < world_size; ++i) {
                     // Receive a message from each rank
                     MPI_Status status;
@@ -515,8 +515,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                     MPI_Get_count(&status, MPI_CHAR, &strlen);
                     if (strlen > bufflen) {
                         free(buff);
-                        bufflen = 2 * strlen;
-                        buff = static_cast<char*>(malloc(bufflen));
+                        buff = static_cast<char*>(malloc(strlen));
                     }
                     MPI_Recv(
                         buff,                           // void* data
