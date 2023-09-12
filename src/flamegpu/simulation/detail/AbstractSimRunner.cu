@@ -97,7 +97,7 @@ void AbstractSimRunner::runSimulation(int plan_id) {
     // Set the step config directly, to bypass validation
     simulation->step_log_config = step_log_config;
     simulation->exit_log_config = exit_log_config;
-    // TODO Set population?
+    // Don't need to set pop, this must be done via init function within ensembles
     // Execute simulation
     simulation->simulate();
     {
