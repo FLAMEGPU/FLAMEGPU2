@@ -407,22 +407,17 @@ SET(ALL_SRC
 )
 SET(FLAMEGPU_INCLUDE ${SRC_INCLUDE} CACHE INTERNAL "Include files required by FLAMEGPU RTC")
 
-# Setup Visual Studio (and eclipse) filters
-source_group(TREE ${FLAMEGPU_ROOT}/include/flamegpu PREFIX include FILES ${SRC_INCLUDE})
-list(FILTER T_SRC INCLUDE REGEX ".*\.(h|hpp|cuh)$")
-set(T_SRC_FLAMEGPU "${SRC_FLAMEGPU}")
-list(FILTER T_SRC_FLAMEGPU INCLUDE REGEX ".*\.(h|hpp|cuh)$")
-source_group(TREE ${FLAMEGPU_ROOT}/src/flamegpu PREFIX headers FILES ${T_SRC_FLAMEGPU})
-set(T_SRC_FLAMEGPU "${SRC_FLAMEGPU}")
-list(FILTER T_SRC_FLAMEGPU EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
-source_group(TREE ${FLAMEGPU_ROOT}/src/flamegpu PREFIX src FILES ${T_SRC_FLAMEGPU})
-set(T_SRC_EXTERNAL "${SRC_EXTERNAL}")
-list(FILTER T_SRC_EXTERNAL INCLUDE REGEX ".*\.(h|hpp|cuh)$")
-source_group(TREE ${FLAMEGPU_ROOT}/include PREFIX external FILES ${T_SRC_EXTERNAL})
-set(T_SRC_EXTERNAL "${SRC_EXTERNAL}")
-list(FILTER T_SRC_EXTERNAL EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
-source_group(TREE ${FLAMEGPU_ROOT}/include PREFIX external FILES ${T_SRC_EXTERNAL})
-
+# Setup Visual Studio (and eclipse) filters, using the TREE variant separating header and source files.
+set(SRC_GROUP_TREE_COMPATIBLE_HEADERS "${ALL_SRC}")
+list(FILTER SRC_GROUP_TREE_COMPATIBLE_HEADERS INCLUDE REGEX ".*\.(h|hpp|cuh)$")
+set(SRC_GROUP_TREE_COMPATIBLE_SOURCES "${ALL_SRC}")
+list(FILTER SRC_GROUP_TREE_COMPATIBLE_SOURCES EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
+# Apply source group filters with TREE, using CMake's default "Header Files" and "Source Files" for consistency
+source_group(TREE ${FLAMEGPU_ROOT} PREFIX "Header Files" FILES ${SRC_GROUP_TREE_COMPATIBLE_HEADERS})
+source_group(TREE ${FLAMEGPU_ROOT} PREFIX "Source Files" FILES ${SRC_GROUP_TREE_COMPATIBLE_SOURCES})
+# Clean up variables
+unset(SRC_GROUP_TREE_COMPATIBLE_HEADERS)
+unset(SRC_GROUP_TREE_COMPATIBLE_SOURCES)
 
 # Create the library target and set various properties
 
