@@ -118,6 +118,7 @@ class CodeGenerator:
         self._message_iterator_var = None           # default
         self._input_message_var = 'message_in'      # default
         self._output_message_var = 'message_out'    # default
+        self._standalone_message_var = []           # default
         self.dispatch(tree)
         print("", file=self.f)
         self.f.flush()
@@ -506,7 +507,20 @@ class CodeGenerator:
                     # proceed
                     self.write(py_func)
                 
-                    
+            # standalone message input variable arg
+            elif t.value.id in self._standalone_message_var:
+                # check for legit FGPU function calls and translate
+                self.write(f"{t.value.id}.")
+                if t.attr in self.fgpu_input_msg_funcs: 
+                    # proceed
+                    self.write(t.attr)
+                else:
+                    # possible getter setter type function
+                    py_func = self._deviceVariableFunctionName(t, ["getVariable"])
+                    if not py_func:
+                        self.RaiseError(t, f"Function '{t.attr}' does not exist in '{t.value.id}' message input object")
+                    # proceed
+                    self.write(py_func)
             
             # math functions (try them in raw function call format) or constants
             elif t.value.id == "math":
@@ -607,6 +621,10 @@ class CodeGenerator:
         self.fill()
         # check if target exists in locals
         if t.targets[0].id not in self._locals :
+            # Special case, catch message.at() where a message is returned outside a message loop
+            if hasattr(t.value, "func") and t.value.func.attr == 'at' :
+                if t.value.func.value.id == self._input_message_var :
+                    self._standalone_message_var.append(t.targets[0].id)
             self.write("auto ")
             self._locals.append(t.targets[0].id)
         self.dispatch(t.targets[0])
@@ -752,7 +770,7 @@ class CodeGenerator:
             # check for return annotation type
             if not isinstance(t.returns, ast.Name):
                 self.RaiseError(t, "Agent function conditions return type must be 'bool'")
-            if t.returns.id is not 'bool':
+            if t.returns.id != 'bool':
                 self.RaiseError(t, "Agent function conditions return type must be 'bool'")
             # check to ensure no arguments (discard any with a warning)
             if t.args.args:

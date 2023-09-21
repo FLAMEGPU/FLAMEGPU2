@@ -310,6 +310,17 @@ for (const auto& m : FLAMEGPU->message_in){
 }
 """
 
+py_fgpu_standalone_msg_input = """\
+m = message_in.at(1)
+pass
+n = m.getVariableInt("foo")
+"""
+cpp_fgpu_standalone_msg_input = """\
+auto m = FLAMEGPU->message_in.at(1);
+;
+auto n = m.getVariable<int>("foo");
+"""
+
 py_fgpu_for_msg_input_args = """\
 for m in message_in(x, y, z) : 
     pass
@@ -754,6 +765,8 @@ class CodeGenTest(unittest.TestCase):
         self._checkException(py_fgpu_for_msg_input_func_unknown, "Function 'unsupported' does not exist") 
         # Test math function inside message loop (Previously bug #1077)
         self._checkExpected(py_fgpu_for_msg_input_math_func, cpp_fgpu_for_msg_input_math_func) 
+        # Test standalone input message (Previously bug #1110)
+        self._checkExpected(py_fgpu_standalone_msg_input, cpp_fgpu_standalone_msg_input) 
         # Test message input where message input requires arguments (e.g. spatial messaging)
         self._checkExpected(py_fgpu_for_msg_input_args, cpp_fgpu_for_msg_input_args)
         # Test to ensure that arguments are processed as local variables 
