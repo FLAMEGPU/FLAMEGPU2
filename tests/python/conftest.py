@@ -40,7 +40,7 @@ def pytest_sessionfinish(session, exitstatus):
         # Exit if the terminalreport plugin could not be found
         if not terminalreporter:
             return
-        outcome = "Passed" if exitstatus == 0 else "Failed(code={exitstatus})"
+        outcome = "Passed" if exitstatus == 0 else f"Failed(code={exitstatus})"
         passed = len(terminalreporter.stats.get('passed', []))
         failed = len(terminalreporter.stats.get('failed', []))
         skipped = len(terminalreporter.stats.get('skipped', []))
