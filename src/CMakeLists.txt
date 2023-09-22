@@ -408,9 +408,31 @@ SET(ALL_SRC
 SET(FLAMEGPU_INCLUDE ${SRC_INCLUDE} CACHE INTERNAL "Include files required by FLAMEGPU RTC")
 
 # Setup Visual Studio (and eclipse) filters, using the TREE variant separating header and source files.
-set(SRC_GROUP_TREE_COMPATIBLE_HEADERS "${ALL_SRC}")
+# Potentially the build directory is not a child of the repository,
+# in which case dynamic files (version.cpp) cannot use the tree component, so we must account for that still.
+
+# Get a regex escaped represenatation of the FLAMEGPU_ROOT dir, for paths containg + etc.
+escape_regex("${FLAMEGPU_ROOT}" FLAMEGPU_ROOT_ESCAPE)
+
+# Convert all paths to abs paths, to remove any ../ components
+set(ABS_ALL_SRC "")
+foreach(FILEPATH IN LISTS ALL_SRC)
+    get_filename_component(ABS_FILEPATH ${FILEPATH} REALPATH)
+    list(APPEND ABS_ALL_SRC ${ABS_FILEPATH})
+    unset(ABS_FILEPATH)
+endforeach()
+
+# Filter files which cannot be used with sourge_group(TREE) into separate lists.
+set(SRC_GROUP_TREE_COMPATIBLE "${ABS_ALL_SRC}")
+set(SRC_GROUP_MANUAL "${ABS_ALL_SRC}")
+list(FILTER SRC_GROUP_TREE_COMPATIBLE INCLUDE REGEX "^${FLAMEGPU_ROOT_ESCAPE}/")
+list(FILTER SRC_GROUP_MANUAL EXCLUDE REGEX "^${FLAMEGPU_ROOT_ESCAPE}/")
+unset(ABS_ALL_SRC)
+
+# Filter out header and source files separately for those which can use TREE
+set(SRC_GROUP_TREE_COMPATIBLE_HEADERS "${SRC_GROUP_TREE_COMPATIBLE}")
 list(FILTER SRC_GROUP_TREE_COMPATIBLE_HEADERS INCLUDE REGEX ".*\.(h|hpp|cuh)$")
-set(SRC_GROUP_TREE_COMPATIBLE_SOURCES "${ALL_SRC}")
+set(SRC_GROUP_TREE_COMPATIBLE_SOURCES "${SRC_GROUP_TREE_COMPATIBLE}")
 list(FILTER SRC_GROUP_TREE_COMPATIBLE_SOURCES EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
 # Apply source group filters with TREE, using CMake's default "Header Files" and "Source Files" for consistency
 source_group(TREE ${FLAMEGPU_ROOT} PREFIX "Header Files" FILES ${SRC_GROUP_TREE_COMPATIBLE_HEADERS})
@@ -418,6 +440,21 @@ source_group(TREE ${FLAMEGPU_ROOT} PREFIX "Source Files" FILES ${SRC_GROUP_TREE_
 # Clean up variables
 unset(SRC_GROUP_TREE_COMPATIBLE_HEADERS)
 unset(SRC_GROUP_TREE_COMPATIBLE_SOURCES)
+unset(SRC_GROUP_TREE_COMPATIBLE)
+
+# Filter out header and source files which CANNOT use TREE (dynamic files if build is not a child of the repo, i.e. model template)
+set(SRC_GROUP_MANUAL_HEADERS "${SRC_GROUP_MANUAL}")
+list(FILTER SRC_GROUP_MANUAL_HEADERS INCLUDE REGEX ".*\.(h|hpp|cuh)$")
+set(SRC_GROUP_MANUAL_SOURCES "${SRC_GROUP_MANUAL}")
+list(FILTER SRC_GROUP_MANUAL_SOURCES EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
+# Apply source group filters WITHOUT TREE, using CMake's default "Header Files" and "Source Files" for consistency
+# These will just be placed in the root of the folder, as we cannot have a ../ type setup in sources, so no point bothering with directories
+source_group("Header Files" FILES ${SRC_GROUP_MANUAL_HEADERS})
+source_group("Source Files" FILES ${SRC_GROUP_MANUAL_SOURCES})
+# Clean up variables
+unset(SRC_GROUP_MANUAL_HEADERS)
+unset(SRC_GROUP_MANUAL_SOURCES)
+unset(SRC_GROUP_MANUAL)
 
 # Create the library target and set various properties
 
