@@ -766,14 +766,7 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
 #endif
             continue;
         }
-        // --no-mpi Disable MPI support
-        if (arg.compare("--no-mpi") == 0) {
-#ifdef FLAMEGPU_ENABLE_MPI
-            config.mpi = false;
-#endif
-            continue;
-        }
-        // Warning if not in QUIET verbosity or if silnce-unknown-args is set
+        // Warning if not in QUIET verbosity or if silence-unknown-args is set
         if (!(config.verbosity == flamegpu::Verbosity::Quiet || config.silence_unknown_args))
             fprintf(stderr, "Warning: Unknown argument '%s' passed to Ensemble will be ignored\n", arg.c_str());
     }

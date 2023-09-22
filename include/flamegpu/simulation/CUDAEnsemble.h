@@ -103,10 +103,11 @@ class CUDAEnsemble {
         const bool block_standby = false;
 #endif
         /**
-         * Allows MPI processing to be disabled for builds with MPI support
+         * Flag which denotes whether MPI support is enabled
+         * @note This cannot be changed at runtime, depends on compilation settings.
          */
 #ifdef FLAMEGPU_ENABLE_MPI
-        bool mpi = true;
+        const bool mpi = true;
 #else
         const bool mpi = false;
 #endif
