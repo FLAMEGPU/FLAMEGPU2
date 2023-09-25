@@ -125,9 +125,6 @@ endif()
 # Define a macro for creating a named test project/executable
 # create_test_suite(suite_name, suite_src)
 macro(create_test_project)
-    message(status "Arg0 ${ARGV0}")
-    message(status "Arg1 ${ARGV1}")
-    message(status "Arg2 ${ARGV2}")
     enable_testing()
     # Handle CMAKE_CUDA_ARCHITECTURES and inject code into the tests project() command
     flamegpu_init_cuda_architectures(PROJECT tests_mpi)
