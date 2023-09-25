@@ -221,8 +221,8 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
         std::vector<std::atomic<unsigned int>> err_cts(TOTAL_RUNNERS);
         std::vector<std::atomic<unsigned int>> next_runs(TOTAL_RUNNERS);
         for (unsigned int i = 0; i < TOTAL_RUNNERS; ++i) {
-            std::atomic_init(&err_cts[i], UINT_MAX);
-            std::atomic_init(&next_runs[i], detail::MPISimRunner::Signal::RequestJob);
+            err_cts[i] = UINT_MAX;
+            next_runs[i] = detail::MPISimRunner::Signal::RequestJob;
         }
         {
             unsigned int i = 0;
