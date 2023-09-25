@@ -1,0 +1,187 @@
+# Perform builds with supported MPI versions
+name: MPI
+
+on:
+  # On pull_requests which mutate this CI workflow, using pr rather than push:branch to ensure that the merged state will be OK, as that is what is important here.
+  pull_request:
+    paths:
+      - ".github/workflows/MPI.yml"
+      - "tests/test_cases/simulation/test_mpi_ensemble.cu"
+      - "include/flamegpu/simulation/detail/MPISimRunner.h"
+      - "src/flamegpu/simulation/detail/MPISimRunner.cu"
+      - "src/flamegpu/simulation/CUDAEnsemble.cu"
+      - "**mpi**"
+      - "**MPI**"
+  # Or trigger on manual dispatch. 
+  workflow_dispatch:
+
+defaults:
+  run:
+    # Default to using bash regardless of OS unless otherwise specified.
+    shell: bash
+
+# @todo - add a job/step which validates the version is of the correct format (for pre releases) and that the git tag matches the CMake/header version(s) 
+
+# Several jobs with some dependencies between them.
+# + Thorough Ubuntu builds
+#   + MPI 2.x+
+
+jobs:
+  build-ubuntu:
+    runs-on: ${{ matrix.cudacxx.os }}
+    strategy:
+      fail-fast: false
+      # Multiplicative build matrix
+      # optional exclude: can be partial, include: must be specific
+      matrix:
+        # CUDA_ARCH values are reduced compared to wheels due to CI memory issues while compiling the test suite.
+        cudacxx:
+          - cuda: "12.0"
+            cuda_arch: "50-real;90-real;90-virtual;"
+            hostcxx: gcc-11
+            os: ubuntu-22.04
+        python:
+          - "3.8"
+        mpi:
+          - lib: "libmpich-dev"
+            version: "3.3"
+          - lib: "libmpich-dev"
+            version: "4.0.2"
+          - lib: "libopenmpi-dev"
+            version: "4.0.3"
+          - lib: "libopenmpi-dev"
+            version: "4.1.5"
+        config:
+          - name: "Release"
+            config: "Release"
+            SEATBELTS: "ON"
+        VISUALISATION: 
+          - "OFF"
+
+    # Name the job based on matrix/env options
+    name: "build-ubuntu-mpi (${{ matrix.mpi.lib }}, ${{ matrix.mpi.version }}, ${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
+
+    # Define job-wide env constants, and promote matrix elements to env constants for portable steps.
+    env:
+      # Define constants
+      BUILD_DIR: "build"
+      FLAMEGPU_BUILD_TESTS: "ON"
+      # Conditional based on matrix via awkward almost ternary
+      FLAMEGPU_BUILD_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
+      # Port matrix options to environment, for more portability.
+      CUDA: ${{ matrix.cudacxx.cuda }}
+      CUDA_ARCH: ${{ matrix.cudacxx.cuda_arch }}
+      HOSTCXX: ${{ matrix.cudacxx.hostcxx }}
+      OS: ${{ matrix.cudacxx.os }}
+      CONFIG: ${{ matrix.config.config }}
+      FLAMEGPU_SEATBELTS: ${{ matrix.config.SEATBELTS }}
+      PYTHON: ${{ matrix.python }}
+      MPI_LIB: ${{ matrix.mpi.lib }}
+      MPI_VERSION: ${{ matrix.mpi.version }}
+      VISUALISATION: ${{ matrix.VISUALISATION }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install CUDA
+      if: ${{ startswith(env.OS, 'ubuntu') && env.CUDA != '' }}
+      env:
+        cuda: ${{ env.CUDA }}
+      run: .github/scripts/install_cuda_ubuntu.sh
+
+    - name: Install/Select gcc and g++
+      if: ${{ startsWith(env.HOSTCXX, 'gcc-') }}
+      run: |
+        gcc_version=${HOSTCXX//gcc-/}
+        sudo apt-get install -y gcc-${gcc_version} g++-${gcc_version}
+        echo "CC=/usr/bin/gcc-${gcc_version}" >> $GITHUB_ENV
+        echo "CXX=/usr/bin/g++-${gcc_version}" >> $GITHUB_ENV
+        echo "CUDAHOSTCXX=/usr/bin/g++-${gcc_version}" >> $GITHUB_ENV
+    
+    - name: Install MPI
+      run: |
+        sudo apt-get install -y ${MPI_LIB}=${MPI_VERSION}
+    
+    - name: Select Python
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON }}
+
+    - name: Install python dependencies
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
+      run: |
+        sudo apt-get install python3-venv
+        python3 -m pip install --upgrade wheel build setuptools
+
+    - name: Install Visualisation Dependencies
+      if: ${{ startswith(env.OS, 'ubuntu') && env.VISUALISATION == 'ON' }}
+      run: |
+        # Install ubuntu-20.04 packages
+        if [ "$OS" == 'ubuntu-20.04' ]; then 
+          sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
+        fi
+        # Install Ubuntu 18.04 packages
+        if [ "$OS" == 'ubuntu-18.04' ]; then 
+          sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype6-dev libgl1-mesa-dev
+        fi
+    
+    - name: Install Swig >= 4.0.2
+      run: |
+        # Remove existing swig install, so CMake finds the correct swig
+        if [ "$OS" == 'ubuntu-20.04' ]; then 
+          sudo apt-get remove -y swig swig4.0
+        fi
+        # Install Ubuntu 18.04 packages
+        if [ "$OS" == 'ubuntu-18.04' ]; then 
+          sudo apt-get remove -y swig
+        fi
+        # Install additional apt-based dependencies required to build swig 4.0.2
+        sudo apt-get install -y bison
+        # Create a local directory to build swig in.
+        mkdir -p swig-from-source && cd swig-from-source
+        # Install SWIG building from source dependencies
+        wget https://github.com/swig/swig/archive/refs/tags/v4.0.2.tar.gz
+        tar -zxf v4.0.2.tar.gz
+        cd swig-4.0.2/
+        ./autogen.sh
+        ./configure
+        make
+        sudo make install
+
+    # This pre-emptively patches a bug where ManyLinux didn't generate buildnumber as git dir was owned by diff user
+    - name: Enable git safe-directory
+      run: git config --global --add safe.directory $GITHUB_WORKSPACE
+
+    - name: Configure cmake
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}"
+        -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
+        -Werror=dev
+        -DCMAKE_WARN_DEPRECATED="OFF" 
+        -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
+        -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
+        -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
+        -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}"
+        -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
+        -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
+        -DFLAMEGPU_ENABLE_MPI="ON"
+        -DFLAMEGPU_ENABLE_NVTX="ON"
+
+    - name: Build static library
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target flamegpu --verbose -j `nproc`
+
+    - name: Build python wheel
+      if: ${{ env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target pyflamegpu --verbose -j `nproc`
+
+    - name: Build tests
+      if: ${{ env.FLAMEGPU_BUILD_TESTS == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target tests --verbose -j `nproc`
+
+    - name: Build all remaining targets
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target all --verbose -j `nproc`
