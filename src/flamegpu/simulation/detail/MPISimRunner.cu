@@ -50,7 +50,6 @@ MPISimRunner::MPISimRunner(const std::shared_ptr<const ModelData> _model,
         _isSWIG)
     { }
 
-
 void MPISimRunner::main() {
     // While there are still plans to process
     while (true) {
