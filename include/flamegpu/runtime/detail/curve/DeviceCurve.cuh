@@ -244,6 +244,23 @@ class DeviceCurve {
      */
     template<typename T, unsigned int I = 1, unsigned int J = 1, unsigned int K = 1, unsigned int W = 1, unsigned int M>
     __device__ __forceinline__ static char *getEnvironmentMacroProperty(const char(&name)[M]);
+
+    /**
+     * When passed an agent name, returns a boolean to confirm whether it matches the name of the current agent
+     *
+     * This function may be useful if an agent function is shared between multiple agents
+     *
+     * @note The performance of this function is unlikely to be cheap unless used as part of an RTC agent function.
+     */
+    __device__ __forceinline__ static bool isAgent(const char* agent_name);
+    /**
+     * When passed an agent state, returns a boolean to confirm whether it matches the name of the agent input state of the current agent function
+     *
+     * This function may be useful if an agent function is shared between multiple agent states
+     *
+     * @note The performance of this function is unlikely to be cheap unless used as part of an RTC agent function (whereby it can be processed at compile time).
+     */
+    __device__ __forceinline__ static bool isState(const char* agent_state);
 };
 
 ////
@@ -398,6 +415,15 @@ template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned in
 __device__ __forceinline__ char* DeviceCurve::getEnvironmentMacroProperty(const char(&name)[M]) {
     return getVariablePtr<T, I*J*K*W>(name, Curve::variableHash("_macro_environment"), 0);
 }
+
+__device__ __forceinline__ bool DeviceCurve::isAgent(const char* agent_name) {
+    return strcmp(agent_name, "todo") == 0;  // @todo
+}
+__device__ __forceinline__ bool DeviceCurve::isState(const char* agent_state) {
+    return strcmp(agent_state, "todo") == 0;  // @todo
+}
+
+
 }  // namespace curve
 }  // namespace detail
 }  // namespace flamegpu

@@ -161,6 +161,16 @@ class CurveRTCHost {
      */
     void unregisterEnvMacroProperty(const char* propertyName);
     /**
+     * Register the name of the agent and it's state of the agent function
+     *
+     * Used by ReadOnlyDeviceAPI::isAgent() and ReadOnlyDeviceAPI::isState()
+     *
+     * @param agentName Name of the agent
+     * @param agentState Name of the agent's state
+     * @throws exception::UnknownInternalError If the agent has already been registered
+     */
+    void registerAgent(const std::string &agentName, const std::string &agentState);
+    /**
      * Set the filename tagged in the file (goes into a #line statement)
      * @param filename Name to be used for the file in compile errors
      * @note Do not include quotes
@@ -378,6 +388,14 @@ class CurveRTCHost {
      * <name, RTCVariableProperties>
      */
     std::map<std::string, RTCEnvMacroPropertyProperties> RTCEnvMacroProperties;
+    /**
+     * Agent name for ReadOnlyDeviceAPI::isAgent()
+     */
+    std::string agentName;
+    /**
+    * Agent name for ReadOnlyDeviceAPI::isState()
+    */
+    std::string agentState;
 };
 
 }  // namespace curve

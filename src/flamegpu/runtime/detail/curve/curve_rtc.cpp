@@ -106,6 +106,8 @@ class DeviceCurve {
     template <typename T, unsigned int N, unsigned int M>
     __device__ __forceinline__ static void setNewAgentArrayVariable(const char(&name)[M], T variable, unsigned int variable_index, unsigned int array_index);
 
+    __device__ __forceinline__ static bool isAgent(const char* agent_name);
+    __device__ __forceinline__ static bool isState(const char* agent_state);
 };
 
 template <typename T, unsigned int N>
@@ -168,6 +170,22 @@ $DYNAMIC_SETMESSAGEARRAYVARIABLE_IMPL
 template <typename T, unsigned int N, unsigned int M>
 __device__ __forceinline__ void DeviceCurve::setNewAgentArrayVariable(const char(&name)[M], T variable, unsigned int index, unsigned int array_index) {
 $DYNAMIC_SETNEWAGENTARRAYVARIABLE_IMPL    
+}
+
+// https://stackoverflow.com/a/34873763/1646387
+__device__ __forceinline__ int strcmp(const char *s1, const char *s2) {
+    const unsigned char *p1 = (const unsigned char *)s1;
+    const unsigned char *p2 = (const unsigned char *)s2;
+
+    while(*p1 && *p1 == *p2) ++p1, ++p2;
+
+    return (*p1 > *p2) - (*p2  > *p1);
+}
+__device__ __forceinline__ bool DeviceCurve::isAgent(const char* agent_name) {
+    return strcmp(agent_name, "$DYNAMIC_AGENT_NAME") == 0;
+}
+__device__ __forceinline__ bool DeviceCurve::isState(const char* agent_state) {
+    return strcmp(agent_state, "$DYNAMIC_AGENT_STATE") == 0;
 }
 
 }  // namespace curve 
@@ -329,6 +347,14 @@ void CurveRTCHost::registerEnvVariable(const char* propertyName, ptrdiff_t offse
     props.type_size = type_size;
     if (!RTCEnvVariables.emplace(propertyName, props).second) {
         THROW exception::UnknownInternalError("Environment property with name '%s' is already registered, in CurveRTCHost::registerEnvVariable()", propertyName);
+    }
+}
+void CurveRTCHost::registerAgent(const std::string &_agentName, const std::string &_agentState) {
+    if (this->agentName.empty()) {
+        this->agentName = _agentName;
+        this->agentState = _agentState;
+    } else {
+        THROW exception::UnknownInternalError("Agent is already registered with name '%s' and state '%s', in CurveRTCHost::registerAgent()", this->agentName.c_str(), this->agentState.c_str());
     }
 }
 
@@ -922,6 +948,8 @@ void CurveRTCHost::initHeaderGetters() {
         getMessageArrayVariableLDGImpl << "           return {};\n";
         setHeaderPlaceholder("$DYNAMIC_GETMESSAGEARRAYVARIABLE_LDG_IMPL", getMessageArrayVariableLDGImpl.str());
     }
+    setHeaderPlaceholder("$DYNAMIC_AGENT_NAME", this->agentName);
+    setHeaderPlaceholder("$DYNAMIC_AGENT_STATE", this->agentState);
 }
 void CurveRTCHost::initDataBuffer() {
     if (data_buffer_size == 0 || h_data_buffer) {
