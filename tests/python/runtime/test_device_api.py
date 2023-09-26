@@ -49,8 +49,7 @@ class DeviceAPITest(TestCase):
         return flamegpu::ALIVE;
     }
     """
-    
-    
+
     agent_fn_check_agent_name_state = """
     FLAMEGPU_AGENT_FUNCTION(check_agent_name_state, flamegpu::MessageNone, flamegpu::MessageNone){
         FLAMEGPU->setVariable<int>("correct_name", static_cast<int>(FLAMEGPU->isAgent("agent")));
@@ -104,7 +103,6 @@ class DeviceAPITest(TestCase):
             assert output_array[1] == 4 + j
             assert output_array[2] == 8 + j
             assert output_array[3] == 16 + j
-        
 
 
     def test_array_set(self): 
@@ -148,7 +146,6 @@ class DeviceAPITest(TestCase):
             assert output_array[1] == 4 + j
             assert output_array[2] == 8 + j
             assert output_array[3] == 16 + j
-        
 
 
     def test_array_get(self): 
@@ -196,8 +193,8 @@ class DeviceAPITest(TestCase):
             assert instance.getVariableInt("a2") == 4 + j
             assert instance.getVariableInt("a3") == 8 + j
             assert instance.getVariableInt("a4") == 16 + j
-            
-            
+
+
     def test_check_agent_name_state(self): 
         model = pyflamegpu.ModelDescription("test_array_get")
         agent = model.newAgent("agent")
