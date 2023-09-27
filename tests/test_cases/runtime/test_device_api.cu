@@ -385,11 +385,11 @@ TEST(DeviceAPITest, check_agent_name_state) {
     // Init pop
     const unsigned int agentCount = 100;
     AgentVector init_population(agent, agentCount);
-    
+
     // Setup Model
     CUDASimulation cudaSimulation(model);
     cudaSimulation.setPopulationData(init_population, "state");
-    
+
     // Run 1 step to ensure data is pushed to device
     cudaSimulation.step();
     // Recover data from device

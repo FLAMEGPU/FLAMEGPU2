@@ -429,6 +429,19 @@ FLAMEGPU_AGENT_FUNCTION(func, flamegpu::MessageNone, flamegpu::MessageBruteForce
 }
 """
 
+py_fgpu_agent_func_check_agent_name_state = """\
+@pyflamegpu.agent_function
+def func(message_in: pyflamegpu.MessageNone, message_out: pyflamegpu.MessageNone) :
+    a = pyflamegpu.isAgent("foo")
+    b = pyflamegpu.isState("bar");
+"""
+cpp_fgpu_agent_func_check_agent_name_state = """\
+FLAMEGPU_AGENT_FUNCTION(func, flamegpu::MessageNone, flamegpu::MessageNone){
+    auto a = FLAMEGPU->isAgent("foo");
+    auto b = FLAMEGPU->isState("bar");
+}
+"""
+
 py_fgpu_device_func_args = """\
 @pyflamegpu.device_function
 def func(x: int) -> int :
@@ -871,8 +884,10 @@ class CodeGenTest(unittest.TestCase):
         """ Return type on an agent function raises a warning not error """
         self._checkWarning(py_fgpu_agent_func_return_type, cpp_fgpu_agent_func_return_type, "Function definition return type not supported")
         
-    # device functions, arg types and calling
+    def test_fgpu_agent_func_check_agent_name_state(self):    
+        self._checkExpected(py_fgpu_agent_func_check_agent_name_state, cpp_fgpu_agent_func_check_agent_name_state)
     
+    # device functions, arg types and calling
     def test_fgpu_agent_func_condition(self):
         # check correct format
         self._checkExpected(py_fgpu_cond_func, cpp_fgpu_cond_func)
