@@ -28,6 +28,7 @@ const char* CurveRTCHost::curve_rtc_dynamic_h_template = R"###(dynamic/curve_rtc
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 #include "flamegpu/detail/type_decode.h"
 #include "flamegpu/runtime/detail/curve/Curve.cuh"
+#include "flamegpu/util/dstring.h"
 
 namespace flamegpu {
 
@@ -172,20 +173,11 @@ __device__ __forceinline__ void DeviceCurve::setNewAgentArrayVariable(const char
 $DYNAMIC_SETNEWAGENTARRAYVARIABLE_IMPL    
 }
 
-// https://stackoverflow.com/a/34873763/1646387
-__device__ __forceinline__ int strcmp(const char *s1, const char *s2) {
-    const unsigned char *p1 = (const unsigned char *)s1;
-    const unsigned char *p2 = (const unsigned char *)s2;
-
-    while(*p1 && *p1 == *p2) ++p1, ++p2;
-
-    return (*p1 > *p2) - (*p2  > *p1);
-}
 __device__ __forceinline__ bool DeviceCurve::isAgent(const char* agent_name) {
-    return strcmp(agent_name, "$DYNAMIC_AGENT_NAME") == 0;
+    return dstrcmp(agent_name, "$DYNAMIC_AGENT_NAME") == 0;
 }
 __device__ __forceinline__ bool DeviceCurve::isState(const char* agent_state) {
-    return strcmp(agent_state, "$DYNAMIC_AGENT_STATE") == 0;
+    return dstrcmp(agent_state, "$DYNAMIC_AGENT_STATE") == 0;
 }
 
 }  // namespace curve 

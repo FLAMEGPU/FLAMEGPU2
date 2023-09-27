@@ -5,6 +5,7 @@
 #include "flamegpu/runtime/detail/curve/Curve.cuh"
 #include "flamegpu/exception/FLAMEGPUDeviceException_device.cuh"
 #include "flamegpu/detail/type_decode.h"
+#include "flamegpu/util/dstring.h"
 
 #ifdef FLAMEGPU_USE_GLM
 #ifdef __CUDACC__
@@ -416,23 +417,12 @@ __device__ __forceinline__ char* DeviceCurve::getEnvironmentMacroProperty(const 
     return getVariablePtr<T, I*J*K*W>(name, Curve::variableHash("_macro_environment"), 0);
 }
 
-// https://stackoverflow.com/a/34873763/1646387
-__device__ __forceinline__ int strcmp(const char *s1, const char *s2) {
-    const unsigned char *p1 = (const unsigned char *)s1;
-    const unsigned char *p2 = (const unsigned char *)s2;
-
-    while(*p1 && *p1 == *p2) ++p1, ++p2;
-
-    return (*p1 > *p2) - (*p2  > *p1);
-}
-
 __device__ __forceinline__ bool DeviceCurve::isAgent(const char* agent_name) {
-    return strcmp(agent_name, "todo") == 0;  // @todo
+    return dstrcmp(agent_name, "todo") == 0;  // @todo
 }
 __device__ __forceinline__ bool DeviceCurve::isState(const char* agent_state) {
-    return strcmp(agent_state, "todo") == 0;  // @todo
+    return dstrcmp(agent_state, "todo") == 0;  // @todo
 }
-
 
 }  // namespace curve
 }  // namespace detail

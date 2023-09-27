@@ -261,6 +261,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/environment/HostEnvironment.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/environment/HostMacroProperty.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/util/cleanup.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/util/dstring.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/nvtx.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/StringPair.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/Any.h
