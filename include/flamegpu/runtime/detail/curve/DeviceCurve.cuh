@@ -418,10 +418,10 @@ __device__ __forceinline__ char* DeviceCurve::getEnvironmentMacroProperty(const 
 }
 
 __device__ __forceinline__ bool DeviceCurve::isAgent(const char* agent_name) {
-    return dstrcmp(agent_name, "todo") == 0;  // @todo
+    return dstrcmp(agent_name, sm()->agent_name) == 0;
 }
 __device__ __forceinline__ bool DeviceCurve::isState(const char* agent_state) {
-    return dstrcmp(agent_state, "todo") == 0;  // @todo
+    return dstrcmp(agent_state, sm()->state_name) == 0;
 }
 
 }  // namespace curve

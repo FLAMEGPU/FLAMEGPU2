@@ -383,8 +383,7 @@ TEST(DeviceAPITest, check_agent_name_state) {
     AgentFunctionDescription func = agent.newFunction("some_function", check_agent_name_state_fn);
     model.newLayer().addAgentFunction(func);
     // Init pop
-    const unsigned int agentCount = 100;
-    AgentVector init_population(agent, agentCount);
+    AgentVector init_population(agent, AGENT_COUNT);
 
     // Setup Model
     CUDASimulation cudaSimulation(model);

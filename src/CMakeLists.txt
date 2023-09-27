@@ -206,6 +206,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/RunPlan.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/RunPlanVector.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/Simulation.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/DeviceStrings.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/EnvironmentManager.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/RandomManager.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/runtime/AgentFunction.cuh
@@ -311,6 +312,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CUDAMessage.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CUDAScatter.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CUDAMacroEnvironment.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/DeviceStrings.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/SimRunner.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/SimLogger.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/EnvironmentManager.cu

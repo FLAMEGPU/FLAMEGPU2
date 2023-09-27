@@ -24,6 +24,8 @@ typedef void(AgentFunctionWrapper)(
 #endif
 #ifndef __CUDACC_RTC__
     const detail::curve::CurveTable *d_curve_table,
+    const char* d_agent_name,
+    const char* d_state_name,
     const char* d_env_buffer,
 #endif
     id_t *d_agent_output_nextID,
@@ -60,6 +62,8 @@ __global__ void agent_function_wrapper(
 #endif
 #ifndef __CUDACC_RTC__
     const detail::curve::CurveTable* __restrict__ d_curve_table,
+    const char* d_agent_name,
+    const char* d_state_name,
     const char* d_env_buffer,
 #endif
     id_t *d_agent_output_nextID,
@@ -77,6 +81,8 @@ __global__ void agent_function_wrapper(
         sm()->device_exception = error_buffer;
 #endif
 #ifndef __CUDACC_RTC__
+        sm()->agent_name = d_agent_name;
+        sm()->state_name = d_state_name;
         sm()->env_buffer = d_env_buffer;
 #endif
     }
