@@ -32,6 +32,8 @@ typedef void(AgentFunctionConditionWrapper)(
  * Initialises FLAMEGPU_API instance
  * @param error_buffer Buffer used for detecting and reporting exception::DeviceErrors (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for this to be used)
  * @param d_curve_table Pointer to curve hash table in device memory
+ * @param d_agent_name Pointer to agent name string
+ * @param d_state_name Pointer to agent state string
  * @param d_env_buffer Pointer to env buffer in device memory
  * @param popNo Total number of agents exeucting the function (number of threads launched)
  * @param d_rng Array of curand states for this kernel
