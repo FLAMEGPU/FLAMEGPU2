@@ -3,6 +3,8 @@
 
 #include <cuda_runtime.h>
 
+namespace flamegpu {
+namespace util {
 /**
  * Device implementations of required string.h functionality
  */
@@ -24,4 +26,8 @@ __device__ __forceinline__ int dstrcmp(const char *s1, const char *s2) {
 
     return (*p1 > *p2) - (*p2  > *p1);
 }
+
+}  // namespace util
+}  // namespace flamegpu
+
 #endif  // INCLUDE_FLAMEGPU_UTIL_DSTRING_H_

@@ -174,10 +174,10 @@ $DYNAMIC_SETNEWAGENTARRAYVARIABLE_IMPL
 }
 
 __device__ __forceinline__ bool DeviceCurve::isAgent(const char* agent_name) {
-    return dstrcmp(agent_name, "$DYNAMIC_AGENT_NAME") == 0;
+    return util::dstrcmp(agent_name, "$DYNAMIC_AGENT_NAME") == 0;
 }
 __device__ __forceinline__ bool DeviceCurve::isState(const char* agent_state) {
-    return dstrcmp(agent_state, "$DYNAMIC_AGENT_STATE") == 0;
+    return util::dstrcmp(agent_state, "$DYNAMIC_AGENT_STATE") == 0;
 }
 
 }  // namespace curve 
