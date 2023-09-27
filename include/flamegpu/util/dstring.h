@@ -4,12 +4,15 @@
 #include <cuda_runtime.h>
 
 /**
- * Device implementations of required <cstring> functionality
+ * Device implementations of required string.h functionality
  */
 
 
 /**
  * strcmp() - Compare two strings, return 0 if equal, otherwise return suggests order
+ *
+ * @param s1 First string to be compared
+ * @param s2 Second string to be compared
  *
  * @note Implementation based on https://stackoverflow.com/a/34873763/1646387
  */
