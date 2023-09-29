@@ -129,6 +129,26 @@ class ReadOnlyDeviceAPI {
 #endif
         return blockIdx.x * blockDim.x + threadIdx.x;
     }
+    /**
+     * When passed an agent name, returns a boolean to confirm whether it matches the name of the current agent
+     *
+     * This function may be useful if an agent function is shared between multiple agents
+     *
+     * @note The performance of this function is unlikely to be cheap unless used as part of an RTC agent function.
+     */
+    __forceinline__ __device__ bool isAgent(const char* agent_name) {
+        return detail::curve::DeviceCurve::isAgent(agent_name);
+    }
+    /**
+     * When passed an agent state, returns a boolean to confirm whether it matches the name of the agent input state of the current agent function
+     *
+     * This function may be useful if an agent function is shared between multiple agent states
+     *
+     * @note The performance of this function is unlikely to be cheap unless used as part of an RTC agent function (whereby it can be processed at compile time).
+     */
+    __forceinline__ __device__ bool isState(const char* agent_state) {
+        return detail::curve::DeviceCurve::isState(agent_state);
+    }
 };
 
 /** @brief    A flame gpu api class for the device runtime only
@@ -335,6 +355,26 @@ class DeviceAPI {
         assert(gridDim.z == 1);
 #endif
         return blockIdx.x * blockDim.x + threadIdx.x;
+    }
+    /**
+     * When passed an agent name, returns a boolean to confirm whether it matches the name of the current agent
+     *
+     * This function may be useful if an agent function is shared between multiple agents
+     *
+     * @note The performance of this function is unlikely to be cheap unless used as part of an RTC agent function.
+     */
+    __forceinline__ __device__ bool isAgent(const char* agent_name) {
+        return detail::curve::DeviceCurve::isAgent(agent_name);
+    }
+    /**
+     * When passed an agent state, returns a boolean to confirm whether it matches the name of the agent input state of the current agent function
+     *
+     * This function may be useful if an agent function is shared between multiple agent states
+     *
+     * @note The performance of this function is unlikely to be cheap unless used as part of an RTC agent function (whereby it can be processed at compile time).
+     */
+    __forceinline__ __device__ bool isState(const char* agent_state) {
+        return detail::curve::DeviceCurve::isState(agent_state);
     }
 
     /**

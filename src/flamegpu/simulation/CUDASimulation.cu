@@ -726,6 +726,8 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     error_buffer,
 #endif
                     cuda_agent.getCurve(func_des->name + "_condition").getDevicePtr(),
+                    this->singletons->strings.getDeviceString(func_agent->name),
+                    this->singletons->strings.getDeviceString(func_des->initial_state),
                     static_cast<const char *>(this->singletons->environment->getDeviceBuffer()),
                     state_list_size,
                     t_rng,
@@ -950,7 +952,9 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     error_buffer,
     #endif
                     cuda_agent.getCurve(func_des->name).getDevicePtr(),
-                    static_cast<const char*>(this->singletons->environment->getDeviceBuffer()),
+                    this->singletons->strings.getDeviceString(func_agent->name),
+                    this->singletons->strings.getDeviceString(func_des->initial_state),
+                    static_cast<const char *>(this->singletons->environment->getDeviceBuffer()),
                     d_agentOut_nextID,
                     state_list_size,
                     d_in_messagelist_metadata,
@@ -1569,6 +1573,14 @@ void CUDASimulation::initialiseSingletons() {
             macro_env->init(stream_0);
         } else {
             macro_env->init(*submodel->subenvironment, mastermodel->macro_env, stream_0);
+        }
+
+        // Populate device strings
+        for (const auto &[agent_name, agent] : model->agents) {
+            singletons->strings.registerDeviceString(agent_name);
+            for (const auto &state_name : agent->states) {
+                singletons->strings.registerDeviceString(state_name);
+            }
         }
 
         // Propagate singleton init to submodels

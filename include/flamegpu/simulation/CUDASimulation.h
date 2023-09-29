@@ -20,6 +20,7 @@
 #include "flamegpu/runtime/agent/HostNewAgentAPI.h"
 #include "flamegpu/simulation/detail/CUDAMacroEnvironment.h"
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
+#include "flamegpu/simulation/detail/DeviceStrings.h"
 
 #ifdef FLAMEGPU_VISUALISATION
 #include "flamegpu/visualiser/ModelVis.h"
@@ -566,6 +567,10 @@ class CUDASimulation : public Simulation {
          * Provides buffers for device error checking
          */
         exception::DeviceExceptionManager exception;
+        /**
+         * Provides copies of strings (agent/state names) on device
+         */
+        detail::DeviceStrings strings;
 #endif
         explicit Singletons(const std::shared_ptr<detail::EnvironmentManager> &environment) : environment(environment) { }
     } * singletons;

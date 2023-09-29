@@ -24,6 +24,8 @@ typedef void(AgentFunctionWrapper)(
 #endif
 #ifndef __CUDACC_RTC__
     const detail::curve::CurveTable *d_curve_table,
+    const char* d_agent_name,
+    const char* d_state_name,
     const char* d_env_buffer,
 #endif
     id_t *d_agent_output_nextID,
@@ -40,6 +42,8 @@ typedef void(AgentFunctionWrapper)(
  * Initialises FLAMEGPU_API instance
  * @param error_buffer Buffer used for detecting and reporting exception::DeviceErrors (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for this to be used)
  * @param d_curve_table Pointer to curve hash table in device memory
+ * @param d_agent_name Pointer to agent name string
+ * @param d_state_name Pointer to agent state string
  * @param d_env_buffer Pointer to env buffer in device memory
  * @param d_agent_output_nextID If agent output is enabled, this points to a global memory src of the next suitable agent id, this will be atomically incremented at birth
  * @param popNo Total number of agents executing the function (number of threads launched)
@@ -60,6 +64,8 @@ __global__ void agent_function_wrapper(
 #endif
 #ifndef __CUDACC_RTC__
     const detail::curve::CurveTable* __restrict__ d_curve_table,
+    const char* d_agent_name,
+    const char* d_state_name,
     const char* d_env_buffer,
 #endif
     id_t *d_agent_output_nextID,
@@ -77,6 +83,8 @@ __global__ void agent_function_wrapper(
         sm()->device_exception = error_buffer;
 #endif
 #ifndef __CUDACC_RTC__
+        sm()->agent_name = d_agent_name;
+        sm()->state_name = d_state_name;
         sm()->env_buffer = d_env_buffer;
 #endif
     }

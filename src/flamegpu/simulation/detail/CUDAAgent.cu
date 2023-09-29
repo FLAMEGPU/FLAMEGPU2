@@ -132,7 +132,7 @@ void CUDAAgent::setPopulationData(const AgentVector& population, const std::stri
         if (state_name == ModelData::DEFAULT_STATE) {
             THROW exception::InvalidAgentState("Agent '%s' does not use the default state, so the state must be passed explicitly, "
                 "in CUDAAgent::setPopulationData()",
-                state_name.c_str(), population.getAgentName().c_str());
+                population.getAgentName().c_str());
         } else {
             THROW exception::InvalidAgentState("State '%s' was not found in agent '%s', "
                 "in CUDAAgent::setPopulationData()",
@@ -501,6 +501,9 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const 
 
     // Set Environment macro properties in curve
     macro_env->mapRTCVariables(curve_header);
+
+    // Set the agent name/state
+    curve_header.registerAgent(this->agent_description.name, func.initial_state);
 
     std::string header_filename = std::string(func.rtc_func_name).append("_impl");
     if (function_condition)

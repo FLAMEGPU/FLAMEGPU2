@@ -362,5 +362,47 @@ TEST(DeviceAPITest, getStepCounterFunctionCondition) {
     }
 }
 
+FLAMEGPU_AGENT_FUNCTION(check_agent_name_state_fn, MessageNone, MessageNone) {
+    FLAMEGPU->setVariable<int>("correct_name", static_cast<int>(FLAMEGPU->isAgent("agent")));
+    FLAMEGPU->setVariable<int>("wrong_name", static_cast<int>(FLAMEGPU->isAgent("agent3")));
+    FLAMEGPU->setVariable<int>("correct_state", static_cast<int>(FLAMEGPU->isState("state")));
+    FLAMEGPU->setVariable<int>("wrong_state", static_cast<int>(FLAMEGPU->isState("state5")));
+    return ALIVE;
+}
+
+TEST(DeviceAPITest, check_agent_name_state) {
+    ModelDescription model("model");
+    AgentDescription agent = model.newAgent("agent");
+    agent.newState("state");
+    agent.newState("state8");
+    agent.newVariable<int>("correct_name", -1);
+    agent.newVariable<int>("wrong_name", -1);
+    agent.newVariable<int>("correct_state", -1);
+    agent.newVariable<int>("wrong_state", -1);
+    // Do nothing, but ensure variables are made available on device
+    AgentFunctionDescription func = agent.newFunction("some_function", check_agent_name_state_fn);
+    model.newLayer().addAgentFunction(func);
+    // Init pop
+    AgentVector init_population(agent, AGENT_COUNT);
+
+    // Setup Model
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(init_population, "state");
+
+    // Run 1 step to ensure data is pushed to device
+    cudaSimulation.step();
+    // Recover data from device
+    AgentVector population(agent, AGENT_COUNT);
+    cudaSimulation.getPopulationData(population, "state");
+    // Check results are correct
+    EXPECT_EQ(population.size(), AGENT_COUNT);
+    for (const auto &instance : population) {
+        EXPECT_EQ(instance.getVariable<int>("correct_name"), 1);
+        EXPECT_EQ(instance.getVariable<int>("wrong_name"), 0);
+        EXPECT_EQ(instance.getVariable<int>("correct_state"), 1);
+        EXPECT_EQ(instance.getVariable<int>("wrong_state"), 0);
+    }
+}
+
 }  // namespace test_device_api
 }  // namespace flamegpu

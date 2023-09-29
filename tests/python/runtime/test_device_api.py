@@ -50,6 +50,16 @@ class DeviceAPITest(TestCase):
     }
     """
 
+    agent_fn_check_agent_name_state = """
+    FLAMEGPU_AGENT_FUNCTION(check_agent_name_state, flamegpu::MessageNone, flamegpu::MessageNone){
+        FLAMEGPU->setVariable<int>("correct_name", static_cast<int>(FLAMEGPU->isAgent("agent")));
+        FLAMEGPU->setVariable<int>("wrong_name", static_cast<int>(FLAMEGPU->isAgent("agent3")));
+        FLAMEGPU->setVariable<int>("correct_state", static_cast<int>(FLAMEGPU->isState("state")));
+        FLAMEGPU->setVariable<int>("wrong_state", static_cast<int>(FLAMEGPU->isState("state5")));
+        return flamegpu::ALIVE;
+    }
+    """
+
     def test_agent_death_array(self): 
         model = pyflamegpu.ModelDescription("test_agent_death_array")
         agent = model.newAgent("agent_name")
@@ -93,7 +103,6 @@ class DeviceAPITest(TestCase):
             assert output_array[1] == 4 + j
             assert output_array[2] == 8 + j
             assert output_array[3] == 16 + j
-        
 
 
     def test_array_set(self): 
@@ -137,7 +146,7 @@ class DeviceAPITest(TestCase):
             assert output_array[1] == 4 + j
             assert output_array[2] == 8 + j
             assert output_array[3] == 16 + j
-        
+
 
     def test_array_get(self): 
         model = pyflamegpu.ModelDescription("test_array_get")
@@ -185,3 +194,34 @@ class DeviceAPITest(TestCase):
             assert instance.getVariableInt("a3") == 8 + j
             assert instance.getVariableInt("a4") == 16 + j
 
+
+    def test_check_agent_name_state(self): 
+        model = pyflamegpu.ModelDescription("test_array_get")
+        agent = model.newAgent("agent")
+        agent.newState("state")
+        agent.newState("state8")
+        agent.newVariableInt("correct_name", -1)
+        agent.newVariableInt("wrong_name", -1)
+        agent.newVariableInt("correct_state", -1)
+        agent.newVariableInt("wrong_state", -1)
+        # Do nothing, but ensure variables are made available on device
+        func = agent.newRTCFunction("some_function", self.agent_fn_check_agent_name_state)
+        model.newLayer().addAgentFunction(func)
+        # Init pop
+        init_population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
+        
+        # Setup Model
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
+        cudaSimulation.setPopulationData(init_population, "state")
+        # Run 1 step to ensure data is pushed to device
+        cudaSimulation.step()
+        # Recover data from device
+        population = pyflamegpu.AgentVector(agent, AGENT_COUNT)
+        cudaSimulation.getPopulationData(population, "state")
+        # Check results are correct
+        assert len(population) == AGENT_COUNT
+        for instance in population:
+            assert instance.getVariableInt("correct_name") == 1
+            assert instance.getVariableInt("wrong_name") == 0
+            assert instance.getVariableInt("correct_state") == 1
+            assert instance.getVariableInt("wrong_state") == 0
