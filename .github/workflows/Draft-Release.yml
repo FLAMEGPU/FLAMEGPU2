@@ -26,9 +26,9 @@ defaults:
 # + Thorough Windows builds
 #   + Oldest and newest cuda, lots of arch, vis off, tests on
 # + Wheel producing manylinux builds
-#   + CUDA 11.2 and 12.0, py 3.7-3.12, vis on/off, py only.
+#   + CUDA 11.2 and 12.0, py 3.8-3.12, vis on/off, py only.
 # + Wheel producing Windows builds
-#   + CUDA 11.2 and 12.0, py 3.7-3.12, vis on/off, py only.
+#   + CUDA 11.2 and 12.0, py 3.8-3.12, vis on/off, py only.
 # + Draft github release workflow.
 
 jobs:
@@ -324,7 +324,6 @@ jobs:
           - "3.10"
           - "3.9"
           - "3.8"
-          - "3.7"
         config:
           - name: "Release"
             config: "Release"
@@ -485,7 +484,6 @@ jobs:
           - "3.10"
           - "3.9"
           - "3.8"
-          - "3.7"
         config:
           - name: "Release"
             config: "Release"
