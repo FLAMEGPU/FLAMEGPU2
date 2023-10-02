@@ -26,9 +26,9 @@ defaults:
 # + Thorough Windows builds
 #   + Oldest and newest cuda, lots of arch, vis off, tests on
 # + Wheel producing manylinux builds
-#   + CUDA 11.2 and 12.0, py 3.7-11, vis on/off, py only.
+#   + CUDA 11.2 and 12.0, py 3.7-3.12, vis on/off, py only.
 # + Wheel producing Windows builds
-#   + CUDA 11.2 and 12.0, py 3.7-11, vis on/off, py only.
+#   + CUDA 11.2 and 12.0, py 3.7-3.12, vis on/off, py only.
 # + Draft github release workflow.
 
 jobs:
@@ -319,6 +319,7 @@ jobs:
             hostcxx: devtoolset-9
             os: ubuntu-20.04
         python: 
+          - "3.12"
           - "3.11"
           - "3.10"
           - "3.9"
@@ -479,6 +480,7 @@ jobs:
             hostcxx: "Visual Studio 16 2019"
             os: windows-2019
         python: 
+          - "3.12"
           - "3.11"
           - "3.10"
           - "3.9"
