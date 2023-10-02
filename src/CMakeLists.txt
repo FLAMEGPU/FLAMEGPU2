@@ -584,6 +584,12 @@ endif()
 if (FLAMEGPU_ENABLE_MPI)
     find_package(MPI REQUIRED)
     if (MPI_CXX_FOUND)
+        # If CMake is older than 3.20.1, FindMPI may incorrectly wrap link options when CUDA is enabled.
+        # It is not guaranteed to be a problem, so we should warn rather than error.
+        # https://gitlab.kitware.com/cmake/cmake/-/issues/21887
+        if(CMAKE_VERSION VERSION_LESS 3.20.1)
+            message(WARNING "CMake < 3.20.1 may result in link errors with FLAMEGPU_ENABLE_MPI=ON for some MPI installations. Consider using CMake >= 3.20.1.")
+        endif()
         # This sets up include directories and lib
         target_link_libraries(${PROJECT_NAME} PUBLIC MPI::MPI_CXX)
         target_compile_definitions(${PROJECT_NAME} PUBLIC FLAMEGPU_ENABLE_MPI)
