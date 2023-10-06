@@ -585,7 +585,7 @@ class CodeGenerator:
             if isinstance(tree.value.value, str):
                 return
         # catch special case of Python 3.7 Where doc string is a Str and not a Constant
-        elif sys.version_info < (3,8,0) and isinstance(tree.value, ast.Str):
+        elif sys.version_info < (3,8,0) and isinstance(tree.value, ast.Str): # num required for python 3.7
             return 
         # otherwise treat like a normal expression
         self.fill()
