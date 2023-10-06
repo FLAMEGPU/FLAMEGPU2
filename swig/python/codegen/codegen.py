@@ -223,7 +223,7 @@ class CodeGenerator:
             bounds = tree_parent.args[1:]
             # process bounds by appending to cpp function template arguments
             for i in bounds:
-                if isinstance(i, ast.Num): # num required for python 3.7
+                if sys.version_info < (3,8,0) and isinstance(i, ast.Num): # num required for python 3.7
                     if not isinstance(i.n, int):
                         self.RaiseError(tree, f" Macro environment function argument '{i}' should be an integer value.")
                     cpp_func_name += f", {i.n}"
@@ -585,7 +585,7 @@ class CodeGenerator:
             if isinstance(tree.value.value, str):
                 return
         # catch special case of Python 3.7 Where doc string is a Str and not a Constant
-        elif isinstance(tree.value, ast.Str):
+        elif sys.version_info < (3,8,0) and isinstance(tree.value, ast.Str): # num required for python 3.7
             return 
         # otherwise treat like a normal expression
         self.fill()

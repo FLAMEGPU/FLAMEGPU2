@@ -42,7 +42,7 @@ jobs:
             hostcxx: "Visual Studio 16 2019"
             os: windows-2019
         python: 
-          - "3.11"
+          - "3.12"
         config:
           - name: "Release"
             config: "Release"
