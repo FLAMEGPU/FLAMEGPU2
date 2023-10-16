@@ -79,6 +79,8 @@ Optionally:
 + [swig](http://www.swig.org/) `>= 4.0.2` for python integration
   + Swig `4.x` will be automatically downloaded by CMake if not provided (if possible).
 + MPI (e.g. [MPICH](https://www.mpich.org/), [OpenMPI](https://www.open-mpi.org/)) for distributed ensemble support
+  + MPI 3.0+ tested, older MPIs may work but not tested.
+  + CMake `>= 3.20.1` may be required for some MPI libraries / platforms.
 + [FLAMEGPU2-visualiser](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser) dependencies
   + [SDL](https://www.libsdl.org/)
   + [GLM](http://glm.g-truc.net/) *(consistent C++/GLSL vector maths functionality)*
