@@ -118,7 +118,7 @@ class CodeGenerator:
         self.future_imports = []
         self._indent = 0
         # dict of locals used to determine if variable already exists in assignments
-        self._locals = ["pyflamegpu"]
+        self._locals = {"pyflamegpu": 0}
         self._device_functions = []
         self._message_iterator_var = None             # default
         self._input_message_var = 'message_in'        # default
@@ -189,6 +189,10 @@ class CodeGenerator:
         "Decrease the indentation level and Print '}'"
         self._indent -= 1
         self.fill("}")
+        # Purge _locals of out of scope variables
+        d_key = [key for key, val in self._locals.items() if val > self._indent]
+        for key in d_key:
+            del self._locals[key]
 
     def dispatch(self, tree):
         "Dispatcher function, dispatching tree type T to method _T."
@@ -252,7 +256,7 @@ class CodeGenerator:
         Type hinting is required to translate a type into a FLAME GPU Message type implementation
         """
         # reset the locals variable stack
-        self._locals = ["pyflamegpu"]
+        self._locals = {"pyflamegpu": 0}
         if len(tree.args.args) != 2:
             self.RaiseError(tree, "Expected two FLAME GPU function arguments (input message and output message)")
         # input message
@@ -308,7 +312,7 @@ class CodeGenerator:
         Handles arguments for a FLAME GPU device function. Arguments must use type hinting to be translated to cpp.
         """
         # reset the locals variable stack
-        self._locals = ["pyflamegpu"]
+        self._locals = {"pyflamegpu": 0}
         # input message
         first = True
         annotation = None
@@ -322,7 +326,7 @@ class CodeGenerator:
             self.dispatchType(arg.annotation)
             self.write(f" {arg.arg}")
             # add arg to local variable stack
-            self._locals.append(arg.arg)
+            self._locals[arg.arg] = self._indent
             first = False    
     
     def dispatchMessageIteratorCall(self, tree):
@@ -732,7 +736,7 @@ class CodeGenerator:
             if self._indent == 0:
                 self.write("constexpr ")
             self.write("auto ")
-            self._locals.append(t.targets[0].id)
+            self._locals[t.targets[0].id] =  self._indent
         self.dispatch(t.targets[0])
         self.write(" = ")
         self.dispatch(t.value)
