@@ -46,27 +46,27 @@ jobs:
           - "3.8"
         mpi:
           - lib: "openmpi"
-            version: "apt"
+            version: "apt" # MPI 3.1
+          # - lib: "openmpi"
+          #   version: "4.1.6" # MPI 3.1
+          # - lib: "openmpi"
+          #   version: "4.0.0" # MPI 3.1
+          # - lib: "openmpi"
+          #   version: "3.0.0" # MPI 3.1
+          # - lib: "openmpi"
+          #   version: "2.0.0" # MPI 3.1
           - lib: "openmpi"
-            version: "4.1.6"
-          - lib: "openmpi"
-            version: "4.0.0"
-          - lib: "openmpi"
-            version: "3.0.0"
-          - lib: "openmpi"
-            version: "2.0.0"
-          - lib: "openmpi"
-            version: "1.10.7"
+            version: "1.10.7" # MPI 3.0
           - lib: "mpich"
-            version: "apt"
+            version: "apt" # MPI 4.0
+          # - lib: "mpich"
+          #   version: "4.1.2" # MPI 4.0
+          # - lib: "mpich"
+          #   version: "4.0" # MPI 4.0
+          # - lib: "mpich"
+          #   version: "3.4.3" # MPI 3.1
           - lib: "mpich"
-            version: "4.1.2"
-          - lib: "mpich"
-            version: "4.0"
-          - lib: "mpich"
-            version: "3.4.3"
-          - lib: "mpich"
-            version: "3.3"
+            version: "3.3" # MPI 3.1
         config:
           - name: "Release"
             config: "Release"
