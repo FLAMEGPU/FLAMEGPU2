@@ -138,6 +138,21 @@ a = 2;
 a += 3;
 """
 
+py_var_scope = """\
+for i in range(10):
+    foo = pyflamegpu.getVariableInt("foo")
+for i in range(10):
+    foo = pyflamegpu.getVariableInt("foo")
+"""
+cpp_var_scope = """\
+for (int i=0;i<10;i++){
+    auto foo = FLAMEGPU->getVariable<int>("foo");
+}
+for (int i=0;i<10;i++){
+    auto foo = FLAMEGPU->getVariable<int>("foo");
+}
+"""
+
 py_with_simple = """\
 with f():
     suite1
@@ -824,6 +839,9 @@ class CodeGenTest(unittest.TestCase):
 
     def test_variable_existing(self):
         self._checkExpected(py_var_existing, cpp_var_existing)
+        
+    def test_variable_scope(self):
+        self._checkExpected(py_var_scope, cpp_var_scope)
 
 
     def test_with(self):
