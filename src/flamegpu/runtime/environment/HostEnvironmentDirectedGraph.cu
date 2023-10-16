@@ -7,9 +7,14 @@
 #include "flamegpu/io/JSONGraphWriter.h"
 
 namespace flamegpu {
-HostEnvironmentDirectedGraph::HostEnvironmentDirectedGraph(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>& _directed_graph, const cudaStream_t _stream)
+HostEnvironmentDirectedGraph::HostEnvironmentDirectedGraph(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>& _directed_graph, const cudaStream_t _stream,
+    detail::CUDAScatter& _scatter, const unsigned int _streamID)
     : directed_graph(_directed_graph)
     , stream(_stream)
+#ifdef FLAMEGPU_ADVANCED_API
+    , scatter(_scatter)
+    , streamID(_streamID)
+#endif
 { }
 void HostEnvironmentDirectedGraph::importGraph(const std::string& in_file) {
     // Case insensitive ends_with()

@@ -22,11 +22,15 @@ class HostEnvironmentDirectedGraph {
     // So be extra safe with weak ptr
     std::weak_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> directed_graph;
     const cudaStream_t stream;
+#ifdef FLAMEGPU_ADVANCED_API
+    detail::CUDAScatter &scatter;
+    const unsigned int streamID;
+#endif
 
  public:
     class VertexMap;
     class EdgeMap;
-    HostEnvironmentDirectedGraph(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>& _directed_graph, cudaStream_t _stream);
+    HostEnvironmentDirectedGraph(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>& _directed_graph, cudaStream_t _stream, detail::CUDAScatter& _scatter, unsigned int _streamID);
     // Graph Structure Modifiers
     /**
      * Attempts to import edge and vertex data from the specified file

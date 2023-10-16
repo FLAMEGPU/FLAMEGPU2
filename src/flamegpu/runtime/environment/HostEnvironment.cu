@@ -115,7 +115,7 @@ void HostEnvironment::exportMacroProperty(const std::string& property_name, cons
 HostEnvironmentDirectedGraph HostEnvironment::getDirectedGraph(const std::string& name) const {
     const auto rt = directed_graph_map.find(name);
     if (rt != directed_graph_map.end())
-        return HostEnvironmentDirectedGraph(rt->second, stream);
+        return HostEnvironmentDirectedGraph(rt->second, stream, scatter, streamID);
     THROW exception::InvalidGraphName("Directed Graph with name '%s' was not found, "
         "in HostEnvironment::getDirectedGraph()",
         name.c_str());
