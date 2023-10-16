@@ -590,6 +590,13 @@ if (FLAMEGPU_ENABLE_MPI)
         if(CMAKE_VERSION VERSION_LESS 3.20.1)
             message(WARNING "CMake < 3.20.1 may result in link errors with FLAMEGPU_ENABLE_MPI=ON for some MPI installations. Consider using CMake >= 3.20.1.")
         endif()
+        # If the MPI installation brings in -flto (i.e. Ubuntu 22.04 libmpich-dev), warn about it and suggest a reconfiguration.
+        if(MPI_CXX_COMPILE_OPTIONS MATCHES ".*\-flto.*")
+            message(WARNING
+                " MPI_CXX_COMPILE_OPTIONS contains '-flto' which is likely to result in linker errors. \n"
+                " Consider an alternate MPI implementation which does not embed -flto,\n"
+                " Or reconfiguring CMake with -DMPI_CXX_COMPILE_OPTIONS=\"\" if linker error occur.")
+        endif()
         # This sets up include directories and lib
         target_link_libraries(${PROJECT_NAME} PUBLIC MPI::MPI_CXX)
         target_compile_definitions(${PROJECT_NAME} PUBLIC FLAMEGPU_ENABLE_MPI)

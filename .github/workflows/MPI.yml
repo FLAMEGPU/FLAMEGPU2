@@ -231,6 +231,13 @@ jobs:
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
         -DFLAMEGPU_ENABLE_MPI="ON"
         -DFLAMEGPU_ENABLE_NVTX="ON"
+        ${MPI_OVERRIDE_CXX_OPTIONS}
+
+    - name: Reconfigure cmake fixing MPICH from apt
+      if: ${{ env.MPI_VERSION == 'apt' && env.MPI_LIB == 'mpich' }}
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}"
+        -DMPI_CXX_COMPILE_OPTIONS=""
 
     - name: Build static library
       working-directory: ${{ env.BUILD_DIR }}
