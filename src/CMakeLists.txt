@@ -584,10 +584,10 @@ set_property(TARGET ${PROJECT_NAME}  PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
 # Link against dependency targets / directories.
 
-# Cub and thrust targets are not imported targets, so they do not use -isystem, so warnings must be suppressed as pragmas as requied. This is due to nvcc magic preventing isystem from being reliable with them. 
+# Cub and thrust targets are not imported targets, so they do not use -isystem, so warnings must be suppressed as pragmas as required. This is due to nvcc magic preventing isystem from being reliable with them. 
 target_link_libraries(${PROJECT_NAME} PUBLIC CUB::CUB)
 target_link_libraries(${PROJECT_NAME} PUBLIC Thrust::Thrust)
-
+    
 # tinyxml2 static library
 target_link_libraries(${PROJECT_NAME} PRIVATE Tinyxml2::tinyxml2)
 
@@ -613,7 +613,7 @@ if(FLAMEGPU_ENABLE_NVTX AND TARGET NVTX::nvtx)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Jitify::jitify)
-# jitify is included in public headers, so this definiition must be public too.
+# jitify is included in public headers, so this definition must be public too.
 target_compile_definitions(${PROJECT_NAME} PUBLIC "JITIFY_PRINT_LOG")
 
 # If gcc < 9, needs to link against stdc++fs

@@ -180,5 +180,9 @@ if(NOT WIN32)
     list(APPEND CMAKE_SWIG_FLAGS "-DSWIGWORDSIZE64")
 endif()
 
+# Enable changes required to produce a conda compatible build
+# e.g. dlopen() cuda libraries on Linux
+cmake_dependent_option(FLAMEGPU_BUILD_PYTHON_CONDA "Enable building conda package" OFF "FLAMEGPU_BUILD_PYTHON" OFF)
+
 # Add the python swig subdirectory
 add_subdirectory(python)
