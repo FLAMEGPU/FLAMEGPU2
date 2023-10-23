@@ -95,10 +95,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "Control the output of compi
 # Use the FindCUDATooklit package (CMake > 3.17) to find other parts of the cuda toolkit not provided by the CMake language support
 find_package(CUDAToolkit REQUIRED)
 
-# Control how we link against the cuda runtime library (CMake >= 3.17)
-# We may wish to use static or none instead, subject to python library handling.
-set(CMAKE_CUDA_RUNTIME_LIBRARY shared)
-
 # Ensure the cuda driver API is available, and save it to the list of link targets.
 if(NOT TARGET CUDA::cuda_driver)
     message(FATAL_ERROR "CUDA::cuda_driver is required.")
@@ -315,7 +311,7 @@ function(flamegpu_setup_source_groups)
         message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION}: 'SRC' argument required.")
     endif()
 
-    # Get a regex escaped represenatation of the current source dir, for paths containg + etc.
+    # Get a regex escaped representation of the current source dir, for paths containing + etc.
     escape_regex("${CMAKE_CURRENT_SOURCE_DIR}" CURRENT_SOURCE_DIR_ESCAPE)
 
     # Convert all paths to abs paths, to remove any ../ components
@@ -373,6 +369,10 @@ function(flamegpu_add_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     if (NOT TARGET flamegpu)
         add_subdirectory("${FLAMEGPU_ROOT}/src" "${PROJECT_ROOT}/FLAMEGPU")
     endif()
+
+    # Control how we link against the cuda runtime library (CMake >= 3.17)
+    # We may wish to use static or none instead, subject to python library handling.
+    set(CMAKE_CUDA_RUNTIME_LIBRARY shared)
 
     # Define which source files are required for the target executable
     add_executable(${NAME} ${SRC})

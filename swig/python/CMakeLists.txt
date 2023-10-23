@@ -67,6 +67,10 @@ SET(SWIG_INPUT_FILE_NAME flamegpu)
 #########################################
 ## Swig input processing and building  ##
 #########################################
+if(FLAMEGPU_BUILD_PYTHON_CONDA)
+    # Disable RPath, this isn't strictly necessary, but makes testing simpler
+    set(CMAKE_SKIP_RPATH TRUE)
+endif()
 
 # setup properties of swig input file as required
 set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY CPLUSPLUS ON)
@@ -78,6 +82,11 @@ list(FILTER FLAMEGPU_HEADERS INCLUDE REGEX ".*\.(h|hpp|cuh)$")
 # Specify the dependency for swig file processing on all known headers manually.
 set_property(SOURCE ${SWIG_INPUT_FILE_NAME}.i PROPERTY DEPENDS ${FLAMEGPU_HEADERS})
 unset (FLAMEGPU_HEADERS)
+
+# Control how we link against the cuda runtime library (CMake >= 3.17)
+# We may wish to use static or none instead, subject to python library handling.
+set(CMAKE_CUDA_RUNTIME_LIBRARY shared)
+
 # Add swig module via the native CMake integration integraiton.
 swig_add_library(${PYTHON_SWIG_TARGET_NAME}
 	TYPE SHARED
@@ -132,7 +141,7 @@ foreach(flamegpu_definition ${flamegpu_compile_defines})
 endforeach()
 unset(flamegpu_compile_defines)
 
-# link with the static flamegpu, inherriting links on nvrtc and the cuda driver api etc
+# link with the static flamegpu, inheriting links on nvrtc and the cuda driver api etc
 target_link_libraries(${PYTHON_SWIG_TARGET_NAME} PRIVATE flamegpu)
 
 # Requires the development module.
