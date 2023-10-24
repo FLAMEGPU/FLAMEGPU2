@@ -1,0 +1,50 @@
+package:
+  name: "pyflamegpu"
+  version: "2.0.0rc1"
+
+source:
+  git_url: https://github.com/FLAMEGPU/FLAMEGPU2.git
+  git_rev: v2.0.0-rc
+  git_depth: 1 # Shallow
+  
+# requires: conda config --add channels conda-forge
+requirements:
+  build:
+    - {{ compiler('cxx') }}
+    - cuda-toolkit
+    - swig ==4.0.2 # CMake can't find this, but needs it to build swig from src? (>= does not work either), alt find where conda puts swig and pass path to CMake
+    - cmake
+    - python
+    - pip
+    - setuptools >=40.8.0 # CMake can't find this when installed by conda
+    - wheel
+    - build
+    - astpretty
+  run:
+    - python
+    - cuda-toolkit
+
+#build:
+#  track_features:
+#    - feature2
+#  run_exports:
+#    strong:
+#      - _pyflamegpu
+#      - libnvrtc
+#      - libcuda
+#      - libcudart
+#      - libdl
+#      - libstdc++
+#      - libgcc
+#      - librt
+#      - libpthread
+      
+test:
+  imports:
+    - pyflamegpu
+
+about:
+  home: https://flamegpu.com/
+  license: MIT
+  license_family: MIT
+  summary: GPU accelerated agent based modelling framework for Python
