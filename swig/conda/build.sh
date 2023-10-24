@@ -28,7 +28,9 @@ echo "swig_dir: $swig_dir"
 mkdir -p build && cd build
 
 # Configure CMake
-cmake .. -DCMAKE_BUILD_TYPE=Release -DFLAMEGPU_BUILD_PYTHON=ON -DFLAMEGPU_BUILD_PYTHON_VENV=OFF -DFLAMEGPU_BUILD_PYTHON_CONDA=ON $build_arch $swig_exe $swig_dir -DPython_EXECUTABLE="$PYTHON" $CMAKE_ARGS
+cmake .. -DCMAKE_BUILD_TYPE=Release -DFLAMEGPU_BUILD_PYTHON=ON -DFLAMEGPU_BUILD_PYTHON_VENV=OFF -DFLAMEGPU_BUILD_PYTHON_CONDA=ON $build_arch $swig_exe $swig_dir -DPython_EXECUTABLE="$PYTHON" 
+# CMAKE_ARGS broke find_jitify for me, so disabled it for now. Might need to tweak our CMake for it to be usable?
+# $CMAKE_ARGS
 
 # Build Python wheel
 cmake --build . --target pyflamegpu --parallel $build_threads
