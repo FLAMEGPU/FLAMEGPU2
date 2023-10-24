@@ -1,5 +1,8 @@
 #!/bin/bash -v
 
+# Enable output of bash commands executed to make script debugging easier.
+set -x 
+
 # Setup user config
 build_threads=${FLAMEGPU_CONDA_BUILD_THREADS:-1}
 [[ -z "$FLAMEGPU_CONDA_CUDA_ARCHITECTURES" ]] && build_arch="" || build_arch="-DCMAKE_CUDA_ARCHITECTURES=$FLAMEGPU_CONDA_CUDA_ARCHITECTURES"
