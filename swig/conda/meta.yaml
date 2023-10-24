@@ -3,9 +3,11 @@ package:
   version: "2.0.0rc1"
 
 source:
-  git_url: https://github.com/FLAMEGPU/FLAMEGPU2.git
-  git_rev: v2.0.0-rc
-  git_depth: 1 # Shallow
+  # Use the current committed state of the repo, to avoid pinning versions or copying the build directory if using path.
+  git_url: ../../
+  # git_url: https://github.com/FLAMEGPU/FLAMEGPU2.git
+  # git_rev: v2.0.0-rc
+  # git_depth: 1 # Shallow
   
 # requires: conda config --add channels conda-forge
 requirements:
