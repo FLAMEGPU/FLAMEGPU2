@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -v
 
 # Setup user config
 build_threads=${FLAMEGPU_CONDA_BUILD_THREADS:-1}
@@ -25,14 +25,15 @@ echo "swig_dir: $swig_dir"
 mkdir -p build && cd build
 
 # Configure CMake
-cmake .. -DCMAKE_BUILD_TYPE=Release -DFLAMEGPU_BUILD_PYTHON=ON -DFLAMEGPU_BUILD_PYTHON_VENV=OFF -DFLAMEGPU_BUILD_PYTHON_CONDA=ON $build_arch $swig_exe $swig_dir
+cmake .. -DCMAKE_BUILD_TYPE=Release -DFLAMEGPU_BUILD_PYTHON=ON -DFLAMEGPU_BUILD_PYTHON_VENV=OFF -DFLAMEGPU_BUILD_PYTHON_CONDA=ON $build_arch $swig_exe $swig_dir -DPython_EXECUTABLE="$PYTHON" $CMAKE_ARGS
 
 # Build Python wheel
-#cmake --build . --target pyflamegpu --parallel ${build_threads}
+cmake --build . --target pyflamegpu --parallel $build_threads
 
 # Install built wheel
-#pip install lib/Release/python/dist/pyflamegpu-2.0.0rc1+cuda122-cp38-cp38-linux_x86_64.whl
+pyfgpu_wheel=$(find "lib/Release/python/dist/" -type f -name "pyflamegpu*.whl" -print -quit)
+pip install --no-deps $pyfgpu_wheel
 
 # Cleanup
-cd .
+cd ..
 rm -rf build
