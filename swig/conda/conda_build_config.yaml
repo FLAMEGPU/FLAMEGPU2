@@ -1,0 +1,6 @@
+# https://docs.conda.io/projects/conda-build/en/3.21.x/resources/compiler-tools.html#using-your-customized-compiler-package-with-conda-build-3
+# https://github.com/rapidsai/cuml/blob/branch-23.12/conda/recipes/libcuml/conda_build_config.yaml
+# https://github.com/conda-forge/conda-forge-pinning-feedstock/blob/main/recipe/conda_build_config.yaml
+cuda_compiler:
+  #- nvcc # [win] # installs/uses cudatoolkit package?
+  - cuda-nvcc # [linux] # installs/uses cuda-toolkit package?

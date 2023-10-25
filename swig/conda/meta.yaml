@@ -13,11 +13,14 @@ source:
 requirements:
   build:
     - {{ compiler('cxx') }}
-    # - {{ compiler('cuda') }} # This causes conda build to crash??
-    - cuda-toolkit
-    - swig ==4.0.2 # CMake can't find this, but needs it to build swig from src? (>= does not work either), alt find where conda puts swig and pass path to CMake
+    - {{ compiler('cuda') }}
+    - cuda-cudart-dev # [linux]
+    - libcurand-dev # [linux]
+    - cuda-nvrtc-dev # [linux]
+    - swig ==4.0.2 # Have to manually direct swig to find this
     - cmake
     - python
+    - python-devtools
     - pip
     - setuptools >=40.8.0 # CMake can't find this when installed by conda
     - wheel
