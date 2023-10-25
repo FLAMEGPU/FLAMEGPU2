@@ -21,6 +21,7 @@ include(FindPackageHandleStandardArgs)
 find_path(Jitify_INCLUDE_DIRS
     NAMES
         jitify/jitify.hpp
+    CMAKE_FIND_ROOT_PATH_BOTH
 )
 
 # if found, get the version number.
