@@ -18,6 +18,7 @@ requirements:
     - libcurand-dev # [linux]
     - cuda-nvrtc-dev # [linux]
     - swig ==4.0.2 # Have to manually direct swig to find this
+    - git
     - cmake
     - python
     - python-devtools
@@ -25,10 +26,14 @@ requirements:
     - setuptools >=40.8.0
     - wheel
     - build
-    - astpretty
+  host:
+    - python
+
   run:
     - python
     - cuda-toolkit
+    - astpretty
+
 
 build:
   # Allow certain env vars to be passed through to build.sh. this seems to set warnings...
