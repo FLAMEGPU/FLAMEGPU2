@@ -1,4 +1,4 @@
-#!/bin/bash -v
+#!/bin/bash
 
 # Enable output of bash commands executed to make script debugging easier.
 set -x 
