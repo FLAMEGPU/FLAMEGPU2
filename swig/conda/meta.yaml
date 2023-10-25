@@ -20,7 +20,6 @@ requirements:
     - swig ==4.0.2 # Have to manually direct swig to find this
     - git
     - cmake
-    - python
     - python-devtools
     - pip
     - setuptools >=40.8.0
@@ -28,6 +27,7 @@ requirements:
     - build
   host:
     - python
+    - astpretty
 
   run:
     - python
