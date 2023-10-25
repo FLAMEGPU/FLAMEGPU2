@@ -386,7 +386,7 @@ add_custom_target(${PYTHON_MODULE_TARGET_NAME}
   # Copy the python .pyd/.so file to the working dir
   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PYTHON_SWIG_TARGET_NAME}> src/${PYTHON_MODULE_NAME}/$<TARGET_FILE_NAME:${PYTHON_SWIG_TARGET_NAME}>
   # Build the wheel in the working dir
-  COMMAND ${Python3_EXECUTABLE} -m build --wheel 
+  COMMAND ${Python3_EXECUTABLE} -m build --wheel  --no-isolation
   WORKING_DIRECTORY ${PYTHON_LIB_OUTPUT_DIRECTORY}
   BYPRODUCTS
     ${PYTHON_LIB_OUTPUT_DIRECTORY}/src/${PYTHON_MODULE_NAME}
