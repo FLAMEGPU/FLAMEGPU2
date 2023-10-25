@@ -22,7 +22,7 @@ requirements:
     - python
     - python-devtools
     - pip
-    - setuptools ==40.8.0
+    - setuptools >=40.8.0
     - wheel
     - build
     - astpretty
