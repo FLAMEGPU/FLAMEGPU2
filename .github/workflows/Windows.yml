@@ -47,14 +47,29 @@ jobs:
           - name: "Release"
             config: "Release"
             SEATBELTS: "ON"
+          - name: "Beltsoff"
+            config: "Release"
+            SEATBELTS: "OFF"
         VISUALISATION: 
           - "ON"
           - "OFF"
-
         exclude:
-          # Exclude VIS=ON for old cuda's.
+          # Exclude VIS=ON for oldest cuda.
           - cudacxx:
               cuda: "11.0.3"
+            VISUALISATION: "ON"
+          # Exclude beltsoff builds for old cuda's
+          - cudacxx:
+              cuda: "11.8.0"
+            config:
+              name: "Beltsoff"
+          - cudacxx:
+              cuda: "11.0.3"
+            config:
+              name: "Beltsoff"
+          # Exclude beltsoff vis builds to keep the matrix lighter.
+          - config:
+              name: "Beltsoff"
             VISUALISATION: "ON"
 
     # Name the job based on matrix/env options
@@ -121,6 +136,7 @@ jobs:
         -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF"
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
+        -DFLAMEGPU_SEATBELTS="${{ env.FLAMEGPU_SEATBELTS }}"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
         -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
         -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}" 
@@ -167,9 +183,10 @@ jobs:
         -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF"
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
+        -DFLAMEGPU_SEATBELTS="${{ env.FLAMEGPU_SEATBELTS }}"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
+        -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
         -DFLAMEGPU_ENABLE_NVTX="ON"
-        -DFLAMEGPU_SEATBELTS="OFF"
     
     - name: Build Individual example
       if: ${{ env.INDIVIDUAL_EXAMPLE != '' }}
