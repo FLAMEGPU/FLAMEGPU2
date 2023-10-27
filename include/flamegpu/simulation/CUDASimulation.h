@@ -562,15 +562,15 @@ class CUDASimulation : public Simulation {
          * Held here for tracking when to release cuda memory
          */
         std::shared_ptr<detail::EnvironmentManager> environment;
+        /**
+         * Provides copies of strings (agent/state names) on device
+         */
+        detail::DeviceStrings strings;
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         /**
          * Provides buffers for device error checking
          */
         exception::DeviceExceptionManager exception;
-        /**
-         * Provides copies of strings (agent/state names) on device
-         */
-        detail::DeviceStrings strings;
 #endif
         explicit Singletons(const std::shared_ptr<detail::EnvironmentManager> &environment) : environment(environment) { }
     } * singletons;
