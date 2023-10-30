@@ -169,6 +169,7 @@ jobs:
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
         -DFLAMEGPU_ENABLE_NVTX="ON"
+        -DFLAMEGPU_SEATBELTS="OFF"
     
     - name: Build Individual example
       if: ${{ env.INDIVIDUAL_EXAMPLE != '' }}
