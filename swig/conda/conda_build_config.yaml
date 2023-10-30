@@ -3,4 +3,10 @@
 # https://github.com/conda-forge/conda-forge-pinning-feedstock/blob/main/recipe/conda_build_config.yaml
 cuda_compiler:
   #- nvcc # [win] # installs/uses cudatoolkit package?
+  - cuda-nvcc # [win] # requires -c nvidia
   - cuda-nvcc # [linux] # installs/uses cuda-toolkit package?
+  
+c_compiler: # [win]
+  - vs2022 # [win]
+cxx_compiler: # [win]
+  - vs2022 # [win]
