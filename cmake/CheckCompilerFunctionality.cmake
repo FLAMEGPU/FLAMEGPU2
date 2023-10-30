@@ -8,8 +8,8 @@ function(flamegpu_check_compiler_functionality)
         return()
     endif()
 
-    # Ensure that required languages are avialable.
-    # Enabling the languages must however be perfomed in file scope, so do this in the root cmake after docs only checks have been found.
+    # Ensure that required languages are available.
+    # Enabling the languages must however be performed in file scope, so do this in the root cmake after docs only checks have been found.
     include(CheckLanguage)
     check_language(CXX)
     if(NOT CMAKE_CXX_COMPILER)
@@ -26,7 +26,7 @@ function(flamegpu_check_compiler_functionality)
     endif()
     enable_language(CUDA)
 
-    # We need c++17 std::filesytem, but not all compilers which claim to implement c++17 provide filesystem (GCC 7)
+    # We need c++17 std::filesystem, but not all compilers which claim to implement c++17 provide filesystem (GCC 7)
     if(NOT DEFINED CUDA_STD_FILESYSTEM)
         # Disable CMAKE_CUDA_ARCHTIECTURES if not already controlled. This is scoped to the function so safe to control.
         if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES OR "${CMAKE_CUDA_ARCHITECTURES}" STREQUAL "")
@@ -120,7 +120,7 @@ function(flamegpu_check_compiler_functionality)
                 CXX_STANDARD_REQUIRED "ON"
             )
         endif()
-        # If an error occured while building MWE emit a dev warning. 
+        # If an error occurred while building MWE emit a dev warning. 
         if(NOT GCC_CUDA_VECTOR_TUPLE_PUSHBACK)
             # If the GCC versions is known to be bad, give an appropriate error
             message(AUTHOR_WARNING
@@ -129,7 +129,7 @@ function(flamegpu_check_compiler_functionality)
                 "See https://github.com/FLAMEGPU/FLAMEGPU2/issues/650")
             # Not erroring, so don't change the output value, just emit the above developer warning
         
-        # The compilation error is somewhat tempremental, so always emit a warning for the known bad combination
+        # The compilation error is somewhat temperamental, so always emit a warning for the known bad combination
         elseif(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.0" AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS "11.1" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9" AND CMAKE_CXX_COMILER_VERSION VERSION_LESS "10")
             message(AUTHOR_WARNING 
                 "CUDA 11.0 with g++ 9 in c++17 mode may encounter compiler segmentation faults with 'std::vector<std::tuple<...>>::push_back'.\n"

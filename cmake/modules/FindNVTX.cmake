@@ -63,7 +63,7 @@ if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "10.0")
     endif()
 endif()
 
-# @todo - find both if possible, so both targets are avialable?
+# @todo - find both if possible, so both targets are available?
 # If not yet aware of NVTX, or we found V1/2 while looking for V3, make sure we find the actual V1/2
 if(NOT NVTX_FOUND OR NVTX_VERSION VERSION_LESS 3)
     # Find the header file
@@ -77,7 +77,7 @@ if(NOT NVTX_FOUND OR NVTX_VERSION VERSION_LESS 3)
         PATH_SUFFIXES
             include
         )
-    # Find the appropraite dynamic library - but only 64 bit.
+    # Find the appropriate dynamic library - but only 64 bit.
     find_library(NVTX_LIBRARIES
         NAMES
             libnvToolsExt.so
@@ -104,7 +104,7 @@ if(NOT NVTX_FOUND OR NVTX_VERSION VERSION_LESS 3)
     )
 
     if(NVTX_FOUND)
-        # Create an imported target which can be linked against to inherit include directories and the shared object(s). Mark this as imported, because there are no build steps requred.
+        # Create an imported target which can be linked against to inherit include directories and the shared object(s). Mark this as imported, because there are no build steps required.
         add_library(NVTX::nvtx1 SHARED IMPORTED)
         target_include_directories(NVTX::nvtx1 INTERFACE ${NVTX_INCLUDE_DIRS})
         target_include_directories(NVTX::nvtx1 INTERFACE ${NVTX_LIBRARIES})
