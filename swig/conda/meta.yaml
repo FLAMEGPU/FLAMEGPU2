@@ -15,8 +15,8 @@ requirements:
     - {{ compiler('cxx') }}
     - {{ compiler('cuda') }}
     - cuda-cudart-dev # [linux]
-    - libcurand-dev # [linux]
     - cuda-nvrtc-dev # [linux]
+    - libcurand-dev # [linux]
     - swig ==4.0.2 # Have to manually direct swig to find this
     - git
     - cmake
@@ -31,8 +31,10 @@ requirements:
 
   run:
     - python
-    - cuda-toolkit
     - astpretty
+    - cuda-cudart # [linux]
+    - cuda-nvrtc # [linux]
+    #- libcurand # [linux] We don't currently use host curand
 
 
 build:
@@ -43,21 +45,15 @@ build:
     - FLAMEGPU_CONDA_CUDA_ARCHITECTURES
 #  track_features:
 #    - feature2
-#  run_exports:
-#    strong:
-#      - _pyflamegpu
-#      - libnvrtc
-#      - libcuda
-#      - libcudart
-#      - libdl
-#      - libstdc++
-#      - libgcc
-#      - librt
-#      - libpthread
+  missing_dso_whitelist:
+    -  $RPATH/libcuda.so.1 # Ignore as this comes from CUDA driver
+    -  $RPATH/libnvrtc.so.12 # Conda-build can't find this in run reqs cuda-cudart??
+    -  $RPATH/libcudart.so.12 # Conda-build can't find this in run reqs cuda-nvrtc??
       
 test:
   imports:
     - pyflamegpu
+    - pyflamegpu.codegen
 
 about:
   home: https://flamegpu.com/
