@@ -46,9 +46,12 @@ build:
 #  track_features:
 #    - feature2
   missing_dso_whitelist:
-    -  $RPATH/libcuda.so.1 # Ignore as this comes from CUDA driver
-    -  $RPATH/libnvrtc.so.12 # Conda-build can't find this in run reqs cuda-cudart??
-    -  $RPATH/libcudart.so.12 # Conda-build can't find this in run reqs cuda-nvrtc??
+    - $RPATH/libcuda.so.1 # Ignore as this comes from CUDA driver
+    - $RPATH/libnvrtc.so.12 # Conda-build can't find this in run reqs cuda-cudart??
+    - $RPATH/libcudart.so.12 # Conda-build can't find this in run reqs cuda-nvrtc??
+  ignore_run_exports:
+    - python # Not clear why conda thinks this isn't used
+    - astpretty # Not clear why conda thinks this isn't used
       
 test:
   imports:
