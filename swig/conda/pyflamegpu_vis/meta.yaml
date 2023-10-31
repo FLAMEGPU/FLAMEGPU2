@@ -1,0 +1,71 @@
+package:
+  name: "pyflamegpu"
+  version: "2.0.0rc1"
+
+source:
+  # Use the current committed state of the repo, to avoid pinning versions or copying the build directory if using path.
+  git_url: ../../../
+  # git_url: https://github.com/FLAMEGPU/FLAMEGPU2.git
+  # git_rev: v2.0.0-rc
+  # git_depth: 1 # Shallow
+  
+# requires: conda config --add channels conda-forge
+requirements:
+  build:
+    - {{ compiler('cxx') }}
+    - {{ compiler('cuda') }}
+    - cuda-cudart-dev # [linux]
+    - cuda-nvrtc-dev # [linux]
+    - libcurand-dev # [linux]
+    - swig ==4.0.2 # Have to manually direct swig to find this
+    - git
+    - cmake
+    - freetype
+    - devil
+    - glew
+  host:
+    - python
+    - astpretty
+    - python-devtools
+    - pip
+    - setuptools >=40.8.0
+    - wheel
+    - build
+
+  run:
+    - python
+    - astpretty
+    - cuda-cudart
+    - cuda-nvrtc
+
+build:
+  # Allow certain env vars to be passed through to build.sh. this seems to set warnings...
+  # Probably need to add other env vars CMake might expect to this?
+  script_env:
+    - FLAMEGPU_CONDA_BUILD_THREADS
+    - FLAMEGPU_CONDA_CUDA_ARCHITECTURES
+  track_features:
+    - visualisation
+  string: vis
+  missing_dso_whitelist:
+    - $RPATH/libcuda.so.1 # [linux] Ignore as this comes from CUDA driver
+    - $RPATH/libnvrtc.so.12 # [linux] Conda-build can't find this in run reqs cuda-cudart??
+    - $RPATH/libcudart.so.12 # [linux] Conda-build can't find this in run reqs cuda-nvrtc??
+    - $RPATH/nvrtc64_120_0.dll # [win64] Conda-build can't find this in run reqs cuda-cudart??
+    - $RPATH/cudart64_12.dll # [win64] Conda-build can't find this in run reqs cuda-nvrtc??
+  ignore_run_exports:
+    - python # [linux] Not clear why conda thinks this isn't used
+    - astpretty # [linux, win64] Not clear why conda thinks this isn't used
+    - vc14_runtime # [win64] Not clear why conda thinks this isn't used (we aren't static linking)
+    - ucrt # [win64] Not clear why conda thinks this isn't used (we aren't static linking)
+      
+test:
+  imports:
+    - pyflamegpu
+    - pyflamegpu.codegen
+
+about:
+  home: https://flamegpu.com/
+  license: MIT
+  license_family: MIT
+  summary: GPU accelerated agent based modelling framework for Python
