@@ -1,10 +1,9 @@
+
+setlocal EnableDelayedExpansion 
 :: Enable output of commands executed to make script debugging easier.
 @echo on
-setlocal enabledelayedexpansion
 
 :: Setup user config
-set
-
 set "build_threads=%FLAMEGPU_CONDA_BUILD_THREADS%"
 if "%build_threads%" == "" set "build_threads=1"
 
@@ -16,8 +15,8 @@ if not "%FLAMEGPU_CONDA_CUDA_ARCHITECTURES%" == "" (
 mkdir build 2>nul
 cd build
 
+:: Configure CMake
 cmake .. -DFLAMEGPU_BUILD_PYTHON=ON -DFLAMEGPU_BUILD_PYTHON_VENV=OFF -DFLAMEGPU_BUILD_ALL_EXAMPLES=OFF -DFLAMEGPU_BUILD_PYTHON_CONDA=ON %build_arch% %CMAKE_ARGS% -DPython3_FIND_VIRTUALENV=ONLY -DPython3_ROOT_DIR="%BUILD_PREFIX%" -DPython3_EXECUTABLE="%PYTHON%"
-:: -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=BOTH -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH
 if errorlevel 1 exit /b 1
 
 :: Build Python wheel
