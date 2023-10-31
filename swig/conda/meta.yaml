@@ -1,6 +1,6 @@
 package:
   name: "pyflamegpu"
-  version: "2.0.0rc1" # todo
+  version: "2.0.0rc1" # {{ GIT_DESCRIBE_TAG }} # (Can only use git tag if it's made valid, e.g. no "-")
 
 source:
   # Use the current committed state of the repo, to avoid pinning versions or copying the build directory if using path.
