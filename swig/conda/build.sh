@@ -18,29 +18,8 @@ else
 swig_exe=""
 swig_dir=""
 fi
-echo "swig_exe: $swig_exe"
-echo "swig_dir: $swig_dir"
-# Setup python packages
-# Issues with CMake locating ones installed by conda
-
-#pip install setuptools wheel build astpretty
 
 mkdir -p build && cd build
-
-which python
-
-python --version
-
-which python3
-
-python3 --version
-
-echo "build dir"
-echo $BUILD_PREFIX
-echo "host python"
-echo $PYTHON
-$PYTHON --version
-
 
 # Configure CMake
 cmake .. -DCMAKE_BUILD_TYPE=Release -DFLAMEGPU_BUILD_PYTHON=ON -DFLAMEGPU_BUILD_PYTHON_VENV=OFF -DFLAMEGPU_BUILD_ALL_EXAMPLES=OFF -DFLAMEGPU_BUILD_PYTHON_CONDA=ON $build_arch $swig_exe $swig_dir $CMAKE_ARGS -DPython3_FIND_VIRTUALENV=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=BOTH -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH -DPython3_ROOT_DIR="$BUILD_PREFIX" -DPython3_EXECUTABLE="$PYTHON"
