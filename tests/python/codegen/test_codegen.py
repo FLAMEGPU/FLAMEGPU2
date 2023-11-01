@@ -260,6 +260,19 @@ for (const auto& msg : FLAMEGPU->message_in){
 }
 """
 
+py_fgpu_name_not_attr = """\
+@pyflamegpu.agent_function
+def movement_request(message_in: pyflamegpu.MessageArray2D, message_out: pyflamegpu.MessageArray2D):
+  AGENT_START_COUNT = int(2)
+  return pyflamegpu.ALIVE
+"""
+cpp_fgpu_name_not_attr = """\
+FLAMEGPU_AGENT_FUNCTION(movement_request, flamegpu::MessageArray2D, flamegpu::MessageArray2D){
+    auto AGENT_START_COUNT = int(2);
+    return flamegpu::ALIVE;
+}
+"""
+
 py_fgpu_for_msg_input_var = """\
 for m in message_in:
     i = m.getVariableInt("i")
@@ -712,7 +725,10 @@ class CodeGenTest(unittest.TestCase):
     def test_async_for(self):
         self._checkException(py_async_for, "Async for not supported")
 
-
+    def test_check_name_not_attr(self):
+        # This case previously caused codegen to throw an exception (Bug #1141)
+        # I'm not sure this is still strictly correct, as the python cast is not being changed to C style
+        self._checkExpected(py_fgpu_name_not_attr, cpp_fgpu_name_not_attr)
 
 # FLAME GPU specific functionality
 
@@ -778,8 +794,6 @@ class CodeGenTest(unittest.TestCase):
         self._checkException(py_fgpu_for_msg_input_func_unknown, "Function 'unsupported' does not exist") 
         # Test math function inside message loop (Previously bug #1077)
         self._checkExpected(py_fgpu_for_msg_input_math_func, cpp_fgpu_for_msg_input_math_func) 
-        # Test standalone input message (Previously bug #1110)
-        self._checkExpected(py_fgpu_standalone_msg_input, cpp_fgpu_standalone_msg_input) 
         # Test message input where message input requires arguments (e.g. spatial messaging)
         self._checkExpected(py_fgpu_for_msg_input_args, cpp_fgpu_for_msg_input_args)
         # Test to ensure that arguments are processed as local variables 
@@ -790,8 +804,10 @@ class CodeGenTest(unittest.TestCase):
         self._checkExpected(py_fgpu_for_msg_input_wrap, cpp_fgpu_for_msg_input_wrap)
         # Test to ensure 'message_in' does not allow non iterator functions
         self._checkException(py_fgpu_for_msg_input_unsupported, "Message input loop iterator 'radius' is not supported") # not currently raising an exception
-
     
+    def test_fgpu_msg_input_standalone(self):
+        # Test standalone input message (Previously bug #1110)
+        self._checkExpected(py_fgpu_standalone_msg_input, cpp_fgpu_standalone_msg_input) 
 
     
     # message output
