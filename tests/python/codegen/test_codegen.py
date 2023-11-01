@@ -268,7 +268,7 @@ def movement_request(message_in: pyflamegpu.MessageArray2D, message_out: pyflame
 """
 cpp_fgpu_name_not_attr = """\
 FLAMEGPU_AGENT_FUNCTION(movement_request, flamegpu::MessageArray2D, flamegpu::MessageArray2D){
-    auto AGENT_START_COUNT = int(2);
+    auto AGENT_START_COUNT = static_cast<int>(2);
     return flamegpu::ALIVE;
 }
 """
