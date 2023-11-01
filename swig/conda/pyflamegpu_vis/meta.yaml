@@ -23,6 +23,7 @@ requirements:
     - freetype
     - devil
     - glew
+    - fontconfig # [linux]
   host:
     - python
     - astpretty
