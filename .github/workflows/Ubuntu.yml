@@ -79,7 +79,7 @@ jobs:
     env:
       # Workflow specific constants for building a specific example
       # Note this assumes the example exists in cpp, rather than cpp_rtc subdirectory
-      INDIVIDUAL_EXAMPLE: "game_of_life"
+      INDIVIDUAL_EXAMPLE: ${{ fromJSON('{true:"game_of_life",false:""}')[matrix.config.name == 'Release' && matrix.VISUALISATION == 'OFF'] }}
       # Define constants
       BUILD_DIR: "build"
       FLAMEGPU_BUILD_TESTS: "ON"

@@ -79,7 +79,8 @@ jobs:
     env:
       # Workflow specific constants for building a specific example
       # Note this assumes the example exists in cpp, rather than cpp_rtc subdirectory
-      INDIVIDUAL_EXAMPLE: "game_of_life"
+      # The individual example is only built for some built matrices, to spend less time in CI.
+      INDIVIDUAL_EXAMPLE: ${{ fromJSON('{true:"game_of_life",false:""}')[matrix.config.name == 'Release' && matrix.VISUALISATION == 'OFF'] }}
       # Compute the wheelhouse name which should be unique within the matrix. This must be unique per build matrix/job combination
       ARTIFACT_NAME: wheel-windows-${{ matrix.cudacxx.cuda }}-${{matrix.python}}-${{ matrix.VISUALISATION }}-${{ matrix.config.name }}-${{ matrix.cudacxx.os }}
       # Define constants
