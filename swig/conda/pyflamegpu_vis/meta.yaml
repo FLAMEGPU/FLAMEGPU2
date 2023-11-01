@@ -20,10 +20,6 @@ requirements:
     - swig ==4.0.2 # Have to manually direct swig to find this
     - git
     - cmake
-    - freetype
-    - devil
-    - glew
-    - fontconfig # [linux]
   host:
     - python
     - astpretty
@@ -32,12 +28,17 @@ requirements:
     - setuptools >=40.8.0
     - wheel
     - build
-
+    - sdl2
+    - freetype
+    - devil
+    - glew
+    - fontconfig # [linux]
   run:
     - python
     - astpretty
     - cuda-cudart
     - cuda-nvrtc
+    - devil # Does not strong link, must be specified here to suppress warning
 
 build:
   # Allow certain env vars to be passed through to build.sh. this seems to set warnings...
