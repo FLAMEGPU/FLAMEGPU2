@@ -22,12 +22,6 @@ defaults:
     # Default to using bash regardless of OS unless otherwise specified.
     shell: bash
 
-# @todo - add a job/step which validates the version is of the correct format (for pre releases) and that the git tag matches the CMake/header version(s) 
-
-# Several jobs with some dependencies between them.
-# + Thorough Ubuntu builds
-#   + MPI 2.x+
-
 jobs:
   build-ubuntu:
     runs-on: ${{ matrix.cudacxx.os }}
