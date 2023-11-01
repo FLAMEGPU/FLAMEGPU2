@@ -1150,10 +1150,14 @@ class CodeGenerator:
         # check calls but let attributes check in their own dispatcher
         funcs = self._device_functions + self.pythonbuiltins + [self._input_message_var] # message_input variable is a valid function name as certain message types have arguments on iterator
         if isinstance(t.func, ast.Name):
-            if (t.func.id not in funcs):
-                self.RaiseWarning(t, "Function call is not a defined FLAME GPU device function or a supported python built in.")
-            # dispatch even if warning raised
-            self.dispatch(t.func)
+            if t.func.id in self.basic_arg_types:
+                # Special case for casting python basic types (int/float)
+                self.write(f"static_cast<{t.func.id}>")
+            else:
+                if (t.func.id not in funcs):
+                    self.RaiseWarning(t, "Function call is not a defined FLAME GPU device function or a supported python built in.")
+                # dispatch even if warning raised
+                self.dispatch(t.func)
         elif isinstance(t.func, ast.Lambda):
             self.dispatch(t.func) # not supported
         else:
