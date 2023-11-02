@@ -83,13 +83,14 @@ class TestMPIEnsemble : public testing::Test {
         model->newLayer().addHostFunction(model_step);
     }
     void initPlans() {
-        // 100 runs, each 10 steps which take >100ms each,
+        // 10 runs per rank, steps which take >100ms each,
         // therefore each sim will take >1 second.
-        // Estimate 30 seconds for full test across 4 threads
-        plans = new flamegpu::RunPlanVector(*model, 100);
+        // Estimate 10 seconds for full test across any world size
+        const int RUNS_PER_RANK = 10;
+        plans = new flamegpu::RunPlanVector(*model, RUNS_PER_RANK * world_size);
         plans->setSteps(10);
-        plans->setPropertyLerpRange<int>("counter", 0, 99);
-        plans->setPropertyLerpRange<int>("init_counter", 0, 99);
+        plans->setPropertyLerpRange<int>("counter", 0, (RUNS_PER_RANK * world_size) - 1);
+        plans->setPropertyLerpRange<int>("init_counter", 0, (RUNS_PER_RANK * world_size) - 1);
     }
     void initExitLoggingConfig() {
         exit_log_cfg = new flamegpu::LoggingConfig(*model);
