@@ -14,6 +14,10 @@ requirements:
   build:
     - {{ compiler('cxx') }}
     - {{ compiler('cuda') }}
+    - {{ cdt('libglvnd') }}  # [linux]
+    - {{ cdt('libglvnd-opengl') }}  # [linux]
+    - sysroot_{{ target_platform }} 2.17  # [linux]
+    #- {{ cdt('mesa-libgl-devel') }} # [linux] # works but super old?
     - cuda-cudart-dev # [linux]
     - cuda-nvrtc-dev # [linux]
     - libcurand-dev # [linux]
