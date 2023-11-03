@@ -275,7 +275,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                     } else {
                         // Progress flush
                         if (config.verbosity >= Verbosity::Default && config.error_level != EnsembleConfig::Fast) {
-                            fprintf(stderr, "\rWarning: Run %u failed on rank %d, device %d, thread %u with exception: \n%s\n",
+                            fprintf(stderr, "Warning: Run %u failed on rank %d, device %d, thread %u with exception: \n%s\n",
                                 e_detail.run_id, status.MPI_SOURCE, e_detail.device_id, e_detail.runner_id, e_detail.exception_string);
                         }
                     }
@@ -316,14 +316,19 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                         } else {
                             // Progress flush
                             if (config.verbosity >= Verbosity::Default && config.error_level != EnsembleConfig::Fast) {
-                                fprintf(stderr, "\rWarning: Run %u failed on rank %d, device %d, thread %u with exception: \n%s\n",
+                                fprintf(stderr, "Warning: Run %u failed on rank %d, device %d, thread %u with exception: \n%s\n",
                                     e_detail.run_id, world_rank, e_detail.device_id, e_detail.runner_id, e_detail.exception_string);
                             }
                         }
                         run_id = detail::MPISimRunner::Signal::RequestJob;
                     }
                     if (run_id == detail::MPISimRunner::Signal::RequestJob) {
-                        r.store(next_run++);
+                        r.store(next_run++);                        
+                        // Print progress to console
+                        if (config.verbosity >= Verbosity::Default) {
+                            fprintf(stdout, "MPI ensemble assigned run %d/%u to rank 0\n", next_run, static_cast<unsigned int>(plans.size()));
+                            fflush(stdout);
+                        }
                     }
                 }
                 // Check whether MPI runners require a job assignment
@@ -352,13 +357,13 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                         status.MPI_SOURCE,       // int destination
                         EnvelopeTag::AssignJob,  // int tag
                         MPI_COMM_WORLD);         // MPI_Comm communicator
+                    if (next_run >= plans.size()) ++mpi_runners_fin;
+                    ++next_run;
                     // Print progress to console
                     if (config.verbosity >= Verbosity::Default) {
                         fprintf(stdout, "MPI ensemble assigned run %d/%u to rank %d\n", next_run, static_cast<unsigned int>(plans.size()), status.MPI_SOURCE);
                         fflush(stdout);
                     }
-                    if (next_run >= plans.size()) ++mpi_runners_fin;
-                    ++next_run;
                     // Check again
                     MPI_Iprobe(MPI_ANY_SOURCE, EnvelopeTag::RequestJob, MPI_COMM_WORLD, &flag, &status);
                 }

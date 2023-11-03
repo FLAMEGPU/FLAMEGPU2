@@ -148,7 +148,7 @@ TEST_F(TestMPIEnsemble, success) {
     std::string errors = testing::internal::GetCapturedStderr();
     // Expect no warnings (stderr) but outputs on progress and timing
     if (world_rank == 0) {
-        EXPECT_TRUE(output.find("CUDAEnsemble progress") != std::string::npos);   // E.g. CUDAEnsemble progress: 1/2
+        EXPECT_TRUE(output.find("MPI ensemble assigned run ") != std::string::npos);   // E.g. MPI ensemble assigned run %d/%u to rank %d
         EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
         EXPECT_TRUE(errors.empty());
     } else {
@@ -171,7 +171,7 @@ TEST_F(TestMPIEnsemble, success_verbose) {
     std::string errors = testing::internal::GetCapturedStderr();
     // Expect no warnings (stderr) but outputs on progress and timing
     if (world_rank == 0) {
-        EXPECT_TRUE(output.find("CUDAEnsemble progress") != std::string::npos);   // E.g. CUDAEnsemble progress: 1/2
+        EXPECT_TRUE(output.find("MPI ensemble assigned run ") != std::string::npos);   // E.g. MPI ensemble assigned run %d/%u to rank %d
         EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
         EXPECT_TRUE(output.find("Ensemble time elapsed") != std::string::npos);   // E.g. Ensemble time elapsed: 0.006000s
         EXPECT_TRUE(errors.empty());
@@ -199,7 +199,7 @@ TEST_F(TestMPIEnsemble, error_off) {
         // With error off, we would expect to see run index 10 fail
         // Therefore 1 returned instead of 0
         EXPECT_EQ(err_count, 1u);
-        EXPECT_TRUE(output.find("CUDAEnsemble progress") != std::string::npos);   // E.g. CUDAEnsemble progress: 1/2
+        EXPECT_TRUE(output.find("MPI ensemble assigned run ") != std::string::npos);   // E.g. MPI ensemble assigned run %d/%u to rank %d
         EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
         EXPECT_TRUE(errors.find("Warning: Run 10 failed on rank ") != std::string::npos);  // E.g. Warning: Run 10 failed on rank 0, device 0, thread 0 with exception:
     } else {
@@ -227,7 +227,7 @@ TEST_F(TestMPIEnsemble, error_slow) {
         // Get stderr and stdout
         const std::string output = testing::internal::GetCapturedStdout();
         const std::string errors = testing::internal::GetCapturedStderr();
-        EXPECT_TRUE(output.find("CUDAEnsemble progress") != std::string::npos);   // E.g. CUDAEnsemble progress: 1/2
+        EXPECT_TRUE(output.find("MPI ensemble assigned run ") != std::string::npos);   // E.g. MPI ensemble assigned run %d/%u to rank %d
         EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
         EXPECT_TRUE(errors.find("Warning: Run 10 failed on rank ") != std::string::npos);  // E.g. Warning: Run 10 failed on rank 0, device 0, thread 0 with exception:
     } else {
@@ -257,7 +257,7 @@ TEST_F(TestMPIEnsemble, error_fast) {
         // Get stderr and stdout
         const std::string output = testing::internal::GetCapturedStdout();
         const std::string errors = testing::internal::GetCapturedStderr();
-        EXPECT_TRUE(output.find("CUDAEnsemble progress") != std::string::npos);   // E.g. CUDAEnsemble progress: 1/2
+        EXPECT_TRUE(output.find("MPI ensemble assigned run ") != std::string::npos);   // E.g. MPI ensemble assigned run %d/%u to rank %d
 #ifdef _DEBUG
         EXPECT_TRUE(errors.find("Run 10 failed on rank") != std::string::npos);   // E.g. Run 10 failed on rank 0, device 0, thread 0 with exception:
 #else
