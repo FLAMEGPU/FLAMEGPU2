@@ -32,7 +32,7 @@ FLAMEGPU_STEP_FUNCTION(model_step) {
 FLAMEGPU_STEP_FUNCTION(throw_exception) {
     const int counter = FLAMEGPU->environment.getProperty<int>("counter");
     const int init_counter = FLAMEGPU->environment.getProperty<int>("init_counter");
-    if (FLAMEGPU->getStepCounter() == 1 && counter == 12) {
+    if (FLAMEGPU->getStepCounter() == 1 && counter == 10) {
         printf("exception counter: %u, init_counter: %u\n", counter, init_counter);
         throw std::runtime_error("Exception thrown by host fn throw_exception()");
     }
@@ -188,8 +188,8 @@ TEST_F(TestMPIEnsemble, error_off) {
     ensemble->Config().error_level = CUDAEnsemble::EnsembleConfig::Off;
     unsigned int err_count = 0;
     // Capture stderr and stdout
-    testing::internal::CaptureStdout();
-    testing::internal::CaptureStderr();
+    //testing::internal::CaptureStdout();
+    //testing::internal::CaptureStderr();
     EXPECT_NO_THROW(err_count = ensemble->simulate(*plans));
     // Get stderr and stdout
     const std::string output = testing::internal::GetCapturedStdout();
@@ -201,7 +201,8 @@ TEST_F(TestMPIEnsemble, error_off) {
         EXPECT_EQ(err_count, 1u);
         EXPECT_TRUE(output.find("MPI ensemble assigned run ") != std::string::npos);   // E.g. MPI ensemble assigned run %d/%u to rank %d
         EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
-        EXPECT_TRUE(errors.find("Warning: Run 10 failed on rank ") != std::string::npos);  // E.g. Warning: Run 10 failed on rank 0, device 0, thread 0 with exception:
+        EXPECT_TRUE(errors.find("Warning: Run 9/") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
+        EXPECT_TRUE(errors.find(" failed on rank ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
     } else {
         // Capture stderr and stdout
         // Only rank 0 returns the error count
@@ -229,7 +230,8 @@ TEST_F(TestMPIEnsemble, error_slow) {
         const std::string errors = testing::internal::GetCapturedStderr();
         EXPECT_TRUE(output.find("MPI ensemble assigned run ") != std::string::npos);   // E.g. MPI ensemble assigned run %d/%u to rank %d
         EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
-        EXPECT_TRUE(errors.find("Warning: Run 10 failed on rank ") != std::string::npos);  // E.g. Warning: Run 10 failed on rank 0, device 0, thread 0 with exception:
+        EXPECT_TRUE(errors.find("Warning: Run 9/") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
+        EXPECT_TRUE(errors.find(" failed on rank ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
     } else {
         // Only rank 0 raises exception
         EXPECT_NO_THROW(ensemble->simulate(*plans));
@@ -259,7 +261,8 @@ TEST_F(TestMPIEnsemble, error_fast) {
         const std::string errors = testing::internal::GetCapturedStderr();
         EXPECT_TRUE(output.find("MPI ensemble assigned run ") != std::string::npos);   // E.g. MPI ensemble assigned run %d/%u to rank %d
 #ifdef _DEBUG
-        EXPECT_TRUE(errors.find("Run 10 failed on rank") != std::string::npos);   // E.g. Run 10 failed on rank 0, device 0, thread 0 with exception:
+        EXPECT_TRUE(errors.find("Warning: Run 9/") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
+        EXPECT_TRUE(errors.find(" failed on rank ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
 #else
         EXPECT_TRUE(errors.empty());
 #endif

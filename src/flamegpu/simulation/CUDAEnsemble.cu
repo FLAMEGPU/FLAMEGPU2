@@ -275,8 +275,9 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                     } else {
                         // Progress flush
                         if (config.verbosity >= Verbosity::Default && config.error_level != EnsembleConfig::Fast) {
-                            fprintf(stderr, "Warning: Run %u failed on rank %d, device %d, thread %u with exception: \n%s\n",
-                                e_detail.run_id, status.MPI_SOURCE, e_detail.device_id, e_detail.runner_id, e_detail.exception_string);
+                            fprintf(stderr, "Warning: Run %u/%u failed on rank %d, device %d, thread %u with exception: \n%s\n",
+                                e_detail.run_id + 1, static_cast<unsigned int>(plans.size()), status.MPI_SOURCE, e_detail.device_id, e_detail.runner_id, e_detail.exception_string);
+                            fflush(stderr);
                         }
                     }
                     // Check again
@@ -316,8 +317,9 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                         } else {
                             // Progress flush
                             if (config.verbosity >= Verbosity::Default && config.error_level != EnsembleConfig::Fast) {
-                                fprintf(stderr, "Warning: Run %u failed on rank %d, device %d, thread %u with exception: \n%s\n",
-                                    e_detail.run_id, world_rank, e_detail.device_id, e_detail.runner_id, e_detail.exception_string);
+                                fprintf(stderr, "Warning: Run %u/%u failed on rank %d, device %d, thread %u with exception: \n%s\n",
+                                    e_detail.run_id + 1, static_cast<unsigned int>(plans.size()), world_rank, e_detail.device_id, e_detail.runner_id, e_detail.exception_string);
+                                fflush(stderr);
                             }
                         }
                         run_id = detail::MPISimRunner::Signal::RequestJob;
@@ -325,7 +327,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                     if (run_id == detail::MPISimRunner::Signal::RequestJob) {
                         r.store(next_run++);                        
                         // Print progress to console
-                        if (config.verbosity >= Verbosity::Default) {
+                        if (config.verbosity >= Verbosity::Default && next_run <= plans.size()) {
                             fprintf(stdout, "MPI ensemble assigned run %d/%u to rank 0\n", next_run, static_cast<unsigned int>(plans.size()));
                             fflush(stdout);
                         }
@@ -360,7 +362,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                     if (next_run >= plans.size()) ++mpi_runners_fin;
                     ++next_run;
                     // Print progress to console
-                    if (config.verbosity >= Verbosity::Default) {
+                    if (config.verbosity >= Verbosity::Default && next_run <= plans.size()) {
                         fprintf(stdout, "MPI ensemble assigned run %d/%u to rank %d\n", next_run, static_cast<unsigned int>(plans.size()), status.MPI_SOURCE);
                         fflush(stdout);
                     }
@@ -445,13 +447,83 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
         }
 
         // Notify all local runners to exit
-        for (auto &r : next_runs) {
-            r.store(plans.size());
+        for (unsigned int i = 0; i < TOTAL_RUNNERS; ++i) {
+            auto &r = next_runs[i];
+            if (r.exchange(plans.size()) == detail::MPISimRunner::Signal::RunFailed) {
+                if (world_rank == 0) {
+                    ++err_count;
+                    // Fetch error detail
+                    detail::AbstractSimRunner::ErrorDetail e_detail;
+                    {
+                        // log_export_mutex is treated as our protection for race conditions on err_detail
+                        std::lock_guard<std::mutex> lck(log_export_queue_mutex);
+                        // Fetch corresponding error detail
+                        bool success = false;
+                        const unsigned int t_device_id = i / config.concurrent_runs;
+                        const unsigned int t_runner_id = i % config.concurrent_runs;
+                        for (auto it = err_detail_local.begin(); it != err_detail_local.end(); ++it) {
+                            if (it->runner_id == t_runner_id && it->device_id == t_device_id) {
+                                e_detail = *it;
+                                err_detail.emplace(world_rank, e_detail);
+                                err_detail_local.erase(it);
+                                success = true;
+                                break;
+                            }
+                        }
+                        if (!success) {
+                            THROW exception::UnknownInternalError("Management thread failed to locate reported error from device %u runner %u, in CUDAEnsemble::simulate()", t_device_id, t_runner_id);
+                        }
+                    }
+                    // Progress flush
+                    if (config.verbosity >= Verbosity::Default && config.error_level != EnsembleConfig::Fast) {
+                        fprintf(stderr, "Warning: Run %u/%u failed on rank %d, device %d, thread %u with exception: \n%s\n",
+                            e_detail.run_id + 1, static_cast<unsigned int>(plans.size()), world_rank, e_detail.device_id, e_detail.runner_id, e_detail.exception_string);
+                        fflush(stderr);
+                    }
+                } else {
+                 // @todo
+                }
+            }
         }
         // Wait for all runners to exit
         for (unsigned int i = 0; i < TOTAL_RUNNERS; ++i) {
             runners[i]->join();
             delete runners[i];
+            if (next_runs[i].load() == detail::MPISimRunner::Signal::RunFailed) {
+                if (world_rank == 0) {
+                    ++err_count;
+                    // Fetch error detail
+                    detail::AbstractSimRunner::ErrorDetail e_detail;
+                    {
+                        // log_export_mutex is treated as our protection for race conditions on err_detail
+                        std::lock_guard<std::mutex> lck(log_export_queue_mutex);
+                        // Fetch corresponding error detail
+                        bool success = false;
+                        const unsigned int t_device_id = i / config.concurrent_runs;
+                        const unsigned int t_runner_id = i % config.concurrent_runs;
+                        for (auto it = err_detail_local.begin(); it != err_detail_local.end(); ++it) {
+                            if (it->runner_id == t_runner_id && it->device_id == t_device_id) {
+                                e_detail = *it;
+                                err_detail.emplace(world_rank, e_detail);
+                                err_detail_local.erase(it);
+                                success = true;
+                                break;
+                            }
+                        }
+                        if (!success) {
+                            THROW exception::UnknownInternalError("Management thread failed to locate reported error from device %u runner %u, in CUDAEnsemble::simulate()", t_device_id, t_runner_id);
+                        }
+                    }
+                    // Progress flush
+                    if (config.verbosity >= Verbosity::Default && config.error_level != EnsembleConfig::Fast) {
+                        fprintf(stderr, "Warning: Run %u/%u failed on rank %d, device %d, thread %u with exception: \n%s\n",
+                            e_detail.run_id + 1, static_cast<unsigned int>(plans.size()), world_rank, e_detail.device_id, e_detail.runner_id, e_detail.exception_string);
+                        fflush(stderr);
+                    }
+                } else {
+                 // @todo
+                }
+            }
         }
 #endif
     } else {
