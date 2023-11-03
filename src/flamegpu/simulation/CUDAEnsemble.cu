@@ -242,7 +242,6 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
         // If work_rank == 0, also perform the assignments
         if (world_rank == 0) {
             unsigned int next_run = 0;
-            unsigned int next_run_reported = 0;
             MPI_Status status;
             int flag;
             int mpi_runners_fin = 1;  // Start at 1 because we have always already finished
@@ -353,18 +352,15 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                         status.MPI_SOURCE,       // int destination
                         EnvelopeTag::AssignJob,  // int tag
                         MPI_COMM_WORLD);         // MPI_Comm communicator
-
+                    // Print progress to console
+                    if (config.verbosity >= Verbosity::Default) {
+                        fprintf(stdout, "MPI ensemble assigned run %d/%u to rank %d\n", next_run, static_cast<unsigned int>(plans.size()), status.MPI_SOURCE);
+                        fflush(stdout);
+                    }
                     if (next_run >= plans.size()) ++mpi_runners_fin;
                     ++next_run;
                     // Check again
                     MPI_Iprobe(MPI_ANY_SOURCE, EnvelopeTag::RequestJob, MPI_COMM_WORLD, &flag, &status);
-                }
-                // Print progress to console
-                if (config.verbosity >= Verbosity::Default && next_run_reported != next_run) {
-                    const int progress = static_cast<int>(next_run) - static_cast<int>(TOTAL_RUNNERS * world_size);
-                    fprintf(stdout, "\rCUDAEnsemble progress: %d/%u", progress < 0 ? 0 : progress, static_cast<unsigned int>(plans.size()));
-                    fflush(stdout);
-                    next_run_reported = next_run;
                 }
                 // Yield, rather than hammering the processor
                 std::this_thread::yield();
