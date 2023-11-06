@@ -23,20 +23,6 @@ struct RunLog;
  */
 class CUDAEnsemble {
  public:
-#ifdef FLAMEGPU_ENABLE_MPI
-    // Tags to different the MPI messages used in protocol
-    enum EnvelopeTag : int {
-        // Sent from worker to manager to request a job index to process
-        RequestJob = 0,
-        // Sent from manager to worker to assign a job index to process in response to AssignJob
-        AssignJob = 1,
-        // Sent from worker to manager to report an error during job execution
-        // If fail fast is enabled, following RequestJob will receive an exit job id (>=plans.size())
-        ReportError = 2,
-        // Sent from worker to manager to report GPUs for telemetry
-        TelemetryDevices = 3,
-    };
-#endif
     /**
      * Execution config for running a CUDAEnsemble
      */

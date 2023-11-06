@@ -204,6 +204,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/CUDAScatter.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/CUDAMacroEnvironment.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/MPISimRunner.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/MPIEnsemble.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/SimRunner.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/SimLogger.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/AgentInterface.h
