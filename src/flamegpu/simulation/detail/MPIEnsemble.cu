@@ -6,13 +6,14 @@
 namespace flamegpu {
 namespace detail {
 
-MPIEnsemble::MPIEnsemble(const CUDAEnsemble::EnsembleConfig &_config)
+MPIEnsemble::MPIEnsemble(const CUDAEnsemble::EnsembleConfig &_config, const unsigned int _total_runs)
     : MPI_ERROR_DETAIL(AbstractSimRunner::createErrorDetailMPIDatatype())
     , config(_config)
     , world_rank(getWorldRank())
-    , world_size(getWorldSize()) { }
+    , world_size(getWorldSize())
+    , total_runs(_total_runs) { }
 
-int MPIEnsemble::receiveErrors(std::multimap<int, AbstractSimRunner::ErrorDetail> &err_detail, const unsigned int total_runs) {
+int MPIEnsemble::receiveErrors(std::multimap<int, AbstractSimRunner::ErrorDetail> &err_detail) {
     int errCount = 0;
     if (world_rank == 0) {
         MPI_Status status;
@@ -51,7 +52,7 @@ int MPIEnsemble::receiveErrors(std::multimap<int, AbstractSimRunner::ErrorDetail
     }
     return errCount;
 }
-int MPIEnsemble::receiveJobRequests(unsigned int &next_run, const unsigned int total_runs) {
+int MPIEnsemble::receiveJobRequests(unsigned int &next_run) {
     int mpi_runners_fin = 0;
     if (world_rank == 0) {
         MPI_Status status;
@@ -206,6 +207,42 @@ void MPIEnsemble::initMPI() {
         if (thread_provided != MPI_THREAD_SINGLE) {
             THROW exception::UnknownInternalError("MPI unable to provide MPI_THREAD_SINGLE support");
         }
+    }
+}
+void MPIEnsemble::retrieveLocalErrorDetail(std::mutex &log_export_queue_mutex, std::multimap<int, AbstractSimRunner::ErrorDetail> &err_detail, 
+std::vector<detail::AbstractSimRunner::ErrorDetail> &err_detail_local, const int i) {
+    // Fetch error detail
+    detail::AbstractSimRunner::ErrorDetail e_detail;
+    {
+        // log_export_mutex is treated as our protection for race conditions on err_detail
+        std::lock_guard<std::mutex> lck(log_export_queue_mutex);
+        // Fetch corresponding error detail
+        bool success = false;
+        const unsigned int t_device_id = i / config.concurrent_runs;
+        const unsigned int t_runner_id = i % config.concurrent_runs;
+        for (auto it = err_detail_local.begin(); it != err_detail_local.end(); ++it) {
+            if (it->runner_id == t_runner_id && it->device_id == t_device_id) {
+                e_detail = *it;
+                err_detail.emplace(world_rank, e_detail);
+                err_detail_local.erase(it);
+                success = true;
+                break;
+            }
+        }
+        if (!success) {
+            THROW exception::UnknownInternalError("Management thread failed to locate reported error from device %u runner %u, in CUDAEnsemble::simulate()", t_device_id, t_runner_id);
+        }
+    }
+    if (world_rank == 0) {
+        // Progress flush
+        if (config.verbosity >= Verbosity::Default && config.error_level != CUDAEnsemble::EnsembleConfig::Fast) {
+            fprintf(stderr, "Warning: Run %u/%u failed on rank %d, device %d, thread %u with exception: \n%s\n",
+                e_detail.run_id + 1, total_runs, world_rank, e_detail.device_id, e_detail.runner_id, e_detail.exception_string);
+            fflush(stderr);
+        }
+    } else {
+        // Notify 0 that an error occurred, with the error detail
+        sendErrorDetail(e_detail);
     }
 }
 

@@ -10,7 +10,6 @@
 #include "flamegpu/defines.h"
 
 namespace flamegpu {
-
 struct ModelData;
 class ModelDescription;
 class RunPlanVector;
