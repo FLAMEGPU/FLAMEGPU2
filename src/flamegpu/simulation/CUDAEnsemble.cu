@@ -278,7 +278,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                     if (runner_status == detail::MPISimRunner::Signal::RunFailed) {
                         // Fetch the job id, increment local error counter
                         const unsigned int failed_run_id = err_cts[i].exchange(UINT_MAX);
-                        ++err_count;                        
+                        ++err_count;
                         // Retrieve and handle local error detail
                         mpi->retrieveLocalErrorDetail(log_export_queue_mutex, err_detail, err_detail_local, i);
                         runner_status = detail::MPISimRunner::Signal::RequestJob;
