@@ -325,7 +325,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                         run_id = detail::MPISimRunner::Signal::RequestJob;
                     }
                     if (run_id == detail::MPISimRunner::Signal::RequestJob) {
-                        r.store(next_run++);                        
+                        r.store(next_run++);
                         // Print progress to console
                         if (config.verbosity >= Verbosity::Default && next_run <= plans.size()) {
                             fprintf(stdout, "MPI ensemble assigned run %d/%u to rank 0\n", next_run, static_cast<unsigned int>(plans.size()));

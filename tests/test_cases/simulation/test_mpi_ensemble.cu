@@ -33,7 +33,7 @@ FLAMEGPU_STEP_FUNCTION(throw_exception) {
     const int counter = FLAMEGPU->environment.getProperty<int>("counter");
     const int init_counter = FLAMEGPU->environment.getProperty<int>("init_counter");
     if (FLAMEGPU->getStepCounter() == 1 && counter == 10) {
-        printf("exception counter: %u, init_counter: %u\n", counter, init_counter);
+        // printf("exception counter: %u, init_counter: %u\n", counter, init_counter);
         throw std::runtime_error("Exception thrown by host fn throw_exception()");
     }
 }
@@ -182,14 +182,19 @@ TEST_F(TestMPIEnsemble, success_verbose) {
 
     validateLogs();
 }
+/**
+ * Note, tests do not differentiate between an error at rank 0 or another rank
+ * These failures follow different paths
+ * As written, the 9th job always throws an exception, this could be assigned to any rank
+ */
 TEST_F(TestMPIEnsemble, error_off) {
     model->newLayer().addHostFunction(throw_exception);
     initEnsemble();
     ensemble->Config().error_level = CUDAEnsemble::EnsembleConfig::Off;
     unsigned int err_count = 0;
     // Capture stderr and stdout
-    //testing::internal::CaptureStdout();
-    //testing::internal::CaptureStderr();
+    testing::internal::CaptureStdout();
+    testing::internal::CaptureStderr();
     EXPECT_NO_THROW(err_count = ensemble->simulate(*plans));
     // Get stderr and stdout
     const std::string output = testing::internal::GetCapturedStdout();
