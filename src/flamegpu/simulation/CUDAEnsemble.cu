@@ -68,11 +68,9 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
 #endif
 
     // Validate/init output directories
-    if (!config.out_directory.empty() && 
+    if (!config.out_directory.empty()
 #ifdef FLAMEGPU_ENABLE_MPI
-    (!config.mpi || mpi->world_rank == 0)
-#else
-    !config.mpi
+        && (!config.mpi || mpi->world_rank == 0)
 #endif
     ) {
         // Validate out format is right
@@ -234,7 +232,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
             // Wait for all runs to have been assigned, and all MPI runners to have been notified of fin
             while (next_run < plans.size() || mpi_runners_fin < mpi->world_size) {
                 // Check for errors
-                const int t_err_count = mpi->recieveErrors(err_detail, static_cast<unsigned int>(plans.size()));
+                const int t_err_count = mpi->receiveErrors(err_detail, static_cast<unsigned int>(plans.size()));
                 err_count += t_err_count;
                 if (t_err_count && config.error_level == EnsembleConfig::Fast) {
                     // Skip to end to kill workers
@@ -291,7 +289,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                     }
                 }
                 // Check whether MPI runners require a job assignment
-                mpi_runners_fin += mpi->recieveJobRequests(next_run, static_cast<unsigned int>(plans.size()));
+                mpi_runners_fin += mpi->receiveJobRequests(next_run, static_cast<unsigned int>(plans.size()));
                 // Yield, rather than hammering the processor
                 std::this_thread::yield();
             }
@@ -472,7 +470,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
         // Ensure all workers have finished before exit
         mpi->worldBarrier();
         // Check whether MPI runners have reported any final errors
-        err_count += mpi->recieveErrors(err_detail, static_cast<unsigned int>(plans.size()));
+        err_count += mpi->receiveErrors(err_detail, static_cast<unsigned int>(plans.size()));
         if (config.telemetry) {
             // All ranks should notify rank 0 of their GPU devices
             remote_device_names = mpi->assembleGPUsString();
@@ -485,20 +483,28 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
 
     // Ensemble has finished, print summary
     if (config.verbosity > Verbosity::Quiet &&
-       (!config.mpi || mpi->world_rank == 0) &&
+#ifdef FLAMEGPU_ENABLE_MPI
+        (!config.mpi || mpi->world_rank == 0) &&
+#endif
        (config.error_level != EnsembleConfig::Fast || err_count == 0)) {
         printf("\rCUDAEnsemble completed %u runs successfully!\n", static_cast<unsigned int>(plans.size() - err_count));
         if (err_count)
             printf("There were a total of %u errors.\n", err_count);
     }
     if ((config.timing || config.verbosity >= Verbosity::Verbose) &&
-       (!config.mpi || mpi->world_rank == 0) &&
+#ifdef FLAMEGPU_ENABLE_MPI
+    (!config.mpi || mpi->world_rank == 0) &&
+#endif
        (config.error_level != EnsembleConfig::Fast || err_count == 0)) {
         printf("Ensemble time elapsed: %fs\n", ensemble_elapsed_time);
     }
 
     // Send Telemetry
-    if (config.telemetry && (!config.mpi || mpi->world_rank == 0)) {
+    if (config.telemetry
+#ifdef FLAMEGPU_ENABLE_MPI
+       && (!config.mpi || mpi->world_rank == 0)
+#endif
+    ) {
         // Generate some payload items
         std::map<std::string, std::string> payload_items;
 #ifndef FLAMEGPU_ENABLE_MPI
@@ -532,7 +538,11 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
         }
     } else {
         // Encourage users who have opted out to opt back in, unless suppressed.
-        if ((config.verbosity > Verbosity::Quiet) && (!config.mpi || mpi->world_rank == 0)) {
+        if ((config.verbosity > Verbosity::Quiet)
+#ifdef FLAMEGPU_ENABLE_MPI
+            && (!config.mpi || mpi->world_rank == 0)
+#endif
+        ) {
             flamegpu::io::Telemetry::encourageUsage();
         }
     }

@@ -337,6 +337,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/DeviceStrings.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/MPISimRunner.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/MPIEnsemble.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/SimRunner.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/SimLogger.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/EnvironmentManager.cu
