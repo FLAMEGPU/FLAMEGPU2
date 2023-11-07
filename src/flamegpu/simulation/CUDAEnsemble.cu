@@ -278,19 +278,19 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                     if (runner_status == detail::MPISimRunner::Signal::RunFailed) {
                         // Fetch the job id, increment local error counter
                         const unsigned int failed_run_id = err_cts[i].exchange(UINT_MAX);
-                        ++err_count;
+                        ++err_count;                        
                         // Retrieve and handle local error detail
                         mpi->retrieveLocalErrorDetail(log_export_queue_mutex, err_detail, err_detail_local, i);
                         runner_status = detail::MPISimRunner::Signal::RequestJob;
                     }
                     if (runner_status == detail::MPISimRunner::Signal::RequestJob) {
                         next_run = mpi->requestJob();
+                        // Pass the job to runner that requested it
+                        next_runs[i].store(next_run);
                         // Break if assigned job is out of range, work is finished
                         if (next_run >= plans.size()) {
                             break;
                         }
-                        // Pass the job to runner that requested it
-                        next_runs[i].store(next_run);
                     }
                 }
                 std::this_thread::yield();
@@ -437,6 +437,13 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
             flamegpu::io::Telemetry::encourageUsage();
         }
     }
+
+#ifdef FLAMEGPU_ENABLE_MPI
+    if (config.mpi && mpi->world_rank != 0) {
+        // All errors are reported via rank 0
+        err_count = 0;
+    }
+#endif
 
     if (config.error_level == EnsembleConfig::Fast && err_count) {
         if (config.mpi) {

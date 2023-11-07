@@ -209,7 +209,15 @@ void MPIEnsemble::initMPI() {
         }
     }
 }
-void MPIEnsemble::retrieveLocalErrorDetail(std::mutex &log_export_queue_mutex, std::multimap<int, AbstractSimRunner::ErrorDetail> &err_detail,
+unsigned int MPIEnsemble::getDeviceIndex(const int j) {
+    int i = 0;
+    for (auto& d : config.devices) {
+        if (i++ == j)
+            return d;
+    }
+    return UINT_MAX;
+}
+void MPIEnsemble::retrieveLocalErrorDetail(std::mutex &log_export_queue_mutex, std::multimap<int, AbstractSimRunner::ErrorDetail> &err_detail, 
 std::vector<detail::AbstractSimRunner::ErrorDetail> &err_detail_local, const int i) {
     // Fetch error detail
     detail::AbstractSimRunner::ErrorDetail e_detail;
@@ -218,19 +226,24 @@ std::vector<detail::AbstractSimRunner::ErrorDetail> &err_detail_local, const int
         std::lock_guard<std::mutex> lck(log_export_queue_mutex);
         // Fetch corresponding error detail
         bool success = false;
-        const unsigned int t_device_id = i / config.concurrent_runs;
+        const unsigned int t_device_id = getDeviceIndex(i / config.concurrent_runs);
         const unsigned int t_runner_id = i % config.concurrent_runs;
         for (auto it = err_detail_local.begin(); it != err_detail_local.end(); ++it) {
             if (it->runner_id == t_runner_id && it->device_id == t_device_id) {
                 e_detail = *it;
-                err_detail.emplace(world_rank, e_detail);
+                if (world_rank == 0) {
+                    // Only rank 0 collects error details
+                    err_detail.emplace(world_rank, e_detail);
+                } else {
+                  // fprintf(stderr, "[%d] Purged error  from device %u runner %u\n", world_rank, t_device_id, t_runner_id);  // useful debug, breaks tests
+                }
                 err_detail_local.erase(it);
                 success = true;
                 break;
             }
         }
         if (!success) {
-            THROW exception::UnknownInternalError("Management thread failed to locate reported error from device %u runner %u, in CUDAEnsemble::simulate()", t_device_id, t_runner_id);
+            THROW exception::UnknownInternalError("[%d] Management thread failed to locate reported error from device %u runner %u from %u errors, in CUDAEnsemble::simulate()", world_rank, t_device_id, t_runner_id, static_cast<unsigned int>(err_detail_local.size()));
         }
     }
     if (world_rank == 0) {

@@ -65,9 +65,8 @@ void MPISimRunner::main() {
             } catch(std::exception &e) {
                 // log_export_mutex is treated as our protection for race conditions on err_detail
                 std::lock_guard<std::mutex> lck(log_export_queue_mutex);
-                log_export_queue.push(UINT_MAX);
                 // Build the error detail (fixed len char array for string)
-                printf("Fail: run: %u device: %u, runner: %u\n", run_id, device_id, runner_id);
+                // fprintf(stderr, "Fail: run: %u device: %u, runner: %u\n", run_id, device_id, runner_id);  // useful debug, breaks tests
                 err_detail.push_back(ErrorDetail{run_id, static_cast<unsigned int>(device_id), runner_id, });
                 strncpy(err_detail.back().exception_string, e.what(), sizeof(ErrorDetail::exception_string)-1);
                 err_detail.back().exception_string[sizeof(ErrorDetail::exception_string) - 1] = '\0';

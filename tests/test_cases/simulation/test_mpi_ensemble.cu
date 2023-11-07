@@ -199,6 +199,8 @@ TEST_F(TestMPIEnsemble, error_off) {
     // Get stderr and stdout
     const std::string output = testing::internal::GetCapturedStdout();
     const std::string errors = testing::internal::GetCapturedStderr();
+    // printf("[%d]output:\n:%s\n", world_rank, output.c_str());
+    // printf("[%d]errors:\n:%s\n", world_rank, errors.c_str());
     // Expect no warnings (stderr) but outputs on progress and timing
     if (world_rank == 0) {
         // With error off, we would expect to see run index 10 fail
@@ -233,6 +235,8 @@ TEST_F(TestMPIEnsemble, error_slow) {
         // Get stderr and stdout
         const std::string output = testing::internal::GetCapturedStdout();
         const std::string errors = testing::internal::GetCapturedStderr();
+        // printf("[%d]output:\n:%s\n", world_rank, output.c_str());
+        // printf("[%d]errors:\n:%s\n", world_rank, errors.c_str());
         EXPECT_TRUE(output.find("MPI ensemble assigned run ") != std::string::npos);   // E.g. MPI ensemble assigned run %d/%u to rank %d
         EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
         EXPECT_TRUE(errors.find("Warning: Run 9/") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
@@ -244,6 +248,8 @@ TEST_F(TestMPIEnsemble, error_slow) {
         // Get stderr and stdout
         const std::string output = testing::internal::GetCapturedStdout();
         const std::string errors = testing::internal::GetCapturedStderr();
+        // printf("[%d]output:\n:%s\n", world_rank, output.c_str());
+        // printf("[%d]errors:\n:%s\n", world_rank, errors.c_str());
         EXPECT_TRUE(output.empty());
         EXPECT_TRUE(errors.empty());
     }
@@ -264,6 +270,8 @@ TEST_F(TestMPIEnsemble, error_fast) {
         // Get stderr and stdout
         const std::string output = testing::internal::GetCapturedStdout();
         const std::string errors = testing::internal::GetCapturedStderr();
+        // printf("[%d]output:\n:%s\n", world_rank, output.c_str());
+        // printf("[%d]errors:\n:%s\n", world_rank, errors.c_str());
         EXPECT_TRUE(output.find("MPI ensemble assigned run ") != std::string::npos);   // E.g. MPI ensemble assigned run %d/%u to rank %d
 #ifdef _DEBUG
         EXPECT_TRUE(errors.find("Warning: Run 9/") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
@@ -277,6 +285,8 @@ TEST_F(TestMPIEnsemble, error_fast) {
         // Get stderr and stdout
         const std::string output = testing::internal::GetCapturedStdout();
         const std::string errors = testing::internal::GetCapturedStderr();
+        // printf("[%d]output:\n:%s\n", world_rank, output.c_str());
+        // printf("[%d]errors:\n:%s\n", world_rank, errors.c_str());
         EXPECT_TRUE(output.empty());
         EXPECT_TRUE(errors.empty());
     }

@@ -6,7 +6,6 @@
 #include <map>
 #include <string>
 #include <mutex>
-#include <vector>
 
 #include "flamegpu/simulation/CUDAEnsemble.h"
 #include "flamegpu/simulation/detail/MPISimRunner.h"
@@ -81,7 +80,6 @@ class MPIEnsemble {
     void retrieveLocalErrorDetail(std::mutex &log_export_queue_mutex,
         std::multimap<int, AbstractSimRunner::ErrorDetail> &err_detail,
         std::vector<AbstractSimRunner::ErrorDetail> &err_detail_local, int i);
-
  private:
     /**
      * @return Retrieve the local world rank from MPI
@@ -95,6 +93,10 @@ class MPIEnsemble {
      * If necessary initialise MPI, else do nothing
      */
     void initMPI();
+    /**
+     * Iterate config.devices to find the item at index j
+     */
+    unsigned int getDeviceIndex(const int j);
 };
 }  // namespace detail
 }  // namespace flamegpu
