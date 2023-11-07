@@ -26,23 +26,41 @@ namespace test_mpi_ensemble {
  * MPI_Init() and MPI_Finalize() can only be called once each
  */
 #ifdef FLAMEGPU_ENABLE_MPI
+int has_error = 0;
 FLAMEGPU_STEP_FUNCTION(model_step) {
     int counter = FLAMEGPU->environment.getProperty<int>("counter");
     counter+=1;
     FLAMEGPU->environment.setProperty<int>("counter", counter);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
-FLAMEGPU_STEP_FUNCTION(throw_exception) {
+FLAMEGPU_STEP_FUNCTION(throw_exception_rank_0) {
+    int world_rank = -1;
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    if (world_rank != 0) return;
     const int counter = FLAMEGPU->environment.getProperty<int>("counter");
     const int init_counter = FLAMEGPU->environment.getProperty<int>("init_counter");
-    if (FLAMEGPU->getStepCounter() == 1 && counter == 10) {
+    if (FLAMEGPU->getStepCounter() == 1 && counter > 6 && has_error < 2) {
+        ++has_error;
+        // printf("exception counter: %u, init_counter: %u\n", counter, init_counter);
+        throw std::runtime_error("Exception thrown by host fn throw_exception()");
+    }
+}
+FLAMEGPU_STEP_FUNCTION(throw_exception_rank_1) {
+    int world_rank = -1;
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    if (world_rank != 1) return;
+    const int counter = FLAMEGPU->environment.getProperty<int>("counter");
+    const int init_counter = FLAMEGPU->environment.getProperty<int>("init_counter");
+    if (FLAMEGPU->getStepCounter() == 1 && counter > 6 && has_error < 2) {
+        ++has_error;
         // printf("exception counter: %u, init_counter: %u\n", counter, init_counter);
         throw std::runtime_error("Exception thrown by host fn throw_exception()");
     }
 }
 class TestMPIEnsemble : public testing::Test {
  protected:
-    void SetUp() override {
+    void SetUp() override {        
+        has_error = 0;
         int flag = 0;
         MPI_Finalized(&flag);
         if (flag) {
@@ -185,13 +203,9 @@ TEST_F(TestMPIEnsemble, success_verbose) {
 
     validateLogs();
 }
-/**
- * Note, tests do not differentiate between an error at rank 0 or another rank
- * These failures follow different paths
- * As written, the 9th job always throws an exception, this could be assigned to any rank
- */
-TEST_F(TestMPIEnsemble, error_off) {
-    model->newLayer().addHostFunction(throw_exception);
+
+TEST_F(TestMPIEnsemble, error_off_rank_0) {
+    model->newLayer().addHostFunction(throw_exception_rank_0);
     initEnsemble();
     ensemble->Config().error_level = CUDAEnsemble::EnsembleConfig::Off;
     unsigned int err_count = 0;
@@ -208,10 +222,10 @@ TEST_F(TestMPIEnsemble, error_off) {
     if (world_rank == 0) {
         // With error off, we would expect to see run index 10 fail
         // Therefore 1 returned instead of 0
-        EXPECT_EQ(err_count, 1u);
+        EXPECT_EQ(err_count, 2u);
         EXPECT_TRUE(output.find("MPI ensemble assigned run ") != std::string::npos);   // E.g. MPI ensemble assigned run %d/%u to rank %d
         EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
-        EXPECT_TRUE(errors.find("Warning: Run 9/") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
+        EXPECT_TRUE(errors.find("Warning: Run ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
         EXPECT_TRUE(errors.find(" failed on rank ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
     } else {
         // Capture stderr and stdout
@@ -224,8 +238,8 @@ TEST_F(TestMPIEnsemble, error_off) {
     // Existing logs should still validate
     validateLogs();
 }
-TEST_F(TestMPIEnsemble, error_slow) {
-    model->newLayer().addHostFunction(throw_exception);
+TEST_F(TestMPIEnsemble, error_slow_rank_0) {
+    model->newLayer().addHostFunction(throw_exception_rank_0);
     initEnsemble();
     ensemble->Config().error_level = CUDAEnsemble::EnsembleConfig::Slow;
     // Capture stderr and stdout
@@ -242,7 +256,7 @@ TEST_F(TestMPIEnsemble, error_slow) {
         // printf("[%d]errors:\n:%s\n", world_rank, errors.c_str());
         EXPECT_TRUE(output.find("MPI ensemble assigned run ") != std::string::npos);   // E.g. MPI ensemble assigned run %d/%u to rank %d
         EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
-        EXPECT_TRUE(errors.find("Warning: Run 9/") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
+        EXPECT_TRUE(errors.find("Warning: Run ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
         EXPECT_TRUE(errors.find(" failed on rank ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
     } else {
         // Only rank 0 raises exception
@@ -259,8 +273,8 @@ TEST_F(TestMPIEnsemble, error_slow) {
     // Existing logs should still validate
     validateLogs();
 }
-TEST_F(TestMPIEnsemble, error_fast) {
-    model->newLayer().addHostFunction(throw_exception);
+TEST_F(TestMPIEnsemble, error_fast_rank_0) {
+    model->newLayer().addHostFunction(throw_exception_rank_0);
     initEnsemble();
     ensemble->Config().error_level = CUDAEnsemble::EnsembleConfig::Fast;
     // Capture stderr and stdout
@@ -277,7 +291,123 @@ TEST_F(TestMPIEnsemble, error_fast) {
         // printf("[%d]errors:\n:%s\n", world_rank, errors.c_str());
         EXPECT_TRUE(output.find("MPI ensemble assigned run ") != std::string::npos);   // E.g. MPI ensemble assigned run %d/%u to rank %d
 #ifdef _DEBUG
-        EXPECT_TRUE(errors.find("Warning: Run 9/") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
+        EXPECT_TRUE(errors.find("Warning: Run ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
+        EXPECT_TRUE(errors.find(" failed on rank ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
+#else
+        EXPECT_TRUE(errors.empty());
+#endif
+    } else {
+        // Only rank 0 raises exception and captures total number of successful/failed runs
+        EXPECT_NO_THROW(ensemble->simulate(*plans));
+        // Get stderr and stdout
+        const std::string output = testing::internal::GetCapturedStdout();
+        const std::string errors = testing::internal::GetCapturedStderr();
+        // printf("[%d]output:\n:%s\n", world_rank, output.c_str());
+        // printf("[%d]errors:\n:%s\n", world_rank, errors.c_str());
+        EXPECT_TRUE(output.empty());
+        EXPECT_TRUE(errors.empty());
+    }
+
+    // Existing logs should still validate
+    validateLogs();
+}
+TEST_F(TestMPIEnsemble, error_off_rank_1) {
+    if (world_size == 1) {
+        GTEST_SKIP() << "world_size==1, test not applicable.";
+    }
+    model->newLayer().addHostFunction(throw_exception_rank_1);
+    initEnsemble();
+    ensemble->Config().error_level = CUDAEnsemble::EnsembleConfig::Off;
+    unsigned int err_count = 0;
+    // Capture stderr and stdout
+    testing::internal::CaptureStdout();
+    testing::internal::CaptureStderr();
+    EXPECT_NO_THROW(err_count = ensemble->simulate(*plans));
+    // Get stderr and stdout
+    const std::string output = testing::internal::GetCapturedStdout();
+    const std::string errors = testing::internal::GetCapturedStderr();
+    // printf("[%d]output:\n:%s\n", world_rank, output.c_str());
+    // printf("[%d]errors:\n:%s\n", world_rank, errors.c_str());
+    // Expect no warnings (stderr) but outputs on progress and timing
+    if (world_rank == 0) {
+        // With error off, we would expect to see run index 10 fail
+        // Therefore 1 returned instead of 0
+        EXPECT_EQ(err_count, 2u);
+        EXPECT_TRUE(output.find("MPI ensemble assigned run ") != std::string::npos);   // E.g. MPI ensemble assigned run %d/%u to rank %d
+        EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
+        EXPECT_TRUE(errors.find("Warning: Run ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
+        EXPECT_TRUE(errors.find(" failed on rank ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
+    } else {
+        // Capture stderr and stdout
+        // Only rank 0 returns the error count
+        EXPECT_EQ(err_count, 0u);
+        EXPECT_TRUE(output.empty());
+        EXPECT_TRUE(errors.empty());
+    }
+
+    // Existing logs should still validate
+    validateLogs();
+}
+TEST_F(TestMPIEnsemble, error_slow_rank_1) {
+    if (world_size == 1) {
+        GTEST_SKIP() << "world_size==1, test not applicable.";
+    }
+    model->newLayer().addHostFunction(throw_exception_rank_1);
+    initEnsemble();
+    ensemble->Config().error_level = CUDAEnsemble::EnsembleConfig::Slow;
+    // Capture stderr and stdout
+    testing::internal::CaptureStdout();
+    testing::internal::CaptureStderr();
+    // Expect no warnings (stderr) but outputs on progress and timing
+    if (world_rank == 0) {
+        EXPECT_THROW(ensemble->simulate(*plans), flamegpu::exception::EnsembleError);
+        // @todo can't capture total number of successful/failed runs
+        // Get stderr and stdout
+        const std::string output = testing::internal::GetCapturedStdout();
+        const std::string errors = testing::internal::GetCapturedStderr();
+        // printf("[%d]output:\n:%s\n", world_rank, output.c_str());
+        // printf("[%d]errors:\n:%s\n", world_rank, errors.c_str());
+        EXPECT_TRUE(output.find("MPI ensemble assigned run ") != std::string::npos);   // E.g. MPI ensemble assigned run %d/%u to rank %d
+        EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
+        EXPECT_TRUE(errors.find("Warning: Run ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
+        EXPECT_TRUE(errors.find(" failed on rank ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
+    } else {
+        // Only rank 0 raises exception
+        EXPECT_NO_THROW(ensemble->simulate(*plans));
+        // @todo can't capture total number of successful/failed runs
+        // Get stderr and stdout
+        const std::string output = testing::internal::GetCapturedStdout();
+        const std::string errors = testing::internal::GetCapturedStderr();
+        // printf("[%d]output:\n:%s\n", world_rank, output.c_str());
+        // printf("[%d]errors:\n:%s\n", world_rank, errors.c_str());
+        EXPECT_TRUE(output.empty());
+        EXPECT_TRUE(errors.empty());
+    }
+    // Existing logs should still validate
+    validateLogs();
+}
+TEST_F(TestMPIEnsemble, error_fast_rank_1) {
+    if (world_size == 1) {
+        GTEST_SKIP() << "world_size==1, test not applicable.";
+    }
+    model->newLayer().addHostFunction(throw_exception_rank_1);
+    initEnsemble();
+    ensemble->Config().error_level = CUDAEnsemble::EnsembleConfig::Fast;
+    // Capture stderr and stdout
+    testing::internal::CaptureStdout();
+    testing::internal::CaptureStderr();
+    // Expect no warnings (stderr) but outputs on progress and timing
+    if (world_rank == 0) {
+        EXPECT_THROW(ensemble->simulate(*plans), flamegpu::exception::EnsembleError);
+        // @todo can't capture total number of successful/failed runs
+        // Get stderr and stdout
+        const std::string output = testing::internal::GetCapturedStdout();
+        const std::string errors = testing::internal::GetCapturedStderr();
+        // printf("[%d]output:\n:%s\n", world_rank, output.c_str());
+        // printf("[%d]errors:\n:%s\n", world_rank, errors.c_str());
+        EXPECT_TRUE(output.find("MPI ensemble assigned run ") != std::string::npos);   // E.g. MPI ensemble assigned run %d/%u to rank %d
+#ifdef _DEBUG
+        EXPECT_TRUE(errors.find("Warning: Run ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
         EXPECT_TRUE(errors.find(" failed on rank ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
 #else
         EXPECT_TRUE(errors.empty());
@@ -300,9 +430,12 @@ TEST_F(TestMPIEnsemble, error_fast) {
 #else
 TEST(TestMPIEnsemble, DISABLED_success) { }
 TEST(TestMPIEnsemble, DISABLED_success_verbose) { }
-TEST(TestMPIEnsemble, DISABLED_error_off) { }
-TEST(TestMPIEnsemble, DISABLED_error_slow) { }
-TEST(TestMPIEnsemble, DISABLED_error_fast) { }
+TEST(TestMPIEnsemble, DISABLED_error_off_rank_0) { }
+TEST(TestMPIEnsemble, DISABLED_error_slow_rank_0) { }
+TEST(TestMPIEnsemble, DISABLED_error_fast_rank_0) { }
+TEST(TestMPIEnsemble, DISABLED_error_off_rank_1) { }
+TEST(TestMPIEnsemble, DISABLED_error_slow_rank_1) { }
+TEST(TestMPIEnsemble, DISABLED_error_fast_rank_1) { }
 #endif
 
 }  // namespace test_mpi_ensemble
