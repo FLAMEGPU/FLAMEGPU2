@@ -120,7 +120,7 @@ class TestMPIEnsemble : public testing::Test {
     void initEnsemble() {
         initPlans();
         initExitLoggingConfig();
-        ensemble = new flamegpu::CUDAEnsemble (*model);
+        ensemble = new flamegpu::CUDAEnsemble(*model);
         ensemble->Config().concurrent_runs = 1;
         if (group_size == world_size) {
             // Single node MPI run

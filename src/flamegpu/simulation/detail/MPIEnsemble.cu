@@ -7,11 +7,11 @@ namespace flamegpu {
 namespace detail {
 
 MPIEnsemble::MPIEnsemble(const CUDAEnsemble::EnsembleConfig &_config, const unsigned int _total_runs)
-    : MPI_ERROR_DETAIL(AbstractSimRunner::createErrorDetailMPIDatatype())
-    , config(_config)
+    : config(_config)
     , world_rank(getWorldRank())
     , world_size(getWorldSize())
-    , total_runs(_total_runs) { }
+    , total_runs(_total_runs)
+    , MPI_ERROR_DETAIL(AbstractSimRunner::createErrorDetailMPIDatatype()) { }
 
 int MPIEnsemble::receiveErrors(std::multimap<int, AbstractSimRunner::ErrorDetail> &err_detail) {
     int errCount = 0;
@@ -196,6 +196,7 @@ int MPIEnsemble::getWorldSize() {
     return world_size;
 }
 void MPIEnsemble::initMPI() {
+    printf("MPI IS BEING INIT\n");
     int flag = 0;
     // MPI can only be init once, for certain test cases we do some initial MPI comms for setup
     MPI_Initialized(&flag);

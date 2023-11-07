@@ -15,7 +15,6 @@ namespace flamegpu {
 namespace detail {
 
 class MPIEnsemble {
-    const MPI_Datatype MPI_ERROR_DETAIL;
     const CUDAEnsemble::EnsembleConfig &config;
     // Tags to different the MPI messages used in protocol
     enum EnvelopeTag : int {
@@ -98,6 +97,10 @@ class MPIEnsemble {
      * Iterate config.devices to find the item at index j
      */
     unsigned int getDeviceIndex(const int j);
+    /**
+     * MPI representation of AbstractSimRunner::ErrorDetail type
+     */
+    const MPI_Datatype MPI_ERROR_DETAIL;
 };
 }  // namespace detail
 }  // namespace flamegpu
