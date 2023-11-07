@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <mutex>
+#include <vector>
 
 #include "flamegpu/simulation/CUDAEnsemble.h"
 #include "flamegpu/simulation/detail/MPISimRunner.h"
@@ -51,7 +52,6 @@ class MPIEnsemble {
     /**
      * If world_rank==0, receive and process any waiting job requests
      * @param next_run A reference to the int which tracks the progress through the run plan vector
-     * @param total_runs The total number of runs to be executed (only used for printing error warnings)
      * @return The number of runners that have been told to exit (if next_run>total_runs)
      */
     int receiveJobRequests(unsigned int &next_run);
@@ -80,6 +80,7 @@ class MPIEnsemble {
     void retrieveLocalErrorDetail(std::mutex &log_export_queue_mutex,
         std::multimap<int, AbstractSimRunner::ErrorDetail> &err_detail,
         std::vector<AbstractSimRunner::ErrorDetail> &err_detail_local, int i);
+
  private:
     /**
      * @return Retrieve the local world rank from MPI
