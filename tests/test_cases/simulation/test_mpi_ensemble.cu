@@ -20,6 +20,9 @@ namespace test_mpi_ensemble {
  * Executed on a single node TestMPIEnsemble 'mpirun -n 4 ./bin/Debug/tests', TestMPIEnsemble.local will run
  * Executed on multiple nodes TestMPIEnsemble 'mpirun -n $SLURM_JOB_NUM_NODES -hosts $SLURM_JOB_NODELIST ./bin/Debug/tests', TestMPIEnsemble.multi will run
  *
+ * Error tests do not currently control whether the error occurs on rank==0 or rank != 0
+ * These errors are handled differently, so it would benefit from duplicate tests (for multi-rank runs)
+ *
  * MPI_Init() and MPI_Finalize() can only be called once each
  */
 #ifdef FLAMEGPU_ENABLE_MPI

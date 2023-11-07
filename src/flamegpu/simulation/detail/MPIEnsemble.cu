@@ -215,7 +215,7 @@ unsigned int MPIEnsemble::getDeviceIndex(const int j) {
         if (i++ == j)
             return d;
     }
-    return UINT_MAX;
+    return j;  // If set is empty, then direct index should be used
 }
 void MPIEnsemble::retrieveLocalErrorDetail(std::mutex &log_export_queue_mutex, std::multimap<int, AbstractSimRunner::ErrorDetail> &err_detail, 
 std::vector<detail::AbstractSimRunner::ErrorDetail> &err_detail_local, const int i) {
