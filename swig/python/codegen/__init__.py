@@ -37,14 +37,17 @@ def translate(function: Union[str, Callable]) -> str:
         # get source for each function
         for d_f in d_functions:
             prepend_source += inspect.getsource(d_f);
-        # get source for function and preprend device functions
+        # get source for function and prepend device functions
         function_source = prepend_source + inspect.getsource(function)
         tree = ast.parse(function_source)
         # Filter constants
-        module_annontations = inspect.get_annotations(module) #  requires python 3.10
         module_members = inspect.getmembers(module);
-        print(module_annontations)
-        print(module_members)
+        # Emulate inspect.get_annotations() (requires python 3.10+)
+        module_annontations = {}
+        for mem in module_members:
+            if mem[0] == "__annotations__":
+                module_annontations = mem[1]
+                break
         prepend_c_source = ""
         # Find all annotated variables
         for key, val in module_annontations.items():
