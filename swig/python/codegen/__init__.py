@@ -40,6 +40,20 @@ def translate(function: Union[str, Callable]) -> str:
         # get source for function and preprend device functions
         function_source = prepend_source + inspect.getsource(function)
         tree = ast.parse(function_source)
-        return codegen(tree)
+        # Filter constants
+        module_annontations = inspect.get_annotations(module) #  requires python 3.10
+        module_members = inspect.getmembers(module);
+        print(module_annontations)
+        print(module_members)
+        prepend_c_source = ""
+        # Find all annotated variables
+        for key, val in module_annontations.items():
+            print(val.__name__)
+            if val.__name__ == "Final" or val.__name__ == "constant":
+                # Locate the literal for that variable (Python will precompute anything e.g. math.sqrt(12.5))
+                for mem in module_members:
+                    if key == mem[0]:
+                        prepend_c_source += f"constexpr auto {mem[0]} = {mem[1]};\n"
+        return prepend_c_source + codegen(tree)
     else:
         raise CodeGenException(f"Error: translate function requires either a source string or Callable")
