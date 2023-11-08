@@ -54,6 +54,7 @@ def translate(function: Union[str, Callable]) -> str:
                 for mem in module_members:
                     if key == mem[0]:
                         prepend_c_source += f"constexpr auto {mem[0]} = {mem[1]};\n"
+                        break
         return prepend_c_source + codegen(tree)
     else:
         raise CodeGenException(f"Error: translate function requires either a source string or Callable")
