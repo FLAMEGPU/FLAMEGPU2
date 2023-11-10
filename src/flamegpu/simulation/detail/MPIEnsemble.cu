@@ -196,7 +196,6 @@ int MPIEnsemble::getWorldSize() {
     return world_size;
 }
 void MPIEnsemble::initMPI() {
-    printf("MPI IS BEING INIT\n");
     int flag = 0;
     // MPI can only be init once, for certain test cases we do some initial MPI comms for setup
     MPI_Initialized(&flag);
