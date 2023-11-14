@@ -163,10 +163,18 @@ FLAMEGPU_AGENT_FUNCTION(outputdata, flamegpu::MessageNone, flamegpu::MessageBrut
     return flamegpu::ALIVE;
 }
 )###";
-        auto program = jitify::experimental::Program(kernel_src, headers, options);
-        auto kernel = program.kernel("flamegpu::agent_function_wrapper");
-        const std::vector<std::string> template_args = { "outputdata_impl", "flamegpu::MessageNone", "flamegpu::MessageBruteForce" };
         flamegpu::detail::SteadyClockTimer timer;
+        timer.start();
+        auto program = jitify::experimental::Program(kernel_src, headers, options);
+        timer.stop();
+        printf("Jitify Program took %fms\n", timer.getElapsedMilliseconds());
+        timer = flamegpu::detail::SteadyClockTimer();  // reset
+        timer.start();
+        auto kernel = program.kernel("flamegpu::agent_function_wrapper");
+        timer.stop();
+        printf("Jitify Kernel took %fms\n", timer.getElapsedMilliseconds());
+        timer = flamegpu::detail::SteadyClockTimer();  // reset
+        const std::vector<std::string> template_args = { "outputdata_impl", "flamegpu::MessageNone", "flamegpu::MessageBruteForce" };
         timer.start();
         // Actually compile the kernel
         jitify::experimental::KernelInstantiation(kernel, template_args);
