@@ -12,7 +12,7 @@
 
 #include "flamegpu/detail/compute_capability.cuh"
 #include "flamegpu/exception/FLAMEGPUException.h"
-#include "flamegpu/util/nvtx.h"
+#include "flamegpu/detail/SteadyClockTimer.h"
 
 /**
  * Find the cuda include directory.
@@ -145,7 +145,7 @@ int main(void) {
     getKnownHeaders(headers);
 
     // jitify to create program (with compilation settings)
-   // try {
+    try {
         const char* kernel_src = R"###(
 #include "flamegpu/runtime/DeviceAPI.cuh"
 #include "flamegpu/runtime/messaging/MessageNone/MessageNoneDevice.cuh"
@@ -166,15 +166,19 @@ FLAMEGPU_AGENT_FUNCTION(outputdata, flamegpu::MessageNone, flamegpu::MessageBrut
         auto program = jitify::experimental::Program(kernel_src, headers, options);
         auto kernel = program.kernel("flamegpu::agent_function_wrapper");
         const std::vector<std::string> template_args = { "outputdata_impl", "flamegpu::MessageNone", "flamegpu::MessageBruteForce" };
+        flamegpu::detail::SteadyClockTimer timer;
+        timer.start();
         // Actually compile the kernel
         jitify::experimental::KernelInstantiation(kernel, template_args);
+        timer.stop();
+        printf("Jitify KernelInstantiation took %fms\n", timer.getElapsedMilliseconds());
         return EXIT_SUCCESS;
-   // } catch (std::runtime_error const&) {
+    } catch (std::runtime_error const&) {
         // jitify does not have a method for getting compile logs so rely on JITIFY_PRINT_LOG defined in cmake
-     //   throw flamegpu::exception::InvalidAgentFunc("Error compiling runtime agent function: function had compilation errors (see std::cout), "
-     //       "in JitifyCache::buildProgram().");
-   // }
-    //return EXIT_FAILURE;
+        throw flamegpu::exception::InvalidAgentFunc("Error compiling runtime agent function: function had compilation errors (see std::cout), "
+            "in JitifyCache::buildProgram().");
+    }
+    return EXIT_FAILURE;
 }
 
 std::string getCUDAIncludeDir() {
