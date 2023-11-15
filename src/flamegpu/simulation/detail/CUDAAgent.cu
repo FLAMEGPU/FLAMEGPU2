@@ -31,6 +31,8 @@
 #pragma warning(pop)
 #endif  // _MSC_VER
 
+#include "jitify/jitify2.hpp"
+
 #include "flamegpu/version.h"
 #include "flamegpu/simulation/detail/CUDAFatAgent.h"
 #include "flamegpu/simulation/detail/CUDAAgentStateList.h"
@@ -654,7 +656,7 @@ void CUDAAgent::addInstantitateFunction(const AgentFunctionData& func, const std
     curve_map.insert(std::unordered_map<std::string, std::shared_ptr<detail::curve::HostCurve>>::value_type(key_name, std::move(curve)));
 }
 
-const jitify::experimental::KernelInstantiation& CUDAAgent::getRTCInstantiation(const std::string &function_name) const {
+const jitify2::KernelData& CUDAAgent::getRTCInstantiation(const std::string &function_name) const {
     CUDARTCFuncMap::const_iterator mm = rtc_func_map.find(function_name);
     if (mm == rtc_func_map.end()) {
         THROW exception::InvalidAgentFunc("Function name '%s' is not a runtime compiled agent function in agent '%s', "
@@ -663,6 +665,15 @@ const jitify::experimental::KernelInstantiation& CUDAAgent::getRTCInstantiation(
     }
 
     return *mm->second;
+}
+void CUDAAgent::destroyRTCInstances(bool context_alive) {
+    for (auto &[_, fn] : rtc_func_map) {
+        if (context_alive) {
+            fn.reset();
+        } else {
+            fn.release();
+        }
+    }
 }
 detail::curve::CurveRTCHost& CUDAAgent::getRTCHeader(const std::string &function_name) const {
     CUDARTCHeaderMap::const_iterator mm = rtc_header_map.find(function_name);

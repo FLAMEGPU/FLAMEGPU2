@@ -536,7 +536,7 @@ AgentFunctionDescription AgentDescription::newRTCFunction(const std::string& fun
                     }
                 }
                 // set the runtime agent function source in agent function data
-                std::string func_src_str = std::string(function_name + "_program\n");
+                std::string func_src_str;
 #ifdef FLAMEGPU_OUTPUT_RTC_DYNAMIC_FILES
                 func_src_str.append("#line 1 \"").append(code_func_name).append("_impl.cu\"\n");
 #endif

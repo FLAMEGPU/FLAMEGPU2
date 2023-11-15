@@ -18,6 +18,7 @@ CUDA_PACKAGES_IN=(
     "cuda-nvtx"
     "cuda-nvrtc-devel"
     "libcurand-devel" # 11-0+
+    "libnvjitlink-devel" # 12.0+
 )
 
 ## -------------------
@@ -91,9 +92,12 @@ do :
     if [[ ${package} == libcu* ]] && version_lt "$CUDA_VERSION_MAJOR_MINOR" "11.0" ; then
         package="${package/libcu/cuda-cu}"
     fi
-    # CUDA < 11, -devel- packages were actually -dev
-    if [[ ${package} == *devel* ]] && version_lt "$CUDA_VERSION_MAJOR_MINOR" "11.0" ; then
-        package="${package//devel/dev}"
+    # libnvjitlink not required prior to CUDA 12.0
+    if [[ ${package} == libnvjitlink-dev* ]] && version_lt "$CUDA_VERSION_MAJOR_MINOR" "12.0" ;then
+        continue
+    # CUDA 11+ includes lib* / lib*-dev packages, which if they existed previously where cuda-cu*- / cuda-cu*-dev-
+    elif [[ ${package} == lib* ]] && version_lt "$CUDA_VERSION_MAJOR_MINOR" "11.0" ; then
+        package="${package/libcu/cuda-cu}"
     fi
     # Build the full package name and append to the string.
     CUDA_PACKAGES+=" ${package}-${CUDA_MAJOR}-${CUDA_MINOR}"
