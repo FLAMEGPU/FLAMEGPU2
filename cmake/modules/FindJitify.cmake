@@ -20,7 +20,7 @@ include(FindPackageHandleStandardArgs)
 # Find the main Jitify header
 find_path(Jitify_INCLUDE_DIRS
     NAMES
-        jitify/jitify.hpp
+        jitify/jitify2.hpp
 )
 
 # if found, get the version number.

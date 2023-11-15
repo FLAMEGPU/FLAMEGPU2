@@ -61,7 +61,7 @@ $VISUAL_STUDIO_MIN_CUDA = @{
     "2022" = "11.6.0";
     "2019" = "10.1";
     "2017" = "10.0"; # Depends on which version of 2017! 9.0 to 10.0 depending on version
-    "2015" = "8.0";  # Might support older, unsure. Depracated as of 11.1, unsupported in 11.2
+    "2015" = "8.0";  # Might support older, unsure. Deprecated as of 11.1, unsupported in 11.2
 }
 
 # cuda_runtime.h is in nvcc <= 10.2, but cudart >= 11.0
@@ -73,6 +73,8 @@ $CUDA_PACKAGES_IN = @(
     "nvrtc_dev";
     "cudart";
     "thrust";
+    "thrust";
+    "nvjitlink";
 )
 
 ## -------------------
@@ -125,6 +127,9 @@ Foreach ($package in $CUDA_PACKAGES_IN) {
     } elseif($package -eq "thrust" -and [version]$CUDA_VERSION_FULL -lt [version]"11.3") {
         # Thrust is a package from CUDA 11.3, otherwise it should be skipped.
         continue
+    } elseif($package -eq "nvjitlink" -and [version]$CUDA_VERSION_FULL -lt [version]"12.0") {
+        # nvjitlink is a from CUDA 12.0, otherwise it should be skipped.
+        continue
     }
     $CUDA_PACKAGES += " $($package)_$($CUDA_MAJOR).$($CUDA_MINOR)"
 }
@@ -173,7 +178,7 @@ while (-not $downloaded) {
         Write-Output "Downloading Complete"
         $downloaded=$true
     } else {
-        # If downlaod failed, either wait and try again, or give up and error.
+        # If download failed, either wait and try again, or give up and error.
         if ($download_attempt -le $download_attempts_max) {
             Write-Output "Error: Failed to download $($CUDA_REPO_PKG_LOCAL) (attempt $($download_attempt)/$($download_attempts_max)). Retrying."
             # Sleep for a number of seconds.
