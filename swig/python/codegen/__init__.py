@@ -51,7 +51,6 @@ def translate(function: Union[str, Callable]) -> str:
         prepend_c_source = ""
         # Find all annotated variables
         for key, val in module_annontations.items():
-            print(val.__name__)
             if val.__name__ == "Final" or val.__name__ == "constant":
                 # Locate the literal for that variable (Python will precompute anything e.g. math.sqrt(12.5))
                 for mem in module_members:
