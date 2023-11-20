@@ -307,7 +307,7 @@ bool confirmFLAMEGPUHeaderVersion(const std::string &flamegpuIncludeDir, const s
 }  // namespace
 
 std::mutex JitifyCache::instance_mutex;
-std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::string &func_name, const std::vector<std::string> &template_args, const std::string &kernel_src, const std::string &dynamic_header) {
+std::unique_ptr<jitify::experimental::KernelInstantiation> JitifyCache::compileKernel(const std::string &func_name, const std::vector<std::string> &template_args, const std::string &kernel_src, const std::string &dynamic_header) {
     flamegpu::util::nvtx::Range range{"JitifyCache::compileKernel"};
     // find and validate the cuda include directory via CUDA_PATH or CUDA_HOME.
     static const std::string cuda_include_dir = getCUDAIncludeDir();
@@ -416,7 +416,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::compileKernel(const std::strin
         auto program = jitify::experimental::Program(kernel_src, headers, options);
         assert(template_args.size() == 1 || template_args.size() == 3);  // Add this assertion incase template args change
         auto kernel = program.kernel(template_args.size() > 1 ? "flamegpu::agent_function_wrapper" : "flamegpu::agent_function_condition_wrapper");
-        return std::make_unique<KernelInstantiation>(kernel, template_args);
+        return std::make_unique<jitify::experimental::KernelInstantiation>(kernel, template_args);
     } catch (std::runtime_error const&) {
         // jitify does not have a method for getting compile logs so rely on JITIFY_PRINT_LOG defined in cmake
         THROW exception::InvalidAgentFunc("Error compiling runtime agent function (or function condition) ('%s'): function had compilation errors (see std::cout), "
@@ -497,7 +497,7 @@ void JitifyCache::getKnownHeaders(std::vector<std::string>& headers) {
     headers.push_back("type_traits");
 }
 
-std::unique_ptr<KernelInstantiation> JitifyCache::loadKernel(const std::string &func_name, const std::vector<std::string> &template_args, const std::string &kernel_src, const std::string &dynamic_header) {
+std::unique_ptr<jitify::experimental::KernelInstantiation> JitifyCache::loadKernel(const std::string &func_name, const std::vector<std::string> &template_args, const std::string &kernel_src, const std::string &dynamic_header) {
     flamegpu::util::nvtx::Range range{"JitifyCache::loadKernel"};
     std::lock_guard<std::mutex> lock(cache_mutex);
     // Detect current compute capability=
@@ -534,7 +534,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::loadKernel(const std::string &
         if (it != cache.end()) {
             // Check long reference
             if (it->second.long_reference == long_reference) {
-                return std::make_unique<KernelInstantiation>(KernelInstantiation::deserialize(it->second.serialised_kernelinst));
+                return std::make_unique<jitify::experimental::KernelInstantiation>(jitify::experimental::KernelInstantiation::deserialize(it->second.serialised_kernelinst));
             }
         }
     }
@@ -551,7 +551,7 @@ std::unique_ptr<KernelInstantiation> JitifyCache::loadKernel(const std::string &
                 // Add it to cache for later loads
                 cache.emplace(short_reference, CachedProgram{long_reference, serialised_kernelinst});
                 // Deserialize and return program
-                return std::make_unique<KernelInstantiation>(KernelInstantiation::deserialize(serialised_kernelinst));
+                return std::make_unique<jitify::experimental::KernelInstantiation>(jitify::experimental::KernelInstantiation::deserialize(serialised_kernelinst));
             }
         }
     }

@@ -712,6 +712,10 @@ class ModelVis;
 // Because of how _ prefixes are handeled, this must be called via pyflamegpu._pyflamegpu.__TestSuiteTelemetry_sendResults()
 %rename (__TestSuiteTelemetry) flamegpu::detail::TestSuiteTelemetry;
 %include "flamegpu/detail/TestSuiteTelemetry.h"
+// Expose jitifycache for override cache settings
+%ignore flamegpu::detail::JitifyCache::loadKernel;
+%rename(JitifyCache) flamegpu::detail::JitifyCache;
+%include "flamegpu/detail/JitifyCache.h"
 // Ignore detail agian? 
 %ignore flamegpu::detail;
 
