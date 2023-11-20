@@ -5,12 +5,14 @@ import pyflamegpu.codegen
 from random import randint
 import typing
 
+def return_two():
+    return 2
 
 AGENT_COUNT = 100
 STEPS = 5
 
 TEN: pyflamegpu.constant = 10
-TWO: typing.Final = 2
+TWO: typing.Final = return_two()
 
 @pyflamegpu.device_function
 def add_2(a : int) -> int:
