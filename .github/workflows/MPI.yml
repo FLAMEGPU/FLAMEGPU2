@@ -247,6 +247,15 @@ jobs:
       working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --target tests --verbose -j `nproc`
 
+    - name: Build tests_mpi
+      if: ${{ env.FLAMEGPU_BUILD_TESTS == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target tests_mpi --verbose -j `nproc`
+
+    - name: Build ensemble example
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target ensemble --verbose -j `nproc`
+
     - name: Build all remaining targets
       working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --target all --verbose -j `nproc`
