@@ -1183,3 +1183,9 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(poisson, flamegpu::HostRandom::poisson)
 #else
     #define GLM false
 #endif
+
+// Declare an empty type we can use as an attribute for constants to be pulled in by codegen
+%pythoncode {
+class constant:
+  pass;
+}

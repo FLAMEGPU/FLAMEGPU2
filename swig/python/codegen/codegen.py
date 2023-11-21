@@ -625,6 +625,9 @@ class CodeGenerator:
             if hasattr(t.value, "func") and isinstance(t.value.func, ast.Attribute) and t.value.func.attr == 'at' :
                 if t.value.func.value.id == self._input_message_var :
                     self._standalone_message_var.append(t.targets[0].id)
+            # Special case, definitions outside of agent fn are made const
+            if self._indent == 0:
+                self.write("constexpr ")
             self.write("auto ")
             self._locals.append(t.targets[0].id)
         self.dispatch(t.targets[0])

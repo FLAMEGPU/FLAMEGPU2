@@ -3,11 +3,16 @@ from unittest import TestCase
 from pyflamegpu import *
 import pyflamegpu.codegen
 from random import randint
+import typing
 
+def return_two():
+    return 2
 
 AGENT_COUNT = 100
 STEPS = 5
 
+TEN: pyflamegpu.constant = 10
+TWO: typing.Final = return_two()
 
 @pyflamegpu.device_function
 def add_2(a : int) -> int:
@@ -15,7 +20,7 @@ def add_2(a : int) -> int:
     Pure python agent device function that can be called from a @pyflamegpu.agent_function
     Function adds two to an int variable
     """
-    return a + 2
+    return a + TWO
 
 @pyflamegpu.agent_function
 def add_func(message_in: pyflamegpu.MessageNone, message_out: pyflamegpu.MessageNone):
@@ -26,7 +31,7 @@ def add_func(message_in: pyflamegpu.MessageNone, message_out: pyflamegpu.Message
 @pyflamegpu.agent_function_condition
 def cond_func() -> bool:
     i = pyflamegpu.getVariableInt("i")
-    return i < 10
+    return i < TEN
 
 class GPUTest(TestCase):
     """

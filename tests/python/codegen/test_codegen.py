@@ -133,7 +133,7 @@ a = 2
 a += 3
 """
 cpp_var_existing = """\
-auto a = 1;
+constexpr auto a = 1;
 a = 2;
 a += 3;
 """
@@ -170,76 +170,98 @@ async with g() as x:
 """
 
 # FGPU functionality
+py_fgpu_constexpr = """\
+a = 12
 
+@pyflamegpu.agent_function
+def func(message_in: pyflamegpu.MessageNone, message_out: pyflamegpu.MessageNone) :
+    b = 13
+"""
+
+cpp_fgpu_constexpr = """\
+constexpr auto a = 12;
+
+FLAMEGPU_AGENT_FUNCTION(func, flamegpu::MessageNone, flamegpu::MessageNone){
+    auto b = 13;
+}
+"""
 
 
 
 py_fgpu_types = """\
-f = pyflamegpu.getVariableFloat("f")
-d = pyflamegpu.getVariableDouble("d")
-i = pyflamegpu.getVariableInt("i")
-ui = pyflamegpu.getVariableUInt("ui")
-i8 = pyflamegpu.getVariableInt8("i8")
-ui8 = pyflamegpu.getVariableUInt8("ui8")
-c = pyflamegpu.getVariableChar("c")
-uc = pyflamegpu.getVariableUChar("uc")
-i16 = pyflamegpu.getVariableInt16("i16")
-ui16 = pyflamegpu.getVariableUInt16("ui16")
-i32 = pyflamegpu.getVariableInt32("i32")
-ui32 = pyflamegpu.getVariableUInt32("ui32")
-i64 = pyflamegpu.getVariableInt64("i64")
-ui64 = pyflamegpu.getVariableUInt64("ui64")
+@pyflamegpu.agent_function
+def func(message_in: pyflamegpu.MessageNone, message_out: pyflamegpu.MessageNone) :
+    f = pyflamegpu.getVariableFloat("f")
+    d = pyflamegpu.getVariableDouble("d")
+    i = pyflamegpu.getVariableInt("i")
+    ui = pyflamegpu.getVariableUInt("ui")
+    i8 = pyflamegpu.getVariableInt8("i8")
+    ui8 = pyflamegpu.getVariableUInt8("ui8")
+    c = pyflamegpu.getVariableChar("c")
+    uc = pyflamegpu.getVariableUChar("uc")
+    i16 = pyflamegpu.getVariableInt16("i16")
+    ui16 = pyflamegpu.getVariableUInt16("ui16")
+    i32 = pyflamegpu.getVariableInt32("i32")
+    ui32 = pyflamegpu.getVariableUInt32("ui32")
+    i64 = pyflamegpu.getVariableInt64("i64")
+    ui64 = pyflamegpu.getVariableUInt64("ui64")
 """
 
 cpp_fgpu_types = """\
-auto f = FLAMEGPU->getVariable<float>("f");
-auto d = FLAMEGPU->getVariable<double>("d");
-auto i = FLAMEGPU->getVariable<int>("i");
-auto ui = FLAMEGPU->getVariable<unsigned int>("ui");
-auto i8 = FLAMEGPU->getVariable<int_8>("i8");
-auto ui8 = FLAMEGPU->getVariable<uint_8>("ui8");
-auto c = FLAMEGPU->getVariable<char>("c");
-auto uc = FLAMEGPU->getVariable<unsigned char>("uc");
-auto i16 = FLAMEGPU->getVariable<int_16>("i16");
-auto ui16 = FLAMEGPU->getVariable<uint_16>("ui16");
-auto i32 = FLAMEGPU->getVariable<int_32>("i32");
-auto ui32 = FLAMEGPU->getVariable<uint_32>("ui32");
-auto i64 = FLAMEGPU->getVariable<int_64>("i64");
-auto ui64 = FLAMEGPU->getVariable<uint_64>("ui64");
+FLAMEGPU_AGENT_FUNCTION(func, flamegpu::MessageNone, flamegpu::MessageNone){
+    auto f = FLAMEGPU->getVariable<float>("f");
+    auto d = FLAMEGPU->getVariable<double>("d");
+    auto i = FLAMEGPU->getVariable<int>("i");
+    auto ui = FLAMEGPU->getVariable<unsigned int>("ui");
+    auto i8 = FLAMEGPU->getVariable<int_8>("i8");
+    auto ui8 = FLAMEGPU->getVariable<uint_8>("ui8");
+    auto c = FLAMEGPU->getVariable<char>("c");
+    auto uc = FLAMEGPU->getVariable<unsigned char>("uc");
+    auto i16 = FLAMEGPU->getVariable<int_16>("i16");
+    auto ui16 = FLAMEGPU->getVariable<uint_16>("ui16");
+    auto i32 = FLAMEGPU->getVariable<int_32>("i32");
+    auto ui32 = FLAMEGPU->getVariable<uint_32>("ui32");
+    auto i64 = FLAMEGPU->getVariable<int_64>("i64");
+    auto ui64 = FLAMEGPU->getVariable<uint_64>("ui64");
+}
 """
 
 py_fgpu_array_types = """\
-f = pyflamegpu.getVariableFloatArray1("f")
-d = pyflamegpu.getVariableDoubleArray2("d")
-i = pyflamegpu.getVariableIntArray3("i")
-ui = pyflamegpu.getVariableUIntArray4("ui")
-i8 = pyflamegpu.getVariableInt8Array5("i8")
-ui8 = pyflamegpu.getVariableUInt8Array6("ui8")
-c = pyflamegpu.getVariableCharArray7("c")
-uc = pyflamegpu.getVariableUCharArray8("uc")
-i16 = pyflamegpu.getVariableInt16Array9("i16")
-ui16 = pyflamegpu.getVariableUInt16Array10("ui16")
-i32 = pyflamegpu.getVariableInt32Array11("i32")
-ui32 = pyflamegpu.getVariableUInt32Array12("ui32")
-i64 = pyflamegpu.getVariableInt64Array13("i64")
-ui64 = pyflamegpu.getVariableUInt64Array14("ui64")
+@pyflamegpu.agent_function
+def func(message_in: pyflamegpu.MessageNone, message_out: pyflamegpu.MessageNone) :
+    f = pyflamegpu.getVariableFloatArray1("f")
+    d = pyflamegpu.getVariableDoubleArray2("d")
+    i = pyflamegpu.getVariableIntArray3("i")
+    ui = pyflamegpu.getVariableUIntArray4("ui")
+    i8 = pyflamegpu.getVariableInt8Array5("i8")
+    ui8 = pyflamegpu.getVariableUInt8Array6("ui8")
+    c = pyflamegpu.getVariableCharArray7("c")
+    uc = pyflamegpu.getVariableUCharArray8("uc")
+    i16 = pyflamegpu.getVariableInt16Array9("i16")
+    ui16 = pyflamegpu.getVariableUInt16Array10("ui16")
+    i32 = pyflamegpu.getVariableInt32Array11("i32")
+    ui32 = pyflamegpu.getVariableUInt32Array12("ui32")
+    i64 = pyflamegpu.getVariableInt64Array13("i64")
+    ui64 = pyflamegpu.getVariableUInt64Array14("ui64")
 """
 
 cpp_fgpu_array_types = """\
-auto f = FLAMEGPU->getVariable<float, 1>("f");
-auto d = FLAMEGPU->getVariable<double, 2>("d");
-auto i = FLAMEGPU->getVariable<int, 3>("i");
-auto ui = FLAMEGPU->getVariable<unsigned int, 4>("ui");
-auto i8 = FLAMEGPU->getVariable<int_8, 5>("i8");
-auto ui8 = FLAMEGPU->getVariable<uint_8, 6>("ui8");
-auto c = FLAMEGPU->getVariable<char, 7>("c");
-auto uc = FLAMEGPU->getVariable<unsigned char, 8>("uc");
-auto i16 = FLAMEGPU->getVariable<int_16, 9>("i16");
-auto ui16 = FLAMEGPU->getVariable<uint_16, 10>("ui16");
-auto i32 = FLAMEGPU->getVariable<int_32, 11>("i32");
-auto ui32 = FLAMEGPU->getVariable<uint_32, 12>("ui32");
-auto i64 = FLAMEGPU->getVariable<int_64, 13>("i64");
-auto ui64 = FLAMEGPU->getVariable<uint_64, 14>("ui64");
+FLAMEGPU_AGENT_FUNCTION(func, flamegpu::MessageNone, flamegpu::MessageNone){
+    auto f = FLAMEGPU->getVariable<float, 1>("f");
+    auto d = FLAMEGPU->getVariable<double, 2>("d");
+    auto i = FLAMEGPU->getVariable<int, 3>("i");
+    auto ui = FLAMEGPU->getVariable<unsigned int, 4>("ui");
+    auto i8 = FLAMEGPU->getVariable<int_8, 5>("i8");
+    auto ui8 = FLAMEGPU->getVariable<uint_8, 6>("ui8");
+    auto c = FLAMEGPU->getVariable<char, 7>("c");
+    auto uc = FLAMEGPU->getVariable<unsigned char, 8>("uc");
+    auto i16 = FLAMEGPU->getVariable<int_16, 9>("i16");
+    auto ui16 = FLAMEGPU->getVariable<uint_16, 10>("ui16");
+    auto i32 = FLAMEGPU->getVariable<int_32, 11>("i32");
+    auto ui32 = FLAMEGPU->getVariable<uint_32, 12>("ui32");
+    auto i64 = FLAMEGPU->getVariable<int_64, 13>("i64");
+    auto ui64 = FLAMEGPU->getVariable<uint_64, 14>("ui64");
+}
 """
 
 py_fgpu_unknown_type = """\
@@ -324,14 +346,18 @@ for (const auto& m : FLAMEGPU->message_in){
 """
 
 py_fgpu_standalone_msg_input = """\
-m = message_in.at(1)
-pass
-n = m.getVariableInt("foo")
+@pyflamegpu.agent_function
+def func(message_in: pyflamegpu.MessageNone, message_out: pyflamegpu.MessageNone) :
+    m = message_in.at(1)
+    pass
+    n = m.getVariableInt("foo")
 """
 cpp_fgpu_standalone_msg_input = """\
-auto m = FLAMEGPU->message_in.at(1);
-;
-auto n = m.getVariable<int>("foo");
+FLAMEGPU_AGENT_FUNCTION(func, flamegpu::MessageNone, flamegpu::MessageNone){
+    auto m = FLAMEGPU->message_in.at(1);
+    ;
+    auto n = m.getVariable<int>("foo");
+}
 """
 
 py_fgpu_for_msg_input_args = """\
@@ -356,20 +382,24 @@ FLAMEGPU->message_out.setVariable<int>("i", i);
 """
 
 py_fgpu_macro_env_permitted = """\
-a = pyflamegpu.environment.getMacroPropertyInt('a') 
-a += 1
-a.exchange(b) 
-a.CAS(b, c)
-a.min(b)
-a.max(b)
+@pyflamegpu.agent_function
+def func(message_in: pyflamegpu.MessageNone, message_out: pyflamegpu.MessageNone) :
+    a = pyflamegpu.environment.getMacroPropertyInt('a') 
+    a += 1
+    a.exchange(b) 
+    a.CAS(b, c)
+    a.min(b)
+    a.max(b)
 """
 cpp_fgpu_macro_env_permitted = """\
-auto a = FLAMEGPU->environment.getMacroProperty<int>("a");
-a += 1;
-a.exchange(b);
-a.CAS(b, c);
-a.min(b);
-a.max(b);
+FLAMEGPU_AGENT_FUNCTION(func, flamegpu::MessageNone, flamegpu::MessageNone){
+    auto a = FLAMEGPU->environment.getMacroProperty<int>("a");
+    a += 1;
+    a.exchange(b);
+    a.CAS(b, c);
+    a.min(b);
+    a.max(b);
+}
 """
 
 py_fgpu_macro_env_function = """\
@@ -733,6 +763,7 @@ class CodeGenTest(unittest.TestCase):
 # FLAME GPU specific functionality
 
     # numpy types
+    
 
     def test_fgpu_supported_types(self):
         self._checkExpected("a: numpy.byte", "char a;")
@@ -770,6 +801,9 @@ class CodeGenTest(unittest.TestCase):
         # check unsupported
         self._checkException("a: numpy.unsupported", "Not a supported numpy type")
         
+    
+    def test_fgpu_constexpr(self):
+        self._checkExpected(py_fgpu_constexpr, cpp_fgpu_constexpr)
     
     # getVariable and types
     
