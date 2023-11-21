@@ -90,6 +90,14 @@ class MPIEnsemble {
     */
     static int queryMPIWorldSize();
     /**
+     * @return Retrieve the local rank within the current shared memory region
+     */
+    static int queryMPISharedGroupRank();
+    /**
+     * @return retrieve the number of mpi processes on the current shared memory region 
+     */
+    static int queryMPISharedGroupSize();
+    /**
      * If necessary initialise MPI, else do nothing
      */
     static void initMPI();

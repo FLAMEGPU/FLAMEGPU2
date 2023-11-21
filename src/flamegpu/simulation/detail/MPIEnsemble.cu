@@ -195,6 +195,25 @@ int MPIEnsemble::queryMPIWorldSize() {
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     return world_size;
 }
+
+int MPIEnsemble::queryMPISharedGroupRank() {
+    initMPI();
+    int group_rank = -1;
+    MPI_Comm group;
+    MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &group);
+    MPI_Comm_rank(group, &group_rank);
+    return group_rank;
+}
+
+int MPIEnsemble::queryMPISharedGroupSize() {
+    initMPI();
+    int group_size = -1;
+    MPI_Comm group;
+    MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &group);
+    MPI_Comm_size(group, &group_size);
+    return group_size;
+}
+
 void MPIEnsemble::initMPI() {
     int flag = 0;
     // MPI can only be init once, for certain test cases we do some initial MPI comms for setup
