@@ -210,7 +210,7 @@ break_flamegpu_inc_dir_loop:
             THROW flamegpu::exception::InvalidAgentFunc("Error compiling runtime agent function: Unable to automatically determine include directory and FLAMEGPU_INC_DIR environment variable not set");
         }
     }
-    return include_dir_str;
+    return std::filesystem::absolute(include_dir_str).generic_string();
 }
 
 #ifdef FLAMEGPU_USE_GLM
@@ -310,43 +310,6 @@ bool confirmFLAMEGPUHeaderVersion(const std::string &flamegpuIncludeDir, const s
 
 }  // namespace
 
-void JitifyCache::getKnownHeaders(const std::string& flamegpu_include_dir, std::unordered_map<std::string, std::string>& headers) {
-    // Add known headers from FLAMEGPU include hierarchy
-    headers.emplace("flamegpu/defines.h", loadFile(flamegpu_include_dir + "/flamegpu/defines.h"));
-    headers.emplace("flamegpu/exception/FLAMEGPUDeviceException.cuh", loadFile(flamegpu_include_dir + "/flamegpu/exception/FLAMEGPUDeviceException.cuh"));
-    headers.emplace("flamegpu/exception/FLAMEGPUDeviceException_device.cuh", loadFile(flamegpu_include_dir + "/flamegpu/exception/FLAMEGPUDeviceException_device.cuh"));
-    headers.emplace("flamegpu/simulation/detail/CUDAScanCompaction.h", loadFile(flamegpu_include_dir + "/flamegpu/simulation/detail/CUDAScanCompaction.h"));
-    headers.emplace("flamegpu/runtime/AgentFunction.cuh", loadFile(flamegpu_include_dir + "/flamegpu/runtime/AgentFunction.cuh"));
-    headers.emplace("flamegpu/runtime/AgentFunctionCondition.cuh", loadFile(flamegpu_include_dir + "/flamegpu/runtime/AgentFunctionCondition.cuh"));
-    headers.emplace("flamegpu/runtime/AgentFunctionCondition_shim.cuh", loadFile(flamegpu_include_dir + "/flamegpu/runtime/AgentFunctionCondition_shim.cuh"));
-    headers.emplace("flamegpu/runtime/AgentFunction_shim.cuh", loadFile(flamegpu_include_dir + "/flamegpu/runtime/AgentFunction_shim.cuh"));
-    headers.emplace("flamegpu/runtime/detail/SharedBlock.h", loadFile(flamegpu_include_dir + "/flamegpu/runtime/detail/SharedBlock.h"));
-    headers.emplace("flamegpu/runtime/detail/curve/Curve.cuh", loadFile(flamegpu_include_dir + "/flamegpu/runtime/detail/curve/Curve.cuh"));
-    headers.emplace("flamegpu/runtime/DeviceAPI.cuh", loadFile(flamegpu_include_dir + "/flamegpu/runtime/DeviceAPI.cuh"));
-    headers.emplace("flamegpu/runtime/messaging/MessageArray.h", loadFile(flamegpu_include_dir + "/flamegpu/runtime/messaging/MessageArray.h"));
-    headers.emplace("flamegpu/runtime/messaging/MessageArray/MessageArrayDevice.cuh", loadFile(flamegpu_include_dir + "/flamegpu/runtime/messaging/MessageArray/MessageArrayDevice.cuh"));
-    headers.emplace("flamegpu/runtime/messaging/MessageArray2D.h", loadFile(flamegpu_include_dir + "/flamegpu/runtime/messaging/MessageArray2D.h"));
-    headers.emplace("flamegpu/runtime/messaging/MessageArray2D/MessageArray2DDevice.cuh", loadFile(flamegpu_include_dir + "/flamegpu/runtime/messaging/MessageArray2D/MessageArray2DDevice.cuh"));
-    headers.emplace("flamegpu/runtime/messaging/MessageArray3D.h", loadFile(flamegpu_include_dir + "/flamegpu/runtime/messaging/MessageArray3D.h"));
-    headers.emplace("flamegpu/runtime/messaging/MessageArray3D/MessageArray3DDevice.cuh", loadFile(flamegpu_include_dir + "/flamegpu/runtime/messaging/MessageArray3D/MessageArray3DDevice.cuh"));
-    headers.emplace("flamegpu/runtime/messaging/MessageBruteForce.h", loadFile(flamegpu_include_dir + "/flamegpu/runtime/messaging/MessageBruteForce.h"));
-    headers.emplace("flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceDevice.cuh", loadFile(flamegpu_include_dir + "/flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceDevice.cuh"));
-    headers.emplace("flamegpu/runtime/messaging/MessageBucket.h", loadFile(flamegpu_include_dir + "/flamegpu/runtime/messaging/MessageBucket.h"));
-    headers.emplace("flamegpu/runtime/messaging/MessageBucket/MessageBucketDevice.cuh", loadFile(flamegpu_include_dir + "/flamegpu/runtime/messaging/MessageBucket/MessageBucketDevice.cuh"));
-    headers.emplace("flamegpu/runtime/messaging/MessageSpatial2D.h", loadFile(flamegpu_include_dir + "/flamegpu/runtime/messaging/MessageSpatial2D.h"));
-    headers.emplace("flamegpu/runtime/messaging/MessageSpatial2D/MessageSpatial2DDevice.cuh", loadFile(flamegpu_include_dir + "/flamegpu/runtime/messaging/MessageSpatial2D/MessageSpatial2DDevice.cuh"));
-    headers.emplace("flamegpu/runtime/messaging/MessageSpatial3D.h", loadFile(flamegpu_include_dir + "/flamegpu/runtime/messaging/MessageSpatial3D.h"));
-    headers.emplace("flamegpu/runtime/messaging/MessageSpatial3D/MessageSpatial3DDevice.cuh", loadFile(flamegpu_include_dir + "/flamegpu/runtime/messaging/MessageSpatial3D/MessageSpatial3DDevice.cuh"));
-    headers.emplace("flamegpu/runtime/messaging/MessageNone.h", loadFile(flamegpu_include_dir + "/flamegpu/runtime/messaging/MessageNone.h"));
-    headers.emplace("flamegpu/runtime/messaging/MessageNone/MessageNoneDevice.cuh", loadFile(flamegpu_include_dir + "/flamegpu/runtime/messaging/MessageNone/MessageNoneDevice.cuh"));
-    headers.emplace("flamegpu/runtime/random/AgentRandom.cuh", loadFile(flamegpu_include_dir + "/flamegpu/runtime/random/AgentRandom.cuh"));
-    headers.emplace("flamegpu/runtime/environment/DeviceEnvironment.cuh", loadFile(flamegpu_include_dir + "/flamegpu/runtime/environment/DeviceEnvironment.cuh"));
-    headers.emplace("flamegpu/runtime/environment/DeviceMacroProperty.cuh", loadFile(flamegpu_include_dir + "/flamegpu/runtime/environment/DeviceMacroProperty.cuh"));
-    headers.emplace("flamegpu/detail/StaticAssert.h", loadFile(flamegpu_include_dir + "/flamegpu/detail/StaticAssert.h"));
-    headers.emplace("flamegpu/detail/type_decode.h", loadFile(flamegpu_include_dir + "/flamegpu/detail/type_decode.h"));
-    headers.emplace("flamegpu/detail/curand.cuh", loadFile(flamegpu_include_dir + "/flamegpu/detail/curand.cuh"));
-    headers.emplace("flamegpu/util/dstring.h", loadFile(flamegpu_include_dir + "/flamegpu/util/dstring.h"));
-}
 std::mutex JitifyCache::instance_mutex;
 std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
     const std::string &func_name,
@@ -442,15 +405,8 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
     options.push_back("--define-macro=FLAMEGPU_SEATBELTS=0");
 #endif
 
-    // cuda.h
-    std::string include_cuda_h;
-    include_cuda_h = "--pre-include=" + cuda_include_dir + "/cuda.h";
-    options.push_back(include_cuda_h);
-
     // get the dynamically generated header from curve rtc
     headers.emplace("dynamic/curve_rtc_dynamic.h", dynamic_header);
-
-    getKnownHeaders(flamegpu_include_dir, headers);
 
     // jitify to create program (with compilation settings)
     const std::string program_name = func_name + "_program";  // Does this name actually matter?
