@@ -30,8 +30,25 @@ class MPIEnsemble {
     };
 
  public:
+    /**
+     * The rank within the world MPI communicator
+     */
     const int world_rank;
+    /**
+     * The size of the world MPI communicator
+     */
     const int world_size;
+    /**
+     * The rank within the MPI shared memory communicator (i.e. the within the node)
+     */
+    const int group_rank;
+    /**
+     * The size of the MPI shared memory communicator (i.e. the within the node)
+     */
+    const int group_size;
+    /**
+     * The total number of runs to be executed (only used for printing error warnings)
+     */
     const unsigned int total_runs;
     /**
      * Construct the object for managing MPI comms during an ensemble
@@ -94,7 +111,7 @@ class MPIEnsemble {
      */
     static int queryMPISharedGroupRank();
     /**
-     * @return retrieve the number of mpi processes on the current shared memory region 
+     * @return retrieve the number of mpi processes on the current shared memory region
      */
     static int queryMPISharedGroupSize();
     /**

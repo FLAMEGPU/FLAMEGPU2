@@ -10,6 +10,8 @@ MPIEnsemble::MPIEnsemble(const CUDAEnsemble::EnsembleConfig &_config, const unsi
     : config(_config)
     , world_rank(queryMPIWorldRank())
     , world_size(queryMPIWorldSize())
+    , group_rank(queryMPISharedGroupRank())
+    , group_size(queryMPISharedGroupSize())
     , total_runs(_total_runs)
     , MPI_ERROR_DETAIL(AbstractSimRunner::createErrorDetailMPIDatatype()) { }
 
