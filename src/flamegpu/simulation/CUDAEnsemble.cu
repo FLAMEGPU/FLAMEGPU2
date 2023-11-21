@@ -136,6 +136,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
     // Resize means we can setup logs during execution out of order, without risk of list being reallocated
     run_logs.clear();
     // Workout how many devices and runner we will be executing
+    // if MPI is enabled, This will throw exceptions if any rank has 0 GPUs visible, prior to device allocation preventing issues where rank 0 would not be participating.
     int device_count = -1;
     cudaError_t cudaStatus = cudaGetDeviceCount(&device_count);
     if (cudaStatus != cudaSuccess) {
@@ -150,14 +151,26 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
         }
     }
 
+    // Select the actual devices to be used, based on user provided gpus, architecture compatibility, and optionally mpi ranks per node.
+    // For non-mpi builds / configurations, just use all the devices provided by the user / all visible devices (then check they are valid later)
+    // For MPI builds with mpi enabled, load balance the gpus across mpi ranks within the shared memory system. If there are more ranks than gpus, latter ranks will not participate.
     std::set<int> devices;
+    // initialise the local devices set to be the non-mpi behaviour, using config.devices or all visible cuda devices
     if (config.devices.size()) {
         devices = config.devices;
     } else {
+        // If no devices were specified by the user, use all visible devices but load balance if MPI is in use.
         for (int i = 0; i < device_count; ++i) {
             devices.emplace(i);
         }
     }
+#ifdef FLAMEGPU_ENABLE_MPI
+    // if MPI is enabled at compile time, and mpi is enabled in the config, use the MPIEnsemble method to assign devices balanced across ranks
+    if (mpi != nullptr) {
+        devices = mpi->devicesForThisRank(devices);
+    }
+#endif  // ifdef FLAMEGPU_ENABLE_MPI
+
     // Check that each device is capable, and init cuda context
     for (auto d = devices.begin(); d != devices.end(); ++d) {
         if (!detail::compute_capability::checkComputeCapability(*d)) {
@@ -171,6 +184,36 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
     }
     // Return to device 0 (or check original device first?)
     gpuErrchk(cudaSetDevice(0));
+
+    // If there are no devices left (and mpi is not being used), we need to error as the work cannot be executed.
+#ifdef FLAMEGPU_ENABLE_MPI
+    if (devices.size() == 0 && mpi == nullptr) {
+        THROW exception::InvalidCUDAdevice("FLAMEGPU2 has not been built with an appropraite compute capability for any devices, unable to continue\n");
+    }
+#else  // FLAMEGPU_ENABLE_MPI
+    if (devices.size() == 0) {
+        THROW exception::InvalidCUDAdevice("FLAMEGPU2 has not been built with an appropraite compute capability for any devices, unable to continue\n");
+    }
+#endif  // FLAMEGPU_ENABLE_MPI
+
+#ifdef FLAMEGPU_ENABLE_MPI
+    // Once the number of devices per rank is known, we can create the actual communicator to be used during MPI, so we can warn/error as needed.
+    if (mpi != nullptr) {
+        // This rank is participating if it has atleast one device assigned to it.
+        // Rank 0 will be participating at this point, otherwise InvalidCUDAdevice would have been thrown
+        // This also implies the participating communicator cannot have a size of 0, as atleast one thread must be participating at this point, but throw in that case just in case.
+        bool communicatorCreated = mpi->createParticipatingCommunicator(devices.size() > 0);
+        // If the communicator failed to be created or is empty for any participating threads, throw. This should never occur.
+        if (!communicatorCreated || mpi->getParticipatingCommSize() == 0) {
+            THROW exception::EnsembleError("Unable to create MPI communicator. Ensure atleast one GPU is visible.\n");
+        }
+        // If the world size is not the participating size, issue a warning.that too many threads have been used.
+        if (mpi->world_rank == 0 && mpi->world_size != mpi->getParticipatingCommSize() && config.verbosity >= Verbosity::Default) {
+            fprintf(stderr, "Warning: MPI Ensemble launched with %d MPI ranks, but only %d ranks have GPUs assigned. %d ranks are unneccesary.\n", mpi->world_size, mpi->getParticipatingCommSize(), mpi->world_size - mpi->getParticipatingCommSize());
+            fflush(stderr);
+        }
+    }
+#endif
 
     const unsigned int TOTAL_RUNNERS = static_cast<unsigned int>(devices.size()) * config.concurrent_runs;
 
@@ -231,7 +274,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
             int flag;
             int mpi_runners_fin = 1;  // Start at 1 because we have always already finished
             // Wait for all runs to have been assigned, and all MPI runners to have been notified of fin
-            while (next_run < plans.size() || mpi_runners_fin < mpi->world_size) {
+            while (next_run < plans.size() || mpi_runners_fin < mpi->getParticipatingCommSize()) {
                 // Check for errors
                 const int t_err_count = mpi->receiveErrors(err_detail);
                 err_count += t_err_count;
@@ -245,7 +288,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                     unsigned int run_id = r.load();
                     if (run_id == detail::MPISimRunner::Signal::RunFailed) {
                         // Retrieve and handle local error detail
-                        mpi->retrieveLocalErrorDetail(log_export_queue_mutex, err_detail, err_detail_local, i);
+                        mpi->retrieveLocalErrorDetail(log_export_queue_mutex, err_detail, err_detail_local, i, devices);
                         ++err_count;
                         if (config.error_level == EnsembleConfig::Fast) {
                             // Skip to end to kill workers
@@ -267,8 +310,8 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                 // Yield, rather than hammering the processor
                 std::this_thread::yield();
             }
-        } else {
-            // Wait for all runs to have been assigned, and all MPI runners to have been notified of fin
+        } else if (mpi->getRankIsParticipating()) {
+            // Wait for all runs to have been assigned, and all MPI runners to have been notified of fin. ranks without GPU(s) do not request jobs.
             unsigned int next_run = 0;
             MPI_Status status;
             while (next_run < plans.size()) {
@@ -280,7 +323,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
                         const unsigned int failed_run_id = err_cts[i].exchange(UINT_MAX);
                         ++err_count;
                         // Retrieve and handle local error detail
-                        mpi->retrieveLocalErrorDetail(log_export_queue_mutex, err_detail, err_detail_local, i);
+                        mpi->retrieveLocalErrorDetail(log_export_queue_mutex, err_detail, err_detail_local, i, devices);
                         runner_status = detail::MPISimRunner::Signal::RequestJob;
                     }
                     if (runner_status == detail::MPISimRunner::Signal::RequestJob) {
@@ -303,7 +346,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
             if (r.exchange(plans.size()) == detail::MPISimRunner::Signal::RunFailed) {
                 ++err_count;
                 // Retrieve and handle local error detail
-                mpi->retrieveLocalErrorDetail(log_export_queue_mutex, err_detail, err_detail_local, i);
+                mpi->retrieveLocalErrorDetail(log_export_queue_mutex, err_detail, err_detail_local, i, devices);
             }
         }
         // Wait for all runners to exit
@@ -313,7 +356,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
             if (next_runs[i].load() == detail::MPISimRunner::Signal::RunFailed) {
                 ++err_count;
                 // Retrieve and handle local error detail
-                mpi->retrieveLocalErrorDetail(log_export_queue_mutex, err_detail, err_detail_local, i);
+                mpi->retrieveLocalErrorDetail(log_export_queue_mutex, err_detail, err_detail_local, i, devices);
             }
         }
 #endif

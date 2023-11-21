@@ -10,10 +10,14 @@ MPIEnsemble::MPIEnsemble(const CUDAEnsemble::EnsembleConfig &_config, const unsi
     : config(_config)
     , world_rank(queryMPIWorldRank())
     , world_size(queryMPIWorldSize())
-    , group_rank(queryMPISharedGroupRank())
-    , group_size(queryMPISharedGroupSize())
+    , local_rank(queryMPISharedGroupRank())
+    , local_size(queryMPISharedGroupSize())
     , total_runs(_total_runs)
-    , MPI_ERROR_DETAIL(AbstractSimRunner::createErrorDetailMPIDatatype()) { }
+    , MPI_ERROR_DETAIL(AbstractSimRunner::createErrorDetailMPIDatatype())
+    , rank_is_participating(false)
+    , comm_participating(MPI_COMM_NULL)
+    , participating_size(0)
+    , participating_rank(-1) { }
 
 int MPIEnsemble::receiveErrors(std::multimap<int, AbstractSimRunner::ErrorDetail> &err_detail) {
     int errCount = 0;
@@ -138,7 +142,7 @@ void MPIEnsemble::worldBarrier() {
 }
 std::string MPIEnsemble::assembleGPUsString() {
     std::string remote_device_names;
-    // All ranks should notify rank 0 of their GPU devices
+    // One rank per node should notify rank 0 of their GPU devices. other ranks will send an empty message.
     if (world_rank == 0) {
         int bufflen = 256;  // Length of name string in cudaDeviceProp
         char *buff = static_cast<char*>(malloc(bufflen));
@@ -166,12 +170,14 @@ std::string MPIEnsemble::assembleGPUsString() {
                 EnvelopeTag::TelemetryDevices,  // int tag
                 MPI_COMM_WORLD,                 // MPI_Comm communicator
                 &status);                       // MPI_Status*
-            remote_device_names.append(", ");
-            remote_device_names.append(buff);
+            if (strlen > 1) {
+                remote_device_names.append(", ");
+                remote_device_names.append(buff);
+            }
         }
         free(buff);
     } else {
-        const std::string d_string = compute_capability::getDeviceNames(config.devices);
+        const std::string d_string = local_rank == 0 ? compute_capability::getDeviceNames(config.devices) : "";
         // Send GPU count
         MPI_Send(
             d_string.c_str(),               // void* data
@@ -200,20 +206,20 @@ int MPIEnsemble::queryMPIWorldSize() {
 
 int MPIEnsemble::queryMPISharedGroupRank() {
     initMPI();
-    int group_rank = -1;
+    int local_rank = -1;
     MPI_Comm group;
     MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &group);
-    MPI_Comm_rank(group, &group_rank);
-    return group_rank;
+    MPI_Comm_rank(group, &local_rank);
+    return local_rank;
 }
 
 int MPIEnsemble::queryMPISharedGroupSize() {
     initMPI();
-    int group_size = -1;
+    int local_size = -1;
     MPI_Comm group;
     MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &group);
-    MPI_Comm_size(group, &group_size);
-    return group_size;
+    MPI_Comm_size(group, &local_size);
+    return local_size;
 }
 
 void MPIEnsemble::initMPI() {
@@ -230,16 +236,16 @@ void MPIEnsemble::initMPI() {
         }
     }
 }
-unsigned int MPIEnsemble::getDeviceIndex(const int j) {
+unsigned int MPIEnsemble::getDeviceIndex(const int j, const std::set<int> devices) {
     int i = 0;
-    for (auto& d : config.devices) {
+    for (auto& d : devices) {
         if (i++ == j)
             return d;
     }
     return j;  // If set is empty, then direct index should be used
 }
 void MPIEnsemble::retrieveLocalErrorDetail(std::mutex &log_export_queue_mutex, std::multimap<int, AbstractSimRunner::ErrorDetail> &err_detail,
-std::vector<detail::AbstractSimRunner::ErrorDetail> &err_detail_local, const int i) {
+std::vector<detail::AbstractSimRunner::ErrorDetail> &err_detail_local, const int i, std::set<int> devices) {
     // Fetch error detail
     detail::AbstractSimRunner::ErrorDetail e_detail;
     {
@@ -247,7 +253,7 @@ std::vector<detail::AbstractSimRunner::ErrorDetail> &err_detail_local, const int
         std::lock_guard<std::mutex> lck(log_export_queue_mutex);
         // Fetch corresponding error detail
         bool success = false;
-        const unsigned int t_device_id = getDeviceIndex(i / config.concurrent_runs);
+        const unsigned int t_device_id = getDeviceIndex(i / config.concurrent_runs, devices);
         const unsigned int t_runner_id = i % config.concurrent_runs;
         for (auto it = err_detail_local.begin(); it != err_detail_local.end(); ++it) {
             if (it->runner_id == t_runner_id && it->device_id == t_device_id) {
@@ -256,7 +262,7 @@ std::vector<detail::AbstractSimRunner::ErrorDetail> &err_detail_local, const int
                     // Only rank 0 collects error details
                     err_detail.emplace(world_rank, e_detail);
                 } else {
-                  // fprintf(stderr, "[%d] Purged error  from device %u runner %u\n", world_rank, t_device_id, t_runner_id);  // useful debug, breaks tests
+                //   fprintf(stderr, "[%d] Purged error  from device %u runner %u\n", world_rank, t_device_id, t_runner_id);  // useful debug, breaks tests
                 }
                 err_detail_local.erase(it);
                 success = true;
@@ -278,6 +284,63 @@ std::vector<detail::AbstractSimRunner::ErrorDetail> &err_detail_local, const int
         // Notify 0 that an error occurred, with the error detail
         sendErrorDetail(e_detail);
     }
+}
+
+bool MPIEnsemble::createParticipatingCommunicator(const bool isParticipating) {
+    // If the communicator has not yet been created, create it and get the rank and size.
+    if (this->comm_participating == MPI_COMM_NULL) {
+        // determine if this thread is participating or not, i..e. the colour of the rank
+        this->rank_is_participating = isParticipating;
+        // Split the world  communicator, if the split fails, abort (this makes the return type not useful tbh.)
+        if (MPI_Comm_split(MPI_COMM_WORLD, this->rank_is_participating, this->world_rank, &this->comm_participating) != MPI_SUCCESS) {
+            fprintf(stderr, "Error creating communicator\n");
+            MPI_Abort(MPI_COMM_WORLD, 1);
+            return false;
+        }
+        // Get the size of the split pariticpating communicator
+        MPI_Comm_size(this->comm_participating, &this->participating_size);
+        // Get the local rank within the split communicator
+        MPI_Comm_rank(this->comm_participating, &this->participating_rank);
+    }
+    return true;
+}
+
+std::set<int> MPIEnsemble::devicesForThisRank(const std::set<int> devicesToSelectFrom, int local_size, int local_rank) {
+    // create a vector from teh set to enable direct access.
+    std::vector<int> devicesToSelectFromVector = std::vector<int>(devicesToSelectFrom.begin(), devicesToSelectFrom.end());
+    int device_count = static_cast<int>(devicesToSelectFrom.size());
+    // if there is only a single mpi rank on this shared memory system, assign all devices, or if there are no devices to select from
+    if (local_size == 1 || device_count == 0) {
+        return devicesToSelectFrom;
+    } else if (local_size > 1 && local_size <= device_count) {
+        // Otherwise, if there are more than one rank per node, but fewer ranks than gpus, attempt to load balance
+        std::set<int> devices;
+        // find the balanced number of gpus per rank, and how many will need +1
+        int gpusPerRank = device_count / local_size;
+        int unallocated = device_count - (gpusPerRank * local_size);
+        // Compute the indices of the first and last gpu to be assigned to the current rank, based on how many lower ranks will have +1
+        int lowerRanksWithPlus1 = local_rank < unallocated ? local_rank : unallocated;
+        int lowerRanksWithPlus0 = std::max(0, local_rank - unallocated);
+        int first = (lowerRanksWithPlus1 * (gpusPerRank + 1)) + (lowerRanksWithPlus0 * gpusPerRank);
+        int last = local_rank < unallocated ? first + gpusPerRank + 1 : first + gpusPerRank;
+        // Assign the devices for this rank
+        for (int i = first; i < last; i++) {
+            devices.emplace(devicesToSelectFromVector[i]);
+        }
+        return devices;
+    } else {
+        // Otherwise, there are more ranks than gpus, so use upto one gpu per rank.
+        std::set<int> devices;
+        for (const auto & d : devicesToSelectFromVector) {}
+        if (local_rank < device_count) {
+            devices.emplace(local_rank);
+        }
+        return devices;
+    }
+}
+
+std::set<int> MPIEnsemble::devicesForThisRank(const std::set<int> devicesToSelectFrom) {
+    return MPIEnsemble::devicesForThisRank(devicesToSelectFrom, this->local_size, this->local_rank);
 }
 
 }  // namespace detail

@@ -81,22 +81,23 @@ int main(int argc, const char ** argv) {
      * Check result for each log
      */
     const std::map<unsigned int, flamegpu::RunLog> &logs = cuda_ensemble.getLogs();
-    unsigned int init_sum = 0, expected_init_sum = 0;
-    uint64_t result_sum = 0, expected_result_sum = 0;
+    if (!cuda_ensemble.Config().mpi || logs.size() > 0) {
+        unsigned int init_sum = 0, expected_init_sum = 0;
+        uint64_t result_sum = 0, expected_result_sum = 0;
 
-    for (const auto &[i, log] : logs) {
-        const int init = i/10;
-        const int init_offset = 1 - i/50;
-        expected_init_sum += init;
-        expected_result_sum += POPULATION_TO_GENERATE * init + init_offset * ((POPULATION_TO_GENERATE-1)*POPULATION_TO_GENERATE/2);  // Initial agent values
-        expected_result_sum += POPULATION_TO_GENERATE * STEPS * i;  // Agent values added by steps
-        const flamegpu::ExitLogFrame &exit_log = log.getExitLog();
-        init_sum += exit_log.getEnvironmentProperty<int>("init");
-        result_sum += exit_log.getEnvironmentProperty<int>("result");
+        for (const auto &[i, log] : logs) {
+            const int init = i/10;
+            const int init_offset = 1 - i/50;
+            expected_init_sum += init;
+            expected_result_sum += POPULATION_TO_GENERATE * init + init_offset * ((POPULATION_TO_GENERATE-1)*POPULATION_TO_GENERATE/2);  // Initial agent values
+            expected_result_sum += POPULATION_TO_GENERATE * STEPS * i;  // Agent values added by steps
+            const flamegpu::ExitLogFrame &exit_log = log.getExitLog();
+            init_sum += exit_log.getEnvironmentProperty<int>("init");
+            result_sum += exit_log.getEnvironmentProperty<int>("result");
+        }
+        printf("Ensemble init: %u, calculated init %u\n", expected_init_sum, init_sum);
+        printf("Ensemble result: %zu, calculated result %zu\n", expected_result_sum, result_sum);
     }
-    printf("Ensemble init: %u, calculated init %u\n", expected_init_sum, init_sum);
-    printf("Ensemble result: %zu, calculated result %zu\n", expected_result_sum, result_sum);
-
     /**
      * Report if MPI was enabled
      */
