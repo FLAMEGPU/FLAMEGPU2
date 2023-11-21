@@ -459,7 +459,7 @@ void AgentFunctionDescription::setRTCFunctionCondition(std::string func_cond_src
     }
 
     // append jitify program string and include
-    std::string func_cond_src_str = std::string(func_cond_name + "_program\n");
+    std::string func_cond_src_str;
 #ifdef FLAMEGPU_OUTPUT_RTC_DYNAMIC_FILES
     func_cond_src_str.append("#line 1 \"").append(function->rtc_func_name).append("_impl_condition.cu\"\n");
 #endif
