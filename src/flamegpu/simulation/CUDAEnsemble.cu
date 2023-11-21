@@ -635,9 +635,6 @@ void CUDAEnsemble::printHelp(const char *executable) {
 #ifdef _MSC_VER
     printf(line_fmt, "    --standby", "Allow the machine to enter standby during execution");
 #endif
-#ifdef FLAMEGPU_ENABLE_MPI
-    printf(line_fmt, "    --no-mpi", "Disable execution using MPI");
-#endif
 }
 void CUDAEnsemble::setStepLog(const StepLoggingConfig &stepConfig) {
     // Validate ModelDescription matches
