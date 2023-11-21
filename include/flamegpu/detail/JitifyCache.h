@@ -100,18 +100,6 @@ class JitifyCache {
     const std::string &kernel_src,
     const std::string &dynamic_header,
     const std::string &name_expression);
-    /**
-     * Fill the provided vector with the list of FLAMEGPU headers we expect to be loaded
-     * This enables Jitify to find all the required headers with less NVRTC calls
-     *
-     * @param flamegpu_include_dir Directory that flamegpu header paths are relative to
-     * @param headers The vector to fill.
-     *
-     * @note At current this method has a static list of headers, which is somewhat fragile to changes to our header hierarchy.
-     *       In future, Jitify is planning to rework how it processes headers, so this may be unnecessary.
-     * @note Libraries such as GLM, which use relative includes internally cannot easily be optimised in this way
-     */
-    static void getKnownHeaders(const std::string& flamegpu_include_dir, std::unordered_map<std::string, std::string>& headers);
 
     /**
      * In-memory map of cached RTC kernels
