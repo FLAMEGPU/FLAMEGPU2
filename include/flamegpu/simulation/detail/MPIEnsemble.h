@@ -84,15 +84,15 @@ class MPIEnsemble {
     /**
      * @return Retrieve the local world rank from MPI
      */
-    int getWorldRank();
+    static int queryMPIWorldRank();
     /**
     * @return Retrieve the world size from MPI
     */
-    int getWorldSize();
+    static int queryMPIWorldSize();
     /**
      * If necessary initialise MPI, else do nothing
      */
-    void initMPI();
+    static void initMPI();
     /**
      * Iterate config.devices to find the item at index j
      */

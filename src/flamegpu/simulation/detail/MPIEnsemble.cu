@@ -8,8 +8,8 @@ namespace detail {
 
 MPIEnsemble::MPIEnsemble(const CUDAEnsemble::EnsembleConfig &_config, const unsigned int _total_runs)
     : config(_config)
-    , world_rank(getWorldRank())
-    , world_size(getWorldSize())
+    , world_rank(queryMPIWorldRank())
+    , world_size(queryMPIWorldSize())
     , total_runs(_total_runs)
     , MPI_ERROR_DETAIL(AbstractSimRunner::createErrorDetailMPIDatatype()) { }
 
@@ -183,13 +183,13 @@ std::string MPIEnsemble::assembleGPUsString() {
     return remote_device_names;
 }
 
-int MPIEnsemble::getWorldRank() {
+int MPIEnsemble::queryMPIWorldRank() {
     initMPI();
     int world_rank = -1;
-  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     return world_rank;
 }
-int MPIEnsemble::getWorldSize() {
+int MPIEnsemble::queryMPIWorldSize() {
     initMPI();
     int world_size = -1;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
