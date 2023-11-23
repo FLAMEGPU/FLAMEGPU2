@@ -113,9 +113,11 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @throws exception::InvalidEnvProperty If a property of the name does not exist
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length > 1
      * @throws exception::OutOfBoundsException If this vector has a length less than 2
+     * @see setPropertyLerpRange(const std::string &name, flamegpu::size_type, T min, T max)
+     * @see setPropertyStep(const std::string&, T, T)
      */
     template<typename T>
-    void setPropertyLerpRange(const std::string &name, const T min, const T max);
+    void setPropertyLerpRange(const std::string &name, T min, T max);
     /**
      * Array property element equivalent of setPropertyLerpRange()
      * Sweep element of named environment property array over an inclusive uniform distribution
@@ -130,10 +132,43 @@ class RunPlanVector : private std::vector<RunPlan>  {
      * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T
      * @throws exception::OutOfBoundsException If index is greater than or equal to the length of the environment property array
      * @throws exception::OutOfBoundsException If this vector has a length less than 2
-     * @see setPropertyUniformDistribution(const std::string &name, T min, T max)
+     * @see setPropertyLerpRange(const std::string &name, T min, T max)
+     * @see setPropertyStep(const std::string&, flamegpu::size_type, T, T)
      */
     template<typename T>
-    void setPropertyLerpRange(const std::string &name, const flamegpu::size_type index, const T min, const T max);
+    void setPropertyLerpRange(const std::string &name, flamegpu::size_type index, T min, T max);
+    /**
+     * Increment named environment property with a user defined step
+     * value = init + index * step
+     * @param name The name of the environment property to set
+     * @param init The value of the first environment property
+     * @param step The value to increment each subsequent environment property by
+     * @tparam T The type of the environment property, this must match the ModelDescription
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length > 1
+     * @throws exception::OutOfBoundsException If this vector has a length less than 2
+     * @see setPropertyStep(const std::string&, flamegpu::size_type, T, T)
+     * @see setPropertyLerpRange(const std::string&, T, T)
+     */
+    template<typename T>
+    void setPropertyStep(const std::string& name, T init, T step);
+    /**
+     * Array property element equivalent of setPropertyStep()
+     * Increment named environment property with a user defined step
+     * value = init + index * step
+     * @param name The name of the environment property to set
+     * @param index The index of the element within the environment property array to set
+     * @param init The value of the first environment property
+     * @param step The value to increment each subsequent environment property by
+     * @tparam T The type of the environment property, this must match the ModelDescription
+     * @throws exception::InvalidEnvProperty If a property of the name does not exist
+     * @throws exception::InvalidEnvPropertyType If a property with the name has a type different to T, or length > 1
+     * @throws exception::OutOfBoundsException If this vector has a length less than 2
+     * @see setPropertyStep(const std::string&, T, T)
+     * @see setPropertyLerpRange(const std::string&, flamegpu::size_type, T, T)
+     */
+    template<typename T>
+    void setPropertyStep(const std::string& name, flamegpu::size_type index, T init, T step);
     /**
      * Seed the internal random generator used for random property distributions
      * This will only affect subsequent calls to setPropertyRandom()
@@ -468,6 +503,55 @@ void RunPlanVector::setPropertyLerpRange(const std::string &name, const flamegpu
             lerp = round(lerp);
         const T lerp_t = static_cast<T>(lerp);
         i.setProperty<T>(name, index, lerp_t);
+    }
+}
+
+template<typename T>
+void RunPlanVector::setPropertyStep(const std::string& name, T init, const T step) {
+    // Validation
+    const auto it = environment->find(name);
+    if (it == environment->end()) {
+        THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
+            "in RunPlanVector::setPropertyStep()\n",
+            name.c_str());
+    }
+    if (it->second.data.type != std::type_index(typeid(T))) {
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
+            "in RunPlanVector::setPropertyStep()\n",
+            name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
+    }
+    if (it->second.data.elements != 1) {
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' is an array with %u elements, array method should be used, "
+            "in RunPlanVector::setPropertyStep()\n",
+            name.c_str(), it->second.data.elements);
+    }
+    for (auto& i : *this) {
+        i.setProperty<T>(name, init);
+        init += step;
+    }
+}
+template<typename T>
+void RunPlanVector::setPropertyStep(const std::string& name, const flamegpu::size_type index, T init, const T step) {
+    // Validation
+    const auto it = environment->find(name);
+    if (it == environment->end()) {
+        THROW exception::InvalidEnvProperty("Environment description does not contain property '%s', "
+            "in RunPlanVector::setPropertyStep()\n",
+            name.c_str());
+    }
+    if (it->second.data.type != std::type_index(typeid(T))) {
+        THROW exception::InvalidEnvPropertyType("Environment property '%s' type mismatch '%s' != '%s', "
+            "in RunPlanVector::setPropertyStep()\n",
+            name.c_str(), it->second.data.type.name(), std::type_index(typeid(T)).name());
+    }
+    const unsigned int t_index = detail::type_decode<T>::len_t * index + detail::type_decode<T>::len_t;
+    if (t_index > it->second.data.elements || t_index < index) {
+        throw exception::OutOfBoundsException("Environment property array index out of bounds "
+            "in RunPlanVector::setPropertyStep()\n");
+    }
+    for (auto& i : *this) {
+        i.setProperty<T>(name, index, init);
+        init += step;
     }
 }
 
