@@ -181,7 +181,6 @@ double t_lerp(const T _min, const T _max, const double a) {
 }
 
 // Check that all values set lie within the min and max inclusive
-// @todo - should fp be [min, max) like when using RNG?
 TEST(TestRunPlanVector, setPropertyUniformDistribution) {
     // Define the simple model to use
     flamegpu::ModelDescription model("test");
@@ -223,6 +222,7 @@ TEST(TestRunPlanVector, setPropertyUniformDistribution) {
     plans.setPropertyLerpRange("u3", 2, u3Min[2], u3Max[2]);
     plans.setPropertyLerpRange("f2", 0, f2Min[0], f2Max[0]);
     plans.setPropertyLerpRange("f2", 1, f2Min[1], f2Max[1]);
+
     // Check values are as expected by accessing the properties from each plan
     int i = 0;
     const double divisor = totalPlans - 1;
@@ -257,6 +257,81 @@ TEST(TestRunPlanVector, setPropertyUniformDistribution) {
     EXPECT_THROW((plans.setPropertyLerpRange<float>("u3", 0u, 1.f, 100.f)), flamegpu::exception::InvalidEnvPropertyType);
     EXPECT_THROW((plans.setPropertyLerpRange<uint32_t>("u3", static_cast<flamegpu::size_type>(-1), 1u, 100u)), exception::OutOfBoundsException);
     EXPECT_THROW((plans.setPropertyLerpRange<uint32_t>("u3", 4u, 1u, 100u)), exception::OutOfBoundsException);
+}
+// Check that all values set lie within the min and max inclusive
+TEST(TestRunPlanVector, setPropertyStep) {
+    // Define the simple model to use
+    flamegpu::ModelDescription model("test");
+    // Add a few environment properties to the model.
+    auto environment = model.Environment();
+    const float fOriginal = 0.0f;
+    const int32_t iOriginal = 0;
+    const std::array<uint32_t, 3> u3Original = { {0, 0, 0} };
+    const std::array<float, 2> f2Original = { {12.0f, 13.0f} };
+    environment.newProperty<float>("f", fOriginal);
+    environment.newProperty<float>("fb", fOriginal);
+    environment.newProperty<int32_t>("i", iOriginal);
+    environment.newProperty<uint32_t, 3>("u3", u3Original);
+    environment.newProperty<float, 2>("f2", f2Original);
+    // Create a vector of plans
+    constexpr uint32_t totalPlans = 10u;
+    flamegpu::RunPlanVector plans(model, totalPlans);
+    // No need to seed the random, as does not use a random distribution.
+
+    // Uniformly set each property to a new value, then check it has been applied correctly.
+    const float fMin = 1.f;
+    const float fStep = 100.f;
+    const float fbMin = 0.0f;
+    const float fbStep = 1.0f;
+    const int32_t iMin = 1;
+    const int32_t iStep = 100;
+    const std::array<uint32_t, 3> u3Min = { {1u, 101u, 201u} };
+    const std::array<uint32_t, 3> u3Step = { {100u, 200u, 300u} };
+    const std::array<float, 2> f2Min = { {1.0f, 100.f} };
+    const std::array<float, 2> f2Step = { {0.0f, -100.0f} };
+    // void setPropertyStep(const std::string &name, T init, T step);
+    plans.setPropertyStep("f", fMin, fStep);
+    plans.setPropertyStep("fb", fbMin, fbStep);
+    plans.setPropertyStep("i", iMin, iStep);
+    // Check setting individual array elements
+    // void setPropertyStep(const std::string &name, flamegpu::size_type index, T init, T step);
+    plans.setPropertyStep("u3", 0, u3Min[0], u3Step[0]);
+    plans.setPropertyStep("u3", 1, u3Min[1], u3Step[1]);
+    plans.setPropertyStep("u3", 2, u3Min[2], u3Step[2]);
+    plans.setPropertyStep("f2", 0, f2Min[0], f2Step[0]);
+    plans.setPropertyStep("f2", 1, f2Min[1], f2Step[1]);
+
+    // Check values are as expected by accessing the properties from each plan
+    int i = 0;
+    for (const auto& plan : plans) {
+        EXPECT_EQ(plan.getProperty<float>("f"), fMin + i * fStep);
+        EXPECT_EQ(plan.getProperty<float>("fb"), fbMin + i * fbStep);
+        const std::array<float, 2> f2FromPlan = plan.getProperty<float, 2>("f2");
+        EXPECT_EQ(f2FromPlan[0], f2Min[0] + i * f2Step[0]);
+        EXPECT_EQ(f2FromPlan[1], f2Min[1] + i * f2Step[1]);
+        // Note integer values are rounded
+        EXPECT_EQ(plan.getProperty<int32_t>("i"), iMin + i * iStep);
+        const std::array<uint32_t, 3> u3FromPlan = plan.getProperty<uint32_t, 3>("u3");
+        EXPECT_EQ(u3FromPlan[0], u3Min[0] + i * u3Step[0]);
+        EXPECT_EQ(u3FromPlan[1], u3Min[1] + i * u3Step[1]);
+        EXPECT_EQ(u3FromPlan[2], u3Min[2] + i * u3Step[2]);
+        ++i;
+    }
+
+    // Tests for exceptions
+    // --------------------
+    flamegpu::RunPlanVector singlePlanVector(model, 1);
+    // Note literals used must match the templated type not the incorrect types used, to appease MSVC warnings.
+    // void RunPlanVector::setPropertyStep(const std::string &name, T init, T step)
+    EXPECT_THROW((plans.setPropertyStep<float>("does_not_exist", 1.f, 100.f)), flamegpu::exception::InvalidEnvProperty);
+    EXPECT_THROW((plans.setPropertyStep<float>("i", 1.f, 100.f)), flamegpu::exception::InvalidEnvPropertyType);
+    EXPECT_THROW((plans.setPropertyStep<uint32_t>("u3", 1u, 100u)), flamegpu::exception::InvalidEnvPropertyType);
+    // void RunPlanVector::setPropertyStep(const std::string &name, const flamegpu::size_type, T init, T step)
+    // Extra brackets within the macro mean commas can be used due to how preproc tokenizers work
+    EXPECT_THROW((plans.setPropertyStep<float>("does_not_exist", 0u, 1.f, 100.f)), flamegpu::exception::InvalidEnvProperty);
+    EXPECT_THROW((plans.setPropertyStep<float>("u3", 0u, 1.f, 100.f)), flamegpu::exception::InvalidEnvPropertyType);
+    EXPECT_THROW((plans.setPropertyStep<uint32_t>("u3", static_cast<flamegpu::size_type>(-1), 1u, 100u)), exception::OutOfBoundsException);
+    EXPECT_THROW((plans.setPropertyStep<uint32_t>("u3", 4u, 1u, 100u)), exception::OutOfBoundsException);
 }
 // Checking for uniformity of distribution would require a very large samples size.
 // As std:: is used, we trust the distribution is legit, and instead just check for min/max.
