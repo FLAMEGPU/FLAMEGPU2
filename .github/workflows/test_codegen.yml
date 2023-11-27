@@ -54,4 +54,4 @@ jobs:
 
     - name: Run pytest on codegen.py
       run: |
-        python3 -m pytest tests/python/codegen/test_codegen.py
+        python3 -m pytest tests/python/codegen/test_codegen.py -v
