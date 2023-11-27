@@ -2,7 +2,7 @@
 from io import StringIO
 from .codegen import CodeGenerator
 from .codegen import CodeGenException
-from typing import Callable, Union
+from typing import Callable, Union, _SpecialForm
 import ast
 import inspect
 
@@ -51,7 +51,7 @@ def translate(function: Union[str, Callable]) -> str:
         prepend_c_source = ""
         # Find all annotated variables
         for key, val in module_annontations.items():
-            if val.__name__ == "Final" or val.__name__ == "constant":
+            if (isinstance(val, _SpecialForm) and val._name == "Final") or val.__name__ == "constant":
                 # Locate the literal for that variable (Python will precompute anything e.g. math.sqrt(12.5))
                 for mem in module_members:
                     if key == mem[0]:
