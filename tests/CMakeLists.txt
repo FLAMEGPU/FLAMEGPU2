@@ -127,7 +127,7 @@ endif()
 macro(create_test_project)
     enable_testing()
     # Handle CMAKE_CUDA_ARCHITECTURES and inject code into the tests project() command
-    flamegpu_init_cuda_architectures(PROJECT tests_mpi)
+    flamegpu_init_cuda_architectures(PROJECT ${ARGV0})
     # Name the project and set languages
     project(${ARGV0} CUDA CXX)
     # Include common rules.
