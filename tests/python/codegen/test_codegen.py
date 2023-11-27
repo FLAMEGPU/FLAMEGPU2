@@ -799,7 +799,7 @@ class CodeGenTest(unittest.TestCase):
         self._checkExpected("a: numpy.float32", "float a;")
         self._checkExpected("a: numpy.float64", "double a;")
         # check unsupported
-        self._checkException("a: numpy.unsupported", "Not a supported numpy type")
+        self._checkException("a: numpy.unsupported", "numpy.unsupported is not a supported numpy type")
         
     
     def test_fgpu_constexpr(self):
