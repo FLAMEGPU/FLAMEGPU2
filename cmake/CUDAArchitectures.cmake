@@ -215,7 +215,7 @@ function(flamegpu_set_cuda_architectures)
                 endif()
                 message(AUTHOR_WARNING
                     "  ${CMAKE_CURRENT_FUNCTION} failed to parse NVCC --help output for default architecture generation\n"
-                    "  Using ${default_archs} based on CUDA 11.0 to 11.8."
+                    "  Using ${default_archs} based on CUDA 11.2 to 11.8."
                 )
             endif()
             # We actually want real for each arch, then virtual for the final, but only for library-provided values, to only embed one arch worth of ptx.

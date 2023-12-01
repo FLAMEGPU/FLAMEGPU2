@@ -644,9 +644,8 @@ set_property(TARGET ${PROJECT_NAME}  PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
 # Link against dependency targets / directories.
 
-# Cub and thrust targets are not imported targets, so they do not use -isystem, so warnings must be suppressed as pragmas as requied. This is due to nvcc magic preventing isystem from being reliable with them. 
-target_link_libraries(${PROJECT_NAME} PUBLIC CUB::CUB)
-target_link_libraries(${PROJECT_NAME} PUBLIC Thrust::Thrust)
+# CCCL for Cub and thrust (and libcudacxx) targets are not imported targets, so they do not use -isystem, so warnings must be suppressed as pragmas if required. This is due to nvcc magic implicit include directory search ordering
+target_link_libraries(${PROJECT_NAME} PUBLIC CCCL::CCCL)
 
 # tinyxml2 static library
 target_link_libraries(${PROJECT_NAME} PRIVATE Tinyxml2::tinyxml2)
@@ -705,16 +704,6 @@ endif()
 flamegpu_set_target_folder(${PROJECT_NAME} "FLAMEGPU")
 # Put the tinyxml2 in the folder
 flamegpu_set_target_folder("tinyxml2" "FLAMEGPU/Dependencies")
-
-# Emit some warnings that should only be issued once and are related to this file (but not this target)
-# @todo - move these author warnigns elsewhere, so they will be emitted if not building FLAMEGPU iteself? Common but with some form of guard?
-if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS_EQUAL "10.2")
-    message(AUTHOR_WARNING "MSVC and NVCC <= 10.2 may encounter compiler errors due to an NVCC bug exposed by Thrust. Cosider using a newer CUDA toolkit.")
-endif()
-if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS_EQUAL "11.0")
-    # https://github.com/FLAMEGPU/FLAMEGPU2/issues/483
-    message(AUTHOR_WARNING "MSVC and NVCC <= 11.0 may encounter errors at link time with incremental rebuilds. Cosider using a newer CUDA toolkit.")
-endif()
 
 # Also set as startup project (if top level project)
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
