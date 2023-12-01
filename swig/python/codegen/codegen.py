@@ -102,7 +102,8 @@ class CodeGenerator:
                   "Int32": "int_32",
                   "UInt32": "uint_32",
                   "Int64": "int_64",
-                  "UInt64": "uint_64"
+                  "UInt64": "uint_64",
+                  "ID": "flamegpu::id_t"
                  }
 
 
@@ -197,7 +198,7 @@ class CodeGenerator:
     def RaiseError(self, tree, str):
         raise CodeGenException(f"Error ({tree.lineno}, {tree.col_offset}): {str}")
 
-    ############### Cutsom Unparsing methods ###############
+    ############### Custom Unparsing methods ###############
     # These are special versions of the ast unparsing      #
     # dispatch functions.                                  #
     ########################################################
@@ -282,15 +283,15 @@ class CodeGenerator:
         """
         if isinstance(tree, ast.Name):
             if tree.id not in self.basic_arg_types:
-                self.RaiseError(tree, "Not a supported type")
+                self.RaiseError(tree, "%s is not a supported type"%(tree.id))
             self.write(tree.id)
         elif isinstance(tree, ast.Attribute):
             if not isinstance(tree.value, ast.Name) :
                 self.RaiseError(tree, "Not a supported type")
             if not (tree.value.id == "numpy" or tree.value.id == "np"):
-                self.RaiseError(tree, "Not a supported type")
+                self.RaiseError(tree, "%s.%s is not a supported type"%(tree.value.id, tree.attr))
             if tree.attr not in self.numpytypes:
-                self.RaiseError(tree, "Not a supported numpy type")
+                self.RaiseError(tree, "%s.%s is not a supported numpy type"%(tree.value.id, tree.attr))
             self.write(self.numpytypes[tree.attr])
         else:
             self.RaiseError(tree, "Not a supported type")
@@ -450,7 +451,7 @@ class CodeGenerator:
                     self.write(py_func)
                     t_parent.call_type = "AgentOut"
             else:
-                self.RaiseError(t, f"Unknown or unsupported nested attribute in {t.value.value.id}")
+                self.RaiseError(t, f"Unknown or unsupported nested attribute {t.value.attr} in {t.value.value.id}")
         # Non nested member functions (e.g. x.y())
         elif isinstance(t.value, ast.Name):
             # pyflamegpu singleton
