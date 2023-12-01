@@ -63,7 +63,7 @@ Building FLAME GPU has the following requirements. There are also optional depen
 
 + [CMake](https://cmake.org/download/) `>= 3.18`
   + `>= 3.20` if building python bindings using a multi-config generator (Visual Studio, Eclipse or Ninja Multi-Config)
-+ [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 11.0` and a [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 3.5` NVIDIA GPU.
++ [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 11.2` and a [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 3.5` NVIDIA GPU.
 + C++17 capable C++ compiler (host), compatible with the installed CUDA version
   + [Microsoft Visual Studio 2019 or 2022](https://visualstudio.microsoft.com/) (Windows)
     + *Note:* Visual Studio must be installed before the CUDA toolkit is installed. See the [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) for more information.
@@ -252,7 +252,7 @@ Several environmental variables are used or required by FLAME GPU 2.
 
 | Environment Variable                 | Description |
 |--------------------------------------|-------------|
-| `CUDA_PATH`                          | Required when using RunTime Compilation (RTC), pointing to the root of the CUDA Toolkit where NVRTC resides. <br /> i.e. `/usr/local/cuda-11.0/` or `C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.0`. <br /> Alternatively `CUDA_HOME` may be used if `CUDA_PATH` was not set. |
+| `CUDA_PATH`                          | Required when using RunTime Compilation (RTC), pointing to the root of the CUDA Toolkit where NVRTC resides. <br /> i.e. `/usr/local/cuda-11.2/` or `C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.2`. <br /> Alternatively `CUDA_HOME` may be used if `CUDA_PATH` was not set. |
 | `FLAMEGPU_INC_DIR`                   | When RTC compilation is required, if the location of the `include` directory cannot be found it must be specified using the `FLAMEGPU_INC_DIR` environment variable. |
 | `FLAMEGPU_TMP_DIR`                   | FLAME GPU may cache some files to a temporary directory on the system, using the temporary directory returned by [`std::filesystem::temp_directory_path`](https://en.cppreference.com/w/cpp/filesystem/temp_directory_path). The location can optionally be overridden using the `FLAMEGPU_TMP_DIR` environment variable. |
 | `FLAMEGPU_RTC_INCLUDE_DIRS`          | A list of include directories that should be provided to the RTC compiler, these should be separated using `;` (Windows) or `:` (Linux). If this variable is not found, the working directory will be used as a default. |

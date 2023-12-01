@@ -35,7 +35,7 @@ jobs:
             cuda_arch: "35"
             hostcxx: "Visual Studio 16 2019"
             os: windows-2019
-          - cuda: "11.0.3"
+          - cuda: "11.2.2"
             cuda_arch: "35"
             hostcxx: "Visual Studio 16 2019"
             os: windows-2019

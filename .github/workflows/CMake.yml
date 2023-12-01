@@ -26,7 +26,7 @@ jobs:
       # Multiplicative build matrix
       matrix:
         cudacxx:
-          - cuda: "11.0"
+          - cuda: "11.2"
             cuda_arch: "35"
             hostcxx: gcc-8
             os: ubuntu-20.04
