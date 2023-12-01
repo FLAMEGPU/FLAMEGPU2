@@ -63,7 +63,7 @@ Building FLAME GPU has the following requirements. There are also optional depen
 
 + [CMake](https://cmake.org/download/) `>= 3.18`
   + `>= 3.20` if building python bindings using a multi-config generator (Visual Studio, Eclipse or Ninja Multi-Config)
-+ [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 11.0` and a [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 3.5` NVIDIA GPU.
++ [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 11.2` and a [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 3.5` NVIDIA GPU.
 + C++17 capable C++ compiler (host), compatible with the installed CUDA version
   + [Microsoft Visual Studio 2019 or 2022](https://visualstudio.microsoft.com/) (Windows)
     + *Note:* Visual Studio must be installed before the CUDA toolkit is installed. See the [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) for more information.
@@ -144,7 +144,7 @@ REM Alternatively, build from the command line specifying the build configuratio
 cmake --build . --config Release --target flamegpu boids_bruteforce --verbose
 ```
 
-On Windows, by default CMake will select the newest version of CUDA available when configuring. If you have multiple versions of CUDA installed then you can select an earlier installed CUDA version (e.g. CUDA 11.0) by additionally passing `-T cuda=11.0` when calling CMake configure (`cmake ..`).
+On Windows, by default CMake will select the newest version of CUDA available when configuring. If you have multiple versions of CUDA installed then you can select an earlier installed CUDA version (e.g. CUDA 11.2) by additionally passing `-T cuda=11.2` when calling CMake configure (`cmake ..`).
 
 #### Configuring and Building a single example
 
@@ -252,7 +252,7 @@ Several environmental variables are used or required by FLAME GPU 2.
 
 | Environment Variable                 | Description |
 |--------------------------------------|-------------|
-| `CUDA_PATH`                          | Required when using RunTime Compilation (RTC), pointing to the root of the CUDA Toolkit where NVRTC resides. <br /> i.e. `/usr/local/cuda-11.0/` or `C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.0`. <br /> Alternatively `CUDA_HOME` may be used if `CUDA_PATH` was not set. |
+| `CUDA_PATH`                          | Required when using RunTime Compilation (RTC), pointing to the root of the CUDA Toolkit where NVRTC resides. <br /> i.e. `/usr/local/cuda-11.2/` or `C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.2`. <br /> Alternatively `CUDA_HOME` may be used if `CUDA_PATH` was not set. |
 | `FLAMEGPU_INC_DIR`                   | When RTC compilation is required, if the location of the `include` directory cannot be found it must be specified using the `FLAMEGPU_INC_DIR` environment variable. |
 | `FLAMEGPU_TMP_DIR`                   | FLAME GPU may cache some files to a temporary directory on the system, using the temporary directory returned by [`std::filesystem::temp_directory_path`](https://en.cppreference.com/w/cpp/filesystem/temp_directory_path). The location can optionally be overridden using the `FLAMEGPU_TMP_DIR` environment variable. |
 | `FLAMEGPU_RTC_INCLUDE_DIRS`          | A list of include directories that should be provided to the RTC compiler, these should be separated using `;` (Windows) or `:` (Linux). If this variable is not found, the working directory will be used as a default. |
@@ -372,8 +372,5 @@ For a full list of known issues pleases see the [Issue Tracker](https://github.c
 
 + Warnings and a loss of performance due to hash collisions in device code ([#356](https://github.com/FLAMEGPU/FLAMEGPU2/issues/356))
 + Multiple known areas where performance can be improved (e.g. [#449](https://github.com/FLAMEGPU/FLAMEGPU2/issues/449), [#402](https://github.com/FLAMEGPU/FLAMEGPU2/issues/402))
-+ Windows/MSVC builds using CUDA 11.0 may encounter errors when performing incremental builds if the static library has been recompiled. If this presents itself, re-save any `.cu` file in your executable producing project and re-trigger the build.
-+ Debug builds under linux with CUDA 11.0 may encounter cuda errors during `validateIDCollisions`. Consider using an alternate CUDA version if this is required ([#569](https://github.com/FLAMEGPU/FLAMEGPU2/issues/569)).
-+ CUDA 11.0 with GCC 9 may encounter a segmentation fault during compilation of the test suite. Consider using GCC 8 with CUDA 11.0.
 + CUDA 12.2+ suffers from poor RTC compilation times, to be fixed in a future release ([#1118](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1118)).
 + Wrapped spatial message iteration with may incorrectly report that the radius is not a factor of the environment with `FLAMEGPU_SEATBELTS=ON` for certain floating point values, to be fixed in a future release ([#1177](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1177)).

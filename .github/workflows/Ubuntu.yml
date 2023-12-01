@@ -64,7 +64,7 @@ jobs:
               cuda: "12.0"
             VISUALISATION: "ON"
           - cudacxx:
-              cuda: "11.0"
+              cuda: "11.2"
             VISUALISATION: "ON"
           # Exclude beltsoff builds for all but the most recent cuda
           - cudacxx:
@@ -76,7 +76,7 @@ jobs:
             config:
               name: "Beltsoff"
           - cudacxx:
-              cuda: "11.0"
+              cuda: "11.2"
             config:
               name: "Beltsoff"
           # Exclude beltsoff vis builds to keep the matrix lighter.

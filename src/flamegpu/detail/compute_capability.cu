@@ -73,8 +73,8 @@ std::vector<int> compute_capability::getNVRTCSupportedComputeCapabilties() {
     }
     // If any of the above functions failed, we have no idea what arch's are supported, so assume none are?
     return {};
-// Older CUDA's do not support this, but this is simple to hard-code for CUDA 11.0/11.1  (and our deprected CUDA 10.x).
-// CUDA 11.1 suports 35 to 86
+// Older CUDA's do not support this, but this is simple to hard-code for CUDA 11.0/11.1 (and CUDA 10.x).
+// CUDA 11.1 supports 35 to 86
 #elif (__CUDACC_VER_MAJOR__ == 11) && __CUDACC_VER_MINOR__ == 1
     return {35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75, 80, 86};
 // CUDA 11.0 supports 35 to 80
