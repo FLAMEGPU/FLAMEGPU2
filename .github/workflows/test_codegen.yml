@@ -1,0 +1,57 @@
+# Test codegen.py in isolation of cuda.
+name: test_codegen.py
+
+on:
+  # Branch pushes to codegen related files
+  push:
+    branches:
+      - '**'
+    paths:
+      - ".github/workflows/test_codegen.yml"
+      - "swig/python/codegen/**"
+      - "tests/python/codegen/test_codegen.py"
+  # Allow manual invocation.
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  configure:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      # Multiplicative build matrix
+      matrix:
+        python: 
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
+          - "3.12"
+
+    # Name the job based on matrix/env options
+    name: "test_codegen ${{matrix.python}}"
+
+    # Define job-wide env constants, and promote matrix elements to env constants for portable steps.
+    env:
+      PYTHON: ${{ matrix.python}}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Select Python
+      if: ${{ env.PYTHON != ''}} 
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON }}
+
+    - name: Install python dependencies
+      if: ${{ env.PYTHON != ''}} 
+      run: |
+        python3 -m pip install --upgrade pytest astpretty
+
+    - name: Run pytest on codegen.py
+      run: |
+        python3 -m pytest tests/python/codegen/test_codegen.py -v

@@ -4,7 +4,13 @@ import sys
 import pytest
 import unittest
 import ast
-import pyflamegpu.codegen
+try:
+    import pyflamegpu.codegen as codegen
+except:
+    # If pyflamegpu is not in the current env, use a local import of just the codegen submodule intead.
+    import pathlib
+    sys.path.append(f"{pathlib.Path(__file__).parent}/../../../swig/python/")
+    import codegen
 import astpretty
 
 
@@ -591,7 +597,7 @@ class CodeGenTest(unittest.TestCase):
         tree = ast.parse(source)
         if DEBUG_OUT:
             astpretty.pprint(tree)
-        code = pyflamegpu.codegen.codegen(tree)
+        code = codegen.codegen(tree)
         # remove new lines
         code = code.strip()
         expected = expected.strip()
@@ -606,10 +612,10 @@ class CodeGenTest(unittest.TestCase):
         assert warning_str in str(record[0].message)
         
     def _checkException(self, source, exception_str):
-        with pytest.raises(pyflamegpu.codegen.CodeGenException) as e:
+        with pytest.raises(codegen.CodeGenException) as e:
             tree = ast.parse(source.strip())
             # code generate
-            code = pyflamegpu.codegen.codegen(tree)
+            code = codegen.codegen(tree)
         if EXCEPTION_MSG_CHECKING:
             assert exception_str in str(e.value)
            
@@ -901,7 +907,7 @@ class CodeGenTest(unittest.TestCase):
     def test_fgpu_agent_func_input_types(self):
         """ Try all the message input types by using a string replacement """
         # try all correct types
-        for msg_type in pyflamegpu.codegen.CodeGenerator.fgpu_message_types:
+        for msg_type in codegen.CodeGenerator.fgpu_message_types:
             py_func = py_fgpu_agent_func.replace("pyflamegpu.MessageNone", msg_type)
             cpp_msg_type = msg_type.replace("pyflamegpu.", "flamegpu::")
             cpp_output = cpp_fgpu_agent_func.replace("flamegpu::MessageNone", cpp_msg_type)
@@ -913,7 +919,7 @@ class CodeGenTest(unittest.TestCase):
     def test_fgpu_agent_func_output_types(self):
         """ Try all the message output types by using a string replacement """
         # try all correct types
-        for msg_type in pyflamegpu.codegen.CodeGenerator.fgpu_message_types:
+        for msg_type in codegen.CodeGenerator.fgpu_message_types:
             py_func = py_fgpu_agent_func.replace("pyflamegpu.MessageBruteForce", msg_type)
             cpp_msg_type = msg_type.replace("pyflamegpu.", "flamegpu::")
             cpp_output = cpp_fgpu_agent_func.replace("flamegpu::MessageBruteForce", cpp_msg_type)
