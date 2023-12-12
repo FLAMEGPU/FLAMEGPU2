@@ -1034,5 +1034,97 @@ TEST(Spatial3DMessageTest, buffer_not_init) {
     c.SimulationConfig().steps = 4;
     EXPECT_NO_THROW(c.simulate());
 }
+
+FLAMEGPU_AGENT_FUNCTION(in_bounds_not_factor, MessageSpatial3D, MessageNone) {
+    const float x1 = FLAMEGPU->getVariable<float>("x");
+    const float y1 = FLAMEGPU->getVariable<float>("y");
+    const float z1 = FLAMEGPU->getVariable<float>("z");
+    unsigned int count = 0;
+    // Count how many messages we received (including our own)
+    for (const auto& message : FLAMEGPU->message_in(x1, y1, z1)) {
+        ++count;
+    }
+    FLAMEGPU->setVariable<unsigned int>("count", count);
+    return ALIVE;
+}
+TEST(Spatial3DMessageTest, bounds_not_factor_radius) {
+    // This tests that bug #1157 is fixed
+    // When the interaction radius is not a factor of the width
+    // that agent's near the max env bound all have the full interaction radius
+    ModelDescription m("model");
+    MessageSpatial3D::Description message = m.newMessage<MessageSpatial3D>("location");
+    message.setMin(0, 0, 0);
+    message.setMax(50.1f, 50.1f, 50.1f);
+    message.setRadius(10);
+    // Grid will be 6x6
+    // 6th column/row should only be  0.1 wide of the environment
+    // Bug would incorrectly divide the whole environment by 6
+    // So bin widths would instead become 8.35 (down from 10)
+    message.newVariable<flamegpu::id_t>("id");  // unused by current test
+    AgentDescription agent = m.newAgent("agent");
+    agent.newVariable<float>("x");
+    agent.newVariable<float>("y");
+    agent.newVariable<float>("z");
+    agent.newVariable<unsigned int>("count", 0);
+    AgentFunctionDescription fo = agent.newFunction("out", out_mandatory3D);
+    fo.setMessageOutput(message);
+    AgentFunctionDescription fi = agent.newFunction("in", in_bounds_not_factor);
+    fi.setMessageInput(message);
+    LayerDescription lo = m.newLayer();
+    lo.addAgentFunction(fo);
+    LayerDescription li = m.newLayer();
+    li.addAgentFunction(fi);
+    // Set pop in model
+    CUDASimulation c(m);
+    // Create an agent in the middle of each edge
+    AgentVector population(agent, 6);
+    // Initialise agents
+    // Vertical pair that can interact
+    // Top side
+    AgentVector::Agent i1 = population[0];
+    i1.setVariable<float>("x", 50.1f / 2);
+    i1.setVariable<float>("y", 0.0f);
+    i1.setVariable<float>("z", 50.1f / 2);
+    // Top side inner
+    AgentVector::Agent i2 = population[1];
+    i2.setVariable<float>("x", 50.1f / 2);
+    i2.setVariable<float>("y", 18.0f);
+    i2.setVariable<float>("z", 50.1f / 2);
+    // Right side
+    AgentVector::Agent i3 = population[2];
+    i3.setVariable<float>("x", 0.0f);
+    i3.setVariable<float>("y", 50.1f / 2);
+    i3.setVariable<float>("z", 1.0f / 2);
+    // Horizontal pair that can interact
+    // Right side inner
+    AgentVector::Agent i4 = population[3];
+    i4.setVariable<float>("x", 18.0f);
+    i4.setVariable<float>("y", 50.1f / 2);
+    i4.setVariable<float>("z", 1.0f / 2);
+    // Rear side
+    AgentVector::Agent i5 = population[4];
+    i5.setVariable<float>("x", 50.1f / 2);
+    i5.setVariable<float>("y", 50.0f);
+    i5.setVariable<float>("z", 50.1f);
+    // Horizontal pair that can interact
+    // Rear side inner
+    AgentVector::Agent i6 = population[5];
+    i6.setVariable<float>("x", 50.1f / 2);
+    i6.setVariable<float>("y", 50.0f);
+    i6.setVariable<float>("z", 50.1f - 10.11f);
+    c.setPopulationData(population);
+    c.SimulationConfig().steps = 1;
+    EXPECT_NO_THROW(c.simulate());
+    // Recover the results and check they match what was expected
+    c.getPopulationData(population);
+    // Validate each agent has same result
+    for (AgentVector::Agent ai : population) {
+        if (ai.getID() < 5) {
+            EXPECT_EQ(2u, ai.getVariable<unsigned int>("count"));
+        } else {
+            EXPECT_EQ(1u, ai.getVariable<unsigned int>("count"));
+        }
+    }
+}
 }  // namespace test_message_spatial3d
 }  // namespace flamegpu
