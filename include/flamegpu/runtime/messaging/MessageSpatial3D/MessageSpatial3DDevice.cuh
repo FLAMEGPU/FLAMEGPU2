@@ -639,9 +639,9 @@ T MessageSpatial3D::In::WrapFilter::Message::getVariable(const char(&variable_na
 __device__ __forceinline__ MessageSpatial3D::GridPos3D getGridPosition3D(const MessageSpatial3D::MetaData *md, float x, float y, float z) {
     // Clamp each grid coord to 0<=x<dim
     int gridPos[3] = {
-        static_cast<int>(floorf(((x-md->min[0]) / md->environmentWidth[0])*md->gridDim[0])),
-        static_cast<int>(floorf(((y-md->min[1]) / md->environmentWidth[1])*md->gridDim[1])),
-        static_cast<int>(floorf(((z-md->min[2]) / md->environmentWidth[2])*md->gridDim[2]))
+        static_cast<int>(floorf((x-md->min[0]) / md->radius)),
+        static_cast<int>(floorf((y-md->min[1]) / md->radius)),
+        static_cast<int>(floorf((z-md->min[2]) / md->radius))
     };
     MessageSpatial3D::GridPos3D rtn = {
         gridPos[0] < 0 ? 0 : (gridPos[0] >= static_cast<int>(md->gridDim[0]) ? static_cast<int>(md->gridDim[0]) - 1 : gridPos[0]),
