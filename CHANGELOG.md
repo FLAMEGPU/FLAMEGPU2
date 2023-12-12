@@ -20,6 +20,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 -->
+
+## [2.0.0-rc.1] - 2024-01-12
+
+### Added
+
++ Support for CUDA 12.0-12.3. ([#1015](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1015), [#1056](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1056), [#1097](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1097), [#1130](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1130))
+  + CUDA 12.2+ currently suffers from poor RTC compilation times due to changes in the CUDA headers ([#1118](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1118)). This will be fixed in a future release.
++ Support for Python 3.12. ([#1117](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1117))
++ Visualiser: Add support for orthographic projection. ([FLAMEGPU/FLAMEGPU2-visualiser#114](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser/pull/114), [FLAMEGPU/FLAMEGPU2-visualiser#121](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser/pull/121) [#1040](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1040))
++ Visualiser: Agents can be hidden according to their state. ([#1041](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1041))
++ Declare/define Agent and Host function shims. ([#1049](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1049))
++ Poisson distribution support for random APIs. ([#1060](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1060))
++ `HostAPI` returns config structures and ensemble run index. ([#1082](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1082))
++ `pyflamegpu` installable from custom pip wheelhouse [whl.flamegpu.com](https://whl.flamegpu.com) . ([#645](https://github.com/FLAMEGPU/FLAMEGPU2/issues/645))
++ Environment macro properties can now be imported/exported. ([#1087](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1087))
++ Readme within `examples/` documenting the available examples.
++ `DeviceAPI::isAgent()`, `DeviceAPI::isState()`. ([#1116](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1116), [#1139](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1139))
++ Agent python codegen will now capture external variables with corresponding attribute. ([#1147](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1147))
++ Added `RunPlanVector::setPropertyStep()` ([#1152](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1152))
++ Added directed grraph support, via `EnvironmentDirectedGraphDescription` which can then be used with `MessageBucket` for on-graph communication. ([#1089](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1089))
++ Added optional Distributed Ensemble support (MPI). ([#1090](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1090))
+
+### Changed (Breaking)
+
++ `CUDAEnsemble::getLogs` returns `std::map<unsigned int, RunLog>` rather than `std::vector<RunLog>`, required for distributed ensemble support. ([#1090](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1090))
+
+### Changed
+
++ Improved dependency find logic. ([#1015](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1015))
++ Improved telemetry message when configuring CMake. ([#1030](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1030))
++ Improved robustness of context creation testing. ([#1096](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1096))
++ Improved (experimental) GLM support within python API. ([#1074](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1074))
++ Various CI changes. ([#1015](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1015), [#1036](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1036), [#1044](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1044), [#1062](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1062), [#1090](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1090), [#1097](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1097), [#1100](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1100), [#1102](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1102), [#1117](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1117), [#1130](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1130), [#1138](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1138), [#1140](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1140))
+
+### Fixed
+
++ `FLAMEGPU_ENABLE_GLM` was incorrectly documented in README. ([#1033](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1033))
++ ManyLinux wheels did not have BuildNumber set. ([#1036](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1036))
++ arm/Tegra compilation errors. ([#1039](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1039), [FLAMEGPU/FLAMEGPU2-visualiser#119](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser/pull/119))
++ `AgentRandom::uniform<int>()` would never return max bound. ([#411](https://github.com/FLAMEGPU/FLAMEGPU2/pull/411))
++ `AgentRandom::uniform<float>()` would return range `(0, 1]`. ([#411](https://github.com/FLAMEGPU/FLAMEGPU2/pull/411))
++ `AgentRandom::uniform<double>()` would return range `(0, 1]`. ([#411](https://github.com/FLAMEGPU/FLAMEGPU2/pull/411))
++ Visualiser: Draw would lose data when resizing large line art. ([FLAMEGPU/FLAMEGPU2-visualiser#118](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser/pull/118))
++ Visualiser: Begin paused now pauses at the first frame with agents. ([FLAMEGPU/FLAMEGPU2-visualiser#120](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser/pull/120), [#1046](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1046))
++ Resolved crash where no optional messages were output first step. ([#1054](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1054))
++ Old version of Curl would write to stdout during telemetry. ([#1027](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1027))
++ Agent python codegen would fail to translate math functions inside message loops. ([#1077](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1077))
++ Resolved missing messages from python host function exceptions thrown during ensembles. ([#1067](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1067))
++ Various Telemetry fixes. ([#1035](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1035), [#1098](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1098), [#1099](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1099), [#1079](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1079))
++ Various CMake fixes. ([#1071](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1071), [#1092](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1092), [#1062](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1062), [#1113](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1113))
++ Resolved nested venvs within Windows Python Wheels. ([#998](https://github.com/FLAMEGPU/FLAMEGPU2/issues/998))
++ Agent states loaded from file could be ignored. ([#1093](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1093))
++ Agent python codegen did not support standalone message variables. ([#1110](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1110), [#1143](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1143))
++ Agent python codegen did not support `int`/`float` casts. ([#1143](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1143))
++ Resolved floating point cast to enum error. ([#1148](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1148))
++ `JitifyCache` is now exposed via the python API. ([#1151](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1151))
++ Agent python codegen did not support `ID` to `id_t` conversion. ([#1153](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1153))
++ Spatial Messaging interaction radius was incorrect when the requested radius was not a factor of the environment width ([#1160](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1160))
++ `astpretty` no longer a dependency of `pyflamegpu` ([#1166](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1166))
++ Agent python codegen did not correctly account for variable scope ([#1125](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1125), [#1127](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1127))
++ Resolve cmake_minimum_version deprecations by updating and patching dependencies (GoogleTest, RapidJSON and CMakeRC) ([1168](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1168))
++ Fix docstrings associated with the `flamegpu` namespace ([#1169](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1169))
++ Fix unused result warning(s) issued with clang as the host compiler ([1170](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1170))
++ Include `<cstdint>` in `DiscreteColor.h` for gcc 12.3 ([#1171](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1171)). Thanks to [Daniele Baccege](https://github.com/daniele-baccega)
+
 ## [2.0.0-rc] - 2022-12-13
 
 ### Added
@@ -246,7 +311,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initial alpha release of FLAME GPU 2.0.0, a CUDA C++ / python3 library for agent based simulations
 
-[Unreleased]: https://github.com/FLAMEGPU/FLAMEGPU2/compare/v2.0.0-rc...HEAD
+[Unreleased]: https://github.com/FLAMEGPU/FLAMEGPU2/compare/v2.0.0-rc.1...HEAD
+[2.0.0-rc.1]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc.1
 [2.0.0-rc]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc
 [2.0.0-alpha.2]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-alpha.2
 [2.0.0-alpha.1]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-alpha.1
