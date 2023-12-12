@@ -370,3 +370,4 @@ For a full list of known issues pleases see the [Issue Tracker](https://github.c
 + Windows/MSVC builds using CUDA 11.0 may encounter errors when performing incremental builds if the static library has been recompiled. If this presents itself, re-save any `.cu` file in your executable producing project and re-trigger the build.
 + Debug builds under linux with CUDA 11.0 may encounter cuda errors during `validateIDCollisions`. Consider using an alternate CUDA version if this is required ([#569](https://github.com/FLAMEGPU/FLAMEGPU2/issues/569)).
 + CUDA 11.0 with GCC 9 may encounter a segmentation fault during compilation of the test suite. Consider using GCC 8 with CUDA 11.0.
++ CUDA 12.2+ suffers from poor RTC compilation times, to be fixed in a future release. ([#1118](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1118)).
