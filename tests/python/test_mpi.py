@@ -18,7 +18,7 @@ class throw_exception(pyflamegpu.HostFunction):
       if FLAMEGPU.getStepCounter() == 1 and counter == 8:
           raise Exception("Exception thrown by host fn throw_exception()");
 
-
+@pytest.mark.skipif(not pyflamegpu.MPI, reason="pyflamegpu not built with MPI enabled")
 class TestMPIEnsemble(TestCase):
 
     def test_mpi(self):
@@ -58,6 +58,7 @@ class TestMPIEnsemble(TestCase):
             # Get a logged environment property
             counter = exit_log.getEnvironmentPropertyInt("counter")
             assert counter == index + 10
-            
-        # cleanup to trigger MPI finalize
-        pyflamegpu.cleanup()
+
+        # Unable to call pyflamegpu.cleanup() in pytest, as other tests might want to use mpi after, but mpi_finalize would prevent that.
+        # Cleanup can only be tested if this is the only test. being executed.
+        # pyflamegpu.cleanup()

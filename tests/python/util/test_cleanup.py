@@ -14,6 +14,7 @@ class initfn(pyflamegpu.HostFunction):
         for i in range(AGENT_COUNT):
             agent.newAgent()
 
+@pytest.mark.skipif(pyflamegpu.MPI, reason="Cleanup cannot be safely tested in pytest with MPI due to use of MPI_Finalzie (if it has been initialised already)")
 class CleanupTest(TestCase):
     """
         Test suite for the flamegpu::util::cleanup

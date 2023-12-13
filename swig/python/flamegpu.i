@@ -1263,6 +1263,13 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(poisson, flamegpu::HostRandom::poisson)
     #define GLM false
 #endif
 
+#ifdef FLAMEGPU_ENABLE_MPI
+    #undef FLAMEGPU_ENABLE_MPI
+    #define MPI true
+#else
+    #define MPI false
+#endif
+
 // Declare an empty type we can use as an attribute for constants to be pulled in by codegen
 %pythoncode {
 class constant:
