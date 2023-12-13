@@ -280,8 +280,8 @@ TEST_F(TestMPIEnsemble, error_fast_rank_0) {
         // printf("[%d]errors:\n:%s\n", world_rank, errors.c_str());
         EXPECT_TRUE(output.find("MPI ensemble assigned run ") != std::string::npos);   // E.g. MPI ensemble assigned run %d/%u to rank %d
 #ifdef _DEBUG
-        EXPECT_TRUE(errors.find("Warning: Run ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
-        EXPECT_TRUE(errors.find(" failed on rank ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
+        EXPECT_TRUE(errors.find("Run ") != std::string::npos);  // E.g. Run 5 failed on rank 0, device 1, thread 0 with exception:
+        EXPECT_TRUE(errors.find(" failed on rank ") != std::string::npos);  // E.g. Run 5 failed on rank 0, device 1, thread 0 with exception:
 #else
         EXPECT_TRUE(errors.empty() || errors.find("Warning: MPI Ensemble launched with") != std::string::npos);  // can't fully match the error message as it contains mpirun/machine specific numbers
 #endif
@@ -395,8 +395,8 @@ TEST_F(TestMPIEnsemble, error_fast_rank_1) {
         // printf("[%d]errors:\n:%s\n", world_rank, errors.c_str());
         EXPECT_TRUE(output.find("MPI ensemble assigned run ") != std::string::npos);   // E.g. MPI ensemble assigned run %d/%u to rank %d
 #ifdef _DEBUG
-        EXPECT_TRUE(errors.find("Warning: Run ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
-        EXPECT_TRUE(errors.find(" failed on rank ") != std::string::npos);  // E.g. Warning: Run 10/10 failed on rank 0, device 0, thread 0 with exception:
+        EXPECT_TRUE(errors.find("Run ") != std::string::npos);  // E.g. Run 5 failed on rank 1, device 1, thread 0 with exception:
+        EXPECT_TRUE(errors.find(" failed on rank ") != std::string::npos);  // E.g. Run 5 failed on rank 1, device 1, thread 0 with exception:
 #else
         EXPECT_TRUE(errors.empty() || errors.find("Warning: MPI Ensemble launched with") != std::string::npos);  // can't fully match the error message as it contains mpirun/machine specific numbers
 #endif
