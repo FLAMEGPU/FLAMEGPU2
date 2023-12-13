@@ -976,8 +976,55 @@ TEST(Spatial3DMessageTest, Wrapped3) {
 TEST(Spatial3DMessageTest, Wrapped_OutOfBounds) {
     EXPECT_THROW(wrapped_3d_test(141.0f, -540.0f, 0.0f, 200.0f), exception::DeviceError);
 }
+FLAMEGPU_AGENT_FUNCTION(in_wrapped_EnvDimsNotFactor, MessageSpatial3D, MessageNone) {
+    const float x1 = FLAMEGPU->getVariable<float>("x");
+    const float y1 = FLAMEGPU->getVariable<float>("y");
+    const float z1 = FLAMEGPU->getVariable<float>("z");
+    for (auto &t : FLAMEGPU->message_in.wrap(x1, y1, z1)) {
+        // Do nothing, it should throw a device exception
+    }
+    return ALIVE;
+}
+TEST(Spatial3DMessageTest, Wrapped_EnvDimsNotFactor) {
+    // This tests that bug #1157 is fixed
+    // When the interaction radius is not a factor of the width
+    // that agent's near the max env bound all have the full interaction radius
+    ModelDescription m("model");
+    MessageSpatial3D::Description message = m.newMessage<MessageSpatial3D>("location");
+    message.setMin(0, 0, 0);
+    message.setMax(50.1f, 50.1f, 50.1f);
+    message.setRadius(10);
+    message.newVariable<flamegpu::id_t>("id");  // unused by current test
+    AgentDescription agent = m.newAgent("agent");
+    agent.newVariable<float>("x");
+    agent.newVariable<float>("y");
+    agent.newVariable<float>("z");
+    AgentFunctionDescription fo = agent.newFunction("out", out_mandatory3D);
+    fo.setMessageOutput(message);
+    AgentFunctionDescription fi = agent.newFunction("in", in_wrapped_EnvDimsNotFactor);
+    fi.setMessageInput(message);
+    LayerDescription lo = m.newLayer();
+    lo.addAgentFunction(fo);
+    LayerDescription li = m.newLayer();
+    li.addAgentFunction(fi);
+    // Set pop in model
+    CUDASimulation c(m);
+    // Create an agent in the middle of each edge
+    AgentVector population(agent, 1);
+    // Initialise agents
+    // Vertical pair that can interact
+    // Top side
+    AgentVector::Agent i1 = population[0];
+    i1.setVariable<float>("x", 25.0f);
+    i1.setVariable<float>("y", 25.0f);
+    i1.setVariable<float>("z", 25.0f);
+    c.setPopulationData(population);
+    c.SimulationConfig().steps = 1;
+    EXPECT_THROW(c.simulate(), exception::DeviceError);
+}
 #else
 TEST(Spatial3DMessageTest, DISABLED_Wrapped_OutOfBounds) { }
+TEST(Spatial3DMessageTest, DISABLED_Wrapped_EnvDimsNotFactor) { }
 #endif
 FLAMEGPU_AGENT_FUNCTION(out_mandatory3D_OddStep, MessageNone, MessageSpatial3D) {
     if (FLAMEGPU->getStepCounter() % 2 == 0) {

@@ -539,6 +539,15 @@ class MessageSpatial3D::In {
             // Return iterator at min corner of env, this should be safe
             return WrapFilter(metadata, metadata->min[0], metadata->min[1], metadata->min[2]);
         }
+        if (fmodf(metadata->max[0] - metadata->min[0], metadata->radius) > 0.00001f ||
+            fmodf(metadata->max[1] - metadata->min[1], metadata->radius) > 0.00001f ||
+            fmodf(metadata->max[2] - metadata->min[2], metadata->radius) > 0.00001f) {
+            DTHROW("Spatial messaging radius (%g) is not a factor of environment dimensions (%g, %g, %g),"
+                " this is unsupported for the wrapped iterator, MessageSpatial3D::In::wrap().\n", metadata->radius,
+                metadata->max[0] - metadata->min[0],
+                metadata->max[1] - metadata->min[1],
+                metadata->max[2] - metadata->min[2]);
+        }
 #endif
         return WrapFilter(metadata, x, y, z);
     }

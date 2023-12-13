@@ -908,8 +908,52 @@ TEST(Spatial2DMessageTest, Wrapped7) {
 TEST(Spatial2DMessageTest, Wrapped_OutOfBounds) {
     EXPECT_THROW(wrapped_2d_test(141.0f, -540.0f, 200.0f), exception::DeviceError);
 }
+FLAMEGPU_AGENT_FUNCTION(in_wrapped_EnvDimsNotFactor, MessageSpatial2D, MessageNone) {
+    const float x1 = FLAMEGPU->getVariable<float>("x");
+    const float y1 = FLAMEGPU->getVariable<float>("y");
+    for (auto& t : FLAMEGPU->message_in.wrap(x1, y1)) {
+        // Do nothing, it should throw a device exception
+    }
+    return ALIVE;
+}
+TEST(Spatial2DMessageTest, Wrapped_EnvDimsNotFactor) {
+    // This tests that bug #1157 is fixed
+    // When the interaction radius is not a factor of the width
+    // that agent's near the max env bound all have the full interaction radius
+    ModelDescription m("model");
+    MessageSpatial2D::Description message = m.newMessage<MessageSpatial2D>("location");
+    message.setMin(0, 0);
+    message.setMax(50.1f, 50.1f);
+    message.setRadius(10);
+    message.newVariable<flamegpu::id_t>("id");  // unused by current test
+    AgentDescription agent = m.newAgent("agent");
+    agent.newVariable<float>("x");
+    agent.newVariable<float>("y");
+    AgentFunctionDescription fo = agent.newFunction("out", out_mandatory2D);
+    fo.setMessageOutput(message);
+    AgentFunctionDescription fi = agent.newFunction("in", in_wrapped_EnvDimsNotFactor);
+    fi.setMessageInput(message);
+    LayerDescription lo = m.newLayer();
+    lo.addAgentFunction(fo);
+    LayerDescription li = m.newLayer();
+    li.addAgentFunction(fi);
+    // Set pop in model
+    CUDASimulation c(m);
+    // Create an agent in the middle of each edge
+    AgentVector population(agent, 1);
+    // Initialise agents
+    // Vertical pair that can interact
+    // Top side
+    AgentVector::Agent i1 = population[0];
+    i1.setVariable<float>("x", 25.0f);
+    i1.setVariable<float>("y", 25.0f);
+    c.setPopulationData(population);
+    c.SimulationConfig().steps = 1;
+    EXPECT_THROW(c.simulate(), exception::DeviceError);
+}
 #else
 TEST(Spatial2DMessageTest, DISABLED_Wrapped_OutOfBounds) { }
+TEST(Spatial2DMessageTest, DISABLED_Wrapped_EnvDimsNotFactor) { }
 #endif
 FLAMEGPU_AGENT_FUNCTION(out_mandatory2D_OddStep, MessageNone, MessageSpatial2D) {
     if (FLAMEGPU->getStepCounter() % 2 == 0) {
