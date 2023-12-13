@@ -324,7 +324,7 @@ class TestCUDAEnsemble(TestCase):
         # Get the logs, checking the correct number are present.
         runLogs = ensemble.getLogs()
         assert runLogs.size() == plans.size()
-        for log in runLogs:
+        for _, log in runLogs.items():
             stepLogs = log.getStepLog()
             assert stepLogs.size() == 1 + 1  # This is 1 + 1 due to the always present init log.
             expectedStepCount = 0
@@ -368,7 +368,7 @@ class TestCUDAEnsemble(TestCase):
         # Get the logs, checking the correct number are present.
         runLogs = ensemble.getLogs()
         assert runLogs.size() == plans.size()
-        for log in runLogs:
+        for _, log in runLogs.items():
             exitLog = log.getExitLog()
             assert exitLog.getStepCount() == 1
 

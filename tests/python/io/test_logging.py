@@ -401,7 +401,7 @@ class LoggingTest(TestCase):
         # Check step log
         run_logs = sim.getLogs();
         i_id = 0;
-        for log in run_logs:
+        for _, log in run_logs.items():
             # Check step log
             steps = log.getStepLog();
             # init log, + 5 logs from 10 steps
