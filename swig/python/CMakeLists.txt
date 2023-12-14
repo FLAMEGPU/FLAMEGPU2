@@ -413,8 +413,8 @@ if(FLAMEGPU_BUILD_PYTHON_VENV)
     # Install the wheel from the dist dir. Specify a version incase the same build dir has been used for a previous build
     # Relaxed the no-index option to allow setup.py to install requirements
     COMMAND ${VENV_PIP} install --force-reinstall --find-links=dist -U ${PYTHON_DISTRIBUTION_NAME}==${FLAMEGPU_VERSION_PYTHON}
-    # install pytest
-    COMMAND ${VENV_PIP} install pytest
+    # install pytest and astpretty 
+    COMMAND ${VENV_PIP} install pytest astpretty
     BYPRODUCTS ${VENV_BYPRODUCTS}
     WORKING_DIRECTORY ${PYTHON_LIB_OUTPUT_DIRECTORY}
     COMMENT "Install ${PYTHON_DISTRIBUTION_NAME} ${FLAMEGPU_VERSION_PYTHON} wheel into ${VENV_DIR}"
