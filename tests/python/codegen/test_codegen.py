@@ -9,7 +9,8 @@ import pyflamegpu.codegen
 try:
     import astpretty
 except ImportError:
-    pass
+    print("Install astpretty if ast tree printing required for test debugging")
+
 
 DEBUG_OUT = True
 EXCEPTION_MSG_CHECKING = True
@@ -596,7 +597,7 @@ class CodeGenTest(unittest.TestCase):
             try:
                 astpretty.pprint(tree)
             except NameError:
-                print("Install astpretty if debugging required")
+                pass
         code = pyflamegpu.codegen.codegen(tree)
         # remove new lines
         code = code.strip()
