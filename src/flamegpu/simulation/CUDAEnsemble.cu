@@ -63,9 +63,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
     }
 
 #ifdef FLAMEGPU_ENABLE_MPI
-    std::unique_ptr<detail::MPIEnsemble> mpi = config.mpi
-      ? std::make_unique<detail::MPIEnsemble>(config, static_cast<unsigned int>(plans.size()))
-      : nullptr;
+    std::unique_ptr<detail::MPIEnsemble> mpi = std::make_unique<detail::MPIEnsemble>(config, static_cast<unsigned int>(plans.size()));
 #endif
 
     // Validate/init output directories
@@ -165,10 +163,8 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
         }
     }
 #ifdef FLAMEGPU_ENABLE_MPI
-    // if MPI is enabled at compile time, and mpi is enabled in the config, use the MPIEnsemble method to assign devices balanced across ranks
-    if (mpi != nullptr) {
-        devices = mpi->devicesForThisRank(devices);
-    }
+    // if MPI is enabled at compile time, use the MPIEnsemble method to assign devices balanced across ranks
+    devices = mpi->devicesForThisRank(devices);
 #endif  // ifdef FLAMEGPU_ENABLE_MPI
 
     // Check that each device is capable, and init cuda context
@@ -186,32 +182,26 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
     gpuErrchk(cudaSetDevice(0));
 
     // If there are no devices left (and mpi is not being used), we need to error as the work cannot be executed.
-#ifdef FLAMEGPU_ENABLE_MPI
-    if (devices.size() == 0 && mpi == nullptr) {
-        THROW exception::InvalidCUDAdevice("FLAMEGPU2 has not been built with an appropraite compute capability for any devices, unable to continue\n");
-    }
-#else  // FLAMEGPU_ENABLE_MPI
+#ifndef FLAMEGPU_ENABLE_MPI
     if (devices.size() == 0) {
         THROW exception::InvalidCUDAdevice("FLAMEGPU2 has not been built with an appropraite compute capability for any devices, unable to continue\n");
     }
-#endif  // FLAMEGPU_ENABLE_MPI
+#endif  // ifndef FLAMEGPU_ENABLE_MPI
 
 #ifdef FLAMEGPU_ENABLE_MPI
     // Once the number of devices per rank is known, we can create the actual communicator to be used during MPI, so we can warn/error as needed.
-    if (mpi != nullptr) {
-        // This rank is participating if it has atleast one device assigned to it.
-        // Rank 0 will be participating at this point, otherwise InvalidCUDAdevice would have been thrown
-        // This also implies the participating communicator cannot have a size of 0, as atleast one thread must be participating at this point, but throw in that case just in case.
-        bool communicatorCreated = mpi->createParticipatingCommunicator(devices.size() > 0);
-        // If the communicator failed to be created or is empty for any participating threads, throw. This should never occur.
-        if (!communicatorCreated || mpi->getParticipatingCommSize() == 0) {
-            THROW exception::EnsembleError("Unable to create MPI communicator. Ensure atleast one GPU is visible.\n");
-        }
-        // If the world size is not the participating size, issue a warning.that too many threads have been used.
-        if (mpi->world_rank == 0 && mpi->world_size != mpi->getParticipatingCommSize() && config.verbosity >= Verbosity::Default) {
-            fprintf(stderr, "Warning: MPI Ensemble launched with %d MPI ranks, but only %d ranks have GPUs assigned. %d ranks are unneccesary.\n", mpi->world_size, mpi->getParticipatingCommSize(), mpi->world_size - mpi->getParticipatingCommSize());
-            fflush(stderr);
-        }
+    // This rank is participating if it has atleast one device assigned to it.
+    // Rank 0 will be participating at this point, otherwise InvalidCUDAdevice would have been thrown
+    // This also implies the participating communicator cannot have a size of 0, as atleast one thread must be participating at this point, but throw in that case just in case.
+    bool communicatorCreated = mpi->createParticipatingCommunicator(devices.size() > 0);
+    // If the communicator failed to be created or is empty for any participating threads, throw. This should never occur.
+    if (!communicatorCreated || mpi->getParticipatingCommSize() == 0) {
+        THROW exception::EnsembleError("Unable to create MPI communicator. Ensure atleast one GPU is visible.\n");
+    }
+    // If the world size is not the participating size, issue a warning.that too many threads have been used.
+    if (mpi->world_rank == 0 && mpi->world_size != mpi->getParticipatingCommSize() && config.verbosity >= Verbosity::Default) {
+        fprintf(stderr, "Warning: MPI Ensemble launched with %d MPI ranks, but only %d ranks have GPUs assigned. %d ranks are unneccesary.\n", mpi->world_size, mpi->getParticipatingCommSize(), mpi->world_size - mpi->getParticipatingCommSize());
+        fflush(stderr);
     }
 #endif
 
