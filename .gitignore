@@ -3,6 +3,7 @@
 *.json
 *.gv
 *.bin
+*test_rtcfunc_file
 
 # GoogleTest directories (handled by CMake)
 googletest-build/
