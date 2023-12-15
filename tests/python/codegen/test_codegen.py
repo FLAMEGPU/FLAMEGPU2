@@ -5,7 +5,11 @@ import pytest
 import unittest
 import ast
 import pyflamegpu.codegen
-import astpretty
+# Import astpretty if it is available
+try:
+    import astpretty
+except ImportError:
+    print("Install astpretty if ast tree printing required for test debugging")
 
 
 DEBUG_OUT = True
@@ -688,7 +692,10 @@ class CodeGenTest(unittest.TestCase):
         source = source.strip()
         tree = ast.parse(source)
         if DEBUG_OUT:
-            astpretty.pprint(tree)
+            try:
+                astpretty.pprint(tree)
+            except NameError:
+                pass
         code = pyflamegpu.codegen.codegen(tree)
         # remove new lines
         code = code.strip()
