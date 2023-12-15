@@ -500,6 +500,13 @@ class MessageSpatial2D::In {
              // Return iterator at min corner of env, this should be safe
              return WrapFilter(metadata, metadata->min[0], metadata->min[1]);
          }
+         if (fmodf(metadata->max[0] - metadata->min[0], metadata->radius) > 0.00001f ||
+             fmodf(metadata->max[1] - metadata->min[1], metadata->radius) > 0.00001f) {
+             DTHROW("Spatial messaging radius (%g) is not a factor of environment dimensions (%g, %g),"
+                 " this is unsupported for the wrapped iterator, MessageSpatial2D::In::wrap().\n", metadata->radius,
+                 metadata->max[0] - metadata->min[0],
+                 metadata->max[1] - metadata->min[1]);
+         }
 #endif
          return WrapFilter(metadata, x, y);
      }
@@ -599,8 +606,8 @@ T MessageSpatial2D::In::WrapFilter::Message::getVariable(const char(&variable_na
 __device__ __forceinline__ MessageSpatial2D::GridPos2D getGridPosition2D(const MessageSpatial2D::MetaData *md, float x, float y) {
     // Clamp each grid coord to 0<=x<dim
     int gridPos[2] = {
-        static_cast<int>(floorf(((x-md->min[0]) / md->environmentWidth[0])*md->gridDim[0])),
-        static_cast<int>(floorf(((y-md->min[1]) / md->environmentWidth[1])*md->gridDim[1]))
+        static_cast<int>(floorf((x-md->min[0]) / md->radius)),
+        static_cast<int>(floorf((y-md->min[1]) / md->radius))
     };
     MessageSpatial2D::GridPos2D rtn = {
         gridPos[0] < 0 ? 0 : (gridPos[0] >= static_cast<int>(md->gridDim[0]) ? static_cast<int>(md->gridDim[0]) - 1 : gridPos[0]),

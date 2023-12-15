@@ -908,8 +908,52 @@ TEST(Spatial2DMessageTest, Wrapped7) {
 TEST(Spatial2DMessageTest, Wrapped_OutOfBounds) {
     EXPECT_THROW(wrapped_2d_test(141.0f, -540.0f, 200.0f), exception::DeviceError);
 }
+FLAMEGPU_AGENT_FUNCTION(in_wrapped_EnvDimsNotFactor, MessageSpatial2D, MessageNone) {
+    const float x1 = FLAMEGPU->getVariable<float>("x");
+    const float y1 = FLAMEGPU->getVariable<float>("y");
+    for (auto& t : FLAMEGPU->message_in.wrap(x1, y1)) {
+        // Do nothing, it should throw a device exception
+    }
+    return ALIVE;
+}
+TEST(Spatial2DMessageTest, Wrapped_EnvDimsNotFactor) {
+    // This tests that bug #1157 is fixed
+    // When the interaction radius is not a factor of the width
+    // that agent's near the max env bound all have the full interaction radius
+    ModelDescription m("model");
+    MessageSpatial2D::Description message = m.newMessage<MessageSpatial2D>("location");
+    message.setMin(0, 0);
+    message.setMax(50.1f, 50.1f);
+    message.setRadius(10);
+    message.newVariable<flamegpu::id_t>("id");  // unused by current test
+    AgentDescription agent = m.newAgent("agent");
+    agent.newVariable<float>("x");
+    agent.newVariable<float>("y");
+    AgentFunctionDescription fo = agent.newFunction("out", out_mandatory2D);
+    fo.setMessageOutput(message);
+    AgentFunctionDescription fi = agent.newFunction("in", in_wrapped_EnvDimsNotFactor);
+    fi.setMessageInput(message);
+    LayerDescription lo = m.newLayer();
+    lo.addAgentFunction(fo);
+    LayerDescription li = m.newLayer();
+    li.addAgentFunction(fi);
+    // Set pop in model
+    CUDASimulation c(m);
+    // Create an agent in the middle of each edge
+    AgentVector population(agent, 1);
+    // Initialise agents
+    // Vertical pair that can interact
+    // Top side
+    AgentVector::Agent i1 = population[0];
+    i1.setVariable<float>("x", 25.0f);
+    i1.setVariable<float>("y", 25.0f);
+    c.setPopulationData(population);
+    c.SimulationConfig().steps = 1;
+    EXPECT_THROW(c.simulate(), exception::DeviceError);
+}
 #else
 TEST(Spatial2DMessageTest, DISABLED_Wrapped_OutOfBounds) { }
+TEST(Spatial2DMessageTest, DISABLED_Wrapped_EnvDimsNotFactor) { }
 #endif
 FLAMEGPU_AGENT_FUNCTION(out_mandatory2D_OddStep, MessageNone, MessageSpatial2D) {
     if (FLAMEGPU->getStepCounter() % 2 == 0) {
@@ -962,6 +1006,81 @@ TEST(Spatial2DMessageTest, buffer_not_init) {
     CUDASimulation c(m);
     c.SimulationConfig().steps = 4;
     EXPECT_NO_THROW(c.simulate());
+}
+
+FLAMEGPU_AGENT_FUNCTION(in_bounds_not_factor, MessageSpatial2D, MessageNone) {
+    const float x1 = FLAMEGPU->getVariable<float>("x");
+    const float y1 = FLAMEGPU->getVariable<float>("y");
+    unsigned int count = 0;
+    // Count how many messages we received (including our own)
+    for (const auto& message : FLAMEGPU->message_in(x1, y1)) {
+        ++count;
+    }
+    FLAMEGPU->setVariable<unsigned int>("count", count);
+    return ALIVE;
+}
+TEST(Spatial2DMessageTest, bounds_not_factor_radius) {
+    // This tests that bug #1157 is fixed
+    // When the interaction radius is not a factor of the width
+    // that agent's near the max env bound all have the full interaction radius
+    ModelDescription m("model");
+    MessageSpatial2D::Description message = m.newMessage<MessageSpatial2D>("location");
+    message.setMin(0, 0);
+    message.setMax(50.1f, 50.1f);
+    message.setRadius(10);
+    // Grid will be 6x6
+    // 6th column/row should only be  0.1 wide of the environment
+    // Bug would incorrectly divide the whole environment by 6
+    // So bin widths would instead become 8.35 (down from 10)
+    message.newVariable<flamegpu::id_t>("id");  // unused by current test
+    AgentDescription agent = m.newAgent("agent");
+    agent.newVariable<float>("x");
+    agent.newVariable<float>("y");
+    agent.newVariable<unsigned int>("count", 0);
+    AgentFunctionDescription fo = agent.newFunction("out", out_mandatory2D);
+    fo.setMessageOutput(message);
+    AgentFunctionDescription fi = agent.newFunction("in", in_bounds_not_factor);
+    fi.setMessageInput(message);
+    LayerDescription lo = m.newLayer();
+    lo.addAgentFunction(fo);
+    LayerDescription li = m.newLayer();
+    li.addAgentFunction(fi);
+    // Set pop in model
+    CUDASimulation c(m);
+    // Create an agent in the middle of each edge
+    AgentVector population(agent, 4);
+    // Initialise agents
+    // Vertical pair that can interact
+    // Top side
+    AgentVector::Agent i1 = population[0];
+    i1.setVariable<float>("x", 10.0f);
+    i1.setVariable<float>("y", 0.0f);
+    // Top side inner
+    AgentVector::Agent i2 = population[1];
+    i2.setVariable<float>("x", 10.0f);
+    i2.setVariable<float>("y", 18.0f);
+    // Right side
+    AgentVector::Agent i3 = population[2];
+    i3.setVariable<float>("x", 50.1f);
+    i3.setVariable<float>("y", 40.0f);
+    // Horizontal pair that can interact
+    // Right side inner
+    AgentVector::Agent i4 = population[3];
+    i4.setVariable<float>("x", 50.1f - 10.11f);
+    i4.setVariable<float>("y", 40.0f);
+    c.setPopulationData(population);
+    c.SimulationConfig().steps = 1;
+    EXPECT_NO_THROW(c.simulate());
+    // Recover the results and check they match what was expected
+    c.getPopulationData(population);
+    // Validate each agent has same result
+    for (AgentVector::Agent ai : population) {
+        if (ai.getID() < 3) {
+            EXPECT_EQ(2u, ai.getVariable<unsigned int>("count"));
+        } else {
+            EXPECT_EQ(1u, ai.getVariable<unsigned int>("count"));
+        }
+    }
 }
 
 }  // namespace test_message_spatial2d
