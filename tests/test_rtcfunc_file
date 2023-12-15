@@ -1,0 +1,5 @@
+
+FLAMEGPU_AGENT_FUNCTION(rtc_test_filefunc, flamegpu::MessageNone, flamegpu::MessageNone) {
+    FLAMEGPU->setVariable<int>("x", FLAMEGPU->getVariable<int>("x") + 1);
+    return flamegpu::ALIVE;
+}
