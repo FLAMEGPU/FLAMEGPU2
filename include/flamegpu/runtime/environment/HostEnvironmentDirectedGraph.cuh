@@ -91,7 +91,7 @@ class HostEnvironmentDirectedGraph {
     VertexMap vertices();
     /**
      * Returns a map for accessing edges
-     * The edges are accessed via their ID, and will be created if they don't already exist
+     * The edges are accessed via their source-destination pair, and will be created if they don't already exist
      * It is necessary to first call setEdgeCount() to initialise the storage for edges
      */
     EdgeMap edges();

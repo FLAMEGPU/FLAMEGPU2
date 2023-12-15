@@ -14,7 +14,7 @@ class DeviceEnvironmentDirectedGraph {
 
  public:
     /**
-    * This class is created when a vertex is provided to DeviceEnvironmentDirectedGraph::edgesLeaving()(id_t)
+    * This class is created when a vertex is provided to DeviceEnvironmentDirectedGraph::outEdges()(id_t)
     * It provides iterator access to the subset of edges found leaving the specified vertex
     *
     * @see DeviceEnvironmentDirectedGraph::outEdges()(id_t)
@@ -44,7 +44,7 @@ class DeviceEnvironmentDirectedGraph {
 
          public:
             /**
-             * Constructs a message and directly initialises all of it's member variables
+             * Constructs an edge and directly initialises all of it's member variables
              * @note See member variable documentation for their purposes
              */
             __device__ Edge(const OutEdgeFilter&parent, const unsigned int&_edge_index)
@@ -61,11 +61,11 @@ class DeviceEnvironmentDirectedGraph {
             /**
              * Inequality operator
              * Returns inverse of equality operator
-             * @see operator==(const Message&)
+             * @see operator==(const Edge&)
              */
             __device__ bool operator!=(const Edge& rhs) const { return !(*this == rhs); }
             /**
-             * Updates the message to return variables from the next message in the message list
+             * Updates the edge to return variables from the next edge leaving the vertex
              * @return Returns itself
              */
             __device__ Edge& operator++() { ++edge_index; return *this; }
@@ -115,7 +115,7 @@ class DeviceEnvironmentDirectedGraph {
             /**
              * Constructor
              * This iterator is constructed by DeviceEnvironmentDirectedGraph::OutEdgeFilter::begin()(id_t)
-             * @see DeviceEnvironmentDirectedGraph::edgesLeaving()(id_t)
+             * @see DeviceEnvironmentDirectedGraph::outEdges()(id_t)
              */
             __device__ iterator(const OutEdgeFilter &parent, const unsigned int &cell_index)
                 : _edge(parent, cell_index) {
@@ -170,7 +170,7 @@ class DeviceEnvironmentDirectedGraph {
             return iterator(*this, bucket_begin - 1);
         }
         /**
-         * Returns an iterator to the position beyond the end of the edge list subset
+         * Returns an iterator to the position beyond the end of the edge list subset leaving the vertex
          * @note This iterator is the same for all edge list subsets
          */
         inline __device__ iterator end(void) const {
@@ -195,7 +195,7 @@ class DeviceEnvironmentDirectedGraph {
         const detail::curve::Curve::VariableHash graph_hash;
     };
     /**
-     * This class is created when a vertex is provided to DeviceEnvironmentDirectedGraph::edgesLeaving()(id_t)
+     * This class is created when a vertex is provided to DeviceEnvironmentDirectedGraph::inEdges()(id_t)
      * It provides iterator access to the subset of edges found leaving the specified vertex
      *
      * @see DeviceEnvironmentDirectedGraph::inEdges()(id_t)
@@ -230,7 +230,7 @@ class DeviceEnvironmentDirectedGraph {
 
          public:
             /**
-             * Constructs a message and directly initialises all of it's member variables
+             * Constructs an edge and directly initialises all of it's member variables
              * @note See member variable documentation for their purposes
              */
             __device__ Edge(const InEdgeFilter&parent, const unsigned int&_ipbm_index)
@@ -249,11 +249,11 @@ class DeviceEnvironmentDirectedGraph {
             /**
              * Inequality operator
              * Returns inverse of equality operator
-             * @see operator==(const Message&)
+             * @see operator==(const Edge&)
              */
             __device__ bool operator!=(const Edge& rhs) const { return !(*this == rhs); }
             /**
-             * Updates the message to return variables from the next edge in the message list
+             * Updates the edge to return variables from the next edge joining the vertex
              * @return Returns itself
              */
             __device__ Edge& operator++() {
@@ -306,7 +306,7 @@ class DeviceEnvironmentDirectedGraph {
             /**
              * Constructor
              * This iterator is constructed by DeviceEnvironmentDirectedGraph::InEdgeFilter::begin()(id_t)
-             * @see DeviceEnvironmentDirectedGraph::edgesJoining()(id_t)
+             * @see DeviceEnvironmentDirectedGraph::inEdges()(id_t)
              */
             __device__ iterator(const InEdgeFilter &parent, const unsigned int &cell_index)
                 : _edge(parent, cell_index) {
@@ -354,14 +354,14 @@ class DeviceEnvironmentDirectedGraph {
         */
         inline __device__ InEdgeFilter(detail::curve::Curve::VariableHash _graph_hash, const id_t &vertex_index);
         /**
-       * Returns an iterator to the start of the message list subset about the search origin
+         * Returns an iterator to the start of the in edge list subset joining the vertex
          */
         inline __device__ iterator begin(void) const {
             // Bin before initial bin, as the constructor calls increment operator
             return iterator(*this, bucket_begin - 1);
         }
         /**
-         * Returns an iterator to the position beyond the end of the edge list subset
+         * Returns an iterator to the position beyond the end of the edge list subset joining the vertex
          * @note This iterator is the same for all edge list subsets
          */
         inline __device__ iterator end(void) const {

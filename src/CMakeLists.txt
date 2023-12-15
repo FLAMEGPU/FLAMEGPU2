@@ -96,11 +96,11 @@ endif()
 option(FLAMEGPU_ENABLE_LINT_FLAMEGPU "Enable creation of the lint_flamegpu target" ${FLAMEGPU_ENABLE_LINT_FLAMEGPU_DEFAULT})
 unset(FLAMEGPU_ENABLE_LINT_FLAMEGPU_DEFAULT)
 
-# Option to make put glm on the include path
+# Option to enable GLM support and put GLM on the include path
 option(FLAMEGPU_ENABLE_GLM "Experimental: Make GLM available to flamegpu2 projects on the include path" OFF)
 mark_as_advanced(FLAMEGPU_ENABLE_GLM)
 
-# Option to make put glm on the include path
+# Option to enable the "advanced API" - access to high performance internals that may break at any time 
 option(FLAMEGPU_ENABLE_ADVANCED_API "Enable advanced API functionality (C++ only), providing access to internal sim components for high-performance extensions." OFF)
 mark_as_advanced(FLAMEGPU_ENABLE_ADVANCED_API)
 

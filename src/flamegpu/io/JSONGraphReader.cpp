@@ -76,7 +76,7 @@ class JSONAdjacencyGraphSizeReader : public rapidjson::BaseReaderHandler<rapidjs
         return true;
     }
 };
-    /**
+/**
  * This is the main sax style parser for the json state
  * It stores it's current position within the hierarchy with mode, lastKey and current_variable_array_index
  */
