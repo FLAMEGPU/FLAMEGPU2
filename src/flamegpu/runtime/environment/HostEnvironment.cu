@@ -13,14 +13,15 @@
 #include "flamegpu/simulation/CUDASimulation.h"
 
 namespace flamegpu {
-
-HostEnvironment::HostEnvironment(CUDASimulation &_simulation, cudaStream_t _stream,
-                                 std::shared_ptr<detail::EnvironmentManager> env,
-                                 std::shared_ptr<detail::CUDAMacroEnvironment> _macro_env)
+HostEnvironment::HostEnvironment(CUDASimulation &_simulation, std::shared_ptr<detail::EnvironmentManager> env, std::shared_ptr<detail::CUDAMacroEnvironment> _macro_env,
+    CUDADirectedGraphMap& _directed_graph_map, detail::CUDAScatter& _scatter, const unsigned int _streamID, const cudaStream_t _stream)
     : env_mgr(std::move(env))
     , macro_env(std::move(_macro_env))
+    , directed_graph_map(_directed_graph_map)
     , instance_id(_simulation.getInstanceID())
     , simulation(_simulation)
+    , scatter(_scatter)
+    , streamID(_streamID)
     , stream(_stream) { }
 
 void HostEnvironment::importMacroProperty(const std::string& property_name, const std::string& file_path) const {
@@ -81,13 +82,14 @@ void HostEnvironment::exportMacroProperty(const std::string& property_name, cons
         write__->beginWrite(file_path, pretty_print);
         write__->writeMacroEnvironment(macro_env, { property_name });
         write__->endWrite();
-    } catch (const exception::UnsupportedFileType&) {
+    }
+    catch (const exception::UnsupportedFileType&) {
         const std::string extension = std::filesystem::path(file_path).extension().string();
         if (extension == ".bin") {
             // Additionally support raw binary dump
             // Validate the property exists
-            const auto &m_props = macro_env->getPropertiesMap();
-            const auto &m_prop = m_props.find(property_name);
+            const auto& m_props = macro_env->getPropertiesMap();
+            const auto& m_prop = m_props.find(property_name);
             if (m_prop == m_props.end()) {
                 THROW exception::InvalidEnvProperty("The environment macro property '%s' was not found within the model description, in HostEnvironment::exportMacroProperty().", property_name.c_str());
             }
@@ -108,6 +110,15 @@ void HostEnvironment::exportMacroProperty(const std::string& property_name, cons
             throw;
         }
     }
+}
+
+HostEnvironmentDirectedGraph HostEnvironment::getDirectedGraph(const std::string& name) const {
+    const auto rt = directed_graph_map.find(name);
+    if (rt != directed_graph_map.end())
+        return HostEnvironmentDirectedGraph(rt->second, stream, scatter, streamID);
+    THROW exception::InvalidGraphName("Directed Graph with name '%s' was not found, "
+        "in HostEnvironment::getDirectedGraph()",
+        name.c_str());
 }
 
 }  // namespace flamegpu

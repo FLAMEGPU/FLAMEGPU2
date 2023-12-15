@@ -58,6 +58,7 @@ SET(TESTS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/environment/test_device_environment.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/environment/test_device_macro_property.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/environment/test_environment_manager.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/environment/test_environment_directed_graph.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/random/test_agent_random.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/random/test_host_random.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/agent/test_device_agent_vector.cu

@@ -1,4 +1,6 @@
 #include "flamegpu/runtime/HostAPI.h"
+
+#include <map>
 #include "flamegpu/runtime/agent/HostAgentAPI.cuh"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/simulation/Simulation.h"
@@ -15,10 +17,11 @@ HostAPI::HostAPI(CUDASimulation &_agentModel,
     AgentDataMap &_agentData,
     const std::shared_ptr<detail::EnvironmentManager>& env,
     const std::shared_ptr<detail::CUDAMacroEnvironment>& macro_env,
+    CUDADirectedGraphMap &directed_graph_map,
     const unsigned int _streamId,
     cudaStream_t _stream)
     : random(rng)
-    , environment(_agentModel, _stream, env, macro_env)
+    , environment(_agentModel, env, macro_env, directed_graph_map, _scatter, _streamId, _stream)
     , agentModel(_agentModel)
     , d_output_space(nullptr)
     , d_output_space_size(0)

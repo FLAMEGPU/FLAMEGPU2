@@ -21,6 +21,7 @@
 #include "flamegpu/simulation/detail/CUDAMacroEnvironment.h"
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
 #include "flamegpu/simulation/detail/DeviceStrings.h"
+#include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
 
 #ifdef FLAMEGPU_VISUALISATION
 #include "flamegpu/visualiser/ModelVis.h"
@@ -86,6 +87,11 @@ class CUDASimulation : public Simulation {
      * Ordered is used, so that random seed mutation always occurs same order.
      */
     typedef std::map<std::string, std::unique_ptr<CUDASimulation>> CUDASubModelMap;
+    /**
+     * Map of a number of CUDA directed graph buffers by name
+     * The CUDABuffers objects are responsible for allocating and managing all the device memory of a given directed graph
+     */
+    typedef std::unordered_map<std::string, std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>> CUDADirectedGraphMap;
 
  public:
     /**
@@ -125,7 +131,7 @@ class CUDASimulation : public Simulation {
      * Initialise cuda runner
      * Allocates memory for agents/messages, copies environment properties to device etc
      * If provided, you can pass runtime arguments to this constructor, to automatically call inititialise()
-     * This is not required, you can call inititialise() manually later, or not at all.
+     * This is not required, you can call initialise() manually later, or not at all.
      * @param model The model description to initialise the runner to execute
      * @param argc Runtime argument count
      * @param argv Runtime argument list ptr
@@ -447,6 +453,10 @@ class CUDASimulation : public Simulation {
      * Macro env property storage
      */
     std::shared_ptr<detail::CUDAMacroEnvironment> macro_env;
+    /**
+     * Macro env property storage
+     */
+    CUDADirectedGraphMap directed_graph_map;
     /**
      * Internal model config
      */

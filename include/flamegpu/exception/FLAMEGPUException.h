@@ -116,7 +116,7 @@ DERIVED_FLAMEGPUException(InvalidInputFile, "Invalid Input File");
 /**
  * Defines a type of object to be thrown as exception.
  * It reports errors that are due to invalid agent variable type.
- * This could happen when retriving or setting a variable of differet type.
+ * This could happen when retrieving or setting a variable of different type.
  */
 DERIVED_FLAMEGPUException(InvalidVarType, "Bad variable type in agent instance set/get variable");
 
@@ -315,6 +315,11 @@ DERIVED_FLAMEGPUException(DuplicateEnvProperty, "Environment property of same na
  * It reports errors that are due invalid environment property names
  */
 DERIVED_FLAMEGPUException(InvalidEnvProperty, "Environment property of name does not exist");
+/**
+ * Defines a type of object to be thrown as exception.
+ * It reports errors that are due invalid environment graphs
+ */
+DERIVED_FLAMEGPUException(InvalidEnvGraph, "Environment graph of name does not exist");
 
 /**
  * Defines a type of object to be thrown as exception.
@@ -415,10 +420,22 @@ DERIVED_FLAMEGPUException(InvalidDependencyGraph, "Agent function dependency gra
  * This should not occur if the shared ID matches ID_NOT_SET
  */
 DERIVED_FLAMEGPUException(AgentIDCollision, "Multiple agents of same type share an ID");
+DERIVED_FLAMEGPUException(IDCollision, "Generic ID collision");
+DERIVED_FLAMEGPUException(IDOutOfBounds, "Generic ID range failure");
+DERIVED_FLAMEGPUException(IDNotSet, "Generic ID has not been set failure");
+DERIVED_FLAMEGPUException(InvalidID, "Generic ID provided is not valid failure");
 /**
  * Defines an error when runs fail during an ensemble's execution
  */
 DERIVED_FLAMEGPUException(EnsembleError, "One of more runs failed during the ensemble's execution");
+/**
+ * Defines an error when an invalid property for a graph is specified
+ */
+DERIVED_FLAMEGPUException(InvalidGraphProperty, "Invalid graph property specified");
+/**
+ * Defines an error when an invalid name for a graph is specified
+ */
+DERIVED_FLAMEGPUException(InvalidGraphName, "Invalid graph name specified");
 
 }  // namespace exception
 }  // namespace flamegpu

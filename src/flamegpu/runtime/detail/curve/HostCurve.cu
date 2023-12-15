@@ -23,7 +23,9 @@ HostCurve::HostCurve()
     , message_out_hash(Curve::variableRuntimeHash("_message_out"))
     , agent_out_hash(Curve::variableRuntimeHash("_agent_birth"))
     , environment_hash(Curve::variableRuntimeHash("_environment"))
-    , macro_environment_hash(Curve::variableRuntimeHash("_macro_environment")) {
+    , macro_environment_hash(Curve::variableRuntimeHash("_macro_environment"))
+    , directed_graph_vertex_hash(Curve::variableRuntimeHash("_environment_directed_graph_vertex"))
+    , directed_graph_edge_hash(Curve::variableRuntimeHash("_environment_directed_graph_edge"))  {
     //, h_curve_table_ext_type{std::type_index(typeid(void))}
     // std::fill_n(h_curve_table_ext_type, MAX_VARIABLES, typeid(void));
 
@@ -68,6 +70,12 @@ void HostCurve::registerSetMacroEnvironmentProperty(const std::string& variable_
     registerVariable(macro_environment_hash + Curve::variableRuntimeHash(variable_name), type, type_size, elements);
     setVariable(macro_environment_hash + Curve::variableRuntimeHash(variable_name), d_ptr, 1);
 }
+void HostCurve::registerEnvironmentDirectedGraphVertexProperty(const std::string &graph_name, const std::string& variable_name, std::type_index type, size_t type_size, unsigned int elements) {
+    registerVariable((Curve::variableRuntimeHash(graph_name) ^ directed_graph_vertex_hash) + Curve::variableRuntimeHash(variable_name), type, type_size, elements);
+}
+void HostCurve::registerEnvironmentDirectedGraphEdgeProperty(const std::string& graph_name, const std::string& variable_name, std::type_index type, size_t type_size, unsigned int elements) {
+    registerVariable((Curve::variableRuntimeHash(graph_name) ^ directed_graph_edge_hash) + Curve::variableRuntimeHash(variable_name), type, type_size, elements);
+}
 void HostCurve::registerVariable(const VariableHash variable_hash, const std::type_index type, const size_t type_size, const unsigned int elements) {
     if (variable_hash == EMPTY_FLAG) {
         THROW exception::CurveException("Unable to register variable, it's hash matches a reserved symbol!");
@@ -110,6 +118,12 @@ void HostCurve::setMessageOutputVariable(const std::string& variable_name, void*
 }
 void HostCurve::setAgentOutputVariable(const std::string& variable_name, void* d_ptr, const unsigned int count) {
     setVariable(agent_out_hash + Curve::variableRuntimeHash(variable_name), d_ptr, count);
+}
+void HostCurve::setEnvironmentDirectedGraphVertexProperty(const std::string& graph_name, const std::string& variable_name, void* d_ptr, const unsigned int count) {
+    setVariable((Curve::variableRuntimeHash(graph_name) ^ directed_graph_vertex_hash) + Curve::variableRuntimeHash(variable_name), d_ptr, count);
+}
+void HostCurve::setEnvironmentDirectedGraphEdgeProperty(const std::string& graph_name, const std::string& variable_name, void* d_ptr, const unsigned int count) {
+    setVariable((Curve::variableRuntimeHash(graph_name) ^ directed_graph_edge_hash) + Curve::variableRuntimeHash(variable_name), d_ptr, count);
 }
 void HostCurve::setVariable(const VariableHash variable_hash, void * d_ptr, const unsigned int count) {
     if (variable_hash == EMPTY_FLAG) {

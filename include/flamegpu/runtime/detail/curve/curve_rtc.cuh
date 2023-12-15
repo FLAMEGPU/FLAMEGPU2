@@ -8,6 +8,9 @@
 #include <cstdio>
 #include <typeindex>
 #include <map>
+#include <vector>
+
+#include "flamegpu/util/StringPair.h"
 
 namespace jitify {
 namespace experimental {
@@ -79,6 +82,30 @@ class CurveRTCHost {
      * @throws exception::UnknownInternalError If an output agent variable with the same name is already registered
      */
     void registerNewAgentVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements = 1, bool read = true, bool write = true);
+    /**
+     * Specify an environment directed graph vertex property to be included in the dynamic header
+     * @param graphName The properties's graph's name
+     * @param propertyName The properties's name
+     * @param type The name of the property's type (%std::type_index::name())
+     * @param type_size The type size of the property's base type (sizeof()), this is the size of a single element if the variable is an array property.
+     * @param elements The number of elements in the property (1 unless the property is an array property)
+     * @param read True if the property should be readable
+     * @param write True if the property should be writable
+     * @throws exception::UnknownInternalError If an environment directed graph vertex property with the same name is already registered
+     */
+    void registerEnvironmentDirectedGraphVertexProperty(const std::string& graphName, const std::string& propertyName, const char* type, size_t type_size, unsigned int elements = 1, bool read = true, bool write = false);
+    /**
+     * Specify an environment directed graph edge property to be included in the dynamic header
+     * @param graphName The properties's graph's name
+     * @param propertyName The properties's name
+     * @param type The name of the property's type (%std::type_index::name())
+     * @param type_size The type size of the property's base type (sizeof()), this is the size of a single element if the variable is an array property.
+     * @param elements The number of elements in the property (1 unless the property is an array property)
+     * @param read True if the property should be readable
+     * @param write True if the property should be writable
+     * @throws exception::UnknownInternalError If an environment directed graph edge property with the same name is already registered
+     */
+    void registerEnvironmentDirectedGraphEdgeProperty(const std::string &graphName, const std::string &propertyName, const char* type, size_t type_size, unsigned int elements = 1, bool read = true, bool write = false);
 
     /**
      * Unregister an agent variable, so that it is nolonger included in the dynamic header
@@ -105,6 +132,20 @@ class CurveRTCHost {
      */
     void unregisterNewAgentVariable(const char* variableName);
     /**
+     * Unregister an environment directed graph vertex property, so that it is nolonger included in the dynamic header
+     * @param graphName The properties's graph's name
+     * @param propertyName The properties's name
+     * @throws exception::UnknownInternalError If the specified variable is not registered
+     */
+    void unregisterEnvironmentDirectedGraphVertexProperty(const std::string& graphName, const std::string& propertyName);
+    /**
+     * Unregister an environment directed graph edge property, so that it is nolonger included in the dynamic header
+     * @param graphName The properties's graph's name
+     * @param propertyName The properties's name
+     * @throws exception::UnknownInternalError If the specified variable is not registered
+     */
+    void unregisterEnvironmentDirectedGraphEdgeProperty(const std::string& graphName, const std::string& propertyName);
+    /**
      * Returns a host pointer to the memory which stores the device pointer to be included for the specified variable in the dynamic header
      * @param variableName The variable's name
      * @throws exception::UnknownInternalError If the specified variable is not registered
@@ -128,6 +169,40 @@ class CurveRTCHost {
      * @throws exception::UnknownInternalError If the specified variable is not registered
      */
     void* getNewAgentVariableCachePtr(const char* variableName);
+    /**
+     * Returns a host pointer to the memory which stores the device pointer to be included for the specified property in the dynamic header
+     * @param graphName The properties's graph's name
+     * @param propertyName The properties's name
+     * @throws exception::UnknownInternalError If the specified property is not registered
+     */
+    void* getEnvironmentDirectedGraphVertexPropertyCachePtr(const std::string& graphName, const std::string& propertyName);
+    /**
+     * Returns a host pointer to the memory which stores the device pointer to be included for the specified property in the dynamic header
+     * @param graphName The properties's graph's name
+     * @param propertyName The properties's name
+     * @throws exception::UnknownInternalError If the specified property is not registered
+     */
+    void* getEnvironmentDirectedGraphEdgePropertyCachePtr(const std::string& graphName, const std::string& propertyName);
+    void setAgentVariableCount(const std::string& variableName, unsigned int count);
+    void setMessageOutVariableCount(const std::string& variableName, unsigned int count);
+    void setMessageInVariableCount(const std::string& variableName, unsigned int count);
+    void setNewAgentVariableCount(const std::string& variableName, unsigned int count);
+    /**
+     * Set the number of vertices in the named buffer
+     * @param graphName The properties's graph's name
+     * @param propertyName The properties's name
+     * @param count The value to set
+     * @throws exception::UnknownInternalError If the specified property is not registered
+     */
+    void setEnvironmentDirectedGraphVertexPropertyCount(const std::string& graphName, const std::string& propertyName, unsigned int count);
+    /**
+     * Set the number of edges in the named buffer
+     * @param graphName The properties's graph's name
+     * @param propertyName The properties's name
+     * @param count The value to set
+     * @throws exception::UnknownInternalError If the specified property is not registered
+     */
+    void setEnvironmentDirectedGraphEdgePropertyCount(const std::string& graphName, const std::string& propertyName, unsigned int count);
     /**
      * Specify an environment property to be included in the dynamic header
      * @param propertyName The property's name
@@ -252,6 +327,11 @@ class CurveRTCHost {
          * Pointer to a location in host memory where the device pointer to this variables buffer must be stored
          */
         void *h_data_ptr;
+        /**
+         * Index in the count buffer where the count is stored
+         * Count being the number of agents/messages/vertices/edges etc in the buffer
+         */
+        unsigned int count_index;
     };
     /**
      * Properties for a registered environment property
@@ -347,9 +427,21 @@ class CurveRTCHost {
      */
     size_t newAgent_data_offset = 0;
     /**
+     * Offset into h_data_buffer where environment directed graph vertex property data begins
+     */
+    size_t directedGraphVertex_data_offset = 0;
+    /**
+     * Offset into h_data_buffer where environment directed graph edge property data begins
+     */
+    size_t directedGraphEdge_data_offset = 0;
+    /**
      * Offset into h_data_buffer where output agent (device agent birth) variable data begins
      */
     size_t envMacro_data_offset = 0;
+    /**
+     * Offset into h_data_buffer where count buffer data begins
+     */
+    size_t count_data_offset = 0;
     /**
      * Size of the allocation pointed to by h_data_buffer
      */
@@ -379,6 +471,16 @@ class CurveRTCHost {
      */
     std::map<std::string, RTCVariableProperties> newAgent_variables;
     /**
+     * Registered environment directed graph vertex properties
+     * <<graphName, propertyName>, RTCVariableProperties>
+     */
+    util::StringPairMap<RTCVariableProperties> directedGraph_vertexProperties;
+    /**
+     * Registered environment directed graph edge properties
+     * <<graphName, propertyName>, RTCVariableProperties>
+     */
+    util::StringPairMap<RTCVariableProperties> directedGraph_edgeProperties;
+    /**
      * Registered environment property properties
      * <name, RTCVariableProperties>
      */
@@ -389,12 +491,16 @@ class CurveRTCHost {
      */
     std::map<std::string, RTCEnvMacroPropertyProperties> RTCEnvMacroProperties;
     /**
+     * Holds the number of agents/messages/vertices/edges/etc in the buffer which holds the index
+     */
+    std::vector<unsigned int> count_buffer;
+    /**
      * Agent name for ReadOnlyDeviceAPI::isAgent()
      */
     std::string agentName;
     /**
-    * Agent name for ReadOnlyDeviceAPI::isState()
-    */
+     * Agent name for ReadOnlyDeviceAPI::isState()
+     */
     std::string agentState;
 };
 

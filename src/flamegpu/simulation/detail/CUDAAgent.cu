@@ -41,6 +41,7 @@
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/runtime/agent/DeviceAgentVector_impl.h"
 #include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
 
 namespace flamegpu {
 namespace detail {
@@ -118,6 +119,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const unsigne
         if (!func.rtc_func_condition_name.empty()) {
             auto& rtc_header = getRTCHeader(func.name + "_condition");
             memcpy(rtc_header.getAgentVariableCachePtr(mmp.first.c_str()), &d_ptr, sizeof(void*));
+            rtc_header.setAgentVariableCount(mmp.first, agent_count);
         } else if (func.condition) {
             auto& curve = getCurve(func.name + "_condition");
             curve.setAgentVariable(mmp.first, d_ptr, agent_count);
@@ -398,6 +400,7 @@ void CUDAAgent::mapNewRuntimeVariables_async(const CUDAAgent& func_agent, const 
             } else  {
                 auto& rtc_header = func_agent.getRTCHeader(func.name);
                 memcpy(rtc_header.getNewAgentVariableCachePtr(mmp.first.c_str()), &d_ptr, sizeof(void*));
+                rtc_header.setNewAgentVariableCount(mmp.first, maxLen);
             }
         }
     }
@@ -450,13 +453,14 @@ void CUDAAgent::clearFunctionCondition(const std::string &state) {
     fat_agent->setConditionState(fat_index, state, 0);
 }
 
-void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager> &env, std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env, bool function_condition) {
+void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager> &env, std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env,
+    const std::unordered_map<std::string, std::shared_ptr<CUDAEnvironmentDirectedGraphBuffers>>& directed_graphs, bool function_condition) {
     // Generate the dynamic curve header
-    detail::curve::CurveRTCHost &curve_header = *rtc_header_map.emplace(function_condition ? func.name + "_condition" : func.name, std::make_unique<detail::curve::CurveRTCHost>()).first->second;
+    std::shared_ptr<detail::curve::CurveRTCHost> &curve_header = rtc_header_map.emplace(function_condition ? func.name + "_condition" : func.name, std::make_shared<detail::curve::CurveRTCHost>()).first->second;
 
     // set agent function variables in rtc curve
     for (const auto& mmp : func.parent.lock()->variables) {
-        curve_header.registerAgentVariable(mmp.first.c_str(), mmp.second.type.name(), mmp.second.type_size, mmp.second.elements);
+        curve_header->registerAgentVariable(mmp.first.c_str(), mmp.second.type.name(), mmp.second.type_size, mmp.second.elements);
     }
 
     // for normal agent function (e.g. not an agent function condition) append messages and agent outputs
@@ -465,7 +469,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const 
         if (auto im = func.message_input.lock()) {
             for (auto message_in_var : im->variables) {
                 // register message variables using combined hash
-                curve_header.registerMessageInVariable(message_in_var.first.c_str(),
+                curve_header->registerMessageInVariable(message_in_var.first.c_str(),
                 message_in_var.second.type.name(), message_in_var.second.type_size, message_in_var.second.elements, true, false);
             }
         }
@@ -473,7 +477,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const 
         if (auto om = func.message_output.lock()) {
             for (auto message_out_var : om->variables) {
                 // register message variables using combined hash
-                curve_header.registerMessageOutVariable(message_out_var.first.c_str(),
+                curve_header->registerMessageOutVariable(message_out_var.first.c_str(),
                 message_out_var.second.type.name(), message_out_var.second.type_size, message_out_var.second.elements, false, true);
             }
         }
@@ -481,7 +485,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const 
         if (auto ao = func.agent_output.lock()) {
             for (auto agent_out_var : ao->variables) {
                 // register message variables using combined hash
-                curve_header.registerNewAgentVariable(agent_out_var.first.c_str(),
+                curve_header->registerNewAgentVariable(agent_out_var.first.c_str(),
                 agent_out_var.second.type.name(), agent_out_var.second.type_size, agent_out_var.second.elements, false, true);
             }
         }
@@ -495,24 +499,41 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const 
             const char* type = p.second.type.name();
             const unsigned int elements = p.second.elements;
             const ptrdiff_t offset = p.second.offset;
-            curve_header.registerEnvVariable(variableName, offset, type, p.second.length/elements, elements);
+            curve_header->registerEnvVariable(variableName, offset, type, p.second.length/elements, elements);
          }
     }
 
     // Set Environment macro properties in curve
-    macro_env->mapRTCVariables(curve_header);
+    macro_env->mapRTCVariables(*curve_header);
 
     // Set the agent name/state
-    curve_header.registerAgent(this->agent_description.name, func.initial_state);
+    curve_header->registerAgent(this->agent_description.name, func.initial_state);
+
+    // Set Environment directed graph properties in curve
+    {
+        for (const auto& dg : directed_graphs) {
+            for (const auto& v : dg.second->getDescription().vertexProperties) {
+                curve_header->registerEnvironmentDirectedGraphVertexProperty(dg.first, v.first, v.second.type.name(), v.second.type_size, v.second.elements);
+            }
+            for (const auto& e : dg.second->getDescription().edgeProperties) {
+                curve_header->registerEnvironmentDirectedGraphEdgeProperty(dg.first, e.first, e.second.type.name(), e.second.type_size, e.second.elements);
+            }
+            curve_header->registerEnvironmentDirectedGraphVertexProperty(dg.first, GRAPH_VERTEX_PBM_VARIABLE_NAME, std::type_index(typeid(unsigned int)).name(), sizeof(unsigned int), 1);
+            curve_header->registerEnvironmentDirectedGraphVertexProperty(dg.first, GRAPH_VERTEX_IPBM_VARIABLE_NAME, std::type_index(typeid(unsigned int)).name(), sizeof(unsigned int), 1);
+            curve_header->registerEnvironmentDirectedGraphVertexProperty(dg.first, GRAPH_VERTEX_IPBM_EDGES_VARIABLE_NAME, std::type_index(typeid(unsigned int)).name(), sizeof(unsigned int), 1);
+            curve_header->registerEnvironmentDirectedGraphVertexProperty(dg.first, GRAPH_VERTEX_INDEX_MAP_VARIABLE_NAME, std::type_index(typeid(unsigned int)).name(), sizeof(unsigned int), 1);
+            dg.second->registerCurveInstance(curve_header);
+        }
+    }
 
     std::string header_filename = std::string(func.rtc_func_name).append("_impl");
     if (function_condition)
         header_filename.append("_condition");
     header_filename.append("_curve_rtc_dynamic.h");
-    curve_header.setFileName(header_filename);
+    curve_header->setFileName(header_filename);
 
     // get the dynamically generated header from curve rtc
-    const std::string curve_dynamic_header = curve_header.getDynamicHeader(env->getBufferLen());
+    const std::string curve_dynamic_header = curve_header->getDynamicHeader(env->getBufferLen());
 
     // output to disk if FLAMEGPU_OUTPUT_RTC_DYNAMIC_FILES macro is set
 #ifdef FLAMEGPU_OUTPUT_RTC_DYNAMIC_FILES
@@ -561,9 +582,9 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const 
     }
 }
 
-void CUDAAgent::addInstantitateFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager>& env, std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env, bool function_condition) {
+void CUDAAgent::addInstantitateFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager>& env, std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env, const std::unordered_map<std::string, std::shared_ptr<CUDAEnvironmentDirectedGraphBuffers>>& directed_graphs, bool function_condition) {
     // Generate the host curve instance
-    std::unique_ptr<detail::curve::HostCurve> curve = std::make_unique<detail::curve::HostCurve>();
+    std::shared_ptr<detail::curve::HostCurve> curve = std::make_shared<detail::curve::HostCurve>();
 
     // Initialising values here, removes the need to "unregister" curve values
     // set agent variables in curve
@@ -605,9 +626,27 @@ void CUDAAgent::addInstantitateFunction(const AgentFunctionData& func, const std
     // Set Environment macro properties in curve
     macro_env->registerCurveVariables(*curve);
 
+    // Set directed graphs in curve
+    {
+        for (const auto &dg : directed_graphs) {
+            for (const auto &v : dg.second->getDescription().vertexProperties) {
+                curve->registerEnvironmentDirectedGraphVertexProperty(dg.first, v.first, v.second.type, v.second.type_size, v.second.elements);
+            }
+            for (const auto& e : dg.second->getDescription().edgeProperties) {
+                curve->registerEnvironmentDirectedGraphEdgeProperty(dg.first, e.first, e.second.type, e.second.type_size, e.second.elements);
+            }
+            curve->registerEnvironmentDirectedGraphVertexProperty(dg.first, GRAPH_VERTEX_PBM_VARIABLE_NAME, std::type_index(typeid(unsigned int)), sizeof(unsigned int), 1);
+            curve->registerEnvironmentDirectedGraphVertexProperty(dg.first, GRAPH_VERTEX_IPBM_VARIABLE_NAME, std::type_index(typeid(unsigned int)), sizeof(unsigned int), 1);
+            curve->registerEnvironmentDirectedGraphVertexProperty(dg.first, GRAPH_VERTEX_IPBM_EDGES_VARIABLE_NAME, std::type_index(typeid(unsigned int)), sizeof(unsigned int), 1);
+            curve->registerEnvironmentDirectedGraphVertexProperty(dg.first, GRAPH_VERTEX_INDEX_MAP_VARIABLE_NAME, std::type_index(typeid(unsigned int)), sizeof(unsigned int), 1);
+
+            dg.second->registerCurveInstance(curve);
+        }
+    }
+
     // switch between normal agent function and agent function condition, and add to map
     const std::string key_name = function_condition ? func.name + "_condition" : func.name;
-    curve_map.insert(std::unordered_map<std::string, std::unique_ptr<detail::curve::HostCurve>>::value_type(key_name, std::move(curve)));
+    curve_map.insert(std::unordered_map<std::string, std::shared_ptr<detail::curve::HostCurve>>::value_type(key_name, std::move(curve)));
 }
 
 const jitify::experimental::KernelInstantiation& CUDAAgent::getRTCInstantiation(const std::string &function_name) const {

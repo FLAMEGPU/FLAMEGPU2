@@ -84,8 +84,12 @@ class CodeGenerator:
     fgpu_input_msg_iter_var_funcs = ["getIndex", "getVirtualX", "getVirtualY", "getVirtualZ"] 
     fgpu_output_msg_funcs = ["setLocation", "setKey", "setIndex"]
     fgpu_agent_out_msg_funcs = ["getID"]
-    fgpu_env_funcs = ["containsProperty", "containsMacroProperty"]
+    fgpu_env_funcs = ["containsProperty", "containsMacroProperty", "getDirectedGraph"]
     fgpu_env_macro_funcs = ["exchange", "CAS", "min", "max"]
+    fgpu_env_directed_graph_funcs = ["getVertexID", "getVertexIndex", "getEdgeSource", "getEdgeDestination", "getEdgeIndex"]
+    fgpu_env_directed_graph_iter_funcs = ["outEdges", "inEdges"]
+    fgpu_env_directed_graph_iter_in_var_funcs = ["getEdgeSource"]
+    fgpu_env_directed_graph_iter_out_var_funcs = ["getEdgeDestination"]
     fgpu_rand_funcs = []
     fgpu_message_types = ["pyflamegpu.MessageNone", "pyflamegpu.MessageBruteForce", "pyflamegpu.MessageBucket", "pyflamegpu.MessageSpatial2D", "pyflamegpu.MessageSpatial3D", "pyflamegpu.MessageArray", "pyflamegpu.MessageArray2D", "pyflamegpu.MessageArray3D"]
     
@@ -116,10 +120,13 @@ class CodeGenerator:
         # dict of locals used to determine if variable already exists in assignments
         self._locals = ["pyflamegpu"]
         self._device_functions = []
-        self._message_iterator_var = None           # default
-        self._input_message_var = 'message_in'      # default
-        self._output_message_var = 'message_out'    # default
-        self._standalone_message_var = []           # default
+        self._message_iterator_var = None             # default
+        self._input_message_var = 'message_in'        # default
+        self._output_message_var = 'message_out'      # default
+        self._standalone_message_var = []             # default
+        self._directed_graph_vars = []                # default
+        self._directed_graph_in_iterator_var = None   # default
+        self._directed_graph_out_iterator_var = None  # default
         self.dispatch(tree)
         print("", file=self.f)
         self.f.flush()
@@ -342,7 +349,7 @@ class CodeGenerator:
 
     def dispatchMessageLoop(self, tree):
         """
-        This is a special case of a range based for loop in which iterator item returns a const referecne to the message.
+        This is a special case of a range based for loop in which iterator item returns a const reference to the message.
         Any user specified message value can be used.
         """
         self.fill("for (const auto& ")
@@ -366,6 +373,51 @@ class CodeGenerator:
         self.dispatch(tree.body)
         self.leave()
         self._message_iterator_var = None
+    
+    def dispatchGraphIteratorCall(self, tree):
+        """
+        Graph iterator call maybe be either (e.g. mygraph.edgesIn() or mygraph.edgesOut())
+        Using this function avoid using the global call one which may accept member function calls to things that are not iterators.
+        """
+        # simple case not a member function just an iterator with arguments
+        if isinstance(tree.func, ast.Attribute) :
+            if isinstance(tree.func.value, ast.Name):
+                # check that the iterator is supported
+                if not tree.func.attr in self.fgpu_env_directed_graph_iter_funcs:
+                    self.RaiseError(tree, f"Graph loop iterator '{tree.func.attr}' is not supported.")
+                self.write(f"{tree.func.value.id}.{tree.func.attr}")
+            else:
+                self.RaiseError(tree, "Graph loop iterator format incorrect.")
+
+        # handle function arguments        
+        self.write("(")
+        self._CallArguments(tree)
+        self.write(")")        
+        
+    def dispatchGraphLoop(self, tree):
+        """
+        This is a special case of a range based for loop in which iterator item returns a const reference to the edge.
+        Any user specified graph value can be used.
+        """
+        self.fill("for (const auto& ")
+        self.dispatch(tree.target)
+        self.write(" : ")
+        # graph iterator only current has calls
+        if isinstance(tree.iter, ast.Call):
+            self.dispatchGraphIteratorCall(tree.iter)
+        #otherwise not supported
+        else :
+            self.RaiseError(tree, f"Graph loop iterator in unsupported format")
+        self.write(")")
+        if tree.iter.func.attr == "inEdges":
+            self._directed_graph_in_iterator_var = tree.target.id
+        elif tree.iter.func.attr == "outEdges":
+            self._directed_graph_out_iterator_var = tree.target.id
+        self.enter()
+        self.dispatch(tree.body)
+        self.leave()
+        self._directed_graph_in_iterator_var = None
+        self._directed_graph_out_iterator_var = None
     
     def dispatchMemberFunction(self, t, t_parent):
         """
@@ -492,7 +544,35 @@ class CodeGenerator:
                             self.RaiseError(t, f"Function '{t.attr}' does not exist in '{self._message_iterator_var}' message input iterable object")
                         # proceed
                         self.write(py_func)
-              
+
+            # directed graph iterator arg
+            elif self._directed_graph_in_iterator_var and t.value.id == self._directed_graph_in_iterator_var:
+                    self.write(f"{self._directed_graph_in_iterator_var}.")
+                    # check for legit FGPU function calls and translate
+                    if t.attr in self.fgpu_env_directed_graph_iter_in_var_funcs:
+                        # proceed
+                        self.write(t.attr)
+                    else:
+                        # possible getter setter type function
+                        py_func = self._deviceVariableFunctionName(t, ["getProperty"])
+                        if not py_func:
+                            self.RaiseError(t, f"Function '{t.attr}' does not exist in '{self._directed_graph_in_iterator_var}' graph iterable object")
+                        # proceed
+                        self.write(py_func)
+            elif self._directed_graph_out_iterator_var and t.value.id == self._directed_graph_out_iterator_var:
+                    self.write(f"{self._directed_graph_out_iterator_var}.")
+                    # check for legit FGPU function calls and translate
+                    if t.attr in self.fgpu_env_directed_graph_iter_out_var_funcs:
+                        # proceed
+                        self.write(t.attr)
+                    else:
+                        # possible getter setter type function
+                        py_func = self._deviceVariableFunctionName(t, ["getProperty"])
+                        if not py_func:
+                            self.RaiseError(t, f"Function '{t.attr}' does not exist in '{self._directed_graph_out_iterator_var}' graph iterable object")
+                        # proceed
+                        self.write(py_func)
+
             # message output arg
             elif t.value.id == self._output_message_var:
                 # check for legit FGPU function calls and translate
@@ -522,6 +602,23 @@ class CodeGenerator:
                         self.RaiseError(t, f"Function '{t.attr}' does not exist in '{t.value.id}' message input object")
                     # proceed
                     self.write(py_func)
+                    
+            # standalone graph property arg
+            elif t.value.id in self._directed_graph_vars:
+                    self.write(f"{t.value.id}.")
+                    # check for legit FGPU function calls and translate
+                    if t.attr in self.fgpu_env_directed_graph_funcs:
+                        # proceed
+                        self.write(t.attr)
+                    else:
+                        # possible getter setter type function
+                        py_func = self._deviceVariableFunctionName(t, ["getEdgeProperty"])
+                        if not py_func:                        
+                            py_func = self._deviceVariableFunctionName(t, ["getVertexProperty"])
+                        if not py_func:
+                            self.RaiseError(t, f"Function '{t.attr}' does not exist in '{t.value.id}' graph object")
+                        # proceed
+                        self.write(py_func)
             
             # math functions (try them in raw function call format) or constants
             elif t.value.id == "math":
@@ -623,9 +720,14 @@ class CodeGenerator:
         # check if target exists in locals
         if t.targets[0].id not in self._locals :
             # Special case, catch message.at() where a message is returned outside a message loop
-            if hasattr(t.value, "func") and isinstance(t.value.func, ast.Attribute) and t.value.func.attr == 'at' :
-                if t.value.func.value.id == self._input_message_var :
-                    self._standalone_message_var.append(t.targets[0].id)
+            if hasattr(t.value, "func") and isinstance(t.value.func, ast.Attribute):
+                if t.value.func.attr == 'at' :
+                    if t.value.func.value.id == self._input_message_var :
+                        self._standalone_message_var.append(t.targets[0].id)
+                # Special case, track which variables hold directed graph handles
+                elif t.value.func.attr == 'getDirectedGraph' :
+                    if t.value.func.value.value.id == "pyflamegpu" and t.value.func.value.attr == "environment" :
+                        self._directed_graph_vars.append(t.targets[0].id)
             # Special case, definitions outside of agent fn are made const
             if self._indent == 0:
                 self.write("constexpr ")
@@ -796,12 +898,14 @@ class CodeGenerator:
         1) Message for loop in which case the format requires a iterator using the named pyflamegpu function argument of 'message_in'
         2) A range based for loop with 1 to 3 arguments which is converted into a c style loop
         """
-        # if message loop then process differently
+        # if message or graph loop then process differently
         if isinstance(t.iter, ast.Name):
             if t.iter.id == self._input_message_var:
                 self.dispatchMessageLoop(t)
+            elif t.iter.id in self._directed_graph_vars:
+                self.dispatchGraphLoop(t)
             else:
-                self.RaiseError(t, "Range based for loops only support message iteration using 'message_in' iterator")
+                self.RaiseError(t, "Range based for loops only support message iteration using 'message_in' or directed graph iterator")
         # do not support for else
         elif t.orelse:
             self.RaiseError(t, "For else not supported")
@@ -812,6 +916,8 @@ class CodeGenerator:
                 # catch case of message_input with arguments (e.g. spatial messaging)
                 if t.iter.func.id == self._input_message_var:
                     self.dispatchMessageLoop(t)
+                elif t.iter.func.id in self._directed_graph_vars:
+                    self.dispatchGraphLoop(t)
                 # otherwise permit only range based for loops
                 elif t.iter.func.id == "range":
                     # switch on different uses of range based on number of arguments
@@ -863,6 +969,8 @@ class CodeGenerator:
                 # must be an attribute (e.g. calling a member of message_in)
                 if t.iter.func.value.id == self._input_message_var:
                     self.dispatchMessageLoop(t)
+                elif t.iter.func.value.id in self._directed_graph_vars:
+                    self.dispatchGraphLoop(t)
                 else:
                     self.RaiseError(t, "Range based for loops only support calling members of message input variable")
             else:

@@ -147,6 +147,22 @@ class CUDAScatter {
         Type messageOrAgent,
         const std::vector<ScatterData>& scatterData,
         unsigned int itemCount);
+    /**
+     * Scatters agents from SoA to SoA according to d_position flag as input_source, all variables are scattered
+     * Used for Host function sort agent
+     * CUDAScanCompaction::position is used to decide where to scatter to
+     * @param streamResourceId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
+     * @param stream CUDA stream to be used for async CUDA operations
+     * @param position Buffer containing indexes to move data from
+     * @param scatterData Vector of scatter configuration for each variable to be scattered
+     * @param itemCount Total number of items in input array to consider
+     */
+    void scatterPosition_async(
+        unsigned int streamResourceId,
+        cudaStream_t stream,
+        unsigned int *position,
+        const std::vector<ScatterData>& scatterData,
+        unsigned int itemCount);
     void scatterPosition(
         unsigned int streamResourceId,
         cudaStream_t stream,

@@ -19,8 +19,8 @@ struct SharedBlock {
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     unsigned int curve_type_size[curve::Curve::MAX_VARIABLES];
     unsigned int curve_elements[curve::Curve::MAX_VARIABLES];
-    unsigned int curve_count[curve::Curve::MAX_VARIABLES];
 #endif
+    unsigned int curve_count[curve::Curve::MAX_VARIABLES];
     const char* env_buffer;
     const char* agent_name;
     const char* state_name;

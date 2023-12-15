@@ -177,13 +177,21 @@ void CUDAScatter::scatterPosition(
     Type messageOrAgent,
     const std::vector<ScatterData>& sd,
     unsigned int itemCount) {
-    scatterPosition_async(streamResourceId, stream, messageOrAgent, sd, itemCount);
+    scatterPosition_async(streamResourceId, stream, scan.Config(messageOrAgent, streamResourceId).d_ptrs.position, sd, itemCount);
     gpuErrchk(cudaStreamSynchronize(stream));
 }
 void CUDAScatter::scatterPosition_async(
     unsigned int streamResourceId,
     cudaStream_t stream,
     Type messageOrAgent,
+    const std::vector<ScatterData>& sd,
+    unsigned int itemCount) {
+    scatterPosition_async(streamResourceId, stream, scan.Config(messageOrAgent, streamResourceId).d_ptrs.position, sd, itemCount);
+}
+void CUDAScatter::scatterPosition_async(
+    unsigned int streamResourceId,
+    cudaStream_t stream,
+    unsigned int *position,
     const std::vector<ScatterData> &sd,
     unsigned int itemCount) {
     int blockSize = 0;  // The launch configurator returned block size
@@ -199,7 +207,7 @@ void CUDAScatter::scatterPosition_async(
     gpuErrchk(cudaMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice, stream));
     scatter_position_generic <<<gridSize, blockSize, 0, stream>>> (
         itemCount,
-        scan.Config(messageOrAgent, streamResourceId).d_ptrs.position,
+        position,
         streamResources[streamResourceId].d_data, static_cast<unsigned int>(sd.size()));
     gpuErrchkLaunch();
 }
