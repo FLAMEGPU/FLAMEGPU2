@@ -30,7 +30,7 @@ void RunPlan::setRandomSimulationSeed(const uint64_t _random_seed) {
 }
 void RunPlan::setSteps(const unsigned int _steps) {
     if (_steps == 0 && !allow_0_steps) {
-        throw exception::OutOfBoundsException("Model description requires atleast 1 exit condition to have unlimited steps, "
+        THROW exception::OutOfBoundsException("Model description requires atleast 1 exit condition to have unlimited steps, "
             "in RunPlan::setSteps()");
     }
     steps = _steps;

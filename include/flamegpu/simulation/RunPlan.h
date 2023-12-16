@@ -15,7 +15,7 @@
 
 namespace flamegpu {
 namespace detail {
-class SimRunner;
+class AbstractSimRunner;
 }
 class ModelDescription;
 class RunPlanVector;
@@ -31,7 +31,7 @@ class XMLLogger;
  */
 class RunPlan {
     friend class RunPlanVector;
-    friend class detail::SimRunner;
+    friend class detail::AbstractSimRunner;
     friend class CUDASimulation;
     friend class io::JSONLogger;
     friend class io::XMLLogger;
@@ -264,7 +264,7 @@ void RunPlan::setProperty(const std::string &name, const flamegpu::size_type ind
     }
     const unsigned int t_index = detail::type_decode<T>::len_t * index + detail::type_decode<T>::len_t;
     if (it->second.data.elements < t_index || t_index < index) {
-        throw exception::OutOfBoundsException("Environment property array index out of bounds "
+        THROW exception::OutOfBoundsException("Environment property array index out of bounds "
             "in RunPlan::setProperty()\n");
     }
     // Check whether array already exists in property overrides
@@ -383,7 +383,7 @@ T RunPlan::getProperty(const std::string &name, const flamegpu::size_type index)
     }
     const unsigned int t_index = detail::type_decode<T>::len_t * index + detail::type_decode<T>::len_t;
     if (it->second.data.elements < t_index || t_index < index) {
-        throw exception::OutOfBoundsException("Environment property array index out of bounds "
+        THROW exception::OutOfBoundsException("Environment property array index out of bounds "
             "in RunPlan::getProperty()\n");
     }
     // Check whether property already exists in property overrides

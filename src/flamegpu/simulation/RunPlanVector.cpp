@@ -27,7 +27,7 @@ void RunPlanVector::setRandomSimulationSeed(const uint64_t initial_seed, const u
 }
 void RunPlanVector::setSteps(const unsigned int steps) {
     if (steps == 0 && !allow_0_steps) {
-        throw exception::OutOfBoundsException("Model description requires atleast 1 exit condition to have unlimited steps, "
+        THROW exception::OutOfBoundsException("Model description requires atleast 1 exit condition to have unlimited steps, "
             "in RunPlanVector::setSteps()");
     }
     for (auto &i : *this) {

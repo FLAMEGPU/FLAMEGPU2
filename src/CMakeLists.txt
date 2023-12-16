@@ -96,6 +96,9 @@ endif()
 option(FLAMEGPU_ENABLE_LINT_FLAMEGPU "Enable creation of the lint_flamegpu target" ${FLAMEGPU_ENABLE_LINT_FLAMEGPU_DEFAULT})
 unset(FLAMEGPU_ENABLE_LINT_FLAMEGPU_DEFAULT)
 
+# Option to enable/disable MPI support
+option(FLAMEGPU_ENABLE_MPI "Enable MPI support for distributed ensembles" OFF)
+
 # Option to enable GLM support and put GLM on the include path
 option(FLAMEGPU_ENABLE_GLM "Experimental: Make GLM available to flamegpu2 projects on the include path" OFF)
 mark_as_advanced(FLAMEGPU_ENABLE_GLM)
@@ -186,6 +189,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/model/Variable.h
     ${FLAMEGPU_ROOT}/include/flamegpu/model/EnvironmentDirectedGraphData.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/model/EnvironmentDirectedGraphDescription.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/AbstractSimRunner.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/MemoryVector.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/GenericMemoryVector.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/CUDAScanCompaction.h
@@ -199,6 +203,8 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/CUDAFatAgentStateList.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/CUDAScatter.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/CUDAMacroEnvironment.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/MPISimRunner.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/MPIEnsemble.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/SimRunner.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/SimLogger.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/AgentInterface.h
@@ -317,6 +323,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/model/HostFunctionDescription.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/model/EnvironmentDirectedGraphData.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/model/EnvironmentDirectedGraphDescription.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/AbstractSimRunner.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CubTemporaryMemory.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CUDAScanCompaction.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CUDAMessageList.cu
@@ -329,6 +336,8 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CUDAMacroEnvironment.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/DeviceStrings.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/MPISimRunner.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/MPIEnsemble.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/SimRunner.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/SimLogger.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/simulation/detail/EnvironmentManager.cu
@@ -571,6 +580,31 @@ if (FLAMEGPU_VISUALISATION)
     target_link_libraries(${PROJECT_NAME} PUBLIC flamegpu_visualiser)
     flamegpu_set_target_folder(flamegpu_visualiser "FLAMEGPU")
     target_compile_definitions(${PROJECT_NAME} PUBLIC FLAMEGPU_VISUALISATION) 
+endif()
+
+# Activate MPI support (distributed ensembles)
+if (FLAMEGPU_ENABLE_MPI)
+    find_package(MPI REQUIRED)
+    if (MPI_CXX_FOUND)
+        # If CMake is older than 3.20.1, FindMPI may incorrectly wrap link options when CUDA is enabled.
+        # It is not guaranteed to be a problem, so we should warn rather than error.
+        # https://gitlab.kitware.com/cmake/cmake/-/issues/21887
+        if(CMAKE_VERSION VERSION_LESS 3.20.1)
+            message(WARNING "CMake < 3.20.1 may result in link errors with FLAMEGPU_ENABLE_MPI=ON for some MPI installations. Consider using CMake >= 3.20.1.")
+        endif()
+        # If the MPI installation brings in -flto (i.e. Ubuntu 22.04 libmpich-dev), warn about it and suggest a reconfiguration.
+        if(MPI_CXX_COMPILE_OPTIONS MATCHES ".*\-flto.*")
+            message(WARNING
+                " MPI_CXX_COMPILE_OPTIONS contains '-flto' which is likely to result in linker errors. \n"
+                " Consider an alternate MPI implementation which does not embed -flto,\n"
+                " Or reconfiguring CMake with -DMPI_CXX_COMPILE_OPTIONS=\"\" if linker error occur.")
+        endif()
+        # This sets up include directories and lib
+        target_link_libraries(${PROJECT_NAME} PUBLIC MPI::MPI_CXX)
+        target_compile_definitions(${PROJECT_NAME} PUBLIC FLAMEGPU_ENABLE_MPI)
+    else()
+        message(FATAL_ERROR "MPI C++ Support was not found!")
+    endif()
 endif()
 
 # Make GLM accessible via include. PUBLIC so this is usable by downstream projects

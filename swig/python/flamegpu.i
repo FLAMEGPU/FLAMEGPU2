@@ -870,7 +870,7 @@ namespace std {
 %template(dependsOn) flamegpu::DependencyNode::dependsOn<flamegpu::DependencyNode>;
 
 %template(StepLogFrameList) std::list<flamegpu::StepLogFrame>;
-%template(RunLogVec) std::vector<flamegpu::RunLog>;
+%template(RunLogMap) std::map<unsigned int, flamegpu::RunLog>;
  
 // Instantiate template versions of agent functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::AgentDescription::newVariable)
@@ -1261,6 +1261,13 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(poisson, flamegpu::HostRandom::poisson)
     #define GLM true
 #else
     #define GLM false
+#endif
+
+#ifdef FLAMEGPU_ENABLE_MPI
+    #undef FLAMEGPU_ENABLE_MPI
+    #define MPI true
+#else
+    #define MPI false
 #endif
 
 // Declare an empty type we can use as an attribute for constants to be pulled in by codegen

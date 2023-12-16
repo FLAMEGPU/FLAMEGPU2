@@ -78,6 +78,9 @@ Optionally:
   + With `setuptools`, `wheel`, `build` and optionally `venv` python packages installed
 + [swig](http://www.swig.org/) `>= 4.0.2` for python integration
   + Swig `4.x` will be automatically downloaded by CMake if not provided (if possible).
++ MPI (e.g. [MPICH](https://www.mpich.org/), [OpenMPI](https://www.open-mpi.org/)) for distributed ensemble support
+  + MPI 3.0+ tested, older MPIs may work but not tested.
+  + CMake `>= 3.20.1` may be required for some MPI libraries / platforms.
 + [FLAMEGPU2-visualiser](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser) dependencies
   + [SDL](https://www.libsdl.org/)
   + [GLM](http://glm.g-truc.net/) *(consistent C++/GLSL vector maths functionality)*
@@ -176,6 +179,7 @@ cmake --build . --target all
 | `FLAMEGPU_VERBOSE_PTXAS`             | `ON`/`OFF`                  | Enable verbose PTXAS output during compilation. Default `OFF`.                                             |
 | `FLAMEGPU_CURAND_ENGINE`             | `XORWOW` / `PHILOX` / `MRG` | Select the CUDA random engine. Default `XORWOW`                                                            |
 | `FLAMEGPU_ENABLE_GLM`                | `ON`/`OFF`                  | Experimental feature for GLM type support within models. Default `OFF`.                                    |
+| `FLAMEGPU_ENABLE_MPI`                | `ON`/`OFF`                  | Enable MPI support for distributed CUDAEnsembles, each MPI worker should have exclusive access to it's GPUs e.g. 1 MPI worker per node. Default `OFF`.                                           |
 | `FLAMEGPU_ENABLE_ADVANCED_API`       | `ON`/`OFF`                  | Enable advanced API functionality (C++ only), providing access to internal sim components for high-performance extensions. No stability guarantees are provided around this interface and the returned objects.  Documentation is limited to that found in the source. Default `OFF`. |
 | `FLAMEGPU_SHARE_USAGE_STATISTICS`    | `ON`/`OFF`                  | Share usage statistics ([telemetry](https://docs.flamegpu.com/guide/telemetry)) to support evidencing usage/impact of the software. Default `ON`. |
 | `FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE` | `ON`/`OFF`                  | Suppress notice encouraging telemetry to be enabled, which is emitted once per binary execution if telemetry is disabled. Defaults to `OFF`, or the value of a system environment variable of the same name. |

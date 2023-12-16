@@ -1,12 +1,12 @@
 #ifndef INCLUDE_FLAMEGPU_SIMULATION_DETAIL_SIMLOGGER_H_
 #define INCLUDE_FLAMEGPU_SIMULATION_DETAIL_SIMLOGGER_H_
 
-#include <vector>
 #include <thread>
 #include <mutex>
 #include <queue>
 #include <string>
 #include <condition_variable>
+#include <map>
 
 #include "flamegpu/simulation/LogFrame.h"
 
@@ -34,7 +34,7 @@ class SimLogger {
      * @param _export_step_time If true step log time will be exported
      * @param _export_exit_time If true exit log time will be exported
      */
-    SimLogger(const std::vector<RunLog> &run_logs,
+    SimLogger(const std::map<unsigned int, RunLog> &run_logs,
         const RunPlanVector &run_plans,
         const std::string &out_directory,
         const std::string &out_format,
@@ -55,9 +55,9 @@ class SimLogger {
     void start();
     // External references
     /**
-     * Reference to the vector to store generate run logs
+     * Reference to the map to store generate run logs
      */
-    const std::vector<RunLog> &run_logs;
+    const std::map<unsigned int, RunLog> &run_logs;
     /**
      * Reference to the vector of run configurations to be executed
      */

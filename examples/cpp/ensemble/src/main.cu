@@ -17,8 +17,7 @@ FLAMEGPU_INIT_FUNCTION(Init) {
 std::atomic<unsigned int> atomic_init = {0};
 std::atomic<uint64_t> atomic_result = {0};
 FLAMEGPU_EXIT_FUNCTION(Exit) {
-    atomic_init += FLAMEGPU->environment.getProperty<int>("init");
-    atomic_result += FLAMEGPU->agent("Agent").sum<int>("x");
+    FLAMEGPU->environment.setProperty<int>("result", FLAMEGPU->agent("Agent").sum<int>("x"));
 }
 int main(int argc, const char ** argv) {
     flamegpu::ModelDescription model("boids_spatial3D");
@@ -35,6 +34,7 @@ int main(int argc, const char ** argv) {
         env.newProperty<int>("init", 0);
         env.newProperty<int>("init_offset", 0);
         env.newProperty<int>("offset", 1);
+        env.newProperty<int>("result", 0);
     }
     {   // Agent
         flamegpu::AgentDescription  agent = model.newAgent("Agent");
@@ -64,27 +64,46 @@ int main(int argc, const char ** argv) {
         runs.setPropertyLerpRange<int>("init_offset", 1, 0);
         runs.setPropertyLerpRange<int>("offset", 0, 99);
     }
-
+    /**
+     * Create a logging config
+     */
+    flamegpu::LoggingConfig exit_log_cfg(model);
+    exit_log_cfg.logEnvironment("init");
+    exit_log_cfg.logEnvironment("result");
     /**
      * Create Model Runner
      */
     flamegpu::CUDAEnsemble cuda_ensemble(model, argc, argv);
-
+    cuda_ensemble.setExitLog(exit_log_cfg);
     cuda_ensemble.simulate(runs);
 
-    // Check result
-    // Don't currently have logging
-    unsigned int init_sum = 0;
-    uint64_t result_sum = 0;
-    for (int i = 0 ; i < 100; ++i) {
-        const int init = i/10;
-        const int init_offset = 1 - i/50;
-        init_sum += init;
-        result_sum += POPULATION_TO_GENERATE * init + init_offset * ((POPULATION_TO_GENERATE-1)*POPULATION_TO_GENERATE/2);  // Initial agent values
-        result_sum += POPULATION_TO_GENERATE * STEPS * i;  // Agent values added by steps
+    /**
+     * Check result for each log
+     */
+    const std::map<unsigned int, flamegpu::RunLog> &logs = cuda_ensemble.getLogs();
+    if (!cuda_ensemble.Config().mpi || logs.size() > 0) {
+        unsigned int init_sum = 0, expected_init_sum = 0;
+        uint64_t result_sum = 0, expected_result_sum = 0;
+
+        for (const auto &[i, log] : logs) {
+            const int init = i/10;
+            const int init_offset = 1 - i/50;
+            expected_init_sum += init;
+            expected_result_sum += POPULATION_TO_GENERATE * init + init_offset * ((POPULATION_TO_GENERATE-1)*POPULATION_TO_GENERATE/2);  // Initial agent values
+            expected_result_sum += POPULATION_TO_GENERATE * STEPS * i;  // Agent values added by steps
+            const flamegpu::ExitLogFrame &exit_log = log.getExitLog();
+            init_sum += exit_log.getEnvironmentProperty<int>("init");
+            result_sum += exit_log.getEnvironmentProperty<int>("result");
+        }
+        printf("Ensemble init: %u, calculated init %u\n", expected_init_sum, init_sum);
+        printf("Ensemble result: %zu, calculated result %zu\n", expected_result_sum, result_sum);
     }
-    printf("Ensemble init: %u, calculated init %u\n", atomic_init.load(), init_sum);
-    printf("Ensemble result: %zu, calculated result %zu\n", atomic_result.load(), result_sum);
+    /**
+     * Report if MPI was enabled
+     */
+    if (cuda_ensemble.Config().mpi) {
+        printf("Local MPI runner completed %u/%u runs.\n", static_cast<unsigned int>(logs.size()), static_cast<unsigned int>(runs.size()));
+    }
 
     // Ensure profiling / memcheck work correctly
     flamegpu::util::cleanup();
