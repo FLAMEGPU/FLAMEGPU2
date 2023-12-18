@@ -7,7 +7,8 @@ include(FetchContent)
 cmake_policy(SET CMP0079 NEW)
 
 # Set the visualiser repo and tag to use unless overridden by the user.
-set(DEFAULT_FLAMEGPU_VISUALISATION_GIT_VERSION "02097b5ca1bf38a52693e926d0d750d972a2ae80")
+#set(DEFAULT_FLAMEGPU_VISUALISATION_GIT_VERSION "02097b5ca1bf38a52693e926d0d750d972a2ae80")
+set(DEFAULT_FLAMEGPU_VISUALISATION_GIT_VERSION "conda_test")
 set(DEFAULT_FLAMEGPU_VISUALISATION_REPOSITORY "https://github.com/FLAMEGPU/FLAMEGPU2-visualiser.git")
 
 # Set a VISUSLAITION_ROOT cache entry so it is available in the GUI to override the location if required
@@ -31,7 +32,7 @@ if (FLAMEGPU_VISUALISATION_ROOT)
     )
     # If found, use the local vis, otherwise error.
     if(FLAMEGPU_VISUALISATION_ROOT_ABS)
-        # If the correct visualtiion root was found, output a successful status message
+        # If the correct visualisation root was found, output a successful status message
         message(STATUS "Found FLAMEGPU_VISUALISATION_ROOT: ${FLAMEGPU_VISUALISATION_ROOT_ABS} (${FLAMEGPU_VISUALISATION_ROOT})")
         # update the value to the non abs version, in local and parent scope.
         set(FLAMEGPU_VISUALISATION_ROOT "${FLAMEGPU_VISUALISATION_ROOT_ABS}")

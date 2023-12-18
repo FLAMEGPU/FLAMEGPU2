@@ -166,7 +166,8 @@ cmake --build . --target all
 | `CMAKE_CUDA_ARCHITECTURES`           | e.g `60`, `"60;70"`         | [CUDA Compute Capabilities][cuda-CC] to build/optimise for, as a `;` separated list. See [CMAKE_CUDA_ARCHITECTURES][cmake-CCA]. Defaults to `all-major` or equivalent. Alternatively use the `CUDAARCHS` environment variable. |
 | `FLAMEGPU_SEATBELTS`                 | `ON`/`OFF`                  | Enable / Disable additional runtime checks which harm performance but increase usability. Default `ON`     |
 | `FLAMEGPU_BUILD_PYTHON`              | `ON`/`OFF`                  | Enable Python target `pyflamegpu` via Swig. Default `OFF`. Python packages `setuptools`, `build` & `wheel` required |
-| `FLAMEGPU_BUILD_PYTHON_VENV`         | `ON`/`OFF`                  | Use a python `venv` when building the python Swig target. Default `ON`. Python package `venv` required     |
+| `FLAMEGPU_BUILD_PYTHON_VENV`         | `ON`/`OFF`                  | Use a Python `venv` when building the Python Swig target. Default `ON`. Python package `venv` required     |
+| `FLAMEGPU_BUILD_PYTHON_CONDA`        | `ON`/`OFF`                  | Build target 'pyflamegpu' as a Conda compatible Python package. Default `OFF`.                             |
 | `FLAMEGPU_BUILD_TESTS`               | `ON`/`OFF`                  | Build the C++/CUDA test suite. Default `OFF`.                                                              |
 | `FLAMEGPU_BUILD_TESTS_DEV`           | `ON`/`OFF`                  | Build the reduced-scope development test suite. Default `OFF`                                              |
 | `FLAMEGPU_ENABLE_GTEST_DISCOVER`     | `ON`/`OFF`                  | Run individual CUDA C++ tests as independent `ctest` tests. This dramatically increases test suite runtime. Default `OFF`. |
