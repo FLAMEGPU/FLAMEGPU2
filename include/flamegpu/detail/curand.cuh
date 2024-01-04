@@ -1,9 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_DETAIL_CURAND_CUH_
 #define INCLUDE_FLAMEGPU_DETAIL_CURAND_CUH_
 
-/**
- * This header exists to allow a convenient way to switch between curand implementations
- */
+// This header exists to allow a convenient way to switch between curand implementations
 
 #include <curand_kernel.h>
 

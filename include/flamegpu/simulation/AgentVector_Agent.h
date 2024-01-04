@@ -1,8 +1,8 @@
 #ifndef INCLUDE_FLAMEGPU_SIMULATION_AGENTVECTOR_AGENT_H_
 #define INCLUDE_FLAMEGPU_SIMULATION_AGENTVECTOR_AGENT_H_
 
-/**
- * THIS CLASS SHOULD NOT BE INCLUDED DIRECTLY
+/*
+ * THIS HEADER SHOULD NOT BE INCLUDED DIRECTLY
  * Include flamegpu/simulation/AgentVector.h instead
  * Use AgentVector::CAgent instead of AgentVector_CAgent
  * Use AgentVector::Agent instead of AgentVector_Agent
