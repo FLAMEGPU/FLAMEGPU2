@@ -7,12 +7,14 @@ include(FetchContent)
 include(ExternalProject)
 cmake_policy(SET CMP0079 NEW)
 
-# Head of master as of 2020-07-14, as last release is ~500 commits behind head
+# a95e013b97ca6523f32da23f5095fcc9dd6067e5 is the last commit before a change which breaks our method of finding rapid json without running a cmake install first.
+# but we also need to patch this to avoid a cmake >= 3.26.4 deprecation
 FetchContent_Declare(
     rapidjson
     GIT_REPOSITORY https://github.com/Tencent/rapidjson.git
-    GIT_TAG        f56928de85d56add3ca6ae7cf7f119a42ee1585b
+    GIT_TAG        a95e013b97ca6523f32da23f5095fcc9dd6067e5
     GIT_PROGRESS   ON
+    PATCH_COMMAND git apply ${CMAKE_CURRENT_LIST_DIR}/patches/rapidjson-cmake-3.5-deprecation.patch || true
     # UPDATE_DISCONNECTED   ON
 )
 FetchContent_GetProperties(rapidjson)
