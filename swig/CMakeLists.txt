@@ -148,6 +148,9 @@ if(NOT SWIG_FOUND)
             set(SWIG_EXECUTABLE "${swig_BINARY_DIR}/bin/swig")
             set(SWIG_EXECUTABLE "${swig_BINARY_DIR}/bin/swig" CACHE FILEPATH "Path to SWIG executable")
         endif()
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        message(FATAL_ERROR "  Unable to build swig from source with some Clang versions.\n"
+          "  Please install swig >= ${SWIG_MINIMUM_SUPPORTED_VERSION} manually.")
     endif()
     # Attempt to find swig again, but as REQUIRED.
     find_package(SWIG ${SWIG_MINIMUM_SUPPORTED_VERSION} REQUIRED)
