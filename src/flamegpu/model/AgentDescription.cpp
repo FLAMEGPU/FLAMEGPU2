@@ -8,7 +8,7 @@ namespace flamegpu {
 CAgentDescription::CAgentDescription(std::shared_ptr<AgentData> data)
     : agent(std::move(data)) { }
 CAgentDescription::CAgentDescription(std::shared_ptr<const AgentData> data)
-    : agent(std::move(std::const_pointer_cast<AgentData>(data))) { }
+    : agent(std::const_pointer_cast<AgentData>(data)) { }
 
 bool CAgentDescription::operator==(const CAgentDescription& rhs) const {
     return *this->agent == *rhs.agent;  // Compare content is functionally the same

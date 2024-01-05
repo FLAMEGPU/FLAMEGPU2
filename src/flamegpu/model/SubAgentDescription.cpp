@@ -8,7 +8,7 @@ namespace flamegpu {
 CSubAgentDescription::CSubAgentDescription(std::shared_ptr<SubAgentData> data)
     : subagent(std::move(data)) { }
 CSubAgentDescription::CSubAgentDescription(std::shared_ptr<const SubAgentData> data)
-    : subagent(std::move(std::const_pointer_cast<SubAgentData>(data))) { }
+    : subagent(std::const_pointer_cast<SubAgentData>(data)) { }
 
 bool CSubAgentDescription::operator==(const CSubAgentDescription& rhs) const {
     return *this->subagent == *rhs.subagent;  // Compare content is functionally the same

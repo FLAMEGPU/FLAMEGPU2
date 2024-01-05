@@ -12,7 +12,7 @@ namespace flamegpu {
 CSubModelDescription::CSubModelDescription(std::shared_ptr<SubModelData> data)
     : submodel(std::move(data)) { }
 CSubModelDescription::CSubModelDescription(std::shared_ptr<const SubModelData> data)
-    : submodel(std::move(std::const_pointer_cast<SubModelData>(data))) { }
+    : submodel(std::const_pointer_cast<SubModelData>(data)) { }
 
 bool CSubModelDescription::operator==(const CSubModelDescription& rhs) const {
     return *this->submodel == *rhs.submodel;  // Compare content is functionally the same

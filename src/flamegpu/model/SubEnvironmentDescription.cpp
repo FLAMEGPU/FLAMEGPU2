@@ -10,7 +10,7 @@ namespace flamegpu {
 CSubEnvironmentDescription::CSubEnvironmentDescription(std::shared_ptr<SubEnvironmentData> data)
     : subenvironment(std::move(data)) { }
 CSubEnvironmentDescription::CSubEnvironmentDescription(std::shared_ptr<const SubEnvironmentData> data)
-    : subenvironment(std::move(std::const_pointer_cast<SubEnvironmentData>(data))) { }
+    : subenvironment(std::const_pointer_cast<SubEnvironmentData>(data)) { }
 
 bool CSubEnvironmentDescription::operator==(const CSubEnvironmentDescription& rhs) const {
     return *this->subenvironment == *rhs.subenvironment;  // Compare content is functionally the same
