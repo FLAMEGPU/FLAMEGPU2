@@ -85,8 +85,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model, b
     const auto &am = model->agents;
     // create new cuda agent and add to the map
     for (auto it = am.cbegin(); it != am.cend(); ++it) {
-        // insert into map using value_type and store a reference to the map pair
-        agent_map.emplace(it->first, std::make_unique<detail::CUDAAgent>(*it->second, *this)).first;
+        agent_map.emplace(it->first, std::make_unique<detail::CUDAAgent>(*it->second, *this));
     }
 
     // populate the CUDA message map
@@ -162,7 +161,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
             agent_map.emplace(it->first, std::make_unique<detail::CUDAAgent>(*it->second, *this, masterAgent, mapping));
         } else {
             // Agent is not mapped, create regular agent
-            agent_map.emplace(it->first, std::make_unique<detail::CUDAAgent>(*it->second, *this)).first;
+            agent_map.emplace(it->first, std::make_unique<detail::CUDAAgent>(*it->second, *this));
         }
     }  // insert into map using value_type
 
