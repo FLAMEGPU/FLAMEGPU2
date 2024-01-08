@@ -73,6 +73,8 @@ jobs:
         VISUALISATION: 
           # - "ON"
           - "OFF"
+        cmake:
+          - "3.20.0"
 
     # Name the job based on matrix/env options
     name: "build (${{ matrix.cudacxx.hostcxx }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
@@ -92,6 +94,7 @@ jobs:
       FLAMEGPU_SEATBELTS: ${{ matrix.config.SEATBELTS }}
       PYTHON: ${{ matrix.python}}
       VISUALISATION: ${{ matrix.VISUALISATION }}
+      CMAKE: ${{ matrix.cmake }}
 
     steps:
     - uses: actions/checkout@v3
@@ -157,6 +160,15 @@ jobs:
         ./configure
         make
         make install
+
+    - name: Install cmake from GitHub Releases
+      if: ${{ env.CMAKE != '' && env.CMAKE != 'default' }}
+      working-directory: ${{ runner.temp }}
+      run: |
+        wget -q https://github.com/Kitware/CMake/releases/download/v${{ env.CMAKE }}/cmake-${{ env.CMAKE }}-linux-x86_64.tar.gz
+        tar -zxvf cmake-${{ env.CMAKE }}-linux-x86_64.tar.gz
+        # Inner directory case changes in some releases, use find to get the right path
+        echo "$(dirname $(find $(pwd) -wholename "*/bin/cmake" -exec echo {} \; -quit))" >> $GITHUB_PATH
 
 
     - name: Configure cmake
