@@ -42,6 +42,27 @@ jobs:
             hostcxx: nvhpc-22.11
             os: ubuntu-20.04
             container: nvcr.io/nvidia/nvhpc:22.11-devel-cuda11.8-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:23.11-devel-cuda12.3-ubuntu22.04
+            # nvcr.io/nvidia/nvhpc:23.9-devel-cuda12.2-ubuntu22.04
+            # nvcr.io/nvidia/nvhpc:23.7-devel-cuda12.2-ubuntu22.04
+            # nvcr.io/nvidia/nvhpc:23.5-devel-cuda12.1-ubuntu22.04
+            # nvcr.io/nvidia/nvhpc:23.3-devel-cuda12.0-ubuntu22.04
+            # nvcr.io/nvidia/nvhpc:23.1-devel-cuda12.0-ubuntu22.04
+            # nvcr.io/nvidia/nvhpc:22.11-devel-cuda11.8-ubuntu22.04
+            # nvcr.io/nvidia/nvhpc:22.9-devel-cuda11.7-ubuntu22.04
+            # nvcr.io/nvidia/nvhpc:22.7-devel-cuda11.7-ubuntu22.04
+            # nvcr.io/nvidia/nvhpc:22.5-devel-cuda11.7-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:22.3-devel-cuda11.6-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:22.2-devel-cuda11.6-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:22.1-devel-cuda11.5-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:21.11-devel-cuda11.5-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:21.9-devel-cuda11.4-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:21.7-devel-cuda11.4-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:21.5-devel-cuda11.3-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:21.3-devel-cuda11.2-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:21.2-devel-cuda11.2-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:21.1-devel-cuda11.2-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:20.11-devel-cuda11.1-ubuntu20.04
         python:
           - "3.12"
           - "3.11"
