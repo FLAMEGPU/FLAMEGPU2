@@ -1,6 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_DETAIL_CUDA_CUH_
 #define INCLUDE_FLAMEGPU_DETAIL_CUDA_CUH_
 
+#include <cstdint>
 #include <cuda_runtime.h>
 #include <cuda.h>
 #include <limits>
