@@ -108,6 +108,10 @@ jobs:
         add-apt-repository -y ppa:deadsnakes/ppa
         apt-get update
         apt-get install -y python${{ env.PYTHON }} python${{ env.PYTHON }}-venv python${{ env.PYTHON }}-distutils python${{ env.PYTHON }}-dev python3-pip 
+        # create and activate a venv + install python deps into it, to workaround a deadsnakes + pip quirk
+        python${{ env.PYTHON }} -m venv .venv
+        source .venv/bin/activate
+        echo PATH=$PATH >> $GITHUB_ENV
         python${{ env.PYTHON }} -m pip install --upgrade wheel build setuptools
 
     # these conditions need to be based on the version in the container, not the host. Might want tweaking, or just relies on the yml being correct.
