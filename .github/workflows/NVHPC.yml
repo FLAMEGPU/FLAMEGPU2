@@ -82,7 +82,7 @@ jobs:
     - name: Install python dependencies
       if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       run: |
-        apt-get install python3-venv
+        apt-get update && apt-get install python3-venv
         python3 -m pip install --upgrade wheel build setuptools
 
     # these conditions need to be based on the version in the container, not the host. Might want tweaking, or just relies on the yml being correct.
@@ -90,6 +90,7 @@ jobs:
       if: ${{ startswith(env.OS, 'ubuntu') && env.VISUALISATION == 'ON' }}
       run: |
         # Install ubuntu-20.04 packages
+        apt-get update
         if [ "$OS" == 'ubuntu-22.04' ]; then 
             apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
         fi
@@ -105,6 +106,7 @@ jobs:
     # @tood - doubel check this builds with gcc and not nvhpc within the container
     - name: Install Swig >= 4.0.2
       run: |
+        apt-get update
         # Remove existing swig install, so CMake finds the correct swig
         if [ "$OS" == 'ubuntu-20.04' ]; then 
           apt-get remove -y swig swig4.0
@@ -114,7 +116,7 @@ jobs:
           apt-get remove -y swig
         fi
         # Install additional apt-based dependencies required to build swig 4.0.2
-        sudo apt-get install -y bison
+        apt-get install -y bison
         # Create a local directory to build swig in.
         mkdir -p swig-from-source && cd swig-from-source
         # Install SWIG building from source dependencies
