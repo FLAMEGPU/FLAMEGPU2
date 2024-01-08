@@ -107,7 +107,7 @@ jobs:
         apt-get install -y software-properties-common
         add-apt-repository -y ppa:deadsnakes/ppa
         apt-get update
-        apt-get install -y python${{ env.PYTHON }} python${{ env.PYTHON }}-pip python${{ env.PYTHON }}-distutils python3-pip 
+        apt-get install -y python${{ env.PYTHON }} python${{ env.PYTHON }}-venv python${{ env.PYTHON }}-distutils python3-pip 
         python${{ env.PYTHON }} -m pip install --upgrade wheel build setuptools
 
     # these conditions need to be based on the version in the container, not the host. Might want tweaking, or just relies on the yml being correct.
