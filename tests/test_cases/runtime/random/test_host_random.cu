@@ -125,8 +125,8 @@ FLAMEGPU_STEP_FUNCTION(step_uniform_int_range) {
 FLAMEGPU_STEP_FUNCTION(step_uniform_ulonglong_range) {
     for (auto &i : unsigned_longlong_out)
         ASSERT_NO_THROW(i = FLAMEGPU->random.uniform<uint64_t>(
-            static_cast<uint64_t>(UINT64_MAX * 0.25),
-            static_cast<uint64_t>(UINT64_MAX * 0.75)));
+            static_cast<uint64_t>(static_cast<double>(UINT64_MAX) * 0.25),
+            static_cast<uint64_t>(static_cast<double>(UINT64_MAX) * 0.75)));
 }
 FLAMEGPU_STEP_FUNCTION(step_uniform_longlong_range) {
     for (auto &i : longlong_out)
@@ -1048,8 +1048,8 @@ TEST_F(HostRandomTest, UniformULongLongRange) {
     ms->model.addStepFunction(step_uniform_ulonglong_range);
     ms->run();
     for (auto &i : unsigned_longlong_out) {
-        EXPECT_GE(i, static_cast<uint64_t>(UINT64_MAX*0.25));
-        EXPECT_LE(i, static_cast<uint64_t>(UINT64_MAX*0.75));
+        EXPECT_GE(i, static_cast<uint64_t>(static_cast<double>(UINT64_MAX)*0.25));
+        EXPECT_LE(i, static_cast<uint64_t>(static_cast<double>(UINT64_MAX)*0.75));
     }
 }
 TEST_F(HostRandomTest, UniformLongLongRange) {
