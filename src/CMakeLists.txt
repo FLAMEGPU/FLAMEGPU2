@@ -675,7 +675,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Jitify::jitify)
 target_compile_definitions(${PROJECT_NAME} PUBLIC "JITIFY_PRINT_LOG")
 
 # If gcc < 9, needs to link against stdc++fs. If using NVHPC,this is required if the underlying toolchain is also < 9. @todo - need to detect gcc version when nvhpc is the host compiler somehow...
-if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0) OR OR (CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC"))
+if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0) OR (CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC"))
     target_link_libraries(${PROJECT_NAME} PUBLIC stdc++fs)
 endif()
 
