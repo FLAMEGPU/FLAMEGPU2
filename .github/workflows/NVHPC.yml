@@ -82,7 +82,7 @@ jobs:
     - name: Install python dependencies
       if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       run: |
-        apt-get update && apt-get install python3-venv
+        apt-get update && apt-get install -y python3-venv
         python3 -m pip install --upgrade wheel build setuptools
 
     # these conditions need to be based on the version in the container, not the host. Might want tweaking, or just relies on the yml being correct.
