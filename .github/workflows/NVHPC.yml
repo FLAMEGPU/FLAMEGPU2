@@ -40,8 +40,8 @@ jobs:
           - cuda: "11.8"
             cuda_arch: "35"
             hostcxx: nvhpc-22.11
-            os: ubuntu-22.04
-            container: nvcr.io/nvidia/nvhpc:22.11-devel-cuda11.8-ubuntu22.04
+            os: ubuntu-20.04
+            container: nvcr.io/nvidia/nvhpc:20.11-devel-cuda11.8-ubuntu22.04
         python:
           - "3.12"
           - "3.11"
@@ -78,11 +78,13 @@ jobs:
     - name: Add custom problem matchers for annotations
       run: echo "::add-matcher::.github/problem-matchers.json"
 
-    - name: Select Python
+    # Don't use select python when running in the container. deadsnakes ppa might be easiest way to add custom python?
+    - name: Install python from deadsnakes
       if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ env.PYTHON }}
+      run: |
+        add-apt-repository -y ppa:deadsnakes/ppa
+        apt-get update
+        apt-get install python${{ env.PYTHON }}
 
     # @todo - is some/all of this still required when using select Python?
     - name: Install python dependencies
