@@ -50,7 +50,7 @@ jobs:
             config: "Release"
             SEATBELTS: "ON"
         VISUALISATION: 
-          - "ON"
+          # - "ON"
           - "OFF"
 
     # Name the job based on matrix/env options
