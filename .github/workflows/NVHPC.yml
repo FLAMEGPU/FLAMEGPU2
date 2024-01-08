@@ -107,7 +107,7 @@ jobs:
         apt-get install -y software-properties-common
         add-apt-repository -y ppa:deadsnakes/ppa
         apt-get update
-        apt-get install python${{ env.PYTHON }}
+        apt-get install -y python${{ env.PYTHON }}
 
     # @todo - is some/all of this still required when using select Python?
     - name: Install python dependencies
