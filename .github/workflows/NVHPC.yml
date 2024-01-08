@@ -40,8 +40,8 @@ jobs:
           - cuda: "11.8"
             cuda_arch: "35"
             hostcxx: nvhpc-22.11
-            os: ubuntu-20.04
-            container: nvcr.io/nvidia/nvhpc:22.11-devel-cuda11.8-ubuntu20.04
+            os: ubuntu-22.04
+            container: nvcr.io/nvidia/nvhpc:22.11-devel-cuda11.8-ubuntu22.04
         python:
           - "3.12"
           - "3.11"
@@ -111,6 +111,7 @@ jobs:
     # @todo - enforce that $OS is correct. maybe parse lsb_release instead? 
     # @tood - doubel check this builds with gcc and not nvhpc within the container
     - name: Install Swig >= 4.0.2
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       run: |
         apt-get update
         # Remove existing swig install, so CMake finds the correct swig
@@ -122,7 +123,7 @@ jobs:
           apt-get remove -y swig
         fi
         # Install additional apt-based dependencies required to build swig 4.0.2
-        apt-get install -y bison libpcre2-dev
+        apt-get install -y bison libpcre3-dev libpcre2-dev
         # Create a local directory to build swig in.
         mkdir -p swig-from-source && cd swig-from-source
         # Install SWIG building from source dependencies
