@@ -150,10 +150,6 @@ jobs:
     - name: Enable git safe-directory
       run: git config --global --add safe.directory $GITHUB_WORKSPACE
 
-    # Select the host compiler
-    - name: Set host compiler
-      run:  
-
     # Don't use select python when running in the container. deadsnakes ppa might be easiest way to add custom python?
     - name: Install python from deadsnakes + dependencies
       if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
