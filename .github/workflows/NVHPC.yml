@@ -120,6 +120,8 @@ jobs:
         source .venv/bin/activate
         # manually add venv dirs to the path and env for later steps
         echo "$(readlink -f ./venv/bin/)" >> $GITHUB_PATH
+        echo "$(readlink -f ./venv/bin/) GITHUB_PATH"
+        echo "VIRTUAL_ENV=$(readlink -f ./venv/) $GITHUB_ENV"
         echo "VIRTUAL_ENV=$(readlink -f ./venv/)" >> $GITHUB_ENV
         python${{ env.PYTHON }} -m pip install --upgrade wheel build setuptools
 
@@ -188,6 +190,8 @@ jobs:
         -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
         -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}"
         -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
+        -DPython3_ROOT_DIR="venv/bin" 
+        -DPython3_EXECUTABLE="venv/bin/python${{ env.python }}"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
         -DFLAMEGPU_ENABLE_NVTX="ON"
         
