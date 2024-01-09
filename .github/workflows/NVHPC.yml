@@ -102,6 +102,10 @@ jobs:
     - name: Add custom problem matchers for annotations
       run: echo "::add-matcher::.github/problem-matchers.json"
 
+    # This patches a bug where ManyLinux doesn't generate buildnumber as git dir is owned by diff user
+    - name: Enable git safe-directory
+      run: git config --global --add safe.directory $GITHUB_WORKSPACE
+
     # Don't use select python when running in the container. deadsnakes ppa might be easiest way to add custom python?
     - name: Install python from deadsnakes + dependencies
       if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
@@ -114,7 +118,9 @@ jobs:
         # create and activate a venv + install python deps into it, to workaround a deadsnakes + pip quirk
         python${{ env.PYTHON }} -m venv .venv
         source .venv/bin/activate
-        echo PATH=$PATH >> $GITHUB_ENV
+        # manually add venv dirs to the path and env for later steps
+        echo "$(readlink -f ./venv/bin/)" >> $GITHUB_PATH
+        echo "VIRTUAL_ENV=$(readlink -f ./venv/)" >> $GITHUB_ENV
         python${{ env.PYTHON }} -m pip install --upgrade wheel build setuptools
 
     # these conditions need to be based on the version in the container, not the host. Might want tweaking, or just relies on the yml being correct.
