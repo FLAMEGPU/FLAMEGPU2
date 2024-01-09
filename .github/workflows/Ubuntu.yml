@@ -41,79 +41,16 @@ jobs:
             cuda_arch: "35"
             hostcxx: gcc-8
             os: ubuntu-20.04
-          # clang 14 is latest available in ubuntu 22.04's apt, rather
+          # newest cuda with newest clang on ubuntu 22.04
           - cuda: "12.3"
             cuda_arch: "50"
             hostcxx: clang-14 # 7-16
             os: ubuntu-22.04
-          - cuda: "12.2"
-            cuda_arch: "50"
-            hostcxx: clang-14 # 7-15
-            os: ubuntu-22.04
-          - cuda: "12.1"
-            cuda_arch: "50"
-            hostcxx: clang-14 # 15.0
-            os: ubuntu-22.04
+          # cuda 12.0 with oldest clang on ubuntu 22.04.
           - cuda: "12.0"
             cuda_arch: "50"
-            hostcxx: clang-14 # 14.0
+            hostcxx: clang-11 # 7-15
             os: ubuntu-22.04
-          - cuda: "12.0"
-            cuda_arch: "50"
-            hostcxx: clang-13 # 14.0
-            os: ubuntu-22.04
-          - cuda: "12.0"
-            cuda_arch: "50"
-            hostcxx: clang-12 # 14.0
-            os: ubuntu-22.04
-          - cuda: "12.0"
-            cuda_arch: "50"
-            hostcxx: clang-11 # 14.0
-            os: ubuntu-22.04
-          - cuda: "12.0"
-            cuda_arch: "50"
-            hostcxx: clang-10 # 14.0
-            os: ubuntu-22.04
-          - cuda: "12.0"
-            cuda_arch: "50"
-            hostcxx: clang-9 # 14.0
-            os: ubuntu-22.04
-          - cuda: "11.8"
-            cuda_arch: "35"
-            hostcxx: clang-13 # 14.0
-            os: ubuntu-22.04
-          - cuda: "11.7"
-            cuda_arch: "35"
-            hostcxx: clang-12 # 13.0
-            os: ubuntu-22.04
-          - cuda: "11.6"
-            cuda_arch: "35"
-            hostcxx: clang-12 # 12.0
-            os: ubuntu-20.04
-          - cuda: "11.5"
-            cuda_arch: "35"
-            hostcxx: clang-12 # 12.0
-            os: ubuntu-20.04
-          - cuda: "11.4"
-            cuda_arch: "35"
-            hostcxx: clang-11 # 11.0
-            os: ubuntu-20.04
-          - cuda: "11.3"
-            cuda_arch: "35"
-            hostcxx: clang-11 # 11.0
-            os: ubuntu-20.04
-          - cuda: "11.2"
-            cuda_arch: "35"
-            hostcxx: clang-9 # 9
-            os: ubuntu-20.04
-          - cuda: "11.1"
-            cuda_arch: "35"
-            hostcxx: clang-9 # 9
-            os: ubuntu-20.04
-          - cuda: "11.0"
-            cuda_arch: "35"
-            hostcxx: clang-9 # 9
-            os: ubuntu-20.04
         python: 
           - "3.12"
         config:
@@ -140,6 +77,19 @@ jobs:
               cuda: "11.0"
             config:
               name: "Beltsoff"
+          # Exclude beltsoff builds with clang's
+          - cudacxx:
+              hostcxx: "clang-14"
+            config:
+              name: "Beltsoff"
+          - cudacxx:
+              hostcxx: "clang-11"
+            config:
+              name: "Beltsoff"
+          # Exclude vis with older clang
+          - cudacxx:
+              hostcxx: "clang-11"
+            VISUALISTAION: "ON"
           # Exclude beltsoff vis builds to keep the matrix lighter.
           - config:
               name: "Beltsoff"
