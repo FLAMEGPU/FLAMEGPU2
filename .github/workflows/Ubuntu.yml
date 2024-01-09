@@ -60,11 +60,11 @@ jobs:
             os: ubuntu-22.04
           - cuda: "11.8"
             cuda_arch: "35"
-            hostcxx: clang-14 # 14.0
+            hostcxx: clang-13 # 14.0
             os: ubuntu-22.04
           - cuda: "11.7"
             cuda_arch: "35"
-            hostcxx: clang-13 # 13.0
+            hostcxx: clang-12 # 13.0
             os: ubuntu-22.04
           - cuda: "11.6"
             cuda_arch: "35"
