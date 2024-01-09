@@ -1,5 +1,5 @@
 # Minimum CMake version 3.18 for CUDA --std=c++17 
-cmake_minimum_required(VERSION 3.18...3.25 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18...3.28 FATAL_ERROR)
 
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
@@ -659,8 +659,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::cuda_driver)
 # If using cuda installed with older nvhpc, the location of curand won't implicitly be on the include directory path, so we must explicitly specify it.
 
 # do a find path for curand.h at the expected nvcc location. If it does not exist there, then try again where nvhpc places it, and if found add that to the include directories. Potentially this is not required for new enough nvhpc with gcc as the host compiler. 
-# Could also detect if this is neccesary via try compile, set a cache var, and if the cache var exists use that?
-message("CUDAToolkit_INCLUDE_DIRS ${CUDAToolkit_INCLUDE_DIRS}")
+# Could also detect if this is necessary via try compile, set a cache var, and if the cache var exists use that?
 find_path(curand_INCLUDE_DIRS
     NAMES
         curand.h
@@ -671,7 +670,7 @@ find_path(curand_INCLUDE_DIRS
 # if not found, probably an nvhpc install (or curand is not installed)
 if(NOT curand_INCLUDE_DIRS)
     # search for the (expected) split math library location
-    message(WARNING "curand not found at expected location, must be an nvhpc install.")
+    # message(WARNING "curand not found at expected location, must be an nvhpc install.")
     # if using nvhpc as the host compiler 
     if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
         file(REAL_PATH "${CUDAToolkit_LIBRARY_DIR}/../../../math_libs/${CUDAToolkit_VERSION_MAJOR}.${CUDAToolkit_VERSION_MINOR}" curand_split_search_dir)
@@ -679,7 +678,6 @@ if(NOT curand_INCLUDE_DIRS)
         message(FATAL_ERROR "@todo - use get filename component isntead.")
         get_filename_component(curand_split_search_dir "@todo" REALPATH)
     endif()
-    message("curand_split_search_dir ${curand_split_search_dir}")
     find_file(curand_header_abspath
         NAMES
             curand.h
@@ -692,39 +690,21 @@ if(NOT curand_INCLUDE_DIRS)
     if(NOT curand_header_abspath)
         message(FATAL_ERROR "${curand_header_abspath} not found @todo")
     else()
-        # if we found curand at the exepcted nvhpc installation location, we might have to resolve symlinks again, and return the parent directory
+        # if we found curand at the expected nvhpc installation location, we might have to resolve symlinks again, and return the parent directory. This could be simplified for 3.28+
+        # @todo - do we need to support the 3.18/3.19 path here? nvhpc is only supported for 3.20+, and we might add a lower minimum if it fixes things.
         if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
-        message("curand_header_abspath ${curand_header_abspath}")
+            message("curand_header_abspath ${curand_header_abspath}")
             file(REAL_PATH "${curand_header_abspath}" curand_header_abspath)
             cmake_path(GET curand_header_abspath PARENT_PATH curand_INCLUDE_DIRS)
         else()
             message(FATAL_ERROR "@todo - use get filename component isntead.")
             get_filename_component(curand_split_search_dir "@todo" REALPATH)
-        endif()
-
-        # message(FATAL_ERROR "curand_INCLUDE_DIRS ${curand_INCLUDE_DIRS}")
-        
+        endif()        
         target_include_directories(${PROJECT_NAME} PUBLIC ${curand_INCLUDE_DIRS})
         unset(curand_header_abspath)
     endif()
 endif()
 unset(curand_INCLUDE_DIRS)
-
-# @todo - correctly detect where nvcc came from, but when nvhpc is not the host compiler.
-# @todo - if using nvhpc and version is older, or using an nvcc install from within nvhpc?
-# if(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "22.3")
-#     target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::curand)
-#     message(FATAL_ERROR "older nvhpc, doi curand manually")
-# # else()
-#     # message(FATAL_ERROR "${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
-# endif()
-
-# If using cuda installed with older nvhpc, and nvhpc as the host compiler, need to ensure that curands repackaged include directory is on the include path. the CUDA::curand target does not do this.
-# if(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
-#     target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::curand)
-#     message(FATAL_ERROR "CUDAToolkit_INCLUDE_DIRS ${CUDAToolkit_INCLUDE_DIRS}")
-#     target_include_directories(${PROJECT_NAME} PUBLIC ${})
-# endif()
 
 if(FLAMEGPU_ENABLE_NVTX AND TARGET NVTX::nvtx)
     target_link_libraries(${PROJECT_NAME} PUBLIC NVTX::nvtx)

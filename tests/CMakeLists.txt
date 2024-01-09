@@ -1,5 +1,5 @@
 # Minimum CMake version 3.18 for CUDA --std=c++17 
-cmake_minimum_required(VERSION 3.18...3.25 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18...3.28 FATAL_ERROR)
 
 # Option to enable GTEST_DISCOVER if tests or tests_dev are enabled. Defaults to off due to runtime increase
 cmake_dependent_option(FLAMEGPU_ENABLE_GTEST_DISCOVER "Enable GTEST_DISCOVER for more detailed ctest output without -VV. This dramatically increases test suite runtime to CUDA context initialisation." OFF "FLAMEGPU_BUILD_TESTS OR FLAMEGPU_BUILD_TESTS_DEV" OFF)

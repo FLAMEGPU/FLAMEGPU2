@@ -1,6 +1,6 @@
 # Minimum CMake version 3.18 for CUDA --std=c++17
 # for multi-config generators, CMake must be >= 3.20 for python bindings due to use of generator expressions in outputs/byproducts
-cmake_minimum_required(VERSION 3.18...3.25 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18...3.28 FATAL_ERROR)
 
 # Defines multiple CMake targets and custom commands to build swig bindings, create a python wheel and (optionally) install it into a venv.
 # defines `pyflamegpu` - the user-facing target which creates the wheel.
