@@ -58,6 +58,26 @@ jobs:
             cuda_arch: "50"
             hostcxx: clang-14 # 14.0
             os: ubuntu-22.04
+          - cuda: "12.0"
+            cuda_arch: "50"
+            hostcxx: clang-13 # 14.0
+            os: ubuntu-22.04
+          - cuda: "12.0"
+            cuda_arch: "50"
+            hostcxx: clang-12 # 14.0
+            os: ubuntu-22.04
+          - cuda: "12.0"
+            cuda_arch: "50"
+            hostcxx: clang-11 # 14.0
+            os: ubuntu-22.04
+          - cuda: "12.0"
+            cuda_arch: "50"
+            hostcxx: clang-10 # 14.0
+            os: ubuntu-22.04
+          - cuda: "12.0"
+            cuda_arch: "50"
+            hostcxx: clang-9 # 14.0
+            os: ubuntu-22.04
           - cuda: "11.8"
             cuda_arch: "35"
             hostcxx: clang-13 # 14.0
