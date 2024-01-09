@@ -42,6 +42,21 @@ jobs:
             hostcxx: nvhpc-22.11
             os: ubuntu-22.04
             container: nvcr.io/nvidia/nvhpc:22.11-devel-cuda11.8-ubuntu22.04
+          - cuda: "11.7"
+            cuda_arch: "35"
+            hostcxx: nvhpc-22.9
+            os: ubuntu-22.04
+            container: nvcr.io/nvidia/nvhpc:22.9-devel-cuda11.7-ubuntu22.04
+          - cuda: "11.7"
+            cuda_arch: "35"
+            hostcxx: nvhpc-22.5
+            os: ubuntu-20.04
+            container: nvcr.io/nvidia/nvhpc:22.5-devel-cuda11.7-ubuntu20.04
+          - cuda: "11.6"
+            cuda_arch: "35"
+            hostcxx: nvhpc-22.3
+            os: ubuntu-20.04
+            container: nvcr.io/nvidia/nvhpc:22.3-devel-cuda11.6-ubuntu20.04
           - cuda: "11.5"
             cuda_arch: "35"
             hostcxx: nvhpc-21.11
