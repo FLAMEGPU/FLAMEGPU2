@@ -150,6 +150,10 @@ jobs:
     - name: Enable git safe-directory
       run: git config --global --add safe.directory $GITHUB_WORKSPACE
 
+    # Select the host compiler
+    - name: Set host compiler
+      run:  
+
     # Don't use select python when running in the container. deadsnakes ppa might be easiest way to add custom python?
     - name: Install python from deadsnakes + dependencies
       if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
@@ -219,6 +223,13 @@ jobs:
         tar -zxvf cmake-${{ env.CMAKE }}-linux-x86_64.tar.gz
         # Inner directory case changes in some releases, use find to get the right path
         echo "$(dirname $(find $(pwd) -wholename "*/bin/cmake" -exec echo {} \; -quit))" >> $GITHUB_PATH
+
+    - name: Ensure the correct host compiler is selected (gcc must be used for swig)
+      if: ${{ startsWith(env.HOSTCXX, 'nvhpc-') }}
+      run: |
+        echo "CC=$(which nvc)" >> $GITHUB_ENV
+        echo "CXX=$(which nvc++)" >> $GITHUB_ENV
+        echo "CUDAHOSTCXX=$(which nvc++)" >> $GITHUB_ENV
 
     - name: Configure cmake
       run: >
