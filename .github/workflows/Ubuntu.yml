@@ -89,7 +89,7 @@ jobs:
           # Exclude vis with older clang
           - cudacxx:
               hostcxx: "clang-11"
-            VISUALISTAION: "ON"
+            VISUALISATION: "ON"
           # Exclude beltsoff vis builds to keep the matrix lighter.
           - config:
               name: "Beltsoff"
