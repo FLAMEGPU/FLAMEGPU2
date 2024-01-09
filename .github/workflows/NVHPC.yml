@@ -118,6 +118,13 @@ jobs:
         # create and activate a venv + install python deps into it, to workaround a deadsnakes + pip quirk
         python${{ env.PYTHON }} -m venv .venv
         source .venv/bin/activate
+        echo "$(pwd)/.venv/bin"
+        echo "ls venv"
+        ls $(pwd)/.venv
+        echo "ls bin"
+        ls $(pwd)/.venv/bin
+        ls does-not-exist
+        
         # manually add venv dirs to the path and env for later steps
         echo "$(pwd)/.venv/bin" >> $GITHUB_PATH
         echo "VIRTUAL_ENV=$(pwd)/venv/" >> $GITHUB_ENV
