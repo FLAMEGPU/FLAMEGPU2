@@ -122,9 +122,6 @@ jobs:
         echo "$(pwd)/.venv/bin" >> $GITHUB_PATH
         echo "VIRTUAL_ENV=$(pwd)/venv/" >> $GITHUB_ENV
         python${{ env.PYTHON }} -m pip install --upgrade wheel build setuptools
-        which python3
-        python3 --version
-
 
     # these conditions need to be based on the version in the container, not the host. Might want tweaking, or just relies on the yml being correct.
     - name: Install Visualisation Dependencies
@@ -178,11 +175,6 @@ jobs:
         tar -zxvf cmake-${{ env.CMAKE }}-linux-x86_64.tar.gz
         # Inner directory case changes in some releases, use find to get the right path
         echo "$(dirname $(find $(pwd) -wholename "*/bin/cmake" -exec echo {} \; -quit))" >> $GITHUB_PATH
-
-    - name: py test
-      run: | 
-        which python3
-        python3 --version 
 
     - name: Configure cmake
       run: >
