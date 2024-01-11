@@ -260,7 +260,8 @@ jobs:
 
     - name: Build all remaining targets
       working-directory: ${{ env.BUILD_DIR }}
-      run: cmake --build . --target all --verbose -j `nproc`
+      run: cmake --build . --target all --verbose -j 1 
+      #`nproc`
 
       # Upload wheel artifacts to the job on GHA, with a short retention
     # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
