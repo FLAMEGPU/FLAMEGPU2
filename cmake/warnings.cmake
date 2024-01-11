@@ -119,6 +119,9 @@ if(NOT COMMAND flamegpu_suppress_some_compiler_warnings)
             # nvc++ etc do not appear to have an equivalent to -isystem. Rather than more pragma warning soup, just tone down warnings when using nvc++ as appropriate. 
             target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe --diag_suppress=code_is_unreachable>")
             target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:SHELL:--diag_suppress=code_is_unreachable>")
+            # older nvhpc as host compiler warns for intentional declared but never referenced parameters
+            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:SHELL:-Wno-unused-but-set-parameter>")
+            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-unused-but-set-parameter>")
         else()
             # Linux specific warning suppressions
         endif()
