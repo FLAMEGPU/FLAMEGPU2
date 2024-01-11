@@ -57,10 +57,14 @@ if(NOT COMMAND flamegpu_set_high_warning_level)
                 target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--Wreorder>")
             endif()
         else()
-            # Assume using GCC/Clang which Wall is relatively sane for. 
-            target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wall$<COMMA>-Wsign-compare>")
+            # Assume using GCC/Clang which Wall is relatively sane for.
+            target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wall>")
             target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wall>")
-            target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wsign-compare>")
+            # Sign compare is not valid with older nvhpc's
+            if(NOT (CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "21.11")
+                target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wsign-compare>")
+                target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wsign-compare>")
+            endif()
             # Reorder errors for device code are caused by some cub/thrust versions (< 2.1.0?), but can be suppressed by pragmas successfully in 11.3+ under linux, but not for nvhpc
             if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.3.0 AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
                 target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--Wreorder>")
