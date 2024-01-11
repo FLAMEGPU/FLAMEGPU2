@@ -69,6 +69,11 @@ if(NOT COMMAND flamegpu_set_high_warning_level)
             # Disabled, as cpplint occasionally disagrees with gcc concerning override
             # target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wsuggest-override>")
             # target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wsuggest-override>")
+
+            # if nvhpc, add display error numbers to the host com
+            if(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
+                target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:SHELL:--display_error_number>")
+            endif()
         endif()
         # Generic options regardless of platform/host compiler:
         # Ensure NVCC outputs warning numbers
