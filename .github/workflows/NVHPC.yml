@@ -253,6 +253,7 @@ jobs:
         -DPython_FIND_STRATEGY=LOCATION
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
         -DFLAMEGPU_ENABLE_NVTX="ON"
+        -DCMAKE_CUDA_FLAGS="-allow-unsupported-compiler"
     
     - name: Log Configure Erorrs
       if: ${{ failure() && steps.configure.conclusion == 'failure' }}
