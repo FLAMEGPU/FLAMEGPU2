@@ -693,7 +693,6 @@ if(NOT curand_INCLUDE_DIRS)
         # if we found curand at the expected nvhpc installation location, we might have to resolve symlinks again, and return the parent directory. This could be simplified for 3.28+
         # @todo - do we need to support the 3.18/3.19 path here? nvhpc is only supported for 3.20+, and we might add a lower minimum if it fixes things.
         if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
-            message("curand_header_abspath ${curand_header_abspath}")
             file(REAL_PATH "${curand_header_abspath}" curand_header_abspath)
             cmake_path(GET curand_header_abspath PARENT_PATH curand_INCLUDE_DIRS)
         else()
