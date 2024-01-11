@@ -51,6 +51,10 @@ jobs:
             cuda_arch: "50"
             hostcxx: clang-8 # 7-15
             os: ubuntu-20.04
+          - cuda: "11.8"
+            cuda_arch: "50"
+            hostcxx: clang-8 # 7-15
+            os: ubuntu-20.04
         python: 
           - "3.12"
         config:
