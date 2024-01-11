@@ -241,6 +241,7 @@ jobs:
       run: git config --global --add safe.directory $GITHUB_WORKSPACE
 
     - name: Configure cmake
+      id: configure
       run: >
         cmake . -B "${{ env.BUILD_DIR }}"
         -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
@@ -254,6 +255,15 @@ jobs:
         -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
         -DFLAMEGPU_ENABLE_NVTX="ON"
+        - name: Log Configure Erorrs
+        
+    - name: Log Configure Erorrs
+      if: ${{ success() || (failure() && steps.configure.conclusion == 'failure') }}
+      run: |
+        echo "${{ env.BUILD_DIR }}/CMakeFiles/CMakeOutput.log:"
+        cat ${{ env.BUILD_DIR }}/CMakeFiles/CMakeOutput.log || true
+        echo "${{ env.BUILD_DIR }}/CMakeFiles/CMakeError.log:"
+        cat ${{ env.BUILD_DIR }}/CMakeFiles/CMakeError.log || true
 
     - name: Build static library
       working-directory: ${{ env.BUILD_DIR }}
