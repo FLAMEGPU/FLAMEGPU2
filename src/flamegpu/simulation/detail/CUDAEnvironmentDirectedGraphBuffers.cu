@@ -429,7 +429,7 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
             }
             {  // Build the map
                 const auto& v_id_b = vertex_buffers.at(ID_VARIABLE_NAME);
-                gpuErrchk(cudaMemsetAsync(d_vertex_index_map, 0xffffffff, ID_RANGE * sizeof(unsigned int), stream));
+                gpuErrchk(cudaMemsetAsync(d_vertex_index_map, 0xffff, ID_RANGE * sizeof(unsigned int), stream));
                 gpuErrchk(cudaMemsetAsync(d_pbm_swap, 0, 3 * sizeof(unsigned int), stream));  // We will use spare pbm_swap to count errors, save allocating more memory
                 const unsigned int BLOCK_SZ = 512;
                 const unsigned int BLOCK_CT = static_cast<unsigned int>(ceil(vertex_count / static_cast<float>(BLOCK_SZ)));
@@ -478,7 +478,7 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
             cub_temp.resize(temp_req);
             gpuErrchk(cub::DeviceRadixSort::SortPairs(cub_temp.getPtr(), cub_temp.getSize(), d_keys, d_keys_swap, d_vals, d_vals_swap, edge_count, 0, sizeof(uint64_t) * 8, stream));
             // Build PBM (For vertices with edges)
-            gpuErrchk(cudaMemset(d_pbm, 0xffffffff, (vertex_count + 1) * sizeof(unsigned int)));
+            gpuErrchk(cudaMemset(d_pbm, 0xffff, (vertex_count + 1) * sizeof(unsigned int)));
             gpuErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(&blockSize, findBinStart, 32, 0));  // Randomly 32
             gridSize = (edge_count + blockSize - 1) / blockSize;  // Round up according to array size
             findBinStart << <gridSize, blockSize, 0, stream >> > (d_pbm, d_keys_swap, edge_count, vertex_count);
@@ -532,7 +532,7 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
             auto& cub_temp = scatter.CubTemp(streamID);
             gpuErrchk(cub::DeviceRadixSort::SortPairs(cub_temp.getPtr(), cub_temp.getSize(), d_keys, d_keys_swap, d_vals, d_vals_swap, edge_count, 0, sizeof(uint64_t) * 8, stream));
             // Build inverted PBM (For vertices with edges)
-            gpuErrchk(cudaMemset(d_ipbm, 0xffffffff, (vertex_count + 1) * sizeof(unsigned int)));
+            gpuErrchk(cudaMemset(d_ipbm, 0xffff, (vertex_count + 1) * sizeof(unsigned int)));
             gpuErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(&blockSize, findBinStart, 32, 0));  // Randomly 32
             gridSize = (edge_count + blockSize - 1) / blockSize;  // Round up according to array size
             findBinStart << <gridSize, blockSize, 0, stream >> > (d_ipbm, d_keys_swap, edge_count, vertex_count);
