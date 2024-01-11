@@ -119,9 +119,12 @@ if(NOT COMMAND flamegpu_suppress_some_compiler_warnings)
             # nvc++ etc do not appear to have an equivalent to -isystem. Rather than more pragma warning soup, just tone down warnings when using nvc++ as appropriate. 
             target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe --diag_suppress=code_is_unreachable>")
             target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:SHELL:--diag_suppress=code_is_unreachable>")
-            # older nvhpc as host compiler warns for intentional declared but never referenced parameters
-            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:SHELL:-Wno-unused-but-set-parameter>")
-            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-unused-but-set-parameter>")
+            # older nvhpc as host compiler warns for intentional declared but never referenced parameters. only supported from 22.7/9
+            message(FATAL_ERROR "${CMAKE_CXX_COMPILER_VERSION}")
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "22.7")
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:SHELL:-Wno-unused-but-set-parameter>")
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-unused-but-set-parameter>")
+            endif()
         else()
             # Linux specific warning suppressions
         endif()
