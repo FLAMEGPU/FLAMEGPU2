@@ -255,9 +255,8 @@ jobs:
         -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
         -DFLAMEGPU_ENABLE_NVTX="ON"
-        - name: Log Configure Erorrs
         
-    - name: Log Configure Erorrs
+    - name: Log Configure Errors
       if: ${{ success() || (failure() && steps.configure.conclusion == 'failure') }}
       run: |
         echo "${{ env.BUILD_DIR }}/CMakeFiles/CMakeOutput.log:"
