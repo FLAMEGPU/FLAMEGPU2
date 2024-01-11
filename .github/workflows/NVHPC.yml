@@ -257,10 +257,10 @@ jobs:
     - name: Log Configure Erorrs
       if: ${{ failure() && steps.configure.conclusion == 'failure' }}
       run: |
-        echo "CMakeOutput.log:"
-        cat ${{ env.BUILD_DIR }}/CMakeFiles/CMakeOutput.log
-        echo "CMakeError.log:"
-        cat ${{ env.BUILD_DIR }}/CMakeFiles/CMakeError.log
+        echo "${{ env.BUILD_DIR }}/CMakeFiles/CMakeOutput.log:"
+        cat ${{ env.BUILD_DIR }}/CMakeFiles/CMakeOutput.log || true
+        echo "${{ env.BUILD_DIR }}/CMakeFiles/CMakeError.log:"
+        cat ${{ env.BUILD_DIR }}/CMakeFiles/CMakeError.log || true
         
     - name: Build static library
       working-directory: ${{ env.BUILD_DIR }}
