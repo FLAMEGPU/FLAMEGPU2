@@ -238,6 +238,7 @@ jobs:
         echo "CUDAHOSTCXX=$(which nvc++)" >> $GITHUB_ENV
 
     - name: Configure cmake
+      id: configure
       run: >
         cmake . -B "${{ env.BUILD_DIR }}"
         -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
@@ -252,6 +253,14 @@ jobs:
         -DPython_FIND_STRATEGY=LOCATION
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
         -DFLAMEGPU_ENABLE_NVTX="ON"
+    
+    - name: Log Configure Erorrs
+      if: ${{ failure() && steps.configure.conclusion == 'failure' }}
+      run: |
+        echo "CMakeOutput.log:"
+        cat ${{ env.BUILD_DIR }}/CMakeFiles/CMakeOutput.log
+        echo "CMakeError.log:"
+        cat ${{ env.BUILD_DIR }}/CMakeFiles/CMakeError.log
         
     - name: Build static library
       working-directory: ${{ env.BUILD_DIR }}
