@@ -132,6 +132,10 @@ if(NOT COMMAND flamegpu_suppress_some_compiler_warnings)
             if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "22.7")
                 target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:SHELL:-Wno-unused-but-set-parameter>")
                 target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-unused-but-set-parameter>")
+            else()
+                # parameter "x" was declared but never referenced
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe --diag_suppress=177>")
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:SHELL:--diag_suppress=177>")
             endif()
         else()
             # Linux specific warning suppressions
