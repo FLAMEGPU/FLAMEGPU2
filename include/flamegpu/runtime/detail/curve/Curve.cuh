@@ -4,7 +4,7 @@
 #ifndef __CUDACC_RTC__
 #include <string>
 #endif
-/**
+/*
  * The main cuRVE header file for the CUDA Runtime Variable Environment (cuRVE)
  * Based off the following article http:// www.gamasutra.com/view/news/127915/InDepth_Quasi_CompileTime_String_Hashing.php
  * This file contains definitions common to HostCurve and DeviceCurve

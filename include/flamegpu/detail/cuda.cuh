@@ -1,11 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_DETAIL_CUDA_CUH_
 #define INCLUDE_FLAMEGPU_DETAIL_CUDA_CUH_
 
-/**
- * Collection of cuda related utility methods for internal use.
- * Mostly to allow for graceful handling of device resets when cuda is called by dtors
- * @todo - we should check for unified addressing support prior to use of cudaPointerGetAttributes, but it should be available for all valide flamegpu targets (x64 linux and windows). Tegra's might be an edge case.
- */
 #include <cuda_runtime.h>
 #include <cuda.h>
 #include <limits>
@@ -13,6 +8,12 @@
 
 namespace flamegpu {
 namespace detail {
+
+/**
+ * Collection of cuda related utility methods for internal use.
+ * Mostly to allow for graceful handling of device resets when cuda is called by dtors
+ * @todo - we should check for unified addressing support prior to use of cudaPointerGetAttributes, but it should be available for all valid flamegpu targets (x64 linux and windows). Tegra's might be an edge case.
+ */
 namespace cuda {
 
 /**

@@ -12,6 +12,13 @@
 #include <glm/glm.hpp>
 #endif
 
+/**
+ * @namespace flamegpu
+ * The flamegpu namespace containing all namespace'd elements of the flamegpu api.
+ *
+ * The inner detail namespace and it's members are implementation details not considered part of the public facing API and may change at any time.
+ */
+
 // include all host API classes (top level header from each module)
 #include "flamegpu/version.h"
 #include "flamegpu/runtime/HostAPI.h"

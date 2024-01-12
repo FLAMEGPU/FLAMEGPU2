@@ -3,12 +3,6 @@
 
 #include <cstdint>
 
-/**
- * Utility namespace for handling of NVTX profiling markers/ranges, uses if constexpr to avoid runtime cost when disabled
- *
- * Macro `FLAMEGPU_USE_NVTX` is defined via CMake to set the member constexpr
- */
-
 // If NVTX is enabled, include header, defined namespace / class and macros.
 #if defined(FLAMEGPU_USE_NVTX)
     // Include the appropriate header if enabled
@@ -27,6 +21,12 @@
 
 namespace flamegpu {
 namespace util {
+
+/**
+ * Utility namespace for handling of NVTX profiling markers/ranges, uses if constexpr to avoid runtime cost when disabled
+ *
+ * Macro `FLAMEGPU_USE_NVTX` is defined via CMake to set the member constexpr
+ */
 namespace nvtx {
 
 /**

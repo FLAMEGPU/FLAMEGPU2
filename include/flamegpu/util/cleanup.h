@@ -1,8 +1,8 @@
 #ifndef INCLUDE_FLAMEGPU_UTIL_CLEANUP_H_
 #define INCLUDE_FLAMEGPU_UTIL_CLEANUP_H_
 
-/**
- * Prodvides a utility method to cleanup after flamegpu. Currently for the only implementation (CUDA) this resets all devices.
+/*
+ * Provides a utility method to cleanup after flamegpu. Currently for the only implementation (CUDA) this resets all devices.
  */
 
 namespace flamegpu {
