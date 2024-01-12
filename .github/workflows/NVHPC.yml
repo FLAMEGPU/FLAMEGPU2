@@ -128,7 +128,7 @@ jobs:
           # - "ON"
           - "OFF"
         cmake:
-          - "3.20.0"
+          - "3.27.0"
 
     # Name the job based on matrix/env options
     name: "build (${{ matrix.cudacxx.hostcxx }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
