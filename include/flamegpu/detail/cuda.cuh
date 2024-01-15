@@ -3,6 +3,7 @@
 
 #include <cuda_runtime.h>
 #include <cuda.h>
+#include <cstdint>
 #include <limits>
 #include "flamegpu/exception/FLAMEGPUException.h"
 

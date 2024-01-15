@@ -14,7 +14,7 @@ namespace flamegpu {
 CAgentFunctionDescription::CAgentFunctionDescription(std::shared_ptr<AgentFunctionData> data)
     : function(std::move(data)) { }
 CAgentFunctionDescription::CAgentFunctionDescription(std::shared_ptr<const AgentFunctionData> data)
-    : function(std::move(std::const_pointer_cast<AgentFunctionData>(data))) { }
+    : function(std::const_pointer_cast<AgentFunctionData>(data)) { }
 
 bool CAgentFunctionDescription::operator==(const CAgentFunctionDescription& rhs) const {
     return *this->function == *rhs.function;  // Compare content is functionally the same

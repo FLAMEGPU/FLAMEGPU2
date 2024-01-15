@@ -115,8 +115,18 @@ if(NOT COMMAND flamegpu_suppress_some_compiler_warnings)
             if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.6.0)
                 target_compile_definitions(${SSCW_TARGET} PRIVATE "__CDPRT_SUPPRESS_SYNC_DEPRECATION_WARNING")
             endif()
-        else()
-            # Linux specific warning suppressions
+        elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+            # Suppress unused function warnigns raised by clang on some vis headers
+            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-unused-function>")
+            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wno-unused-function>")
+            # Suppress unused-private-field warnings on Clang, which are falsely emitted in some cases where a private member is used in device code (i.e. ArrayMessage)
+            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-unused-private-field>")
+            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wno-unused-private-field>")
+            # Suppress unused-but-set-variable which triggers on some device code, clang 13+
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 13.0)
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-unused-but-set-variable>")
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wno-unused-but-set-variable>")
+            endif()
         endif()
         # Generic OS/host compiler warning suppressions
         # Ensure NVCC outputs warning numbers
