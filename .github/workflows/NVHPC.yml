@@ -1,0 +1,295 @@
+# Build using nvhpc installs of CUDA, using containers so doesn't fit in the ubuntu workflow.
+name: NVHPC
+
+# Run on branch push events (i.e. not tag pushes) and on pull requests
+on:
+  # Branch pushes that do not only modify other workflow files
+  push:
+    branches:
+      - '**'
+    paths:
+      - "**"
+      - "!.github/**"
+      - ".github/workflows/NVHPC.yml"
+  # Disabled for now. See https://github.com/FLAMEGPU/FLAMEGPU2/pull/644
+  # pull_request:
+  # Allow manual invocation.
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+# A single job, which builds manylinux2014 wheels, which ships with GCC 10.2.1 at the time of writing. If this bumps to unpatched 10.3 we might have issues w/ cuda. 
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # Run steps inside a nvhpc container
+    container: ${{ matrix.cudacxx.container}}
+    strategy:
+      fail-fast: false
+      # Multiplicative build matrix
+      # optional exclude: can be partial, include: must be specific
+      matrix:
+        cudacxx:
+          - cuda: "12.3"
+            cuda_arch: "50"
+            hostcxx: nvhpc-23.11
+            os: ubuntu-22.04
+            container: nvcr.io/nvidia/nvhpc:23.11-devel-cuda12.3-ubuntu22.04
+          - cuda: "11.8"
+            cuda_arch: "35"
+            hostcxx: gcc
+            os: ubuntu-22.04
+            container: nvcr.io/nvidia/nvhpc:22.11-devel-cuda11.8-ubuntu22.04
+          - cuda: "11.8"
+            cuda_arch: "35"
+            hostcxx: nvhpc-22.11
+            os: ubuntu-22.04
+            container: nvcr.io/nvidia/nvhpc:22.11-devel-cuda11.8-ubuntu22.04
+          - cuda: "11.7"
+            cuda_arch: "35"
+            hostcxx: nvhpc-22.9
+            os: ubuntu-22.04
+            container: nvcr.io/nvidia/nvhpc:22.9-devel-cuda11.7-ubuntu22.04
+          - cuda: "11.7"
+            cuda_arch: "35"
+            hostcxx: nvhpc-22.7
+            os: ubuntu-22.04
+            container: nvcr.io/nvidia/nvhpc:22.7-devel-cuda11.7-ubuntu22.04
+          - cuda: "11.7"
+            cuda_arch: "35"
+            hostcxx: nvhpc-22.5
+            os: ubuntu-20.04
+            container: nvcr.io/nvidia/nvhpc:22.5-devel-cuda11.7-ubuntu20.04
+          - cuda: "11.6"
+            cuda_arch: "35"
+            hostcxx: nvhpc-22.3
+            os: ubuntu-20.04
+            container: nvcr.io/nvidia/nvhpc:22.3-devel-cuda11.6-ubuntu20.04
+          - cuda: "11.6"
+            cuda_arch: "35"
+            hostcxx: nvhpc-22.2
+            os: ubuntu-20.04
+            container: nvcr.io/nvidia/nvhpc:22.2-devel-cuda11.6-ubuntu20.04
+          - cuda: "11.5"
+            cuda_arch: "35"
+            hostcxx: nvhpc-22.1
+            os: ubuntu-20.04
+            container: nvcr.io/nvidia/nvhpc:22.1-devel-cuda11.5-ubuntu20.04
+          - cuda: "11.5"
+            cuda_arch: "35"
+            hostcxx: nvhpc-21.11
+            os: ubuntu-20.04
+            container: nvcr.io/nvidia/nvhpc:21.11-devel-cuda11.5-ubuntu20.04
+          - cuda: "11.3"
+            cuda_arch: "35"
+            hostcxx: nvhpc-21.5
+            os: ubuntu-20.04
+            container: nvcr.io/nvidia/nvhpc:21.5-devel-cuda11.3-ubuntu20.04
+          - cuda: "11.2"
+            cuda_arch: "35"
+            hostcxx: nvhpc-21.1
+            os: ubuntu-20.04
+            container: nvcr.io/nvidia/nvhpc:21.1-devel-cuda11.2-ubuntu20.04
+          - cuda: "11.1"
+            cuda_arch: "35"
+            hostcxx: nvhpc-20.11
+            os: ubuntu-20.04
+            container: nvcr.io/nvidia/nvhpc:20.11-devel-cuda11.1-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:23.11-devel-cuda12.3-ubuntu22.04
+            # nvcr.io/nvidia/nvhpc:23.9-devel-cuda12.2-ubuntu22.04
+            # nvcr.io/nvidia/nvhpc:23.7-devel-cuda12.2-ubuntu22.04
+            # nvcr.io/nvidia/nvhpc:23.5-devel-cuda12.1-ubuntu22.04
+            # nvcr.io/nvidia/nvhpc:23.3-devel-cuda12.0-ubuntu22.04
+            # nvcr.io/nvidia/nvhpc:23.1-devel-cuda12.0-ubuntu22.04
+            # nvcr.io/nvidia/nvhpc:22.11-devel-cuda11.8-ubuntu22.04
+            # nvcr.io/nvidia/nvhpc:22.9-devel-cuda11.7-ubuntu22.04
+            # nvcr.io/nvidia/nvhpc:22.7-devel-cuda11.7-ubuntu22.04
+            # nvcr.io/nvidia/nvhpc:22.5-devel-cuda11.7-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:22.3-devel-cuda11.6-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:22.2-devel-cuda11.6-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:22.1-devel-cuda11.5-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:21.11-devel-cuda11.5-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:21.9-devel-cuda11.4-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:21.7-devel-cuda11.4-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:21.5-devel-cuda11.3-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:21.3-devel-cuda11.2-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:21.2-devel-cuda11.2-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:21.1-devel-cuda11.2-ubuntu20.04
+            # nvcr.io/nvidia/nvhpc:20.11-devel-cuda11.1-ubuntu20.04
+        python:
+          - "3.12"
+        config:
+          - name: "Release"
+            config: "Release"
+            SEATBELTS: "ON"
+        VISUALISATION: 
+          # - "ON"
+          - "OFF"
+        cmake:
+          - "3.27.0"
+
+    # Name the job based on matrix/env options
+    name: "build (${{ matrix.cudacxx.hostcxx }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
+
+    env:
+      # Define constants
+      BUILD_DIR: "build"
+      FLAMEGPU_BUILD_TESTS: "OFF"
+      # Conditional based on matrix via awkward almost ternary
+      FLAMEGPU_BUILD_PYTHON: ${{ fromJSON('{true:"ON",false:"OFF"}')[matrix.python != ''] }}
+      # Port matrix options to environment, for more portability.
+      CUDA: ${{ matrix.cudacxx.cuda }}
+      CUDA_ARCH: ${{ matrix.cudacxx.cuda_arch }}
+      HOSTCXX: ${{ matrix.cudacxx.hostcxx }}
+      OS: ${{ matrix.cudacxx.os }}
+      CONFIG: ${{ matrix.config.config }}
+      FLAMEGPU_SEATBELTS: ${{ matrix.config.SEATBELTS }}
+      PYTHON: ${{ matrix.python}}
+      VISUALISATION: ${{ matrix.VISUALISATION }}
+      CMAKE: ${{ matrix.cmake }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Add custom problem matchers for annotations
+      run: echo "::add-matcher::.github/problem-matchers.json"
+
+    # This patches a bug where ManyLinux doesn't generate buildnumber as git dir is owned by diff user
+    - name: Enable git safe-directory
+      run: git config --global --add safe.directory $GITHUB_WORKSPACE
+
+    # Don't use select python when running in the container. deadsnakes ppa might be easiest way to add custom python?
+    - name: Install python from deadsnakes + dependencies
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
+      run: |
+        apt-get update
+        apt-get install -y software-properties-common
+        add-apt-repository -y ppa:deadsnakes/ppa
+        apt-get update
+        apt-get install -y python${{ env.PYTHON }} python${{ env.PYTHON }}-venv python${{ env.PYTHON }}-distutils python${{ env.PYTHON }}-dev python3-pip 
+        # create and activate a venv + install python deps into it, to workaround a deadsnakes + pip quirk
+        python${{ env.PYTHON }} -m venv .venv
+        source .venv/bin/activate        
+        # manually add venv dirs to the path and env for later steps
+        echo "$(pwd)/.venv/bin" >> $GITHUB_PATH
+        echo "VIRTUAL_ENV=$(pwd)/venv/" >> $GITHUB_ENV
+        python${{ env.PYTHON }} -m pip install --upgrade wheel build setuptools
+
+    # these conditions need to be based on the version in the container, not the host. Might want tweaking, or just relies on the yml being correct.
+    - name: Install Visualisation Dependencies
+      if: ${{ startswith(env.OS, 'ubuntu') && env.VISUALISATION == 'ON' }}
+      run: |
+        # Install ubuntu-20.04 packages
+        apt-get update
+        if [ "$OS" == 'ubuntu-22.04' ]; then 
+            apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
+        fi
+        if [ "$OS" == 'ubuntu-20.04' ]; then 
+            apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
+        fi
+        # Install Ubuntu 18.04 packages
+        if [ "$OS" == 'ubuntu-18.04' ]; then 
+             apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype6-dev libgl1-mesa-dev
+        fi
+
+    # @todo - enforce that $OS is correct. maybe parse lsb_release instead? 
+    # @tood - doubel check this builds with gcc and not nvhpc within the container
+    - name: Install Swig >= 4.0.2
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
+      run: |
+        apt-get update
+        # Remove existing swig install, so CMake finds the correct swig
+        if [ "$OS" == 'ubuntu-20.04' ]; then 
+          apt-get remove -y swig swig4.0
+        fi
+        # Install Ubuntu 18.04 packages
+        if [ "$OS" == 'ubuntu-18.04' ]; then 
+          apt-get remove -y swig
+        fi
+        # Install additional apt-based dependencies required to build swig 4.0.2
+        apt-get install -y bison libpcre3-dev libpcre2-dev
+        # Create a local directory to build swig in.
+        mkdir -p swig-from-source && cd swig-from-source
+        # Install SWIG building from source dependencies
+        wget https://github.com/swig/swig/archive/refs/tags/v4.0.2.tar.gz
+        tar -zxf v4.0.2.tar.gz
+        cd swig-4.0.2/
+        ./autogen.sh
+        ./configure
+        make
+        make install
+
+    - name: Install cmake from GitHub Releases
+      if: ${{ env.CMAKE != '' && env.CMAKE != 'default' }}
+      working-directory: ${{ runner.temp }}
+      run: |
+        wget -q https://github.com/Kitware/CMake/releases/download/v${{ env.CMAKE }}/cmake-${{ env.CMAKE }}-linux-x86_64.tar.gz
+        tar -zxvf cmake-${{ env.CMAKE }}-linux-x86_64.tar.gz
+        # Inner directory case changes in some releases, use find to get the right path
+        echo "$(dirname $(find $(pwd) -wholename "*/bin/cmake" -exec echo {} \; -quit))" >> $GITHUB_PATH
+
+    - name: Ensure the correct host compiler is selected (gcc must be used for swig)
+      if: ${{ startsWith(env.HOSTCXX, 'nvhpc-') }}
+      run: |
+        echo "CC=$(which nvc)" >> $GITHUB_ENV
+        echo "CXX=$(which nvc++)" >> $GITHUB_ENV
+        echo "CUDAHOSTCXX=$(which nvc++)" >> $GITHUB_ENV
+
+    - name: Configure cmake
+      id: configure
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}"
+        -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
+        -Werror=dev
+        -DCMAKE_WARN_DEPRECATED="OFF" 
+        -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
+        -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
+        -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
+        -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}"
+        -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
+        -DPython3_ROOT_DIR="$(pwd)/.venv/bin" 
+        -DPython_FIND_STRATEGY=LOCATION
+        -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
+        -DFLAMEGPU_ENABLE_NVTX="ON"
+        -DCMAKE_CUDA_FLAGS="-allow-unsupported-compiler"
+    
+    - name: Log Configure Erorrs
+      if: ${{ failure() && steps.configure.conclusion == 'failure' }}
+      run: |
+        echo "${{ env.BUILD_DIR }}/CMakeFiles/CMakeOutput.log:"
+        cat ${{ env.BUILD_DIR }}/CMakeFiles/CMakeOutput.log || true
+        echo "${{ env.BUILD_DIR }}/CMakeFiles/CMakeError.log:"
+        cat ${{ env.BUILD_DIR }}/CMakeFiles/CMakeError.log || true
+        
+    - name: Build static library
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target flamegpu --verbose -j `nproc`
+
+
+    - name: Build python wheel
+      if: ${{ env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target pyflamegpu --verbose -j `nproc`
+
+    - name: Build tests
+      if: ${{ env.FLAMEGPU_BUILD_TESTS == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target tests --verbose -j `nproc`
+
+    - name: Build all remaining targets
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target all --verbose -j 1 
+      #`nproc`
+
+      # Upload wheel artifacts to the job on GHA, with a short retention
+    # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
+    # - name: Upload Wheel Artifacts
+    #   if: ${{env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: ${{ env.ARTIFACT_NAME }}
+    #     path: ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/*.whl
+    #     if-no-files-found: error
+    #     retention-days: 5

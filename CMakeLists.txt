@@ -1,5 +1,5 @@
 # Minimum CMake version 3.18 for CUDA --std=c++17 
-cmake_minimum_required(VERSION 3.18...3.25 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18...3.28 FATAL_ERROR)
 
 # Include and call some CMake to record initial state of CMAKE_CUDA_ARCHITECTURES for later use
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/CUDAArchitectures.cmake)

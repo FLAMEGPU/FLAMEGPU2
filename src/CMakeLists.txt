@@ -1,5 +1,5 @@
 # Minimum CMake version 3.18 for CUDA --std=c++17 
-cmake_minimum_required(VERSION 3.18...3.25 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18...3.28 FATAL_ERROR)
 
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
@@ -656,6 +656,55 @@ target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::nvrtc)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::cuda_driver)
 
+# If using cuda installed with older nvhpc, the location of curand won't implicitly be on the include directory path, so we must explicitly specify it.
+
+# do a find path for curand.h at the expected nvcc location. If it does not exist there, then try again where nvhpc places it, and if found add that to the include directories. Potentially this is not required for new enough nvhpc with gcc as the host compiler. 
+# Could also detect if this is necessary via try compile, set a cache var, and if the cache var exists use that?
+find_path(curand_INCLUDE_DIRS
+    NAMES
+        curand.h
+    PATHS
+        ${CUDAToolkit_INCLUDE_DIRS}
+    NO_CACHE
+)
+# if not found, probably an nvhpc install (or curand is not installed)
+if(NOT curand_INCLUDE_DIRS)
+    # search for the (expected) split math library location
+    # message(WARNING "curand not found at expected location, must be an nvhpc install.")
+    # if using nvhpc as the host compiler 
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
+        file(REAL_PATH "${CUDAToolkit_LIBRARY_DIR}/../../../math_libs/${CUDAToolkit_VERSION_MAJOR}.${CUDAToolkit_VERSION_MINOR}" curand_split_search_dir)
+    else()
+        message(FATAL_ERROR "@todo - use get filename component isntead.")
+        get_filename_component(curand_split_search_dir "@todo" REALPATH)
+    endif()
+    find_file(curand_header_abspath
+        NAMES
+            curand.h
+            include/curand.h
+        PATHS
+            ${curand_split_search_dir}
+        NO_CACHE
+    )
+    # if we still don't have curand, we probably can't continue so error.
+    if(NOT curand_header_abspath)
+        message(FATAL_ERROR "${curand_header_abspath} not found @todo")
+    else()
+        # if we found curand at the expected nvhpc installation location, we might have to resolve symlinks again, and return the parent directory. This could be simplified for 3.28+
+        # @todo - do we need to support the 3.18/3.19 path here? nvhpc is only supported for 3.20+, and we might add a lower minimum if it fixes things.
+        if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
+            file(REAL_PATH "${curand_header_abspath}" curand_header_abspath)
+            cmake_path(GET curand_header_abspath PARENT_PATH curand_INCLUDE_DIRS)
+        else()
+            message(FATAL_ERROR "@todo - use get filename component isntead.")
+            get_filename_component(curand_split_search_dir "@todo" REALPATH)
+        endif()        
+        target_include_directories(${PROJECT_NAME} PUBLIC ${curand_INCLUDE_DIRS})
+        unset(curand_header_abspath)
+    endif()
+endif()
+unset(curand_INCLUDE_DIRS)
+
 if(FLAMEGPU_ENABLE_NVTX AND TARGET NVTX::nvtx)
     target_link_libraries(${PROJECT_NAME} PUBLIC NVTX::nvtx)
     # Get the version to set a definition value 
@@ -674,8 +723,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC Jitify::jitify)
 # jitify is included in public headers, so this definiition must be public too.
 target_compile_definitions(${PROJECT_NAME} PUBLIC "JITIFY_PRINT_LOG")
 
-# If gcc < 9, needs to link against stdc++fs
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
+# If gcc < 9, needs to link against stdc++fs. If using NVHPC,this is required if the underlying toolchain is also < 9. @todo - need to detect gcc version when nvhpc is the host compiler somehow...
+if ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0) OR (CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC"))
     target_link_libraries(${PROJECT_NAME} PUBLIC stdc++fs)
 endif()
 

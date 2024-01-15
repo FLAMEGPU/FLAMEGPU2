@@ -57,18 +57,27 @@ if(NOT COMMAND flamegpu_set_high_warning_level)
                 target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--Wreorder>")
             endif()
         else()
-            # Assume using GCC/Clang which Wall is relatively sane for. 
-            target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wall$<COMMA>-Wsign-compare>")
+            # Assume using GCC/Clang which Wall is relatively sane for.
+            target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wall>")
             target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wall>")
-            target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wsign-compare>")
-            # Reorder errors for device code are caused by some cub/thrust versions (< 2.1.0?), but can be suppressed by pragmas successfully in 11.3+ under linux
-            if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.3.0)
+            # Sign compare is not valid with older nvhpc's
+            if(NOT (CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "21.11"))
+                target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wsign-compare>")
+                target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wsign-compare>")
+            endif()
+            # Reorder errors for device code are caused by some cub/thrust versions (< 2.1.0?), but can be suppressed by pragmas successfully in 11.3+ under linux, but not for nvhpc
+            if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.3.0 AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
                 target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--Wreorder>")
             endif()
             # Add warnings which suggest the use of override
             # Disabled, as cpplint occasionally disagrees with gcc concerning override
             # target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wsuggest-override>")
             # target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wsuggest-override>")
+
+            # if nvhpc, add display error numbers to the host com
+            if(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
+                target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:SHELL:--display_error_number>")
+            endif()
         endif()
         # Generic options regardless of platform/host compiler:
         # Ensure NVCC outputs warning numbers
@@ -114,6 +123,19 @@ if(NOT COMMAND flamegpu_suppress_some_compiler_warnings)
             # This is used in cub/thrust, and windows still emits this warning from the third party library
             if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.6.0)
                 target_compile_definitions(${SSCW_TARGET} PRIVATE "__CDPRT_SUPPRESS_SYNC_DEPRECATION_WARNING")
+            endif()
+        elseif(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
+            # nvc++ etc do not appear to have an equivalent to -isystem. Rather than more pragma warning soup, just tone down warnings when using nvc++ as appropriate. 
+            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe --diag_suppress=code_is_unreachable>")
+            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:SHELL:--diag_suppress=code_is_unreachable>")
+            # older nvhpc as host compiler warns for intentional declared but never referenced parameters. only supported from 22.7/9
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "22.7")
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:SHELL:-Wno-unused-but-set-parameter>")
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-unused-but-set-parameter>")
+            else()
+                # parameter "x" was declared but never referenced
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe --diag_suppress=177>")
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:SHELL:--diag_suppress=177>")
             endif()
         else()
             # Linux specific warning suppressions
@@ -179,7 +201,7 @@ if(NOT COMMAND flamegpu_enable_warnings_as_errors)
                 # Add cross-execution-space-call. This is blocked under msvc by a jitify related bug (untested > CUDA 10.1): https://github.com/NVIDIA/jitify/issues/62
                 target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror cross-execution-space-call>")
                 # Add reorder to Werror, this is usable with workign nv/diag_suppress pragmas for cub/thrust from CUDA 11.3+ under linux
-                if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.3.0)
+                if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.3.0 AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
                     target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror reorder>")
                 endif()
             endif()
