@@ -4,14 +4,12 @@
 * Tests cover:
 * > mandatory messaging, send/recieve
 */
+#include <array>
 #include <unordered_map>
-
 #include "flamegpu/flamegpu.h"
-
 #include "gtest/gtest.h"
 
 namespace flamegpu {
-
 
 namespace test_message_spatial2d {
 
@@ -918,15 +916,12 @@ FLAMEGPU_AGENT_FUNCTION(in_wrapped_EnvDimsNotFactor, MessageSpatial2D, MessageNo
     }
     return ALIVE;
 }
-TEST(Spatial2DMessageTest, Wrapped_EnvDimsNotFactor) {
-    // This tests that bug #1157 is fixed
-    // When the interaction radius is not a factor of the width
-    // that agent's near the max env bound all have the full interaction radius
+void wrapped_2d_test_bounds(std::array<float, 2> lower, std::array<float, 2> upper, float radius, bool exceptionExpected) {
     ModelDescription m("model");
     MessageSpatial2D::Description message = m.newMessage<MessageSpatial2D>("location");
-    message.setMin(0, 0);
-    message.setMax(50.1f, 50.1f);
-    message.setRadius(10);
+    message.setMin(lower.at(0), lower.at(1));
+    message.setMax(upper.at(0), upper.at(1));
+    message.setRadius(radius);
     message.newVariable<flamegpu::id_t>("id");  // unused by current test
     AgentDescription agent = m.newAgent("agent");
     agent.newVariable<float>("x");
@@ -947,11 +942,28 @@ TEST(Spatial2DMessageTest, Wrapped_EnvDimsNotFactor) {
     // Vertical pair that can interact
     // Top side
     AgentVector::Agent i1 = population[0];
-    i1.setVariable<float>("x", 25.0f);
-    i1.setVariable<float>("y", 25.0f);
+    i1.setVariable<float>("x", upper.at(0));
+    i1.setVariable<float>("y", upper.at(1));
     c.setPopulationData(population);
     c.SimulationConfig().steps = 1;
-    EXPECT_THROW(c.simulate(), exception::DeviceError);
+    if (exceptionExpected) {
+        EXPECT_THROW(c.simulate(), exception::DeviceError);
+    } else {
+        EXPECT_NO_THROW(c.simulate());
+    }
+}
+TEST(Spatial2DMessageTest, Wrapped_EnvDimsNotFactor) {
+    // This tests that bug #1157 is fixed
+    // When the interaction radius is not a factor of the width
+    // that agent's near the max env bound all have the full interaction radius
+    wrapped_2d_test_bounds({0, 0}, {50.1f, 50.1f}, 10, true);
+    wrapped_2d_test_bounds({0, 0}, {1, 1}, 0.03f, true);
+
+    // also includes a number of potential edge cases to ensure that no false positives are included (#1177)
+    wrapped_2d_test_bounds({0, 0}, {1, 1}, 0.05f, false);
+    wrapped_2d_test_bounds({0, 0}, {1, 1}, 0.04f, false);
+    wrapped_2d_test_bounds({0, 0}, {2, 1}, 0.05f, false);
+    wrapped_2d_test_bounds({0, 0}, {1, 1}, 0.005f, false);
 }
 #else
 TEST(Spatial2DMessageTest, DISABLED_Wrapped_OutOfBounds) { }
