@@ -146,6 +146,11 @@ jobs:
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
         -DFLAMEGPU_ENABLE_NVTX="ON"
 
+    # Check for bugs when cmake is reconfigured, i.e. fetch content patching
+    - name: Re-configure cmake
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}"
+
     - name: Build static library
       working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --config ${{ env.CONFIG }} --target flamegpu --verbose -j `nproc`
