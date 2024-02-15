@@ -35,12 +35,19 @@ FLAMEGPU_AGENT_FUNCTION(update, flamegpu::MessageArray2D, flamegpu::MessageNone)
     FLAMEGPU->setVariable<float>("value", new_value);
     return flamegpu::ALIVE;
 }
+#if defined(__GNUC__) && (( __GNUC__ == 10 && defined(__GNUC_MINOR__) && __GNUC_MINOR__ >= 1) || __GNUC__ > 10)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wpsabi"
+#endif
 FLAMEGPU_EXIT_CONDITION(stable_temperature) {
     // Exit when standard deviation of temperature across agents goes below 0.006
     // (At this point it looks kind of uniform to the eye)
     const double sd = FLAMEGPU->agent("cell").meanStandardDeviation<float>("value").second;
     return sd < 0.006 ? flamegpu::EXIT : flamegpu::CONTINUE;
 }
+#if defined(__GNUC__) && (( __GNUC__ == 10 && defined(__GNUC_MINOR__) && __GNUC_MINOR__ >= 1) || __GNUC__ > 10)
+    #pragma GCC diagnostic pop
+#endif
 int main(int argc, const char ** argv) {
     const unsigned int SQRT_AGENT_COUNT = 200;
     const unsigned int AGENT_COUNT = SQRT_AGENT_COUNT * SQRT_AGENT_COUNT;
