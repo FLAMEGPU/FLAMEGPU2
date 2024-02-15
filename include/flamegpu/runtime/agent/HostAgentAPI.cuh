@@ -192,11 +192,6 @@ class HostAgentAPI {
      * @throws exception::InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      * @note If you only require the mean, it is more efficient to use sum()/count()
      */
-    // Suppress GCC >= 10.1 diagnostic due to ABI change in C++17 mode on aarch64 for parameter passing of std::pair<double, double>
-#if defined(__GNUC__) && (( __GNUC__ == 10 && defined(__GNUC_MINOR__) && __GNUC_MINOR__ >= 1) || __GNUC__ > 10)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wpsabi"
-#endif
     template<typename InT>
     std::pair<double, double> meanStandardDeviation(const std::string& variable) const;
     /**
@@ -207,9 +202,6 @@ class HostAgentAPI {
      * @throws exception::InvalidAgentVar If the agent does not contain a variable of the same name
      * @throws exception::InvalidVarType If the passed variable type does not match that specified in the model description hierarchy
      */
-#if defined(__GNUC__) && (( __GNUC__ == 10 && defined(__GNUC_MINOR__) && __GNUC_MINOR__ >= 1) || __GNUC__ > 10)
-    #pragma GCC diagnostic pop
-#endif
     template<typename InT>
     InT min(const std::string &variable) const;
     /**
@@ -565,11 +557,6 @@ void HostAgentAPI::sum_async(const std::string &variable, OutT &result, const cu
     gpuErrchkLaunch();
     gpuErrchk(cudaMemcpyAsync(&result, api.d_output_space, sizeof(OutT), cudaMemcpyDeviceToHost, stream));
 }
-// Suppress GCC >= 10.1 diagnostic due to ABI change in C++17 mode on aarch64 for parameter passing of std::pair<double, double>
-#if defined(__GNUC__) && (( __GNUC__ == 10 && defined(__GNUC_MINOR__) && __GNUC_MINOR__ >= 1) || __GNUC__ > 10)
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wpsabi"
-#endif
 template<typename InT>
 std::pair<double, double> HostAgentAPI::meanStandardDeviation(const std::string& variable) const {
     std::pair<double, double> rtn;
@@ -577,9 +564,6 @@ std::pair<double, double> HostAgentAPI::meanStandardDeviation(const std::string&
     gpuErrchk(cudaStreamSynchronize(this->api.stream));  // Redundant, meanStandardDeviation_async() is not truly async
     return rtn;
 }
-#if defined(__GNUC__) && (( __GNUC__ == 10 && defined(__GNUC_MINOR__) && __GNUC_MINOR__ >= 1) || __GNUC__ > 10)
-    #pragma GCC diagnostic pop
-#endif
 template<typename InT>
 void HostAgentAPI::meanStandardDeviation_async(const std::string& variable, std::pair<double, double> &result, const cudaStream_t stream, const unsigned int streamId) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
