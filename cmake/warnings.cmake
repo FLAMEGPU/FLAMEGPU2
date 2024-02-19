@@ -115,8 +115,13 @@ if(NOT COMMAND flamegpu_suppress_some_compiler_warnings)
             if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.6.0)
                 target_compile_definitions(${SSCW_TARGET} PRIVATE "__CDPRT_SUPPRESS_SYNC_DEPRECATION_WARNING")
             endif()
-        else()
-            # Linux specific warning suppressions
+        elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+            # GCC specific warning suppressions
+            # GCC 10.1 AARCH specific ps ABI warnings in C++17 mode. See https://github.com/FLAMEGPU/FLAMEGPU2/issues/1176
+            if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 10.1.0)
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-psabi>")
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wno-psabi>")
+            endif()
         endif()
         # Generic OS/host compiler warning suppressions
         # Ensure NVCC outputs warning numbers
