@@ -952,14 +952,49 @@ void wrapped_2d_test_bounds(std::array<float, 2> lower, std::array<float, 2> upp
         EXPECT_NO_THROW(c.simulate());
     }
 }
+
+template <typename T>
+bool approxExactlyDivisible(T a, T b) {
+    // Scale machine epsilon by the magnitude of the larger value
+    T scaledEpsilon = std::max(std::abs(a), std::abs(b)) * std::numeric_limits<T>::epsilon();
+    // Compute the remainder
+    T v = std::fmod(a, b);
+    // approx equal if the remainder is within scaledEpsilon of 0 or b (fmod(1, 0.05f) returns ~0.05f)
+    return v <= scaledEpsilon || v > b - scaledEpsilon;
+}
+
+bool wrappedCompatible(float lower, float upper, float radius) {
+    // @todo - validate that upper is > lower?, upper != lower etc, radius != 0 && radius < upper-lower 
+    return approxExactlyDivisible<float>(upper - lower, radius);
+}
+
+
 TEST(Spatial2DMessageTest, Wrapped_EnvDimsNotFactor) {
     // This tests that bug #1157 is fixed
     // When the interaction radius is not a factor of the width
     // that agent's near the max env bound all have the full interaction radius
     wrapped_2d_test_bounds({0, 0}, {50.1f, 50.1f}, 10, true);
     // also includes a number of potential edge cases to ensure that no false positives are included (#1177)
+
+    wrappedCompatible(0, 1, 0.05f);
+    wrappedCompatible(0, 1, 0.04f);
+    wrappedCompatible(0, 2, 0.05f);
+    wrappedCompatible(0, 1, 0.005f);
+    wrappedCompatible(0, 1, 0.005f);
+
+    wrappedCompatible(0, 100000, 0.05f);
+    wrappedCompatible(0, 100000, 0.03f);
+
+
+    wrappedCompatible(0, 1, 0.03f);
+
     wrapped_2d_test_bounds({0, 0}, {1, 1}, 0.05f, false);
     wrapped_2d_test_bounds({0, 0}, {2, 1}, 0.05f, false);
+    wrapped_2d_test_bounds({0, 0}, {1, 1}, 0.04f, false);
+
+    wrapped_2d_test_bounds({0, 0}, {1, 1}, 0.03f, true);
+
+
 }
 #else
 TEST(Spatial2DMessageTest, DISABLED_Wrapped_OutOfBounds) { }
