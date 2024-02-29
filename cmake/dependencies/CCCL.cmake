@@ -10,7 +10,7 @@ cmake_policy(SET CMP0079 NEW)
 # Set the minimum supported CCCL version, and the version to fetch
 # using find_package(version) means it's up to CCCL's cmake to determine if newer versions are compatible, but this will likely need changing for CUDA 13, when CCCL is planned to have a major version bump (and drop CUDA 11 support).
 set(MIN_REQUIRED_CCCL_VERSION 2.3.0)
-set(CCCL_DOWNLOAD_TAG branch/2.3.x) # @todo - this should be changed to v2.3.0 when possible 
+set(CCCL_DOWNLOAD_TAG v2.3.0)
 
 # Use the FindCUDATooklit package (CMake > 3.17) to get the CUDA version and CUDA include directories for cub/thrust location hints
 find_package(CUDAToolkit REQUIRED)
@@ -18,7 +18,8 @@ find_package(CUDAToolkit REQUIRED)
 # Quietly find CCCL, to check if the version included with CUDA (if CCCL) is sufficiently new.
 # Using CCCL avoids complex cub/thrust version workarounds previously required.
 # However we cannot find thrust due to a missing guard in CCCL's cmake config file, and cannot find cub without finding libcudacxx, so just find libcudacxx quietly.
-# The fix for this was merged in upstream, but unclear if for the 2.3.x or 2.4.x release we should be able to remove the `components libcudacxx`. 
+# The fix for this was merged into branch/2.3.x, but was not included in the v2.3.0 tagged commit.
+# @todo - wait for and test 2.3.2/2.4.0.
 find_package(CCCL ${MIN_REQUIRED_CCCL_VERSION} QUIET COMPONENTS libcudacxx CONFIG HINTS ${CUDAToolkit_INCLUDE_DIRS} ${CUDAToolkit_LIBRARY_DIR}/cmake)
 
 # If CCCL was found, find it again but loudly (with all components)
