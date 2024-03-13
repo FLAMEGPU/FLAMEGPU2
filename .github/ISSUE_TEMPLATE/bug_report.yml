@@ -48,7 +48,7 @@ body:
     attributes:
       label: CUDA Versions
       description: 
-      placeholder: e.g. CUDA 11.0, CUDA 12.2
+      placeholder: e.g. CUDA 11.2, CUDA 12.2
     validations:
       required: false
   - type: input

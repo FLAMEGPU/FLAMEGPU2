@@ -49,10 +49,15 @@ if(CMAKE_CUDA_COMPILER)
     flamegpu_set_cuda_architectures()
 endif()
 
-# Set the minimum supported version of CUDA for FLAME GPU, currently 11.0
-set(MINIMUM_SUPPORTED_CUDA_VERSION 11.0)
-# Set the minimum, usable, but deprecated CUDA version. Currently there are no deprecated versions
+# Set the minimum supported version of CUDA for FLAME GPU, currently 11.2
+set(MINIMUM_SUPPORTED_CUDA_VERSION 11.2)
+# Set the minimum, potentially usable, but unsupported CUDA version.
+# Currently 11.0 on linux and 11.1 on windows (due to CCCL support).
+# CUDA 11.1 is not supported to simplify python releases
 set(MINIMUM_CUDA_VERSION 11.0)
+if(WIN32)
+    set(MINIMUM_CUDA_VERSION 11.1)
+endif()
 
 # If the CUDA compiler is too old, trigger a docs only build.
 if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_CUDA_VERSION})
@@ -60,9 +65,9 @@ if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_CUDA_VERSION})
     message(STATUS "Documentation-only build: CUDA ${MINIMUM_SUPPORTED_CUDA_VERSION} or greater is required for compilation.")
 endif()
 
-# If the CUDA compiler is atleast the minimum deprecated version, but less than the minimum actually supported version, issue a dev warning.
+# If the CUDA compiler is at least the minimum (unsupported) version, but less than the minimum actually supported version, issue a warning.
 if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL ${MINIMUM_CUDA_VERSION} AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_SUPPORTED_CUDA_VERSION})
-    message(DEPRECATION "Support for CUDA verisons <= ${MINIMUM_SUPPORTED_CUDA_VERSION} is deprecated and will be removed in a future release.")
+    message(WARNING "CUDA versions >= ${MINIMUM_CUDA_VERSION} && < ${MINIMUM_SUPPORTED_CUDA_VERSION} are unsupported buy may work on some platforms.")
 endif()
 
 # If CUDA is not available, or the minimum version is too low only build the docs.
@@ -78,7 +83,7 @@ endif()
 # include for dependent modules
 include(CMakeDependentOption)
 
-# Option to enable building all examples, defaults to ON if FLAMEPGU is the top level cmake, else OFF
+# Option to enable building all examples, defaults to ON if FLAMEGPU is the top level cmake, else OFF
 cmake_dependent_option(FLAMEGPU_BUILD_ALL_EXAMPLES "Enable building all FLAMEGPU examples" ON "FLAMEGPU_PROJECT_IS_TOP_LEVEL" OFF)
 
 # Options to enable building individual examples, if FLAMEGPU_BUILD_ALL_EXAMPLES is off. 

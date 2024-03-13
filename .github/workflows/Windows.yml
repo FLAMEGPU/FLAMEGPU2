@@ -37,7 +37,7 @@ jobs:
             cuda_arch: "35"
             hostcxx: "Visual Studio 17 2022"
             os: windows-2022
-          - cuda: "11.0.3"
+          - cuda: "11.2.2"
             cuda_arch: "35"
             hostcxx: "Visual Studio 16 2019"
             os: windows-2019
@@ -56,7 +56,7 @@ jobs:
         exclude:
           # Exclude VIS=ON for oldest cuda.
           - cudacxx:
-              cuda: "11.0.3"
+              cuda: "11.2.2"
             VISUALISATION: "ON"
           # Exclude beltsoff builds for old cuda's
           - cudacxx:
@@ -64,7 +64,7 @@ jobs:
             config:
               name: "Beltsoff"
           - cudacxx:
-              cuda: "11.0.3"
+              cuda: "11.2.2"
             config:
               name: "Beltsoff"
           # Exclude beltsoff vis builds to keep the matrix lighter.

@@ -28,7 +28,7 @@ endif()
 
 # Ensure that other dependencies are downloaded and available. 
 # As flamegpu is a static library, linking only only occurs at consumption not generation, so dependent targets must also know of PRIVATE shared library dependencies such as tinyxml2 and rapidjson, as well any intentionally public dependencies (for include dirs)
-include(${CMAKE_CURRENT_LIST_DIR}/dependencies/Thrust.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/dependencies/CCCL.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/dependencies/Jitify.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/dependencies/Tinyxml2.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/dependencies/rapidjson.cmake)
@@ -134,22 +134,26 @@ if(FLAMEGPU_ENABLE_NVTX)
     endif()
 endif(FLAMEGPU_ENABLE_NVTX)
 
-# Set the minimum supported cuda version, if not already set. Currently duplicated due to docs only build logic.
-# CUDA 11.0 is current minimum cuda version, and the minimum supported
+# Set the minimum unsupported and minimum supported cuda version, if not already set.
+# Currently duplicated due to docs only build logic.
+# CUDA 11.0/11.1 is current minimum (unsupported but usable) cuda version
 if(NOT DEFINED MINIMUM_CUDA_VERSION)
     set(MINIMUM_CUDA_VERSION 11.0)
+    if(WIN32)
+        set(MINIMUM_CUDA_VERSION 11.1)
+    endif()
     # Require a minimum cuda version
     if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_CUDA_VERSION})
         message(FATAL_ERROR "CUDA version must be at least ${MINIMUM_CUDA_VERSION}")
     endif()
 endif()
-# CUDA 11.0 is the current minimum supported version.
+# CUDA 11.2 is the current minimum supported version.
 if(NOT DEFINED MINIMUM_SUPPORTED_CUDA_VERSION)
-    set(MINIMUM_SUPPORTED_CUDA_VERSION 11.0)
+    set(MINIMUM_SUPPORTED_CUDA_VERSION 11.2)
     # Warn on deprecated cuda version.
     # If the CUDA compiler is atleast the minimum deprecated version, but less than the minimum actually supported version, issue a dev warning.
     if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL ${MINIMUM_CUDA_VERSION} AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_SUPPORTED_CUDA_VERSION})
-        message(DEPRECATION "Support for CUDA verisons <= ${MINIMUM_SUPPORTED_CUDA_VERSION} is deprecated and will be removed in a future release.")
+    message(WARNING "CUDA versions >= ${MINIMUM_CUDA_VERSION} && < ${MINIMUM_SUPPORTED_CUDA_VERSION} are unsupported buy may work on some platforms.")
     endif()
 endif()
 

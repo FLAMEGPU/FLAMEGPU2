@@ -37,7 +37,7 @@ jobs:
             cuda_arch: "35"
             hostcxx: gcc-11
             os: ubuntu-22.04
-          - cuda: "11.0"
+          - cuda: "11.2"
             cuda_arch: "35"
             hostcxx: gcc-8
             os: ubuntu-20.04
@@ -56,7 +56,7 @@ jobs:
         exclude:
           # Exclude VIS=ON for oldest cuda.
           - cudacxx:
-              cuda: "11.0"
+              cuda: "11.2"
             VISUALISATION: "ON"
           # Exclude beltsoff builds for old cuda's
           - cudacxx:
@@ -64,7 +64,7 @@ jobs:
             config:
               name: "Beltsoff"
           - cudacxx:
-              cuda: "11.0"
+              cuda: "11.2"
             config:
               name: "Beltsoff"
           # Exclude beltsoff vis builds to keep the matrix lighter.

@@ -642,9 +642,8 @@ set_property(TARGET ${PROJECT_NAME}  PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
 # Link against dependency targets / directories.
 
-# Cub and thrust targets are not imported targets, so they do not use -isystem, so warnings must be suppressed as pragmas as requied. This is due to nvcc magic preventing isystem from being reliable with them. 
-target_link_libraries(${PROJECT_NAME} PUBLIC CUB::CUB)
-target_link_libraries(${PROJECT_NAME} PUBLIC Thrust::Thrust)
+# CCCL for Cub and thrust (and libcudacxx) targets are not imported targets, so they do not use -isystem, so warnings must be suppressed as pragmas if required. This is due to nvcc magic implicit include directory search ordering
+target_link_libraries(${PROJECT_NAME} PUBLIC CCCL::CCCL)
 
 # tinyxml2 static library
 target_link_libraries(${PROJECT_NAME} PRIVATE Tinyxml2::tinyxml2)
