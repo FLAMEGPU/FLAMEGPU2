@@ -1,4 +1,5 @@
 #include "flamegpu/flamegpu.h"
+#include <iostream>
 
 #define SCALE_FACTOR 0.03125
 
@@ -55,7 +56,7 @@ FLAMEGPU_AGENT_FUNCTION(output_pedestrian_location, flamegpu::MessageNone, flame
     return flamegpu::ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(output_navmap_cells, flamegpu::MessageNone, flamegpu::MessageArray2D) {
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     // It would be far more efficient to set these once within the input file, as they do not change
     if (FLAMEGPU->getStepCounter() == 0) {
         FLAMEGPU->setVariable<float>("x_vis", (ENV_WIDTH / 256.0f) * FLAMEGPU->getVariable<int>("x") - (ENV_WIDTH / 2.0f) + (ENV_WIDTH / 512.0f));
@@ -385,7 +386,7 @@ int main(int argc, const char ** argv) {
         navmap.newVariable<float>("exit5_y");
         navmap.newVariable<float>("exit6_x");
         navmap.newVariable<float>("exit6_y");
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
         // Extra vars, not present in FLAMEGPU 1 version are required to visualise with stock visualiser
         navmap.newVariable<float>("x_vis");
         navmap.newVariable<float>("y_vis");
@@ -472,7 +473,7 @@ int main(int argc, const char ** argv) {
     /**
      * Create visualisation
      */
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     flamegpu::visualiser::ModelVis  m_vis = cudaSimulation.getVisualisation();
     {
         m_vis.setInitialCameraLocation(0.873f, 1.740f, 0.800f);
@@ -570,7 +571,7 @@ int main(int argc, const char ** argv) {
      */
     cudaSimulation.simulate();
 
-#ifdef VISUALISATION
+#ifdef FLAMEGPU_VISUALISATION
     m_vis.join();
 #endif
     return 0;
