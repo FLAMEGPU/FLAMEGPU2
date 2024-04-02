@@ -200,6 +200,11 @@ jobs:
       working-directory: ${{ env.BUILD_DIR }}
       run: cmake --build . --target pyflamegpu --verbose -j `nproc`
 
+    - name: readelf
+      if: ${{ env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
+      run: find . -name "_pyflamegpu.so" | head -n 1 | xargs readelf -d 
+
     - name: Build tests
       if: ${{ env.FLAMEGPU_BUILD_TESTS == 'ON' }}
       working-directory: ${{ env.BUILD_DIR }}
