@@ -372,8 +372,15 @@ endforeach()
 # Define a custom target, with the name intended to be invoked by users (i.e. pyflamegpu)
 # This copies the generated .pyd/.so file produces by swig into the appropriate directory, and byuilds the wheel.
 # Ideally the .pyd/so copy would be a custom_command which specifies the OUTPUT, but this is not possible due to TARGET genex's not being available for use in OUTPUTS or BYPRODUCTS, which is unlikely to be fixed in CMake.
+
+# @todo - this would need to be conditional on the OS. and the presence of patchelf
+find_program(PATCHELF patchelf)
+set(PATCHELF_COMMAND ${PATCHELF} --remove-needed libnvrtc-builtins.so.${CUDAToolkit_VERSION_MAJOR}.${CUDAToolkit_VERSION_MINOR} $<TARGET_FILE:${PYTHON_SWIG_TARGET_NAME}> || true)
+
 add_custom_target(${PYTHON_MODULE_TARGET_NAME}
   ALL
+  # Modify the .so via patchelf to remove a dependency on libnvrtc-builtins.so if there is one.
+  COMMAND ${PATCHELF_COMMAND} $<TARGET_FILE:${PYTHON_SWIG_TARGET_NAME}>
   # Copy the python .pyd/.so file to the working dir
   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PYTHON_SWIG_TARGET_NAME}> src/${PYTHON_MODULE_NAME}/$<TARGET_FILE_NAME:${PYTHON_SWIG_TARGET_NAME}>
   # Build the wheel in the working dir
