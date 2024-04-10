@@ -1271,7 +1271,7 @@ class CodeGenerator:
                 self.write(f"static_cast<{t.func.id}>")
             else:
                 if (t.func.id not in funcs):
-                    self.RaiseWarning(t, "Function call is not a defined FLAME GPU device function or a supported python built in.")
+                    self.RaiseWarning(t, f"Function call to '{t.func.id}' is not a defined FLAME GPU device function or a supported python built in.")
                 # dispatch even if warning raised
                 self.dispatch(t.func)
         elif isinstance(t.func, ast.Lambda):
