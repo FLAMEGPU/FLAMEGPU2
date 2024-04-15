@@ -4,6 +4,7 @@
 #include <cuda_runtime.h>
 #include <cuda.h>
 #include <limits>
+#include <cstdint>
 #include "flamegpu/exception/FLAMEGPUException.h"
 
 namespace flamegpu {
