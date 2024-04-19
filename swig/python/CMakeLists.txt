@@ -14,6 +14,10 @@ mark_as_advanced(FLAMEGPU_BUILD_PYTHON_VENV)
 option(FLAMEGPU_BUILD_PYTHON_LOCALVERSION "Embed CUDA version for the build in the local information" ON)
 mark_as_advanced(FLAMEGPU_BUILD_PYTHON_LOCALVERSION)
 
+# Add option use patchelf to remove explicit runtime dynamic dependency on libnvrtc-builtins.so
+option(FLAMEGPU_BUILD_PYTHON_PATCHELF "Use PATCHELF to remove a runtime dependency on libnvrtc-builtins.so" ON)
+mark_as_advanced(FLAMEGPU_BUILD_PYTHON_PATCHELF)
+
 # Get the root of the repository to find other CMake files etc.
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../ REALPATH)
 
@@ -369,18 +373,30 @@ foreach(PYTHON_CODEGEN_FILE IN LISTS PYTHON_CODEGEN_SRC_FILES)
   list(APPEND PYTHON_MODULE_TARGET_NAME_SOURCES ${PYTHON_CODEGEN_FILE})
 endforeach()
 
+
+# If patchelf is required and available, add a custom command as a swig build post step to remove libnvrtc-builtins.so from the target.
+if (FLAMEGPU_BUILD_PYTHON_PATCHELF AND NOT WIN32)
+  find_program(PATCHELF patchelf)
+  if (PATCHELF)
+    add_custom_command(
+      TARGET ${PYTHON_SWIG_TARGET_NAME}
+      POST_BUILD
+      COMMAND patchelf --remove-needed libnvrtc-builtins.so.${CUDAToolkit_VERSION_MAJOR}.${CUDAToolkit_VERSION_MINOR} $<TARGET_FILE_NAME:${PYTHON_SWIG_TARGET_NAME}>
+      COMMENT "Patching $<TARGET_FILE_NAME:${PYTHON_SWIG_TARGET_NAME}> ELF to not depend upon libnvrtc-builtins.so"
+    )
+  else()
+    message(FATAL_ERROR "patchelf could not be found, but is required by FLAMEGPU_BUILD_PYTHON_PATCHELF=ON")
+  endif()
+
+endif()
+
 # Define a custom target, with the name intended to be invoked by users (i.e. pyflamegpu)
 # This copies the generated .pyd/.so file produces by swig into the appropriate directory, and byuilds the wheel.
 # Ideally the .pyd/so copy would be a custom_command which specifies the OUTPUT, but this is not possible due to TARGET genex's not being available for use in OUTPUTS or BYPRODUCTS, which is unlikely to be fixed in CMake.
-
-# @todo - this would need to be conditional on the OS. and the presence of patchelf
-find_program(PATCHELF patchelf)
-set(PATCHELF_COMMAND ${PATCHELF} --remove-needed libnvrtc-builtins.so.${CUDAToolkit_VERSION_MAJOR}.${CUDAToolkit_VERSION_MINOR} $<TARGET_FILE:${PYTHON_SWIG_TARGET_NAME}> || true)
-
 add_custom_target(${PYTHON_MODULE_TARGET_NAME}
   ALL
   # Modify the .so via patchelf to remove a dependency on libnvrtc-builtins.so if there is one.
-  COMMAND ${PATCHELF_COMMAND} $<TARGET_FILE:${PYTHON_SWIG_TARGET_NAME}>
+  # COMMAND ${PATCHELF_COMMAND} $<TARGET_FILE:${PYTHON_SWIG_TARGET_NAME}>
   # Copy the python .pyd/.so file to the working dir
   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PYTHON_SWIG_TARGET_NAME}> src/${PYTHON_MODULE_NAME}/$<TARGET_FILE_NAME:${PYTHON_SWIG_TARGET_NAME}>
   # Build the wheel in the working dir
@@ -396,6 +412,9 @@ add_custom_target(${PYTHON_MODULE_TARGET_NAME}
   SOURCES ${PYTHON_MODULE_TARGET_NAME_SOURCES}
   COMMENT "Copying ${PYTHON_MODULE_NAME}.pyd/.so and Building ${PYTHON_MODULE_NAME} Wheel"
 )
+
+
+
 
 # Ensure the custom target depends on the swig wrapper target
 add_dependencies(${PYTHON_MODULE_TARGET_NAME} ${PYTHON_SWIG_TARGET_NAME})
