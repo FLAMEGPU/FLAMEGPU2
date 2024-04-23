@@ -352,7 +352,7 @@ See [CONTRIBUTING.md](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/CONTRIBU
 
 See [Contributors](https://github.com/FLAMEGPU/FLAMEGPU2/graphs/contributors) for a list of contributors towards this project.
 
-If you refer to the technical, algorithmic or performance aspects of FLAME GPU then please cite our most recent research article ["FLAME GPU 2: A framework for flexible and performant agent based simulation on GPUs"](https://onlinelibrary.wiley.com/doi/full/10.1002/spe.3207) (DOI: https://doi.org/10.1002/spe.3207). If you use this software in your work, please cite DOI [10.5281/zenodo.5428984](https://doi.org/10.5281/zenodo.5428984). Release specific DOI are also provided via Zenodo.
+If you refer to the technical, algorithmic or performance aspects of FLAME GPU then please cite ["FLAME GPU 2: A framework for flexible and performant agent based simulation on GPUs"](https://onlinelibrary.wiley.com/doi/full/10.1002/spe.3207) (DOI: https://doi.org/10.1002/spe.3207). If you use this software in your work, please cite DOI [10.5281/zenodo.5428984](https://doi.org/10.5281/zenodo.5428984). Release specific DOI are also provided via Zenodo.
 
 Alternatively, [CITATION.cff](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/CITATION.cff) provides citation metadata, which can also be accessed from [GitHub](https://github.com/FLAMEGPU/FLAMEGPU2).
 
