@@ -33,9 +33,38 @@ authors:
     family-names: Kabiri Chimeh
     alias: mozhgan-kch 
     orcid: "https://orcid.org/0000-0002-2561-7926"
-message: "If you use this software, please cite it using these metadata."
+message: "If you use this software, please cite both the article from preferred-citation and the software itself."
+preferred-citation:
+  authors: 
+    - given-names: Paul
+      family-names: Richmond
+      affiliation: The University of Sheffield
+      alias: mondus
+      orcid: "https://orcid.org/0000-0002-4657-5518"
+    - given-names: Robert
+      family-names: Chisholm
+      affiliation: The University of Sheffield
+      alias: Robadob
+      orcid: "https://orcid.org/0000-0003-3379-9042"
+    - given-names: Peter
+      family-names: Heywood
+      affiliation: The University of Sheffield
+      alias: ptheywood
+      orcid: "https://orcid.org/0000-0001-9277-8394"
+    - given-names: Matthew
+      family-names: Leach
+      affiliation: The University of Sheffield
+      alias: MILeach
+      orcid: "https://orcid.org/0000-0002-8901-5609"
+    - given-names: Mozhgan
+      family-names: Kabiri Chimeh
+      affiliation: NVIDIA
+      alias: mozhgan-kch 
+      orcid: "https://orcid.org/0000-0002-2561-7926"
+  title: "FLAME GPU 2: A framework for flexible and performant agent based simulation on GPUs"
+  type: article
+  doi: 10.1002/spe.3207
 identifiers:
   - description: The collection of archived snapshots of all versions of FLAME GPU 2
     type: doi
     value: "10.5281/zenodo.5428984"
-
