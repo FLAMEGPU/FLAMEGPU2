@@ -431,6 +431,7 @@ jobs:
         -DFLAMEGPU_ENABLE_NVTX="ON"
         -DGLEW_USE_STATIC_LIBS="${{ env.USE_STATIC_GLEW }}"
         -DOpenGL_GL_PREFERENCE:STRING=LEGACY
+        -DFLAMEGPU_BUILD_PYTHON_PATCHELF=ON
 
     - name: Build python wheel
       if: ${{ env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
