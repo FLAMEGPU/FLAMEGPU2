@@ -14,6 +14,10 @@ mark_as_advanced(FLAMEGPU_BUILD_PYTHON_VENV)
 option(FLAMEGPU_BUILD_PYTHON_LOCALVERSION "Embed CUDA version for the build in the local information" ON)
 mark_as_advanced(FLAMEGPU_BUILD_PYTHON_LOCALVERSION)
 
+# Add option use patchelf to remove explicit runtime dynamic dependency on libnvrtc-builtins.so
+option(FLAMEGPU_BUILD_PYTHON_PATCHELF "Use PATCHELF to remove a runtime dependency on libnvrtc-builtins.so" ON)
+mark_as_advanced(FLAMEGPU_BUILD_PYTHON_PATCHELF)
+
 # Get the root of the repository to find other CMake files etc.
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../ REALPATH)
 
@@ -369,8 +373,25 @@ foreach(PYTHON_CODEGEN_FILE IN LISTS PYTHON_CODEGEN_SRC_FILES)
   list(APPEND PYTHON_MODULE_TARGET_NAME_SOURCES ${PYTHON_CODEGEN_FILE})
 endforeach()
 
+# If patchelf is required and available, add a custom command as a swig build post step to remove libnvrtc-builtins.so from the target.
+# This prevents issues for manylinux2014 builds which incorrectly add a NEEDED dependency on libnvrtc-builtins.so.MM[.mm], rather than only the dependency on libnvrtc.so.MM[.mm]
+# See https://github.com/FLAMEGPU/FLAMEGPU2/issues/1193
+if (FLAMEGPU_BUILD_PYTHON_PATCHELF AND NOT WIN32)
+  find_program(PATCHELF patchelf)
+  if (PATCHELF)
+    add_custom_command(
+      TARGET ${PYTHON_SWIG_TARGET_NAME}
+      POST_BUILD
+      COMMAND patchelf --remove-needed libnvrtc-builtins.so.${CUDAToolkit_VERSION_MAJOR}.${CUDAToolkit_VERSION_MINOR} $<TARGET_FILE_NAME:${PYTHON_SWIG_TARGET_NAME}>
+      COMMENT "Patching $<TARGET_FILE_NAME:${PYTHON_SWIG_TARGET_NAME}> ELF to not depend upon libnvrtc-builtins.so.${CUDAToolkit_VERSION_MAJOR}.${CUDAToolkit_VERSION_MINOR}"
+    )
+  else()
+    message(FATAL_ERROR "patchelf could not be found, but is required by FLAMEGPU_BUILD_PYTHON_PATCHELF=ON. Please ensure that patchelf is installed and on your path.")
+  endif()
+endif()
+
 # Define a custom target, with the name intended to be invoked by users (i.e. pyflamegpu)
-# This copies the generated .pyd/.so file produces by swig into the appropriate directory, and byuilds the wheel.
+# This copies the generated .pyd/.so file produces by swig into the appropriate directory, and builds the wheel.
 # Ideally the .pyd/so copy would be a custom_command which specifies the OUTPUT, but this is not possible due to TARGET genex's not being available for use in OUTPUTS or BYPRODUCTS, which is unlikely to be fixed in CMake.
 add_custom_target(${PYTHON_MODULE_TARGET_NAME}
   ALL
