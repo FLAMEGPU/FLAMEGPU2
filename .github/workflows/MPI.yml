@@ -91,7 +91,7 @@ jobs:
       VISUALISATION: ${{ matrix.VISUALISATION }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install CUDA
       if: ${{ startswith(env.OS, 'ubuntu') && env.CUDA != '' }}
@@ -162,7 +162,7 @@ jobs:
     
     - name: Select Python
       if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON }}
 
