@@ -98,6 +98,8 @@ jobs:
       FLAMEGPU_SEATBELTS: ${{ matrix.config.SEATBELTS }}
       PYTHON: ${{ matrix.python}}
       VISUALISATION: ${{ matrix.VISUALISATION }}
+      # Ensure MSVC >= 1940 works with CUDA <= 12.3
+      CUDAFLAGS: -allow-unsupported-compiler
 
 
     steps:
