@@ -20,7 +20,34 @@ function(flamegpu_check_compiler_functionality)
     enable_language(CXX)
     check_language(CUDA)
     if(NOT CMAKE_CUDA_COMPILER)
-        message(WARNING "CUDA Language Support Not Found")
+        # If using MSVC >= 1940 then CUDA <= 12.3 support requires -allow-unsupported-compiler, so warn about this
+        if(MSVC AND MSVC_VERSION VERSION_GREATER_EQUAL "1940")
+            # If this is the case, then CMake >= 3.29.4 is also required, otherwise CMake does not pass -allow-unsupported-compiler along, warn as appropriate
+            if(CMAKE_VERSION VERSION_LESS "3.29.4")
+                message(WARNING
+                    " CUDA Language Support Not Found (with MSVC ${MSVC_VERSION} >= 1940)\n"
+                    " \n"
+                    " If you have CUDA <= 12.3 installed:\n"
+                    "  - You must upgrade CMake to be >= 3.29.4\n"
+                    "    The CUDAFLAGS environment variable must include '-allow-unsupported-compiler'\n"
+                    "    You must clear the CMake Cache before reconfiguring this project\n"
+                    " \n"
+                    "  - Alternatively you may upgrade CUDA to >= 12.4 and clear the CMake Cache before reconfiguring\n"
+                )
+            else()
+                message(WARNING
+                    " CUDA Language Support Not Found (with MSVC ${MSVC_VERSION} >= 1940)\n"
+                    " \n"
+                    " If you have CUDA <= 12.3 installed:\n"
+                    "  - The CUDAFLAGS environment variable must include '-allow-unsupported-compiler'\n"
+                    "    You must clear the CMake Cache before reconfiguring this project\n"
+                    " \n"
+                    "  - Alternatively you may upgrade CUDA to >= 12.4 and clear the CMake Cache before reconfiguring\n"
+                )
+            endif()
+        else()
+            message(WARNING "CUDA Language Support Not Found")
+        endif()
         set(FLAMEGPU_CheckCompilerFunctionality_RESULT "NO" PARENT_SCOPE)
         return()
     endif()
