@@ -6,6 +6,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/modules/ ${CMAKE_MODULE_PATH})
 include(FetchContent)
 include(ExternalProject)
 cmake_policy(SET CMP0079 NEW)
+# Temporary CMake >= 3.30 fix https://github.com/FLAMEGPU/FLAMEGPU2/issues/1223
+if(POLICY CMP0169)
+    cmake_policy(SET CMP0169 OLD)
+endif()
 
 # a95e013b97ca6523f32da23f5095fcc9dd6067e5 is the last commit before a change which breaks our method of finding rapid json without running a cmake install first.
 # but we also need to patch this to avoid a cmake >= 3.26.4 deprecation, but this is handled manually post-population
