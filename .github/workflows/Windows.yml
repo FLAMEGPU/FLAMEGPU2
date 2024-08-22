@@ -29,7 +29,11 @@ jobs:
       # optional exclude: can be partial, include: must be specific
       matrix:
         cudacxx:
-          - cuda: "12.3.0"
+          - cuda: "12.6.0"
+            cuda_arch: "50"
+            hostcxx: "Visual Studio 17 2022"
+            os: windows-2022
+          - cuda: "12.0.0"
             cuda_arch: "50"
             hostcxx: "Visual Studio 17 2022"
             os: windows-2022
@@ -54,11 +58,18 @@ jobs:
           - "ON"
           - "OFF"
         exclude:
-          # Exclude VIS=ON for oldest cuda.
+          # Exclude VIS=ON for oldest cuda of each major version
+          - cudacxx:
+              cuda: "12.0.0"
+            VISUALISATION: "ON"
           - cudacxx:
               cuda: "11.0.3"
             VISUALISATION: "ON"
-          # Exclude beltsoff builds for old cuda's
+          # Exclude beltsoff builds for all but the most recent cuda
+          - cudacxx:
+              cuda: "12.0.0"
+            config:
+              name: "Beltsoff"
           - cudacxx:
               cuda: "11.8.0"
             config:
