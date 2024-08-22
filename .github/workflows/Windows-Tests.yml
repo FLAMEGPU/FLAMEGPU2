@@ -23,6 +23,9 @@ jobs:
       matrix:
         # CUDA_ARCH values are reduced compared to wheels due to CI memory issues while compiling the test suite.
         cudacxx:
+          - cuda: "12.6.0"
+            cuda_arch: "50"
+            hostcxx: "Visual Studio 17 2022"
           - cuda: "12.0.0"
             cuda_arch: "50"
             hostcxx: "Visual Studio 17 2022"
@@ -59,6 +62,8 @@ jobs:
       CONFIG: ${{ matrix.config.config }}
       FLAMEGPU_SEATBELTS: ${{ matrix.config.SEATBELTS }}
       VISUALISATION: ${{ matrix.VISUALISATION }}
+      # Ensure MSVC >= 1940 works with CUDA <= 12.3
+      CUDAFLAGS: -allow-unsupported-compiler
 
     steps:
     - uses: actions/checkout@v3
