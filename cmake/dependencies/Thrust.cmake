@@ -6,6 +6,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/modules/ ${CMAKE_MODULE_PATH})
 
 include(FetchContent)
 cmake_policy(SET CMP0079 NEW)
+# Temporary CMake >= 3.30 fix https://github.com/FLAMEGPU/FLAMEGPU2/issues/1223
+if(POLICY CMP0169)
+    cmake_policy(SET CMP0169 OLD)
+endif()
 
 # Set the minimum supported cub/thrust version, and the version to fetch
 # Thrust minimum version to 1.16 to avoid windows.h related issues and pull in bug fixes, but fetch the most recent 1.x release otherwise (at the time of writing).

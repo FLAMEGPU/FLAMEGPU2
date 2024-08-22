@@ -1,7 +1,10 @@
 # Minimum CMake version 3.18 for CUDA --std=c++17 
 cmake_minimum_required(VERSION 3.18...3.25 FATAL_ERROR)
 include(FetchContent)
-
+# Temporary CMake >= 3.30 fix https://github.com/FLAMEGPU/FLAMEGPU2/issues/1223
+if(POLICY CMP0169)
+    cmake_policy(SET CMP0169 OLD)
+endif()
 
 # Set some policy behaviours for SWIG
 
