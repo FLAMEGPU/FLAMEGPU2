@@ -140,10 +140,11 @@ jobs:
     - name: Install Visualisation Dependencies
       if: ${{ startswith(env.OS, 'ubuntu') && env.VISUALISATION == 'ON' }}
       run: |
-        # Install ubuntu-20.04 packages
+        # Install ubuntu-22.04 packages
         if [ "$OS" == 'ubuntu-22.04' ]; then 
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
         fi
+        # Install ubuntu-20.04 packages
         if [ "$OS" == 'ubuntu-20.04' ]; then 
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
         fi
@@ -158,7 +159,6 @@ jobs:
         if [ "$OS" == 'ubuntu-20.04' ]; then 
           sudo apt-get remove -y swig swig4.0
         fi
-        # Install Ubuntu 18.04 packages
         if [ "$OS" == 'ubuntu-18.04' ]; then 
           sudo apt-get remove -y swig
         fi
