@@ -41,6 +41,10 @@ jobs:
       matrix:
         # CUDA_ARCH values are reduced compared to wheels due to CI memory issues while compiling the test suite.
         cudacxx:
+          - cuda: "12.6"
+            cuda_arch: "50-real;90-real;90-virtual;"
+            hostcxx: gcc-12
+            os: ubuntu-22.04
           - cuda: "12.0"
             cuda_arch: "50-real;90-real;90-virtual;"
             hostcxx: gcc-11
@@ -115,23 +119,26 @@ jobs:
     - name: Install Visualisation Dependencies
       if: ${{ startswith(env.OS, 'ubuntu') && env.VISUALISATION == 'ON' }}
       run: |
+        # Install ubuntu-22.04 packages
+        if [ "$OS" == 'ubuntu-22.04' ]; then
+          sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
+        fi
         # Install ubuntu-20.04 packages
-        if [ "$OS" == 'ubuntu-20.04' ]; then 
+        if [ "$OS" == 'ubuntu-20.04' ]; then
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
         fi
         # Install Ubuntu 18.04 packages
-        if [ "$OS" == 'ubuntu-18.04' ]; then 
+        if [ "$OS" == 'ubuntu-18.04' ]; then
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype6-dev libgl1-mesa-dev
         fi
     
     - name: Install Swig >= 4.0.2
       run: |
         # Remove existing swig install, so CMake finds the correct swig
-        if [ "$OS" == 'ubuntu-20.04' ]; then 
+        if [ "$OS" == 'ubuntu-20.04' ]; then
           sudo apt-get remove -y swig swig4.0
         fi
-        # Install Ubuntu 18.04 packages
-        if [ "$OS" == 'ubuntu-18.04' ]; then 
+        if [ "$OS" == 'ubuntu-18.04' ]; then
           sudo apt-get remove -y swig
         fi
         # Install additional apt-based dependencies required to build swig 4.0.2
