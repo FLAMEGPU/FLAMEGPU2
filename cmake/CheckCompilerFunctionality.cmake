@@ -20,8 +20,20 @@ function(flamegpu_check_compiler_functionality)
     enable_language(CXX)
     check_language(CUDA)
     if(NOT CMAKE_CUDA_COMPILER)
+        # MSVC 1941 (VS2022 17.11) requires CUDA 12.4 or greater - see https://github.com/microsoft/STL/pull/4475
+        if(MSVC AND MSVC_VERSION VERSION_GREATER_EQUAL "1941")
+            message(WARNING
+                " CUDA Language Support Not Found (with MSVC ${MSVC_VERSION} >= 1941)\n"
+                " \n"
+                " The MSVC STL included with MSVC 1941 requires CUDA 12.4 or newer\n"
+                " If you have CUDA <= 12.3 installed you must either:\n"
+                "  - Upgrade CUDA to >= 12.4\n"
+                "  - Downgrade MSVC to 1940 and set the CUDAFLAGS environment variable to contain '-allow-unsupported-compiler'\n"
+                "  - Downgrade MSVC to 1939 or older\n"
+                " You must then clear the CMake cache before reconfiguring\n"
+            )
         # If using MSVC >= 1940 then CUDA <= 12.3 support requires -allow-unsupported-compiler, so warn about this
-        if(MSVC AND MSVC_VERSION VERSION_GREATER_EQUAL "1940")
+        elseif(MSVC AND MSVC_VERSION VERSION_GREATER_EQUAL "1940")
             # If this is the case, then CMake >= 3.29.4 is also required, otherwise CMake does not pass -allow-unsupported-compiler along, warn as appropriate
             if(CMAKE_VERSION VERSION_LESS "3.29.4")
                 message(WARNING
