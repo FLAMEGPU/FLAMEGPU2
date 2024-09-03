@@ -593,7 +593,7 @@ jobs:
     # Download python wheels from previous jobs.
     - name: Download Wheel Artifacts
       id: download
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4.1.7
       with:
         path: artifacts
 
