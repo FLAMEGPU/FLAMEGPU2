@@ -41,7 +41,7 @@ jobs:
       OS: ${{ matrix.cudacxx.os }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install CUDA
       if: ${{ startswith(env.OS, 'ubuntu') && env.CUDA != '' }}
