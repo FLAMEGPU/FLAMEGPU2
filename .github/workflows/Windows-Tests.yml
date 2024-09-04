@@ -67,7 +67,7 @@ jobs:
       CUDAFLAGS: -allow-unsupported-compiler
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install CUDA (Windows)
       if: ${{ runner.os == 'Windows' && env.CUDA != '' }}

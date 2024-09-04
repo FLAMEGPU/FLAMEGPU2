@@ -1,5 +1,5 @@
 # Build manylinux wheels, and upload them to the action for testing within a short time frame
-name: Manylinux2014
+name: Manylinux_2_28
 
 # Run on branch push events (i.e. not tag pushes) and on pull requests
 on:
@@ -10,8 +10,8 @@ on:
     paths:
       - "**"
       - "!.github/**"
-      - ".github/scripts/install_cuda_centos.sh"
-      - ".github/workflows/Manylinux2014.yml"
+      - ".github/scripts/install_cuda_el8.sh"
+      - ".github/workflows/Manylinux_2_28.yml"
   # Disabled for now. See https://github.com/FLAMEGPU/FLAMEGPU2/pull/644
   # pull_request:
   # Allow manual invocation.
@@ -21,12 +21,12 @@ defaults:
   run:
     shell: bash
 
-# A single job, which builds manylinux2014 wheels, which ships with GCC 10.2.1 at the time of writing. If this bumps to unpatched 10.3 we might have issues w/ cuda. 
+# A single job, which builds manylinux_2_28 wheels, which ships with GCC 12.
 jobs:
   build:
     runs-on: ${{ matrix.cudacxx.os }}
     # Run steps inside a manylinux container.
-    container: quay.io/pypa/manylinux2014_x86_64
+    container: quay.io/pypa/manylinux_2_28_x86_64
     strategy:
       fail-fast: false
       # Multiplicative build matrix
@@ -35,12 +35,12 @@ jobs:
         cudacxx:
           - cuda: "12.0"
             cuda_arch: "50"
-            hostcxx: devtoolset-10
-            os: ubuntu-20.04
+            hostcxx: gcc-toolset-12
+            os: ubuntu-22.04
           - cuda: "11.2"
             cuda_arch: "35"
-            hostcxx: devtoolset-9
-            os: ubuntu-20.04
+            hostcxx: gcc-toolset-9
+            os: ubuntu-22.04
         python: 
           - "3.12"
         config:
@@ -57,12 +57,12 @@ jobs:
     env:
       # Control if the wheel should be repaired. This will fail until .so's are addressed
       AUDITWHEEL_REPAIR: "OFF"
-      MANYLINUX: "manylinux2014"
+      MANYLINUX: "manylinux_2_28"
       ARCH: "x86_64"
       # Control if static GLEW should be built and used or not.
       USE_STATIC_GLEW: "ON"
       # Compute the wheelhouse name which should be unique within the matrix. This must be unique per build matrix/job combination
-      ARTIFACT_NAME: wheel-manylinux2014-${{ matrix.cudacxx.cuda }}-${{matrix.python}}-${{ matrix.VISUALISATION }}-${{ matrix.config.name }}-${{ matrix.cudacxx.os }}
+      ARTIFACT_NAME: wheel-manylinux_2_28-${{ matrix.cudacxx.cuda }}-${{matrix.python}}-${{ matrix.VISUALISATION }}-${{ matrix.config.name }}-${{ matrix.cudacxx.os }}
       # Define constants
       BUILD_DIR: "build"
       FLAMEGPU_BUILD_TESTS: "OFF"
@@ -81,16 +81,13 @@ jobs:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    # Downgrade the devtoolset in the image based on the build matrix, using:
-    # gcc-10 for CUDA >= 11.2. Unclear if devtoolset-10 will upgrade to unpatched 11.3 which breaks CUDA builds that use <chrono>. 
-    # gcc-9 for CUDA >= 11.0
-    # these are not the officially supported toolset on centos by cuda, but it's what works.
-    - name: Install RHEL devtoolset (CentOS)
-      if: ${{ startsWith(env.HOSTCXX, 'devtoolset-') }}
+    # Downgrade the gcc-toolset in the image based on the build matrix
+    - name: Install RHEL gcc-toolset (EL 8)
+      if: ${{ startsWith(env.HOSTCXX, 'gcc-toolset-') }}
       run: |
-        # Install devtoolset-X
+        # Install gcc-toolset-X
         yum install -y ${{ env.HOSTCXX }}
         # Enable the toolset via source not scl enable which doesn't get on with multi-step GHA 
         source /opt/rh/${{ env.HOSTCXX }}/enable
@@ -100,13 +97,13 @@ jobs:
         echo "CXX=$(which g++)" >> $GITHUB_ENV
         echo "CUDAHOSTCXX=$(which g++)" >> $GITHUB_ENV
 
-    - name: Install CUDA (CentOS)
+    - name: Install CUDA (EL 8)
       if: ${{ env.CUDA != '' }}
       env:
         cuda: ${{ env.CUDA }}
-      run: .github/scripts/install_cuda_centos.sh
+      run: .github/scripts/install_cuda_el8.sh
 
-    - name: Install Visualisation Dependencies (CentOS)
+    - name: Install Visualisation Dependencies (EL 8)
       if: ${{ env.VISUALISATION == 'ON' }}
       run: |
         yum install -y glew-devel fontconfig-devel SDL2-devel freetype-devel 
@@ -185,7 +182,7 @@ jobs:
     # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
     - name: Upload Wheel Artifacts
       if: ${{env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.ARTIFACT_NAME }}
         path: ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/*.whl

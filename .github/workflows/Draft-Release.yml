@@ -87,7 +87,7 @@ jobs:
       VISUALISATION: ${{ matrix.VISUALISATION }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install CUDA
       if: ${{ startswith(env.OS, 'ubuntu') && env.CUDA != '' }}
@@ -106,7 +106,7 @@ jobs:
 
     - name: Select Python
       if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON }}
 
@@ -249,7 +249,7 @@ jobs:
       CUDAFLAGS: -allow-unsupported-compiler
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install CUDA (Windows)
       if: ${{ runner.os == 'Windows' && env.CUDA != '' }}
@@ -261,7 +261,7 @@ jobs:
 
     - name: Select Python
       if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON }}
     
@@ -312,11 +312,11 @@ jobs:
       run: cmake --build . --config ${{ env.CONFIG }} --target ALL_BUILD --verbose -j `nproc`
 
 
-  # Manylinux2014 Wheel builds, using the manylinux2014 container
-  wheel-manylinux2014:
+  # Manylinux Wheel builds, using the ManyLinux_2_28 container. 2014's base OS is depreacted and no longer supported on GitHub actions
+  wheel-manylinux_2_28:
     runs-on: ${{ matrix.cudacxx.os }}
     # Run steps inside a manylinux container.
-    container: quay.io/pypa/manylinux2014_x86_64
+    container: quay.io/pypa/manylinux_2_28_x86_64
     strategy:
       fail-fast: false
       # Multiplicative build matrix
@@ -325,12 +325,12 @@ jobs:
         cudacxx:
           - cuda: "12.0"
             cuda_arch: "50-real;60-real;70-real;80-real;90-real;90-virtual"
-            hostcxx: devtoolset-10
-            os: ubuntu-20.04
+            hostcxx: gcc-toolset-12
+            os: ubuntu-22.04
           - cuda: "11.2"
             cuda_arch: "35-real;50-real;60-real;70-real;80-real;80-virtual"
-            hostcxx: devtoolset-9
-            os: ubuntu-20.04
+            hostcxx: gcc-toolset-9
+            os: ubuntu-22.04
         python: 
           - "3.12"
           - "3.11"
@@ -346,17 +346,17 @@ jobs:
           - "OFF"
 
     # Name the job based on matrix/env options
-    name: "wheel-manylinux2014 (${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
+    name: "wheel-manylinux_2_28 (${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
 
     env:
       # Control if the wheel should be repaired. This will fail until .so's are addressed
       AUDITWHEEL_REPAIR: "OFF"
-      MANYLINUX: "manylinux2014"
+      MANYLINUX: "manylinux_2_28"
       ARCH: "x86_64"
       # Control if static GLEW should be built and used or not.
       USE_STATIC_GLEW: "ON"
       # Compute the wheelhouse name which should be unique within the matrix. This must be unique per build matrix/job combination
-      ARTIFACT_NAME: wheel-manylinux2014-${{ matrix.cudacxx.cuda }}-${{matrix.python}}-${{ matrix.VISUALISATION }}-${{ matrix.config.name }}-${{ matrix.cudacxx.os }}
+      ARTIFACT_NAME: wheel-manylinux_2_28-${{ matrix.cudacxx.cuda }}-${{matrix.python}}-${{ matrix.VISUALISATION }}-${{ matrix.config.name }}-${{ matrix.cudacxx.os }}
       # Define constants
       BUILD_DIR: "build"
       FLAMEGPU_BUILD_TESTS: "OFF"
@@ -375,16 +375,13 @@ jobs:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    # Downgrade the devtoolset in the image based on the build matrix, using:
-    # gcc-10 for CUDA >= 11.2. Unclear if devtoolset-10 will upgrade to unpatched 11.3 which breaks CUDA builds that use <chrono>. 
-    # gcc-9 for CUDA >= 11.0
-    # these are not the officially supported toolset on centos by cuda, but it's what works.
-    - name: Install RHEL devtoolset (CentOS)
-      if: ${{ startsWith(env.HOSTCXX, 'devtoolset-') }}
+   # Downgrade the gcc-toolset in the image based on the build matrix
+    - name: Install RHEL gcc-toolset (EL 8)
+      if: ${{ startsWith(env.HOSTCXX, 'gcc-toolset-') }}
       run: |
-        # Install devtoolset-X
+        # Install gcc-toolset-X
         yum install -y ${{ env.HOSTCXX }}
         # Enable the toolset via source not scl enable which doesn't get on with multi-step GHA 
         source /opt/rh/${{ env.HOSTCXX }}/enable
@@ -394,13 +391,13 @@ jobs:
         echo "CXX=$(which g++)" >> $GITHUB_ENV
         echo "CUDAHOSTCXX=$(which g++)" >> $GITHUB_ENV
 
-    - name: Install CUDA (CentOS)
+    - name: Install CUDA (EL 8)
       if: ${{ env.CUDA != '' }}
       env:
         cuda: ${{ env.CUDA }}
-      run: .github/scripts/install_cuda_centos.sh
+      run: .github/scripts/install_cuda_el8.sh
 
-    - name: Install Visualisation Dependencies (CentOS)
+    - name: Install Visualisation Dependencies (EL 8)
       if: ${{ env.VISUALISATION == 'ON' }}
       run: |
         yum install -y glew-devel fontconfig-devel SDL2-devel freetype-devel 
@@ -430,12 +427,13 @@ jobs:
       if: ${{ env.PYTHON >= 3.12 }}
       run: |
         python${{env.PYTHON}} -m pip install setuptools wheel
+    - name: Add custom problem matchers for annotations
+      run: echo "::add-matcher::.github/problem-matchers.json"
 
     # This patches a bug where ManyLinux doesn't generate buildnumber as git dir is owned by diff user
     - name: Enable git safe-directory
       run: git config --global --add safe.directory $GITHUB_WORKSPACE
 
-    # Unlike other builds manylinux, uses static glew as it has been built and installed.
     - name: Configure cmake
       run: >
         cmake . -B "${{ env.BUILD_DIR }}"
@@ -477,7 +475,7 @@ jobs:
     # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
     - name: Upload Wheel Artifacts
       if: ${{ env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.ARTIFACT_NAME }}
         path: ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/*.whl
@@ -542,7 +540,7 @@ jobs:
       CUDAFLAGS: -allow-unsupported-compiler
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install CUDA (Windows)
       if: ${{ runner.os == 'Windows' && env.CUDA != '' }}
@@ -554,7 +552,7 @@ jobs:
 
     - name: Select Python
       if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON }}
 
@@ -598,7 +596,7 @@ jobs:
     # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
     - name: Upload Wheel Artifacts
       if: ${{env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.ARTIFACT_NAME }}
         path: ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/*.whl
@@ -611,17 +609,17 @@ jobs:
     needs: 
       - build-ubuntu
       - build-windows
-      - wheel-manylinux2014
+      - wheel-manylinux_2_28
       - wheel-windows
     if: ${{ success() && startsWith(github.ref, 'refs/tags/v') && github.event_name != 'workflow_dispatch' && github.event_name != 'pull_request' }}
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     # Download python wheels from previous jobs.
     - name: Download Wheel Artifacts
       id: download
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         path: artifacts
 
