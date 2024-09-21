@@ -43,11 +43,6 @@ void JSONRunPlanWriter::save(const RunPlanVector& rpv, const std::string& output
     writer.reset();
     buffer.Clear();
 }
-/**
- * Utility method for writing out a single RunPlan
- * @param writer An initialised RapidJSON writer.
- * @param rp RunPlan to be writer
- */
 
 template <typename T>
 void JSONRunPlanWriter::writeRunPlan(std::unique_ptr<T> &writer, const RunPlan &rp) {
