@@ -1,11 +1,11 @@
 #include "flamegpu/io/JSONRunPlanReader.h"
 
-#include <fstream>
-#include <stack>
-
 #include <rapidjson/stream.h>
 #include <rapidjson/reader.h>
 #include <rapidjson/error/en.h>
+
+#include <fstream>
+#include <stack>
 
 #include "flamegpu/model/ModelDescription.h"
 
@@ -231,5 +231,5 @@ RunPlanVector JSONRunPlanReader::load(const std::string &input_filepath, const M
     // Return the result
     return result;
 }
-}
-}
+}  // namespace io
+}  // namespace flamegpu

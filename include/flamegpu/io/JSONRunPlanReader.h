@@ -1,6 +1,8 @@
 #ifndef INCLUDE_FLAMEGPU_IO_JSONRUNPLANREADER_H_
 #define INCLUDE_FLAMEGPU_IO_JSONRUNPLANREADER_H_
 
+#include <string>
+
 #include "flamegpu/simulation/RunPlanVector.h"
 
 namespace flamegpu {

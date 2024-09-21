@@ -1,10 +1,11 @@
 #include "flamegpu/io/JSONRunPlanWriter.h"
 
-#include <fstream>
-
 #include <rapidjson/writer.h>
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/stringbuffer.h>
+
+#include <fstream>
+
 namespace flamegpu {
 namespace io {
 void JSONRunPlanWriter::save(const RunPlanVector& rpv, const std::string& output_filepath, const bool pretty_print) {
@@ -100,5 +101,5 @@ void JSONRunPlanWriter::writeRunPlan(std::unique_ptr<GenericJSONWriter> &writer,
     }
     writer->EndObject();
 }
-}
-}
+}  // namespace io
+}  // namespace flamegpu
