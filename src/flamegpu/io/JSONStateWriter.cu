@@ -8,6 +8,7 @@
 #include <string>
 #include <numeric>
 #include <set>
+#include <algorithm>
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/model/AgentDescription.h"
@@ -27,13 +28,11 @@ void JSONStateWriter::beginWrite(const std::string &output_file, bool pretty_pri
         THROW exception::UnknownInternalError("Writing already active, in JSONStateWriter::beginWrite()");
     }
     buffer = rapidjson::StringBuffer();
-    if (pretty_print) {
-        auto t_writer = std::make_unique<rapidjson::PrettyWriter<rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::UTF8<>, rapidjson::CrtAllocator, rapidjson::kWriteNanAndInfFlag>>(buffer);
-        t_writer->SetIndent('\t', 1);
-        writer = std::move(t_writer);
-    } else {
-        writer = std::make_unique<rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::UTF8<>, rapidjson::CrtAllocator, rapidjson::kWriteNanAndInfFlag>>(buffer);
-    }
+    writer = std::make_unique<PrettyWriter>(buffer);
+    // PrettyWriter overloads Writer, but methods aren't virtual so pointer casting doesn't work as intended
+    // This is the best of the bad options for this particular implementation
+    writer->SetIndent('\t', pretty_print ? 1 : 0);
+    newline_purge_required = !pretty_print;
     // Begin Json file
     writer->StartObject();
 
@@ -53,7 +52,21 @@ void JSONStateWriter::endWrite() {
     writer->EndObject();
 
     std::ofstream out(outputPath, std::ofstream::trunc);
-    out << buffer.GetString();
+    if (newline_purge_required) {
+        // Minify the output
+        std::string t_buffer = buffer.GetString();
+        // Replace all spaces outside of quotes with \n
+        bool in_string = false;
+        for (auto it = t_buffer.begin(); it != t_buffer.end(); ++it) {
+            if (*it == '"') in_string = !in_string;
+            if (*it == ' ' && !in_string) *it = '\n';
+        }
+        // Remove newlines
+        t_buffer.erase(std::remove(t_buffer.begin(), t_buffer.end(), '\n'), t_buffer.end());
+        out << t_buffer;
+    } else {
+        out << buffer.GetString();
+    }
     out.close();
 
     writer.reset();
