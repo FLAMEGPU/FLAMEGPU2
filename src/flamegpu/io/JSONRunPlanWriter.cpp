@@ -8,40 +8,22 @@
 
 namespace flamegpu {
 namespace io {
-
 // Typedef for the writer used, as the full template specification is way too long
 typedef rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::UTF8<>, rapidjson::CrtAllocator, rapidjson::kWriteNanAndInfFlag> GenericJSONWriter;
+typedef rapidjson::PrettyWriter<rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::UTF8<>, rapidjson::CrtAllocator, rapidjson::kWriteNanAndInfFlag> PrettyJSONWriter;
 
-void JSONRunPlanWriter::save(const RunPlanVector& rpv, const std::string& output_filepath, const bool pretty_print) {
-    // Init writer
-    auto buffer = rapidjson::StringBuffer();
-    std::unique_ptr<GenericJSONWriter> writer;
-    if (pretty_print) {
-        auto t_writer = std::make_unique<rapidjson::PrettyWriter<rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::UTF8<>, rapidjson::CrtAllocator, rapidjson::kWriteNanAndInfFlag>>(buffer);
-        t_writer->SetIndent('\t', 1);
-        writer = std::move(t_writer);
-    } else {
-        writer = std::make_unique<rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::UTF8<>, rapidjson::CrtAllocator, rapidjson::kWriteNanAndInfFlag>>(buffer);
-    }
+template <typename T>
+void JSONRunPlanWriter::writeCommon(std::unique_ptr<T> &writer, const RunPlanVector &rpv) {
     writer->StartObject();
     writer->Key("RunPlanVector");
     writer->StartArray();
     // Write out RunPlan records
-    for (const auto &rp : rpv) {
+    for (const auto& rp : rpv) {
         writeRunPlan(writer, rp);
     }
     // Finalise and dump to file
     writer->EndArray();
     writer->EndObject();
-    std::ofstream out(output_filepath, std::ofstream::trunc);
-    if (!out.is_open()) {
-        THROW exception::InvalidFilePath("Unable to open '%s' for writing, in JSONRunPlanWriter::save().", output_filepath.c_str());
-    }
-    out << buffer.GetString();
-    out.close();
-    // Cleanup (redundant in a static method)
-    writer.reset();
-    buffer.Clear();
 }
 
 template <typename T>
@@ -104,6 +86,25 @@ void JSONRunPlanWriter::writeRunPlan(std::unique_ptr<T> &writer, const RunPlan &
     writer->EndObject();
     writer->EndObject();
 }
-template void JSONRunPlanWriter::writeRunPlan(std::unique_ptr<GenericJSONWriter>& writer, const RunPlan& rp);
+void JSONRunPlanWriter::save(const RunPlanVector &rpv, const std::string &output_filepath, const bool pretty_print) {
+    // Init writer
+    auto buffer = rapidjson::StringBuffer();
+    if (pretty_print) {
+        std::unique_ptr<PrettyJSONWriter> writer = std::make_unique<PrettyJSONWriter>(buffer);
+        writer->SetIndent('\t', 1);
+        writeCommon(writer, rpv);
+    } else {
+        std::unique_ptr<GenericJSONWriter> writer = std::make_unique<GenericJSONWriter>(buffer);
+        writeCommon(writer, rpv);
+    }
+    std::ofstream out(output_filepath, std::ofstream::trunc);
+    if (!out.is_open()) {
+        THROW exception::InvalidFilePath("Unable to open '%s' for writing, in JSONRunPlanWriter::save().", output_filepath.c_str());
+    }
+    out << buffer.GetString();
+    // Redundant cleanup
+    out.close();
+    buffer.Clear();
+}
 }  // namespace io
 }  // namespace flamegpu
