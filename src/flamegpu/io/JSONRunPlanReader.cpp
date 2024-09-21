@@ -24,9 +24,9 @@ class JSONRunPlanReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UT
 
  public:
     JSONRunPlanReader_impl(const std::string& _filename, RunPlanVector& _rpv)
-        : filename(_filename)
-        , rpv(_rpv)
-        , current_array_index(0) { }
+        : current_array_index(0)
+        , filename(_filename)
+        , rpv(_rpv) { }
     template<typename T>
     bool processValue(const T val) {
         Mode isArray = Nop;
