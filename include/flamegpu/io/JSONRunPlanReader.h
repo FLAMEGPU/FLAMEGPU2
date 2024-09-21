@@ -19,7 +19,7 @@ class JSONRunPlanReader {
     * @param input_filepath Path on disk to read the file from
     * @param model The model used to initialise the RunPlanVector
     */
-    static RunPlanVector load(const std::string &input_filepath, const ModelDescription& model);
+    static RunPlanVector load(const std::string &input_filepath, const ModelDescription &model);
 };
 }  // namespace io
 }  // namespace flamegpu
