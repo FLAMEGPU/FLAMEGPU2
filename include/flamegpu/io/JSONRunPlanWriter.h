@@ -3,6 +3,10 @@
 
 #include <rapidjson/writer.h>
 
+#include <memory>
+#include <string>
+
+
 #include "flamegpu/simulation/RunPlanVector.h"
 
 namespace flamegpu {
@@ -27,7 +31,7 @@ class JSONRunPlanWriter {
     * @param output_filepath Location on disk to export the file
     * @param pretty Whether the exported JSON is "prettified" or "minified"
     */
-    static void save(const RunPlanVector &rpv, const std::string &output_filepath, bool pretty=true);
+    static void save(const RunPlanVector &rpv, const std::string &output_filepath, bool pretty = true);
 };
 }  // namespace io
 }  // namespace flamegpu
