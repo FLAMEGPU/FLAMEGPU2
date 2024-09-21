@@ -8,6 +8,10 @@
 
 namespace flamegpu {
 namespace io {
+
+// Typedef for the writer used, as the full template specification is way too long
+typedef rapidjson::Writer<rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::UTF8<>, rapidjson::CrtAllocator, rapidjson::kWriteNanAndInfFlag> GenericJSONWriter;
+
 void JSONRunPlanWriter::save(const RunPlanVector& rpv, const std::string& output_filepath, const bool pretty_print) {
     // Init writer
     auto buffer = rapidjson::StringBuffer();
@@ -44,7 +48,10 @@ void JSONRunPlanWriter::save(const RunPlanVector& rpv, const std::string& output
  * @param writer An initialised RapidJSON writer.
  * @param rp RunPlan to be writer
  */
-void JSONRunPlanWriter::writeRunPlan(std::unique_ptr<GenericJSONWriter> &writer, const RunPlan &rp) {
+
+template <typename T>
+void JSONRunPlanWriter::writeRunPlan(std::unique_ptr<T> &writer, const RunPlan &rp) {
+    writer->StartObject();
     // Core
     writer->Key("random_seed");
     writer->Uint64(rp.random_seed);
@@ -100,6 +107,8 @@ void JSONRunPlanWriter::writeRunPlan(std::unique_ptr<GenericJSONWriter> &writer,
         }
     }
     writer->EndObject();
+    writer->EndObject();
 }
+template void JSONRunPlanWriter::writeRunPlan(std::unique_ptr<GenericJSONWriter>& writer, const RunPlan& rp);
 }  // namespace io
 }  // namespace flamegpu

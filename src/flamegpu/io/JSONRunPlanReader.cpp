@@ -12,7 +12,7 @@
 namespace flamegpu {
 namespace io {
 class JSONRunPlanReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, JSONRunPlanReader_impl> {
-    enum Mode { Root, Plan, Core, Properties, PropertyArray, Nop };
+    enum Mode { Root, PlanVector, Plan, Properties, PropertyArray, Nop };
     std::stack<Mode> mode;
     std::string lastKey;
     /**
@@ -25,7 +25,8 @@ class JSONRunPlanReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UT
  public:
     JSONRunPlanReader_impl(const std::string& _filename, RunPlanVector& _rpv)
         : filename(_filename)
-        , rpv(_rpv) { }
+        , rpv(_rpv)
+        , current_array_index(0) { }
     template<typename T>
     bool processValue(const T val) {
         Mode isArray = Nop;
@@ -44,30 +45,30 @@ class JSONRunPlanReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UT
                     "in JSONRunPlanReader::load()\n", lastKey.c_str(), current_array_index, it->second.data.elements);
             }
             // Retrieve the linked any and replace the value
-            const auto rp = rpv.end();
+            auto &rp = rpv.back();
             const std::type_index val_type = it->second.data.type;
-            if (it->second.data.elements ==0) {
+            if (it->second.data.elements == 1) {
                 // Properties don't exist by default, so must be created
                 if (val_type == std::type_index(typeid(float))) {
-                    rp->setProperty(lastKey, static_cast<float>(val));
+                   rp.setProperty(lastKey, static_cast<float>(val));
                 } else if (val_type == std::type_index(typeid(double))) {
-                    rp->setProperty(lastKey, static_cast<double>(val));
+                   rp.setProperty(lastKey, static_cast<double>(val));
                 } else if (val_type == std::type_index(typeid(int64_t))) {
-                    rp->setProperty(lastKey, static_cast<int64_t>(val));
+                   rp.setProperty(lastKey, static_cast<int64_t>(val));
                 } else if (val_type == std::type_index(typeid(uint64_t))) {
-                    rp->setProperty(lastKey, static_cast<uint64_t>(val));
+                   rp.setProperty(lastKey, static_cast<uint64_t>(val));
                 } else if (val_type == std::type_index(typeid(int32_t))) {
-                    rp->setProperty(lastKey, static_cast<int32_t>(val));
+                   rp.setProperty(lastKey, static_cast<int32_t>(val));
                 } else if (val_type == std::type_index(typeid(uint32_t))) {
-                    rp->setProperty(lastKey, static_cast<uint32_t>(val));
+                   rp.setProperty(lastKey, static_cast<uint32_t>(val));
                 } else if (val_type == std::type_index(typeid(int16_t))) {
-                    rp->setProperty(lastKey, static_cast<int16_t>(val));
+                   rp.setProperty(lastKey, static_cast<int16_t>(val));
                 } else if (val_type == std::type_index(typeid(uint16_t))) {
-                    rp->setProperty(lastKey, static_cast<uint16_t>(val));
+                   rp.setProperty(lastKey, static_cast<uint16_t>(val));
                 } else if (val_type == std::type_index(typeid(int8_t))) {
-                    rp->setProperty(lastKey, static_cast<int8_t>(val));
+                   rp.setProperty(lastKey, static_cast<int8_t>(val));
                 } else if (val_type == std::type_index(typeid(uint8_t))) {
-                    rp->setProperty(lastKey, static_cast<uint8_t>(val));
+                   rp.setProperty(lastKey, static_cast<uint8_t>(val));
                 } else {
                     THROW exception::RapidJSONError("RunPlan contains property '%s' of unsupported type '%s', "
                         "in JSONRunPlanReader::load()\n", lastKey.c_str(), val_type.name());
@@ -76,12 +77,12 @@ class JSONRunPlanReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UT
                 // Arrays require more fiddly handling
                 // Create the array if this is the first item
                 if (current_array_index == 0) {
-                    rp->property_overrides.emplace(lastKey, detail::Any(it->second));
+                   rp.property_overrides.emplace(lastKey, detail::Any(it->second.data));
                 }
                 // Copy in the specific value
-                const auto prop_it = rp->property_overrides.at(lastKey);
+                const auto prop_it = rp.property_overrides.at(lastKey);
                 if (val_type == std::type_index(typeid(float))) {
-                    static_cast<double*>(const_cast<void*>(prop_it.ptr))[current_array_index++] = static_cast<float>(val);
+                    static_cast<float*>(const_cast<void*>(prop_it.ptr))[current_array_index++] = static_cast<float>(val);
                 } else if (val_type == std::type_index(typeid(double))) {
                     static_cast<double*>(const_cast<void*>(prop_it.ptr))[current_array_index++] = static_cast<double>(val);
                 } else if (val_type == std::type_index(typeid(int64_t))) {
@@ -105,7 +106,15 @@ class JSONRunPlanReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UT
                         "in JSONRunPlanReader::load()\n", lastKey.c_str(), val_type.name());
                 }
             }
-        }  else {
+        } else if (mode.top() == Plan) {
+            if (lastKey == "steps") {
+                rpv.back().setSteps(static_cast<uint32_t>(val));
+            } else if (lastKey == "random_seed") {
+                rpv.back().setRandomSimulationSeed(static_cast<uint64_t>(val));
+            } else {
+                THROW exception::RapidJSONError("Unexpected value whilst parsing input file '%s'.\n", filename.c_str());
+            }
+        } else {
             THROW exception::RapidJSONError("Unexpected value whilst parsing input file '%s'.\n", filename.c_str());
         }
         if (isArray == PropertyArray) {
@@ -117,31 +126,17 @@ class JSONRunPlanReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UT
     bool Bool(bool b) { return processValue<bool>(b); }
     bool Int(int i) { return processValue<int32_t>(i); }
     bool Uint(unsigned u) {
-        if (mode.top() == Plan) {
-            if (lastKey == "steps") {
-                rpv.end()->setSteps(u);
-                return true;
-            }
-            return false;
-        }
         return processValue<uint32_t>(u);
      }
     bool Int64(int64_t i) { return processValue<int64_t>(i); }
     bool Uint64(uint64_t u) {
-         if (mode.top() == Plan) {
-             if (lastKey == "random_seed") {
-                 rpv.end()->setRandomSimulationSeed(u);
-                 return true;
-             }
-             return false;
-         }
          return processValue<uint64_t>(u);
      }
     bool Double(double d) { return processValue<double>(d); }
     bool String(const char*s, rapidjson::SizeType, bool) {
         if (mode.top() == Plan) {
             if (lastKey == "output_subdirectory") {
-                rpv.end()->setOutputSubdirectory(s);
+                rpv.back().setOutputSubdirectory(s);
                 return true;
             }
         }
@@ -151,20 +146,13 @@ class JSONRunPlanReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UT
     bool StartObject() {
         if (mode.empty()) {
             mode.push(Root);
-        } else if (mode.top() == Plan) {
-            if (lastKey == "RunPlanVector") {
-                mode.push(Core);
-            } else {
-                THROW exception::RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
-            }
-        } else if (mode.top() == Core) {
-            if (lastKey == "properties") {
-                mode.push(Properties);
-            } else {
-                THROW exception::RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
-            }
-        } else if (mode.top() == PropertyArray) {
+        } else if (mode.top() == PlanVector) {
+            // Starting a new element of the RunPlanVector
             rpv.push_back(RunPlan(rpv.environment, rpv.allow_0_steps));
+            mode.push(Plan);
+        } else if (mode.top() == Plan && lastKey == "properties") {
+            // Starting a new element of the RunPlanVector
+            mode.push(Properties);
         } else {
             THROW exception::RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
         }
@@ -179,13 +167,13 @@ class JSONRunPlanReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UT
         return true;
     }
     bool StartArray() {
-        if (current_array_index != 0) {
-            THROW exception::RapidJSONError("Array start when current_array_index !=0, in file '%s'. This should never happen.\n", filename.c_str());
-        }
-        if (mode.top() == Plan && lastKey == "properties") {
-            mode.push(Properties);
-        } else if (mode.top() == Properties) {
+        if (mode.top() == Properties) {
+            if (current_array_index != 0) {
+                THROW exception::RapidJSONError("Array start when current_array_index !=0, in file '%s'. This should never happen.\n", filename.c_str());
+            }
             mode.push(PropertyArray);
+        } else if (mode.top() == Root) {
+            mode.push(PlanVector);
         } else {
             THROW exception::RapidJSONError("Unexpected array start whilst parsing input file '%s'.\n", filename.c_str());
         }
@@ -193,17 +181,15 @@ class JSONRunPlanReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UT
     }
     bool EndArray(rapidjson::SizeType) {
         if (mode.top() == PropertyArray) {
-            mode.pop();
-            if (mode.top() == Properties) {
-                // Confirm env array had correct number of elements
-                const auto &prop = rpv.environment->at(lastKey);
-                if (current_array_index != prop.data.elements) {
-                    THROW exception::RapidJSONError("Input file contains property '%s' with %u elements expected %u,"
-                        "in JSONRunPlanReader::load()\n", lastKey.c_str(), current_array_index, prop.data.elements);
-                }
+            // Confirm env array had correct number of elements
+            const auto& prop = rpv.environment->at(lastKey);
+            if (current_array_index != prop.data.elements) {
+                THROW exception::RapidJSONError("Input file contains property '%s' with %u elements expected %u,"
+                    "in JSONRunPlanReader::load()\n", lastKey.c_str(), current_array_index, prop.data.elements);
             }
             current_array_index = 0;
-        } else if (mode.top() == Properties) {
+            mode.pop();
+        } else if (mode.top() == PlanVector) {
             mode.pop();
         } else {
             THROW exception::RapidJSONError("Unexpected array end whilst parsing input file '%s'.\n", filename.c_str());
