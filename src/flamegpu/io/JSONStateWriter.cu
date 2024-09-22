@@ -57,8 +57,10 @@ void JSONStateWriter::endWrite() {
         std::string t_buffer = buffer.GetString();
         // Replace all spaces outside of quotes with \n
         bool in_string = false;
-        for (auto it = t_buffer.begin(); it != t_buffer.end(); ++it) {
-            if (*it == '"') in_string = !in_string;
+        auto it = t_buffer.begin();
+        ++it;  // First char in generated JSON will never be a quote or space
+        for (; it != t_buffer.end(); ++it) {
+            if (*it == '"' && *(it-1) != '\\') in_string = !in_string; // Catch string begin/end, ignore nested quotes
             if (*it == ' ' && !in_string) *it = '\n';
         }
         // Remove newlines
