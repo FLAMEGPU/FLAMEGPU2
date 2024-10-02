@@ -98,6 +98,11 @@ jobs:
         echo "CXX=$(which g++)" >> $GITHUB_ENV
         echo "CUDAHOSTCXX=$(which g++)" >> $GITHUB_ENV
 
+    - name: Downgrade swig to 4.0.2
+      run: |
+        python3 -m pip install swig==4.0.2
+        swig -version
+
     - name: Install CUDA (EL 8)
       if: ${{ env.CUDA != '' }}
       env:
