@@ -4,12 +4,11 @@
 * Tests cover:
 * > mandatory messaging, send/recieve
 */
+#include <array>
 #include "flamegpu/flamegpu.h"
-
 #include "gtest/gtest.h"
 
 namespace flamegpu {
-
 
 namespace test_message_spatial3d {
 
@@ -898,7 +897,7 @@ FLAMEGPU_AGENT_FUNCTION(inWrapped3D, MessageSpatial3D, MessageNone) {
 void wrapped_3d_test(const float x_offset, const float y_offset, const float z_offset, const float out_of_bounds = 0) {
     std::unordered_map<int, unsigned int> bin_counts;
     // Construct model
-    ModelDescription model("Spatial2DMessageTestModel");
+    ModelDescription model("Spatial3DMessageTestModel");
     {   // Location message
         MessageSpatial3D::Description message = model.newMessage<MessageSpatial3D>("location");
         message.setMin(0 + x_offset, 0 + y_offset, 0 + z_offset);
@@ -985,15 +984,12 @@ FLAMEGPU_AGENT_FUNCTION(in_wrapped_EnvDimsNotFactor, MessageSpatial3D, MessageNo
     }
     return ALIVE;
 }
-TEST(Spatial3DMessageTest, Wrapped_EnvDimsNotFactor) {
-    // This tests that bug #1157 is fixed
-    // When the interaction radius is not a factor of the width
-    // that agent's near the max env bound all have the full interaction radius
+void wrapped_3d_test_bounds(std::array<float, 3> lower, std::array<float, 3> upper, float radius, bool exceptionExpected) {
     ModelDescription m("model");
     MessageSpatial3D::Description message = m.newMessage<MessageSpatial3D>("location");
-    message.setMin(0, 0, 0);
-    message.setMax(50.1f, 50.1f, 50.1f);
-    message.setRadius(10);
+    message.setMin(lower.at(0), lower.at(1), lower.at(2));
+    message.setMax(upper.at(0), upper.at(1), upper.at(2));
+    message.setRadius(radius);
     message.newVariable<flamegpu::id_t>("id");  // unused by current test
     AgentDescription agent = m.newAgent("agent");
     agent.newVariable<float>("x");
@@ -1015,12 +1011,25 @@ TEST(Spatial3DMessageTest, Wrapped_EnvDimsNotFactor) {
     // Vertical pair that can interact
     // Top side
     AgentVector::Agent i1 = population[0];
-    i1.setVariable<float>("x", 25.0f);
-    i1.setVariable<float>("y", 25.0f);
-    i1.setVariable<float>("z", 25.0f);
+    i1.setVariable<float>("x", upper.at(0));
+    i1.setVariable<float>("y", upper.at(1));
+    i1.setVariable<float>("z", upper.at(2));
     c.setPopulationData(population);
     c.SimulationConfig().steps = 1;
-    EXPECT_THROW(c.simulate(), exception::DeviceError);
+    if (exceptionExpected) {
+        EXPECT_THROW(c.simulate(), exception::DeviceError);
+    } else {
+        EXPECT_NO_THROW(c.simulate());
+    }
+}
+TEST(Spatial3DMessageTest, Wrapped_EnvDimsNotFactor) {
+    // This tests that bug #1157 is fixed
+    // When the interaction radius is not a factor of the width
+    // that agent's near the max env bound all have the full interaction radius
+    wrapped_3d_test_bounds({0, 0, 0}, {50.1f, 50.1f, 50.1f}, 10, true);
+    // also includes a number of potential edge cases to ensure that no false positives are included (#1177)
+    wrapped_3d_test_bounds({0, 0, 0}, {1, 1, 1}, 0.05f, false);
+    wrapped_3d_test_bounds({0, 0, 0}, {3, 2, 1}, 0.05f, false);
 }
 #else
 TEST(Spatial3DMessageTest, DISABLED_Wrapped_OutOfBounds) { }
