@@ -182,14 +182,14 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_INTS(function, classfunction)
  * This also maps ID to id_t, this should be synonymous with UInt/unsigned int
  */
 %define TEMPLATE_VARIABLE_INSTANTIATE_ID(function, classfunction)
-TEMPLATE_VARIABLE_INSTANTIATE(function, classfunction) 
 %template(function ## ID) classfunction<flamegpu::id_t>;
+TEMPLATE_VARIABLE_INSTANTIATE(function, classfunction) 
 %enddef
 
 // Array version, passing default 2nd template arg 0
 %define TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(function, classfunction)
-TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function, classfunction) 
 %template(function ## ID) classfunction<flamegpu::id_t, 0>;
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function, classfunction) 
 %enddef
 
 
