@@ -15,15 +15,18 @@
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/detail/type_decode.h"
 #include "flamegpu/util/StringPair.h"
-
 namespace flamegpu {
+#ifdef FLAMEGPU_VISUALISATION
+namespace visualiser {
+struct ModelVisData;
+}
+#endif
 namespace detail {
 class CUDAScatter;
 namespace curve {
 class HostCurve;
 class CurveRTCHost;
 }
-
 /**
  * This represents the equivalent of CUDAAgent, CUDAMessage for EnvironmentDirectedGraph
  * As the graph cannot be modified on the device, the host buffers can be assumed to always holds the truth
@@ -66,6 +69,12 @@ class CUDAEnvironmentDirectedGraphBuffers {
     std::map<std::string, Buffer> edge_buffers;
     std::list<std::weak_ptr<detail::curve::HostCurve>> curve_instances;
     std::list<std::weak_ptr<detail::curve::CurveRTCHost>> rtc_curve_instances;
+#ifdef FLAMEGPU_VISUALISATION
+    /**
+     * Empty if getVisualisation() hasn't been called
+     */
+    mutable std::weak_ptr<visualiser::ModelVisData> visualisation;
+#endif
     size_type vertex_count;
     size_type edge_count;
     bool requires_rebuild;
@@ -267,6 +276,11 @@ class CUDAEnvironmentDirectedGraphBuffers {
     * @throws exception::InvalidID If the ID is not in use
     */
     unsigned int getEdgeIndex(id_t src_vertex_id, id_t dest_vertex_id) const;
+#ifdef FLAMEGPU_VISUALISATION
+    void setVisualisation(std::shared_ptr<visualiser::ModelVisData> &_visualisation) const {
+        this->visualisation = _visualisation;
+    }
+#endif
 };
 
 
