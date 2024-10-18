@@ -28,5 +28,10 @@ void LineVis::addVertex(float x, float y, float z) {
     l->colors.push_back(currentColor[3]);
 }
 
+void LineVis::clear() {
+    l->vertices.clear();
+    l->colors.clear();
+}
+
 }  // namespace visualiser
 }  // namespace flamegpu

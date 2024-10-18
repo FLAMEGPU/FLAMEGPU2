@@ -7,6 +7,10 @@
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/runtime/detail/curve/HostCurve.cuh"
 #include "flamegpu/detail/cuda.cuh"
+#ifdef FLAMEGPU_VISUALISATION
+#include "flamegpu/visualiser/ModelVis.h"
+#include "flamegpu/visualiser/FLAMEGPU_Visualisation.h"
+#endif
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #pragma warning(disable : 4706 4834)
@@ -379,6 +383,7 @@ __global__ void translateSrcDest(id_t *edgeSrcDest, unsigned int *idMap, const u
     }
 }
 void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& scatter, const unsigned int streamID, const cudaStream_t stream) {
+    bool has_changed = false;
     // Copy variable buffers to device
     if (vertex_count) {
         for (auto& v : graph_description.vertexProperties) {
@@ -386,6 +391,7 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
             if (vb.ready == Buffer::Host) {
                 gpuErrchk(cudaMemcpyAsync(vb.d_ptr, vb.h_ptr, vertex_count * v.second.type_size * v.second.elements, cudaMemcpyHostToDevice, stream));
                 vb.ready = Buffer::Both;
+                has_changed = true;
             }
         }
     }
@@ -395,6 +401,7 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
             if (eb.ready == Buffer::Host) {
                 gpuErrchk(cudaMemcpyAsync(eb.d_ptr, eb.h_ptr, edge_count * e.second.type_size * e.second.elements, cudaMemcpyHostToDevice, stream));
                 eb.ready = Buffer::Both;
+                has_changed = true;
             }
         }
     }
@@ -571,6 +578,17 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
             }
         }
         requires_rebuild = false;
+        has_changed = true;
+    }
+    if (has_changed) {
+#ifdef FLAMEGPU_VISUALISATION
+        if (auto vis = visualisation.lock()) {
+            vis->visualiser->lockDynamicLinesMutex();
+            vis->rebuildEnvGraph(graph_description.name);
+            vis->visualiser->updateDynamicLine(std::string("graph_") + graph_description.name);
+            vis->visualiser->releaseDynamicLinesMutex();
+        }
+#endif
     }
 }
 

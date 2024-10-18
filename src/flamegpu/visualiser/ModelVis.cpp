@@ -18,6 +18,14 @@ ModelVisData::ModelVisData(const flamegpu::CUDASimulation &_model)
 , model(_model)
 , modelData(_model.getModelDescription()) { }
 
+void ModelVisData::hookVis(std::shared_ptr<visualiser::ModelVisData>& vis, std::unordered_map<std::string, std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>> &map) {
+    for (auto [name, graph] : graphs) {
+        auto &graph_buffs = map.at(name);
+        graph_buffs->setVisualisation(vis);
+        graph->constructGraph(graph_buffs);
+        vis->rebuildEnvGraph(name);
+    }
+}
 void ModelVisData::registerEnvProperties() {
     if (model.singletons && !env_registered) {
         char* const host_env_origin = const_cast<char*>(static_cast<const char*>(model.singletons->environment->getHostBuffer()));
@@ -70,6 +78,14 @@ void ModelVisData::updateRandomSeed() {
         visualiser->setRandomSeed(model.getSimulationConfig().random_seed);
     }
 }
+void ModelVisData::buildEnvGraphs() {
+    for (auto [name, graph] : graphs) {
+        graph->constructGraph(model.directed_graph_map.at(name));
+    }
+}
+void ModelVisData::rebuildEnvGraph(const std::string &graph_name) {
+    graphs.at(graph_name)->constructGraph(model.directed_graph_map.at(graph_name));
+}
 
 ModelVis::ModelVis(std::shared_ptr<ModelVisData> _data, bool _isSWIG)
     : isSWIG(_isSWIG)
@@ -100,7 +116,7 @@ AgentVis ModelVis::addAgent(const std::string &agent_name) {
 AgentVis ModelVis::Agent(const std::string &agent_name) {
     // If agent exists
     if (data->modelData.agents.find(agent_name) != data->modelData.agents.end()) {
-        // If agent is not already in vis map
+        // If agent is already in vis map
         auto visAgent = data->agents.find(agent_name);
         if (visAgent != data->agents.end()) {
             // Create new vis agent
@@ -114,7 +130,41 @@ AgentVis ModelVis::Agent(const std::string &agent_name) {
         "in ModelVis::Agent()\n",
         agent_name.c_str());
 }
-
+EnvironmentGraphVis ModelVis::addGraph(const std::string& graph_name) {
+    // If graph exists
+    auto graph_it = data->modelData.environment->directed_graphs.find(graph_name);
+    if (graph_it != data->modelData.environment->directed_graphs.end()) {
+        // If graph is not already in vis map
+        auto visGraph = data->graphs.find(graph_name);
+        if (visGraph == data->graphs.end()) {
+            // Create a line config for the graph
+            auto m = std::make_shared<LineConfig>(LineConfig::Type::Lines);
+            data->modelCfg.dynamic_lines.insert({std::string("graph_") + graph_name, m});
+            // Create new vis graph
+            return EnvironmentGraphVis(data->graphs.emplace(graph_name, std::make_shared<EnvironmentGraphVisData>(graph_it->second, m)).first->second);
+        }
+        return EnvironmentGraphVis(visGraph->second);
+    }
+    THROW exception::InvalidEnvGraph("Environment direct graph name '%s' was not found within the model description hierarchy, "
+        "in ModelVis::addGraph()\n",
+        graph_name.c_str());
+}
+EnvironmentGraphVis ModelVis::Graph(const std::string& graph_name) {
+    // If graph exists
+    if (data->modelData.environment->directed_graphs.find(graph_name) != data->modelData.environment->directed_graphs.end()) {
+        // If graph is already in vis map
+        auto visGraph = data->graphs.find(graph_name);
+        if (visGraph != data->graphs.end()) {
+            return EnvironmentGraphVis(visGraph->second);
+        }
+        THROW exception::InvalidEnvGraph("Environment direct graph name '%s' has not been marked for visualisation, ModelVis::addGraph() must be called first, "
+            "in ModelVis::Agent()\n",
+            graph_name.c_str());
+    }
+    THROW exception::InvalidEnvGraph("Environment direct graph name '%s' was not found within the model description hierarchy, "
+        "in ModelVis::addGraph()\n",
+        graph_name.c_str());
+}
 // Below methods are related to executing the visualiser
 void ModelVis::activate() {
     // Only execute if background thread is not active

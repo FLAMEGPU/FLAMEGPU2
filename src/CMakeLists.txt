@@ -394,6 +394,7 @@ SET(SRC_INCLUDE_VISUALISER
     ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/ModelVis.h
     ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/AgentVis.h
     ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/AgentStateVis.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/EnvironmentGraphVis.h
     ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/StaticModelVis.h
     ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/LineVis.h
     ${FLAMEGPU_ROOT}/include/flamegpu/visualiser/PanelVis.h
@@ -411,6 +412,7 @@ set(SRC_FLAMEGPU_VISUALISER
     ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/ModelVis.cpp    
     ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/AgentVis.cpp     
     ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/AgentStateVis.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/EnvironmentGraphVis.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/StaticModelVis.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/LineVis.cpp
         ${FLAMEGPU_ROOT}/src/flamegpu/visualiser/PanelVis.cpp

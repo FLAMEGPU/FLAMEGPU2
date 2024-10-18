@@ -1162,6 +1162,8 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(poisson, flamegpu::HostRandom::poisson)
     %ignore flamegpu::visualiser::Palette::colors;  // This is protected, i've no idea why SWIG is trying to wrap it
     // Mark PanelVis as a class where assignment operator is not supported
     %feature("valuewrapper") flamegpu::visualiser::PanelVis;
+    // Mark EnvironmentGraphVis as a class where default construction is not supported
+    %feature("valuewrapper") flamegpu::visualiser::EnvironmentGraphVis;
     // Rename directives. These go before any %includes
     // -----------------
     // Director features. These go before the %includes.
@@ -1174,6 +1176,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(poisson, flamegpu::HostRandom::poisson)
     %include "flamegpu/visualiser/StaticModelVis.h"
     %include "flamegpu/visualiser/AgentStateVis.h"
     %include "flamegpu/visualiser/AgentVis.h"
+    %include "flamegpu/visualiser/EnvironmentGraphVis.h"
     %include "flamegpu/visualiser/LineVis.h"
     %include "flamegpu/visualiser/PanelVis.h"
     %include "flamegpu/visualiser/ModelVis.h"
