@@ -1542,6 +1542,12 @@ void CUDASimulation::applyConfig_derived() {
 
     // We init Random through submodel hierarchy after singletons
     reseed(getSimulationConfig().random_seed);
+
+#ifdef FLAMEGPU_VISUALISATION
+    if (visualisation) {
+        visualisation->hookVis(visualisation, directed_graph_map);
+    }
+#endif
 }
 
 void CUDASimulation::reseed(const uint64_t seed) {
@@ -1709,8 +1715,9 @@ const CUDASimulation::Config &CUDASimulation::getCUDAConfig() const {
 }
 #ifdef FLAMEGPU_VISUALISATION
 visualiser::ModelVis CUDASimulation::getVisualisation() {
-    if (!visualisation)
+    if (!visualisation) {
         visualisation = std::make_shared<visualiser::ModelVisData>(*this);
+    }
     return visualiser::ModelVis(visualisation, isSWIG);
 }
 #endif

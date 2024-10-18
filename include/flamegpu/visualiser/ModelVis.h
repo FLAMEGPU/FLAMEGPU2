@@ -10,6 +10,7 @@
 
 // @todo - All vis headers should live in the vis repo.
 #include "flamegpu/visualiser/AgentVis.h"
+#include "flamegpu/visualiser/EnvironmentGraphVis.h"
 #include "flamegpu/visualiser/StaticModelVis.h"
 #include "flamegpu/visualiser/LineVis.h"
 #include "flamegpu/visualiser/PanelVis.h"
@@ -34,6 +35,12 @@ struct ModelVisData {
      */
     explicit ModelVisData(const CUDASimulation& model/*TBD*/);
     /**
+     * Pass the vis shared pointer to directed graphs being visualised so they can trigger updates
+     * @param vis pointer to this
+     * @param map the map of environment directed graph cuda buffers
+     */
+    void hookVis(std::shared_ptr<visualiser::ModelVisData> &vis, std::unordered_map<std::string, std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>> &map);
+    /**
      * Main struct of visualisation configuration options for the model
      */
     ModelConfig modelCfg;
@@ -46,6 +53,10 @@ struct ModelVisData {
      * Per agent, visualisation configuration options
      */
     std::unordered_map<std::string, std::shared_ptr<AgentVisData>> agents;
+    /**
+     * Per environment direct graph, visualisation configuration options
+     */
+    std::unordered_map<std::string, std::shared_ptr<EnvironmentGraphVisData>> graphs;
     /**
      * Reference back to the model to be visualised
      */
@@ -75,6 +86,14 @@ struct ModelVisData {
      * Random seed has changed
      */
     void updateRandomSeed();
+    /**
+     * Rebuild all environment graph sketches
+     */
+    void buildEnvGraphs();
+    /**
+     * Rebuild a specific environment graph sketch
+     */
+    void rebuildEnvGraph(const std::string& graph_name);
 };
 
 /**
@@ -110,6 +129,17 @@ class ModelVis {
      * @see addAgent(const std::string&)
      */
     AgentVis Agent(const std::string &agent_name);
+    /**
+     * Select a graph to be rendered
+     * @param graph_name The name of the environment directed graph to visualise
+     * @return A handle to configure the visualisation of the specified graph
+     */
+    EnvironmentGraphVis addGraph(const std::string &graph_name);
+    /**
+     * Returns the configuration handler if the environment directed graph has been marked for visualisation
+     * @see addGraph(const std::string&)
+     */
+    EnvironmentGraphVis Graph(const std::string& graph_name);
     /**
      * Set the title for the visualisation window
      * This value defaults to the model's name

@@ -40,6 +40,10 @@ class LineVis {
      * @note Y is considered the vertical axis
      */
     void addVertex(float x, float y, float z = 0.0f);
+    /**
+     * Remove all sketch data to start drawing a replacement
+     */
+    void clear();
 
  private:
     /**
