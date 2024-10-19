@@ -197,6 +197,12 @@ class ModelVis {
      */
     void setInitialCameraTarget(const float &x, const float &y, const float &z);
     /**
+     * Set the initial camera roll in radians
+     * This value defaults to 0
+     * @param roll The roll angle in radians
+     */
+    void setInitialCameraRoll(const float &roll);
+    /**
      * The speed of camera movement, in units travelled per millisecond
      * This value defaults to (0.05, 5.0)
      * @param speed The camera speed

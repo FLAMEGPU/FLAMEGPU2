@@ -247,6 +247,10 @@ void ModelVis::setInitialCameraTarget(const float &x, const float &y, const floa
     data->modelCfg.cameraTarget[2] = z;
 }
 
+void ModelVis::setInitialCameraRoll(const float &roll) {
+    data->modelCfg.cameraRoll = roll;
+}
+
 void ModelVis::setCameraSpeed(const float &speed, const float &shiftMultiplier) {
     data->modelCfg.cameraSpeed[0] = speed;
     data->modelCfg.cameraSpeed[1] = shiftMultiplier;
