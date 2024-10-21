@@ -77,8 +77,6 @@ jobs:
       FLAMEGPU_SEATBELTS: ${{ matrix.config.SEATBELTS }}
       PYTHON: ${{ matrix.python}}
       VISUALISATION: ${{ matrix.VISUALISATION }}
-      # Short term fix to use node16 not node20 for actions. This will stop working eventually, forcing our hand in dropping manylinux2014 support.
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
     steps:
     - uses: actions/checkout@v4
@@ -136,6 +134,11 @@ jobs:
 
     - name: Add custom problem matchers for annotations
       run: echo "::add-matcher::.github/problem-matchers.json"
+
+    - name: Install setuptools and wheel
+      if: ${{ env.PYTHON >= 3.12 }}
+      run: |
+        python${{env.PYTHON}} -m pip install setuptools wheel
 
     # This patches a bug where ManyLinux doesn't generate buildnumber as git dir is owned by diff user
     - name: Enable git safe-directory
