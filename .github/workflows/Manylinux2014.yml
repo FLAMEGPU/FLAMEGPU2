@@ -132,6 +132,11 @@ jobs:
         make
         make install
 
+    - name: Install setuptools and wheel
+      if: ${{ env.PYTHON >= 3.12 }}
+      run: |
+        python${{env.PYTHON}} -m pip install setuptools wheel
+
     - name: Add custom problem matchers for annotations
       run: echo "::add-matcher::.github/problem-matchers.json"
 
