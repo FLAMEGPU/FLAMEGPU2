@@ -19,9 +19,11 @@ ModelVisData::ModelVisData(const flamegpu::CUDASimulation &_model)
 , modelData(_model.getModelDescription()) { }
 
 void ModelVisData::hookVis(std::shared_ptr<visualiser::ModelVisData>& vis, std::unordered_map<std::string, std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>> &map) {
+    for (auto [key, buf] : map) {
+        buf->setVisualisation(vis);
+    }
     for (auto [name, graph] : graphs) {
         auto &graph_buffs = map.at(name);
-        graph_buffs->setVisualisation(vis);
         graph->constructGraph(graph_buffs);
         vis->rebuildEnvGraph(name);
     }

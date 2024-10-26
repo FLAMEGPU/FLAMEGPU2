@@ -583,10 +583,12 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
     if (has_changed) {
 #ifdef FLAMEGPU_VISUALISATION
         if (auto vis = visualisation.lock()) {
-            vis->visualiser->lockDynamicLinesMutex();
-            vis->rebuildEnvGraph(graph_description.name);
-            vis->visualiser->updateDynamicLine(std::string("graph_") + graph_description.name);
-            vis->visualiser->releaseDynamicLinesMutex();
+            if (vis->graphs.find(graph_description.name) != vis->graphs.end()) {
+                vis->visualiser->lockDynamicLinesMutex();
+                vis->rebuildEnvGraph(graph_description.name);
+                vis->visualiser->updateDynamicLine(std::string("graph_") + graph_description.name);
+                vis->visualiser->releaseDynamicLinesMutex();
+            }
         }
 #endif
     }

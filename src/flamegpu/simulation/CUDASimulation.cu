@@ -1542,12 +1542,6 @@ void CUDASimulation::applyConfig_derived() {
 
     // We init Random through submodel hierarchy after singletons
     reseed(getSimulationConfig().random_seed);
-
-#ifdef FLAMEGPU_VISUALISATION
-    if (visualisation) {
-        visualisation->hookVis(visualisation, directed_graph_map);
-    }
-#endif
 }
 
 void CUDASimulation::reseed(const uint64_t seed) {
@@ -1662,6 +1656,12 @@ void CUDASimulation::initialiseSingletons() {
 
     // Ensure RTC is set up.
     initialiseRTC();
+
+#ifdef FLAMEGPU_VISUALISATION
+    if (visualisation) {
+        visualisation->hookVis(visualisation, directed_graph_map);
+    }
+#endif
 }
 
 void CUDASimulation::initialiseRTC() {
@@ -1717,6 +1717,10 @@ const CUDASimulation::Config &CUDASimulation::getCUDAConfig() const {
 visualiser::ModelVis CUDASimulation::getVisualisation() {
     if (!visualisation) {
         visualisation = std::make_shared<visualiser::ModelVisData>(*this);
+        // If visualisation is init after sim has been init ensure graphs are linked to vis
+        if (directed_graph_map.size()) {
+            visualisation->hookVis(visualisation, directed_graph_map);
+        }
     }
     return visualiser::ModelVis(visualisation, isSWIG);
 }
