@@ -32,6 +32,9 @@ class StateWriterFactory {
             return new XMLStateWriter();
         } else if (extension == ".json") {
             return new JSONStateWriter();
+        } else if (extension.empty()) {
+            THROW exception::InvalidFilePath("Filepath '%s' contains unsuitable characters or lacks a file extension, "
+                "in StateWriterFactory::createLogger().", output_file.c_str());
         }
         THROW exception::UnsupportedFileType("File '%s' is not a type which can be written "
             "by StateWriterFactory::createWriter().",

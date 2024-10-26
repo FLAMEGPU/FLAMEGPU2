@@ -37,6 +37,9 @@ class StateReaderFactory {
             return new XMLStateReader();
         } else if (extension == ".json") {
             return new JSONStateReader();
+        } else if (extension.empty()) {
+                THROW exception::InvalidFilePath("Filepath '%s' contains unsuitable characters or lacks a file extension, "
+                    "in StateReaderFactory::createLogger().", input.c_str());
         }
         THROW exception::UnsupportedFileType("File '%s' is not a type which can be read "
             "by StateReaderFactory::createReader().",
