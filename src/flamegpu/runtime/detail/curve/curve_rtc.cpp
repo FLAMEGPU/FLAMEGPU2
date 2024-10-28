@@ -732,7 +732,9 @@ void CurveRTCHost::initHeaderSetters() {
                 setAgentVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[index] = (T) variable;\n";
                 setAgentVariableImpl << "              return;\n";
                 setAgentVariableImpl << "          }\n";
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         setAgentVariableImpl <<         "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         setAgentVariableImpl <<         "          DTHROW(\"Agent variable '%s' was not found during setVariable().\\n\", name);\n";
@@ -759,7 +761,9 @@ void CurveRTCHost::initHeaderSetters() {
                 setMessageVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageOut_data_offset + (ct++ * sizeof(void*)) << ")))[index] = (T) variable;\n";
                 setMessageVariableImpl << "              return;\n";
                 setMessageVariableImpl << "          }\n";
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         setMessageVariableImpl <<         "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         setMessageVariableImpl <<         "          DTHROW(\"Message variable '%s' was not found during setVariable().\\n\", name);\n";
@@ -786,7 +790,9 @@ void CurveRTCHost::initHeaderSetters() {
                 setNewAgentVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << newAgent_data_offset + (ct++ * sizeof(void*)) << ")))[index] = (T) variable;\n";
                 setNewAgentVariableImpl << "              return;\n";
                 setNewAgentVariableImpl << "          }\n";
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         setNewAgentVariableImpl <<         "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         setNewAgentVariableImpl <<         "          DTHROW(\"New agent variable '%s' was not found during setVariable().\\n\", name);\n";
@@ -819,7 +825,9 @@ void CurveRTCHost::initHeaderSetters() {
                 setAgentArrayVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[i] = (T) variable;\n";
                 setAgentArrayVariableImpl << "              return;\n";
                 setAgentArrayVariableImpl << "          }\n";
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         setAgentArrayVariableImpl <<         "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         setAgentArrayVariableImpl <<         "          DTHROW(\"Agent array variable '%s' was not found during setVariable().\\n\", name);\n";
@@ -852,7 +860,9 @@ void CurveRTCHost::initHeaderSetters() {
                 setMessageArrayVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageOut_data_offset + (ct++ * sizeof(void*)) << ")))[i] = (T) variable;\n";
                 setMessageArrayVariableImpl << "              return;\n";
                 setMessageArrayVariableImpl << "          }\n";
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         setMessageArrayVariableImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         setMessageArrayVariableImpl << "          DTHROW(\"Message array variable '%s' was not found during setVariable().\\n\", name);\n";
@@ -885,7 +895,9 @@ void CurveRTCHost::initHeaderSetters() {
                 setNewAgentArrayVariableImpl << "              (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << newAgent_data_offset + (ct++ * sizeof(void*)) << ")))[i] = (T) variable;\n";
                 setNewAgentArrayVariableImpl << "              return;\n";
                 setNewAgentArrayVariableImpl << "          }\n";
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         setNewAgentArrayVariableImpl <<         "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         setNewAgentArrayVariableImpl <<         "          DTHROW(\"New agent array variable '%s' was not found during setVariable().\\n\", name);\n";
@@ -913,7 +925,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentVariableImpl << "#endif\n";
                 getAgentVariableImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[index];\n";
                 getAgentVariableImpl << "            }\n";
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         getAgentVariableImpl <<         "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getAgentVariableImpl <<         "            DTHROW(\"Agent variable '%s' was not found during getVariable().\\n\", name);\n";
@@ -940,7 +954,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getMessageVariableImpl << "#endif\n";
                 getMessageVariableImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageIn_data_offset + (ct++ * sizeof(void*)) << ")))[index];\n";
                 getMessageVariableImpl << "            }\n";
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         getMessageVariableImpl <<         "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getMessageVariableImpl <<         "            DTHROW(\"Message variable '%s' was not found during getVariable().\\n\", name);\n";
@@ -958,7 +974,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getDirectedGraphPBMImpl << "            if (graphHash == " << Curve::variableRuntimeHash(element.first.first) << ") {\n";
                 getDirectedGraphPBMImpl << "                return (*static_cast<unsigned int**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << directedGraphVertex_data_offset + (ct++ * sizeof(void*)) << ")));\n";
                 getDirectedGraphPBMImpl << "            }\n";
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         getDirectedGraphPBMImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getDirectedGraphPBMImpl << "            DTHROW(\"Directed graph PBM was not found during getEnvironmentDirectedGraphPBM().\\n\");\n";
@@ -976,7 +994,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getDirectedGraphIPBMImpl << "            if (graphHash == " << Curve::variableRuntimeHash(element.first.first) << ") {\n";
                 getDirectedGraphIPBMImpl << "                return (*static_cast<unsigned int**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << directedGraphVertex_data_offset + (ct++ * sizeof(void*)) << ")));\n";
                 getDirectedGraphIPBMImpl << "            }\n";
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         getDirectedGraphIPBMImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getDirectedGraphIPBMImpl << "            DTHROW(\"Directed graph IPBM was not found during getEnvironmentDirectedGraphIPBM().\\n\");\n";
@@ -994,7 +1014,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getDirectedGraphIPBMEdgesImpl << "            if (graphHash == " << Curve::variableRuntimeHash(element.first.first) << ") {\n";
                 getDirectedGraphIPBMEdgesImpl << "                return (*static_cast<unsigned int**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << directedGraphVertex_data_offset + (ct++ * sizeof(void*)) << ")));\n";
                 getDirectedGraphIPBMEdgesImpl << "            }\n";
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         getDirectedGraphIPBMEdgesImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getDirectedGraphIPBMEdgesImpl << "            DTHROW(\"Directed graph IPBM edge list was not found during getEnvironmentDirectedGraphIPBMEdges().\\n\");\n";
@@ -1021,7 +1043,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getGraphVertexPropertyImpl << "#endif\n";
                 getGraphVertexPropertyImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << directedGraphVertex_data_offset + (ct++ * sizeof(void*)) << ")))[index];\n";
                 getGraphVertexPropertyImpl << "            }\n";
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         getGraphVertexPropertyImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getGraphVertexPropertyImpl << "            DTHROW(\"Directed graph vertex property '%s' was not found during getProperty().\\n\", name);\n";
@@ -1048,7 +1072,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getGraphEdgePropertyImpl << "#endif\n";
                 getGraphEdgePropertyImpl << "                return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << directedGraphEdge_data_offset + (ct++ * sizeof(void*)) << ")))[index];\n";
                 getGraphEdgePropertyImpl << "            }\n";
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         getGraphEdgePropertyImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getGraphEdgePropertyImpl << "            DTHROW(\"Directed graph edge property '%s' was not found during getProperty().\\n\", name);\n";
@@ -1073,7 +1099,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct * sizeof(void*)) << "))) + index);\n";
                 getAgentVariableLDGImpl << "            }\n";
                 ++ct;  // Prev was part of the return line, but don't want confusion
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         getAgentVariableLDGImpl <<         "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getAgentVariableLDGImpl <<         "            DTHROW(\"Agent variable '%s' was not found during getVariable().\\n\", name);\n";
@@ -1098,7 +1126,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getMessageVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageIn_data_offset + (ct * sizeof(void*)) << "))) + index);\n";
                 getMessageVariableLDGImpl << "            }\n";
                 ++ct;  // Prev was part of the return line, but don't want confusion
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         getMessageVariableLDGImpl <<         "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getMessageVariableLDGImpl <<         "            DTHROW(\"Message variable '%s' was not found during getVariable().\\n\", name);\n";
@@ -1131,7 +1161,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentArrayVariableImpl << "#endif\n";
                 getAgentArrayVariableImpl << "              return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct++ * sizeof(void*)) << ")))[i];\n";
                 getAgentArrayVariableImpl << "           };\n";
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         getAgentArrayVariableImpl <<         "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getAgentArrayVariableImpl <<         "           DTHROW(\"Agent array variable '%s' was not found during getVariable().\\n\", name);\n";
@@ -1164,7 +1196,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getMessageArrayVariableImpl << "#endif\n";
                 getMessageArrayVariableImpl << "              return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageIn_data_offset + (ct++ * sizeof(void*)) << ")))[i];\n";
                 getMessageArrayVariableImpl << "           };\n";
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         getMessageArrayVariableImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getMessageArrayVariableImpl << "           DTHROW(\"Message array variable '%s' was not found during getVariable().\\n\", name);\n";
@@ -1197,7 +1231,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getGraphVertexArrayPropertyImpl << "#endif\n";
                 getGraphVertexArrayPropertyImpl << "              return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << directedGraphVertex_data_offset + (ct++ * sizeof(void*)) << ")))[i];\n";
                 getGraphVertexArrayPropertyImpl << "           };\n";
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         getGraphVertexArrayPropertyImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getGraphVertexArrayPropertyImpl << "           DTHROW(\"Directed graph vertex array property '%s' was not found during getProperty().\\n\", name);\n";
@@ -1230,7 +1266,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getGraphEdgeArrayPropertyImpl << "#endif\n";
                 getGraphEdgeArrayPropertyImpl << "              return (*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << directedGraphEdge_data_offset + (ct++ * sizeof(void*)) << ")))[i];\n";
                 getGraphEdgeArrayPropertyImpl << "           };\n";
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         getGraphEdgeArrayPropertyImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getGraphEdgeArrayPropertyImpl << "           DTHROW(\"Directed graph edge array property '%s' was not found during getProperty().\\n\", name);\n";
@@ -1263,7 +1301,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getAgentArrayVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << agent_data_offset + (ct * sizeof(void*)) << "))) + i);\n";
                 getAgentArrayVariableLDGImpl << "           };\n";
                 ++ct;  // Prev was part of the return line, but don't want confusion
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         getAgentArrayVariableLDGImpl <<         "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getAgentArrayVariableLDGImpl <<         "           DTHROW(\"Agent array variable '%s' was not found during getVariable().\\n\", name);\n";
@@ -1296,7 +1336,9 @@ void CurveRTCHost::initHeaderGetters() {
                 getMessageArrayVariableLDGImpl << "                return (T) __ldg((*static_cast<T**>(static_cast<void*>(flamegpu::detail::curve::" << getVariableSymbolName() << " + " << messageIn_data_offset + (ct * sizeof(void*)) << "))) + i);\n";
                 getMessageArrayVariableLDGImpl << "           };\n";
                 ++ct;  // Prev was part of the return line, but don't want confusion
-            } else { ++ct; }
+            } else {
+                ++ct;
+            }
         }
         getMessageArrayVariableLDGImpl << "#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS\n";
         getMessageArrayVariableLDGImpl << "           DTHROW(\"Message array variable '%s' was not found during getVariable().\\n\", name);\n";
