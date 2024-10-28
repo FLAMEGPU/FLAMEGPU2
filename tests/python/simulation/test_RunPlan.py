@@ -10,7 +10,7 @@ class TestRunPlan(TestCase):
         model = pyflamegpu.ModelDescription("test")
         plan = None
         plan = pyflamegpu.RunPlan(model)
-        assert plan != None
+        assert plan is not None
         plan = None
 
     def test_setRandomSimulationSeed(self):

@@ -72,7 +72,7 @@ class TestCUDAEnsemble(TestCase):
         # Use the ctor
         # explicit CUDAEnsemble(const ModelDescription& model, int argc = 0, const char** argv = None)
         ensemble = pyflamegpu.CUDAEnsemble(model, [])
-        assert ensemble != None
+        assert ensemble is not None
         # Check a property
         assert ensemble.Config().timing == False
         # Run the destructor ~CUDAEnsemble

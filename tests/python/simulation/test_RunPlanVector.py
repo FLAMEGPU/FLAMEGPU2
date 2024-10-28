@@ -23,7 +23,7 @@ class TestRunPlanVector(TestCase):
         # Use New
         initialLength = 4
         plans = pyflamegpu.RunPlanVector(model, initialLength)
-        assert plans != None
+        assert plans is not None
         assert plans.size() == initialLength
         # Run the destructor
         plans = None
