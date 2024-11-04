@@ -36,35 +36,36 @@ class MiniSim {
         model.addExitCondition(allow_0_steps);
         {
             EnvironmentDescription e = model.Environment();
-            e.newProperty<float>("float", 12.0f);
-            e.newProperty<double>("double", 13.0);
-            e.newProperty<int64_t>("int64_t", 14);
-            e.newProperty<uint64_t>("uint64_t", 15u);
-            e.newProperty<int32_t>("int32_t", 16);
-            e.newProperty<uint32_t>("uint32_t", 17u);
-            e.newProperty<int16_t>("int16_t", 18);
-            e.newProperty<uint16_t>("uint16_t", 19u);
-            e.newProperty<int8_t>("int8_t", 20);
-            e.newProperty<uint8_t>("uint8_t", 21u);
-            e.newProperty<float, 3>("float_a", { 12.0f, 0.0f, 1.0f });
-            e.newProperty<double, 3>("double_a", { 13.0, 0.0, 1.0 });
-            e.newProperty<int64_t, 3>("int64_t_a", { 14, 0, 1 });
-            e.newProperty<uint64_t, 3>("uint64_t_a", { 15u, 0u, 1u });
-            e.newProperty<int32_t, 3>("int32_t_a", { 16, 0, 1 });
-            e.newProperty<uint32_t, 3>("uint32_t_a", { 17u, 0u, 1u });
-            e.newProperty<int16_t, 3>("int16_t_a", { 18, 0, 1});
-            e.newProperty<uint16_t, 3>("uint16_t_a", { 19u, 0u, 1u });
-            e.newProperty<int8_t, 3>("int8_t_a", { 20, 0, 1 });
-            e.newProperty<uint8_t, 3>("uint8_t_a", {21u, 0u, 1u});
+            // Ensure default values differ!!!
+            e.newProperty<float>("float", 112.0f);
+            e.newProperty<double>("double", 113.0);
+            e.newProperty<int64_t>("int64_t", 114);
+            e.newProperty<uint64_t>("uint64_t", 115u);
+            e.newProperty<int32_t>("int32_t", 116);
+            e.newProperty<uint32_t>("uint32_t", 117u);
+            e.newProperty<int16_t>("int16_t", 118);
+            e.newProperty<uint16_t>("uint16_t", 119u);
+            e.newProperty<int8_t>("int8_t", 120);
+            e.newProperty<uint8_t>("uint8_t", 121u);
+            e.newProperty<float, 3>("float_a", { 112.0f, 10.0f, 11.0f });
+            e.newProperty<double, 3>("double_a", { 113.0, 10.0, 11.0 });
+            e.newProperty<int64_t, 3>("int64_t_a", { 114, 10, 11 });
+            e.newProperty<uint64_t, 3>("uint64_t_a", { 115u, 10u, 11u });
+            e.newProperty<int32_t, 3>("int32_t_a", { 116, 10, 11 });
+            e.newProperty<uint32_t, 3>("uint32_t_a", { 117u, 10u, 11u });
+            e.newProperty<int16_t, 3>("int16_t_a", { 118, 10, 11});
+            e.newProperty<uint16_t, 3>("uint16_t_a", { 119u, 10u, 11u });
+            e.newProperty<int8_t, 3>("int8_t_a", { 120, 10, 11 });
+            e.newProperty<uint8_t, 3>("uint8_t_a", {121u, 10u, 11u});
             // Limit values
-            e.newProperty<float>("float_qnan", std::numeric_limits<float>::quiet_NaN());
-            e.newProperty<float>("float_snan", std::numeric_limits<float>::signaling_NaN());
-            e.newProperty<float>("float_inf", std::numeric_limits<float>::infinity());
-            e.newProperty<float>("float_inf_neg", -std::numeric_limits<float>::infinity());
-            e.newProperty<double>("double_qnan", std::numeric_limits<double>::quiet_NaN());
-            e.newProperty<double>("double_snan", std::numeric_limits<double>::quiet_NaN());
-            e.newProperty<double>("double_inf", std::numeric_limits<double>::infinity());
-            e.newProperty<double>("double_inf_neg", -std::numeric_limits<double>::infinity());
+            e.newProperty<float>("float_qnan", 0);
+            e.newProperty<float>("float_snan", 0);
+            e.newProperty<float>("float_inf", 0);
+            e.newProperty<float>("float_inf_neg", 0);
+            e.newProperty<double>("double_qnan", 0);
+            e.newProperty<double>("double_snan", 0);
+            e.newProperty<double>("double_inf", 0);
+            e.newProperty<double>("double_inf_neg", 0);
         }
         {  // Run export
             RunPlanVector rpv(model, 3);
