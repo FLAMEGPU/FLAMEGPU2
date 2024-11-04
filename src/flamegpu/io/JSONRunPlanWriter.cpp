@@ -54,25 +54,25 @@ void JSONRunPlanWriter::writeRunPlan(std::unique_ptr<T> &writer, const RunPlan &
         // Loop through elements, to construct array
         for (unsigned int el = 0; el < p_meta.data.elements; ++el) {
             if (p_meta.data.type == std::type_index(typeid(float))) {
-                writer->Double(*(reinterpret_cast<const float*>(p_meta.data.ptr) + el));
+                writer->Double(*(reinterpret_cast<const float*>(p.ptr) + el));
             } else if (p_meta.data.type == std::type_index(typeid(double))) {
-                writer->Double(*(reinterpret_cast<const double*>(p_meta.data.ptr) + el));
+                writer->Double(*(reinterpret_cast<const double*>(p.ptr) + el));
             } else if (p_meta.data.type == std::type_index(typeid(int64_t))) {
-                writer->Int64(*(reinterpret_cast<const int64_t*>(p_meta.data.ptr) + el));
+                writer->Int64(*(reinterpret_cast<const int64_t*>(p.ptr) + el));
             } else if (p_meta.data.type == std::type_index(typeid(uint64_t))) {
-                writer->Uint64(*(reinterpret_cast<const uint64_t*>(p_meta.data.ptr) + el));
+                writer->Uint64(*(reinterpret_cast<const uint64_t*>(p.ptr) + el));
             } else if (p_meta.data.type == std::type_index(typeid(int32_t))) {
-                writer->Int(*(reinterpret_cast<const int32_t*>(p_meta.data.ptr) + el));
+                writer->Int(*(reinterpret_cast<const int32_t*>(p.ptr) + el));
             } else if (p_meta.data.type == std::type_index(typeid(uint32_t))) {
-                writer->Uint(*(reinterpret_cast<const uint32_t*>(p_meta.data.ptr) + el));
+                writer->Uint(*(reinterpret_cast<const uint32_t*>(p.ptr) + el));
             } else if (p_meta.data.type == std::type_index(typeid(int16_t))) {
-                writer->Int(*(reinterpret_cast<const int16_t*>(p_meta.data.ptr) + el));
+                writer->Int(*(reinterpret_cast<const int16_t*>(p.ptr) + el));
             } else if (p_meta.data.type == std::type_index(typeid(uint16_t))) {
-                writer->Uint(*(reinterpret_cast<const uint16_t*>(p_meta.data.ptr) + el));
+                writer->Uint(*(reinterpret_cast<const uint16_t*>(p.ptr) + el));
             } else if (p_meta.data.type == std::type_index(typeid(int8_t))) {
-                writer->Int(static_cast<int32_t>(*(reinterpret_cast<const int8_t*>(p_meta.data.ptr) + el)));  // Char outputs weird if being used as an integer
+                writer->Int(static_cast<int32_t>(*(reinterpret_cast<const int8_t*>(p.ptr) + el)));  // Char outputs weird if being used as an integer
             } else if (p_meta.data.type == std::type_index(typeid(uint8_t))) {
-                writer->Uint(static_cast<uint32_t>(*(reinterpret_cast<const uint8_t*>(p_meta.data.ptr) + el)));  // Char outputs weird if being used as an integer
+                writer->Uint(static_cast<uint32_t>(*(reinterpret_cast<const uint8_t*>(p.ptr) + el)));  // Char outputs weird if being used as an integer
             } else {
                 THROW exception::RapidJSONError("RunPlan contains environment property '%s' of unsupported type '%s', "
                     "in JSONRunPlanWriter::writeRunPlan()\n", name.c_str(), p_meta.data.type.name());

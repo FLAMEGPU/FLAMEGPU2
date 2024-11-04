@@ -80,7 +80,7 @@ class JSONRunPlanReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UT
                    rp.property_overrides.emplace(lastKey, detail::Any(it->second.data));
                 }
                 // Copy in the specific value
-                const auto prop_it = rp.property_overrides.at(lastKey);
+                const auto &prop_it = rp.property_overrides.at(lastKey);
                 if (val_type == std::type_index(typeid(float))) {
                     static_cast<float*>(const_cast<void*>(prop_it.ptr))[current_array_index++] = static_cast<float>(val);
                 } else if (val_type == std::type_index(typeid(double))) {
