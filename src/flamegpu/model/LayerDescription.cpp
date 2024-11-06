@@ -1,4 +1,8 @@
 #include "flamegpu/model/LayerDescription.h"
+
+#include <utility>
+#include <string>
+
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/model/SubModelDescription.h"
 #include "flamegpu/model/SubModelData.h"

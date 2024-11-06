@@ -3,6 +3,7 @@
 
 #include <cstring>
 #include <array>
+#include <cstdio>
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 

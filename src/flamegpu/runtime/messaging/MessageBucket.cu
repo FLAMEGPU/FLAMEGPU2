@@ -1,5 +1,10 @@
 #include "flamegpu/runtime/messaging/MessageBucket.h"
 
+#include <utility>
+#include <string>
+#include <memory>
+#include <limits>
+
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #pragma warning(disable : 4706 4834)

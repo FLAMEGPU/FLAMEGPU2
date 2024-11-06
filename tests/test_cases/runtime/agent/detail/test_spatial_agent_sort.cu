@@ -1,3 +1,5 @@
+#include <vector>
+
 #include "flamegpu/flamegpu.h"
 
 #include "gtest/gtest.h"

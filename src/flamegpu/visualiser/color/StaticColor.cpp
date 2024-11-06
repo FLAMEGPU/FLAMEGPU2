@@ -2,6 +2,7 @@
 #include "flamegpu/visualiser/color/StaticColor.h"
 
 #include <sstream>
+#include <string>
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 

@@ -3,6 +3,12 @@
 #include <cuda_runtime.h>
 #include <vector>
 #include <cassert>
+#include <cstdio>
+#include <list>
+#include <map>
+#include <string>
+#include <algorithm>
+#include <limits>
 
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/simulation/detail/CUDAFatAgentStateList.h"

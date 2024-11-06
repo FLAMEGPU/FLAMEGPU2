@@ -6,6 +6,11 @@
 #include <fstream>
 #include <string>
 #include <filesystem>
+#include <vector>
+#include <unordered_map>
+#include <utility>
+#include <list>
+#include <memory>
 
 #ifdef _MSC_VER
 #pragma warning(push, 1)

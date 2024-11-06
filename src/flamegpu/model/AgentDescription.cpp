@@ -1,5 +1,9 @@
 #include "flamegpu/model/AgentDescription.h"
 
+#include <utility>
+#include <set>
+#include <string>
+
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/exception/FLAMEGPUException.h"
 

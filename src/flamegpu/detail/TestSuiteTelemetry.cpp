@@ -1,4 +1,6 @@
 #include <cstdio>
+#include <map>
+#include <string>
 
 #include "flamegpu/detail/TestSuiteTelemetry.h"
 

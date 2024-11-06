@@ -1,5 +1,7 @@
 #include "flamegpu/simulation/AgentVector_Agent.h"
 
+#include <memory>
+
 namespace flamegpu {
 
 AgentVector_CAgent::AgentVector_CAgent(AgentVector* parent, const std::shared_ptr<const AgentData>& agent, const std::weak_ptr<AgentVector::AgentDataMap>& data, flamegpu::size_type pos)

@@ -1,6 +1,7 @@
 #include "helpers/device_initialisation.h"
 #include <cuda.h>
 #include <stdio.h>
+#include <cstdio>
 #include "flamegpu/flamegpu.h"
 
 namespace flamegpu {

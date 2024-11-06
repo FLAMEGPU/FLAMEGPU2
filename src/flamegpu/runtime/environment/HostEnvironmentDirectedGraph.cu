@@ -2,6 +2,9 @@
 
 #include <cstring>
 #include <stdexcept>
+#include <utility>
+#include <string>
+#include <memory>
 
 #include "flamegpu/io/JSONGraphReader.h"
 #include "flamegpu/io/JSONGraphWriter.h"

@@ -1,6 +1,8 @@
 #include <nvrtc.h>
 
 #include <cassert>
+#include <vector>
+#include <string>
 
 #include "flamegpu/detail/compute_capability.cuh"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"

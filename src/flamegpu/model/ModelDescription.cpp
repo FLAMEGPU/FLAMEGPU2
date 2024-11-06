@@ -1,5 +1,8 @@
 #include "flamegpu/model/ModelDescription.h"
 
+#include <string>
+#include <memory>
+
 #include "flamegpu/model/DependencyGraph.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/LayerDescription.h"

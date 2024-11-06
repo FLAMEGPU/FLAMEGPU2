@@ -1,5 +1,11 @@
 #include "flamegpu/simulation/detail/CUDAFatAgent.h"
 
+#include <unordered_map>
+#include <memory>
+#include <string>
+#include <vector>
+#include <algorithm>
+
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/runtime/HostAPI.h"
 #include "flamegpu/util/nvtx.h"

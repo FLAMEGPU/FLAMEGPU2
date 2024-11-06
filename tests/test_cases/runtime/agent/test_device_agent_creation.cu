@@ -9,6 +9,9 @@
 * > With birthing agent conditional state change
 */
 #include <set>
+#include <cstdio>
+#include <utility>
+#include <map>
 
 #include "flamegpu/flamegpu.h"
 

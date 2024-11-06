@@ -1,5 +1,9 @@
 #include "flamegpu/simulation/LogFrame.h"
 
+#include <utility>
+#include <string>
+#include <map>
+
 namespace flamegpu {
 
 LogFrame::LogFrame()

@@ -1,4 +1,9 @@
 #include "flamegpu/simulation/RunPlan.h"
+
+#include <string>
+#include <memory>
+#include <unordered_map>
+
 #include "flamegpu/simulation/RunPlanVector.h"
 
 #include "flamegpu/model/ModelDescription.h"

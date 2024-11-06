@@ -3,6 +3,9 @@
 #include <algorithm>
 #include <atomic>
 #include <cinttypes>  // For PRIu64
+#include <cstdio>
+#include <string>
+#include <memory>
 
 #include "flamegpu/version.h"
 #include "flamegpu/model/ModelData.h"

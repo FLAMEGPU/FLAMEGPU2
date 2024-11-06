@@ -1,6 +1,10 @@
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
 
 #include <iostream>
+#include <utility>
+#include <string>
+#include <memory>
+#include <set>
 
 #include "flamegpu/model/EnvironmentData.h"
 #include "flamegpu/model/SubEnvironmentData.h"

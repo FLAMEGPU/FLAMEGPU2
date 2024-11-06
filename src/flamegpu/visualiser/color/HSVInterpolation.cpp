@@ -2,6 +2,7 @@
 #include "flamegpu/visualiser/color/HSVInterpolation.h"
 
 #include <sstream>
+#include <string>
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 

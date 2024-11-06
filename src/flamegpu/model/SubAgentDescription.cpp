@@ -1,4 +1,8 @@
 #include "flamegpu/model/SubAgentDescription.h"
+
+#include <utility>
+#include <string>
+
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/SubAgentData.h"
 #include "flamegpu/model/AgentData.h"

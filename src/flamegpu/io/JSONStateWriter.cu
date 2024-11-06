@@ -9,6 +9,9 @@
 #include <numeric>
 #include <set>
 #include <algorithm>
+#include <memory>
+#include <map>
+#include <functional>
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/model/AgentDescription.h"

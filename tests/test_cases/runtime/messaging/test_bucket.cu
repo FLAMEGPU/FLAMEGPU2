@@ -4,7 +4,7 @@
 * Tests cover:
 * > validation on MessageBucket::Description
 */
-
+#include <unordered_map>
 
 #include "gtest/gtest.h"
 #include "flamegpu/flamegpu.h"

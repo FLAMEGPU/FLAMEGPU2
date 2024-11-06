@@ -1,6 +1,11 @@
 #include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
 
 #include <algorithm>
+#include <utility>
+#include <string>
+#include <memory>
+#include <vector>
+#include <limits>
 
 #include "flamegpu/simulation/detail/CUDAAgent.h"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"

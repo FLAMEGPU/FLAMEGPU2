@@ -1,4 +1,8 @@
 #include "flamegpu/model/EnvironmentDirectedGraphDescription.cuh"
+
+#include <utility>
+#include <string>
+
 namespace flamegpu {
 
 CEnvironmentDirectedGraphDescription::CEnvironmentDirectedGraphDescription(std::shared_ptr<EnvironmentDirectedGraphData> data)

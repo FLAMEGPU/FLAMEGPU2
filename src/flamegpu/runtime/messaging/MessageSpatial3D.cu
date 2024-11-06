@@ -1,3 +1,7 @@
+#include <utility>
+#include <string>
+#include <memory>
+
 #include "flamegpu/runtime/messaging/MessageSpatial3D/MessageSpatial3DHost.h"
 #include "flamegpu/runtime/messaging/MessageSpatial3D/MessageSpatial3DDevice.cuh"
 #include "flamegpu/detail/cuda.cuh"

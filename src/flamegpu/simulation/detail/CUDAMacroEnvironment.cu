@@ -1,5 +1,10 @@
 #include "flamegpu/simulation/detail/CUDAMacroEnvironment.h"
 
+#include <string>
+#include <memory>
+#include <map>
+#include <vector>
+
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/simulation/CUDASimulation.h"
 #include "flamegpu/model/AgentFunctionData.cuh"

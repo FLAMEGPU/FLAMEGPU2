@@ -3,6 +3,12 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
+#include <string>
+#include <memory>
+#include <vector>
+#include <list>
+#include <set>
+
 #include "flamegpu/simulation/detail/CUDAAgent.h"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/simulation/AgentVector.h"

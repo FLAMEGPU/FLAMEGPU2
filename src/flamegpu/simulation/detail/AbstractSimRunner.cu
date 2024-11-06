@@ -1,5 +1,11 @@
 #include "flamegpu/simulation/detail/AbstractSimRunner.h"
 
+#include <utility>
+#include <vector>
+#include <queue>
+#include <memory>
+#include <map>
+
 #ifdef _MSC_VER
 #include <windows.h>
 #else

@@ -1,5 +1,8 @@
 #include "flamegpu/model/SubEnvironmentData.h"
 
+#include <utility>
+#include <memory>
+
 #include "flamegpu/model/SubEnvironmentDescription.h"
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/model/SubModelData.h"

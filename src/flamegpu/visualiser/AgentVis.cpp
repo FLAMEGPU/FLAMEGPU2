@@ -2,6 +2,10 @@
 
 #include "flamegpu/visualiser/AgentVis.h"
 
+#include <utility>
+#include <string>
+#include <memory>
+
 #include "flamegpu/simulation/detail/CUDAAgent.h"
 #include "flamegpu/model/AgentData.h"
 #include "flamegpu/model/AgentDescription.h"

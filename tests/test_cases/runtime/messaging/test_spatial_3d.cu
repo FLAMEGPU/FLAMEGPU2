@@ -4,6 +4,8 @@
 * Tests cover:
 * > mandatory messaging, send/recieve
 */
+#include <unordered_map>
+
 #include "flamegpu/flamegpu.h"
 
 #include "gtest/gtest.h"

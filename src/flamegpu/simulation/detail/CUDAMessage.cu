@@ -1,6 +1,10 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
+#include <string>
+#include <memory>
+#include <algorithm>
+
 #include "flamegpu/simulation/detail/CUDAMessage.h"
 #include "flamegpu/simulation/detail/CUDAAgent.h"
 #include "flamegpu/simulation/detail/CUDAMessageList.h"

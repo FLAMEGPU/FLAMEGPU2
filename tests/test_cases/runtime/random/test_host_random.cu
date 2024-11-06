@@ -2,6 +2,7 @@
 #define TESTS_TEST_CASES_RUNTIME_TEST_HOST_RANDOM_H_
 
 #include <array>
+#include <string>
 
 #include "flamegpu/flamegpu.h"
 

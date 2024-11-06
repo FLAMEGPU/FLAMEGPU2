@@ -10,6 +10,9 @@
 #include <condition_variable>
 #include <filesystem>
 #include <map>
+#include <cstdio>
+#include <vector>
+#include <string>
 
 #ifdef FLAMEGPU_ENABLE_MPI
 #include "flamegpu/simulation/detail/MPIEnsemble.h"

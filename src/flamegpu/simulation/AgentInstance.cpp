@@ -1,5 +1,7 @@
 #include "flamegpu/runtime/agent/AgentInstance.h"
 
+#include <utility>
+
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/AgentData.h"
 #include "flamegpu/simulation/AgentVector.h"

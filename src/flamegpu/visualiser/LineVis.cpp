@@ -2,6 +2,8 @@
 
 #include "flamegpu/visualiser/LineVis.h"
 
+#include <utility>
+
 namespace flamegpu {
 namespace visualiser {
 

@@ -1,6 +1,10 @@
 #include "flamegpu/simulation/AgentVector.h"
 
 #include <limits>
+#include <utility>
+#include <string>
+#include <memory>
+
 
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/simulation/AgentVector_Agent.h"

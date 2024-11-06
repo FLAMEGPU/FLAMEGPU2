@@ -1,3 +1,7 @@
+#include <utility>
+#include <memory>
+#include <string>
+
 #include "flamegpu/model/EnvironmentDescription.h"
 #include "flamegpu/model/EnvironmentDirectedGraphDescription.cuh"
 

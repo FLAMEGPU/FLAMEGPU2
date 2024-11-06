@@ -1,6 +1,7 @@
 #include <cuda_runtime.h>
 #include <cstdio>
 #include <map>
+#include <string>
 
 #include "flamegpu/simulation/CUDASimulation.h"
 #include "gtest/gtest.h"

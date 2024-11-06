@@ -8,6 +8,8 @@
 #include <string>
 #include <map>
 #include <set>
+#include <cstdio>
+#include <memory>
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"

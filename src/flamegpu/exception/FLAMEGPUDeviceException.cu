@@ -1,3 +1,6 @@
+#include <cstdio>
+#include <string>
+
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"

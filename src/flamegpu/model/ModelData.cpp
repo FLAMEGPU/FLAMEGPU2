@@ -1,5 +1,7 @@
 #include <iostream>
 #include <algorithm>
+#include <string>
+#include <memory>
 
 #include "flamegpu/model/ModelData.h"
 

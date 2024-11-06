@@ -1,5 +1,8 @@
 #include "flamegpu/model/EnvironmentDirectedGraphData.cuh"
 
+#include <string>
+#include <memory>
+
 #include "flamegpu/model/EnvironmentDirectedGraphDescription.cuh"
 #include "flamegpu/defines.h"
 

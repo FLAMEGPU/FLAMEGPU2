@@ -1,6 +1,8 @@
 // @todo - ifdef visualisation
 #include "flamegpu/visualiser/StaticModelVis.h"
 
+#include <utility>
+
 #include "flamegpu/exception/FLAMEGPUException.h"
 
 namespace flamegpu {

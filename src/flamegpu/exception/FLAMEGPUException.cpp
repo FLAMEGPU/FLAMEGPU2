@@ -4,6 +4,7 @@
 #include <cstring>
 #include <sstream>
 #include <limits>
+#include <string>
 
 namespace flamegpu {
 namespace exception {

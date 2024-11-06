@@ -1,6 +1,9 @@
-#include <utility>
-
 #include "flamegpu/simulation/AgentLoggingConfig.h"
+
+#include <utility>
+#include <string>
+#include <memory>
+
 #include "flamegpu/model/AgentData.h"
 
 namespace flamegpu {

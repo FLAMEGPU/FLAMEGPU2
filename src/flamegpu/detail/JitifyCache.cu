@@ -6,6 +6,9 @@
 #include <regex>
 #include <array>
 #include <filesystem>
+#include <vector>
+#include <memory>
+#include <string>
 
 #include "flamegpu/version.h"
 #include "flamegpu/exception/FLAMEGPUException.h"

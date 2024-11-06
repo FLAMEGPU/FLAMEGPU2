@@ -1,4 +1,5 @@
 #include <float.h>
+#include <cstdio>
 #include "flamegpu/flamegpu.h"
 
 FLAMEGPU_AGENT_FUNCTION(output_message, flamegpu::MessageNone, flamegpu::MessageBruteForce) {
