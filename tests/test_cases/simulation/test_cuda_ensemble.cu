@@ -1,6 +1,8 @@
 #include <thread>
 #include <chrono>
 #include <filesystem>
+#include <string>
+#include <set>
 
 #include "flamegpu/flamegpu.h"
 

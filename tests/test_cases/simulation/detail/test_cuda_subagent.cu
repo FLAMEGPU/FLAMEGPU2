@@ -1,3 +1,6 @@
+#include <limits>
+#include <set>
+
 #include "flamegpu/flamegpu.h"
 
 #include "gtest/gtest.h"

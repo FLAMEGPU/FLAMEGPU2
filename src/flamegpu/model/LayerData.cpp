@@ -1,5 +1,8 @@
 #include "flamegpu/model/LayerData.h"
 
+#include <string>
+#include <memory>
+
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/model/SubModelData.h"
 

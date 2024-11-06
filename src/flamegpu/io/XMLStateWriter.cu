@@ -2,6 +2,13 @@
 
 #include <numeric>
 #include <sstream>
+#include <string>
+#include <functional>
+#include <algorithm>
+#include <set>
+#include <map>
+#include <memory>
+
 #include "tinyxml2/tinyxml2.h"              // downloaded from https:// github.com/leethomason/tinyxml2, the list of xml parsers : http:// lars.ruoff.free.fr/xmlcpp/
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/model/AgentDescription.h"

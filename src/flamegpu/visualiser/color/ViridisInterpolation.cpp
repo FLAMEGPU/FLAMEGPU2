@@ -1,7 +1,9 @@
 // @todo -  #ifdef FLAMEGPU_VISUALISATION
 #include "flamegpu/visualiser/color/ViridisInterpolation.h"
 
+#include <utility>
 #include <sstream>
+#include <string>
 
 namespace flamegpu {
 namespace visualiser {

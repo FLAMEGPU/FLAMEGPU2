@@ -5,6 +5,10 @@
 #include <sstream>
 #include <string>
 #include <regex>
+#include <utility>
+#include <vector>
+#include <memory>
+#include <set>
 
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/detail/cxxname.hpp"

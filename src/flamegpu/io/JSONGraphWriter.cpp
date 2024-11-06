@@ -4,6 +4,10 @@
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/stringbuffer.h>
 #include <fstream>
+#include <cstdio>
+#include <utility>
+#include <string>
+#include <memory>
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"

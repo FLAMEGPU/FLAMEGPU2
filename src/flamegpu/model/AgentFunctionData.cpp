@@ -1,5 +1,8 @@
 #include "flamegpu/model/AgentFunctionData.cuh"
 
+#include <string>
+#include <memory>
+
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"

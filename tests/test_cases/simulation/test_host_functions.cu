@@ -2,6 +2,7 @@
 #define TESTS_TEST_CASES_SIM_TEST_SIM_VALIDATION_H_
 
 #include <algorithm>
+#include <vector>
 
 #include "flamegpu/flamegpu.h"
 

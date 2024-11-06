@@ -1,4 +1,12 @@
 #include "flamegpu/simulation/RunPlanVector.h"
+
+#include <vector>
+#include <string>
+#include <memory>
+#include <unordered_map>
+#include <algorithm>
+
+
 #include "flamegpu/model/ModelDescription.h"
 
 namespace flamegpu {

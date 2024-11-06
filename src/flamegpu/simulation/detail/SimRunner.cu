@@ -1,3 +1,9 @@
+#include <cstdio>
+#include <map>
+#include <memory>
+#include <queue>
+#include <vector>
+
 #include "flamegpu/simulation/detail/SimRunner.h"
 
 #include "flamegpu/simulation/RunPlanVector.h"

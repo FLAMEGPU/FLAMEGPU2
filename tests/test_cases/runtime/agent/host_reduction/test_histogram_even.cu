@@ -1,4 +1,7 @@
+#include <vector>
+
 #include "helpers/host_reductions_common.h"
+
 namespace flamegpu {
 
 

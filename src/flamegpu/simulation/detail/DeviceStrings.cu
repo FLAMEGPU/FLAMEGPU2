@@ -1,5 +1,7 @@
 #include "flamegpu/simulation/detail/DeviceStrings.h"
 
+#include <string>
+
 #include "flamegpu/detail/cuda.cuh"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 

@@ -5,6 +5,11 @@
 #include <string>
 #include <map>
 #include <numeric>
+#include <cstdio>
+#include <vector>
+#include <utility>
+#include <functional>
+#include <memory>
 
 #include "flamegpu/detail/curand.cuh"
 #include "flamegpu/model/AgentFunctionData.cuh"

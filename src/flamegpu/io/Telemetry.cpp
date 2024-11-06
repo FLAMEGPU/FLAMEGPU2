@@ -9,6 +9,8 @@
 #include <cstdio>
 #include <cctype>
 #include <sstream>
+#include <string>
+#include <map>
 
 #include "flamegpu/version.h"
 

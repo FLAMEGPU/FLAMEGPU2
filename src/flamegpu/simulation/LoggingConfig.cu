@@ -1,5 +1,8 @@
 #include "flamegpu/simulation/LoggingConfig.h"
 
+#include <utility>
+#include <string>
+
 #include "flamegpu/simulation/AgentLoggingConfig.h"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/model/ModelData.h"

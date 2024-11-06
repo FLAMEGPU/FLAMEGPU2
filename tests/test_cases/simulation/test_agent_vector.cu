@@ -1,5 +1,8 @@
 #ifndef TESTS_TEST_CASES_POP_TEST_AGENT_VECTOR_H_
 #define TESTS_TEST_CASES_POP_TEST_AGENT_VECTOR_H_
+
+#include <utility>
+
 #include "flamegpu/flamegpu.h"
 #include "gtest/gtest.h"
 

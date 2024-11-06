@@ -1,6 +1,10 @@
 #include "flamegpu/simulation/detail/MPISimRunner.h"
 
 #include <utility>
+#include <map>
+#include <memory>
+#include <queue>
+#include <vector>
 
 #include "flamegpu/model/ModelData.h"
 #include "flamegpu/simulation/CUDASimulation.h"

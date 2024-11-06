@@ -1,6 +1,8 @@
 // @todo - ifdef visualisation?
 #include "flamegpu/visualiser/AgentStateVis.h"
 
+#include <string>
+
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/visualiser/AgentVis.h"
 #include "flamegpu/model/AgentData.h"

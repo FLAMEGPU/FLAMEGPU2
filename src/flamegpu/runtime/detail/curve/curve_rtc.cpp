@@ -1,4 +1,6 @@
 #include <sstream>
+#include <set>
+#include <string>
 
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 #include "flamegpu/exception/FLAMEGPUException.h"

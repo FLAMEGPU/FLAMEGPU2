@@ -1,4 +1,9 @@
 #include "flamegpu/runtime/messaging/MessageArray3D.h"
+
+#include <utility>
+#include <string>
+#include <memory>
+
 #include "flamegpu/model/AgentDescription.h"  // Used by Move-Assign
 #include "flamegpu/simulation/detail/CUDAMessage.h"
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"

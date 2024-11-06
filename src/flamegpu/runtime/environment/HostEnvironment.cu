@@ -5,6 +5,11 @@
 #include <iterator>
 #include <numeric>
 #include <vector>
+#include <utility>
+#include <memory>
+#include <unordered_map>
+#include <functional>
+#include <string>
 
 #include "flamegpu/io/StateWriter.h"
 #include "flamegpu/io/StateWriterFactory.h"

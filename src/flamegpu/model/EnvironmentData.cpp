@@ -1,4 +1,7 @@
 #include "flamegpu/model/EnvironmentData.h"
+
+#include <memory>
+
 #include "flamegpu/model/EnvironmentDirectedGraphData.cuh"
 
 namespace flamegpu {

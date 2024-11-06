@@ -1,3 +1,5 @@
+#include <string>
+
 #include "gtest/gtest.h"
 
 #include "flamegpu/flamegpu.h"

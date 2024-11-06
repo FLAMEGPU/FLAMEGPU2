@@ -1,5 +1,8 @@
 #include "flamegpu/visualiser/EnvironmentGraphVis.h"
 
+#include <utility>
+#include <string>
+#include <memory>
 
 #include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
 #include "flamegpu/visualiser/LineVis.h"

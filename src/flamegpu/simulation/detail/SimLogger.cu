@@ -1,6 +1,10 @@
 #include "flamegpu/simulation/detail/SimLogger.h"
 
 #include <filesystem>
+#include <string>
+#include <map>
+#include <queue>
+#include <memory>
 
 #include "flamegpu/io/LoggerFactory.h"
 #include "flamegpu/simulation/RunPlanVector.h"

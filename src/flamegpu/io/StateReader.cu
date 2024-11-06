@@ -1,5 +1,9 @@
 #include "flamegpu/io/StateReader.h"
 
+#include <vector>
+#include <unordered_map>
+#include <string>
+
 namespace flamegpu {
 namespace io {
 

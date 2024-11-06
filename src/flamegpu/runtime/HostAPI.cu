@@ -1,6 +1,9 @@
 #include "flamegpu/runtime/HostAPI.h"
 
 #include <map>
+#include <string>
+#include <memory>
+
 #include "flamegpu/runtime/agent/HostAgentAPI.cuh"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/simulation/Simulation.h"

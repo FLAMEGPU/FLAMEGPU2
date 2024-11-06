@@ -1,5 +1,11 @@
 #include "flamegpu/model/DependencyGraph.h"
 
+#include <vector>
+#include <memory>
+#include <set>
+#include <iostream>
+#include <string>
+
 namespace flamegpu {
 
 DependencyGraph::DependencyGraph(ModelData* _model) : model(_model) {

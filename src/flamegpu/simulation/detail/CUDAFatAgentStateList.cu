@@ -1,4 +1,12 @@
 #include "flamegpu/simulation/detail/CUDAFatAgentStateList.h"
+
+#include <utility>
+#include <string>
+#include <memory>
+#include <vector>
+#include <list>
+#include <unordered_map>
+
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/detail/cuda.cuh"
 

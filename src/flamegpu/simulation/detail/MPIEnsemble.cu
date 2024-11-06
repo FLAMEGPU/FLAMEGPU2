@@ -1,4 +1,11 @@
 #ifdef FLAMEGPU_ENABLE_MPI
+#include <cstdio>
+#include <string>
+#include <map>
+#include <vector>
+#include <algorithm>
+#include <set>
+
 #include "flamegpu/simulation/detail/MPIEnsemble.h"
 
 #include "flamegpu/detail/compute_capability.cuh"

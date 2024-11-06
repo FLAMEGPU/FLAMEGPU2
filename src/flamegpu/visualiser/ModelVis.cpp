@@ -4,6 +4,9 @@
 
 #include <thread>
 #include <utility>
+#include <string>
+#include <memory>
+#include <unordered_map>
 
 #include "flamegpu/simulation/CUDASimulation.h"
 #include "flamegpu/model/AgentData.h"

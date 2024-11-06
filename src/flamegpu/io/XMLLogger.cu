@@ -1,6 +1,8 @@
 #include "flamegpu/io/XMLLogger.h"
 
 #include <sstream>
+#include <cstdio>
+#include <string>
 
 #include "tinyxml2/tinyxml2.h"              // downloaded from https:// github.com/leethomason/tinyxml2, the list of xml parsers : http:// lars.ruoff.free.fr/xmlcpp/
 

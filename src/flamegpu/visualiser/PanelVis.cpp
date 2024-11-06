@@ -1,4 +1,6 @@
 #include <utility>
+#include <string>
+#include <memory>
 
 #include "flamegpu/visualiser/PanelVis.h"
 

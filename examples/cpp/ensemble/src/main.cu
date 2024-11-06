@@ -1,3 +1,6 @@
+#include <cstdio>
+#include <map>
+
 #include "flamegpu/flamegpu.h"
 
 FLAMEGPU_AGENT_FUNCTION(AddOffset, flamegpu::MessageNone, flamegpu::MessageNone) {

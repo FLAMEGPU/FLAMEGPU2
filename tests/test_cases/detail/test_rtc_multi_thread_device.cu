@@ -1,6 +1,8 @@
 #include <thread>
 #include <vector>
 #include <memory>
+#include <cstdio>
+#include <utility>
 
 #include "flamegpu/flamegpu.h"
 #include "gtest/gtest.h"

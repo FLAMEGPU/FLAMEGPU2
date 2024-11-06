@@ -1,5 +1,6 @@
 #include <string>
 #include <set>
+#include <vector>
 
 #include "flamegpu/flamegpu.h"
 

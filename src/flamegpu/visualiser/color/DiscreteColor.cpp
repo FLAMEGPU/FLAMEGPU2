@@ -1,4 +1,8 @@
 #include "flamegpu/visualiser/color/DiscreteColor.h"
+
+#include <string>
+#include <map>
+
 #include "flamegpu/visualiser/color/Palette.h"
 
 namespace flamegpu {

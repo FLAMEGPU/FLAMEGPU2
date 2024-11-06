@@ -2,6 +2,8 @@
 #include <filesystem>
 #include <thread>
 #include <set>
+#include <vector>
+#include <string>
 
 #include "flamegpu/flamegpu.h"
 #include "flamegpu/detail/compute_capability.cuh"

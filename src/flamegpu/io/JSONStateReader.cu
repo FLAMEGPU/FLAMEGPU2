@@ -9,6 +9,10 @@
 #include <unordered_map>
 #include <cerrno>
 #include <numeric>
+#include <cstdio>
+#include <vector>
+#include <functional>
+#include <memory>
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/simulation/AgentVector.h"

@@ -1,3 +1,6 @@
+#include <cstdio>
+#include <vector>
+
 #include "flamegpu/flamegpu.h"
 
 const unsigned int AGENT_COUNT = 1024;
