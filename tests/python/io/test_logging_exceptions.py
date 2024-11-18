@@ -17,10 +17,16 @@ class LoggingExceptionTest(TestCase):
         # Unsupported file types
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::UnsupportedFileType exception
             sim.exportLog("test.csv", True, True, True, True);
-        assert e.value.type() == "UnsupportedFileType"
+            assert e.value.type() == "UnsupportedFileType"
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::UnsupportedFileType exception
             sim.exportLog("test.html", True, True, True, True);
-        assert e.value.type() == "UnsupportedFileType"
+            assert e.value.type() == "UnsupportedFileType"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidFilePath exception
+            sim.exportLog("test:", True, True, True, True);
+            assert e.value.type() == "InvalidFilePath"
+        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::InvalidFilePath exception
+            sim.exportLog("test", True, True, True, True);
+            assert e.value.type() == "InvalidFilePath"
         # Does not throw
         sim.exportLog("test.json", True, True, True, True);
         # Cleanup

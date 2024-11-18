@@ -93,7 +93,7 @@ TEST(TestCUDASimulation, AllDeviceIdValues) {
 TEST(TestSimulation, ArgParse_inputfile_long) {
     ModelDescription m(MODEL_NAME);
     CUDASimulation c(m);
-    const char *argv[3] = { "prog.exe", "--in", "test" };
+    const char *argv[3] = { "prog.exe", "--in", "test.fake" };  // unsupported but not blank extension
     EXPECT_EQ(c.getSimulationConfig().input_file, "");
     EXPECT_THROW(c.initialise(sizeof(argv)/sizeof(char*), argv), exception::UnsupportedFileType);  // cant detect filetype
     EXPECT_EQ(c.getSimulationConfig().input_file, argv[2]);
@@ -101,7 +101,18 @@ TEST(TestSimulation, ArgParse_inputfile_long) {
     EXPECT_THROW(c.initialise(0, nullptr), exception::UnsupportedFileType);  // cant detect filetype
     EXPECT_EQ(c.getSimulationConfig().input_file, argv[2]);
 }
-TEST(TestSimulationDeathTest, ArgParse_inputfile_short) {
+TEST(TestSimulation, ArgParse_inputfile_short) {
+    ModelDescription m(MODEL_NAME);
+    CUDASimulation c(m);
+    const char *argv[3] = { "prog.exe", "-i", "test.fake" };  // unsupported but not blank extension
+    EXPECT_EQ(c.getSimulationConfig().input_file, "");
+    EXPECT_THROW(c.initialise(sizeof(argv)/sizeof(char*), argv), exception::UnsupportedFileType);  // cant detect filetype
+    EXPECT_EQ(c.getSimulationConfig().input_file, argv[2]);
+    // Blank init does not reset value to default
+    EXPECT_THROW(c.initialise(0, nullptr), exception::UnsupportedFileType);  // cant detect filetype
+    EXPECT_EQ(c.getSimulationConfig().input_file, argv[2]);
+}
+TEST(TestSimulationDeathTest, ArgParse_inputfile_short_exit) {
     ModelDescription m(MODEL_NAME);
     CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "-i", "I_DO_NOT_EXIST.xml" };
