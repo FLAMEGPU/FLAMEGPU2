@@ -21,6 +21,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 -->
 
+## [2.0.0-rc.2] - 2024-11-22
+
+### Added
+
++ Emit CMake warnings for MSVC + CUDA incompatibilities introduced by MSVC 1940 & 1941 ([#1225](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1225))
++ Add visualisation support for Environment Directed Graphs ([#1239](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1239))
++ Add visualisation support for setting the initial camera roll angle ([#1239](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1239))
++ Add cpplint 2 support, with lint fixes and suppressions ([#1245](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1245))
++ Add CMake options & cache variables to allow per-build SWIG version requirements / selection ([#1247](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1247))
++ Add CMake warnings for SWIG 4.2.0 and 4.2.1 issues ([#1247](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1247))
++ Telemetry accuracy improved using a per-user random id rather than a per build directory configuration file ([#1252](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1252))
+
+### Changed
+
++ Update CITATION.cff and README.md with preferred citation ([#1198](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1198))
++ Updates visualisation dependency to tag `flamegpu-2.0.0-rc.2`
+
+### Deprecated
+
++ Binary wheel artifacts produced via CI will not be compatible with glibc < 2.28 from the next release, due to a changes in GitHub Actions forcing a switch to `Manylinux_2_28` and the EoL for `Manylinux2014`'s base distribution (CentOS 7)
++ Python 3.8 binary wheel artifacts will not be produced from the next release, as it is EoL
++ Support for CUDA 11.0 and CUDA 11.1 will be dropped from a future release due to [nvidia/CCCL support](https://github.com/NVIDIA/cccl/?tab=readme-ov-file#platform-support) ([#1155](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1155))
+
+### Fixed
+
++ Fix CMake patching of RapidJSON for windows ([#1181](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1181))
++ Suppress platform specific ABI warnings from GCC >= 10.1 on Aarch64 ([#1185](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1185))
++ Add missing `#include <cstdint>` impliclty included from older CUDA toolkits ([#1197](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1197))
++ Optionally remove versioned `libnvrtc-builtins.so` dependency via `patchelf` when compiling on ManyLinux for wider wheel compatibility ([#1201](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1201))
++ Short-term fix for CMake 3.30 deprecating some use of `FetchContent_Populate` ([#1225](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1225))
++ Fix pretty-printed JSON output from `JSONStateWriter` ([#1232](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1232))
++ Fix Swig 4.2.1 not wrapping methods for the `flamegpu::id_t` type ([#1234](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1234))
++ Improved exceptions for invalid character handling in filepaths on MSVC ([#1243](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1243))
++ Test Suite workaround for Swig 4.2.1 errors with `== None` and `!= None` ([#1244](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1244))
++ Updated NVIDIA/Jitify dependency version to resolve RTC warnings with recent CUDA/Thrust/CUB/CCCL versions ([#1255](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1255))
++ Resolve sign comparison warnings in `test_transform_reduce.cu` under MSVC ([#1247](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1247))
++ Warning fixes ([#1209](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1209))
++ Multiple CI fixes/workarounds ([#1225](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1225), [#1242](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1242))
++ Workaround for wrapped spatial radius bug in `python_native/boids_spatial3D_wrapped` example by changing interaction radius to `0.04` (see [#1177](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1177)).
+
 ## [2.0.0-rc.1] - 2024-01-12
 
 ### Added
@@ -311,7 +351,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initial alpha release of FLAME GPU 2.0.0, a CUDA C++ / python3 library for agent based simulations
 
-[Unreleased]: https://github.com/FLAMEGPU/FLAMEGPU2/compare/v2.0.0-rc.1...HEAD
+[Unreleased]: https://github.com/FLAMEGPU/FLAMEGPU2/compare/v2.0.0-rc.2...HEAD
+[2.0.0-rc.2]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc.2
 [2.0.0-rc.1]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc.1
 [2.0.0-rc]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc
 [2.0.0-alpha.2]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-alpha.2
