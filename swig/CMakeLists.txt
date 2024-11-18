@@ -32,17 +32,40 @@ find_package(Python3 ${PYTHON3_EXACT_VERSION_ARG} REQUIRED COMPONENTS Interprete
 unset(PYTHON3_EXACT_VERSION_ARG)
 message(STATUS "Python found at " ${Python3_EXECUTABLE})
 
-# Define the minimum version of cmake we support.
-# Swig 4.0+ is required for c++14 (and c++11 std::unordered_map). 
-set(SWIG_MINIMUM_SUPPORTED_VERSION 4.0.2)
-# Define the version of SWIG to be downloaded (to simplify upgrading / output.)
-set(SWIG_DOWNLOAD_VERSION 4.0.2)
+# Define the minimum and download versions of SWIG which FLAME GPU supports/ requires as cache variables so they may be overridden by users/CI workflows.
+# Swig >= 4 is required for C++17
+# Swig 4.2.0 is very broken for FLAME GPU 2
+# Swig 4.2.1 does not allow != / == comparisons against None
+# Swig 4.3.0 is potentially required for Python 3.13 support 
+set(FLAMEGPU_SWIG_MINIMUM 4.0.2 CACHE STRING "Minimum version of SWIG to search for via CMake find_package")
+mark_as_advanced(FLAMEGPU_SWIG_MINIMUM)
+set(FLAMEGPU_SWIG_DOWNLOAD 4.0.2 CACHE STRING "Version of SWIG to download if the minimum required SWIG is not found")
+mark_as_advanced(FLAMEGPU_SWIG_DOWNLOAD)
+# Use an option to control if minimum or exact swig should be found.
+option(FLAMEGPU_SWIG_EXACT "Require the exact version of SWIG specified in FLAMEGPU_SWIG_MINIMUM. This enables downgrading swig." OFF)
+mark_as_advanced(FLAMEGPU_SWIG_EXACT)
+
+# If the download version is less than the minimum, set it to the minimum and issue a warning.
+if(${FLAMEGPU_SWIG_DOWNLOAD} VERSION_LESS ${FLAMEGPU_SWIG_MINIMUM})
+    message(WARNING "FLAMEGPU_SWIG_DOWNLOAD ${FLAMEGPU_SWIG_DOWNLOAD} less than FLAMEGPU_SWIG_MINIMUM ${FLAMEGPU_SWIG_MINIMUM}. Using FLAMEGPU_SWIG_DOWNLOAD=${FLAMEGPU_SWIG_MINIMUM}.")
+    # set(FLAMEGPU_SWIG_DOWNLOAD ${FLAMEGPU_SWIG_MINIMUM})
+    set(FLAMEGPU_SWIG_DOWNLOAD ${FLAMEGPU_SWIG_MINIMUM} CACHE STRING "Minimum version of SWIG to search for via CMake find_package" FORCE)
+endif()
 
 # Look for user-installed SWIG in expectd locations.
 # Users can set -DSWIG_EXECUTABLE pointed at their version of SWIG if it cannot be found (@todo - document this)
 # If swig is downloaded and installed by cmake, the second invocation will contain cache variables which correctly correspond to cmake.
 
-find_package(SWIG ${SWIG_MINIMUM_SUPPORTED_VERSION})
+if(NOT ${FLAMEGPU_SWIG_EXACT})
+    find_package(SWIG ${FLAMEGPU_SWIG_MINIMUM})
+else()
+    find_package(SWIG ${FLAMEGPU_SWIG_MINIMUM} EXACT)
+    if(NOT ${FLAMEGPU_SWIG_DOWNLOAD} VERSION_EQUAL ${FLAMEGPU_SWIG_MINIMUM})
+        message(WARNING "FLAMEGPU_SWIG_DOWNLOAD ${FLAMEGPU_SWIG_DOWNLOAD} != FLAMEGPU_SWIG_MINIMUM ${FLAMEGPU_SWIG_MINIMUM} with FLAMEGPU_SWIG_EXACT=${FLAMEGPU_SWIG_EXACT}. Using FLAMEGPU_SWIG_DOWNLOAD=${FLAMEGPU_SWIG_MINIMUM}.")
+        # set(FLAMEGPU_SWIG_DOWNLOAD ${FLAMEGPU_SWIG_MINIMUM})
+        set(FLAMEGPU_SWIG_DOWNLOAD ${FLAMEGPU_SWIG_MINIMUM} CACHE STRING "Minimum version of SWIG to search for via CMake find_package" FORCE)
+    endif()
+endif()
 
 # If minimum required swig could not be found, download and build it.
 if(NOT SWIG_FOUND)
@@ -63,12 +86,12 @@ if(NOT SWIG_FOUND)
         # Download pre-compiled swig on windows.
         FetchContent_Declare(
             swig
-            URL      http://prdownloads.sourceforge.net/swig/swigwin-${SWIG_DOWNLOAD_VERSION}.zip
+            URL      http://prdownloads.sourceforge.net/swig/swigwin-${FLAMEGPU_SWIG_DOWNLOAD}.zip
             # URL_HASH #@todo - make sure the hash of the download is good?
         )
         FetchContent_GetProperties(swig)
         if(NOT swig_POPULATED)
-            message(STATUS "[swig] Downloading swigwin-${SWIG_DOWNLOAD_VERSION}.zip")
+            message(STATUS "[swig] Downloading swigwin-${FLAMEGPU_SWIG_DOWNLOAD}.zip")
             # Download
             FetchContent_Populate(swig)
             
@@ -85,12 +108,12 @@ if(NOT SWIG_FOUND)
         # Download from sourceforge not github, github releases require several extra tools to build (bison, yacc, autoconfigure, automake), and we want to keep dependencies light. 
         FetchContent_Declare(
             swig
-            URL      https://downloads.sourceforge.net/project/swig/swig/swig-${SWIG_DOWNLOAD_VERSION}/swig-${SWIG_DOWNLOAD_VERSION}.tar.gz
+            URL      https://downloads.sourceforge.net/project/swig/swig/swig-${FLAMEGPU_SWIG_DOWNLOAD}/swig-${FLAMEGPU_SWIG_DOWNLOAD}.tar.gz
             # URL_HASH #@todo - make sure the hash of the download is good?
         )
         FetchContent_GetProperties(swig)
         if(NOT swig_POPULATED)
-            message(STATUS "[swig] Downloading swig-${SWIG_DOWNLOAD_VERSION}.tar.gz")
+            message(STATUS "[swig] Downloading swig-${FLAMEGPU_SWIG_DOWNLOAD}.tar.gz")
             # Download the content
             FetchContent_Populate(swig)
 
@@ -110,9 +133,9 @@ if(NOT SWIG_FOUND)
             )
             if(NOT swig_configure_RESULT EQUAL "0")
                 message(FATAL_ERROR 
-                " [swig] Error configuring SWIG ${SWIG_DOWNLOAD_VERSION}.\n"
+                " [swig] Error configuring SWIG ${FLAMEGPU_SWIG_DOWNLOAD}.\n"
                 " Error log: ${swig_configure_ERROR_FILE}\n"
-                " Consider installing SWIG ${SWIG_MINIMUM_SUPPORTED_VERSION} yourself and passing -DSWIG_EXECUTABLE=/path/to/swig.")
+                " Consider installing SWIG ${FLAMEGPU_SWIG_MINIMUM} yourself and passing -DSWIG_EXECUTABLE=/path/to/swig.")
             endif()
 
             # run make to compile swig within swig_SOURCE_DIR
@@ -125,9 +148,9 @@ if(NOT SWIG_FOUND)
             )
             if(NOT swig_make_RESULT EQUAL "0")
                 message(FATAL_ERROR 
-                " [swig] Error compiling SWIG ${SWIG_DOWNLOAD_VERSION}\n"
+                " [swig] Error compiling SWIG ${FLAMEGPU_SWIG_DOWNLOAD}\n"
                 " Error log: ${swig_make_ERROR_FILE}"
-                " Consider installing SWIG >= ${SWIG_MINIMUM_SUPPORTED_VERSION} yourself and passing -DSWIG_EXECUTABLE=/path/to/swig.")
+                " Consider installing SWIG >= ${FLAMEGPU_SWIG_MINIMUM} yourself and passing -DSWIG_EXECUTABLE=/path/to/swig.")
             endif()
 
             # run make install to copy to the installation location (swig_BINARY_DIR)
@@ -140,9 +163,9 @@ if(NOT SWIG_FOUND)
             )
             if(NOT swig_makeinstall_RESULT EQUAL "0")
                 message(FATAL_ERROR 
-                " [swig] Error installing SWIG ${SWIG_DOWNLOAD_VERSION}\n"
+                " [swig] Error installing SWIG ${FLAMEGPU_SWIG_DOWNLOAD}\n"
                 " Error log: ${swig_makeinstall_ERROR_FILE}"
-                " Consider installing SWIG >= ${SWIG_MINIMUM_SUPPORTED_VERSION} yourself and passing -DSWIG_EXECUTABLE=/path/to/swig.")
+                " Consider installing SWIG >= ${FLAMEGPU_SWIG_MINIMUM} yourself and passing -DSWIG_EXECUTABLE=/path/to/swig.")
             endif()
 
             # Set variables used by find_swig to find swig.
@@ -151,8 +174,18 @@ if(NOT SWIG_FOUND)
             set(SWIG_EXECUTABLE "${swig_BINARY_DIR}/bin/swig" CACHE FILEPATH "Path to SWIG executable")
         endif()
     endif()
-    # Attempt to find swig again, but as REQUIRED.
-    find_package(SWIG ${SWIG_MINIMUM_SUPPORTED_VERSION} REQUIRED)
+    # Attempt to find swig again, but as REQUIRED using the downloaded version
+    find_package(SWIG ${FLAMEGPU_SWIG_MINIMUM} REQUIRED)
+endif()
+
+# If a bad swig has been found, or downloaded, warn about it. 
+if(SWIG_FOUND AND SWIG_VERSION VERSION_EQUAL "4.2.0")
+    # https://github.com/FLAMEGPU/FLAMEGPU2/issues/956#issuecomment-2069104478
+    # https://github.com/swig/swig/commit/c7ab6a01c6582b92db9328e2f3daa67081f05f6e
+    message(WARNING "Swig ${SWIG_VERSION} is likely to error during pyflamegpu compilation, due to a bug with friend constructor/deconstructor declarations. please use an alternate version of SWIG.")
+elseif(SWIG_FOUND AND SWIG_VERSION VERSION_EQUAL "4.2.1")
+    # https://github.com/swig/swig/issues/2987
+    message(WARNING "Swig ${SWIG_VERSION} produces usable pyflamegpu, but swig-wrapped objects cannot be compared to None using == or !=, you must use is / is not. Consider using an alternate version of SWIG.")
 endif()
 
 # Mark some CACHE vars advanced for a cleaner GUI
