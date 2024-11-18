@@ -451,7 +451,10 @@ jobs:
         -DFLAMEGPU_ENABLE_NVTX="ON"
         -DGLEW_USE_STATIC_LIBS="${{ env.USE_STATIC_GLEW }}"
         -DOpenGL_GL_PREFERENCE:STRING=LEGACY
-        -DFLAMEGPU_BUILD_PYTHON_PATCHELF=ON
+        -DFLAMEGPU_BUILD_PYTHON_PATCHELF="ON"
+        -DFLAMEGPU_SWIG_MINIMUM="4.0.2"
+        -DFLAMEGPU_SWIG_DOWNLOAD="4.0.2"
+        -DFLAMEGPU_SWIG_EXACT="ON"
 
     - name: Build python wheel
       if: ${{ env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
@@ -582,6 +585,9 @@ jobs:
         -DPython3_EXECUTABLE="$(which python)"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
         -DFLAMEGPU_ENABLE_NVTX="ON"
+        -DFLAMEGPU_SWIG_MINIMUM="4.0.2"
+        -DFLAMEGPU_SWIG_DOWNLOAD="4.0.2"
+        -DFLAMEGPU_SWIG_EXACT="ON"
 
     - name: Build python wheel
       if: ${{ env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
