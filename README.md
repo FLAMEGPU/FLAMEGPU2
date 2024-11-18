@@ -185,6 +185,9 @@ cmake --build . --target all
 | `FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE` | `ON`/`OFF`                  | Suppress notice encouraging telemetry to be enabled, which is emitted once per binary execution if telemetry is disabled. Defaults to `OFF`, or the value of a system environment variable of the same name. |
 | `FLAMEGPU_TELEMETRY_TEST_MODE`       | `ON`/`OFF`                  | Submit telemetry values to the test mode of TelemetryDeck. Intended for use during development of FLAMEGPU rather than use. Defaults to `OFF`, or the value of a system environment variable of the same name.|
 | `FLAMEGPU_ENABLE_LINT_FLAMEGPU`      | `ON`/`OFF`                  | Enable/Disable creation of the `lint_flamegpu` target. Default `ON` if this repository is the root CMAKE_SOURCE_DIR, otherwise `OFF` |
+| `FLAMEGPU_SWIG_MINIMUM`              | `4.0.2` | The minimum version of SWIG required. |
+| `FLAMEGPU_SWIG_DOWNLOAD`             | `4.0.2` | The version of SWIG to download if the required version is not found. |
+| `FLAMEGPU_SWIG_EXACT`                | `ON`/`OFF` | Require the exact version of SWIG specified in `FLAMEGPU_SWIG_MINIMUM`. This enables downgrading swig. Default `OFF` |
 
 <!-- Additional options which users can find if they need them.
 | `FLAMEGPU_BUILD_API_DOCUMENTATION` | `ON`/`OFF` | Build the documentation target. Default `ON` |
