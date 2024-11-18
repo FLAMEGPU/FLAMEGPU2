@@ -47,7 +47,7 @@ class TestSimulation(TestCase):
     def test_argparse_inputfile_long(self):
         m = pyflamegpu.ModelDescription("test_argparse_inputfile_long")
         c = pyflamegpu.CUDASimulation(m)
-        argv = [ "prog.exe", "--in", "test" ]
+        argv = [ "prog.exe", "--in", "test.fake" ]
         assert c.SimulationConfig().input_file == ""
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::UnsupportedFileType exception
             c.initialise(argv)
@@ -63,7 +63,7 @@ class TestSimulation(TestCase):
     def test_argparse_inputfile_short(self):
         m = pyflamegpu.ModelDescription("test_argparse_inputfile_short")
         c = pyflamegpu.CUDASimulation(m)
-        argv = [ "prog.exe", "-i", "test" ]
+        argv = [ "prog.exe", "-i", "test.fake"]
         assert c.SimulationConfig().input_file == ""
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::UnsupportedFileType exception
             c.initialise(argv)

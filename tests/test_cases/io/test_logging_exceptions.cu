@@ -21,6 +21,7 @@ TEST(LoggingExceptionTest, LoggerSupportedFileType) {
     CUDASimulation sim(m);
     EXPECT_THROW(sim.exportLog("test.csv", true, true, false, false), exception::UnsupportedFileType);
     EXPECT_THROW(sim.exportLog("test.html", true, true, false, false), exception::UnsupportedFileType);
+    EXPECT_THROW(sim.exportLog("noextension", true, true, false, false), exception::InvalidFilePath);
     EXPECT_NO_THROW(sim.exportLog("test.json", true, true, false, false));
     // Cleanup
     ASSERT_EQ(::remove("test.json"), 0);
