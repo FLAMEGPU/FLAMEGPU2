@@ -319,13 +319,15 @@ std::string Telemetry::getConfigDirectory() {
     if (home) {
         return std::string(home) + "/.config";
     }
-    else {
-        struct passwd* pwd;
-        int success = getpwuid_r(getuid(), pwd);
-        if (success) {
-            return std::string(pwd->pw_dir) + "/.config";
-        }
+    // try and get the user directory if home is not set
+    struct passwd pwd;
+    struct passwd* result = nullptr;
+    char buffer[4096];
+    int ret = getpwuid_r(getuid(), &pwd, buffer, sizeof(buffer), &result);
+    if (ret == 0 && result != nullptr) {
+        return std::string(pwd.pw_dir) + "/.config";
     }
+
     throw std::runtime_error("Unable to retrieve config directory on Linux");
 #endif
 }
