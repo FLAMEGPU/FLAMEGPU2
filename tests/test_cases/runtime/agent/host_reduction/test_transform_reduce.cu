@@ -48,7 +48,7 @@ TEST_F(HostReductionTest, CustomTransformReduceFloat) {
     std::mt19937_64 rd;  // Seed does not matter
     std::uniform_real_distribution <float> dist(FLT_MIN, FLT_MAX);
     std::array<float, TEST_LEN> in;
-    std::array<int, TEST_LEN> inTransform;
+    std::array<uint32_t, TEST_LEN> inTransform;
     for (unsigned int i = 0; i < TEST_LEN; i++) {
         AgentVector::Agent instance = ms->population->at(i);
         in[i] = dist(rd);
