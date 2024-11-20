@@ -18,7 +18,6 @@
 #include <windows.h>
 #include <shlobj.h>
 #else
-#include <cstdlib>
 #include <sys/types.h>
 #include <pwd.h>
 #endif
@@ -170,7 +169,7 @@ std::string Telemetry::generateData(std::string event_name, std::map<std::string
     // check ENV for test variable FLAMEGPU_TEST_ENVIRONMENT
     std::string testmode = isTestMode() ? "true" : "false";
     std::string appID = TELEMETRY_APP_ID;
-    std::string telemetryRandomID = Telemetry::getUserId(); // Obtain a unique user ID
+    std::string telemetryRandomID = Telemetry::getUserId();  // Obtain a unique user ID
 
     // Differentiate pyflamegpu in the payload via the SWIG compiler macro, which we only define when building for pyflamegpu.
     // A user could potentially static link against a build using that macro, but that's not a use-case we are currently concerned with.
@@ -320,7 +319,7 @@ std::string Telemetry::getConfigDirectory() {
         return std::string(home) + "/.config";
     }
     else {
-        struct passwd* pwd = getpwuid(getuid());
+        struct passwd* pwd = getpwuid_r(getuid());
         if (pwd) {
             return std::string(pwd->pw_dir) + "/.config";
         }
@@ -354,16 +353,16 @@ std::string Telemetry::getUserId() {
     try {
         // Determine config file location
         std::string configDir = Telemetry::getConfigDirectory() + "/FLAMEGPU";
-        std::filesystem::create_directories(configDir); // Ensure the directory exists
+        std::filesystem::create_directories(configDir);  // Ensure the directory exists
         std::string filePath = configDir + "/flamegpu_user.cfg";
 
         // Check if the file exists
         if (std::filesystem::exists(filePath)) {
             std::ifstream file(filePath);
             if (file.is_open()) {
-                std::getline(file, userId); // overwrite existing Id
+                std::getline(file, userId);  // overwrite existing Id
                 file.close();
-                return userId; // Config file and user id found so return it
+                return userId;  // Config file and user id found so return it
             }
             else {
                 throw std::runtime_error("Unable to open user ID file for reading");
