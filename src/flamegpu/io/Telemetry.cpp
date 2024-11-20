@@ -364,9 +364,14 @@ std::string Telemetry::getUserId() {
         if (std::filesystem::exists(filePath)) {
             std::ifstream file(filePath);
             if (file.is_open()) {
-                std::getline(file, userId);  // overwrite existing Id
+                std::string cached_id;
+                std::getline(file, cached_id);  // overwrite existing Id
                 file.close();
-                return userId;  // Config file and user id found so return it
+                // Config file and user id found so return it if not empty (either because file is externally modified or file is a directory)
+                if (!cached_id.empty())
+                    return cached_id;
+                else
+                    return userId;
             }
             else {
                 throw std::runtime_error("Unable to open user ID file for reading");
@@ -382,7 +387,7 @@ std::string Telemetry::getUserId() {
             throw std::runtime_error("Unable to create user ID file");
         }
     } catch (const std::exception&) {
-        fprintf(stderr, "Warning: Telemetry User Id file is not read/writeable from config file. A new User Id will be used.");
+        fprintf(stderr, "Warning: Telemetry User Id file is not read/writeable from config file. A new User Id will be used.\n");
     }
     return userId;
 }
