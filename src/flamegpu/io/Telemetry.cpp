@@ -320,8 +320,9 @@ std::string Telemetry::getConfigDirectory() {
         return std::string(home) + "/.config";
     }
     else {
-        struct passwd* pwd = getpwuid_r(getuid());
-        if (pwd) {
+        struct passwd* pwd;
+        int success = getpwuid_r(getuid(), pwd);
+        if (success) {
             return std::string(pwd->pw_dir) + "/.config";
         }
     }
