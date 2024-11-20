@@ -19,6 +19,7 @@
 #include <shlobj.h>
 #else
 #include <sys/types.h>
+#include <unistd.h>
 #include <pwd.h>
 #endif
 
