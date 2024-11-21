@@ -6,11 +6,22 @@
 #include <memory>
 #include <array>
 #include <iostream>
+#include <fstream>
+#include <filesystem>
 #include <cstdio>
 #include <cctype>
 #include <sstream>
 #include <string>
 #include <map>
+#include <random>
+#ifdef _WIN32
+#include <windows.h>
+#include <shlobj.h>
+#else
+#include <sys/types.h>
+#include <unistd.h>
+#include <pwd.h>
+#endif
 
 #include "flamegpu/version.h"
 
@@ -159,7 +170,7 @@ std::string Telemetry::generateData(std::string event_name, std::map<std::string
     // check ENV for test variable FLAMEGPU_TEST_ENVIRONMENT
     std::string testmode = isTestMode() ? "true" : "false";
     std::string appID = TELEMETRY_APP_ID;
-    std::string telemetryRandomID = flamegpu::TELEMETRY_RANDOM_ID;
+    std::string telemetryRandomID = Telemetry::getUserId();  // Obtain a unique user ID
 
     // Differentiate pyflamegpu in the payload via the SWIG compiler macro, which we only define when building for pyflamegpu.
     // A user could potentially static link against a build using that macro, but that's not a use-case we are currently concerned with.
@@ -178,6 +189,7 @@ std::string Telemetry::generateData(std::string event_name, std::map<std::string
     payload_items["appVersionPatch"] = std::to_string(flamegpu::VERSION_PATCH);
     payload_items["appVersionPreRelease"] = flamegpu::VERSION_PRERELEASE;
     payload_items["buildNumber"] = flamegpu::VERSION_BUILDMETADATA;  // e.g. '0553592f' (graphed in Telemetry deck)
+    payload_items["buildID"] = flamegpu::TELEMETRY_RANDOM_ID;  // e.g. 'e7e0fe30325c83a3ad52e2cb2180e50979d3e6bcb0692789977a06ad09889843' (ID generated a cmake time)
 
     // OS
 #ifdef _WIN32
@@ -290,6 +302,96 @@ void Telemetry::encourageUsage() {
         haveNotified = true;
     }
 }
+
+std::string Telemetry::getConfigDirectory() {
+#ifdef _WIN32
+    char path[MAX_PATH];
+    if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, path))) {
+        return std::string(path);
+    }
+    throw std::runtime_error("Unable to retrieve config directory on Windows");
+#else
+    const char* configHome = std::getenv("XDG_CONFIG_HOME");
+    if (configHome) {
+        return std::string(configHome);
+    }
+    const char* home = std::getenv("HOME");
+    if (home) {
+        return std::string(home) + "/.config";
+    }
+    // try and get the user directory if home is not set
+    struct passwd pwd;
+    struct passwd* result = nullptr;
+    char buffer[4096];
+    int ret = getpwuid_r(getuid(), &pwd, buffer, sizeof(buffer), &result);
+    if (ret == 0 && result != nullptr) {
+        return std::string(pwd.pw_dir) + "/.config";
+    }
+
+    throw std::runtime_error("Unable to retrieve config directory on Linux");
+#endif
+}
+
+std::string Telemetry::generateRandomId() {
+    const char charset[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+    const size_t length = 36;
+    std::random_device rd;
+    std::mt19937 generator(rd());
+    std::uniform_int_distribution<size_t> distribution(0, sizeof(charset) - 2);
+
+    std::string randomId;
+    for (size_t i = 0; i < length; ++i) {
+        randomId += charset[distribution(generator)];
+    }
+    return randomId;
+}
+
+std::string Telemetry::getUserId() {
+    // Generate and a new random 36-character user ID
+    std::string userId = Telemetry::generateRandomId();
+
+    // Try to load an existing ID from file if it exists
+    try {
+        // Determine config file location
+        std::string configDir = Telemetry::getConfigDirectory() + "/flamegpu";
+        std::filesystem::create_directories(configDir);  // Ensure the directory exists
+        std::string filePath = configDir + "/telemetry_user.cfg";
+
+        // Check if the file exists
+        if (std::filesystem::exists(filePath)) {
+            std::ifstream file(filePath, std::ios_base::binary);
+            if (file.is_open()) {
+                std::string cached_id;
+                std::getline(file, cached_id);  // overwrite existing Id
+                file.close();
+                // Config file and user id found so return it if not empty (either because file is externally modified or file is a directory)
+                if (!cached_id.empty())
+                    return cached_id;
+                else
+                    return userId;
+            }
+            else {
+                throw std::runtime_error("Unable to open user ID file for reading");
+            }
+        }
+
+        std::ofstream file(filePath, std::ios_base::binary);
+        if (file.is_open()) {
+            file << userId;
+            file.close();
+        }
+        else {
+            throw std::runtime_error("Unable to create user ID file");
+        }
+    } catch (const std::exception&) {
+        fprintf(stderr, "Warning: Telemetry User Id file is not read/writeable from config file. A new User Id will be used.\n");
+    }
+    return userId;
+}
+
 
 }  // namespace io
 }  // namespace flamegpu

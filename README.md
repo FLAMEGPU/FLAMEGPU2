@@ -328,7 +328,7 @@ Information is collected when a simulation, ensemble or test suite run have comp
 The [TelemetryDeck](https://telemetrydeck.com/) service is used to store telemetry data. 
 All data is sent to their API endpoint of https://nom.telemetrydeck.com/v1/ via https. For more details please review the [TelmetryDeck privacy policy](https://telemetrydeck.com/privacy/).
 
-We do not collect any personal data such as usernames, email addresses or machine identifiers.
+We do not collect any personal data such as usernames, email addresses or hardware identifiers but we do generate a random user identifier. This identifier is salted and hashed by Telemetry deck.
 
 More information can be found in the [FLAMEGPU documentation](https://docs.flamegpu.com/guide/telemetry).
 

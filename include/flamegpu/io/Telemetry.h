@@ -84,6 +84,24 @@ static void encourageUsage();
  * @return if telemetry is currently in test mode or not.
  */
 static bool isTestMode();
+
+/**
+ * Gets a cross platform location for storing user configuration data. Required to store a per user Id. On windows this uses the AppData folder (CSIDL_APPDATA) and in Linux this uses XDG_CONFIG_HOME.
+ * @return Root directory for storing configuration files
+ */
+static std::string getConfigDirectory();
+
+/**
+ * Generates a randomised 36 character alphanumeric string for use as a User Id. 
+ * @return A 36 character randomised alphanumeric string
+ */
+static std::string generateRandomId();
+
+/**
+ * Obtains a unique user Id. If a configuration file (i.e. ${XDG_CONFIG_HOME}/flamegpu/telemetry_user.cfg on linux) exists this will be loaded from disk otherwise it will be generated and stored in the configuration location. If the configuration location is not writeable a new user Id will be generated each time. The user Id will be further obfuscated by Telemetry Deck which will salt and hash the Id.
+ * @return A 36 character randomised alphanumeric string representing a unique user Id
+ */
+static std::string getUserId();
 };
 }  // namespace io
 }  // namespace flamegpu
