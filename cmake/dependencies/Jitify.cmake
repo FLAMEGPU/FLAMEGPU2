@@ -14,7 +14,7 @@ endif()
 FetchContent_Declare(
     jitify
     GIT_REPOSITORY https://github.com/NVIDIA/jitify.git
-    GIT_TAG        cd6b56bf0c63fcce74a59cd021bf63e5c2a32c73
+    GIT_TAG        9c01f4988bbc3e11fcb84fc2747b5d0f2af7862e
     SOURCE_DIR     ${FETCHCONTENT_BASE_DIR}/jitify-src/jitify
     GIT_PROGRESS   ON
     # UPDATE_DISCONNECTED   ON
