@@ -283,7 +283,7 @@ void DependencyGraph::checkForUnattachedFunctions() {
 
     // Compare sets
     if (modelFunctions != graphFunctions) {
-        std::cerr << "WARNING: Not all agent functions are used in the dependency graph - have you forgotten to add one?" << std::flush;
+        std::cerr << "WARNING: Not all agent functions are used in the dependency graph - have you forgotten to add one?" << std::endl;
     }
 }
 
