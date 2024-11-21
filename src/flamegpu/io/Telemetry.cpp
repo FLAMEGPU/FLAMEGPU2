@@ -358,7 +358,7 @@ std::string Telemetry::getUserId() {
         // Determine config file location
         std::string configDir = Telemetry::getConfigDirectory() + "/flamegpu";
         std::filesystem::create_directories(configDir);  // Ensure the directory exists
-        std::string filePath = configDir + "/flamegpu_user.cfg";
+        std::string filePath = configDir + "/telemetry_user.cfg";
 
         // Check if the file exists
         if (std::filesystem::exists(filePath)) {

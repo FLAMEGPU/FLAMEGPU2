@@ -98,7 +98,7 @@ static std::string getConfigDirectory();
 static std::string generateRandomId();
 
 /**
- * Obtains a unique user Id. If a configuration file (flamegpu_user.cfg) exists this will be loaded from disk otherwise it will be generated and stored in the configuration location. If the configuration location is not writeable a new user Id will be generated each time. The user Id will be further obfuscated by Telemetry Deck which will salt and hash the Id.
+ * Obtains a unique user Id. If a configuration file (i.e. ${XDG_CONFIG_HOME}/flamegpu/telemetry_user.cfg on linux) exists this will be loaded from disk otherwise it will be generated and stored in the configuration location. If the configuration location is not writeable a new user Id will be generated each time. The user Id will be further obfuscated by Telemetry Deck which will salt and hash the Id.
  * @return A 36 character randomised alphanumeric string representing a unique user Id
  */
 static std::string getUserId();
