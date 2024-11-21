@@ -362,7 +362,7 @@ std::string Telemetry::getUserId() {
 
         // Check if the file exists
         if (std::filesystem::exists(filePath)) {
-            std::ifstream file(filePath);
+            std::ifstream file(filePath, std::ios_base::binary);
             if (file.is_open()) {
                 std::string cached_id;
                 std::getline(file, cached_id);  // overwrite existing Id
@@ -378,7 +378,7 @@ std::string Telemetry::getUserId() {
             }
         }
 
-        std::ofstream file(filePath);
+        std::ofstream file(filePath, std::ios_base::binary);
         if (file.is_open()) {
             file << userId;
             file.close();
