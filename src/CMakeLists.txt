@@ -60,7 +60,7 @@ set (FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE_DEFAULT OFF)
 if (DEFINED ENV{FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE} AND "$ENV{FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE}")
     set (FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE_DEFAULT ON)
 endif()
-cmake_dependent_option(FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE "Suppress notice encouraging telemetry to be enabled, which is emitted once per binary execution if telemetry is disabled." ${FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE_DEFAULT} "FLAMEGPU_SHARE_USAGE_STATISTICS" ${FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE_DEFAULT} )
+cmake_dependent_option(FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE "Suppress notice encouraging telemetry to be enabled, which is emitted once per binary execution if telemetry is disabled." ${FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE_DEFAULT} "NOT FLAMEGPU_SHARE_USAGE_STATISTICS" ${FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE_DEFAULT} )
 unset(FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE_DEFAULT)
 
 # advanced developer option to switch telemetery to a test mode, which is reported separately on telemetry hub.
