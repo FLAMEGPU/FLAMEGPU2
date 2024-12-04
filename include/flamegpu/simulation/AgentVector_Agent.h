@@ -249,6 +249,8 @@ void AgentVector_Agent::setVariable(const std::string &variable_name, const unsi
     }
     _parent->_require(variable_name);
     static_cast<T*>(v_buff->getDataPtr())[(index * (v_buff->getElements() / detail::type_decode<T>::len_t)) + array_index] = value;
+    // Notify (_data was locked above)
+    _parent->_changed(variable_name, index);
 }
 #ifdef SWIG
 template <typename T>

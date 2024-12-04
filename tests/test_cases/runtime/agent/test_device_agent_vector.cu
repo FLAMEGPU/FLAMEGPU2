@@ -22,6 +22,24 @@ FLAMEGPU_STEP_FUNCTION(SetGet) {
         ai.setVariable<int>("int", ai.getVariable<int>("int") + 12);
     }
 }
+FLAMEGPU_STEP_FUNCTION(SetGetArray) {
+    // Accessing DeviceAgentVector like this would previously lead to an access violation (Issue #522, PR #751)
+    DeviceAgentVector av = FLAMEGPU->agent(AGENT_NAME).getPopulationData();
+    for (AgentVector::Agent ai : av) {
+        auto t = ai.getVariable<int, 3>("int");
+        t[0] += 11;
+        t[1] += 12;
+        t[2] += 13;
+        ai.setVariable<int, 3>("int", t);
+    }
+}
+FLAMEGPU_STEP_FUNCTION(SetGetArrayElement) {
+    // Accessing DeviceAgentVector like this would previously lead to an access violation (Issue #522, PR #751)
+    DeviceAgentVector av = FLAMEGPU->agent(AGENT_NAME).getPopulationData();
+    for (AgentVector::Agent ai : av) {
+        ai.setVariable<int, 3>("int", 1, ai.getVariable<int, 3>("int", 1) + 12);
+    }
+}
 FLAMEGPU_STEP_FUNCTION(SetGetHalf) {
     HostAgentAPI agent = FLAMEGPU->agent(AGENT_NAME);
     DeviceAgentVector av = agent.getPopulationData();
@@ -75,6 +93,85 @@ TEST(DeviceAgentVectorTest, SetGet) {
     sim.getPopulationData(av);
     for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
         ASSERT_EQ(av[i].getVariable<int>("int"), static_cast<int>(i) + 24);
+    }
+}
+TEST(DeviceAgentVectorTest, SetGetArray) {
+    // Initialise an agent population with values in a variable [0,1,2..N]
+    // Inside a step function, retrieve the agent population as a DeviceAgentVector
+    // Update all agents by adding 12 to their value
+    // After model completion, retrieve the agent population and check their values are [12,13,14..N+12]
+    ModelDescription model(MODEL_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
+    agent.newVariable<int, 3>("int", { 0, 0, 0 });
+    model.addStepFunction(SetGetArray);
+
+    // Init agent pop
+    AgentVector av(agent, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i)
+        av[i].setVariable<int, 3>("int", { 0, static_cast<int>(i), 0 });
+
+    // Create and step simulation
+    CUDASimulation sim(model);
+    sim.setPopulationData(av);
+    sim.step();
+
+    // Retrieve and validate agents match
+    sim.getPopulationData(av);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        const std::array<int, 3> t1 = {11, static_cast<int>(i) + 12, 13 };
+        const std::array<int, 3> t2 = av[i].getVariable<int, 3>("int");
+        ASSERT_EQ(t1, t2);
+    }
+
+    // Step again
+    sim.step();
+
+    // Retrieve and validate agents match
+    sim.getPopulationData(av);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        const std::array<int, 3> t1 = { 22, static_cast<int>(i) + 24, 26 };
+        const std::array<int, 3> t2 = av[i].getVariable<int, 3>("int");
+        ASSERT_EQ(t1, t2);
+    }
+}
+TEST(DeviceAgentVectorTest, SetGetArrayElement) {
+    // Covers former bug, where updating an array element would not trigger sync
+    // Initialise an agent population with values in a variable [0,1,2..N]
+    // Inside a step function, retrieve the agent population as a DeviceAgentVector
+    // Update all agents by adding 12 to their value
+    // After model completion, retrieve the agent population and check their values are [12,13,14..N+12]
+    ModelDescription model(MODEL_NAME);
+    AgentDescription agent = model.newAgent(AGENT_NAME);
+    agent.newVariable<int, 3>("int", {0, 0, 0});
+    model.addStepFunction(SetGetArrayElement);
+
+    // Init agent pop
+    AgentVector av(agent, AGENT_COUNT);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i)
+        av[i].setVariable<int, 3>("int", { 0, static_cast<int>(i), 0 });
+
+    // Create and step simulation
+    CUDASimulation sim(model);
+    sim.setPopulationData(av);
+    sim.step();
+
+    // Retrieve and validate agents match
+    sim.getPopulationData(av);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        const std::array<int, 3> t1 = { 0, static_cast<int>(i) + 12, 0 };
+        const std::array<int, 3> t2 = av[i].getVariable<int, 3>("int");
+        ASSERT_EQ(t1, t2);
+    }
+
+    // Step again
+    sim.step();
+
+    // Retrieve and validate agents match
+    sim.getPopulationData(av);
+    for (unsigned int i = 0; i < AGENT_COUNT; ++i) {
+        const std::array<int, 3> t1 = { 0, static_cast<int>(i) + 24, 0 };
+        const std::array<int, 3> t2 = av[i].getVariable<int, 3>("int");
+        ASSERT_EQ(t1, t2);
     }
 }
 TEST(DeviceAgentVectorTest, SetGetHalf) {
