@@ -535,7 +535,7 @@ TEST(DependencyGraphTest, UnattachedFunctionWarning) {
     _m.generateLayers();
     // Reset cerr
     std::cerr.rdbuf(prev);
-    EXPECT_EQ(buffer.str(), "WARNING: Not all agent functions are used in the dependency graph - have you forgotten to add one?");
+    EXPECT_EQ(buffer.str(), "WARNING: Not all agent functions are used in the dependency graph - have you forgotten to add one?\n");
 }
 TEST(DependencyGraphTest, ModelAlreadyHasLayers) {
     ModelDescription _m(MODEL_NAME);
