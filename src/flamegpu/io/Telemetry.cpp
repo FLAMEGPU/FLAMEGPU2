@@ -372,8 +372,7 @@ std::string Telemetry::getUserId() {
                     return cached_id;
                 else
                     return userId;
-            }
-            else {
+            } else {
                 throw std::runtime_error("Unable to open user ID file for reading");
             }
         }
@@ -382,8 +381,7 @@ std::string Telemetry::getUserId() {
         if (file.is_open()) {
             file << userId;
             file.close();
-        }
-        else {
+        } else {
             throw std::runtime_error("Unable to create user ID file");
         }
     } catch (const std::exception&) {
