@@ -134,7 +134,7 @@ void LayerDescription::addAgentFunction(const std::string &agentName, const std:
                             THROW exception::InvalidAgentFunc("Agent function '%s' owned by agent '%s' cannot be added to this layer as agent function '%s' "
                                 "within the layer shares an input or output state, this is not permitted, "
                                 "in LayerDescription::addAgentFunction().",
-                                a->second->name.c_str(), agentName.c_str(), b->name.c_str());
+                                f->second->name.c_str(), agentName.c_str(), b->name.c_str());
                         }
                     }
                     // Check that the layer does not already contain function for the agent + state being output to
