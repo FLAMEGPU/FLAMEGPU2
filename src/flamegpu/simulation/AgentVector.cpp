@@ -543,13 +543,6 @@ void AgentVector::internal_resize(size_type count, bool init) {
             // Need to create the variable's vector
             auto t = std::unique_ptr<detail::GenericMemoryVector>(v.second.memory_vector->clone());
             t->resize(count);
-            // Default init all new elements
-            if (init) {
-                char* t_data = static_cast<char*>(t->getDataPtr());
-                for (unsigned int i = 0; i < count; ++i) {
-                    memcpy(t_data + i * variable_size, v.second.default_value, variable_size);
-                }
-            }
             _data->emplace(v.first, std::move(t));
         } else {
             // Need to resize the variables vector
@@ -561,6 +554,8 @@ void AgentVector::internal_resize(size_type count, bool init) {
     // Default init all new elements
     if (init && count > old_capacity) {
         this->init(old_capacity, _capacity);
+    } else if (count < old_capacity) {
+        _size = count;
     }
 }
 void AgentVector::swap(AgentVector& other) noexcept {

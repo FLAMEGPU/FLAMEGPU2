@@ -787,6 +787,39 @@ TEST(HostAgentCreationTest, AgentID_MultipleAgents) {
     }
     ASSERT_EQ(ids_b.size(), 2 * POP_SIZE);  // No collisions
 }
+FLAMEGPU_INIT_FUNCTION(AgentID_Consistent1) {
+    for (unsigned int i = 0; i < 10; ++i) {
+        auto a = FLAMEGPU->agent("agent").newAgent();
+        a.setVariable<id_t>("id_copy", a.getID());
+    }
+}
+FLAMEGPU_INIT_FUNCTION(AgentID_Consistent2) {
+    DeviceAgentVector v = FLAMEGPU->agent("agent").getPopulationData();
+    for (const auto &a : v) {
+        id_t t1 = a.getID();
+        id_t t2 = a.getVariable<id_t>("id_copy");
+        EXPECT_EQ(t1, t2);
+    }
+}
+TEST(HostAgentCreationTest, AgentID_Consistent) {
+    // PTHeywood found that when agents were created in a host function they would be given an ID
+    // This would then be reassigned, if they were accessed via a DeviceAgentVector in the same host function
+    // This was also present with multiple init functions, as shown in this test.
+    // Pull request #1270
+
+    ModelDescription model("test_agentid");
+    AgentDescription agent = model.newAgent("agent");
+    agent.newVariable<id_t>("id_copy", ID_NOT_SET);
+
+    model.addInitFunction(AgentID_Consistent1);
+    model.addInitFunction(AgentID_Consistent2);
+
+    CUDASimulation sim(model);
+
+    sim.SimulationConfig().steps = 10;
+
+    sim.simulate();
+}
 #ifdef FLAMEGPU_USE_GLM
 FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirthSetGet_glm) {
     auto t = FLAMEGPU->agent("agent_name");
