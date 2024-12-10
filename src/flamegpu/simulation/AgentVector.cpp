@@ -538,18 +538,10 @@ void AgentVector::internal_resize(size_type count, bool init) {
     for (const auto& v : agent->variables) {
         // For each variable inside agent, add it to the map or replace it in the map
         const auto it = _data->find(v.first);
-        const size_t variable_size = v.second.type_size * v.second.elements;
         if (it == _data->end()) {
             // Need to create the variable's vector
             auto t = std::unique_ptr<detail::GenericMemoryVector>(v.second.memory_vector->clone());
             t->resize(count);
-            // Default init all new elements
-            if (init) {
-                char* t_data = static_cast<char*>(t->getDataPtr());
-                for (unsigned int i = 0; i < count; ++i) {
-                    memcpy(t_data + i * variable_size, v.second.default_value, variable_size);
-                }
-            }
             _data->emplace(v.first, std::move(t));
         } else {
             // Need to resize the variables vector
