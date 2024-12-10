@@ -185,10 +185,10 @@ void DeviceAgentVector_impl::_insert(size_type pos, size_type count) {
             _require(ID_VARIABLE_NAME);
             id_t *h_ptr = static_cast<id_t*>(d->second->getDataPtr());
             for (unsigned int i = pos; i < pos + count; ++i) {
-                // Always assign ID, as AgentVector should reset these to unset, but this saves us checking
-                // if (h_ptr[i] == ID_NOT_SET) {
+                // Do not reassign ID if it has been set during HostAgentCreation
+                if (h_ptr[i] == ID_NOT_SET) {
                     h_ptr[i] = cuda_agent.nextID();
-                // }
+                }
             }
             _changedAfter(ID_VARIABLE_NAME, pos);
         } else {
