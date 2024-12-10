@@ -600,9 +600,10 @@ class AgentVector {
      */
     virtual void _requireLength() const { }
     /**
-     * Notify any subclasses that all variables are about to be accessed
-     * Should be called by operations which move agents (e.g. insert/erase)
-     * @note This is not called in conjunction with _insert() or _erase()
+     * Resize the capacity of the AgentVector
+     * @param count The new capacity of the agent vector
+     * @param init Whether any new agents should be default init
+     * @note If count < size() agent data will be lost
      */
     void internal_resize(size_type count, bool init);
     /**
