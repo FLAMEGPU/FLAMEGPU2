@@ -831,6 +831,74 @@ TEST(HostAgentCreationTest, AgentID_Consistent) {
 
     sim.simulate();
 }
+FLAMEGPU_INIT_FUNCTION(AgentID_Consistent_Combined) {
+    for (unsigned int i = 0; i < 10; ++i) {
+        auto a = FLAMEGPU->agent("agent").newAgent();
+        a.setVariable<id_t>("id_copy", a.getID());
+    }
+    DeviceAgentVector v = FLAMEGPU->agent("agent").getPopulationData();
+    for (auto a : v) {
+        id_t t1 = a.getID();
+        id_t t2 = a.getVariable<id_t>("id_copy");
+        EXPECT_EQ(t1, t2);
+    }
+}
+TEST(HostAgentCreationTest, AgentID_Consistent_Combined) {
+    // Duplicate of AgentID_Consistent, but with new agent creation and then DAV iteration in the same agent function
+    ModelDescription model("test_agentid");
+    AgentDescription agent = model.newAgent("agent");
+    agent.newVariable<id_t>("id_copy", ID_NOT_SET);
+
+    model.addInitFunction(AgentID_Consistent_Combined);
+    model.addStepFunction(AgentID_Consistent_Step);
+
+    CUDASimulation sim(model);
+
+    sim.SimulationConfig().steps = 1;
+
+    sim.simulate();
+}
+FLAMEGPU_AGENT_FUNCTION(AgentID_Consistent_Agent, flamegpu::MessageNone, flamegpu::MessageNone) {
+    FLAMEGPU->setVariable<id_t>("id_copy_from_device", FLAMEGPU->getID());
+    FLAMEGPU->setVariable<id_t>("id_copy_copy_from_device", FLAMEGPU->getVariable<id_t>("id_copy_copy_from_device"));
+    return flamegpu::ALIVE;
+}
+FLAMEGPU_STEP_FUNCTION(AgentID_Consistent_Step_Agent) {
+    DeviceAgentVector v = FLAMEGPU->agent("agent").getPopulationData();
+    for (const auto &a : v) {
+        id_t t1 = a.getID();
+        id_t t2 = a.getVariable<id_t>("id_copy_from_device");
+        id_t t3 = a.getVariable<id_t>("id_copy_copy_from_device");
+        EXPECT_NE(t1, ID_NOT_SET);
+        EXPECT_NE(t2, ID_NOT_SET);
+        EXPECT_NE(t3, ID_NOT_SET);
+        EXPECT_EQ(t1, t2);
+        EXPECT_EQ(t2, t3);
+    }
+}
+TEST(HostAgentCreationTest, AgentID_Consistent_Device) {
+    // Duplicate as AgentID_Consistent, but checks data makes it to the GPU, both in getID and in agent data
+
+    ModelDescription model("test_agentid");
+    AgentDescription agent = model.newAgent("agent");
+    agent.newVariable<id_t>("id_copy", ID_NOT_SET);
+    agent.newVariable<id_t>("id_copy_from_device", ID_NOT_SET);
+    agent.newVariable<id_t>("id_copy_copy_from_device", ID_NOT_SET);
+
+    auto afd = agent.newFunction("AgentID_Consistent_Agent", AgentID_Consistent_Agent);
+
+    model.addInitFunction(AgentID_Consistent1);
+    model.addInitFunction(AgentID_Consistent2);
+    model.addStepFunction(AgentID_Consistent_Step_Agent);
+
+    model.newLayer().addAgentFunction(afd);
+
+    CUDASimulation sim(model);
+
+    sim.SimulationConfig().steps = 1;
+
+    sim.simulate();
+}
 #ifdef FLAMEGPU_USE_GLM
 FLAMEGPU_STEP_FUNCTION(ArrayVarHostBirthSetGet_glm) {
     auto t = FLAMEGPU->agent("agent_name");
