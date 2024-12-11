@@ -190,11 +190,14 @@ void DeviceAgentVector_impl::_insert(size_type pos, size_type count) {
                     h_ptr[i] = cuda_agent.nextID();
                 }
             }
-            _changedAfter(ID_VARIABLE_NAME, pos);
         } else {
             THROW exception::InvalidOperation("Internal agent ID variable was not found, "
                 "in DeviceAgentVector_impl._insert().");
         }
+    }
+    // Update change detail for all variables
+    for (const auto& [v, _] : agent->variables) {
+        _changedAfter(v, pos);
     }
     // No unbound buffers, return
     if (unbound_buffers.empty())
@@ -238,19 +241,6 @@ void DeviceAgentVector_impl::_insert(size_type pos, size_type count) {
     known_device_buffer_size = _size;
     if (unbound_host_buffer_size != _size) {
         THROW exception::InvalidOperation("Unbound buffers have gone out of sync, in DeviceAgentVector::_insert().\n");
-    }
-    // Update change detail for all variables
-    for (const auto& v : agent->variables) {
-        // Does it exist in change map
-        auto change = change_detail.find(v.first);
-        if (change == change_detail.end()) {
-            change_detail.emplace(v.first, std::pair<size_type, size_type>{pos, _size});
-        } else {
-            // Inclusive min bound
-            change->second.first = change->second.first > pos ? pos : change->second.first;
-            // Exclusive max bound
-            change->second.second = _size;
-        }
     }
 }
 void DeviceAgentVector_impl::_erase(size_type pos, size_type count) {
