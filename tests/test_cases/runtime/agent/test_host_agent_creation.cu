@@ -795,10 +795,20 @@ FLAMEGPU_INIT_FUNCTION(AgentID_Consistent1) {
 }
 FLAMEGPU_INIT_FUNCTION(AgentID_Consistent2) {
     DeviceAgentVector v = FLAMEGPU->agent("agent").getPopulationData();
+    for (auto a : v) {
+        id_t t1 = a.getID();
+        id_t t2 = a.getVariable<id_t>("id_copy");
+        EXPECT_EQ(t1, t2);
+    }
+}
+FLAMEGPU_STEP_FUNCTION(AgentID_Consistent_Step) {
+    DeviceAgentVector v = FLAMEGPU->agent("agent").getPopulationData();
     for (const auto &a : v) {
         id_t t1 = a.getID();
         id_t t2 = a.getVariable<id_t>("id_copy");
         EXPECT_EQ(t1, t2);
+        EXPECT_NE(t1, ID_NOT_SET);
+        EXPECT_NE(t2, ID_NOT_SET);
     }
 }
 TEST(HostAgentCreationTest, AgentID_Consistent) {
@@ -813,10 +823,11 @@ TEST(HostAgentCreationTest, AgentID_Consistent) {
 
     model.addInitFunction(AgentID_Consistent1);
     model.addInitFunction(AgentID_Consistent2);
+    model.addStepFunction(AgentID_Consistent_Step);
 
     CUDASimulation sim(model);
 
-    sim.SimulationConfig().steps = 10;
+    sim.SimulationConfig().steps = 2;
 
     sim.simulate();
 }
