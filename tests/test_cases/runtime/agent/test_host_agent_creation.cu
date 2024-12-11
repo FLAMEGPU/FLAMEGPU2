@@ -860,7 +860,7 @@ TEST(HostAgentCreationTest, AgentID_Consistent_Combined) {
 }
 FLAMEGPU_AGENT_FUNCTION(AgentID_Consistent_Agent, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->setVariable<id_t>("id_copy_from_device", FLAMEGPU->getID());
-    FLAMEGPU->setVariable<id_t>("id_copy_copy_from_device", FLAMEGPU->getVariable<id_t>("id_copy_copy_from_device"));
+    FLAMEGPU->setVariable<id_t>("id_copy_copy_from_device", FLAMEGPU->getVariable<id_t>("id_copy"));
     return flamegpu::ALIVE;
 }
 FLAMEGPU_STEP_FUNCTION(AgentID_Consistent_Step_Agent) {
