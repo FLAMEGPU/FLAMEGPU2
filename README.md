@@ -144,6 +144,8 @@ REM Alternatively, build from the command line specifying the build configuratio
 cmake --build . --config Release --target flamegpu boids_bruteforce --verbose
 ```
 
+On Windows, by default CMake will select the newest version of CUDA available when configuring. If you have multiple versions of CUDA installed then you can select an earlier installed CUDA version (e.g. CUDA 11.0) by additionally passing `-T cuda=11.0` when calling CMake configure (`cmake ..`).
+
 #### Configuring and Building a single example
 
 It is also possible to configure and build individual examples as standalone CMake projects.
