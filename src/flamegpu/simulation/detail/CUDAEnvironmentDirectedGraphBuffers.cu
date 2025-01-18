@@ -411,15 +411,17 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
         }
     }
     if (requires_rebuild && vertex_count && edge_count) {
+        if (edge_count != h_edge_index_map.size()) {
+            THROW exception::IDNotSet("Unable to build graph, only %u/%u edges have been assigned both a source and destination, in CUDAEnvironmentDirectedGraphBuffers::syncDevice_async()", edge_count, static_cast<unsigned int>(h_edge_index_map.size()));
+        } else if (vertex_count != h_vertex_index_map.size()) {
+            THROW exception::IDNotSet("Unable to build graph, only %u/%u vertices have been assigned an ID, in CUDAEnvironmentDirectedGraphBuffers::syncDevice_async()", vertex_count, static_cast<unsigned int>(h_vertex_index_map.size()));
+        }
         // Construct the vertex ID : index map
         {
             if (vertex_id_min == std::numeric_limits<unsigned int>::max() || vertex_id_max == std::numeric_limits<unsigned int>::min()) {
                 THROW flamegpu::exception::IDOutOfBounds("No IDs have been set, in CUDAEnvironmentDirectedGraphBuffers::syncDevice_async()");
             }
             const unsigned int ID_RANGE = 1 + vertex_id_max - vertex_id_min;
-            if (ID_RANGE < vertex_count) {
-                THROW flamegpu::exception::IDNotSet("Not all vertices have been assigned a unique ID, in CUDAEnvironmentDirectedGraphBuffers::syncDevice_async()");
-            }
             if (d_vertex_index_map) {
                 gpuErrchk(flamegpu::detail::cuda::cudaFree(d_vertex_index_map));
             }
@@ -625,7 +627,7 @@ void CUDAEnvironmentDirectedGraphBuffers::setVertexID(unsigned int vertex_index,
         h_vertex_index_map.erase(static_cast<id_t*>(vb.h_ptr)[vertex_index]);
     }
 
-    // Add new vertex ID to host map (validate it's not already in us)
+    // Add new vertex ID to host map (validate it's not already in use)
     const auto find = h_vertex_index_map.find(vertex_id);
     if (find != h_vertex_index_map.end()) {
         THROW exception::IDCollision("ID collision, %u has already been assigned to vertex at index %u, "
@@ -688,12 +690,117 @@ void CUDAEnvironmentDirectedGraphBuffers::setEdgeSourceDestination(unsigned int 
     // Require rebuild before use
     markForRebuild();
 }
+void CUDAEnvironmentDirectedGraphBuffers::setEdgeSource(unsigned int edge_index, id_t src_vertex_id) {
+    if (edge_index >= edge_count) {
+        THROW exception::OutOfBoundsException("Edge index exceeds bounds %u >= %u, "
+            "in CUDAEnvironmentDirectedGraphBuffers::setEdgeSource()\n", edge_index, edge_count);
+    } else if (src_vertex_id == ID_NOT_SET) {
+        THROW exception::IDOutOfBounds("Source vertex ID of %u is not valid, "
+            "in CUDAEnvironmentDirectedGraphBuffers::setEdgeSource()\n", ID_NOT_SET);
+    }
+    // Purge old edge src/dest from host map
+    auto& eb = edge_buffers.at(GRAPH_SOURCE_DEST_VARIABLE_NAME);
+    // Don't need to update buffer, src_dest is not stored as ID on device
+    id_t& edge_dest = static_cast<id_t*>(eb.h_ptr)[edge_index * 2 + 0];
+    id_t& edge_src = static_cast<id_t*>(eb.h_ptr)[edge_index * 2 + 1];
+
+    // Remove old edge from src map if it's complete
+    if (edge_src != ID_NOT_SET && edge_dest != ID_NOT_SET) {
+        h_edge_index_map.erase({edge_src, edge_dest});
+    }
+
+    // Update edge's src dest in buffer
+    edge_src = src_vertex_id;
+    eb.ready = Buffer::Host;
+
+    // Add new edge ID to host map if it's complete
+    if (edge_src != ID_NOT_SET && edge_dest != ID_NOT_SET) {
+        // validate it's not already in use
+        const auto find = h_edge_index_map.find({ edge_src, edge_dest });
+        if (find != h_edge_index_map.end()) {
+            THROW exception::IDCollision("Edge collision, an edge has already been assigned source %u dest %u at index %u, "
+                "in CUDAEnvironmentDirectedGraphBuffers::setEdgeSource()\n", src_vertex_id, edge_dest, find->second);
+        }
+        h_edge_index_map.emplace(std::pair{src_vertex_id, edge_dest }, edge_index);
+    }
+
+    // Require rebuild before use
+    markForRebuild();
+}
+void CUDAEnvironmentDirectedGraphBuffers::setEdgeDestination(unsigned int edge_index, id_t dest_vertex_id) {
+    if (edge_index >= edge_count) {
+        THROW exception::OutOfBoundsException("Edge index exceeds bounds %u >= %u, "
+            "in CUDAEnvironmentDirectedGraphBuffers::setEdgeDestination()\n", edge_index, edge_count);
+    } else if (dest_vertex_id == ID_NOT_SET) {
+        THROW exception::IDOutOfBounds("Destination vertex ID of %u is not valid, "
+            "in CUDAEnvironmentDirectedGraphBuffers::setEdgeDestination()\n", ID_NOT_SET);
+    }
+    // Purge old edge src/dest from host map
+    auto& eb = edge_buffers.at(GRAPH_SOURCE_DEST_VARIABLE_NAME);
+    // Don't need to update buffer, src_dest is not stored as ID on device
+    id_t& edge_dest = static_cast<id_t*>(eb.h_ptr)[edge_index * 2 + 0];
+    id_t& edge_src = static_cast<id_t*>(eb.h_ptr)[edge_index * 2 + 1];
+
+    // Update edge's src dest in buffer
+    if (edge_src != ID_NOT_SET && edge_dest != ID_NOT_SET) {
+        h_edge_index_map.erase({edge_src, edge_dest});
+    }
+
+    // Update edge's src dest in buffer
+    edge_dest = dest_vertex_id;
+    eb.ready = Buffer::Host;
+
+    // Add new edge ID to host map if it's complete
+    if (edge_src != ID_NOT_SET && edge_dest != ID_NOT_SET) {
+        // validate it's not already in use
+        const auto find = h_edge_index_map.find({ edge_src, edge_dest });
+        if (find != h_edge_index_map.end()) {
+            THROW exception::IDCollision("Edge collision, an edge has already been assigned source %u dest %u at index %u, "
+                "in CUDAEnvironmentDirectedGraphBuffers::setEdgeDestination()\n", edge_src, edge_dest, find->second);
+        }
+        h_edge_index_map.emplace(std::pair{ edge_src, edge_dest }, edge_index);
+    }
+
+    // Require rebuild before use
+    markForRebuild();
+}
 unsigned int CUDAEnvironmentDirectedGraphBuffers::getEdgeIndex(id_t src_vertex_id, id_t dest_vertex_id) const {
     const auto find = h_edge_index_map.find({src_vertex_id, dest_vertex_id});
     if (find == h_edge_index_map.end()) {
         THROW exception::InvalidID("No edge found with source %u, dest %u, in CUDAEnvironmentDirectedGraphBuffers::getEdgeIndex()\n", src_vertex_id, dest_vertex_id);
     }
     return find->second;
+}
+id_t CUDAEnvironmentDirectedGraphBuffers::getSourceVertexID(unsigned int edge_index, cudaStream_t stream) const {
+    if (edge_index >= edge_count) {
+        THROW exception::OutOfBoundsException("Edge index exceeds bounds %u >= %u, "
+            "in CUDAEnvironmentDirectedGraphBuffers::getSourceVertexID()\n", edge_index, edge_count);
+    }
+    // Purge old edge src/dest from host map
+    auto& eb = edge_buffers.at(GRAPH_SOURCE_DEST_VARIABLE_NAME);
+    eb.updateHostBuffer(edge_count, stream);
+    const unsigned int vertex_index = static_cast<id_t*>(eb.h_ptr)[edge_index * 2 + 1];
+    if (vertex_index == ID_NOT_SET)
+        return vertex_index;
+    auto& vb = vertex_buffers.at(GRAPH_SOURCE_DEST_VARIABLE_NAME);
+    vb.updateHostBuffer(vertex_count, stream);
+    return static_cast<id_t*>(vb.h_ptr)[vertex_index];
+}
+id_t CUDAEnvironmentDirectedGraphBuffers::getDestinationVertexID(unsigned int edge_index, cudaStream_t stream) const {
+    if (edge_index >= edge_count) {
+        THROW exception::OutOfBoundsException("Edge index exceeds bounds %u >= %u, "
+            "in CUDAEnvironmentDirectedGraphBuffers::getDestinationVertexID()\n", edge_index, edge_count);
+    }
+    // Purge old edge src/dest from host map
+    auto& eb = edge_buffers.at(GRAPH_SOURCE_DEST_VARIABLE_NAME);
+    eb.updateHostBuffer(edge_count, stream);
+    // Don't need to update buffer, src_dest is not stored as ID on device
+    const unsigned int vertex_index = static_cast<id_t*>(eb.h_ptr)[edge_index * 2 + 0];
+    if (vertex_index == ID_NOT_SET)
+        return vertex_index;
+    auto& vb = vertex_buffers.at(GRAPH_SOURCE_DEST_VARIABLE_NAME);
+    vb.updateHostBuffer(vertex_count, stream);
+    return static_cast<id_t*>(vb.h_ptr)[vertex_index];
 }
 
 unsigned int CUDAEnvironmentDirectedGraphBuffers::createIfNotExistVertex(id_t vertex_id, const cudaStream_t stream) {
