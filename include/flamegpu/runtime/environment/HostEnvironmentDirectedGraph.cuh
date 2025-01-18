@@ -125,22 +125,38 @@ class HostEnvironmentDirectedGraph {
 
      public:
         class Vertex;
+        struct Iterator;
+        /**
+         * @return The number of vertices with a valid ID
+         */
+        size_type size() const;
+        /**
+         * @return The number of vertices that memory has been allocated for
+         * @see HostEnvironmentDirectedGraph::setVertexCount()
+         */
+        size_type allocated_size() const;
         /**
          * Return a view into the vertex map of the specified vertex
          * If the vertex has not already been created, it will be created
          * @param vertex_id Identifier of the vertex to access
          * @throw exception::IDOutOfBounds 0 is not a valid value of vertex_id
-         * @throw exception::OutOfBoundsException If more vertices have been created, than were allocated via HostEnvironmentGraph::setVertexCount()
+         * @throw exception::OutOfBoundsException If more vertices have been created, than were allocated via HostEnvironmentDirectedGraph::setVertexCount()
          */
         Vertex operator[](id_t vertex_id);
+        /**
+         * Return a view into the allocated vertex buffer at the specified index
+         * @throw exception::OutOfBoundsException If index exceeds the number of vertices allocated via HostEnvironmentDirectedGraph::setVertexCount()
+         */
+        Vertex atIndex(unsigned int index);
          class Vertex {
              std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> directed_graph;
              const cudaStream_t stream;
-             id_t vertex_id;
+             unsigned int vertex_index;
              friend Vertex VertexMap::operator[](id_t);
+             friend struct Iterator;
 
           public:
-             Vertex(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, cudaStream_t _stream, id_t _vertex_id);
+             Vertex(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, cudaStream_t _stream, id_t _vertex_id, bool is_index = false);
              /**
               * Set the id for the current vertex
               * @param vertex_id The value to set the current vertex's id
@@ -186,6 +202,63 @@ class HostEnvironmentDirectedGraph {
              std::vector<T> getPropertyArray(const std::string& property_name) const;
 #endif
          };
+
+        /**
+         * Iterator for VertexMap
+         *
+         * Unlike a traditional C++ map iterator, this does not dereference to a key-value pair,
+         * as it returns all allocated vertices including those which have not had their key
+         * (ID) set, such IDs evaluate as ID_NOT_SET
+         *
+         * @see HostEnvironmentDirectedGraph::VertexMap::begin()
+         * @see HostEnvironmentDirectedGraph::VertexMap::end()
+         */
+        struct Iterator {
+            using iterator_category = std::forward_iterator_tag;
+            using difference_type = unsigned int;
+            using value_type = Vertex;
+            using pointer = Vertex*;
+            using reference = Vertex&;
+
+            Iterator(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const cudaStream_t _stream, difference_type _index)
+                : directed_graph(std::move(_directed_graph))
+                , stream(_stream)
+                , vertex(directed_graph, _stream, _index, true) {}
+            reference operator*() const { return vertex; }
+            pointer operator->() const { return &vertex; }
+            Iterator& operator++() { vertex.vertex_index++; return *this; }
+            Iterator operator++(int) { Iterator tmp = *this; ++(*this);  return tmp; }
+
+            bool operator==(const Iterator& other) const { return vertex.vertex_index == other.vertex.vertex_index; }
+            bool operator!=(const Iterator& other) const { return vertex.vertex_index != other.vertex.vertex_index; }
+
+            Iterator begin() { return { directed_graph, stream, 0 }; }
+            Iterator end() { return { directed_graph, stream, directed_graph->getVertexCount() }; }
+
+         private:
+            std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> directed_graph;
+            cudaStream_t stream;
+            mutable Vertex vertex;
+        };
+
+        /**
+         * Returns an iterator to the first vertex in the buffer that backs the vertex map
+         *
+         * Unlike a traditional C++ map iterator, this does not dereference to a key-value pair,
+         * as it returns all allocated vertices including those which have not had their key
+         * (ID) set, such IDs evaluate as ID_NOT_SET
+         *
+         */
+        Iterator begin() { return {directed_graph, stream, 0}; }
+        /**
+         * Returns an iterator to one beyond the last vertex in the buffer that backs the vertex map
+         *
+         * Unlike a traditional C++ map iterator, this does not dereference to a key-value pair,
+         * as it returns all allocated vertices including those which have not had their key
+         * (ID) set, such IDs evaluate as ID_NOT_SET
+         *
+         */
+        Iterator end() { return { directed_graph, stream, directed_graph->getVertexCount() }; }
     };
     /**
      * A map for accessing edge storage via vertex ID
@@ -198,24 +271,41 @@ class HostEnvironmentDirectedGraph {
         typedef std::pair<id_t, id_t> SrcDestPair;
 
      public:
+        struct Iterator;
         class Edge;
+        /**
+         * @return The number of edges with a valid source/destination vertex pair
+         */
+        size_type size() const;
+        /**
+         * @return The number of edges that memory has been allocated for
+         * @see HostEnvironmentDirectedGraph::setEdgeCount()
+         */
+        size_type allocated_size() const;
         /**
          * Return a view into the edge map of the specified edge
          * If the edge has not already been created, it will be created
          * @param source_dest_vertex_ids Identifier of the source vertex of the edge
          * @throw exception::IDOutOfBounds 0 is not a valid value of edge_id
-         * @throw exception::OutOfBoundsException If more vertices have been created, than were allocated via HostEnvironmentGraph::setEdgeCount()
+         * @throw exception::OutOfBoundsException If more vertices have been created, than were allocated via HostEnvironmentDirectedGraph::setEdgeCount()
          * @todo C++23 support, make 2 arg version
          */
         Edge operator[](SrcDestPair source_dest_vertex_ids);
+        /**
+         * Return a view into the allocated edge buffer at the specified index
+         * @throw exception::OutOfBoundsException If index exceeds the number of vertices allocated via HostEnvironmentDirectedGraph::setEdgeCount()
+         */
+        Edge atIndex(unsigned int index);
         class Edge {
             std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> directed_graph;
             const cudaStream_t stream;
-            id_t source_vertex_id, destination_vertex_id;
+            unsigned int edge_index;
             friend Edge EdgeMap::operator[](SrcDestPair);
+            friend struct Iterator;
 
          public:
             Edge(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, cudaStream_t _stream, id_t _source_vertex_id, id_t _dest_vertex_id);
+            Edge(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, cudaStream_t _stream, unsigned int edge_index);
             /**
              * Set the source vertex's id for the current edge
              * @param source_vertex_id The value to set the current edge's source vertex id
@@ -275,14 +365,71 @@ class HostEnvironmentDirectedGraph {
             std::vector<T> getPropertyArray(const std::string& property_name) const;
 #endif
         };
+
+        /**
+         * Iterator for EdgeMap
+         *
+         * Unlike a traditional C++ map iterator, this does not dereference to a key-value pair,
+         * as it returns all allocated edges including those which have not had their key
+         * (source/destination vertex) set, such IDs evaluate as ID_NOT_SET
+         *
+         * @see HostEnvironmentDirectedGraph::EdgeMap::begin()
+         * @see HostEnvironmentDirectedGraph::EdgeMap::end()
+         */
+        struct Iterator {
+            using iterator_category = std::forward_iterator_tag;
+            using difference_type = unsigned int;
+            using value_type = Edge;
+            using pointer = Edge*;
+            using reference = Edge&;
+
+            Iterator(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const cudaStream_t _stream, difference_type _index)
+                : directed_graph(std::move(_directed_graph))
+                , stream(_stream)
+                , edge(directed_graph, _stream, _index) {}
+            reference operator*() const { return edge; }
+            pointer operator->() const { return &edge; }
+            Iterator& operator++() { edge.edge_index++; return *this; }
+            Iterator operator++(int) { Iterator tmp = *this; ++(*this);  return tmp; }
+
+            bool operator==(const Iterator& other) const { return edge.edge_index == other.edge.edge_index; }
+            bool operator!=(const Iterator& other) const { return edge.edge_index != other.edge.edge_index; }
+
+            Iterator begin() { return { directed_graph, stream, 0 }; }
+            Iterator end() { return { directed_graph, stream, directed_graph->getEdgeCount() }; }
+
+         private:
+            std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> directed_graph;
+            cudaStream_t stream;
+            mutable Edge edge;
+        };
+
+        /**
+         * Returns an iterator to the first edge in the buffer that backs the edge map
+         *
+         * Unlike a traditional C++ map iterator, this does not dereference to a key-value pair,
+         * as it returns all allocated edges including those which have not had their key
+         * (source/destination vertex) set, such IDs evaluate as ID_NOT_SET
+         *
+         * @note The order of edges is not stable and is likely to change when the graph is rebuilt
+         */
+        Iterator begin() { return {directed_graph, stream, 0}; }
+        /**
+         * Returns an iterator to one beyond the last edge in the buffer that backs the edge map
+         *
+         * Unlike a traditional C++ map iterator, this does not dereference to a key-value pair,
+         * as it returns all allocated edges including those which have not had their key
+         * (source/destination vertex) set, such IDs evaluate as ID_NOT_SET
+         *
+         * @note The order of edges is not stable and is likely to change when the graph is rebuilt
+         */
+        Iterator end() { return { directed_graph, stream, directed_graph->getEdgeCount() }; }
     };
 };
 
 #ifdef SWIG
 template<typename T>
 void HostEnvironmentDirectedGraph::VertexMap::Vertex::setPropertyArray(const std::string& property_name, const std::vector<T>& property_value) const {
-    // Get index
-    const unsigned int vertex_index = directed_graph->getVertexIndex(vertex_id);
     size_type n = property_value.size();
     T* val = directed_graph->getVertexPropertyBuffer<T>(property_name, n, stream);
     if (!property_value.size()) {
@@ -294,14 +441,10 @@ void HostEnvironmentDirectedGraph::VertexMap::Vertex::setPropertyArray(const std
 }
 template<typename T>
 std::vector<T> HostEnvironmentDirectedGraph::VertexMap::Vertex::getPropertyArray(const std::string& property_name) const {
-    // Get index
-    const unsigned int vertex_index = directed_graph->getVertexIndex(vertex_id);
     return directed_graph->getVertexPropertyArray<T>(property_name, vertex_index, stream);
 }
 template<typename T>
 void HostEnvironmentDirectedGraph::EdgeMap::Edge::setPropertyArray(const std::string& property_name, const std::vector<T>& property_value) const {
-    // Get index
-    const unsigned int edge_index = directed_graph->getEdgeIndex(source_vertex_id, destination_vertex_id);
     size_type n = property_value.size();
     T* val = directed_graph->getEdgePropertyBuffer<T>(property_name, n, stream);
     if (!property_value.size()) {
@@ -312,24 +455,18 @@ void HostEnvironmentDirectedGraph::EdgeMap::Edge::setPropertyArray(const std::st
 }
 template<typename T>
 std::vector<T> HostEnvironmentDirectedGraph::EdgeMap::Edge::getPropertyArray(const std::string& property_name) const {
-    // Get index
-    const unsigned int edge_index = directed_graph->getEdgeIndex(source_vertex_id, destination_vertex_id);
     return directed_graph->getEdgePropertyArray<T>(property_name, edge_index, stream);
 }
 #endif
 
 template<typename T>
 void HostEnvironmentDirectedGraph::VertexMap::Vertex::setProperty(const std::string& property_name, T property_value) {
-    // Get index
-    const unsigned int vertex_index = directed_graph->getVertexIndex(vertex_id);
     size_type element_ct = 1;
     T* rtn = directed_graph->getVertexPropertyBuffer<T>(property_name, element_ct, stream);
     rtn[vertex_index] = property_value;
 }
 template<typename T, flamegpu::size_type N>
 void HostEnvironmentDirectedGraph::VertexMap::Vertex::setProperty(const std::string& property_name, flamegpu::size_type element_index, T property_value) {
-    // Get index
-    const unsigned int vertex_index = directed_graph->getVertexIndex(vertex_id);
     size_type element_ct = N;
     T* rtn = directed_graph->getVertexPropertyBuffer<T>(property_name, element_ct, stream);
     if (element_index > element_ct) {
@@ -340,8 +477,6 @@ void HostEnvironmentDirectedGraph::VertexMap::Vertex::setProperty(const std::str
 }
 template<typename T, flamegpu::size_type N>
 void HostEnvironmentDirectedGraph::VertexMap::Vertex::setProperty(const std::string& property_name, const std::array<T, N>& property_value) {
-    // Get index
-    const unsigned int vertex_index = directed_graph->getVertexIndex(vertex_id);
     size_type element_ct = N;
     T* rtn = directed_graph->getVertexPropertyBuffer<T>(property_name, element_ct, stream);
     std::array<T, N>* rtn2 = reinterpret_cast<std::array<T, N>*>(rtn);
@@ -349,16 +484,12 @@ void HostEnvironmentDirectedGraph::VertexMap::Vertex::setProperty(const std::str
 }
 template<typename T>
 T HostEnvironmentDirectedGraph::VertexMap::Vertex::getProperty(const std::string& property_name) const {
-    // Get index
-    const unsigned int vertex_index = directed_graph->getVertexIndex(vertex_id);
     size_type element_ct = 1;
     const T* rtn = const_cast<const detail::CUDAEnvironmentDirectedGraphBuffers *>(directed_graph.get())->getVertexPropertyBuffer<T>(property_name, element_ct, stream);
     return rtn[vertex_index];
 }
 template<typename T, size_type N>
 T HostEnvironmentDirectedGraph::VertexMap::Vertex::getProperty(const std::string& property_name, unsigned int element_index) const {
-    // Get index
-    const unsigned int vertex_index = directed_graph->getVertexIndex(vertex_id);
     size_type element_ct = N;
     const T* rtn = const_cast<const detail::CUDAEnvironmentDirectedGraphBuffers*>(directed_graph.get())->getVertexPropertyBuffer<T>(property_name, element_ct, stream);
     if (element_index > element_ct) {
@@ -369,8 +500,6 @@ T HostEnvironmentDirectedGraph::VertexMap::Vertex::getProperty(const std::string
 }
 template<typename T, size_type N>
 std::array<T, N> HostEnvironmentDirectedGraph::VertexMap::Vertex::getProperty(const std::string& property_name) const {
-    // Get index
-    const unsigned int vertex_index = directed_graph->getVertexIndex(vertex_id);
     size_type element_ct = N;
     const T* rtn = const_cast<const detail::CUDAEnvironmentDirectedGraphBuffers*>(directed_graph.get())->getVertexPropertyBuffer<T>(property_name, element_ct, stream);
     const std::array<T, N>* rtn2 = reinterpret_cast<const std::array<T, N>*>(rtn);
@@ -379,16 +508,12 @@ std::array<T, N> HostEnvironmentDirectedGraph::VertexMap::Vertex::getProperty(co
 
 template<typename T>
 void HostEnvironmentDirectedGraph::EdgeMap::Edge::setProperty(const std::string& property_name, const T property_value) {
-    // Get index
-    const unsigned int edge_index = directed_graph->getEdgeIndex(source_vertex_id, destination_vertex_id);
     size_type element_ct = 1;
     T* val = directed_graph->getEdgePropertyBuffer<T>(property_name, element_ct, stream);
     val[edge_index] = property_value;
 }
 template<typename T, flamegpu::size_type N>
 void HostEnvironmentDirectedGraph::EdgeMap::Edge::setProperty(const std::string& property_name, const size_type element_index, const T property_value) {
-    // Get index
-    const unsigned int edge_index = directed_graph->getEdgeIndex(source_vertex_id, destination_vertex_id);
     size_type element_ct = N;
     T* val = directed_graph->getEdgePropertyBuffer<T>(property_name, element_ct, stream);
     if (element_index >= element_ct) {
@@ -399,8 +524,6 @@ void HostEnvironmentDirectedGraph::EdgeMap::Edge::setProperty(const std::string&
 }
 template<typename T, flamegpu::size_type N>
 void HostEnvironmentDirectedGraph::EdgeMap::Edge::setProperty(const std::string& property_name, const std::array<T, N>& property_value) {
-    // Get index
-    const unsigned int edge_index = directed_graph->getEdgeIndex(source_vertex_id, destination_vertex_id);
     size_type element_ct = N;
     T* val = directed_graph->getEdgePropertyBuffer<T>(property_name, element_ct, stream);
     std::array<T, N>* val2 = reinterpret_cast<std::array<T, N>*>(val);
@@ -408,16 +531,12 @@ void HostEnvironmentDirectedGraph::EdgeMap::Edge::setProperty(const std::string&
 }
 template<typename T>
 T HostEnvironmentDirectedGraph::EdgeMap::Edge::getProperty(const std::string& property_name) const {
-    // Get index
-    const unsigned int edge_index = directed_graph->getEdgeIndex(source_vertex_id, destination_vertex_id);
     size_type element_ct = 1;
     const T* rtn = const_cast<const detail::CUDAEnvironmentDirectedGraphBuffers*>(directed_graph.get())->getEdgePropertyBuffer<T>(property_name, element_ct, stream);
     return rtn[edge_index];
 }
 template<typename T, flamegpu::size_type N>
 T HostEnvironmentDirectedGraph::EdgeMap::Edge::getProperty(const std::string& property_name, const size_type element_index) const {
-    // Get index
-    const unsigned int edge_index = directed_graph->getEdgeIndex(source_vertex_id, destination_vertex_id);
     size_type element_ct = N;
     const T* rtn = const_cast<const detail::CUDAEnvironmentDirectedGraphBuffers*>(directed_graph.get())->getEdgePropertyBuffer<T>(property_name, element_ct, stream);
     if (element_index >= element_ct) {
@@ -428,8 +547,6 @@ T HostEnvironmentDirectedGraph::EdgeMap::Edge::getProperty(const std::string& pr
 }
 template<typename T, flamegpu::size_type N>
 std::array<T, N> HostEnvironmentDirectedGraph::EdgeMap::Edge::getProperty(const std::string& property_name) const {
-    // Get index
-    const unsigned int edge_index = directed_graph->getEdgeIndex(source_vertex_id, destination_vertex_id);
     size_type element_ct = N;
     const T *rtn = const_cast<const detail::CUDAEnvironmentDirectedGraphBuffers*>(directed_graph.get())->getEdgePropertyBuffer<T>(property_name, element_ct, stream);
     const std::array<T, N>* rtn2 = reinterpret_cast<const std::array<T, N>*>(rtn);
