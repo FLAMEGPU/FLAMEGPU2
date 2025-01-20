@@ -403,6 +403,84 @@ TEST(TestEnvironmentDirectedGraph, TestHostException) {
 
     EXPECT_NO_THROW(sim.step());
 }
+FLAMEGPU_HOST_FUNCTION(HostIteration) {
+    HostEnvironmentDirectedGraph graph = FLAMEGPU->environment.getDirectedGraph("graph");
+    auto vertices = graph.vertices();
+    auto edges = graph.edges();
+
+    // No vertices allocated, so no iteration, but no error
+    for (auto a : vertices) {
+        FAIL();
+    }
+    // No edges allocated, so no iteration, but no error
+    for (auto a : edges) {
+        FAIL();
+    }
+    const unsigned int edge_count = 3;
+    const unsigned int vertex_count = 4;
+    graph.setEdgeCount(edge_count);
+    graph.setVertexCount(vertex_count);
+
+    // Set a few edges to test stuff
+    vertices[4].setProperty<int>("vertex_int", 0);
+    vertices[5].setProperty<int>("vertex_int", 1);
+    vertices[6].setProperty<int>("vertex_int", 2);
+    edges[{4, 5}].setProperty<int>("edge_int", 9);
+
+    // Test iteration works
+    unsigned int it_count = 0;
+    for (const auto &vertex : vertices) {
+        if (it_count < 3) {
+            // Set vertices should be in order
+            EXPECT_EQ(vertex.getID(), it_count + 4u);
+            EXPECT_EQ(vertex.getProperty<int>("vertex_int"), static_cast<int>(it_count));
+        } else {
+            // Others are default
+            EXPECT_EQ(vertex.getID(), ID_NOT_SET);
+            EXPECT_EQ(vertex.getProperty<int>("vertex_int"), 21);
+        }
+        ++it_count;
+    }
+    EXPECT_EQ(it_count, vertex_count);
+
+    it_count = 0;
+    for (const auto &edge : edges) {
+        if (it_count == 0) {
+            // First edge is the one we set
+            EXPECT_EQ(edge.getDestinationVertexID(), 5u);
+            EXPECT_EQ(edge.getSourceVertexID(), 4u);
+            EXPECT_EQ(edge.getProperty<int>("edge_int"), 9);
+        } else {
+            // Others are default
+            EXPECT_EQ(edge.getDestinationVertexID(), ID_NOT_SET);
+            EXPECT_EQ(edge.getSourceVertexID(), ID_NOT_SET);
+            EXPECT_EQ(edge.getProperty<int>("edge_int"), 12);
+        }
+        ++it_count;
+    }
+    EXPECT_EQ(it_count, edge_count);
+
+    // Allocate remaining edges to avoid exception from incomplete graph
+    vertices[7];
+    edges[{5, 6}];
+    edges[{6, 7}];
+}
+TEST(TestEnvironmentDirectedGraph, TestHostIteration) {
+    ModelDescription model("GraphTest");
+    EnvironmentDirectedGraphDescription graph = model.Environment().newDirectedGraph("graph");
+
+    graph.newVertexProperty<int>("vertex_int", 21);
+    graph.newEdgeProperty<int>("edge_int", 12);
+
+    model.newAgent("agent").newVariable<float>("foobar");  // Agent is not used in this test
+
+    // Init graph with junk data
+    model.newLayer().addHostFunction(HostIteration);
+
+    CUDASimulation sim(model);
+
+    EXPECT_NO_THROW(sim.step());
+}
 FLAMEGPU_AGENT_FUNCTION(CopyGraphToAgent1, MessageNone, MessageNone) {
     if (FLAMEGPU->getID() <= 20) {
         DeviceEnvironmentDirectedGraph graph = FLAMEGPU->environment.getDirectedGraph("graph");

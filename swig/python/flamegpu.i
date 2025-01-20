@@ -656,6 +656,13 @@ class ModelVis;
 %ignore flamegpu::DeviceEnvironmentDirectedGraph;
 %ignore flamegpu::EnvironmentDirectedGraphData;
 %ignore flamegpu::CUDAEnvironmentDirectedGraphBuffers;
+// Disable functions which use C++ iterators/type_index
+%ignore flamegpu::HostEnvironmentDirectedGraph::VertexMap::Iterator;
+%ignore flamegpu::HostEnvironmentDirectedGraph::VertexMap::begin;
+%ignore flamegpu::HostEnvironmentDirectedGraph::VertexMap::end;
+%ignore flamegpu::HostEnvironmentDirectedGraph::EdgeMap::Iterator;
+%ignore flamegpu::HostEnvironmentDirectedGraph::EdgeMap::begin;
+%ignore flamegpu::HostEnvironmentDirectedGraph::EdgeMap::end;
 %include "flamegpu/model/EnvironmentDirectedGraphDescription.cuh"
 %feature("flatnested");     // flat nested on to maps and children are included
 %include "flamegpu/runtime/environment/HostEnvironmentDirectedGraph.cuh"
@@ -840,11 +847,28 @@ namespace std {
     SWIG_fail;
   }
 }
+// Add custom python code for an iterator class, needed when swigifying iterables.
+%pythoncode %{
+class FLAMEGPUGraphMapIterator(object):
+
+    def __init__(self, pointerToVector):
+        self.pointerToVector = pointerToVector
+        self.index = -1
+
+    def __next__(self):
+        self.index += 1
+        if self.index < self.pointerToVector.allocated_size():
+            return self.pointerToVector.atIndex(self.index)
+        else:
+            raise StopIteration
+%}
 // Extend VertexMap/EdgeMap so they can be accessed like a dictionary
 %extend flamegpu::HostEnvironmentDirectedGraph::VertexMap {
     %pythoncode {
         def __len__(self):
             return self.size()
+        def __iter__(self):
+            return FLAMEGPUGraphMapIterator(self)
     }
     flamegpu::HostEnvironmentDirectedGraph::VertexMap::Vertex flamegpu::HostEnvironmentDirectedGraph::VertexMap::__getitem__(const unsigned int vertex_id) {
         return $self->operator[](vertex_id);
@@ -857,6 +881,8 @@ namespace std {
             return self.get_item(int(src), int(dest))
         def __len__(self):
             return self.size()
+        def __iter__(self):
+            return FLAMEGPUGraphMapIterator(self)
     }
     flamegpu::HostEnvironmentDirectedGraph::EdgeMap::Edge flamegpu::HostEnvironmentDirectedGraph::EdgeMap::get_item(const unsigned int src, const unsigned int dest) {
         return $self->operator[]({src, dest});

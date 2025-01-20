@@ -147,6 +147,14 @@ class CUDAEnvironmentDirectedGraphBuffers {
      */
     size_type getEdgeCount() const { return edge_count; }
     /**
+     * Returns the number of vertices that have been assigned IDs
+     */
+    size_type getReadyVertexCount() const { return static_cast<size_type>(h_vertex_index_map.size()); }
+    /**
+     * Returns the number of edges that have been assigned valid source/destination vertex pairs
+     */
+    size_type getReadyEdgeCount() const { return static_cast<size_type>(h_edge_index_map.size()); }
+    /**
      * Attempt to assign the provided vertex_id with an index inside h_vertex_index_map
      * @param vertex_id The ID of the vertex to be created
      * @param stream The CUDA stream to use if the ID buffer requires sync
@@ -265,9 +273,29 @@ class CUDAEnvironmentDirectedGraphBuffers {
     * @param src_vertex_id The ID that has been assigned to the source vertex of the edge
     * @param dest_vertex_id The ID that has been assigned to the destination vertex of the edge
     *
-    * @throws exception::IDCollision If the ID is already assigned to a different vertex
+    * @throws exception::IDCollision If the ID source/dest pair is already assigned to a different edge
     */
     void setEdgeSourceDestination(unsigned int edge_index, id_t src_vertex_id, id_t dest_vertex_id);
+    /**
+    * Updates the edge ID buffer
+    * Updates the internal host map of src:dest->index
+    *
+    * @param edge_index The index of the edge
+    * @param src_vertex_id The ID that has been assigned to the source vertex of the edge
+    *
+    * @throws exception::IDCollision If the ID source/dest pair is already assigned to a different edge
+    */
+    void setEdgeSource(unsigned int edge_index, id_t src_vertex_id);
+    /**
+    * Updates the edge ID buffer
+    * Updates the internal host map of src:dest->index
+    *
+    * @param edge_index The index of the edge
+    * @param dest_vertex_id The ID that has been assigned to the destination vertex of the edge
+    *
+    * @throws exception::IDCollision If the ID source/dest pair is already assigned to a different edge
+    */
+    void setEdgeDestination(unsigned int edge_index, id_t dest_vertex_id);
     /**
     * Returns the index of the edge with the given source and destination vertices
     * @param src_vertex_id The ID that has been assigned to the source vertex of the edge
@@ -276,6 +304,28 @@ class CUDAEnvironmentDirectedGraphBuffers {
     * @throws exception::InvalidID If the ID is not in use
     */
     unsigned int getEdgeIndex(id_t src_vertex_id, id_t dest_vertex_id) const;
+    /**
+    * Returns the source vertex id of the edge with the given index
+    * @param edge_index The index of the edge
+     * @param stream CUDA stream to be used if data must be copied back from device
+    *
+    * @note ID_NOT_SET may be returned, if edge source is not yet set.
+    *
+    * @see getDestinationVertexID(unsigned int)
+    * @throws exception::OutOfBoundsException If the index exceeds the number of edges
+    */
+    id_t getSourceVertexID(unsigned int edge_index, cudaStream_t stream) const;
+    /**
+    * Returns the destination vertex id of the edge with the given index
+    * @param edge_index The index of the edge
+     * @param stream CUDA stream to be used if data must be copied back from device
+    *
+    * @note ID_NOT_SET may be returned, if edge source is not yet set.
+    *
+    * @see getSourceVertexID(unsigned int)
+    * @throws exception::OutOfBoundsException If the index exceeds the number of edges
+    */
+    id_t getDestinationVertexID(unsigned int edge_index, cudaStream_t stream) const;
 #ifdef FLAMEGPU_VISUALISATION
     void setVisualisation(std::shared_ptr<visualiser::ModelVisData> &_visualisation) const {
         this->visualisation = _visualisation;

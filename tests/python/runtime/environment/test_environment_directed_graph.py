@@ -388,6 +388,70 @@ class HostException(pyflamegpu.HostFunction):
         with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:  # exception::OutOfBoundsException 
             edge.setSourceDestinationVertexID(1, 0)
         assert e.value.type() == "IDOutOfBounds"
+       
+class HostIteration(pyflamegpu.HostFunction):
+    def run(self, FLAMEGPU):
+        graph = FLAMEGPU.environment.getDirectedGraph("graph");
+
+        vertices = graph.vertices();
+        edges = graph.edges();
+
+        # No vertices allocated, so no iteration, but no error
+        for a in vertices:
+            pytest.fail("This loop should never be entered")
+        
+        # No edges allocated, so no iteration, but no error
+        for a in edges:
+            pytest.fail("This loop should never be entered")
+            
+        edge_count = 3;
+        vertex_count = 4;
+        graph.setEdgeCount(edge_count);
+        graph.setVertexCount(vertex_count);
+
+        # Set a few edges to test stuff
+        vertices[4].setPropertyInt("vertex_int", 0);
+        vertices[5].setPropertyInt("vertex_int", 1);
+        vertices[6].setPropertyInt("vertex_int", 2);
+        edges[4, 5].setPropertyInt("edge_int", 9);
+
+        # Test iteration works
+        it_count = 0;
+        for vertex in vertices:
+            if it_count < 3:
+                # Set vertices should be in order
+                assert vertex.getID() == it_count + 4;
+                assert vertex.getPropertyInt("vertex_int") == it_count;
+            else:
+                # Others are default
+                assert vertex.getID() == pyflamegpu.ID_NOT_SET;
+                assert vertex.getPropertyInt("vertex_int") == 21;
+            
+            it_count += 1;
+            
+        assert it_count == vertex_count;
+
+        it_count = 0;
+        for edge in edges:
+            if it_count == 0:
+                # First edge is the one we set
+                assert edge.getDestinationVertexID() == 5;
+                assert edge.getSourceVertexID() == 4;
+                assert edge.getPropertyInt("edge_int") == 9;
+            else:
+                # Others are default
+                assert edge.getDestinationVertexID() == pyflamegpu.ID_NOT_SET;
+                assert edge.getSourceVertexID() == pyflamegpu.ID_NOT_SET;
+                assert edge.getPropertyInt("edge_int") == 12;
+                
+            it_count += 1;
+            
+        assert it_count == edge_count;
+
+        # Allocate remaining edges to avoid exception from incomplete graph
+        vertices[7];
+        edges[5, 6];
+        edges[6, 7];
         
 class HostDeviceCheckGraph(pyflamegpu.HostFunction):
     def run(self, FLAMEGPU):
@@ -622,6 +686,22 @@ class EnvironmentDirectedGraphTest(TestCase):
 
         # Init graph with junk data
         model.newLayer().addHostFunction(HostException().__disown__());
+
+        sim = pyflamegpu.CUDASimulation(model);
+
+        sim.step();
+        
+    def test_HostException(self):
+        model = pyflamegpu.ModelDescription("GraphTest");
+        graph = model.Environment().newDirectedGraph("graph");
+
+        graph.newVertexPropertyInt("vertex_int", 21);
+
+        graph.newEdgePropertyInt("edge_int", 12);
+
+        model.newAgent("agent").newVariableFloat("foobar");  # Agent is not used in this test
+
+        model.newLayer().addHostFunction(HostIteration().__disown__());
 
         sim = pyflamegpu.CUDASimulation(model);
 

@@ -107,6 +107,15 @@ VertexMap HostEnvironmentDirectedGraph::vertices() {
 VertexMap::VertexMap(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const cudaStream_t _stream)
     : directed_graph(std::move(_directed_graph))
     , stream(_stream) { }
+size_type VertexMap::size() const {
+    return directed_graph->getReadyVertexCount();
+}
+size_type VertexMap::allocated_size() const {
+    return directed_graph->getVertexCount();
+}
+Vertex VertexMap::atIndex(unsigned int index) {
+    return Vertex{ directed_graph, stream, index, true };
+}
 Vertex VertexMap::operator[](id_t vertex_id) {
     // Attempt to create vertex in id_map if it doesn't already exist
     directed_graph->createIfNotExistVertex(vertex_id, stream);
@@ -114,17 +123,13 @@ Vertex VertexMap::operator[](id_t vertex_id) {
     return Vertex{directed_graph, stream, vertex_id};
 }
 
-Vertex::Vertex(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const cudaStream_t _stream, id_t _vertex_id)
+Vertex::Vertex(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const cudaStream_t _stream, id_t _vertex_id, bool is_index)
     : directed_graph(std::move(_directed_graph))
     , stream(_stream)
-    , vertex_id(_vertex_id) { }
+    , vertex_index(is_index ? _vertex_id : directed_graph->getVertexIndex(_vertex_id)) { }
 void Vertex::setID(id_t vertex_identifier) {
-    // Get index
-    const unsigned int vertex_index = directed_graph->getVertexIndex(vertex_id);
     // Update ID
     directed_graph->setVertexID(vertex_index, vertex_identifier, stream);
-    // Update local copy of ID
-    vertex_id = vertex_identifier;
 }
 id_t Vertex::getID() const {
     return getProperty<id_t>(ID_VARIABLE_NAME);
@@ -142,6 +147,16 @@ EdgeMap HostEnvironmentDirectedGraph::edges() {
 EdgeMap::EdgeMap(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const cudaStream_t _stream)
     : directed_graph(std::move(_directed_graph))
     , stream(_stream) { }
+
+size_type EdgeMap::size() const {
+    return directed_graph->getReadyEdgeCount();
+}
+size_type EdgeMap::allocated_size() const {
+    return directed_graph->getEdgeCount();
+}
+Edge EdgeMap::atIndex(unsigned int index) {
+    return Edge{ directed_graph, stream, index };
+}
 Edge EdgeMap::operator[](SrcDestPair source_dest_vertex_ids) {
     // Attempt to create edge in id_map if it doesn't already exist
     directed_graph->createIfNotExistEdge(source_dest_vertex_ids.first, source_dest_vertex_ids.second, stream);
@@ -152,31 +167,24 @@ Edge EdgeMap::operator[](SrcDestPair source_dest_vertex_ids) {
 Edge::Edge(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const cudaStream_t _stream, id_t _source_vertex_id, id_t _dest_vertex_id)
     : directed_graph(std::move(_directed_graph))
     , stream(_stream)
-    , source_vertex_id(_source_vertex_id)
-    , destination_vertex_id(_dest_vertex_id) { }
+    , edge_index(directed_graph->getEdgeIndex(_source_vertex_id, _dest_vertex_id)) { }
+
+Edge::Edge(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const cudaStream_t _stream, unsigned int _edge_index)
+    : directed_graph(std::move(_directed_graph))
+    , stream(_stream)
+    , edge_index(_edge_index)
+    { }
 void Edge::setSourceVertexID(id_t _source_vertex_id) {
-    // Get index
-    const unsigned int edge_index = directed_graph->getEdgeIndex(source_vertex_id, destination_vertex_id);
     // Update ID
-    directed_graph->setEdgeSourceDestination(edge_index, _source_vertex_id, destination_vertex_id);
-    // Update local copy of ID
-    source_vertex_id = _source_vertex_id;
+    directed_graph->setEdgeSource(edge_index, _source_vertex_id);
 }
 void Edge::setDestinationVertexID(id_t _dest_vertex_id) {
-    // Get index
-    const unsigned int edge_index = directed_graph->getEdgeIndex(source_vertex_id, destination_vertex_id);
     // Update ID
-    directed_graph->setEdgeSourceDestination(edge_index, source_vertex_id, _dest_vertex_id);
-    // Update local copy of ID
-    destination_vertex_id = _dest_vertex_id;
+    directed_graph->setEdgeDestination(edge_index, _dest_vertex_id);
 }
 void Edge::setSourceDestinationVertexID(id_t _source_vertex_id, id_t _dest_vertex_id) {
-    // Get index
-    const unsigned int edge_index = directed_graph->getEdgeIndex(source_vertex_id, destination_vertex_id);
     // Update ID
     directed_graph->setEdgeSourceDestination(edge_index, _source_vertex_id, _dest_vertex_id);
-    // Update local copy of ID
-    destination_vertex_id = _dest_vertex_id;
 }
 id_t Edge::getSourceVertexID() const {
     return getProperty<id_t, 2>(GRAPH_SOURCE_DEST_VARIABLE_NAME, 1);
