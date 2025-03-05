@@ -110,8 +110,6 @@ class XMLLogger : public Logger{
      * @param element The element to set the value of
      * @param value The Any to be written
      * @param elements The number of individual elements stored in the Any (1 if not an array)
-     * @tparam T Instance of rapidjson::Writer or subclass (e.g. rapidjson::PrettyWriter)
-     * @note Templated as can't forward declare rapidjson::Writer<rapidjson::StringBuffer>
      */
     void writeAny(tinyxml2::XMLElement *element, const detail::Any &value, unsigned int elements = 1) const;
 

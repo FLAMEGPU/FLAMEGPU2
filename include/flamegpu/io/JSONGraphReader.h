@@ -22,7 +22,7 @@ class JSONGraphReader {
      * @param stream CUDA stream (required by directed_graph for synchronising device buffers)
      *
      * @throws exception::InvalidFilePath If the file cannot be opened for reading
-     * @throws exception::RapidJSONError If JSON fails for any reason (e.g. structure does not match expectations)
+     * @throws exception::JSONError If JSON fails for any reason (e.g. structure does not match expectations)
      */
      static void loadAdjacencyLike(const std::string &filepath, const std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> &directed_graph, cudaStream_t stream);
 };
