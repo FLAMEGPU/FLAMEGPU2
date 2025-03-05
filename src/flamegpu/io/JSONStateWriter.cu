@@ -75,7 +75,7 @@ void JSONStateWriter::writeConfig(const Simulation *sim_instance) {
         j["config"]["simulation"]["console_mode"] = sim_cfg.console_mode;
 #endif
     }
-    
+
     // CUDA config
     if (auto* cudamodel_instance = dynamic_cast<const CUDASimulation*>(sim_instance)) {
         const auto& cuda_cfg = cudamodel_instance->getCUDAConfig();
