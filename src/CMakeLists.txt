@@ -650,8 +650,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC CCCL::CCCL)
 # tinyxml2 static library
 target_link_libraries(${PROJECT_NAME} PRIVATE Tinyxml2::tinyxml2)
 
-# If rapidjson was found, add it to the include dirs.
-target_link_libraries(${PROJECT_NAME} PRIVATE RapidJSON::rapidjson)
+# If nlohmann_json was found, add it to the include dirs.
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::nvrtc)
 
