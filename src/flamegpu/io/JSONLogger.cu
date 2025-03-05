@@ -136,7 +136,9 @@ void JSONLogger::writeCommonLogFrame(nlohmann::ordered_json& j, const LogFrame &
             }
             j_agents[agent.first.first][agent.first.second].push_back(j_t_agent);
         }
-        j["agents"] = j_agents;
+        if (j_agents.size()) {
+            j["agents"] = j_agents;
+        }
     }
 }
 
@@ -157,7 +159,9 @@ nlohmann::ordered_json JSONLogger::logConfig(const RunPlan &plan) const {
         dyn_j[prop.first] = {};
         writeAny(dyn_j[prop.first], prop.second, env_prop.data.elements);
     }
-    j["environment"] = dyn_j;
+    if (dyn_j.size()) {
+        j["environment"] = dyn_j;
+    }
     return j;
 }
 nlohmann::ordered_json JSONLogger::logPerformanceSpecs(const RunLog& log) const {

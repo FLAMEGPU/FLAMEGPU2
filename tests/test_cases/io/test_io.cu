@@ -661,11 +661,11 @@ TEST(IOTest2, AgentID_XML_ExportImport) {
         for (auto a : pop_out) {
             ASSERT_NE(a.getID(), ID_NOT_SET);
         }
-        sim.exportData(JSON_FILE_NAME);
+        sim.exportData(XML_FILE_NAME);
     }
     {
         CUDASimulation sim(model);
-        sim.SimulationConfig().input_file = JSON_FILE_NAME;
+        sim.SimulationConfig().input_file = XML_FILE_NAME;
         EXPECT_NO_THROW(sim.applyConfig());
 
         AgentVector pop_out(agent);
@@ -675,7 +675,7 @@ TEST(IOTest2, AgentID_XML_ExportImport) {
         }
     }
     // Cleanup
-    ASSERT_EQ(::remove(JSON_FILE_NAME), 0);
+    ASSERT_EQ(::remove(XML_FILE_NAME), 0);
 }
 // Agent ID collision is detected on import from file
 

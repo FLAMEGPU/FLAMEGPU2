@@ -105,8 +105,8 @@ void JSONStateWriter::writeEnvironment(const std::shared_ptr<const detail::Envir
     }
 
     // Environment properties
-    auto &j_env = j["environment"];
     if (env_manager) {
+        auto& j_env = j["environment"];
         const char *env_buffer = reinterpret_cast<const char *>(env_manager->getHostBuffer());
         // for each environment property
         for (auto &a : env_manager->getPropertiesMap()) {
@@ -165,6 +165,9 @@ void JSONStateWriter::writeEnvironment(const std::shared_ptr<const detail::Envir
                 }
             }
         }
+        if (!j_env.size()) {
+            j.erase("environment");
+        }
     }
 
     environment_written = true;
@@ -177,8 +180,8 @@ void JSONStateWriter::writeMacroEnvironment(const std::shared_ptr<const detail::
     }
 
     // Macro Environment
-    auto& j_menv = j["macro_environment"];
     if (macro_env) {
+        auto& j_menv = j["macro_environment"];
         const std::map<std::string, detail::CUDAMacroEnvironment::MacroEnvProp>& m_properties = macro_env->getPropertiesMap();
         for (const auto &_filter : filter) {
             if (m_properties.find(_filter) == m_properties.end()) {
@@ -232,6 +235,9 @@ void JSONStateWriter::writeMacroEnvironment(const std::shared_ptr<const detail::
             // Release temp buffer
             free(t_buffer);
         }
+        if (!j_menv.size()) {
+            j.erase("macro_environment");
+        }
     }
 
     macro_environment_written = true;
@@ -275,25 +281,25 @@ void JSONStateWriter::writeAgents(const util::StringPairUnorderedMap<std::shared
                         // Loop through elements, to construct array
                         for (unsigned int el = 0; el < var.second.elements; ++el) {
                             if (var.second.type == std::type_index(typeid(float))) {
-                                t_agt.emplace_back(instance.getVariable<float>(variable_name, el));
+                                t_agt[variable_name].emplace_back(instance.getVariable<float>(variable_name, el));
                             } else if (var.second.type == std::type_index(typeid(double))) {
-                                t_agt.emplace_back(instance.getVariable<double>(variable_name, el));
+                                t_agt[variable_name].emplace_back(instance.getVariable<double>(variable_name, el));
                             } else if (var.second.type == std::type_index(typeid(int64_t))) {
-                                t_agt.emplace_back(instance.getVariable<int64_t>(variable_name, el));
+                                t_agt[variable_name].emplace_back(instance.getVariable<int64_t>(variable_name, el));
                             } else if (var.second.type == std::type_index(typeid(uint64_t))) {
-                                t_agt.emplace_back(instance.getVariable<uint64_t>(variable_name, el));
+                                t_agt[variable_name].emplace_back(instance.getVariable<uint64_t>(variable_name, el));
                             } else if (var.second.type == std::type_index(typeid(int32_t))) {
-                                t_agt.emplace_back(instance.getVariable<int32_t>(variable_name, el));
+                                t_agt[variable_name].emplace_back(instance.getVariable<int32_t>(variable_name, el));
                             } else if (var.second.type == std::type_index(typeid(uint32_t))) {
-                                t_agt.emplace_back(instance.getVariable<uint32_t>(variable_name, el));
+                                t_agt[variable_name].emplace_back(instance.getVariable<uint32_t>(variable_name, el));
                             } else if (var.second.type == std::type_index(typeid(int16_t))) {
-                                t_agt.emplace_back(instance.getVariable<int16_t>(variable_name, el));
+                                t_agt[variable_name].emplace_back(instance.getVariable<int16_t>(variable_name, el));
                             } else if (var.second.type == std::type_index(typeid(uint16_t))) {
-                                t_agt.emplace_back(instance.getVariable<uint16_t>(variable_name, el));
+                                t_agt[variable_name].emplace_back(instance.getVariable<uint16_t>(variable_name, el));
                             } else if (var.second.type == std::type_index(typeid(int8_t))) {
-                                t_agt.emplace_back(instance.getVariable<int8_t>(variable_name, el));  // Char outputs weird if being used as an integer
+                                t_agt[variable_name].emplace_back(instance.getVariable<int8_t>(variable_name, el));  // Char outputs weird if being used as an integer
                             } else if (var.second.type == std::type_index(typeid(uint8_t))) {
-                                t_agt.emplace_back(instance.getVariable<uint8_t>(variable_name, el));  // Char outputs weird if being used as an integer
+                                t_agt[variable_name].emplace_back(instance.getVariable<uint8_t>(variable_name, el));  // Char outputs weird if being used as an integer
                             } else {
                                 THROW exception::JSONError("Agent '%s' contains variable '%s' of unsupported type '%s', "
                                     "in JSONStateWriter::writeAgents()\n", agent.first.first.c_str(), variable_name.c_str(), var.second.type.name());

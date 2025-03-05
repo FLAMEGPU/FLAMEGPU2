@@ -144,44 +144,48 @@ void writeAnyEdge(nlohmann::ordered_json& j, const std::pair<std::string, Variab
 void toAdjancencyLike(nlohmann::ordered_json &j, const std::shared_ptr<const detail::CUDAEnvironmentDirectedGraphBuffers>& directed_graph, cudaStream_t stream) {
     const EnvironmentDirectedGraphData &data = directed_graph->getDescription();
     // Vertices
-    j["nodes"] = {};
-    for (unsigned int i = 0; i < directed_graph->getVertexCount(); ++i) {
-        nlohmann::ordered_json j_v;
-        // Reserved members first
-        size_type foo = 0;
-        j_v["id"] = std::to_string(directed_graph->getVertexPropertyBuffer<id_t>(ID_VARIABLE_NAME, foo, stream)[i]);
-        // Custom members after
-        for (const auto &v : data.vertexProperties) {
-            if (v.first[0] != '_') {
-                writeAnyVertex(j_v[v.first], v, i, directed_graph, stream);
-                if (i == 0 && v.first == "id" && v.first != ID_VARIABLE_NAME) {
-                    fprintf(stderr, "Warning: Graph vertices contain both 'id' and '%s' properties, export may be invalid.\n", ID_VARIABLE_NAME);
+    if (directed_graph->getVertexCount()) {
+        j["nodes"] = {};
+        for (unsigned int i = 0; i < directed_graph->getVertexCount(); ++i) {
+            nlohmann::ordered_json j_v;
+            // Reserved members first
+            size_type foo = 0;
+            j_v["id"] = std::to_string(directed_graph->getVertexPropertyBuffer<id_t>(ID_VARIABLE_NAME, foo, stream)[i]);
+            // Custom members after
+            for (const auto &v : data.vertexProperties) {
+                if (v.first[0] != '_') {
+                    writeAnyVertex(j_v[v.first], v, i, directed_graph, stream);
+                    if (i == 0 && v.first == "id" && v.first != ID_VARIABLE_NAME) {
+                        fprintf(stderr, "Warning: Graph vertices contain both 'id' and '%s' properties, export may be invalid.\n", ID_VARIABLE_NAME);
+                    }
                 }
             }
+            j["nodes"].push_back(j_v);
         }
-        j["nodes"].push_back(j_v);
     }
     // Edges
+    if (directed_graph->getEdgeCount()) {
     j["links"] = {};
-    for (unsigned int i = 0; i < directed_graph->getEdgeCount(); ++i) {
-        nlohmann::ordered_json j_e;
-        // Reserved members first
-        size_type foo = 0;
-        const id_t *src_dest_buffer = directed_graph->getEdgePropertyBuffer<id_t>(GRAPH_SOURCE_DEST_VARIABLE_NAME, foo, stream);
-        j_e["source"] = std::to_string(src_dest_buffer[i * 2 + 1]);
-        j_e["target"] = std::to_string(src_dest_buffer[i * 2 + 0]);
-        // Custom members after
-        for (const auto& e : data.edgeProperties) {
-            if (e.first[0] != '_') {
-                writeAnyEdge(j_e[e.first], e, i, directed_graph, stream);
-                if (i == 0 && e.first == "source") {
-                    fprintf(stderr, "Warning: Graph edges contain both 'source' and '%s' properties, export may be invalid.\n", GRAPH_SOURCE_DEST_VARIABLE_NAME);
-                } else if (i == 0 && e.first == "target") {
-                    fprintf(stderr, "Warning: Graph edges contain both 'target' and '%s' properties, export may be invalid.\n", GRAPH_SOURCE_DEST_VARIABLE_NAME);
+        for (unsigned int i = 0; i < directed_graph->getEdgeCount(); ++i) {
+            nlohmann::ordered_json j_e;
+            // Reserved members first
+            size_type foo = 0;
+            const id_t *src_dest_buffer = directed_graph->getEdgePropertyBuffer<id_t>(GRAPH_SOURCE_DEST_VARIABLE_NAME, foo, stream);
+            j_e["source"] = std::to_string(src_dest_buffer[i * 2 + 1]);
+            j_e["target"] = std::to_string(src_dest_buffer[i * 2 + 0]);
+            // Custom members after
+            for (const auto& e : data.edgeProperties) {
+                if (e.first[0] != '_') {
+                    writeAnyEdge(j_e[e.first], e, i, directed_graph, stream);
+                    if (i == 0 && e.first == "source") {
+                        fprintf(stderr, "Warning: Graph edges contain both 'source' and '%s' properties, export may be invalid.\n", GRAPH_SOURCE_DEST_VARIABLE_NAME);
+                    } else if (i == 0 && e.first == "target") {
+                        fprintf(stderr, "Warning: Graph edges contain both 'target' and '%s' properties, export may be invalid.\n", GRAPH_SOURCE_DEST_VARIABLE_NAME);
+                    }
                 }
             }
+            j["links"].push_back(j_e);
         }
-        j["links"].push_back(j_e);
     }
 }
 }  // namespace
