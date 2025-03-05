@@ -53,7 +53,7 @@ class HostEnvironmentDirectedGraph {
      *
      * @throws exception::InvalidFilePath If the file cannot be opened for writing
      * @throws exception::UnsupportedFileType If the specified file type does not correspond to a known format
-     * @throws exception::RapidJSONError If conversion to JSON fails for any reason
+     * @throws exception::JSONError If conversion to JSON fails for any reason
      *
      * @see importGraph()
      */

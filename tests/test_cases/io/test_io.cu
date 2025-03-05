@@ -12,7 +12,9 @@ namespace flamegpu {
 namespace test_io {
 bool validate_has_run = false;
 // Used by MiniSim3 where file name is required during a host function
-const char* current_test_file_name = nullptr;
+const char *current_test_file_name = "";
+// JSON IO converts inf to nan, so requires validation to change pre/post load
+bool is_loaded = false;
 const char *XML_FILE_NAME = "test.xml";
 const char *JSON_FILE_NAME = "test.json";
 const char *BIN_FILE_NAME = "test.bin";
@@ -52,12 +54,20 @@ FLAMEGPU_STEP_FUNCTION(VALIDATE_ENV) {
     // Limits
     EXPECT_TRUE(std::isnan(FLAMEGPU->environment.getProperty<float>("float_qnan")));
     EXPECT_TRUE(std::isnan(FLAMEGPU->environment.getProperty<float>("float_snan")));
-    EXPECT_EQ(FLAMEGPU->environment.getProperty<float>("float_inf"), std::numeric_limits<float>::infinity());
-    EXPECT_EQ(FLAMEGPU->environment.getProperty<float>("float_inf_neg"), -std::numeric_limits<float>::infinity());
     EXPECT_TRUE(std::isnan(FLAMEGPU->environment.getProperty<double>("double_qnan")));
     EXPECT_TRUE(std::isnan(FLAMEGPU->environment.getProperty<double>("double_snan")));
-    EXPECT_EQ(FLAMEGPU->environment.getProperty<double>("double_inf"), std::numeric_limits<double>::infinity());
-    EXPECT_EQ(FLAMEGPU->environment.getProperty<double>("double_inf_neg"), -std::numeric_limits<double>::infinity());
+    if (std::string(current_test_file_name) == JSON_FILE_NAME && is_loaded) {
+        // JSON spec does not support NaN/Inf, so they are all represented as Null values, which we load as nan
+        EXPECT_TRUE(std::isnan(FLAMEGPU->environment.getProperty<float>("float_inf")));
+        EXPECT_TRUE(std::isnan(FLAMEGPU->environment.getProperty<float>("float_inf_neg")));
+        EXPECT_TRUE(std::isnan(FLAMEGPU->environment.getProperty<double>("double_inf")));
+        EXPECT_TRUE(std::isnan(FLAMEGPU->environment.getProperty<double>("double_inf_neg")));
+    } else {
+        EXPECT_EQ(FLAMEGPU->environment.getProperty<float>("float_inf"), std::numeric_limits<float>::infinity());
+        EXPECT_EQ(FLAMEGPU->environment.getProperty<float>("float_inf_neg"), -std::numeric_limits<float>::infinity());
+        EXPECT_EQ(FLAMEGPU->environment.getProperty<double>("double_inf"), std::numeric_limits<double>::infinity());
+        EXPECT_EQ(FLAMEGPU->environment.getProperty<double>("double_inf_neg"), -std::numeric_limits<double>::infinity());
+    }
 }
 FLAMEGPU_STEP_FUNCTION(RESET_ENV) {
     FLAMEGPU->environment.setProperty<float>("float", {});
@@ -204,7 +214,9 @@ class MiniSim {
             ::remove(test_file.c_str());
     }
     void run(const std::string &test_file_name) {
+        current_test_file_name = test_file_name.c_str();
         this->test_file = test_file_name;
+        is_loaded = false;
         // Assertions for limits
         ASSERT_TRUE(std::numeric_limits<float>::has_quiet_NaN);
         ASSERT_TRUE(std::numeric_limits<float>::has_signaling_NaN);
@@ -407,12 +419,20 @@ class MiniSim {
                 // Limit values
                 EXPECT_TRUE(std::isnan(agent_in.getVariable<float>("float_qnan")));
                 EXPECT_TRUE(std::isnan(agent_in.getVariable<float>("float_snan")));
-                EXPECT_EQ(agent_in.getVariable<float>("float_inf"), std::numeric_limits<float>::infinity());
-                EXPECT_EQ(agent_in.getVariable<float>("float_inf_neg"), -std::numeric_limits<float>::infinity());
                 EXPECT_TRUE(std::isnan(agent_in.getVariable<double>("double_qnan")));
                 EXPECT_TRUE(std::isnan(agent_in.getVariable<double>("double_snan")));
-                EXPECT_EQ(agent_in.getVariable<double>("double_inf"), std::numeric_limits<double>::infinity());
-                EXPECT_EQ(agent_in.getVariable<double>("double_inf_neg"), -std::numeric_limits<double>::infinity());
+                if (test_file_name == JSON_FILE_NAME) {
+                    // JSON spec does not support NaN/Inf, so they are all represented as Null values, which we load as nan
+                    EXPECT_TRUE(std::isnan(agent_in.getVariable<float>("float_inf")));
+                    EXPECT_TRUE(std::isnan(agent_in.getVariable<float>("float_inf_neg")));
+                    EXPECT_TRUE(std::isnan(agent_in.getVariable<double>("double_inf")));
+                    EXPECT_TRUE(std::isnan(agent_in.getVariable<double>("double_inf_neg")));
+                } else {
+                    EXPECT_EQ(agent_in.getVariable<float>("float_inf"), std::numeric_limits<float>::infinity());
+                    EXPECT_EQ(agent_in.getVariable<float>("float_inf_neg"), -std::numeric_limits<float>::infinity());
+                    EXPECT_EQ(agent_in.getVariable<double>("double_inf"), std::numeric_limits<double>::infinity());
+                    EXPECT_EQ(agent_in.getVariable<double>("double_inf_neg"), -std::numeric_limits<double>::infinity());
+                }
             }
             // Valid agent array vars
             ASSERT_EQ(pop_b_in.size(), pop_b_out.size());
@@ -452,6 +472,7 @@ class MiniSim {
             // Reload env vars from file
             am.SimulationConfig().input_file = test_file_name;
             am.applyConfig();
+            is_loaded = true;
             // Step again, check they have been loaded
             validate_has_run = false;
             am.step();
@@ -477,6 +498,7 @@ class MiniSim {
             // Perform import
             const char *argv[3] = { "prog.exe", "--in", test_file_name.c_str()};
             EXPECT_NO_THROW(am.initialise(sizeof(argv) / sizeof(char*), argv));
+            is_loaded = true;
             // Validate config matches
             EXPECT_EQ(am.getSimulationConfig().input_file, test_file_name);
             EXPECT_EQ(am.getSimulationConfig().step_log_file, "step");
@@ -515,12 +537,20 @@ class MiniSim {
                 // Limit values
                 EXPECT_TRUE(std::isnan(agent_in.getVariable<float>("float_qnan")));
                 EXPECT_TRUE(std::isnan(agent_in.getVariable<float>("float_snan")));
-                EXPECT_EQ(agent_in.getVariable<float>("float_inf"), std::numeric_limits<float>::infinity());
-                EXPECT_EQ(agent_in.getVariable<float>("float_inf_neg"), -std::numeric_limits<float>::infinity());
                 EXPECT_TRUE(std::isnan(agent_in.getVariable<double>("double_qnan")));
                 EXPECT_TRUE(std::isnan(agent_in.getVariable<double>("double_snan")));
-                EXPECT_EQ(agent_in.getVariable<double>("double_inf"), std::numeric_limits<double>::infinity());
-                EXPECT_EQ(agent_in.getVariable<double>("double_inf_neg"), -std::numeric_limits<double>::infinity());
+                if (test_file_name == JSON_FILE_NAME) {
+                    // JSON spec does not support NaN/Inf, so they are all represented as Null values, which we load as nan
+                    EXPECT_TRUE(std::isnan(agent_in.getVariable<float>("float_inf")));
+                    EXPECT_TRUE(std::isnan(agent_in.getVariable<float>("float_inf_neg")));
+                    EXPECT_TRUE(std::isnan(agent_in.getVariable<double>("double_inf")));
+                    EXPECT_TRUE(std::isnan(agent_in.getVariable<double>("double_inf_neg")));
+                } else {
+                    EXPECT_EQ(agent_in.getVariable<float>("float_inf"), std::numeric_limits<float>::infinity());
+                    EXPECT_EQ(agent_in.getVariable<float>("float_inf_neg"), -std::numeric_limits<float>::infinity());
+                    EXPECT_EQ(agent_in.getVariable<double>("double_inf"), std::numeric_limits<double>::infinity());
+                    EXPECT_EQ(agent_in.getVariable<double>("double_inf_neg"), -std::numeric_limits<double>::infinity());
+                }
             }
             // Valid agent array vars
             ASSERT_EQ(pop_b_in.size(), pop_b_out.size());
@@ -661,11 +691,11 @@ TEST(IOTest2, AgentID_XML_ExportImport) {
         for (auto a : pop_out) {
             ASSERT_NE(a.getID(), ID_NOT_SET);
         }
-        sim.exportData(JSON_FILE_NAME);
+        sim.exportData(XML_FILE_NAME);
     }
     {
         CUDASimulation sim(model);
-        sim.SimulationConfig().input_file = JSON_FILE_NAME;
+        sim.SimulationConfig().input_file = XML_FILE_NAME;
         EXPECT_NO_THROW(sim.applyConfig());
 
         AgentVector pop_out(agent);
@@ -675,7 +705,7 @@ TEST(IOTest2, AgentID_XML_ExportImport) {
         }
     }
     // Cleanup
-    ASSERT_EQ(::remove(JSON_FILE_NAME), 0);
+    ASSERT_EQ(::remove(XML_FILE_NAME), 0);
 }
 // Agent ID collision is detected on import from file
 
