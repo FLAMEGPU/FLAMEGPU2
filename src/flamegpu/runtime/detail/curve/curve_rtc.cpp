@@ -1,6 +1,7 @@
 #include <sstream>
 #include <set>
 #include <string>
+#include <memory>
 #ifndef _MSC_VER
 // abi::__cxa_demangle()
 #include <cxxabi.h>

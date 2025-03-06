@@ -9,6 +9,8 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <unordered_map>
+#include <cstdio>
 
 #include "jitify/jitify2.hpp"
 
