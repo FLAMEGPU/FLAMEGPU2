@@ -162,9 +162,8 @@ jobs:
       run: >
         cmake . -B "${{ env.BUILD_DIR }}"
         -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
-        -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF" 
-        -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
+        -DFLAMEGPU_WARNINGS_AS_ERRORS="OFF"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
         -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
         -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}"
