@@ -18,6 +18,7 @@ CUDA_PACKAGES_IN=(
     "cuda-nvtx"
     "cuda-nvrtc-devel"
     "libcurand-devel" # 11-0+
+    "libnvjitlink-devel"
 )
 
 ## -------------------
