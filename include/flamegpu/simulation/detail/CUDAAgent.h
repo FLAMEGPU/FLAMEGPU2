@@ -43,7 +43,7 @@ class CUDAAgent : public AgentInterface {
      *  map of agent function name to RTC function instance
      */
      typedef std::map<const std::string, std::unique_ptr<jitify2::KernelData>> CUDARTCFuncMap;
-     typedef std::map<const std::string, std::unique_ptr<detail::curve::CurveRTCHost>> CUDARTCHeaderMap;
+     typedef std::map<const std::string, std::shared_ptr<detail::curve::CurveRTCHost>> CUDARTCHeaderMap;
     /**
      * Element type of CUDARTCFuncMap
      */
