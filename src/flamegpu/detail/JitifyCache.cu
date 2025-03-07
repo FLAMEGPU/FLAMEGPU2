@@ -11,7 +11,6 @@
 #include <string>
 #include <unordered_map>
 #include <cstdio>
-
 #include "jitify/jitify2.hpp"
 
 #include "flamegpu/version.h"
@@ -412,16 +411,31 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
 
     // jitify to create program (with compilation settings)
     const std::string program_name = func_name + "_program";  // Does this name actually matter?
-    jitify2::PreprocessedProgram program = jitify2::Program(program_name, kernel_src, headers)->preprocess(options);
+    jitify2::Program program = jitify2::Program(program_name, kernel_src, headers);
     if (!program.ok()) {
-        const jitify2::ErrorMsg& compile_error = program->compile_log();
+        const jitify2::ErrorMsg& compile_error = program.error();
         fprintf(stderr, "Failed to load program for agent function (condition) '%s', log:\n%s",
             func_name.c_str(), compile_error.c_str());
         THROW exception::InvalidAgentFunc("Error loading agent function (or function condition) ('%s'): function had compilation errors:\n%s",
             func_name.c_str(), compile_error.c_str());
     }
+    jitify2::PreprocessedProgram preprocessed_program = program->preprocess(options);
+    if (!preprocessed_program.ok()) {
+        const jitify2::ErrorMsg& compile_error = preprocessed_program.error();
+        const char* currentPos = compile_error.c_str();
+        const char* lastPos = currentPos;
+        while ((currentPos = strstr(currentPos, "Found #include"))) {
+            lastPos = currentPos++;
+        }
+        currentPos = strstr(lastPos, "\n");
+        currentPos++;
+        fprintf(stderr, "Failed to load program for agent function (condition) '%s', log:\n%s",
+            func_name.c_str(), currentPos);
+        THROW exception::InvalidAgentFunc("Error loading agent function (or function condition) ('%s'): function had compilation errors:\n%s",
+            func_name.c_str(), currentPos);
+    }
     // Compile
-    jitify2::CompiledProgram compiled_program = program->compile({ name_expression });
+    jitify2::CompiledProgram compiled_program = preprocessed_program->compile({ name_expression });
     if (!compiled_program.ok()) {
         const jitify2::ErrorMsg& compile_error = compiled_program.error();
         fprintf(stderr, "Failed to compile agent function (condition) '%s', log:\n%s",
