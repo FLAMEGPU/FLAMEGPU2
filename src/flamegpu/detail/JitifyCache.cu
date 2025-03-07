@@ -417,9 +417,8 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
         const jitify2::ErrorMsg& compile_error = program.error();
         fprintf(stderr, "Failed to load program for agent function (condition) '%s', log:\n%s",
             func_name.c_str(), compile_error.c_str());
-        THROW exception::InvalidAgentFunc("Error loading agent function (or function condition) ('%s'): function had compilation errors (see std::cout), "
-            "in JitifyCache::buildProgram().",
-            func_name.c_str());
+        THROW exception::InvalidAgentFunc("Error loading agent function (or function condition) ('%s'): function had compilation errors:\n%s",
+            func_name.c_str(), compile_error.c_str());
     }
     // Compile
     jitify2::CompiledProgram compiled_program = program->compile({ name_expression });
@@ -427,9 +426,8 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
         const jitify2::ErrorMsg& compile_error = compiled_program.error();
         fprintf(stderr, "Failed to compile agent function (condition) '%s', log:\n%s",
             func_name.c_str(), compile_error.c_str());
-        THROW exception::InvalidAgentFunc("Error loading agent function (or function condition) ('%s'): function had compilation errors (see std::out), "
-            "in JitifyCache::buildProgram().",
-            func_name.c_str());
+        THROW exception::InvalidAgentFunc("Error loading agent function (or function condition) ('%s'): function had compilation errors:\n%s",
+            func_name.c_str(), compile_error.c_str());
     }
     // Link
     jitify2::LinkedProgram linked_program = compiled_program->link();
@@ -437,9 +435,8 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
         const jitify2::ErrorMsg& link_error = linked_program.error();
         fprintf(stderr, "Failed to link agent function (condition) '%s', log:\n%s",
             func_name.c_str(), link_error.c_str());
-        THROW exception::InvalidAgentFunc("Error loading agent function (or function condition) ('%s'): function had link errors (see std::out), "
-            "in JitifyCache::buildProgram().",
-            func_name.c_str());
+        THROW exception::InvalidAgentFunc("Error loading agent function (or function condition) ('%s'): function had link errors:\n%s",
+            func_name.c_str(), link_error.c_str());
     }
     return std::make_unique<jitify2::LinkedProgramData>(linked_program.value());
 }
