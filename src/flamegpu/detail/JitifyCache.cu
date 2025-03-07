@@ -414,7 +414,7 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
     const std::string program_name = func_name + "_program";  // Does this name actually matter?
     jitify2::PreprocessedProgram program = jitify2::Program(program_name, kernel_src, headers)->preprocess(options);
     if (!program.ok()) {
-        const jitify2::ErrorMsg& compile_error = program.error();
+        const jitify2::ErrorMsg& compile_error = program->compile_log();
         fprintf(stderr, "Failed to load program for agent function (condition) '%s', log:\n%s",
             func_name.c_str(), compile_error.c_str());
         THROW exception::InvalidAgentFunc("Error loading agent function (or function condition) ('%s'): function had compilation errors:\n%s",
