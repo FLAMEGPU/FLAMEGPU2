@@ -52,12 +52,7 @@ endif()
 # Set the minimum supported version of CUDA for FLAME GPU, currently 11.2
 set(MINIMUM_SUPPORTED_CUDA_VERSION 11.2)
 # Set the minimum, potentially usable, but unsupported CUDA version.
-# Currently 11.0 on linux and 11.1 on windows (due to CCCL support).
-# CUDA 11.1 is not supported to simplify python releases
-set(MINIMUM_CUDA_VERSION 11.0)
-if(WIN32)
-    set(MINIMUM_CUDA_VERSION 11.1)
-endif()
+set(MINIMUM_CUDA_VERSION 11.2)
 
 # If the CUDA compiler is too old, trigger a docs only build.
 if(NOT DOCUMENTATION_ONLY_BUILD AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_CUDA_VERSION})

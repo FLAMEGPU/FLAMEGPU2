@@ -705,15 +705,5 @@ flamegpu_set_target_folder(${PROJECT_NAME} "FLAMEGPU")
 # Put the tinyxml2 in the folder
 flamegpu_set_target_folder("tinyxml2" "FLAMEGPU/Dependencies")
 
-# Emit some warnings that should only be issued once and are related to this file (but not this target)
-# @todo - move these author warnigns elsewhere, so they will be emitted if not building FLAMEGPU iteself? Common but with some form of guard?
-if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS_EQUAL "10.2")
-    message(AUTHOR_WARNING "MSVC and NVCC <= 10.2 may encounter compiler errors due to an NVCC bug exposed by Thrust. Cosider using a newer CUDA toolkit.")
-endif()
-if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS_EQUAL "11.0")
-    # https://github.com/FLAMEGPU/FLAMEGPU2/issues/483
-    message(AUTHOR_WARNING "MSVC and NVCC <= 11.0 may encounter errors at link time with incremental rebuilds. Cosider using a newer CUDA toolkit.")
-endif()
-
 # Also set as startup project (if top level project)
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"  PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
