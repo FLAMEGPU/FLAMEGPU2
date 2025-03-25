@@ -41,10 +41,11 @@ jobs:
             cuda_arch: "35"
             hostcxx: gcc-11
             os: ubuntu-22.04
-          - cuda: "11.0"
+          # 11.7 is the oldest supported CUDA on 22.04
+          - cuda: "11.7"
             cuda_arch: "35"
-            hostcxx: gcc-8
-            os: ubuntu-20.04
+            hostcxx: gcc-9
+            os: ubuntu-22.04
         python: 
           - "3.12"
         config:
@@ -144,24 +145,9 @@ jobs:
         if [ "$OS" == 'ubuntu-22.04' ]; then 
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
         fi
-        # Install ubuntu-20.04 packages
-        if [ "$OS" == 'ubuntu-20.04' ]; then 
-          sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
-        fi
-        # Install Ubuntu 18.04 packages
-        if [ "$OS" == 'ubuntu-18.04' ]; then 
-          sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype6-dev libgl1-mesa-dev
-        fi
 
     - name: Install Swig >= 4.0.2
       run: |
-        # Remove existing swig install, so CMake finds the correct swig
-        if [ "$OS" == 'ubuntu-20.04' ]; then 
-          sudo apt-get remove -y swig swig4.0
-        fi
-        if [ "$OS" == 'ubuntu-18.04' ]; then 
-          sudo apt-get remove -y swig
-        fi
         # Install additional apt-based dependencies required to build swig 4.0.2
         sudo apt-get install -y bison
         # Create a local directory to build swig in.
