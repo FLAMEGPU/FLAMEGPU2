@@ -175,25 +175,13 @@ jobs:
     - name: Install Visualisation Dependencies
       if: ${{ startswith(env.OS, 'ubuntu') && env.VISUALISATION == 'ON' }}
       run: |
-        # Install ubuntu-20.04 packages
-        if [ "$OS" == 'ubuntu-20.04' ]; then 
+        # Install ubuntu-22.04 packages
+        if [ "$OS" == 'ubuntu-22.04' ]; then 
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
-        fi
-        # Install Ubuntu 18.04 packages
-        if [ "$OS" == 'ubuntu-18.04' ]; then 
-          sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype6-dev libgl1-mesa-dev
         fi
     
     - name: Install Swig >= 4.0.2
       run: |
-        # Remove existing swig install, so CMake finds the correct swig
-        if [ "$OS" == 'ubuntu-20.04' ]; then 
-          sudo apt-get remove -y swig swig4.0
-        fi
-        # Install Ubuntu 18.04 packages
-        if [ "$OS" == 'ubuntu-18.04' ]; then 
-          sudo apt-get remove -y swig
-        fi
         # Install additional apt-based dependencies required to build swig 4.0.2
         sudo apt-get install -y bison
         # Create a local directory to build swig in.
