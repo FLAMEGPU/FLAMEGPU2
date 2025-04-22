@@ -376,6 +376,11 @@ jobs:
         cuda: ${{ env.CUDA }}
       run: .github/scripts/install_cuda_el8.sh
 
+    # Downgrade CMake for DeVIL and rapidjson. See https://github.com/FLAMEGPU/FLAMEGPU2/issues/1276
+    - name: Install CMake < 4.0, overwriting the pipx installed version from manylinux
+      run: |
+        pipx install --global --force 'cmake<4.0'
+
     - name: Install Visualisation Dependencies (EL 8)
       if: ${{ env.VISUALISATION == 'ON' }}
       run: |
