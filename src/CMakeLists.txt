@@ -153,6 +153,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/io/StateWriter.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/JSONStateReader.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/JSONStateWriter.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/ParaviewVTUWriter.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/XMLStateReader.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/XMLStateWriter.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/StateReaderFactory.h
@@ -371,6 +372,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/random/HostRandom.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateReader.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateWriter.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/ParaviewVTUWriter.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/StateReader.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLStateReader.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLStateWriter.cu
