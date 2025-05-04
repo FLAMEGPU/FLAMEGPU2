@@ -245,7 +245,10 @@ class JSONAdjacencyGraphReader : public nlohmann::json_sax<nlohmann::json> {
         }
         return true;
     }
-    bool null() { return processValue<number_float_t>(std::numeric_limits<number_float_t>::quiet_NaN()); }
+    bool null() {
+         fprintf(stderr, "Warning: JSON graph property '%s' contains NULL, this has been interpreted as NaN (but may represent Inf).\n", lastKey.c_str());
+         return processValue<number_float_t>(std::numeric_limits<number_float_t>::quiet_NaN());
+     }
     bool boolean(bool b) { return processValue<bool>(b); }
     bool number_integer(number_integer_t i) { return processValue<number_integer_t>(i); }
     bool number_unsigned(number_unsigned_t u) { return processValue<number_unsigned_t>(u); }

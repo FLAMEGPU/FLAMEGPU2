@@ -213,7 +213,26 @@ class JSONStateReader_impl : public nlohmann::json_sax<nlohmann::json> {
         }
         return true;
     }
-    bool null() { return processValue<number_float_t>(std::numeric_limits<number_float_t>::quiet_NaN()); }
+    bool null() {
+        bool is_array = false;
+        if (mode.top() == VariableArray) {
+            mode.pop();
+            is_array = true;
+        }
+        if (mode.top() == Environment) {
+            fprintf(stderr, "Warning: JSON Environment property '%s' contains NULL, this has been interpreted as NaN (but may represent Inf).\n", lastKey.c_str());
+        } else if (mode.top() == MacroEnvironment) {
+            fprintf(stderr, "Warning: JSON MacroEnvironment property '%s' contains NULL, this has been interpreted as NaN (but may represent Inf).\n", lastKey.c_str());
+        } else if (mode.top() == AgentInstance) {
+            fprintf(stderr, "Warning: JSON Agent '%s' variable '%s' contains NULL, this has been interpreted as NaN (but may represent Inf).\n", current_agent.c_str(), lastKey.c_str());
+        } else {
+            fprintf(stderr, "Warning: JSON state item '%s' contains NULL, this has been interpreted as NaN (but may represent Inf).\n", lastKey.c_str());
+        }
+        if (is_array) {
+            mode.push(VariableArray);
+        }
+        return processValue<number_float_t>(std::numeric_limits<number_float_t>::quiet_NaN());
+    }
     bool boolean(bool b) { return processValue<bool>(b); }
     bool number_integer(number_integer_t i) { return processValue<number_integer_t>(i); }
     bool number_unsigned(number_unsigned_t u) { return processValue<number_unsigned_t>(u); }
