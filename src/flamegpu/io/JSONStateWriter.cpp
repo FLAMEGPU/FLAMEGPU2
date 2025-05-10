@@ -28,7 +28,6 @@ namespace io {
  */
 class JSONStateWriter::JSONWrapper {
  public:
-    JSONWrapper();
     nlohmann::ordered_json& get() { return json; }
  private:
     nlohmann::ordered_json json;
