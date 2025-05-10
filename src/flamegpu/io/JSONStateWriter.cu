@@ -62,7 +62,7 @@ void JSONStateWriter::endWrite() {
         THROW exception::UnknownInternalError("Writing not active, in JSONStateWriter::endWrite()");
     }
 
-    outStream << j;
+    outStream << j.get();
     outStream.close();
 }
 
