@@ -369,13 +369,13 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/environment/HostEnvironment.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/environment/HostEnvironmentDirectedGraph.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/random/HostRandom.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateReader.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateReader.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateWriter.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/StateReader.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLStateReader.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLStateWriter.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLLogger.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONLogger.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONLogger.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONGraphReader.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONGraphWriter.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/Telemetry.cpp
