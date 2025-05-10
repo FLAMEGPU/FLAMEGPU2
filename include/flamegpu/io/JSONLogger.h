@@ -4,6 +4,8 @@
 #include <string>
 #include <typeindex>
 
+#include <nlohmann/json.hpp>
+
 #include "flamegpu/io/Logger.h"
 #include "flamegpu/detail/Any.h"
 
@@ -38,98 +40,62 @@ class JSONLogger : public Logger{
      * Internal logging method, allows Plan to be passed as null
      */
     void logCommon(const RunLog &log, const RunPlan *plan, bool logConfig, bool logSteps, bool logExit, bool logStepTime, bool logExitTime) const;
+
+    void logCommon(nlohmann::ordered_json& j, const RunLog &log, const RunPlan *plan, bool logConfig, bool logSteps, bool logExit, bool logStepTime, bool logExitTime) const;
     /**
-     * rapidjson::Writer doesn't have virtual methods, so can't pass rapidjson::PrettyWriter around as ptr to rapidjson::writer
-     * Instead we call a templated version of all the methods
-     */
-    template<typename T>
-    void logCommon(T &writer, const RunLog &log, const RunPlan *plan, bool logConfig, bool logSteps, bool logExit, bool logStepTime, bool logExitTime) const;
-    /**
-     * Writes out the run config via a JSON object
-     * @param writer Rapidjson writer instance
+     * Returns the run config as a JSON object
      * @param log RunLog containing the config items to be written
-     * @tparam T Instance of rapidjson::Writer or subclass (e.g. rapidjson::PrettyWriter)
-     * @note Templated as can't forward declare rapidjson::Writer<rapidjson::StringBuffer>
      */
-    template<typename T>
-    void logConfig(T &writer, const RunLog &log) const;
+    nlohmann::ordered_json logConfig(const RunLog &log) const;
     /**
-     * Writes out step logs as a JSON array via the provided writer
-     * @param writer Rapidjson writer instance
+     * Returns the run plan as a JSON object
      * @param plan RunPlan containing the config items to be written
-     * @tparam T Instance of rapidjson::Writer or subclass (e.g. rapidjson::PrettyWriter)
-     * @note Templated as can't forward declare rapidjson::Writer<rapidjson::StringBuffer>
      */
-    template<typename T>
-    void logConfig(T &writer, const RunPlan &plan) const;
+    nlohmann::ordered_json logConfig(const RunPlan &plan) const;
     /**
-     * Writes out step logs as a JSON array via the provided writer
-     * @param writer Rapidjson writer instance
+     * Return a json object containing performance specs
      * @param log RunLog containing the config items to be written
-     * @tparam T Instance of rapidjson::Writer or subclass (e.g. rapidjson::PrettyWriter)
-     * @note Templated as can't forward declare rapidjson::Writer<rapidjson::StringBuffer>
      */
-    template<typename T>
-    void logPerformanceSpecs(T& writer, const RunLog& log) const;
+    nlohmann::ordered_json logPerformanceSpecs(const RunLog& log) const;
     /**
      * Writes out step logs as a JSON array via the provided writer
-     * @param writer Rapidjson writer instance
+     * @param j nhlomann::json instance
      * @param log RunLog containing the step logs to be written
      * @param logTime Include time in the log to be written
-     * @tparam T Instance of rapidjson::Writer or subclass (e.g. rapidjson::PrettyWriter)
-     * @note Templated as can't forward declare rapidjson::Writer<rapidjson::StringBuffer>
      */
-    template<typename T>
-    void logSteps(T &writer, const RunLog &log, bool logTime) const;
+    void logSteps(nlohmann::ordered_json& j, const RunLog &log, bool logTime) const;
     /**
      * Writes out an exit log as a JSON object via the provided writer
-     * @param writer Rapidjson writer instance
+     * @param j nhlomann::json instance
      * @param log RunLog containing the exit log to be written
      * @param logTime Include time in the log to be written
-     * @tparam T Instance of rapidjson::Writer or subclass (e.g. rapidjson::PrettyWriter)
-     * @note Templated as can't forward declare rapidjson::Writer<rapidjson::StringBuffer>
      */
-    template<typename T>
-    void logExit(T &writer, const RunLog &log, bool logTime) const;
+    void logExit(nlohmann::ordered_json& j, const RunLog &log, bool logTime) const;
     /**
-     * Writes out an StepLogFrame instance as a JSON object via the provided writer
-     * @param writer Rapidjson writer instance
+     * Returns the StepLogFrame as a JSON object
      * @param log LogFrame to be written
      * @param logTime Include time in the log to be written
-     * @tparam T Instance of rapidjson::Writer or subclass (e.g. rapidjson::PrettyWriter)
-     * @note Templated as can't forward declare rapidjson::Writer<rapidjson::StringBuffer>
      */
-    template<typename T>
-    void writeLogFrame(T &writer, const StepLogFrame&log, bool logTime) const;
+    nlohmann::ordered_json writeLogFrame(const StepLogFrame&log, bool logTime) const;
     /**
-     * Writes out an ExitLogFrame instance as a JSON object via the provided writer
-     * @param writer Rapidjson writer instance
+     * Returns the ExitLogFrame as a JSON object
      * @param log LogFrame to be written
      * @param logTime Include time in the log to be written
-     * @tparam T Instance of rapidjson::Writer or subclass (e.g. rapidjson::PrettyWriter)
-     * @note Templated as can't forward declare rapidjson::Writer<rapidjson::StringBuffer>
      */
-    template<typename T>
-    void writeLogFrame(T& writer, const ExitLogFrame& log, bool logTime) const;
+    nlohmann::ordered_json writeLogFrame(const ExitLogFrame& log, bool logTime) const;
     /**
      * Writes out a LogFrame instance as a JSON object via the provided writer
-     * @param writer Rapidjson writer instance
+     * @param j nhlomann::json instance
      * @param log LogFrame to be written
-     * @tparam T Instance of rapidjson::Writer or subclass (e.g. rapidjson::PrettyWriter)
-     * @note Templated as can't forward declare rapidjson::Writer<rapidjson::StringBuffer>
      */
-    template<typename T>
-    void writeCommonLogFrame(T& writer, const LogFrame& log) const;
+    void writeCommonLogFrame(nlohmann::ordered_json& j, const LogFrame& log) const;
     /**
      * Writes out the value of an Any via the provided writer
-     * @param writer Rapidjson writer instance
+     * @param j nhlomann::json instance
      * @param value The Any to be written
      * @param elements The number of individual elements stored in the Any (1 if not an array)
-     * @tparam T Instance of rapidjson::Writer or subclass (e.g. rapidjson::PrettyWriter)
-     * @note Templated as can't forward declare rapidjson::Writer<rapidjson::StringBuffer>
      */
-    template<typename T>
-    void writeAny(T &writer, const detail::Any &value, unsigned int elements = 1) const;
+    void writeAny(nlohmann::ordered_json& j, const detail::Any &value, unsigned int elements = 1) const;
 
     std::string out_path;
     bool prettyPrint;

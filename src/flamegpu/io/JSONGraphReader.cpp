@@ -1,8 +1,5 @@
 #include "flamegpu/io/JSONGraphReader.h"
 
-#include <rapidjson/stream.h>
-#include <rapidjson/reader.h>
-#include <rapidjson/error/en.h>
 #include <stack>
 #include <fstream>
 #include <string>
@@ -10,6 +7,8 @@
 #include <set>
 #include <cstdio>
 #include <memory>
+
+#include <nlohmann/json.hpp>
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
@@ -23,7 +22,7 @@ namespace {
  * This is a trivial parser, it counts the number of vertices and edges
  * This allows the graph's buffers to be preallocated to the correct size
  */
-class JSONAdjacencyGraphSizeReader : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, JSONAdjacencyGraphSizeReader>  {
+class JSONAdjacencyGraphSizeReader : public nlohmann::json_sax<nlohmann::json> {
     enum Mode{ Nop, Root, Nodes, Links };
     std::stack<Mode> mode;
     unsigned int vertex_count = 0;
@@ -38,15 +37,14 @@ class JSONAdjacencyGraphSizeReader : public rapidjson::BaseReaderHandler<rapidjs
         return edge_count;
     }
 
-    bool Null() { return true; }
-    bool Bool(bool b) { return true; }
-    bool Int(int i) { return true; }
-    bool Uint(unsigned u) { return true; }
-    bool Int64(int64_t i) { return true; }
-    bool Uint64(uint64_t u) { return true; }
-    bool Double(double d) { return true; }
-    bool String(const char*str, rapidjson::SizeType, bool) { return true; }
-    bool StartObject() {
+    bool null() { return true; }
+    bool boolean(bool) { return true; }
+    bool number_integer(number_integer_t) { return true; }
+    bool number_unsigned(number_unsigned_t) { return true; }
+    bool number_float(number_float_t, const string_t&) { return true; }
+    bool string(string_t& ) { return true; }
+    bool binary(binary_t&) { return true; }
+    bool start_object(size_t) {
         if (mode.empty()) {
             mode.push(Root);
         } else if (mode.top() == Nodes) {
@@ -56,14 +54,14 @@ class JSONAdjacencyGraphSizeReader : public rapidjson::BaseReaderHandler<rapidjs
         }
         return true;
     }
-    bool Key(const char* str, rapidjson::SizeType, bool) {
+    bool key(string_t &str) {
         lastKey = str;
         return true;
     }
-    bool EndObject(rapidjson::SizeType) {
+    bool end_object() {
         return true;
     }
-    bool StartArray() {
+    bool start_array(size_t) {
         if (mode.top() == Root && lastKey == "nodes") {
             mode.push(Nodes);
         } else if (mode.top() == Root && lastKey == "links") {
@@ -73,16 +71,20 @@ class JSONAdjacencyGraphSizeReader : public rapidjson::BaseReaderHandler<rapidjs
         }
         return true;
     }
-    bool EndArray(rapidjson::SizeType) {
+    bool end_array() {
         mode.pop();
         return true;
+    }
+    // called when a parse error occurs; byte position, the last token, and an exception is passed
+    bool parse_error(std::size_t /*position*/, const std::string& /*last_token*/, const nlohmann::json::exception& ex) {
+        THROW exception::JSONError(ex.what());
     }
 };
 /**
  * This is the main sax style parser for the json state
  * It stores it's current position within the hierarchy with mode, lastKey and current_variable_array_index
  */
-class JSONAdjacencyGraphReader : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, JSONAdjacencyGraphReader>  {
+class JSONAdjacencyGraphReader : public nlohmann::json_sax<nlohmann::json> {
     enum Mode{ Nop, Root, Nodes, Links, Node, Link, VariableArray };
     std::stack<Mode> mode;
     std::string lastKey;
@@ -184,7 +186,7 @@ class JSONAdjacencyGraphReader : public rapidjson::BaseReaderHandler<rapidjson::
                 const char t = static_cast<char>(val);
                 graph->getVertexPropertyBuffer<char>(lastKey, elements, stream)[current_index * elements + current_variable_array_index++] = t;
             }  else {
-                THROW exception::RapidJSONError("Input file '%s' contain vertex property '%s', of unknown type %s.\n", filename.c_str(), lastKey.c_str(), val_type.name());
+                THROW exception::JSONError("Input file '%s' contain vertex property '%s', of unknown type %s.\n", filename.c_str(), lastKey.c_str(), val_type.name());
             }
         } else if (mode.top() == Link) {
             const auto f = metagraph.edgeProperties.find(lastKey);
@@ -231,10 +233,10 @@ class JSONAdjacencyGraphReader : public rapidjson::BaseReaderHandler<rapidjson::
                 const char t = static_cast<char>(val);
                 graph->getEdgePropertyBuffer<char>(lastKey, elements, stream)[current_index * elements + current_variable_array_index++] = t;
             }  else {
-                THROW exception::RapidJSONError("Input file '%s' contain edge property '%s', of unknown type %s.\n", filename.c_str(), lastKey.c_str(), val_type.name());
+                THROW exception::JSONError("Input file '%s' contain edge property '%s', of unknown type %s.\n", filename.c_str(), lastKey.c_str(), val_type.name());
             }
         } else {
-            THROW exception::RapidJSONError("Unexpected value with key '%s' whilst parsing input file '%s'.\n", lastKey.c_str(), filename.c_str());
+            THROW exception::JSONError("Unexpected value with key '%s' whilst parsing input file '%s'.\n", lastKey.c_str(), filename.c_str());
         }
         if (isArray == VariableArray) {
             mode.push(isArray);
@@ -243,14 +245,16 @@ class JSONAdjacencyGraphReader : public rapidjson::BaseReaderHandler<rapidjson::
         }
         return true;
     }
-    bool Null() { return true; }
-    bool Bool(bool b) { return processValue<bool>(b); }
-    bool Int(int i) { return processValue<int32_t>(i); }
-    bool Uint(unsigned u) { return processValue<uint32_t>(u); }
-    bool Int64(int64_t i) { return processValue<int64_t>(i); }
-    bool Uint64(uint64_t u) { return processValue<uint64_t>(u); }
-    bool Double(double d) { return processValue<double>(d); }
-    bool String(const char* str, rapidjson::SizeType, bool) {
+    bool null() {
+         fprintf(stderr, "Warning: JSON graph property '%s' contains NULL, this has been interpreted as NaN (but may represent Inf).\n", lastKey.c_str());
+         return processValue<number_float_t>(std::numeric_limits<number_float_t>::quiet_NaN());
+     }
+    bool boolean(bool b) { return processValue<bool>(b); }
+    bool number_integer(number_integer_t i) { return processValue<number_integer_t>(i); }
+    bool number_unsigned(number_unsigned_t u) { return processValue<number_unsigned_t>(u); }
+    bool number_float(number_float_t d, const string_t&) { return processValue<number_float_t>(d); }
+
+    bool string(string_t& str) {
         if (mode.top() == Node) {
             if (lastKey == "id") {
                 // Attempt to convert the string to an int
@@ -267,16 +271,16 @@ class JSONAdjacencyGraphReader : public rapidjson::BaseReaderHandler<rapidjson::
                 return true;
             } else {
                 if (current_index) {
-                    fprintf(stderr, "Input file '%s' contains vertex property '%s' of type String, this has been skipped during loading.", filename.c_str(), str);
+                    fprintf(stderr, "Input file '%s' contains vertex property '%s' of type String, this has been skipped during loading.", filename.c_str(), str.c_str());
                 }
                 return true;
             }
         } else if (mode.top() == Link) {
             const auto f = vertex_id_map.find(str);
             if (vertex_id_map.empty()) {
-                THROW exception::RapidJSONError("'links' object occurs before 'nodes' object, unable to parse.\n", filename.c_str());
+                THROW exception::JSONError("'links' object occurs before 'nodes' object, unable to parse.\n", filename.c_str());
             } else if (f == vertex_id_map.end()) {
-                THROW exception::RapidJSONError("Edge refers to unrecognised Vertex ID '%s', unable to load input file '%s'.\n", str, filename.c_str());
+                THROW exception::JSONError("Edge refers to unrecognised Vertex ID '%s', unable to load input file '%s'.\n", str.c_str(), filename.c_str());
             }
             if (lastKey == "source") {
                 if (last_target == ID_NOT_SET) {
@@ -296,14 +300,17 @@ class JSONAdjacencyGraphReader : public rapidjson::BaseReaderHandler<rapidjson::
                 return true;
             } else {
                 if (current_index) {
-                    fprintf(stderr, "Input file '%s' contains edge property '%s' of type String, this has been skipped during loading.", filename.c_str(), str);
+                    fprintf(stderr, "Input file '%s' contains edge property '%s' of type String, this has been skipped during loading.", filename.c_str(), str.c_str());
                 }
                 return true;
             }
         }
-        THROW exception::RapidJSONError("Unexpected string whilst parsing input file '%s', string properties are not supported.\n", filename.c_str());
+        THROW exception::JSONError("Unexpected string whilst parsing input file '%s', string properties are not supported.\n", filename.c_str());
     }
-    bool StartObject() {
+    bool binary(binary_t&) {
+        THROW exception::JSONError("Unexpected binary value whilst parsing input file '%s'.\n", filename.c_str());
+    }
+    bool start_object(size_t) {
         if (mode.empty()) {
             mode.push(Root);
         } else if (mode.top() == Nodes) {
@@ -311,24 +318,24 @@ class JSONAdjacencyGraphReader : public rapidjson::BaseReaderHandler<rapidjson::
         } else if (mode.top() == Links) {
             mode.push(Link);
         } else {
-            THROW exception::RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
+            THROW exception::JSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
         }
         return true;
     }
-    bool Key(const char* str, rapidjson::SizeType, bool) {
+    bool key(string_t &str) {
         lastKey = str;
         return true;
     }
-    bool EndObject(rapidjson::SizeType) {
+    bool end_object() {
         if (mode.top() == Node || mode.top() == Link) {
             ++current_index;
         }
         mode.pop();
         return true;
     }
-    bool StartArray() {
+    bool start_array(size_t) {
         if (current_variable_array_index != 0) {
-            THROW exception::RapidJSONError("Array start when current_variable_array_index !=0, in file '%s'. This should never happen.\n", filename.c_str());
+            THROW exception::JSONError("Array start when current_variable_array_index !=0, in file '%s'. This should never happen.\n", filename.c_str());
         }
         if (mode.top() == Root && lastKey == "nodes") {
             mode.push(Nodes);
@@ -337,11 +344,11 @@ class JSONAdjacencyGraphReader : public rapidjson::BaseReaderHandler<rapidjson::
         } else if (mode.top() == Node || mode.top() == Link) {
             mode.push(VariableArray);
         } else {
-            THROW exception::RapidJSONError("Unexpected array start whilst parsing input file '%s'.\n", filename.c_str());
+            THROW exception::JSONError("Unexpected array start whilst parsing input file '%s'.\n", filename.c_str());
         }
         return true;
     }
-    bool EndArray(rapidjson::SizeType) {
+    bool end_array() {
         if (mode.top() == VariableArray) {
             mode.pop();
             current_variable_array_index = 0;
@@ -351,6 +358,10 @@ class JSONAdjacencyGraphReader : public rapidjson::BaseReaderHandler<rapidjson::
         }
         return true;
     }
+    // called when a parse error occurs; byte position, the last token, and an exception is passed
+    bool parse_error(std::size_t /*position*/, const std::string& /*last_token*/, const nlohmann::json::exception& ex) {
+        THROW exception::JSONError(ex.what());
+    }
 };
 }  // namespace
 
@@ -359,25 +370,21 @@ void JSONGraphReader::loadAdjacencyLike(const std::string& filepath, const std::
     if (!in) {
         THROW exception::InvalidFilePath("Unable to open file '%s' for reading.\n", filepath.c_str());
     }
-    std::string filestring = std::string((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-    rapidjson::StringStream filess(filestring.c_str());
-    rapidjson::Reader reader;
     // First count the size of the graph
     JSONAdjacencyGraphSizeReader graphSizeCounter;
-    rapidjson::ParseResult pr1 = reader.Parse<rapidjson::kParseNanAndInfFlag, rapidjson::StringStream, JSONAdjacencyGraphSizeReader>(filess, graphSizeCounter);
-    if (pr1.Code() != rapidjson::ParseErrorCode::kParseErrorNone) {
-        THROW exception::RapidJSONError("Whilst calculating graph size from input file '%s', RapidJSON returned error: %s\n", filepath.c_str(), rapidjson::GetParseError_En(pr1.Code()));
+    if (!nlohmann::json::sax_parse(in, &graphSizeCounter)) {
+        THROW exception::JSONError("Calculating graph size from input file '%s' failed, in JSONGraphReader::loadAdjacencyLike()\n", filepath.c_str());
     }
     // Second (pre)allocate the graph's buffers
     directed_graph->setVertexCount(graphSizeCounter.getVertexCount(), stream);
     directed_graph->setEdgeCount(graphSizeCounter.getEdgeCount());
-    // Third reset the string stream
-    filess = rapidjson::StringStream(filestring.c_str());
+    // Third reset the stream
+    in.clear();
+    in.seekg(0);
     // Fourth parse the graph (and map string vertex IDs to integers)
     JSONAdjacencyGraphReader graphReader(filepath, directed_graph, stream);
-    rapidjson::ParseResult pr2 = reader.Parse<rapidjson::kParseNanAndInfFlag, rapidjson::StringStream, JSONAdjacencyGraphReader>(filess, graphReader);
-    if (pr2.Code() != rapidjson::ParseErrorCode::kParseErrorNone) {
-        THROW exception::RapidJSONError("Whilst reading graph from input file '%s', RapidJSON returned error: %s\n", filepath.c_str(), rapidjson::GetParseError_En(pr1.Code()));
+    if (!nlohmann::json::sax_parse(in, &graphReader)) {
+        THROW exception::JSONError("Reading graph from input file '%s' failed, in JSONGraphReader::loadAdjacencyLike()\n", filepath.c_str());
     }
 }
 
