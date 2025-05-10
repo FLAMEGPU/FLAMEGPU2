@@ -10,6 +10,8 @@
 #include <map>
 #include <functional>
 
+#include <nlohmann/json.hpp>
+
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/simulation/AgentVector.h"
@@ -17,11 +19,23 @@
 #include "flamegpu/util/StringPair.h"
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
 #include "flamegpu/simulation/detail/CUDAMacroEnvironment.h"
-
+namespace {
+}
 namespace flamegpu {
 namespace io {
+/**
+ * PIMPL to hide nlohmann::ordered_json from header
+ */
+class JSONStateWriter::JSONWrapper {
+ public:
+    JSONWrapper();
+    nlohmann::ordered_json& get() { return json; }
+ private:
+    nlohmann::ordered_json json;
+};
 JSONStateWriter::JSONStateWriter()
-    : StateWriter() {}
+    : StateWriter()
+    , j(std::make_unique<JSONWrapper>()) { }
 void JSONStateWriter::beginWrite(const std::string &output_file, bool pretty_print) {
     this->outputPath = output_file;
     if (isWriting()) {
@@ -35,7 +49,7 @@ void JSONStateWriter::beginWrite(const std::string &output_file, bool pretty_pri
         outStream << std::setw(4);
     }
     // Reset json cache
-    j = {};
+    j->get() = {};
     // Clear flags
     this->config_written = false;
     this->stats_written = false;
@@ -62,25 +76,25 @@ void JSONStateWriter::writeConfig(const Simulation *sim_instance) {
     // Simulation config
     if (sim_instance) {
         const auto& sim_cfg = sim_instance->getSimulationConfig();
-        j["config"]["simulation"]["input_file"] = sim_cfg.input_file;
-        j["config"]["simulation"]["step_log_file"] = sim_cfg.step_log_file;
-        j["config"]["simulation"]["exit_log_file"] = sim_cfg.exit_log_file;
-        j["config"]["simulation"]["common_log_file"] = sim_cfg.common_log_file;
-        j["config"]["simulation"]["truncate_log_files"] = sim_cfg.truncate_log_files;
-        j["config"]["simulation"]["random_seed"] = sim_cfg.random_seed;
-        j["config"]["simulation"]["steps"] = sim_cfg.steps;
-        j["config"]["simulation"]["verbosity"] = static_cast<unsigned int>(sim_cfg.verbosity);
-        j["config"]["simulation"]["timing"] = sim_cfg.timing;
+        j->get()["config"]["simulation"]["input_file"] = sim_cfg.input_file;
+        j->get()["config"]["simulation"]["step_log_file"] = sim_cfg.step_log_file;
+        j->get()["config"]["simulation"]["exit_log_file"] = sim_cfg.exit_log_file;
+        j->get()["config"]["simulation"]["common_log_file"] = sim_cfg.common_log_file;
+        j->get()["config"]["simulation"]["truncate_log_files"] = sim_cfg.truncate_log_files;
+        j->get()["config"]["simulation"]["random_seed"] = sim_cfg.random_seed;
+        j->get()["config"]["simulation"]["steps"] = sim_cfg.steps;
+        j->get()["config"]["simulation"]["verbosity"] = static_cast<unsigned int>(sim_cfg.verbosity);
+        j->get()["config"]["simulation"]["timing"] = sim_cfg.timing;
 #ifdef FLAMEGPU_VISUALISATION
-        j["config"]["simulation"]["console_mode"] = sim_cfg.console_mode;
+        j->get()["config"]["simulation"]["console_mode"] = sim_cfg.console_mode;
 #endif
     }
 
     // CUDA config
     if (auto* cudamodel_instance = dynamic_cast<const CUDASimulation*>(sim_instance)) {
         const auto& cuda_cfg = cudamodel_instance->getCUDAConfig();
-        j["config"]["cuda"]["device_id"] = cuda_cfg.device_id;
-        j["config"]["cuda"]["inLayerConcurrency"] = cuda_cfg.inLayerConcurrency;
+        j->get()["config"]["cuda"]["device_id"] = cuda_cfg.device_id;
+        j->get()["config"]["cuda"]["inLayerConcurrency"] = cuda_cfg.inLayerConcurrency;
     }
     config_written = true;
 }
@@ -92,7 +106,7 @@ void JSONStateWriter::writeStats(unsigned int iterations) {
     }
 
     // General runtime stats (e.g. we could add timing data in future)
-    j["stats"]["step_count"] = iterations;
+    j->get()["stats"]["step_count"] = iterations;
     // in future could also support random seed, run args etc
 
     stats_written = true;
@@ -106,7 +120,7 @@ void JSONStateWriter::writeEnvironment(const std::shared_ptr<const detail::Envir
 
     // Environment properties
     if (env_manager) {
-        auto& j_env = j["environment"];
+        auto& j_env = j->get()["environment"];
         const char *env_buffer = reinterpret_cast<const char *>(env_manager->getHostBuffer());
         // for each environment property
         for (auto &a : env_manager->getPropertiesMap()) {
@@ -166,7 +180,7 @@ void JSONStateWriter::writeEnvironment(const std::shared_ptr<const detail::Envir
             }
         }
         if (!j_env.size()) {
-            j.erase("environment");
+            j->get().erase("environment");
         }
     }
 
@@ -181,7 +195,7 @@ void JSONStateWriter::writeMacroEnvironment(const std::shared_ptr<const detail::
 
     // Macro Environment
     if (macro_env) {
-        auto& j_menv = j["macro_environment"];
+        auto& j_menv = j->get()["macro_environment"];
         const std::map<std::string, detail::CUDAMacroEnvironment::MacroEnvProp>& m_properties = macro_env->getPropertiesMap();
         for (const auto &_filter : filter) {
             if (m_properties.find(_filter) == m_properties.end()) {
@@ -236,7 +250,7 @@ void JSONStateWriter::writeMacroEnvironment(const std::shared_ptr<const detail::
             free(t_buffer);
         }
         if (!j_menv.size()) {
-            j.erase("macro_environment");
+            j->get().erase("macro_environment");
         }
     }
 
@@ -250,7 +264,7 @@ void JSONStateWriter::writeAgents(const util::StringPairUnorderedMap<std::shared
     }
 
     // AgentStates
-    auto& j_agt = j["agents"];
+    auto& j_agt = j->get()["agents"];
     // Build a set of agent names
     std::set<std::string> agent_names;
     for (const auto& [key, _] : agents_map) {

@@ -5,23 +5,20 @@
 #include <string>
 #include <fstream>
 
-#include <nlohmann/json.hpp>
-
 
 #include "flamegpu/io/StateWriter.h"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
-
-
 namespace flamegpu {
 namespace detail {
 class CUDAMacroEnvironment;
-}
+}  // namespace detail
 namespace io {
 /**
  * JSON format StateWriter
  */
 class JSONStateWriter : public StateWriter {
+    class JSONWrapper;
  public:
     /**
      * Constructs a writer capable of writing model state to an JSON file
@@ -64,7 +61,7 @@ class JSONStateWriter : public StateWriter {
     std::string outputPath;
     std::fstream outStream;
 
-    nlohmann::ordered_json j;
+    std::unique_ptr<JSONWrapper> j;
 };
 }  // namespace io
 }  // namespace flamegpu
