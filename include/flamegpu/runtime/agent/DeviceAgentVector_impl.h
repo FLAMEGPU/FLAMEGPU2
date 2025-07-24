@@ -286,12 +286,21 @@ class DeviceAgentVector_impl : protected AgentVector {
          */
          explicit VariableBufferPair(const std::shared_ptr<detail::VariableBuffer>& _device)
              : device(_device) { }
+         VariableBufferPair(const VariableBufferPair& other) {
+             this->device = other.device;
+             this->host_sz = other.host_sz;
+             if (other.host) {
+                 this->host = static_cast<char*>(malloc(this->host_sz));
+                 memcpy(this->host, other.host, this->host_sz);
+             }
+         }
          VariableBufferPair(VariableBufferPair&& other) {
              *this = std::move(other);
          }
          VariableBufferPair& operator=(VariableBufferPair&& other) {
              std::swap(this->host, other.host);
              std::swap(this->device, other.device);
+             std::swap(this->host_sz, other.host_sz);
              return *this;
          }
          /**
@@ -311,6 +320,10 @@ class DeviceAgentVector_impl : protected AgentVector {
          * nullptr until required to be allocated
          */
          char* host = nullptr;
+         /**
+          * Size of the allocated host ptr in bytes
+          */
+         size_t host_sz = 0;
          /**/
          std::shared_ptr<detail::VariableBuffer> device;
      };
