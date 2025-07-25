@@ -28,7 +28,7 @@ defaults:
 # + Wheel producing manylinux builds
 #   + CUDA 11.2 and 12.0, py 3.8-3.12, vis on/off, py only.
 # + Wheel producing Windows builds
-#   + CUDA 11.2 and 12.0, py 3.8-3.12, vis on/off, py only.
+#   + CUDA 12.4 (due to visual studio), py 3.8-3.12, vis on/off, py only.
 # + Draft github release workflow.
 
 jobs:
@@ -186,18 +186,11 @@ jobs:
             cuda_arch: "50-real;90-real;90-virtual"
             hostcxx: "Visual Studio 17 2022"
             os: windows-2022
-          - cuda: "12.0.0"
+          # CUDA 12.4 is the oldest CUDA supported by recent visual studio 2022 versions :(
+          - cuda: "12.4.0"
             cuda_arch: "50-real;90-real;90-virtual"
-            hostcxx: "Visual Studio 16 2019"
-            os: windows-2019
-          - cuda: "11.8.0"
-            cuda_arch: "35-real;90-real;90-virtual"
-            hostcxx: "Visual Studio 16 2019"
-            os: windows-2019
-          - cuda: "11.2.2"
-            cuda_arch: "35-real;80-real;80-virtual"
-            hostcxx: "Visual Studio 16 2019"
-            os: windows-2019
+            hostcxx: "Visual Studio 17 2022"
+            os: windows-2022
         python: 
           - "3.8"
         config:
@@ -481,14 +474,11 @@ jobs:
       # optional exclude: can be partial, include: must be specific
       matrix:
         cudacxx:
-          - cuda: "12.0.0"
+          # VS2022 on required 12.4, which prevents older wheel building.
+          - cuda: "12.4.0"
             cuda_arch: "50-real;60-real;70-real;80-real;90-real;90-virtual"
-            hostcxx: "Visual Studio 16 2019"
-            os: windows-2019
-          - cuda: "11.2.2"
-            cuda_arch: "35-real;50-real;60-real;70-real;80-real;80-virtual"
-            hostcxx: "Visual Studio 16 2019"
-            os: windows-2019
+            hostcxx: "Visual Studio 17 2022"
+            os: windows-2022
         python: 
           - "3.12"
           - "3.11"
