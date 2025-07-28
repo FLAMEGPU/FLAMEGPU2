@@ -106,9 +106,9 @@ void MessageArray2D::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, 
 /// CDescription
 /// </summary>
 MessageArray2D::CDescription::CDescription(std::shared_ptr<Data> data)
-    : MessageBruteForce::CDescription(std::move(std::static_pointer_cast<MessageBruteForce::Data>(data))) { }
+    : MessageBruteForce::CDescription(std::static_pointer_cast<MessageBruteForce::Data>(data)) { }
 MessageArray2D::CDescription::CDescription(std::shared_ptr<const Data> data)
-    : CDescription(std::move(std::const_pointer_cast<Data>(data))) { }
+    : CDescription(std::const_pointer_cast<Data>(data)) { }
 
 bool MessageArray2D::CDescription::operator==(const CDescription& rhs) const {
     return *this->message == *rhs.message;  // Compare content is functionally the same
