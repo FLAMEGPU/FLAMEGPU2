@@ -67,4 +67,4 @@ jobs:
 
     - name: Lint
       working-directory: ${{ env.BUILD_DIR }}
-      run: cmake --build . --target all_lint --verbose -j `nproc` 
+      run: cmake --build . --target all_lint --verbose -j `nproc`

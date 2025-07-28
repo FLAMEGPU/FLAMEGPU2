@@ -46,7 +46,7 @@ jobs:
             cuda_arch: "35"
             hostcxx: gcc-9
             os: ubuntu-22.04
-        python: 
+        python:
           - "3.12"
         config:
           - name: "Release"
@@ -55,7 +55,7 @@ jobs:
           - name: "Beltsoff"
             config: "Release"
             SEATBELTS: "OFF"
-        VISUALISATION: 
+        VISUALISATION:
           - "ON"
           - "OFF"
         exclude:
@@ -126,7 +126,7 @@ jobs:
         echo "CUDAHOSTCXX=/usr/bin/g++-${gcc_version}" >> $GITHUB_ENV
 
     - name: Select Python
-      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON }}
@@ -146,7 +146,7 @@ jobs:
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
         fi
         # Install ubuntu-22.04 packages
-        if [ "$OS" == 'ubuntu-22.04' ]; then 
+        if [ "$OS" == 'ubuntu-22.04' ]; then
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
         fi
 
@@ -177,7 +177,7 @@ jobs:
         cmake . -B "${{ env.BUILD_DIR }}"
         -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
         -Werror=dev
-        -DCMAKE_WARN_DEPRECATED="OFF" 
+        -DCMAKE_WARN_DEPRECATED="OFF"
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
         -DFLAMEGPU_SEATBELTS="${{ env.FLAMEGPU_SEATBELTS }}"
@@ -217,13 +217,13 @@ jobs:
         cmake . -B "${{ env.BUILD_DIR }}"
         -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
         -Werror=dev
-        -DCMAKE_WARN_DEPRECATED="OFF" 
+        -DCMAKE_WARN_DEPRECATED="OFF"
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
         -DFLAMEGPU_SEATBELTS="${{ env.FLAMEGPU_SEATBELTS }}"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
         -DFLAMEGPU_ENABLE_NVTX="ON"
-    
+
     - name: Build Individual example
       if: ${{ env.INDIVIDUAL_EXAMPLE != '' }}
       working-directory: examples/cpp/${{ env.INDIVIDUAL_EXAMPLE }}/${{ env.BUILD_DIR }}
