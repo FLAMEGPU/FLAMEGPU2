@@ -14,7 +14,7 @@ on:
       - "src/flamegpu/simulation/CUDAEnsemble.cu"
       - "**mpi**"
       - "**MPI**"
-  # Or trigger on manual dispatch. 
+  # Or trigger on manual dispatch.
   workflow_dispatch:
 
 defaults:
@@ -65,7 +65,7 @@ jobs:
           - name: "Release"
             config: "Release"
             SEATBELTS: "ON"
-        VISUALISATION: 
+        VISUALISATION:
           - "OFF"
 
     # Name the job based on matrix/env options
@@ -107,7 +107,7 @@ jobs:
         echo "CC=/usr/bin/gcc-${gcc_version}" >> $GITHUB_ENV
         echo "CXX=/usr/bin/g++-${gcc_version}" >> $GITHUB_ENV
         echo "CUDAHOSTCXX=/usr/bin/g++-${gcc_version}" >> $GITHUB_ENV
-    
+
     - name: Install MPI from apt
       if: ${{ env.MPI_VERSION == 'apt' }}
       working-directory: ${{ runner.temp }}
@@ -132,7 +132,7 @@ jobs:
         echo "LD_RUN_PATH=${{ runner.temp }}/mpi/lib:${LD_RUN_PATH}" >> $GITHUB_ENV
 
     # This will only work for mpich >= 3.3:
-    #   3.0-3.2 doesn't appear compatible with default gcc in 22.04. 
+    #   3.0-3.2 doesn't appear compatible with default gcc in 22.04.
     #   1.x is named mpich2 so requires handling differently
     # Uses the ch3 interface, as ch4 isn't available pre 3.4, but one must be specified for some versions
     - name: Install MPICH from source
@@ -149,7 +149,7 @@ jobs:
         DISABLE_FORTRAN_FLAGS=""
         if (( ${MPI_MAJOR} >= 4 )) || ( ((${MPI_MAJOR} >= 3)) && ((${MPI_MINOR} >= 2)) ); then
             # MPICH >= 3.2 has --disable-fortran
-            DISABLE_FORTRAN_FLAGS="--disable-fortran" 
+            DISABLE_FORTRAN_FLAGS="--disable-fortran"
         else
             DISABLE_FORTRAN_FLAGS="--disable-f77 --disable-fc"
         fi
@@ -159,9 +159,9 @@ jobs:
         echo "${{ runner.temp }}/mpi/bin" >> $GITHUB_PATH
         echo "LD_LIBRARY_PATH=${{ runner.temp }}/mpi/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
         echo "LD_RUN_PATH=${{ runner.temp }}/mpi/lib:${LD_RUN_PATH}" >> $GITHUB_ENV
-    
+
     - name: Select Python
-      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON }}
@@ -180,10 +180,10 @@ jobs:
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
         fi
         # Install ubuntu-22.04 packages
-        if [ "$OS" == 'ubuntu-22.04' ]; then 
+        if [ "$OS" == 'ubuntu-22.04' ]; then
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
         fi
-    
+
     - name: Install Swig >= 4.0.2
       run: |
         # Install additional apt-based dependencies required to build swig 4.0.2
@@ -208,7 +208,7 @@ jobs:
         cmake . -B "${{ env.BUILD_DIR }}"
         -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
         -Werror=dev
-        -DCMAKE_WARN_DEPRECATED="OFF" 
+        -DCMAKE_WARN_DEPRECATED="OFF"
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
         -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"

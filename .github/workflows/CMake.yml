@@ -30,13 +30,13 @@ jobs:
             cuda_arch: "35"
             hostcxx: gcc-9
             os: ubuntu-22.04
-        python: 
+        python:
           - "3.8"
         config:
           - name: "Release"
             config: "Release"
             SEATBELTS: "ON"
-        VISUALISATION: 
+        VISUALISATION:
           - "OFF"
         # 'default' or '' will not install cmake, otherwise provide a full semver version.
         cmake:
@@ -95,7 +95,7 @@ jobs:
         echo "CUDAHOSTCXX=/usr/bin/g++-${gcc_version}" >> $GITHUB_ENV
 
     - name: Select Python
-      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON }}
@@ -115,7 +115,7 @@ jobs:
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
         fi
         # Install ubuntu-22.04 packages
-        if [ "$OS" == 'ubuntu-22.04' ]; then 
+        if [ "$OS" == 'ubuntu-22.04' ]; then
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
         fi
 
@@ -143,7 +143,7 @@ jobs:
         cmake . -B "${{ env.BUILD_DIR }}"
         -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
         -Werror=dev
-        -DCMAKE_WARN_DEPRECATED="OFF" 
+        -DCMAKE_WARN_DEPRECATED="OFF"
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
         -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
@@ -159,7 +159,7 @@ jobs:
         cmake . -B "${{ env.BUILD_DIR }}"
         -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
         -Werror=dev
-        -DCMAKE_WARN_DEPRECATED="OFF" 
+        -DCMAKE_WARN_DEPRECATED="OFF"
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
         -DFLAMEGPU_ENABLE_NVTX="ON"

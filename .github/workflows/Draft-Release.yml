@@ -1,4 +1,4 @@
-# Perform thorough builds, and potentially create a draft CI workflow. 
+# Perform thorough builds, and potentially create a draft CI workflow.
 name: Draft Release
 
 on:
@@ -10,7 +10,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/Draft-Release.yml"
-  # Or trigger on manual dispatch. This will not produce a release, but will perform the thorough build. 
+  # Or trigger on manual dispatch. This will not produce a release, but will perform the thorough build.
   workflow_dispatch:
 
 defaults:
@@ -18,7 +18,7 @@ defaults:
     # Default to using bash regardless of OS unless otherwise specified.
     shell: bash
 
-# @todo - add a job/step which validates the version is of the correct format (for pre releases) and that the git tag matches the CMake/header version(s) 
+# @todo - add a job/step which validates the version is of the correct format (for pre releases) and that the git tag matches the CMake/header version(s)
 
 # Several jobs with some dependencies between them.
 # + Thorough Ubuntu builds
@@ -59,7 +59,7 @@ jobs:
           - name: "Release"
             config: "Release"
             SEATBELTS: "ON"
-        VISUALISATION: 
+        VISUALISATION:
           - "OFF"
 
     # Name the job based on matrix/env options
@@ -101,7 +101,7 @@ jobs:
         echo "CUDAHOSTCXX=/usr/bin/g++-${gcc_version}" >> $GITHUB_ENV
 
     - name: Select Python
-      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON }}
@@ -120,10 +120,10 @@ jobs:
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
         fi
         # Install ubuntu-22.04 packages
-        if [ "$OS" == 'ubuntu-22.04' ]; then 
+        if [ "$OS" == 'ubuntu-22.04' ]; then
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
         fi
-    
+
     - name: Install Swig >= 4.0.2
       run: |
         # Install additional apt-based dependencies required to build swig 4.0.2. 4.0.2 requires pcre-config from pcre3-dev. swig >= 4.1 requires pcre2-config from libpcre2-dev
@@ -148,7 +148,7 @@ jobs:
         cmake . -B "${{ env.BUILD_DIR }}"
         -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
         -Werror=dev
-        -DCMAKE_WARN_DEPRECATED="OFF" 
+        -DCMAKE_WARN_DEPRECATED="OFF"
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
         -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
@@ -195,13 +195,13 @@ jobs:
             cuda_arch: "50-real;90-real;90-virtual"
             hostcxx: "Visual Studio 17 2022"
             os: windows-2022
-        python: 
+        python:
           - "3.8"
         config:
           - name: "Release"
             config: "Release"
             SEATBELTS: "ON"
-        VISUALISATION: 
+        VISUALISATION:
           - "OFF"
 
     # Name the job based on matrix/env options
@@ -238,11 +238,11 @@ jobs:
       run: .github\scripts\install_cuda_windows.ps1
 
     - name: Select Python
-      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON }}
-    
+
     - name: Install python dependencies
       if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       run: |
@@ -254,19 +254,19 @@ jobs:
     # This pre-emptively patches a bug where ManyLinux didn't generate buildnumber as git dir was owned by diff user
     - name: Enable git safe-directory
       run: git config --global --add safe.directory $GITHUB_WORKSPACE
-      
+
     # Must pass -G -A for windows, and -DPython3_ROOT_DIR/-DPYTHON3_EXECUTABLE as a github action workaround
     - name: Configure cmake
       run: >
-        cmake . -B "${{ env.BUILD_DIR }}" 
+        cmake . -B "${{ env.BUILD_DIR }}"
         -G "${{ env.HOSTCXX }}" -A x64
         -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF"
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
         -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
-        -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}" 
-        -DPython3_ROOT_DIR="$(dirname $(which python))" 
+        -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}"
+        -DPython3_ROOT_DIR="$(dirname $(which python))"
         -DPython3_EXECUTABLE="$(which python)"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
         -DFLAMEGPU_ENABLE_NVTX="ON"
@@ -309,7 +309,7 @@ jobs:
             cuda_arch: "35-real;50-real;60-real;70-real;80-real;80-virtual"
             hostcxx: gcc-toolset-9
             os: ubuntu-22.04
-        python: 
+        python:
           - "3.12"
           - "3.11"
           - "3.10"
@@ -319,7 +319,7 @@ jobs:
           - name: "Release"
             config: "Release"
             SEATBELTS: "ON"
-        VISUALISATION: 
+        VISUALISATION:
           - "ON"
           - "OFF"
 
@@ -359,7 +359,7 @@ jobs:
       run: |
         # Install gcc-toolset-X
         yum install -y ${{ env.HOSTCXX }}
-        # Enable the toolset via source not scl enable which doesn't get on with multi-step GHA 
+        # Enable the toolset via source not scl enable which doesn't get on with multi-step GHA
         source /opt/rh/${{ env.HOSTCXX }}/enable
         # Export the new environment / compilers for subsequent steps.
         echo "PATH=${PATH}" >> $GITHUB_ENV
@@ -381,7 +381,7 @@ jobs:
     - name: Install Visualisation Dependencies (EL 8)
       if: ${{ env.VISUALISATION == 'ON' }}
       run: |
-        yum install -y glew-devel fontconfig-devel SDL2-devel freetype-devel 
+        yum install -y glew-devel fontconfig-devel SDL2-devel freetype-devel
         # Build/Install DevIL from source.
         yum install -y freeglut-devel
         git clone --depth 1 https://github.com/DentonW/DevIL.git
@@ -425,7 +425,7 @@ jobs:
         cmake . -B "${{ env.BUILD_DIR }}"
         -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
         -Werror=dev
-        -DCMAKE_WARN_DEPRECATED="OFF" 
+        -DCMAKE_WARN_DEPRECATED="OFF"
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
         -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
@@ -451,7 +451,7 @@ jobs:
       run: auditwheel show lib/${{ env.CONFIG }}/python/dist/*whl
 
     # Ideally we should use auditwheel repair to check/enforce conformity
-    # But we cannot due to cuda shared object (libcuda.so.1) dependencies which we cannot/shouldnot/wil not package into the wheel. 
+    # But we cannot due to cuda shared object (libcuda.so.1) dependencies which we cannot/shouldnot/wil not package into the wheel.
     - name: Run auditwheel repair
       if: ${{ env.AUDITWHEEL_REPAIR == 'ON' }}
       working-directory: ${{ env.BUILD_DIR }}
@@ -483,7 +483,7 @@ jobs:
             cuda_arch: "50-real;60-real;70-real;80-real;90-real;90-virtual"
             hostcxx: "Visual Studio 17 2022"
             os: windows-2022
-        python: 
+        python:
           - "3.12"
           - "3.11"
           - "3.10"
@@ -493,13 +493,13 @@ jobs:
           - name: "Release"
             config: "Release"
             SEATBELTS: "ON"
-        VISUALISATION: 
+        VISUALISATION:
           - "ON"
           - "OFF"
 
     # Name the job based on matrix/env options
     name: "wheel-windows (${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
-    
+
 
     # Define job-wide env constants, and promote matrix elements to env constants for portable steps.
     env:
@@ -534,7 +534,7 @@ jobs:
       run: .github\scripts\install_cuda_windows.ps1
 
     - name: Select Python
-      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON }}
@@ -554,15 +554,15 @@ jobs:
     # Must pass -G -A for windows, and -DPython3_ROOT_DIR/-DPYTHON3_EXECUTABLE as a github action workaround
     - name: Configure cmake
       run: >
-        cmake . -B "${{ env.BUILD_DIR }}" 
+        cmake . -B "${{ env.BUILD_DIR }}"
         -G "${{ env.HOSTCXX }}" -A x64
         -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF"
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
         -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
-        -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}" 
-        -DPython3_ROOT_DIR="$(dirname $(which python))" 
+        -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}"
+        -DPython3_ROOT_DIR="$(dirname $(which python))"
         -DPython3_EXECUTABLE="$(which python)"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
         -DFLAMEGPU_ENABLE_NVTX="ON"
@@ -589,7 +589,7 @@ jobs:
 
   # Create a draft release, if all other jobs are successful and if the workflow was triggered by a version tag push event.
   create-draft-release:
-    needs: 
+    needs:
       - build-ubuntu
       - build-windows
       - wheel-manylinux_2_28
