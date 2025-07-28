@@ -43,8 +43,8 @@ jobs:
         cudacxx:
           - cuda: "12.6"
             cuda_arch: "50-real;90-real;90-virtual;"
-            hostcxx: gcc-12
-            os: ubuntu-22.04
+            hostcxx: gcc-13
+            os: ubuntu-24.04
           - cuda: "12.0"
             cuda_arch: "50-real;90-real;90-virtual;"
             hostcxx: gcc-11
@@ -115,6 +115,10 @@ jobs:
     - name: Install Visualisation Dependencies
       if: ${{ startswith(env.OS, 'ubuntu') && env.VISUALISATION == 'ON' }}
       run: |
+        # Install ubuntu-24.04 packages
+        if [ "$OS" == 'ubuntu-24.04' ]; then
+          sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
+        fi
         # Install ubuntu-22.04 packages
         if [ "$OS" == 'ubuntu-22.04' ]; then 
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
@@ -122,8 +126,8 @@ jobs:
     
     - name: Install Swig >= 4.0.2
       run: |
-        # Install additional apt-based dependencies required to build swig 4.0.2
-        sudo apt-get install -y bison
+        # Install additional apt-based dependencies required to build swig 4.0.2. 4.0.2 requires pcre-config from pcre3-dev. swig >= 4.1 requires pcre2-config from libpcre2-dev
+        sudo apt-get install -y bison automake libpcre3-dev libpcre2-dev
         # Create a local directory to build swig in.
         mkdir -p swig-from-source && cd swig-from-source
         # Install SWIG building from source dependencies
