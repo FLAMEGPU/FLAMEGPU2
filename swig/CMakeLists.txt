@@ -23,6 +23,9 @@ if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
 endif()
 
+# Ensure custom Find* modules are avialable
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/../cmake/modules/ ${CMAKE_MODULE_PATH})
+
 # Find Python3, optionally an exact version for windows CI, or use in manylinux
 if(PYTHON3_EXACT_VERSION)
     set(PYTHON3_EXACT_VERSION_ARG ${PYTHON3_EXACT_VERSION} EXACT)
@@ -113,6 +116,54 @@ if(NOT SWIG_FOUND)
         )
         FetchContent_GetProperties(swig)
         if(NOT swig_POPULATED)
+            # Quitely Find PCRE (Swig < 4.1) or PCRE2 >= swig 4.1. If not found, emit a warning, but do not error (incase cmake/modules/FindPCRE.cmake is not perfect)
+            if (FLAMEGPU_SWIG_DOWNLOAD VERSION_LESS "4.1")
+                find_package(PCRE QUIET)
+                message("a")
+                if(NOT PCRE_FOUND)
+                    message(
+                        WARNING "  Swig ${FLAMEGPU_SWIG_DOWNLOAD} requires 'pcre-config', but PCRE could not be found.\n"
+                        "  Swig compilation from source may fail.\n"
+                        "  If so, please insall PCRE with development dependencies, e.g.:\n"
+                        "  - On DEB-based distributions (Debian, Ubuntu, etc): apt-get install libpcre3-dev\n"
+                        "  - On RPM-based distributions (Fedora, RHEL, etc): dnf install libpcre-devel"
+                    )
+                endif()
+            else()
+                find_package(PCRE2 QUIET)
+                if(NOT PCRE2_FOUND)
+                    message(
+                        WARNING "  Swig ${FLAMEGPU_SWIG_DOWNLOAD} requires 'pcre2-config', but PCRE could not be found.\n"
+                        "  Swig compilation from source may fail.\n"
+                        "  If so, please insall PCRE with development dependencies, e.g.:\n"
+                        "  - On DEB-based distributions (Debian, Ubuntu, etc): apt-get install libpcre2-dev\n"
+                        "  - On DNF-based distributions (Fedora, RHEL, etc): dnf install libpcre2-devel"
+                    )
+                endif()
+            endif()
+
+            # Ensure that autotools/automake is available, as required to build swig from source.
+            find_program(AUTOMAKE_EXECUTABLE NAMES automake)
+            find_program(ACLOCAL_EXECUTABLE NAMES aclocal)
+            if(NOT AUTOMAKE_EXECUTABLE OR NOT ACLOCAL_EXECUTABLE)
+                message(
+                    FATAL_ERROR "  Building Swig ${FLAMEGPU_SWIG_DOWNLOAD} from source requires automake, but it could not be found\n"
+                    "  Please insall automake, e.g.:\n"
+                    "  - On DEB-based distributions (Debian, Ubuntu, etc): apt-get install automake\n"
+                    "  - On DNF-based distributions (Fedora, RHEL, etc): dnf install automake"
+                )
+            endif()
+
+            find_package(BISON)
+            if(NOT BISON_FOUND)
+                message(
+                    FATAL_ERROR "  Buidling Swig ${FLAMEGPU_SWIG_DOWNLOAD} from source requires 'bison', but it could not be found\n"
+                    "  Please insall bison, e.g.:\n"
+                    "  - On DEB-based distributions (Debian, Ubuntu, etc): apt-get install bison\n"
+                    "  - On DNF-based distributions (Fedora, RHEL, etc): dnf install bison"
+                )
+            endif()
+
             message(STATUS "[swig] Downloading swig-${FLAMEGPU_SWIG_DOWNLOAD}.tar.gz")
             # Download the content
             FetchContent_Populate(swig)
@@ -145,6 +196,7 @@ if(NOT SWIG_FOUND)
                 WORKING_DIRECTORY ${swig_SOURCE_DIR}
                 RESULT_VARIABLE swig_make_RESULT
                 OUTPUT_VARIABLE swig_make_OUTPUT
+                ERROR_FILE ${swig_make_ERROR_FILE}
             )
             if(NOT swig_make_RESULT EQUAL "0")
                 message(FATAL_ERROR 
@@ -160,6 +212,7 @@ if(NOT SWIG_FOUND)
                 WORKING_DIRECTORY ${swig_SOURCE_DIR}
                 RESULT_VARIABLE swig_makeinstall_RESULT
                 OUTPUT_VARIABLE swig_makeinstall_OUTPUT
+                ERROR_FILE ${swig_makeinstall_ERROR_FILE}
             )
             if(NOT swig_makeinstall_RESULT EQUAL "0")
                 message(FATAL_ERROR 
