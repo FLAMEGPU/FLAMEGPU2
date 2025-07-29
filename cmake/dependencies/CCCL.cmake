@@ -16,6 +16,16 @@ endif()
 set(MIN_REQUIRED_CCCL_VERSION 3.0.0)
 set(CCCL_DOWNLOAD_TAG v3.0.1)
 
+# If we have already found CCCL (and required sub-targets), don't try to find it once again.
+# find_package(CCCL) is not very quiet even with QUIET passed.
+if (TARGET CCCL::CCCL AND TARGET CCCL::CUB AND TARGET CCCL::Thrust AND TARGET CCCL::libcudacxx)
+    if(NOT "${FOUND_CCCL_VERSION}" STREQUAL "" AND "${FOUND_CCCL_VERSION}" VERSION_LESS "${MIN_REQUIRED_CCCL_VERSION}")
+        message(WARNING "Most recently found version of CCCL is insufficient (${FOUND_CCCL_VERSION} < ${MIN_REQUIRED_CCCL_VERSION}). You may need to re-generate your CMakeCache")
+    endif()
+    return()
+endif()
+
+
 # Use the FindCUDATooklit package (CMake > 3.17) to get the CUDA version and CUDA include directories for cub/thrust location hints
 find_package(CUDAToolkit REQUIRED)
 
@@ -29,6 +39,9 @@ find_package(CCCL ${MIN_REQUIRED_CCCL_VERSION} QUIET COMPONENTS libcudacxx CONFI
 if(CCCL_FOUND)
     # Find the packages again but less quietly (and include all components)
     find_package(CCCL ${MIN_REQUIRED_CCCL_VERSION} REQUIRED CONFIG COMPONENTS HINTS ${CUDAToolkit_INCLUDE_DIRS} ${CUDAToolkit_LIBRARY_DIR}/cmake)
+    # Store the CCCL_VERSION in the cache (as advanced) for quick checking on re-runs?
+    set(FOUND_CCCL_VERSION "${CCCL_VERSION}" CACHE STRING "Most recently found version of CCCL")
+    mark_as_advanced(FETCHCONTENT_QUIET)
 # If CCCL does need downloading, fetch it and find it (no need to add_subdirectory)
 else()
     # Declare information about where and what we want from thrust.
