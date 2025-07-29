@@ -1,29 +1,24 @@
 #ifndef INCLUDE_FLAMEGPU_IO_JSONSTATEWRITER_H_
 #define INCLUDE_FLAMEGPU_IO_JSONSTATEWRITER_H_
 
-#include <rapidjson/writer.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/stringbuffer.h>
-
 #include <memory>
 #include <string>
-#include <unordered_map>
+#include <fstream>
 
 
 #include "flamegpu/io/StateWriter.h"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/util/StringPair.h"
-
-
 namespace flamegpu {
 namespace detail {
 class CUDAMacroEnvironment;
-}
+}  // namespace detail
 namespace io {
 /**
  * JSON format StateWriter
  */
 class JSONStateWriter : public StateWriter {
+    class JSONWrapper;
  public:
     /**
      * Constructs a writer capable of writing model state to an JSON file
@@ -32,7 +27,7 @@ class JSONStateWriter : public StateWriter {
     /**
     * Returns true if beginWrite() has been called and writing is active
     */
-    bool isWriting() override { return writer.get(); }
+    bool isWriting() override { return outStream.is_open(); }
     /**
     * Starts writing to the specified file in the specified mode
     * @param output_file Filename of the input file (This will be used to determine which reader to return)
@@ -64,10 +59,9 @@ class JSONStateWriter : public StateWriter {
     // Dirty workaround for PrettyWriter overloads not being virtual
     bool newline_purge_required = false;
     std::string outputPath;
-    rapidjson::StringBuffer buffer;
-    // Typedef because the template is too long
-    typedef rapidjson::PrettyWriter<rapidjson::StringBuffer, rapidjson::UTF8<>, rapidjson::UTF8<>, rapidjson::CrtAllocator, rapidjson::kWriteNanAndInfFlag> PrettyWriter;
-    std::unique_ptr<PrettyWriter> writer;
+    std::fstream outStream;
+
+    std::unique_ptr<JSONWrapper> j;
 };
 }  // namespace io
 }  // namespace flamegpu
