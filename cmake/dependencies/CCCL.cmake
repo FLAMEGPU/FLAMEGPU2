@@ -13,8 +13,8 @@ endif()
 
 # Set the minimum supported CCCL version, and the version to fetch
 # using find_package(version) means it's up to CCCL's cmake to determine if newer versions are compatible, but this will likely need changing for CUDA 13, when CCCL is planned to have a major version bump (and drop CUDA 11 support).
-set(MIN_REQUIRED_CCCL_VERSION 2.3.2)
-set(CCCL_DOWNLOAD_TAG v2.3.2)
+set(MIN_REQUIRED_CCCL_VERSION 3.0.0)
+set(CCCL_DOWNLOAD_TAG v3.0.1)
 
 # Use the FindCUDATooklit package (CMake > 3.17) to get the CUDA version and CUDA include directories for cub/thrust location hints
 find_package(CUDAToolkit REQUIRED)
