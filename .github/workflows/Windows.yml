@@ -159,8 +159,6 @@ jobs:
         -DPython3_EXECUTABLE="$(which python)"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
         -DFLAMEGPU_ENABLE_NVTX="ON"
-        -DCMAKE_CXX_FLAGS="-D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH=1"
-        -DCMAKE_CUDA_FLAGS="--allow-unsupported-compiler -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH=1"
 
     # Check for bugs when cmake is reconfigured, i.e. fetch content patching
     - name: Re-configure cmake
