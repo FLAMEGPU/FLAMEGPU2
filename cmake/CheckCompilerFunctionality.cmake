@@ -25,36 +25,46 @@ function(flamegpu_check_compiler_functionality)
             message(WARNING
                 " CUDA Language Support Not Found (with MSVC ${MSVC_VERSION} >= 1941)\n"
                 " \n"
-                " The MSVC STL included with MSVC 1941 requires CUDA 12.4 or newer\n"
-                " If you have CUDA <= 12.3 installed you must either:\n"
+                " The MSVC STL included with MSVC >= 1941 requires CUDA >= 12.4\n"
+                " If you have CUDA < 12.4 installed you must either:\n"
+                " \n"
+                "  - Set the NVCC_PREPEND_FLAGS environment variable to include '-D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH -allow-unsupported-compiler' for configuration and compilation\n"
                 "  - Upgrade CUDA to >= 12.4\n"
                 "  - Downgrade MSVC to 1940 and set the CUDAFLAGS environment variable to contain '-allow-unsupported-compiler'\n"
                 "  - Downgrade MSVC to 1939 or older\n"
-                " You must then clear the CMake cache before reconfiguring\n"
+                " \n"
+                " You must clear the CMake Cache before reconfiguring this project\n"
             )
         # If using MSVC >= 1940 then CUDA <= 12.3 support requires -allow-unsupported-compiler, so warn about this
         elseif(MSVC AND MSVC_VERSION VERSION_GREATER_EQUAL "1940")
             # If this is the case, then CMake >= 3.29.4 is also required, otherwise CMake does not pass -allow-unsupported-compiler along, warn as appropriate
             if(CMAKE_VERSION VERSION_LESS "3.29.4")
                 message(WARNING
-                    " CUDA Language Support Not Found (with MSVC ${MSVC_VERSION} >= 1940)\n"
+                    " CUDA Language Support Not Found (with MSVC ${MSVC_VERSION} >= 1940 and CMake < 3.29.4)\n"
                     " \n"
-                    " If you have CUDA <= 12.3 installed:\n"
-                    "  - You must upgrade CMake to be >= 3.29.4\n"
-                    "    The CUDAFLAGS environment variable must include '-allow-unsupported-compiler'\n"
-                    "    You must clear the CMake Cache before reconfiguring this project\n"
+                    " If you have CUDA <= 12.3 installed you must either:\n"
                     " \n"
-                    "  - Alternatively you may upgrade CUDA to >= 12.4 and clear the CMake Cache before reconfiguring\n"
+                    "  - Set the NVCC_PREPEND_FLAGS environment variable to include '-D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH -allow-unsupported-compiler' for configuration and compilation\n"
+                    "  - Upgrade CMake to >= 3.29.4 and set the CUDAFLAGS environment variable to contain '-allow-unsupported-compiler'\n"
+                    "  - Upgrade CUDA to >= 12.4\n"
+                    "  - Downgrade MSVC to 1939 or older\n"
+                    " \n"
+                    " You must clear the CMake Cache before reconfiguring this project\n"
+                    " \n"
                 )
             else()
                 message(WARNING
-                    " CUDA Language Support Not Found (with MSVC ${MSVC_VERSION} >= 1940)\n"
+                    " CUDA Language Support Not Found (with MSVC ${MSVC_VERSION} >= 1940 and CMake >= 3.29.4)\n"
                     " \n"
-                    " If you have CUDA <= 12.3 installed:\n"
-                    "  - The CUDAFLAGS environment variable must include '-allow-unsupported-compiler'\n"
-                    "    You must clear the CMake Cache before reconfiguring this project\n"
+                    " If you have CUDA <= 12.3 installed you must either:\n"
                     " \n"
-                    "  - Alternatively you may upgrade CUDA to >= 12.4 and clear the CMake Cache before reconfiguring\n"
+                    "  - Set the NVCC_PREPEND_FLAGS environment variable to include '-D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH -allow-unsupported-compiler' for configuration and compilation\n"
+                    "  - Set the CUDAFLAGS environment variable to contain '-allow-unsupported-compiler'\n"
+                    "  - Upgrade CUDA to >= 12.4\n"
+                    "  - Downgrade MSVC to 1939 or older\n"
+                    " \n"
+                    " You must clear the CMake Cache before reconfiguring this project\n"
+                    " \n"
                 )
             endif()
         else()
