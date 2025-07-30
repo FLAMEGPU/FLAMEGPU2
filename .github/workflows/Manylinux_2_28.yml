@@ -45,13 +45,13 @@ jobs:
             cuda_arch: "35"
             hostcxx: gcc-toolset-9
             os: ubuntu-22.04
-        python: 
+        python:
           - "3.12"
         config:
           - name: "Release"
             config: "Release"
             SEATBELTS: "ON"
-        VISUALISATION: 
+        VISUALISATION:
           - "ON"
           - "OFF"
 
@@ -91,7 +91,7 @@ jobs:
       run: |
         # Install gcc-toolset-X
         yum install -y ${{ env.HOSTCXX }}
-        # Enable the toolset via source not scl enable which doesn't get on with multi-step GHA 
+        # Enable the toolset via source not scl enable which doesn't get on with multi-step GHA
         source /opt/rh/${{ env.HOSTCXX }}/enable
         # Export the new environment / compilers for subsequent steps.
         echo "PATH=${PATH}" >> $GITHUB_ENV
@@ -113,7 +113,7 @@ jobs:
     - name: Install Visualisation Dependencies (EL 8)
       if: ${{ env.VISUALISATION == 'ON' }}
       run: |
-        yum install -y glew-devel fontconfig-devel SDL2-devel freetype-devel 
+        yum install -y glew-devel fontconfig-devel SDL2-devel freetype-devel
         # Build/Install DevIL from source.
         yum install -y freeglut-devel
         git clone --depth 1 https://github.com/DentonW/DevIL.git
@@ -158,7 +158,7 @@ jobs:
         cmake . -B "${{ env.BUILD_DIR }}"
         -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
         -Werror=dev
-        -DCMAKE_WARN_DEPRECATED="OFF" 
+        -DCMAKE_WARN_DEPRECATED="OFF"
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
         -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
@@ -184,7 +184,7 @@ jobs:
       run: auditwheel show lib/${{ env.CONFIG }}/python/dist/*whl
 
     # Ideally we should use auditwheel repair to check/enforce conformity
-    # But we cannot due to cuda shared object (libcuda.so.1) dependencies which we cannot/shouldnot/wil not package into the wheel. 
+    # But we cannot due to cuda shared object (libcuda.so.1) dependencies which we cannot/shouldnot/wil not package into the wheel.
     - name: Run auditwheel repair
       if: ${{ env.AUDITWHEEL_REPAIR == 'ON' }}
       working-directory: ${{ env.BUILD_DIR }}

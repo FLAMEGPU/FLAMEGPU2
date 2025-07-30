@@ -170,9 +170,9 @@ void MessageSpatial3D::CUDAModelHandler::resizeKeysVals(const unsigned int newSi
 /// CDescription
 /// </summary>
 MessageSpatial3D::CDescription::CDescription(std::shared_ptr<Data> data)
-    : MessageSpatial2D::CDescription(std::move(std::static_pointer_cast<MessageSpatial2D::Data>(data))) { }
+    : MessageSpatial2D::CDescription(std::static_pointer_cast<MessageSpatial2D::Data>(data)) { }
 MessageSpatial3D::CDescription::CDescription(std::shared_ptr<const Data> data)
-    : CDescription(std::move(std::const_pointer_cast<Data>(data))) { }
+    : CDescription(std::const_pointer_cast<Data>(data)) { }
 
 bool MessageSpatial3D::CDescription::operator==(const CDescription& rhs) const {
     return *this->message == *rhs.message;  // Compare content is functionally the same

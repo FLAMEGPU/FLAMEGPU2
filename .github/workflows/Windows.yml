@@ -38,8 +38,8 @@ jobs:
             cuda_arch: "50"
             hostcxx: "Visual Studio 17 2022"
             os: windows-2022
-            
-        python: 
+
+        python:
           - "3.12"
         config:
           - name: "Release"
@@ -48,7 +48,7 @@ jobs:
           - name: "Beltsoff"
             config: "Release"
             SEATBELTS: "OFF"
-        VISUALISATION: 
+        VISUALISATION:
           - "ON"
           - "OFF"
         exclude:
@@ -119,7 +119,7 @@ jobs:
       run: .github\scripts\install_cuda_windows.ps1
 
     - name: Select Python
-      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }} 
+      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON }}
@@ -139,7 +139,7 @@ jobs:
     # Must pass -G -A for windows, and -DPython3_ROOT_DIR/-DPYTHON3_EXECUTABLE as a github action workaround
     - name: Configure cmake
       run: >
-        cmake . -B "${{ env.BUILD_DIR }}" 
+        cmake . -B "${{ env.BUILD_DIR }}"
         -G "${{ env.HOSTCXX }}" -A x64
         -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF"
@@ -147,8 +147,8 @@ jobs:
         -DFLAMEGPU_SEATBELTS="${{ env.FLAMEGPU_SEATBELTS }}"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
         -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
-        -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}" 
-        -DPython3_ROOT_DIR="$(dirname $(which python))" 
+        -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}"
+        -DPython3_ROOT_DIR="$(dirname $(which python))"
         -DPython3_EXECUTABLE="$(which python)"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
         -DFLAMEGPU_ENABLE_NVTX="ON"
@@ -191,7 +191,7 @@ jobs:
       if: ${{ env.INDIVIDUAL_EXAMPLE != '' }}
       working-directory: examples/cpp/${{ env.INDIVIDUAL_EXAMPLE }}
       run: >
-        cmake . -B "${{ env.BUILD_DIR }}" 
+        cmake . -B "${{ env.BUILD_DIR }}"
         -G "${{ env.HOSTCXX }}" -A x64
         -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF"
@@ -200,7 +200,7 @@ jobs:
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
         -DFLAMEGPU_ENABLE_NVTX="ON"
-    
+
     - name: Build Individual example
       if: ${{ env.INDIVIDUAL_EXAMPLE != '' }}
       working-directory: examples/cpp/${{ env.INDIVIDUAL_EXAMPLE }}/${{ env.BUILD_DIR }}

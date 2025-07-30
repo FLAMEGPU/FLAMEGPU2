@@ -100,7 +100,7 @@ std::type_index MessageBruteForce::Data::getType() const { return std::type_inde
 MessageBruteForce::CDescription::CDescription(std::shared_ptr<Data> data)
     : message(std::move(data)) { }
 MessageBruteForce::CDescription::CDescription(std::shared_ptr<const Data> data)
-    : message(std::move(std::const_pointer_cast<Data>(data))) { }
+    : message(std::const_pointer_cast<Data>(data)) { }
 
 bool MessageBruteForce::CDescription::operator==(const CDescription& rhs) const {
     return *this->message == *rhs.message;  // Compare content is functionally the same
