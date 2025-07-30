@@ -30,7 +30,7 @@ jobs:
       # optional exclude: can be partial, include: must be specific
       matrix:
         cudacxx:
-          - cuda: "11.8"
+          - cuda: "11.7"
             os: ubuntu-22.04
     env:
       # Define constants
