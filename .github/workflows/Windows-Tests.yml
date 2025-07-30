@@ -23,13 +23,22 @@ jobs:
       matrix:
         # CUDA_ARCH values are reduced compared to wheels due to CI memory issues while compiling the test suite.
         cudacxx:
+          # Newest and oldest CUDA 12.x we support. 12.4 is the oldest officially supported by MSVC >= 1940, but we have a workaround in place
           - cuda: "12.6.0"
             cuda_arch: "50"
             hostcxx: "Visual Studio 17 2022"
-            os: windows-2022
-          # CUDA 12.4 is the oldest CUDA supported by recent visual studio 2022 versions :(
-          - cuda: "12.4.0"
+            os: windows-2025
+          - cuda: "12.0.0"
             cuda_arch: "50"
+            hostcxx: "Visual Studio 17 2022"
+            os: windows-2022
+          # Newest and oldest CUDA 11.x we can use with VS2022 (11.6+), not an officially supported combination with MSVC >= 1940
+          - cuda: "11.8.0"
+            cuda_arch: "35"
+            hostcxx: "Visual Studio 17 2022"
+            os: windows-2022
+          - cuda: "11.6.0"
+            cuda_arch: "35"
             hostcxx: "Visual Studio 17 2022"
             os: windows-2022
         config:
@@ -57,7 +66,7 @@ jobs:
       FLAMEGPU_SEATBELTS: ${{ matrix.config.SEATBELTS }}
       VISUALISATION: ${{ matrix.VISUALISATION }}
       # Ensure MSVC >= 1940 works with CUDA <= 12.3
-      CUDAFLAGS: -allow-unsupported-compiler
+      NVCC_PREPEND_FLAGS: "-D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH --allow-unsupported-compiler"
 
     steps:
     - uses: actions/checkout@v4
