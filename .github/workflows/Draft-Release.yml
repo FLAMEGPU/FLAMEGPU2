@@ -41,7 +41,7 @@ jobs:
       matrix:
         # CUDA_ARCH values are reduced compared to wheels due to CI memory issues while compiling the test suite.
         cudacxx:
-          - cuda: "12.6"
+          - cuda: "12.9"
             cuda_arch: "50-real;90-real;90-virtual;"
             hostcxx: gcc-13
             os: ubuntu-24.04
