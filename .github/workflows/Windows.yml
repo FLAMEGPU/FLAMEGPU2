@@ -30,7 +30,7 @@ jobs:
       matrix:
         cudacxx:
           # Newest and oldest CUDA 12.x we support. 12.4 is the oldest officially supported by MSVC >= 1940, but we have a workaround in place
-          - cuda: "12.6.0"
+          - cuda: "12.9.1"
             cuda_arch: "50"
             hostcxx: "Visual Studio 17 2022"
             os: windows-2025
