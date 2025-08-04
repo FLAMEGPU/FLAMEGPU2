@@ -190,7 +190,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
     // If there are no devices left (and mpi is not being used), we need to error as the work cannot be executed.
 #ifndef FLAMEGPU_ENABLE_MPI
     if (devices.size() == 0) {
-        THROW exception::InvalidCUDAdevice("FLAMEGPU2 has not been built with an appropraite compute capability for any devices, unable to continue\n");
+        THROW exception::InvalidCUDAdevice("FLAMEGPU2 has not been built with an appropriate compute capability for any devices, unable to continue\n");
     }
 #endif  // ifndef FLAMEGPU_ENABLE_MPI
 
