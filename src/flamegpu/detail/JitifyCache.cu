@@ -422,17 +422,10 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
     jitify2::PreprocessedProgram preprocessed_program = program->preprocess(options);
     if (!preprocessed_program.ok()) {
         const jitify2::ErrorMsg& compile_error = preprocessed_program.error();
-        const char* currentPos = compile_error.c_str();
-        const char* lastPos = currentPos;
-        while ((currentPos = strstr(currentPos, "Found #include"))) {
-            lastPos = currentPos++;
-        }
-        currentPos = strstr(lastPos, "\n");
-        currentPos++;
         fprintf(stderr, "Failed to load program for agent function (condition) '%s', log:\n%s",
-            func_name.c_str(), currentPos);
+            func_name.c_str(), compile_error.c_str());
         THROW exception::InvalidAgentFunc("Error loading agent function (or function condition) ('%s'): function had compilation errors:\n%s",
-            func_name.c_str(), currentPos);
+            func_name.c_str(), compile_error.c_str());
     }
     // Compile
     jitify2::CompiledProgram compiled_program = preprocessed_program->compile({ name_expression });
