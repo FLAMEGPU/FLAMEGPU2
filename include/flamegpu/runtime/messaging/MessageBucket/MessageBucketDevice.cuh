@@ -305,7 +305,7 @@ __device__ void MessageBucket::Out::setKey(const IntT &key) const {
 
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     if (key < metadata->min || key >= metadata->max) {
-        DTHROW("MessageArray key %u is out of range [%d, %d).\n", key, metadata->min, metadata->max);
+        DTHROW("Bucket message key %u is out of range [%d, %d).\n", key, metadata->min, metadata->max);
         return;
     }
 #endif
