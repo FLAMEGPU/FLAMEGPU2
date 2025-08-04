@@ -169,6 +169,7 @@ cmake --build . --target all
 | `FLAMEGPU_SEATBELTS`                 | `ON`/`OFF`                  | Enable / Disable additional runtime checks which harm performance but increase usability. Default `ON`     |
 | `FLAMEGPU_BUILD_PYTHON`              | `ON`/`OFF`                  | Enable Python target `pyflamegpu` via Swig. Default `OFF`. Python packages `setuptools`, `build` & `wheel` required |
 | `FLAMEGPU_BUILD_PYTHON_VENV`         | `ON`/`OFF`                  | Use a python `venv` when building the python Swig target. Default `ON`. Python package `venv` required     |
+| `FLAMEGPU_BUILD_PYTHON_PATCHELF`     | `ON`/`OFF`                  | Under linux, Use `patchelf` to remove explicit runtime dependency on versioned `libnvrtc-builtins.so` for `pyflamegpu`. Default `OFF`. `patchelf` required |
 | `FLAMEGPU_BUILD_TESTS`               | `ON`/`OFF`                  | Build the C++/CUDA test suite. Default `OFF`.                                                              |
 | `FLAMEGPU_BUILD_TESTS_DEV`           | `ON`/`OFF`                  | Build the reduced-scope development test suite. Default `OFF`                                              |
 | `FLAMEGPU_ENABLE_GTEST_DISCOVER`     | `ON`/`OFF`                  | Run individual CUDA C++ tests as independent `ctest` tests. This dramatically increases test suite runtime. Default `OFF`. |
