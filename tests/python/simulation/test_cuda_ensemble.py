@@ -649,7 +649,7 @@ class TestEnsembleVerbosity(TestCase):
         assert "CUDAEnsemble progress" in captured.out
         assert "CUDAEnsemble completed" in captured.out
         assert "Ensemble time elapsed" in captured.out
-        assert captured.err == ""
+        assert captured.err == "" or "FLAMEGPU2 has not been built with an appropriate compute capability for device" in captured.errr
 
     @pytest.fixture(autouse=True)
     def capsys(self, capsys):
