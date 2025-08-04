@@ -190,7 +190,7 @@ function(flamegpu_check_compiler_functionality)
     if (NOT MSVC)
         # Jitify2 on linux requires uses F_OFD_SETLKW or -D_FILE_OFFSET_BITS=64. 
         # Cannot detect the presence of this from CMAKE_SYSTEM_VERSION when in a container, so try to compile with it and if an error occurs then we must define this option.
-        # If required, sets a cmake cahce internal variable FLAMEGPU__FILE_OFFSET_BITS_64_REQUIRED to true
+        # If required, sets a cmake cache internal variable FLAMEGPU__FILE_OFFSET_BITS_64_REQUIRED to true
         try_compile(
             LINUX_F_OFD_SETLKW
             "${CMAKE_CURRENT_BINARY_DIR}/try_compile"
