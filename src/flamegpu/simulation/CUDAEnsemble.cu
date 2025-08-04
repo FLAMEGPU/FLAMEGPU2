@@ -173,7 +173,10 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
     // Check that each device is capable, and init cuda context
     for (auto d = devices.begin(); d != devices.end(); ++d) {
         if (!detail::compute_capability::checkComputeCapability(*d)) {
-            fprintf(stderr, "FLAMEGPU2 has not been built with an appropriate compute capability for device %d, this device will not be used.\n", *d);
+            // Emit a warning unless quiet verbosity was specified.
+            if (config.verbosity >= Verbosity::Default) {
+                fprintf(stderr, "FLAMEGPU2 has not been built with an appropriate compute capability for device %d, this device will not be used.\n", *d);
+            }
             d = devices.erase(d);
             --d;
         } else {
