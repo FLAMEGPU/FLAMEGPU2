@@ -15,7 +15,7 @@ option(FLAMEGPU_BUILD_PYTHON_LOCALVERSION "Embed CUDA version for the build in t
 mark_as_advanced(FLAMEGPU_BUILD_PYTHON_LOCALVERSION)
 
 # Add option use patchelf to remove explicit runtime dynamic dependency on libnvrtc-builtins.so
-option(FLAMEGPU_BUILD_PYTHON_PATCHELF "Use PATCHELF to remove a runtime dependency on libnvrtc-builtins.so" ON)
+option(FLAMEGPU_BUILD_PYTHON_PATCHELF "Use PATCHELF to remove a runtime dependency on libnvrtc-builtins.so" OFF)
 mark_as_advanced(FLAMEGPU_BUILD_PYTHON_PATCHELF)
 
 # Get the root of the repository to find other CMake files etc.
