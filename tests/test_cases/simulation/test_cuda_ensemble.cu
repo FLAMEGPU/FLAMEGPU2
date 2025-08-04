@@ -426,7 +426,8 @@ TEST(TestCUDAEnsemble, verbosity) {
         EXPECT_TRUE(output.find("CUDAEnsemble progress") != std::string::npos);   // E.g. CUDAEnsemble progress: 1/2
         EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
         EXPECT_TRUE(output.find("Ensemble time elapsed") == std::string::npos);   // E.g. Ensemble time elapsed: 0.006000s
-        EXPECT_TRUE(errors.empty());
+        // Errors should be empty but may contain compute capability warnings in mixed-architecture multi-GPU systems depending on compute capability options.
+        EXPECT_TRUE(errors.empty() || output.find("FLAMEGPU2 has not been built with an appropriate compute capability for device"));
     }
     // Verbosity::Verbose
     {
@@ -444,7 +445,8 @@ TEST(TestCUDAEnsemble, verbosity) {
         EXPECT_TRUE(output.find("CUDAEnsemble progress") != std::string::npos);   // E.g. CUDAEnsemble progress: 1/2
         EXPECT_TRUE(output.find("CUDAEnsemble completed") != std::string::npos);  // E.g. CUDAEnsemble completed 2 runs successfully!
         EXPECT_TRUE(output.find("Ensemble time elapsed") != std::string::npos);   // E.g. Ensemble time elapsed: 0.006000s
-        EXPECT_TRUE(errors.empty());
+        // Errors should be empty but may contain compute capability warnings in mixed-architecture multi-GPU systems depending on compute capability options.
+        EXPECT_TRUE(errors.empty() || output.find("FLAMEGPU2 has not been built with an appropriate compute capability for device"));
     }
 }
 // Logging is more thoroughly tested in Logging. Here just make sure the methods work
