@@ -755,7 +755,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     // get instantiation
                     const jitify2::KernelData& instance = cuda_agent.getRTCInstantiation(func_condition_identifier);
                     // calculate the grid block size for main agent function
-                    CUfunction cu_func = instance.function();
+                    CUfunction cu_func = (CUfunction)instance.function();
                     cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size);
                     //! Round up according to CUDAAgent state list size
                     gridSize = (state_list_size + blockSize - 1) / blockSize;
