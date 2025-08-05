@@ -125,6 +125,9 @@ int main(int argc, const char ** argv) {
     flamegpu::CUDASimulation  cudaSimulation(model, argc, argv);
     flamegpu::util::nvtx::pop();
 
+    // Configure the simulation to overwrite log and xml files
+    cudaSimulation.SimulationConfig().truncate_log_files = true;
+
     /**
      * Create visualisation
      */
