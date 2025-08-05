@@ -208,35 +208,32 @@ std::string Telemetry::generateData(std::string event_name, std::map<std::string
     payload_items["Visualisation"] = "false";
 #endif
 
-    // create the payload
-    std::string payload = "";
-    bool first = true;
-    // iterate payload to generate the payload array
+    // create the payload dictionary by iterating items.
+    std::string payload = "{";
     for (const auto& [key, value] : payload_items) {
-        std::string item_str;
-        if (!first)
-            item_str = ",\"" + key + ":" + value + "\"";
-        else
-            item_str = "\"" + key + ":" + value + "\"";
+        std::string item_str = "\"" + key + "\":\"" + value + "\",";
         payload.append(item_str);
-        first = false;
     }
+    // Remove the trailing comma
+    payload.pop_back();
+    // Close the json object
+    payload.append("}");
 
     // create the telemetry json package
     std::string telemetry_data = R"json(
     [{
-        "isTestMode": "$TEST_MODE",
         "appID": "$APP_ID",
         "clientUser": "$TELEMETRY_RANDOM_ID",
-        "sessionID": "",
         "type" : "$EVENT_TYPE",
-        "payload" : [$PAYLOAD]
+        "isTestMode": "$TEST_MODE",
+        "payload" : $PAYLOAD
     }])json";
+    // "sessionID" is not set, and optional in v2
     // update the placeholders
-    telemetry_data.replace(telemetry_data.find(var_testmode), var_testmode.length(), testmode);
     telemetry_data.replace(telemetry_data.find(var_appID), var_appID.length(), appID);
     telemetry_data.replace(telemetry_data.find(var_telemetryRandomID), var_telemetryRandomID.length(), telemetryRandomID);
     telemetry_data.replace(telemetry_data.find(var_eventName), var_eventName.length(), event_name);
+    telemetry_data.replace(telemetry_data.find(var_testmode), var_testmode.length(), testmode);
     telemetry_data.replace(telemetry_data.find(var_payload), var_payload.length(), payload);
     // Remove newlines and replace with space
     telemetry_data.erase(std::remove(telemetry_data.begin(), telemetry_data.end(), '\n'), telemetry_data.end());
@@ -246,12 +243,6 @@ std::string Telemetry::generateData(std::string event_name, std::map<std::string
     telemetry_data.erase(std::remove_if(telemetry_data.begin(), telemetry_data.end(), [](char c) {
             return std::isspace(static_cast<unsigned char>(c));
         }), telemetry_data.end());
-    // Use escape characters
-    size_t pos = 0;
-    while ((pos = telemetry_data.find("\"", pos)) != std::string::npos) {
-        telemetry_data.replace(pos, 1, "\\\"");
-        pos += 2;
-    }
     return telemetry_data;
 }
 
@@ -270,15 +261,23 @@ bool Telemetry::sendData(std::string telemetry_data) {
 #else
     null = "/dev/null";
 #endif
+
+    // Escape quotes, which surround the data payload when passed to curl.
+    size_t pos = 0;
+    while ((pos = telemetry_data.find("\"", pos)) != std::string::npos) {
+        telemetry_data.replace(pos, 1, "\\\"");
+        pos += 2;
+    }
+
     std::stringstream curl_command;
     curl_command << "curl";
     curl_command << " -s";
     curl_command << " -o " << null;
     curl_command << " --connect-timeout " << std::to_string(CURL_CONNECT_TIMEOUT);
     curl_command << " --max-time " << std::to_string(CURL_MAX_TIME);
-    curl_command << " -X POST \"" << std::string(TELEMETRY_ENDPOINT) << "\"";
-    curl_command << " -H \"Content-Type: application/json; charset=utf-8\"";
-    curl_command << " --data-raw \"" << telemetry_data + "\"";
+    curl_command << " -X POST '" << std::string(TELEMETRY_ENDPOINT) << "'";
+    curl_command << " -H 'Content-Type: application/json; charset=utf-8'";
+    curl_command << " --data-raw \"" << telemetry_data << "\"";
     curl_command << " > " << null << " 2>&1";
     // capture the return value
     if (std::system(curl_command.str().c_str()) != EXIT_SUCCESS) {

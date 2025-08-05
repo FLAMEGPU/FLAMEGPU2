@@ -1295,7 +1295,7 @@ void CUDASimulation::simulate() {
             if (telemetrySuccess) {
                 fprintf(stdout, "Telemetry packet sent to '%s' json was: %s\n", flamegpu::io::Telemetry::TELEMETRY_ENDPOINT, telemetry_data.c_str());
             } else {
-                fprintf(stderr, "Warning: Usage statistics for CUDASimulation failed to send.\n");
+                fprintf(stderr, "Warning: Usage statistics for CUDASimulation failed to send with json: %s\n", telemetry_data.c_str());
             }
         }
     } else {

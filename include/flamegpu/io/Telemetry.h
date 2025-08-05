@@ -52,7 +52,7 @@ static void suppressNotice();
 /*
  * The remote endpoint which telemetry is pushed to.
  */
-constexpr static char TELEMETRY_ENDPOINT[] = "https://nom.telemetrydeck.com/v1/";
+constexpr static char TELEMETRY_ENDPOINT[] = "https://nom.telemetrydeck.com/v2/";
 
 /**
  * Generates the telemetry data packet as a string.
