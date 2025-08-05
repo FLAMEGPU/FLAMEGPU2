@@ -331,8 +331,8 @@ Support for academic software is dependant on evidence of impact. Without eviden
 
 Information is collected when a simulation, ensemble or test suite run have completed.
 
-The [TelemetryDeck](https://telemetrydeck.com/) service is used to store telemetry data. 
-All data is sent to their API endpoint of https://nom.telemetrydeck.com/v1/ via https. For more details please review the [TelmetryDeck privacy policy](https://telemetrydeck.com/privacy/).
+The [TelemetryDeck](https://telemetrydeck.com/) service is used to store telemetry data.
+All data is sent to their [Ingest API v2](https://telemetrydeck.com/docs/ingest/v2) endpoint of https://nom.telemetrydeck.com/v2/. For more details please review the [TelmetryDeck privacy policy](https://telemetrydeck.com/privacy/).
 
 We do not collect any personal data such as usernames, email addresses or hardware identifiers but we do generate a random user identifier. This identifier is salted and hashed by Telemetry deck.
 
