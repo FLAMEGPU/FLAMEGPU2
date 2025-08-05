@@ -369,13 +369,13 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/environment/HostEnvironment.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/environment/HostEnvironmentDirectedGraph.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/random/HostRandom.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateReader.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateWriter.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateReader.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateWriter.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/StateReader.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLStateReader.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLStateWriter.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/XMLLogger.cu
-    ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONLogger.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONLogger.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONGraphReader.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONGraphWriter.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/Telemetry.cpp
@@ -650,8 +650,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC CCCL::CCCL)
 # tinyxml2 static library
 target_link_libraries(${PROJECT_NAME} PRIVATE Tinyxml2::tinyxml2)
 
-# If rapidjson was found, add it to the include dirs.
-target_link_libraries(${PROJECT_NAME} PRIVATE RapidJSON::rapidjson)
+# If nlohmann_json was found, add it to the include dirs.
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::nvrtc)
 

@@ -172,7 +172,7 @@ void XMLStateReader::parse(const std::string &inputFile, const std::shared_ptr<c
                             "in XMLStateReader::parse()\n", key);
                     }
                 } else if (el >= it->second.data.elements) {
-                    THROW exception::RapidJSONError("Input file contains environment property '%s' too many elements, expected %u,"
+                    THROW exception::TinyXMLError("Input file contains environment property '%s' too many elements, expected %u,"
                         "in XMLStateReader::parse()\n", key, it->second.data.elements);
                 }
                 const auto ei_it = env_init.find(key);
@@ -233,7 +233,7 @@ void XMLStateReader::parse(const std::string &inputFile, const std::shared_ptr<c
                             "in XMLStateReader::parse()\n", key);
                     }
                 } else if (el >= elements) {
-                    THROW exception::RapidJSONError("Input file contains macro environment property '%s' too many elements, expected %u,"
+                    THROW exception::TinyXMLError("Input file contains macro environment property '%s' too many elements, expected %u,"
                         "in XMLStateReader::parse()\n", key, elements);
                 }
                 auto &mei = macro_env_init.at(key);
