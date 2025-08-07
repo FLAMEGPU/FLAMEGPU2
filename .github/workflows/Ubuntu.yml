@@ -37,19 +37,10 @@ jobs:
           # Oldest and newest CUDA 12.x
           - cuda: "12.9"
             cuda_arch: "120"
-            hostcxx: gcc-13
+            hostcxx: gcc-12
             os: ubuntu-24.04
           - cuda: "12.0"
             cuda_arch: "50"
-            hostcxx: gcc-12
-            os: ubuntu-22.04
-          # Oldest and newest CUDA 11.x with network installers on ubuntu 22.04
-          - cuda: "11.8"
-            cuda_arch: "35"
-            hostcxx: gcc-11
-            os: ubuntu-22.04
-          - cuda: "11.7"
-            cuda_arch: "35"
             hostcxx: gcc-9
             os: ubuntu-22.04
         python:
@@ -69,20 +60,13 @@ jobs:
           - cudacxx:
               cuda: "12.0"
             VISUALISATION: "ON"
-          - cudacxx:
-              cuda: "11.2"
-            VISUALISATION: "ON"
           # Exclude beltsoff builds for all but the most recent cuda
           - cudacxx:
+              cuda: "12.9"
+            config:
+              name: "Beltsoff"
+          - cudacxx:
               cuda: "12.0"
-            config:
-              name: "Beltsoff"
-          - cudacxx:
-              cuda: "11.8"
-            config:
-              name: "Beltsoff"
-          - cudacxx:
-              cuda: "11.2"
             config:
               name: "Beltsoff"
           # Exclude beltsoff vis builds to keep the matrix lighter.
