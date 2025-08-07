@@ -84,6 +84,9 @@ $CUDA_PACKAGES_IN = @(
     "thrust";
     "nvjitlink";
     "crt";
+    "nvptxcompiler";
+    "nvvm";
+    "nsight_vse";
 )
 
 ## -------------------
