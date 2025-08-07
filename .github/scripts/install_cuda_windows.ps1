@@ -83,6 +83,10 @@ $CUDA_PACKAGES_IN = @(
     "thrust";
     "thrust";
     "nvjitlink";
+    # cuda 13+ packages
+    "crt";
+    "nvptxcompiler";
+    "nvvm";
 )
 
 ## -------------------
@@ -137,6 +141,15 @@ Foreach ($package in $CUDA_PACKAGES_IN) {
         continue
     } elseif($package -eq "nvjitlink" -and [version]$CUDA_VERSION_FULL -lt [version]"12.0") {
         # nvjitlink is a from CUDA 12.0, otherwise it should be skipped.
+        continue
+    } elseif($package -eq "crt" -and [version]$CUDA_VERSION_FULL -lt [version]"13.0") {
+        # crt is a from CUDA 13.0, otherwise it should be skipped.
+        continue
+    } elseif($package -eq "nvptxcompiler" -and [version]$CUDA_VERSION_FULL -lt [version]"13.0") {
+        # nvptxcompiler is a from CUDA 13.0, otherwise it should be skipped.
+        continue
+    } elseif($package -eq "nvvm" -and [version]$CUDA_VERSION_FULL -lt [version]"13.0") {
+        # nvvm is a from CUDA 13.0, otherwise it should be skipped.
         continue
     }
     $CUDA_PACKAGES += " $($package)_$($CUDA_MAJOR).$($CUDA_MINOR)"
