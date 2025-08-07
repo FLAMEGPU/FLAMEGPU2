@@ -45,7 +45,7 @@ std::vector<int> getNVRTCSupportedComputeCapabilties();
  * Get the best matching compute capability from a vector of compute capabililties in ascending order
  * I.e. get the maximum CC value which is less than or equal to the target CC
  *
- * This method has been separated from JitifyCache::compileKernel so that it can be tested generically, without having to write tests which are relative to the linked nvrtc and/or the current device.
+ * This method has been separated from JitifyCache::preprocessKernel so that it can be tested generically, without having to write tests which are relative to the linked nvrtc and/or the current device.
  * 
  * @param target compute capability to find the best match for
  * @param archictectures a vector of architectures in ascending order
