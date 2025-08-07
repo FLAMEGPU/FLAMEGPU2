@@ -44,16 +44,6 @@ jobs:
             cuda_arch: "50"
             hostcxx: "Visual Studio 17 2022"
             os: windows-2022
-          # Newest and oldest CUDA 11.x we can use with VS2022 (11.6+), not an officially supported combination with MSVC >= 1940
-          - cuda: "11.8.0"
-            cuda_arch: "35"
-            hostcxx: "Visual Studio 17 2022"
-            os: windows-2022
-          - cuda: "11.6.0"
-            cuda_arch: "35"
-            hostcxx: "Visual Studio 17 2022"
-            os: windows-2022
-
         python:
           - "3.12"
         config:
@@ -71,20 +61,13 @@ jobs:
           - cudacxx:
               cuda: "12.0.0"
             VISUALISATION: "ON"
-          - cudacxx:
-              cuda: "11.2.2"
-            VISUALISATION: "ON"
           # Exclude beltsoff builds for all but the most recent cuda
           - cudacxx:
+              cuda: "12.9.1"
+            config:
+              name: "Beltsoff"
+          - cudacxx:
               cuda: "12.0.0"
-            config:
-              name: "Beltsoff"
-          - cudacxx:
-              cuda: "11.8.0"
-            config:
-              name: "Beltsoff"
-          - cudacxx:
-              cuda: "11.2.2"
             config:
               name: "Beltsoff"
           # Exclude beltsoff vis builds to keep the matrix lighter.
