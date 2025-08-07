@@ -29,6 +29,11 @@ jobs:
       # optional exclude: can be partial, include: must be specific
       matrix:
         cudacxx:
+          # CUDA 13
+          - cuda: "13.0"
+            cuda_arch: "75"
+            hostcxx: gcc-13
+            os: ubuntu-24.04
           # Oldest and newest CUDA 12.x
           - cuda: "12.9"
             cuda_arch: "120"
