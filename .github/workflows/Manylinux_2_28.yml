@@ -33,14 +33,15 @@ jobs:
       # optional exclude: can be partial, include: must be specific
       matrix:
         cudacxx:
-          # Oldest CUDA 12.x and 11.x we support, which are used for wheel production
+          # CUDA 13
+          - cuda: "13.0"
+            cuda_arch: "75"
+            hostcxx: gcc-toolset-13
+            os: ubuntu-24.04
+          # CUDA 12
           - cuda: "12.0"
             cuda_arch: "50"
             hostcxx: gcc-toolset-12
-            os: ubuntu-24.04
-          - cuda: "11.2"
-            cuda_arch: "35"
-            hostcxx: gcc-toolset-9
             os: ubuntu-24.04
         python:
           - "3.12"
