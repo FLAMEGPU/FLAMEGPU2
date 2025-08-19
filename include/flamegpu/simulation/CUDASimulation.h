@@ -516,6 +516,11 @@ class CUDASimulation : public Simulation {
      * Destroy all streams
      */
     void destroyStreams();
+    /**
+     * Destroy all jitify2::KernelData embedded within CUDAAgents
+     * @note This should only be triggered during the destructor
+     */
+    void safeDestroyJitify();
 
     /**
      * Synchronize all streams for this simulation.

@@ -11,6 +11,8 @@
 #include <functional>
 #include <memory>
 
+#include "jitify/jitify2.hpp"
+
 #include "flamegpu/detail/curand.cuh"
 #include "flamegpu/model/AgentFunctionData.cuh"
 #include "flamegpu/model/LayerData.h"
@@ -207,6 +209,10 @@ CUDASimulation::~CUDASimulation() {
         delete singletons;
         singletons = nullptr;
     }
+
+    // We can't cleanly wrap the jitify2::KernelData destructor
+    // Instead perform a check and release them if necessary
+    this->safeDestroyJitify();
 
     // We must explicitly delete all cuda members before we cuda device reset
     agent_map.clear();
@@ -747,24 +753,22 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 } else {  // RTC function
                     std::string func_condition_identifier = func_name + "_condition";
                     // get instantiation
-                    const jitify::experimental::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func_condition_identifier);
+                    const jitify2::KernelData& instance = cuda_agent.getRTCInstantiation(func_condition_identifier);
                     // calculate the grid block size for main agent function
-                    CUfunction cu_func = (CUfunction)instance;
+                    CUfunction cu_func = (CUfunction)instance.function();
                     cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size);
                     //! Round up according to CUDAAgent state list size
                     gridSize = (state_list_size + blockSize - 1) / blockSize;
                     // launch the kernel
-                    CUresult a = instance.configure(gridSize, blockSize, 0, this->getStream(streamIdx)).launch({
+                    jitify2::ErrorMsg a = instance.configure(gridSize, blockSize, 0, this->getStream(streamIdx))->launch_raw({
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
                         reinterpret_cast<void*>(&error_buffer),
 #endif
                         const_cast<void *>(reinterpret_cast<const void*>(&state_list_size)),
                         reinterpret_cast<void*>(&t_rng),
                         reinterpret_cast<void*>(&scanFlag_agentDeath) });
-                    if (a != CUresult::CUDA_SUCCESS) {
-                        const char* err_str = nullptr;
-                        cuGetErrorString(a, &err_str);
-                        THROW exception::InvalidAgentFunc("There was a problem launching the runtime agent function condition '%s': %s", func_des->rtc_func_condition_name.c_str(), err_str);
+                    if (!a.empty()) {
+                        THROW exception::InvalidAgentFunc("There was a problem launching the runtime agent function condition '%s': %s", func_des->rtc_func_condition_name.c_str(), a.c_str());
                     }
                     gpuErrchkLaunch();
                 }
@@ -977,14 +981,14 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 gpuErrchkLaunch();
             } else {      // assume this is a runtime specified agent function
                 // get instantiation
-                const jitify::experimental::KernelInstantiation& instance = cuda_agent.getRTCInstantiation(func_name);
+                const jitify2::KernelData& instance = cuda_agent.getRTCInstantiation(func_name);
                 // calculate the grid block size for main agent function
-                CUfunction cu_func = (CUfunction)instance;
+                CUfunction cu_func = (CUfunction)instance.function();
                 cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size);
                 //! Round up according to CUDAAgent state list size
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
                 // launch the kernel
-                CUresult a = instance.configure(gridSize, blockSize, 0, this->getStream(streamIdx)).launch({
+                jitify2::ErrorMsg a = instance.configure(gridSize, blockSize, 0, this->getStream(streamIdx))->launch_raw({
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
                     reinterpret_cast<void*>(&error_buffer),
 #endif
@@ -996,10 +1000,8 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     reinterpret_cast<void*>(&scanFlag_agentDeath),
                     reinterpret_cast<void*>(&scanFlag_messageOutput),
                     reinterpret_cast<void*>(&scanFlag_agentOutput)});
-                if (a != CUresult::CUDA_SUCCESS) {
-                    const char* err_str = nullptr;
-                    cuGetErrorString(a, &err_str);
-                    THROW exception::InvalidAgentFunc("There was a problem launching the runtime agent function '%s': %s", func_name.c_str(), err_str);
+                if (!a.empty()) {
+                    THROW exception::InvalidAgentFunc("There was a problem launching the runtime agent function '%s': %s", func_name.c_str(), a.c_str());
                 }
                 gpuErrchkLaunch();
             }
@@ -2023,23 +2025,38 @@ void CUDASimulation::destroyStreams() {
     }
     /*
     This method is called by ~CUDASimulation(), which may be after a device reset and / or CUDA shutdown (if static, or if GC'd by python implementation)
-    cudaStreamDestroy and cudaStreamQuery under linux with CUDA 11.8 (and potentialy others) would occasionally segfault after a reset, as passing invalid stream handles to various methods is UB, so these methods cannot be used to check for safe destruction.
+    cudaStreamDestroy and cudaStreamQuery under linux with CUDA 11.8 (and potentially others) would occasionally segfault after a reset, as passing invalid stream handles to various methods is UB, so these methods cannot be used to check for safe destruction.
     The Driver API equivalents include the same UB.
-    Instead, we can use the CUDA driver API to check the primary context is correct / valid for the device, and if it is attempt to destory the stream, which works for CUDA 11.x.
+    Instead, we can use the CUDA driver API to check the primary context is correct / valid for the device, and if it is attempt to destroy the stream, which works for CUDA 11.x.
     CUDA 12.x however claims the ctx is active for the specified device, even after a reset. Getting the active context returns the same handle after a reset, so we cannot store and compare CUcontexts, but CUDA 12 does include a new method to get the unique ID for a context which we can store and check is a match.
     */
-    bool safeToDestroySreams = flamegpu::detail::cuda::cuDevicePrimaryContextIsActive(deviceInitialised);
+    bool safeToDestroy = flamegpu::detail::cuda::cuDevicePrimaryContextIsActive(deviceInitialised);
     #if __CUDACC_VER_MAJOR__ >= 12
         std::uint64_t currentContextID = flamegpu::detail::cuda::cuGetCurrentContextUniqueID();
-        safeToDestroySreams = safeToDestroySreams && currentContextID == this->cudaContextID;
+        safeToDestroy = safeToDestroy && currentContextID == this->cudaContextID;
     #endif  // __CUDACC_VER_MAJOR__ >= 12
-    if (safeToDestroySreams) {
+    if (safeToDestroy) {
         // Destroy streams.
         for (auto stream : streams) {
             gpuErrchk(cudaStreamDestroy(stream));
         }
     }
     streams.clear();
+}
+void CUDASimulation::safeDestroyJitify() {
+    // Can't have done any RTC if device is not init
+    if (deviceInitialised == -1)
+        return;
+    // See note in destroyStreams()
+    bool safeToDestroy = flamegpu::detail::cuda::cuDevicePrimaryContextIsActive(deviceInitialised);
+#if __CUDACC_VER_MAJOR__ >= 12
+    std::uint64_t currentContextID = flamegpu::detail::cuda::cuGetCurrentContextUniqueID();
+    safeToDestroy = safeToDestroy && currentContextID == this->cudaContextID;
+#endif  // __CUDACC_VER_MAJOR__ >= 12
+    // Destroy any RTC functions
+    for (auto &[_, ca] : agent_map) {
+        ca->destroyRTCInstances(safeToDestroy);
+    }
 }
 
 void CUDASimulation::synchronizeAllStreams() {

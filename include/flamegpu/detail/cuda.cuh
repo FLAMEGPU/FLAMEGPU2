@@ -3,6 +3,8 @@
 
 #include <cuda_runtime.h>
 #include <cuda.h>
+
+#ifndef __CUDACC_RTC__
 #include <limits>
 #include <cstdint>
 #include "flamegpu/exception/FLAMEGPUException.h"
@@ -25,8 +27,8 @@ namespace cuda {
  */
 inline cudaError_t cudaFree(void* devPtr) {
     cudaError_t status = cudaSuccess;
-    // Check the pointer attribtues to detect if it is a valid ptr for the current context.
-    // @todo - version which checks the device ordinal is a match for the active context too, potenitally flip-flopping the device.
+    // Check the pointer attributes to detect if it is a valid ptr for the current context.
+    // @todo - version which checks the device ordinal is a match for the active context too, potentially flip-flopping the device.
     cudaPointerAttributes attributes = {};
     status = cudaPointerGetAttributes(&attributes, devPtr);
     // valid device pointers have a type of cudaMemoryTypeDevice (2), or we could check the device is non negative (and matching the current device index?), or the devicePointer will be non null.
@@ -35,7 +37,7 @@ inline cudaError_t cudaFree(void* devPtr) {
         // Forward any status on
         return status;
     }
-    // If the pointer attribtues were not correct, return cudaSuccess to avoid bad error checking.
+    // If the pointer attributes were not correct, return cudaSuccess to avoid bad error checking.
     return cudaSuccess;
 }
 
@@ -47,8 +49,8 @@ inline cudaError_t cudaFree(void* devPtr) {
  */
 inline cudaError_t cudaFreeHost(void* devPtr) {
     cudaError_t status = cudaSuccess;
-    // Check the pointer attribtues to detect if it is a valid ptr for the current context.
-    // @todo - version which checks the device ordinal is a match for the active context too, potenitally flip-flopping the device.
+    // Check the pointer attributes to detect if it is a valid ptr for the current context.
+    // @todo - version which checks the device ordinal is a match for the active context too, potentially flip-flopping the device.
     cudaPointerAttributes attributes = {};
     status = cudaPointerGetAttributes(&attributes, devPtr);
     // valid pointers allocated using cudaMallocHost have a type of cudaMemoryTypeHost
@@ -57,13 +59,13 @@ inline cudaError_t cudaFreeHost(void* devPtr) {
         // Forward on any cuda errors returned.
         return status;
     }
-    // If the pointer attribtues were not correct, return cudaSuccess to avoid bad error checking.
+    // If the pointer attributes were not correct, return cudaSuccess to avoid bad error checking.
     return cudaSuccess;
 }
 
 /**
  * Use the cuda Driver API to check that the primary context for a given device (the device which is shared with the runtime API) is active.
- * This method will silenty absorb any cuda driver api errors, as it's intended use case is when the cuda driver may be uninitlaised / shutdown.
+ * This method will silently absorb any cuda driver api errors, as it's intended use case is when the cuda driver may be uninitialised / shutdown.
  * @param ordinal device index to query for
  * @return bool indicating if primary context for the given device is active or not
  */
@@ -130,5 +132,5 @@ inline std::uint64_t cuGetCurrentContextUniqueID() {
 }  // namespace cuda
 }  // namespace detail
 }  // namespace flamegpu
-
+#endif  // __CUDACC_RTC__
 #endif  // INCLUDE_FLAMEGPU_DETAIL_CUDA_CUH_

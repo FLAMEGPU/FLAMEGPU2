@@ -13,8 +13,8 @@ endif()
 # Change the source-dir to allow inclusion via jitify/jitify.hpp rather than jitify.hpp
 FetchContent_Declare(
     jitify
-    GIT_REPOSITORY https://github.com/NVIDIA/jitify.git
-    GIT_TAG        9c01f4988bbc3e11fcb84fc2747b5d0f2af7862e
+    GIT_REPOSITORY https://github.com/ptheywood/jitify.git
+    GIT_TAG        jitify2-msvc-fixes-2025-08-05  # fork of jitify2 branch with msvc fixes
     SOURCE_DIR     ${FETCHCONTENT_BASE_DIR}/jitify-src/jitify
     GIT_PROGRESS   ON
     # UPDATE_DISCONNECTED   ON
