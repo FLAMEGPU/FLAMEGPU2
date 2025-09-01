@@ -61,6 +61,10 @@ class MessageSpatial3D {
          * max-lowerBound
          */
         float environmentWidth[3];
+        /**
+         * If the environment width is exactly divisible by the radius in all dimensions, allowing wrapped access.
+         */
+        bool wrapCompatible;
     };
 };
 

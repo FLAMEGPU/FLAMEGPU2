@@ -5,6 +5,7 @@
 #include "flamegpu/runtime/messaging/MessageSpatial3D/MessageSpatial3DHost.h"
 #include "flamegpu/runtime/messaging/MessageSpatial3D/MessageSpatial3DDevice.cuh"
 #include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/numeric.h"
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 
 #ifdef _MSC_VER
@@ -39,11 +40,13 @@ MessageSpatial3D::CUDAModelHandler::CUDAModelHandler(detail::CUDAMessage &a)
     hd_data.max[0] = d.maxX;
     hd_data.max[1] = d.maxY;
     hd_data.max[2] = d.maxZ;
+    hd_data.wrapCompatible = true;
     binCount = 1;
     for (unsigned int axis = 0; axis < 3; ++axis) {
         hd_data.environmentWidth[axis] = hd_data.max[axis] - hd_data.min[axis];
         hd_data.gridDim[axis] = static_cast<unsigned int>(ceil(hd_data.environmentWidth[axis] / hd_data.radius));
         binCount *= hd_data.gridDim[axis];
+        hd_data.wrapCompatible = hd_data.wrapCompatible && flamegpu::detail::numeric::approxExactlyDivisible<float>(hd_data.environmentWidth[axis], hd_data.radius);
     }
     // Device allocation occurs in allocateMetaDataDevicePtr rather than the constructor.
 }

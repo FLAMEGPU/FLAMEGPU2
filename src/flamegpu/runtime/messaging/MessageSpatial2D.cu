@@ -30,6 +30,7 @@
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/numeric.h"
 
 namespace flamegpu {
 MessageSpatial2D::CUDAModelHandler::CUDAModelHandler(detail::CUDAMessage &a)
@@ -42,11 +43,13 @@ MessageSpatial2D::CUDAModelHandler::CUDAModelHandler(detail::CUDAMessage &a)
     hd_data.min[1] = d.minY;
     hd_data.max[0] = d.maxX;
     hd_data.max[1] = d.maxY;
+    hd_data.wrapCompatible = true;
     binCount = 1;
     for (unsigned int axis = 0; axis < 2; ++axis) {
         hd_data.environmentWidth[axis] = hd_data.max[axis] - hd_data.min[axis];
         hd_data.gridDim[axis] = static_cast<unsigned int>(ceil(hd_data.environmentWidth[axis] / hd_data.radius));
         binCount *= hd_data.gridDim[axis];
+        hd_data.wrapCompatible = hd_data.wrapCompatible && flamegpu::detail::numeric::approxExactlyDivisible<float>(hd_data.environmentWidth[axis], hd_data.radius);
     }
 }
 MessageSpatial2D::CUDAModelHandler::~CUDAModelHandler() { }
