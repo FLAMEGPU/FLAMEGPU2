@@ -134,7 +134,6 @@ jobs:
         make install
 
     - name: Install setuptools and wheel
-      if: ${{ env.PYTHON >= 3.12 }}
       run: |
         python${{env.PYTHON}} -m pip install setuptools wheel
 
