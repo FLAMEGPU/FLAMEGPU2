@@ -41,7 +41,7 @@ jobs:
         # 'default' or '' will not install cmake, otherwise provide a full semver version.
         cmake:
           - "default"
-          - "3.18.0"
+          - "3.25.2"
 
     # Name the job based on matrix/env options
     name: "configure (${{ matrix.cmake }}, ${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
