@@ -292,7 +292,7 @@ env.newPropertyFloat("MAX_INITIAL_SPEED", 1.0)
 env.newPropertyFloat("MIN_INITIAL_SPEED", 0.1)
 
 # Interaction radius
-env.newPropertyFloat("INTERACTION_RADIUS", 0.04)  # 0.04 is a workaround for wrapped spatial messaging bug
+env.newPropertyFloat("INTERACTION_RADIUS", 0.05)
 env.newPropertyFloat("SEPARATION_RADIUS", 0.01)
 
 # Global Scalers
