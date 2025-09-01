@@ -104,9 +104,9 @@ set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} PROPERTY CUDA_SEPARABLE_COMPILATI
 # Build with the SWIG pre-processor macro enabled
 set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} APPEND PROPERTY SWIG_GENERATED_COMPILE_DEFINITIONS "SWIG")
 
-# Require C++17 as a public target property for C++ and CUDA, with no extensions, and the standard is required
-target_compile_features(${PYTHON_SWIG_TARGET_NAME} PUBLIC cxx_std_17)
-target_compile_features(${PYTHON_SWIG_TARGET_NAME} PUBLIC cuda_std_17)
+# Require c++20 as a public target property for C++ and CUDA, with no extensions, and the standard is required
+target_compile_features(${PYTHON_SWIG_TARGET_NAME} PUBLIC cxx_std_20)
+target_compile_features(${PYTHON_SWIG_TARGET_NAME} PUBLIC cuda_std_20)
 set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} PROPERTY CUDA_EXTENSIONS OFF)
 set_property(TARGET ${PYTHON_SWIG_TARGET_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)

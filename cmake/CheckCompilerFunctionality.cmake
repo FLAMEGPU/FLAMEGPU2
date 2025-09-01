@@ -85,8 +85,8 @@ function(flamegpu_check_compiler_functionality)
             CUDA_STD_FILESYSTEM
             "${CMAKE_CURRENT_BINARY_DIR}/try_compile"
             "${CMAKE_CURRENT_LIST_DIR}/CheckCompilerFunctionality/CheckStdFilesystem.cu"
-            CXX_STANDARD 17
-            CUDA_STANDARD 17
+            CXX_STANDARD 20
+            CUDA_STANDARD 20
             CXX_STANDARD_REQUIRED "ON"
         )
     endif()
@@ -122,8 +122,8 @@ function(flamegpu_check_compiler_functionality)
                 GCC_CUDA_STDCHRONO
                 "${CMAKE_CURRENT_BINARY_DIR}/try_compile"
                 "${CMAKE_CURRENT_LIST_DIR}/CheckCompilerFunctionality/CheckStdChrono.cu"
-                CXX_STANDARD 17
-                CUDA_STANDARD 17
+                CXX_STANDARD 20
+                CUDA_STANDARD 20
                 CXX_STANDARD_REQUIRED "ON"
             )
         endif()
@@ -164,8 +164,8 @@ function(flamegpu_check_compiler_functionality)
                 GCC_CUDA_VECTOR_TUPLE_PUSHBACK
                 "${CMAKE_CURRENT_BINARY_DIR}/try_compile"
                 "${CMAKE_CURRENT_LIST_DIR}/CheckCompilerFunctionality/CheckVectorTuplePushBack.cu"
-                CXX_STANDARD 17
-                CUDA_STANDARD 17
+                CXX_STANDARD 20
+                CUDA_STANDARD 20
                 CXX_STANDARD_REQUIRED "ON"
             )
         endif()
@@ -195,8 +195,8 @@ function(flamegpu_check_compiler_functionality)
             LINUX_F_OFD_SETLKW
             "${CMAKE_CURRENT_BINARY_DIR}/try_compile"
             "${CMAKE_CURRENT_LIST_DIR}/CheckCompilerFunctionality/F_OFD_SETLKW.cpp"
-            CXX_STANDARD 17
-            CUDA_STANDARD 17
+            CXX_STANDARD 20
+            CUDA_STANDARD 20
             CXX_STANDARD_REQUIRED "ON"
         )
         if(NOT LINUX_F_OFD_SETLKW)
