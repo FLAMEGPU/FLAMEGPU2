@@ -62,6 +62,10 @@ class MessageSpatial2D {
          * max-lowerBound
          */
         float environmentWidth[2];
+        /**
+         * If the environment width is exactly divisible by the radius in all dimensions, allowing wrapped access.
+         */
+        bool wrapCompatible;
     };
 };
 

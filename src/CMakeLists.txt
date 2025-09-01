@@ -292,6 +292,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/CUDAEventTimer.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/cuda.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/cxxname.hpp
+    ${FLAMEGPU_ROOT}/include/flamegpu/detail/numeric.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/SignalHandlers.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/StaticAssert.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/SteadyClockTimer.h

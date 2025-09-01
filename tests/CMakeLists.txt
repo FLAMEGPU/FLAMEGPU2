@@ -17,6 +17,7 @@ SET(TESTS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_wddm.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_dependency_versions.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_multi_thread_device.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_numeric.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_CUDAEventTimer.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_SteadyClockTimer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_cxxname.cpp
