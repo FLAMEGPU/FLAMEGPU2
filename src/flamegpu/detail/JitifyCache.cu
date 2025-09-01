@@ -429,8 +429,8 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
 #endif
 
 // pass the c++ language dialect. It may be better to explicitly pass this from CMake.
-#if defined(__cplusplus) && __cplusplus > 201700L && defined(__CUDACC_VER_MAJOR__) && __CUDACC_VER_MAJOR__ >= 11
-    options.push_back("--std=c++17");
+#if defined(__cplusplus) && __cplusplus >= 202002L && defined(__CUDACC_VER_MAJOR__) && __CUDACC_VER_MAJOR__ >= 12
+    options.push_back("--std=c++20");
 #endif
 
     // If FLAMEGPU_SEATBELTS is defined and false, forward it as off, otherwise forward it as on.
