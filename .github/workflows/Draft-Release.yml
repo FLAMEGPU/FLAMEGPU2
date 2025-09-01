@@ -240,6 +240,7 @@ jobs:
 
     - name: Install CUDA (Windows)
       if: ${{ runner.os == 'Windows' && env.CUDA != '' }}
+      timeout-minutes: 30
       shell: powershell
       env:
         cuda: ${{ env.CUDA }}
@@ -537,6 +538,7 @@ jobs:
     - name: Install CUDA (Windows)
       if: ${{ runner.os == 'Windows' && env.CUDA != '' }}
       shell: powershell
+      timeout-minutes: 30
       env:
         cuda: ${{ env.CUDA }}
         visual_studio: ${{ env.HOSTCXX }}
