@@ -127,6 +127,11 @@ if(NOT COMMAND flamegpu_suppress_some_compiler_warnings)
                 target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-psabi>")
                 target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wno-psabi>")
             endif()
+            # (some) GCC 12 in c++20 issues Wrestrict warnings for assigning a single character to a std::string, which is a false-positive.
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 12.0.0 AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 13.0.0)
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-restrict>")
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wno-restrict>")
+            endif()
         endif()
         # Generic OS/host compiler warning suppressions
         # Ensure NVCC outputs warning numbers
