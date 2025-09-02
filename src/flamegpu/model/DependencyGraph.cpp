@@ -18,7 +18,7 @@ DependencyGraph::DependencyGraph(const DependencyGraph& other) : model(other.mod
 }
 
 
-bool DependencyGraph::operator==(const DependencyGraph& rhs) {
+bool DependencyGraph::operator==(const DependencyGraph& rhs) const {
     std::function<bool(DependencyNode*, DependencyNode*)> checkEqual;
     checkEqual = [&checkEqual] (DependencyNode* lhs, DependencyNode* rhs) {
         const auto& lhsDeps = lhs->getDependents();
