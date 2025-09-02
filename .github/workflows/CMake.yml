@@ -28,7 +28,7 @@ jobs:
         cudacxx:
           - cuda: "12.0"
             cuda_arch: "50"
-            hostcxx: gcc-9
+            hostcxx: gcc-10
             os: ubuntu-22.04
         python:
           - "3.8"
