@@ -162,7 +162,7 @@ class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8
         } else if (mode.top() == AgentInstance) {
             const std::shared_ptr<AgentVector> &pop = agents_map.at({current_agent, current_state});
             AgentVector::Agent instance = pop->back();
-            char *data = static_cast<char*>(const_cast<void*>(static_cast<std::shared_ptr<const AgentVector>>(pop)->data(lastKey)));
+            char *data = static_cast<char*>(const_cast<void*>(std::static_pointer_cast<const AgentVector>(pop)->data(lastKey)));
             const VariableMap& agentVariables = pop->getVariableMetaData();
             const auto var_data = agentVariables.at(lastKey);
             const size_t v_size = var_data.type_size * var_data.elements;
