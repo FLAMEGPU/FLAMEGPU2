@@ -119,16 +119,17 @@ jobs:
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
         fi
 
-    - name: Install Swig >= 4.0.2
+    - name: Install Swig >= 4.1.0
       run: |
-        # Install additional apt-based dependencies required to build swig 4.0.2
-        sudo apt-get install -y bison
+        # Install additional apt-based dependencies required to build swig 4.1.0.
+        # swig >= 4.1 requires pcre2-config from libpcre2-dev
+        sudo apt-get install -y bison automake libpcre2-dev
         # Create a local directory to build swig in.
         mkdir -p swig-from-source && cd swig-from-source
         # Install SWIG building from source dependencies
-        wget https://github.com/swig/swig/archive/refs/tags/v4.0.2.tar.gz
-        tar -zxf v4.0.2.tar.gz
-        cd swig-4.0.2/
+        wget https://github.com/swig/swig/archive/refs/tags/v4.1.0.tar.gz
+        tar -zxf v4.1.0.tar.gz
+        cd swig-4.1.0/
         ./autogen.sh
         ./configure
         make
