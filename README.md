@@ -75,8 +75,9 @@ Optionally:
 + [Doxygen](http://www.doxygen.nl/) to build the documentation
 + [Python](https://www.python.org/) `>= 3.8` for python integration
   + With `setuptools`, `wheel`, `build` and optionally `venv` python packages installed
-+ [swig](http://www.swig.org/) `>= 4.0.2` for python integration
-  + Swig `4.x` will be automatically downloaded by CMake if not provided (if possible).
++ [swig](http://www.swig.org/) `>= 4.1.0` for python integration (with c++20 support)
+  + Swig >= `4.1.0` will be automatically downloaded by CMake if not provided (if possible).
+  + Swig `4.2.0` is problematic
 + MPI (e.g. [MPICH](https://www.mpich.org/), [OpenMPI](https://www.open-mpi.org/)) for distributed ensemble support
   + MPI 3.0+ tested, older MPIs may work but not tested.
 + [FLAMEGPU2-visualiser](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser) dependencies
@@ -186,8 +187,8 @@ cmake --build . --target all
 | `FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE` | `ON`/`OFF`                  | Suppress notice encouraging telemetry to be enabled, which is emitted once per binary execution if telemetry is disabled. Defaults to `OFF`, or the value of a system environment variable of the same name. |
 | `FLAMEGPU_TELEMETRY_TEST_MODE`       | `ON`/`OFF`                  | Submit telemetry values to the test mode of TelemetryDeck. Intended for use during development of FLAMEGPU rather than use. Defaults to `OFF`, or the value of a system environment variable of the same name.|
 | `FLAMEGPU_ENABLE_LINT_FLAMEGPU`      | `ON`/`OFF`                  | Enable/Disable creation of the `lint_flamegpu` target. Default `ON` if this repository is the root CMAKE_SOURCE_DIR, otherwise `OFF` |
-| `FLAMEGPU_SWIG_MINIMUM`              | `4.0.2` | The minimum version of SWIG required. |
-| `FLAMEGPU_SWIG_DOWNLOAD`             | `4.0.2` | The version of SWIG to download if the required version is not found. |
+| `FLAMEGPU_SWIG_MINIMUM`              | `4.1.0` | The minimum version of SWIG required. |
+| `FLAMEGPU_SWIG_DOWNLOAD`             | `4.3.0` | The version of SWIG to download if the required version is not found. |
 | `FLAMEGPU_SWIG_EXACT`                | `ON`/`OFF` | Require the exact version of SWIG specified in `FLAMEGPU_SWIG_MINIMUM`. This enables downgrading swig. Default `OFF` |
 
 <!-- Additional options which users can find if they need them.
