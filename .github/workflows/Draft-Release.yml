@@ -26,9 +26,9 @@ defaults:
 # + Thorough Windows builds
 #   + Oldest and newest cuda, lots of arch, vis off, tests on
 # + Wheel producing manylinux builds
-#   + CUDA 11.2 and 12.0, py 3.8-3.12, vis on/off, py only.
+#   + CUDA 12.0 and 13.0, py 3.8-3.12, vis on/off, py only.
 # + Wheel producing Windows builds
-#   + CUDA 12.4 (due to visual studio), py 3.8-3.12, vis on/off, py only.
+#   + CUDA 12.0 and 13.0, py 3.8-3.12, vis on/off, py only.
 # + Draft github release workflow.
 
 jobs:
@@ -41,17 +41,19 @@ jobs:
       matrix:
         # CUDA_ARCH values are reduced compared to wheels due to CI memory issues while compiling the test suite.
         cudacxx:
-          - cuda: "12.9"
-            cuda_arch: "50-real;90-real;90-virtual;"
+          # CUDA 13
+          - cuda: "13.0"
+            cuda_arch: "75-real;120-real;120-virtual;"
             hostcxx: gcc-13
+            os: ubuntu-24.04
+          # Oldest and newest CUDA 12.x
+          - cuda: "12.9"
+            cuda_arch: "50-real;120-real;120-virtual;"
+            hostcxx: gcc-12
             os: ubuntu-24.04
           - cuda: "12.0"
             cuda_arch: "50-real;90-real;90-virtual;"
-            hostcxx: gcc-11
-            os: ubuntu-22.04
-          - cuda: "11.8"
-            cuda_arch: "35-real;90-real;90-virtual"
-            hostcxx: gcc-9
+            hostcxx: gcc-10
             os: ubuntu-22.04
         python:
           - "3.8"
@@ -192,6 +194,11 @@ jobs:
       matrix:
         # CUDA_ARCH values are reduced compared to wheels due to CI memory issues while compiling the test suite.
         cudacxx:
+          # Newest and oldest CUDA 13.x we support
+          - cuda: "13.0.0"
+            cuda_arch: "75"
+            hostcxx: "Visual Studio 17 2022"
+            os: windows-2025
           # Newest and oldest CUDA 12.x we support. 12.4 is the oldest officially supported by MSVC >= 1940, but we have a workaround in place
           - cuda: "12.9.1"
             cuda_arch: "50"
@@ -199,15 +206,6 @@ jobs:
             os: windows-2025
           - cuda: "12.0.0"
             cuda_arch: "50"
-            hostcxx: "Visual Studio 17 2022"
-            os: windows-2022
-          # Newest and oldest CUDA 11.x we can use with VS2022 (11.6+), not an officially supported combination with MSVC >= 1940
-          - cuda: "11.8.0"
-            cuda_arch: "35"
-            hostcxx: "Visual Studio 17 2022"
-            os: windows-2022
-          - cuda: "11.6.0"
-            cuda_arch: "35"
             hostcxx: "Visual Studio 17 2022"
             os: windows-2022
         python:
@@ -327,14 +325,16 @@ jobs:
       # optional exclude: can be partial, include: must be specific
       matrix:
         cudacxx:
+          # CUDA 13
+          - cuda: "13.0"
+            cuda_arch: "75-real;80-real;90-real;100-real;110-real;120-real;120-virtual"
+            hostcxx: gcc-toolset-13
+            os: ubuntu-24.04
+          # CUDA 12
           - cuda: "12.0"
             cuda_arch: "50-real;60-real;70-real;80-real;90-real;90-virtual"
             hostcxx: gcc-toolset-12
-            os: ubuntu-22.04
-          - cuda: "11.2"
-            cuda_arch: "35-real;50-real;60-real;70-real;80-real;80-virtual"
-            hostcxx: gcc-toolset-9
-            os: ubuntu-22.04
+            os: ubuntu-24.04
         python:
           - "3.12"
           - "3.11"
@@ -499,14 +499,14 @@ jobs:
       # optional exclude: can be partial, include: must be specific
       matrix:
         cudacxx:
+          # Oldest CUDA 13.x we support.
+          - cuda: "13.0.0"
+            cuda_arch: "75-real;80-real;90-real;100-real;110-real;120-real;120-virtual"
+            hostcxx: "Visual Studio 17 2022"
+            os: windows-2025
           # Oldest CUDA 12.x we support. 12.4 is the oldest officially supported by MSVC >= 1940, but we have a workaround in place
           - cuda: "12.0.0"
             cuda_arch: "50-real;60-real;70-real;80-real;90-real;90-virtual"
-            hostcxx: "Visual Studio 17 2022"
-            os: windows-2022
-          # Oldest CUDA 11.x we can use with VS2022 (11.6+), not an officially supported combination with MSVC >= 1940
-          - cuda: "11.6.0"
-            cuda_arch: "35-real;50-real;60-real;70-real;80-real;80-virtual"
             hostcxx: "Visual Studio 17 2022"
             os: windows-2022
         python:
