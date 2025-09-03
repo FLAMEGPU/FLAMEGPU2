@@ -174,7 +174,7 @@ function(flamegpu_common_compiler_settings)
     target_compile_options(${CCS_TARGET} PRIVATE "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>,$<CONFIG:RelWithDebInfo>>>:-lineinfo>")
 
     # Set an NVCC flag which allows host constexpr to be used on the device.
-    target_compile_options(${CCS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>")
+    target_compile_options(${CCS_TARGET} PUBLIC "$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>")
 
     # MSVC handling of SYSTEM for external includes, present in 19.10+
     if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
