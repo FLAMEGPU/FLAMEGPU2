@@ -61,13 +61,13 @@ This is used to build the FLAMEGPU2 library, examples, tests and documentation.
 
 Building FLAME GPU has the following requirements. There are also optional dependencies which are required for some components, such as Documentation or Python bindings.
 
-+ [CMake](https://cmake.org/download/) `>= 3.18`
-  + `>= 3.20` if building python bindings using a multi-config generator (Visual Studio, Eclipse or Ninja Multi-Config)
-+ [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 11.2` and a [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 3.5` NVIDIA GPU.
-+ C++17 capable C++ compiler (host), compatible with the installed CUDA version
-  + [Microsoft Visual Studio 2019 or 2022](https://visualstudio.microsoft.com/) (Windows)
++ [CMake](https://cmake.org/download/) `>= 3.25.2`
++ [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 12.0` and a [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 5.0` NVIDIA GPU.
+  + FLAME GPU aims to support the 2 most recent major CUDA versions, currently 12.x and 13.x
++ C++20 capable C++ compiler (host), compatible with the installed CUDA version
+  + [Microsoft Visual Studio 2022](https://visualstudio.microsoft.com/) (Windows)
     + *Note:* Visual Studio must be installed before the CUDA toolkit is installed. See the [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) for more information.
-  + [make](https://www.gnu.org/software/make/) and [GCC](https://gcc.gnu.org/) `>= 8.1` (Linux)
+  + [make](https://www.gnu.org/software/make/) and [GCC](https://gcc.gnu.org/) `>= 10` (Linux)
 + [git](https://git-scm.com/)
 
 Optionally:
@@ -76,11 +76,11 @@ Optionally:
 + [Doxygen](http://www.doxygen.nl/) to build the documentation
 + [Python](https://www.python.org/) `>= 3.8` for python integration
   + With `setuptools`, `wheel`, `build` and optionally `venv` python packages installed
-+ [swig](http://www.swig.org/) `>= 4.0.2` for python integration
-  + Swig `4.x` will be automatically downloaded by CMake if not provided (if possible).
++ [swig](http://www.swig.org/) `>= 4.1.0` for python integration (with c++20 support)
+  + Swig >= `4.1.0` will be automatically downloaded by CMake if not provided (if possible).
+  + Swig `4.2.0` is problematic
 + MPI (e.g. [MPICH](https://www.mpich.org/), [OpenMPI](https://www.open-mpi.org/)) for distributed ensemble support
   + MPI 3.0+ tested, older MPIs may work but not tested.
-  + CMake `>= 3.20.1` may be required for some MPI libraries / platforms.
 + [FLAMEGPU2-visualiser](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser) dependencies
   + [SDL](https://www.libsdl.org/)
   + [GLM](http://glm.g-truc.net/) *(consistent C++/GLSL vector maths functionality)*
@@ -188,8 +188,8 @@ cmake --build . --target all
 | `FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE` | `ON`/`OFF`                  | Suppress notice encouraging telemetry to be enabled, which is emitted once per binary execution if telemetry is disabled. Defaults to `OFF`, or the value of a system environment variable of the same name. |
 | `FLAMEGPU_TELEMETRY_TEST_MODE`       | `ON`/`OFF`                  | Submit telemetry values to the test mode of TelemetryDeck. Intended for use during development of FLAMEGPU rather than use. Defaults to `OFF`, or the value of a system environment variable of the same name.|
 | `FLAMEGPU_ENABLE_LINT_FLAMEGPU`      | `ON`/`OFF`                  | Enable/Disable creation of the `lint_flamegpu` target. Default `ON` if this repository is the root CMAKE_SOURCE_DIR, otherwise `OFF` |
-| `FLAMEGPU_SWIG_MINIMUM`              | `4.0.2` | The minimum version of SWIG required. |
-| `FLAMEGPU_SWIG_DOWNLOAD`             | `4.0.2` | The version of SWIG to download if the required version is not found. |
+| `FLAMEGPU_SWIG_MINIMUM`              | `4.1.0` | The minimum version of SWIG required. |
+| `FLAMEGPU_SWIG_DOWNLOAD`             | `4.3.0` | The version of SWIG to download if the required version is not found. |
 | `FLAMEGPU_SWIG_EXACT`                | `ON`/`OFF` | Require the exact version of SWIG specified in `FLAMEGPU_SWIG_MINIMUM`. This enables downgrading swig. Default `OFF` |
 
 <!-- Additional options which users can find if they need them.

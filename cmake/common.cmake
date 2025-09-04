@@ -174,7 +174,7 @@ function(flamegpu_common_compiler_settings)
     target_compile_options(${CCS_TARGET} PRIVATE "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>,$<CONFIG:RelWithDebInfo>>>:-lineinfo>")
 
     # Set an NVCC flag which allows host constexpr to be used on the device.
-    target_compile_options(${CCS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>")
+    target_compile_options(${CCS_TARGET} PUBLIC "$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>")
 
     # MSVC handling of SYSTEM for external includes, present in 19.10+
     if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -242,7 +242,7 @@ function(flamegpu_configure_rc_file)
     endif()
 endfunction()
 
-function(flamegpu_target_cxx17)
+function(flamegpu_target_cxx20)
     cmake_parse_arguments(
         FTC
         ""
@@ -255,8 +255,8 @@ function(flamegpu_target_cxx17)
     elseif(NOT TARGET ${FTC_TARGET})
         message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION}: TARGET '${FTC_TARGET}' is not a valid target")
     endif()
-    target_compile_features(${FTC_TARGET} PUBLIC cxx_std_17)
-    target_compile_features(${FTC_TARGET} PUBLIC cuda_std_17)
+    target_compile_features(${FTC_TARGET} PUBLIC cxx_std_20)
+    target_compile_features(${FTC_TARGET} PUBLIC cuda_std_20)
     set_property(TARGET ${FTC_TARGET} PROPERTY CXX_EXTENSIONS OFF)
     set_property(TARGET ${FTC_TARGET} PROPERTY CUDA_EXTENSIONS OFF)
     set_property(TARGET ${FTC_TARGET} PROPERTY CXX_STANDARD_REQUIRED ON)
@@ -375,8 +375,8 @@ function(flamegpu_add_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     flamegpu_enable_compiler_warnings(TARGET "${NAME}")
     # Apply common compiler settings
     flamegpu_common_compiler_settings(TARGET "${NAME}")
-    # Set C++17 using modern CMake options
-    flamegpu_target_cxx17(TARGET "${NAME}")    
+    # Set C++20 using modern CMake options
+    flamegpu_target_cxx20(TARGET "${NAME}")
 
     # Enable RDC for the target
     set_property(TARGET ${NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
@@ -430,8 +430,8 @@ function(flamegpu_add_library NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     flamegpu_enable_compiler_warnings(TARGET "${NAME}")
     # Apply common compiler settings
     flamegpu_common_compiler_settings(TARGET "${NAME}")
-    # Set C++17 using modern CMake options
-    flamegpu_target_cxx17(TARGET "${NAME}")    
+    # Set C++20 using modern CMake options
+    flamegpu_target_cxx20(TARGET "${NAME}")
 
     # Enable RDC for the target
     set_property(TARGET ${NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)

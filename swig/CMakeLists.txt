@@ -1,5 +1,5 @@
-# Minimum CMake version 3.18 for CUDA --std=c++17 
-cmake_minimum_required(VERSION 3.18...3.25 FATAL_ERROR)
+# Minimum CMake version 3.25.2 for CUDA --std=c++20
+cmake_minimum_required(VERSION 3.25.2...3.29 FATAL_ERROR)
 include(FetchContent)
 # Temporary CMake >= 3.30 fix https://github.com/FLAMEGPU/FLAMEGPU2/issues/1223
 if(POLICY CMP0169)
@@ -36,13 +36,13 @@ unset(PYTHON3_EXACT_VERSION_ARG)
 message(STATUS "Python found at " ${Python3_EXECUTABLE})
 
 # Define the minimum and download versions of SWIG which FLAME GPU supports/ requires as cache variables so they may be overridden by users/CI workflows.
-# Swig >= 4 is required for C++17
+# Swig >= 4.1.0 is required for C++20
 # Swig 4.2.0 is very broken for FLAME GPU 2
 # Swig 4.2.1 does not allow != / == comparisons against None
 # Swig 4.3.0 is potentially required for Python 3.13 support 
-set(FLAMEGPU_SWIG_MINIMUM 4.0.2 CACHE STRING "Minimum version of SWIG to search for via CMake find_package")
+set(FLAMEGPU_SWIG_MINIMUM 4.1.0 CACHE STRING "Minimum version of SWIG to search for via CMake find_package")
 mark_as_advanced(FLAMEGPU_SWIG_MINIMUM)
-set(FLAMEGPU_SWIG_DOWNLOAD 4.0.2 CACHE STRING "Version of SWIG to download if the minimum required SWIG is not found")
+set(FLAMEGPU_SWIG_DOWNLOAD 4.1.0 CACHE STRING "Version of SWIG to download if the minimum required SWIG is not found")
 mark_as_advanced(FLAMEGPU_SWIG_DOWNLOAD)
 # Use an option to control if minimum or exact swig should be found.
 option(FLAMEGPU_SWIG_EXACT "Require the exact version of SWIG specified in FLAMEGPU_SWIG_MINIMUM. This enables downgrading swig." OFF)

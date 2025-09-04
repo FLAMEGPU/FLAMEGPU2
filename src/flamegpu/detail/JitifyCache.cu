@@ -134,6 +134,34 @@ std::string getCUDAIncludeDir() {
 }
 
 /**
+ * Find the CCCL include directory within the cuda include directory.
+ *
+ * For CUDA >= 13, this should be the cuda_include_directory / cccl
+ * For CUDA <  13, this should just be the cuda_include_directory
+ *
+ * This is a separate CCCL than used to compile FLAME GPU2 (which may be different than distributed with CUDA) which may be problematic but should be OK (otherwise we'll need to start distributing CCCL)
+ *
+ * Throws exceptions if the cuda directory cannot be found.
+ *
+ * @param cuda_include_dir the cuda include directory previously found
+ *
+ * @return the path to the CCCL include directory, which may just be the same as the cuda include directory
+ */
+std::string getCCCLIncludeDir(std::string cuda_include_dir) {
+    // check for the cuda 13 cccl include directory
+    std::string cccl_include_dir_str = cuda_include_dir;
+    std::filesystem::path check_path = std::filesystem::path(cuda_include_dir) / "cccl/";
+    // Use try catch to suppress file permission exceptions etc
+    try {
+        if (std::filesystem::exists(check_path)) {
+            cccl_include_dir_str = check_path.string();
+        }
+    } catch (...) { }
+    // Return either the cuda_include_dir, or the cuda_include_dir/cccl/
+    return cccl_include_dir_str;
+}
+
+/**
  * Get the FLAME GPU include directory via the environment variables. 
  * @param env_var_used modified to return the name of the environment variable which was used, if any.
  * @return the FLAME GPU 2+ include directory.
@@ -321,6 +349,7 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
     flamegpu::util::nvtx::Range range{"JitifyCache::preprocessKernel"};
     // find and validate the cuda include directory via CUDA_PATH or CUDA_HOME.
     static const std::string cuda_include_dir = getCUDAIncludeDir();
+    static const std::string cccl_include_dir = getCCCLIncludeDir(cuda_include_dir);
     // find and validate the the flamegpu include directory
     static std::string flamegpu_include_dir_envvar;
     static const std::string flamegpu_include_dir = getFLAMEGPUIncludeDir(flamegpu_include_dir_envvar);
@@ -336,6 +365,11 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
 
     // cuda include directory (via CUDA_PATH)
     options.push_back(std::string("-I" + cuda_include_dir));
+
+    // cccl include directory (if it is not the cuda_include_dir, i.e. CUDA 13+)
+    if (cccl_include_dir != cuda_include_dir) {
+        options.push_back(std::string("-I" + cccl_include_dir));
+    }
 
     // Add user specified include paths
     for (const auto &p : getIncludeDirs())
@@ -395,8 +429,8 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
 #endif
 
 // pass the c++ language dialect. It may be better to explicitly pass this from CMake.
-#if defined(__cplusplus) && __cplusplus > 201700L && defined(__CUDACC_VER_MAJOR__) && __CUDACC_VER_MAJOR__ >= 11
-    options.push_back("--std=c++17");
+#if defined(__cplusplus) && __cplusplus >= 202002L && defined(__CUDACC_VER_MAJOR__) && __CUDACC_VER_MAJOR__ >= 12
+    options.push_back("--std=c++20");
 #endif
 
     // If FLAMEGPU_SEATBELTS is defined and false, forward it as off, otherwise forward it as on.

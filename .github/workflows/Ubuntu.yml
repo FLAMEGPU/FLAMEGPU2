@@ -29,23 +29,19 @@ jobs:
       # optional exclude: can be partial, include: must be specific
       matrix:
         cudacxx:
+          # CUDA 13
+          - cuda: "13.0"
+            cuda_arch: "75"
+            hostcxx: gcc-13
+            os: ubuntu-24.04
           # Oldest and newest CUDA 12.x
           - cuda: "12.9"
             cuda_arch: "120"
-            hostcxx: gcc-13
+            hostcxx: gcc-12
             os: ubuntu-24.04
           - cuda: "12.0"
             cuda_arch: "50"
-            hostcxx: gcc-12
-            os: ubuntu-22.04
-          # Oldest and newest CUDA 11.x with network installers on ubuntu 22.04
-          - cuda: "11.8"
-            cuda_arch: "35"
-            hostcxx: gcc-11
-            os: ubuntu-22.04
-          - cuda: "11.7"
-            cuda_arch: "35"
-            hostcxx: gcc-9
+            hostcxx: gcc-10
             os: ubuntu-22.04
         python:
           - "3.12"
@@ -64,20 +60,13 @@ jobs:
           - cudacxx:
               cuda: "12.0"
             VISUALISATION: "ON"
-          - cudacxx:
-              cuda: "11.2"
-            VISUALISATION: "ON"
           # Exclude beltsoff builds for all but the most recent cuda
           - cudacxx:
+              cuda: "12.9"
+            config:
+              name: "Beltsoff"
+          - cudacxx:
               cuda: "12.0"
-            config:
-              name: "Beltsoff"
-          - cudacxx:
-              cuda: "11.8"
-            config:
-              name: "Beltsoff"
-          - cudacxx:
-              cuda: "11.2"
             config:
               name: "Beltsoff"
           # Exclude beltsoff vis builds to keep the matrix lighter.
@@ -151,16 +140,17 @@ jobs:
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
         fi
 
-    - name: Install Swig >= 4.0.2
+    - name: Install Swig >= 4.1.0
       run: |
-        # Install additional apt-based dependencies required to build swig 4.0.2. 4.0.2 requires pcre-config from pcre3-dev. swig >= 4.1 requires pcre2-config from libpcre2-dev
-        sudo apt-get install -y bison automake libpcre3-dev libpcre2-dev
+        # Install additional apt-based dependencies required to build swig 4.1.0.
+        # swig >= 4.1 requires pcre2-config from libpcre2-dev
+        sudo apt-get install -y bison automake libpcre2-dev
         # Create a local directory to build swig in.
         mkdir -p swig-from-source && cd swig-from-source
         # Install SWIG building from source dependencies
-        wget https://github.com/swig/swig/archive/refs/tags/v4.0.2.tar.gz
-        tar -zxf v4.0.2.tar.gz
-        cd swig-4.0.2/
+        wget https://github.com/swig/swig/archive/refs/tags/v4.1.0.tar.gz
+        tar -zxf v4.1.0.tar.gz
+        cd swig-4.1.0/
         ./autogen.sh
         ./configure
         make

@@ -1,5 +1,5 @@
-# Minimum CMake version 3.18 for CUDA --std=c++17 
-cmake_minimum_required(VERSION 3.18...3.25 FATAL_ERROR)
+# Minimum CMake version 3.25.2 for CUDA --std=c++20
+cmake_minimum_required(VERSION 3.25.2...3.29 FATAL_ERROR)
 
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
@@ -495,9 +495,9 @@ unset(SRC_GROUP_MANUAL)
 # Define which source files are required for the target executable
 add_library(${PROJECT_NAME} STATIC ${ALL_SRC})
 
-# Require C++17 as a public target property for C++ and CUDA, with no extensions, and the standard is required
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
-target_compile_features(${PROJECT_NAME} PUBLIC cuda_std_17)
+# Require C++20 as a public target property for C++ and CUDA, with no extensions, and the standard is required
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
+target_compile_features(${PROJECT_NAME} PUBLIC cuda_std_20)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CUDA_EXTENSIONS OFF)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)

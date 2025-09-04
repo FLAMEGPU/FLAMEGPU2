@@ -37,7 +37,7 @@ class DependencyGraph {
      * @returns True when both graphs represent the same execution graph
      * @note Instead compare pointers if you wish to check that they are the same instance
      */
-    bool operator==(const DependencyGraph& rhs);
+    bool operator==(const DependencyGraph& rhs) const;
     /**
      * Add an AgentFunctionDescription, host function or submodel as a root node
      * @param root The function or submodel to add to the graph as a root

@@ -26,9 +26,9 @@ jobs:
       # Multiplicative build matrix
       matrix:
         cudacxx:
-          - cuda: "11.7"
-            cuda_arch: "35"
-            hostcxx: gcc-9
+          - cuda: "12.0"
+            cuda_arch: "50"
+            hostcxx: gcc-10
             os: ubuntu-22.04
         python:
           - "3.8"
@@ -41,7 +41,7 @@ jobs:
         # 'default' or '' will not install cmake, otherwise provide a full semver version.
         cmake:
           - "default"
-          - "3.18.0"
+          - "3.25.2"
 
     # Name the job based on matrix/env options
     name: "configure (${{ matrix.cmake }}, ${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
@@ -119,16 +119,17 @@ jobs:
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
         fi
 
-    - name: Install Swig >= 4.0.2
+    - name: Install Swig >= 4.1.0
       run: |
-        # Install additional apt-based dependencies required to build swig 4.0.2
-        sudo apt-get install -y bison
+        # Install additional apt-based dependencies required to build swig 4.1.0.
+        # swig >= 4.1 requires pcre2-config from libpcre2-dev
+        sudo apt-get install -y bison automake libpcre2-dev
         # Create a local directory to build swig in.
         mkdir -p swig-from-source && cd swig-from-source
         # Install SWIG building from source dependencies
-        wget https://github.com/swig/swig/archive/refs/tags/v4.0.2.tar.gz
-        tar -zxf v4.0.2.tar.gz
-        cd swig-4.0.2/
+        wget https://github.com/swig/swig/archive/refs/tags/v4.1.0.tar.gz
+        tar -zxf v4.1.0.tar.gz
+        cd swig-4.1.0/
         ./autogen.sh
         ./configure
         make
