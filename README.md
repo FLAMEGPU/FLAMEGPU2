@@ -62,7 +62,8 @@ This is used to build the FLAMEGPU2 library, examples, tests and documentation.
 Building FLAME GPU has the following requirements. There are also optional dependencies which are required for some components, such as Documentation or Python bindings.
 
 + [CMake](https://cmake.org/download/) `>= 3.25.2`
-+ [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 11.2` and a [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 3.5` NVIDIA GPU.
++ [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 12.0` and a [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 5.0` NVIDIA GPU.
+  + FLAME GPU aims to support the 2 most recent major CUDA versions, currently 12.x and 13.x
 + C++20 capable C++ compiler (host), compatible with the installed CUDA version
   + [Microsoft Visual Studio 2022](https://visualstudio.microsoft.com/) (Windows)
     + *Note:* Visual Studio must be installed before the CUDA toolkit is installed. See the [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) for more information.
