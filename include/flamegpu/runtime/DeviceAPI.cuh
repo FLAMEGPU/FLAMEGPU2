@@ -10,7 +10,7 @@
 #include "flamegpu/runtime/detail/curve/DeviceCurve.cuh"
 #include "flamegpu/runtime/messaging_device.h"
 #else
-#include "dynamic/curve_rtc_dynamic.h"
+#include <dynamic/curve_rtc_dynamic.h>
 #endif  // !_RTC
 #include "flamegpu/runtime/random/AgentRandom.cuh"
 #include "flamegpu/runtime/environment/DeviceEnvironment.cuh"

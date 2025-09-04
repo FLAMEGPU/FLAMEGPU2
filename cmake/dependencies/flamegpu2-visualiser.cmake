@@ -42,7 +42,7 @@ if (FLAMEGPU_VISUALISATION_ROOT)
         set(FLAMEGPU_VISUALISATION_ROOT "${FLAMEGPU_VISUALISATION_ROOT_ABS}" PARENT_SCOPE)
         # And set up the visualisation build 
         add_subdirectory(${FLAMEGPU_VISUALISATION_ROOT_ABS} ${CMAKE_CURRENT_BINARY_DIR}/_deps/flamegpu_visualiser-build EXCLUDE_FROM_ALL)
-        # Set the cahce var too, to ensure it appears in the GUI.
+        # Set the cache var too, to ensure it appears in the GUI.
         set(FLAMEGPU_VISUALISATION_ROOT "${FLAMEGPU_VISUALISATION_ROOT}" CACHE STRING "Path to local copy of the FLAMEGPU2-visualiser repository, rather than CMake-based fetching")
 
     else()

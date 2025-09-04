@@ -12,11 +12,9 @@
 
 #include "flamegpu/util/StringPair.h"
 
-namespace jitify {
-namespace experimental {
-class KernelInstantiation;
-}  // namespace experimental
-}  // namespace jitify
+namespace jitify2 {
+class KernelData;
+}  // namespace jitify2
 namespace flamegpu {
 namespace detail {
 namespace curve {
@@ -289,7 +287,7 @@ class CurveRTCHost {
      * @param stream The CUDA stream used for the cuda memcpy
      * @note This is async, the stream is non synchronised
      */
-    void updateDevice_async(const jitify::experimental::KernelInstantiation& instance, cudaStream_t stream);
+    void updateDevice_async(const jitify2::KernelData& instance, cudaStream_t stream);
 
  protected:
    /**
