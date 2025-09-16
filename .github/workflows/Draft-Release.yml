@@ -28,7 +28,7 @@ defaults:
 # + Wheel producing manylinux builds
 #   + CUDA 12.0 and 13.0, py 3.8-3.12, vis on/off, py only.
 # + Wheel producing Windows builds
-#   + CUDA 12.0 and 13.0, py 3.8-3.12, vis on/off, py only.
+#   + CUDA 12.4 and 13.0, py 3.8-3.12, vis on/off, py only.
 # + Draft github release workflow.
 
 jobs:
@@ -200,12 +200,12 @@ jobs:
             cuda_arch: "75"
             hostcxx: "Visual Studio 17 2022"
             os: windows-2025
-          # Newest and oldest CUDA 12.x we support. 12.4 is the oldest officially supported by MSVC >= 1940, but we have a workaround in place
+          # Newest and oldest CUDA 12.x we support. 12.4 is the oldest officially supported by MSVC >= 1940, and although we have a workaround in place 12.4+ is required for pyflamegpu in c++20.
           - cuda: "12.9.1"
             cuda_arch: "50"
             hostcxx: "Visual Studio 17 2022"
             os: windows-2025
-          - cuda: "12.0.0"
+          - cuda: "12.4.0"
             cuda_arch: "50"
             hostcxx: "Visual Studio 17 2022"
             os: windows-2022
@@ -511,8 +511,8 @@ jobs:
             cuda_arch: "75-real;80-real;90-real;100-real;110-real;120-real;120-virtual"
             hostcxx: "Visual Studio 17 2022"
             os: windows-2025
-          # Oldest CUDA 12.x we support. 12.4 is the oldest officially supported by MSVC >= 1940, but we have a workaround in place
-          - cuda: "12.0.0"
+          # Oldest CUDA 12.x we support. 12.4 is the oldest officially supported by MSVC >= 1940, and is required for pyflamegpu as c++20 due to compiler/stdlib errors
+          - cuda: "12.4.0"
             cuda_arch: "50-real;60-real;70-real;80-real;90-real;90-virtual"
             hostcxx: "Visual Studio 17 2022"
             os: windows-2022
