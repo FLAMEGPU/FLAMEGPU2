@@ -23,6 +23,17 @@ get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../ REALPATH
 # Ensure that the cuda toolkit package is available
 find_package(CUDAToolkit REQUIRED)
 
+# If using MSVC and CUDA < 12.4, pyflamegpu may fail to build in c++20 mode. Please use a newer CUDA for pyflamegpu support.
+if (MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 12.4)
+    message(WARNING
+        " pyflamegpu may fail to build with MSVC and CUDA < 12.4 due to compilation errors under c++20.\n"
+        " \n"
+        " Please upgrade to CUDA >= 12.4 for pyflamegpu on Windows.\n"
+        " \n"
+        " Alternatively, WSL can be used for pyflamegpu with CUDA < 12.4 on Windows (excluding interactive visualisation)"
+    )
+endif()
+
 # include CMake function to enable setting of warning suppressions
 include(${FLAMEGPU_ROOT}/cmake/warnings.cmake)
 # Get FLAMEGPU Version information
