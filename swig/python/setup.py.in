@@ -28,7 +28,7 @@ setup(
   'Development Status :: 3 - Alpha',
   'Environment :: GPU :: NVIDIA CUDA :: @CUDAToolkit_VERSION_MAJOR@.@CUDAToolkit_VERSION_MINOR@',
   'Intended Audience :: Developers',
-  'License :: OSI Approved :: MIT License',
+  'License :: OSI Approved :: GNU Affero General Public License v3',
   'Operating System :: POSIX :: Linux',
   'Operating System :: Microsoft :: Windows',
   'Programming Language :: Python',
