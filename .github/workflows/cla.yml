@@ -1,0 +1,55 @@
+name: "CLA Assistant"
+
+# The CLA assistant workflow must have write scope for pull request comments, and so must be ran on pull_request_target, and issue comments.
+on:
+  issue_comment:
+    types: [created]
+  pull_request_target:
+    types: [opened,closed,synchronize]
+
+# Explicit permissions
+permissions:
+  actions: write
+  contents: read
+  pull-requests: write
+  statuses: write
+
+jobs:
+  CLAAssistant:
+    # Only run the job at all for pull_request_targets or comments which contain one of two strings.
+    # Contains is used to allow whitespace in the comment which is checked in an inner step.
+    if: github.event_name == 'pull_request_target' || (contains(github.event.comment.body, 'recheck') || contains(github.event.comment.body, 'I have read the CLA Document and I hereby sign the CLA'))
+    runs-on: ubuntu-latest
+    steps:
+      # If triggered by an issue comment, compare a trimmed version to allow for additional whitespace.
+      # Uses JS to avoid having to do shell character escaping nicely
+      - name: "Check comment"
+        id: check_trimmed_comment
+        if: github.event_name == 'issue_comment'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const comment = context.payload.comment.body;
+            const trimmed = comment.trim();
+            if (trimmed === 'recheck' || trimmed === 'I have read the CLA Document and I hereby sign the CLA') {
+              return 'true';
+            } else {
+              return 'false';
+            }
+          result-encoding: string
+
+      # For pull_request_triggers, or comments which contained (whitespace wrapped) trigger phrases, run the contributor assistant
+      - name: "Contributor Assistant"
+        if: github.event_name == 'pull_request_target' || steps.check_trimmed_comment.outputs.result == 'true'
+        uses: FLAMEGPU/contributor-assistant-github-action@ca4a40a7d1004f18d9960b404b97e5f30a505a08
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.CLA_SIGNATURES_PAT }}
+        with:
+          path-to-signatures: 'signatures/v1/cla.json'
+          path-to-document: 'https://flamegpu.com/cla/'
+          branch: 'main'
+          # allowlist: bot*
+          remote-organization-name: FLAMEGPU
+          remote-repository-name: cla-signatures
+          lock-pullrequest-aftermerge: false

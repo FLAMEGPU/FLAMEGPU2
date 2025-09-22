@@ -51,7 +51,7 @@ if (DEFINED ENV{FLAMEGPU_SHARE_USAGE_STATISTICS} AND NOT "$ENV{FLAMEGPU_SHARE_US
     set (FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT OFF)
 endif()
 # Option to opt-in to sharing usage statistics
-option(FLAMEGPU_SHARE_USAGE_STATISTICS "Support for academic software is dependant on evidence of impact. Enabling this sends anonymous usage statistics so that we can continue to develop it under a free licence." ${FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT})
+option(FLAMEGPU_SHARE_USAGE_STATISTICS "Support for academic software is dependant on evidence of impact. Enabling this sends anonymous usage statistics so that we can continue to develop it under a free license." ${FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT})
 unset(FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT)
 
 # dependet option to suppress the telemetry notice if telemetry is off.
@@ -557,7 +557,7 @@ else()
     message(STATUS "FLAMEGPU_SHARE_USAGE_STATISTICS is not selected. \n\n"
     "   Support for academic software is dependant on evidence of impact. \n"
     "   Enabling this option sends minimal anonymous usage statistics so \n"
-    "   that we can continue to develop the software under a FOSS licence.\n"
+    "   that we can continue to develop the software under a FOSS license.\n"
     "   See our documentation for more information of what we collect and \n"
     "   why: https://docs.flamegpu.com/guide/telemetry")
 endif()
