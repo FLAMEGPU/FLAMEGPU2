@@ -10,6 +10,7 @@ on:
       - "**"
       - "!.github/**"
       - ".github/scripts/install_cuda_windows.ps1"
+      - ".github/scripts/install_cuda_windows_redist.ps1"
       - ".github/workflows/Windows.yml"
   # Disabled for now. See https://github.com/FLAMEGPU/FLAMEGPU2/pull/644
   # pull_request:
@@ -132,7 +133,12 @@ jobs:
       env:
         cuda: ${{ env.CUDA }}
         visual_studio: ${{ env.HOSTCXX }}
-      run: .github\scripts\install_cuda_windows.ps1
+      run: |
+        if ([version]$env:cuda -ge [version]"12.0") {
+          .github\scripts\install_cuda_windows_redist.ps1
+        } else {
+          .github\scripts\install_cuda_windows.ps1
+        }
 
     - name: Select Python
       if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}

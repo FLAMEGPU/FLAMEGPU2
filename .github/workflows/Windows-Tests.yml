@@ -84,7 +84,12 @@ jobs:
       env:
         cuda: ${{ env.CUDA }}
         visual_studio: ${{ env.HOSTCXX }}
-      run: .github\scripts\install_cuda_windows.ps1
+      run: |
+        if ([version]$env:cuda -ge [version]"12.0") {
+          .github\scripts\install_cuda_windows_redist.ps1
+        } else {
+          .github\scripts\install_cuda_windows.ps1
+        }
 
     - name: Add custom problem matchers for annotations
       run: echo "::add-matcher::.github/problem-matchers.json"
