@@ -26,21 +26,27 @@ jobs:
       # Multiplicative build matrix
       matrix:
         cudacxx:
-          - cuda: "12.0"
-            cuda_arch: "50"
-            hostcxx: gcc-10
-            os: ubuntu-22.04
+          - cuda: "13.0"
+            cuda_arch: "75"
+            hostcxx: gcc-12
+            os: ubuntu-24.04
+          - cuda: "13.0.0"
+            cuda_arch: "75"
+            hostcxx: "Visual Studio 17 2022"
+            os: windows-2025
         python:
-          - "3.8"
+          - "3.10"
         config:
           - name: "Release"
             config: "Release"
             SEATBELTS: "ON"
         VISUALISATION:
-          - "OFF"
+          - "ON"
         # 'default' or '' will not install cmake, otherwise provide a full semver version.
         cmake:
           - "default"
+          - "4.0.0"
+          - "3.31.8"
           - "3.25.2"
 
     # Name the job based on matrix/env options
@@ -65,13 +71,16 @@ jobs:
       FLAMEGPU_SEATBELTS: ${{ matrix.config.SEATBELTS }}
       PYTHON: ${{ matrix.python}}
       VISUALISATION: ${{ matrix.VISUALISATION }}
+      # Ensure MSVC >= 1940 works with CUDA <= 12.3
+      NVCC_PREPEND_FLAGS: "-D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH --allow-unsupported-compiler"
       CMAKE: ${{ matrix.cmake }}
+      
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install cmake from GitHub Releases
-      if: ${{ env.CMAKE != '' && env.CMAKE != 'default' }}
+    - name: Install cmake from GitHub Releases (Linux)
+      if: ${{ startswith(env.OS, 'ubuntu') && env.CMAKE != '' && env.CMAKE != 'default' }}
       working-directory: ${{ runner.temp }}
       run: |
         wget -q https://github.com/Kitware/CMake/releases/download/v${{ env.CMAKE }}/cmake-${{ env.CMAKE }}-linux-x86_64.tar.gz
@@ -79,13 +88,39 @@ jobs:
         # Inner directory case changes in some releases, use find to get the right path
         echo "$(dirname $(find $(pwd) -wholename "*/bin/cmake" -exec echo {} \; -quit))" >> $GITHUB_PATH
 
-    - name: Install CUDA
+    - name: Install cmake from GitHub Releases (Windows)
+      if: ${{ runner.os == 'Windows' && env.CMAKE != '' && env.CMAKE != 'default' }}
+      working-directory: ${{ runner.temp }}
+      run: |
+        curl -s -L -O  https://github.com/Kitware/CMake/releases/download/v${{ env.CMAKE }}/cmake-${{ env.CMAKE }}-windows-x86_64.zip
+        ls
+        7z.exe x "cmake-${{ env.CMAKE }}-windows-x86_64.zip" -o"cmake-${{ env.CMAKE }}-windows-x86_64"
+        echo "$(dirname $(find $(pwd) -wholename "*/bin/cmake.exe" -exec echo {} \; -quit))" >> $GITHUB_PATH
+
+    - name: Check CMake Version
+      run: cmake --version
+
+    - name: Install CUDA (Ubuntu)
       if: ${{ startswith(env.OS, 'ubuntu') && env.CUDA != '' }}
       env:
         cuda: ${{ env.CUDA }}
       run: .github/scripts/install_cuda_ubuntu.sh
 
-    - name: Install/Select gcc and g++
+    - name: Install CUDA (Windows)
+      if: ${{ runner.os == 'Windows' && env.CUDA != '' }}
+      shell: powershell
+      timeout-minutes: 35
+      env:
+        cuda: ${{ env.CUDA }}
+        visual_studio: ${{ env.HOSTCXX }}
+      run: |
+        if ([version]$env:cuda -ge [version]"12.0") {
+          .github\scripts\install_cuda_windows_redist.ps1
+        } else {
+          .github\scripts\install_cuda_windows.ps1
+        }
+
+    - name: Install/Select gcc and g++ (Ubuntu)
       if: ${{ startsWith(env.HOSTCXX, 'gcc-') }}
       run: |
         gcc_version=${HOSTCXX//gcc-/}
@@ -100,14 +135,18 @@ jobs:
       with:
         python-version: ${{ env.PYTHON }}
 
-    # @todo - is some/all of this still required when using select Python?
-    - name: Install python dependencies
-      if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
+    - name: Install python dependencies (Ubuntu)
+      if: ${{ startswith(env.OS, 'ubuntu') && env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       run: |
         sudo apt-get install python3-venv
         python3 -m pip install --upgrade wheel build setuptools
 
-    - name: Install Visualisation Dependencies
+    - name: Install python dependencies (Windows)
+      if: ${{ runner.os == 'Windows' && env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
+      run: |
+        python3 -m pip install --upgrade wheel build setuptools
+
+    - name: Install Visualisation Dependencies (Ubuntu)
       if: ${{ startswith(env.OS, 'ubuntu') && env.VISUALISATION == 'ON' }}
       run: |
         # Install ubuntu-24.04 packages
@@ -119,7 +158,8 @@ jobs:
           sudo apt-get install -y libglew-dev libfontconfig1-dev libsdl2-dev libdevil-dev libfreetype-dev
         fi
 
-    - name: Install Swig >= 4.1.0
+    - name: Install Swig >= 4.1.0 (Ubuntu)
+      if: ${{ startswith(env.OS, 'ubuntu') && env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
       run: |
         # Install additional apt-based dependencies required to build swig 4.1.0.
         # swig >= 4.1 requires pcre2-config from libpcre2-dev
@@ -135,7 +175,6 @@ jobs:
         make
         sudo make install
 
-    # This pre-emptively patches a bug from ManyLinux where git dir is owned by diff user, blocking buildnumber generation
     - name: Enable git safe-directory
       run: git config --global --add safe.directory $GITHUB_WORKSPACE
 
@@ -144,9 +183,10 @@ jobs:
         cmake . -B "${{ env.BUILD_DIR }}"
         -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
         -Werror=dev
-        -DCMAKE_WARN_DEPRECATED="OFF"
+        -DCMAKE_WARN_DEPRECATED="ON"
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
+        -DFLAMEGPU_SEATBELTS="${{ env.FLAMEGPU_SEATBELTS }}"
         -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
         -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}"
         -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
@@ -160,7 +200,9 @@ jobs:
         cmake . -B "${{ env.BUILD_DIR }}"
         -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
         -Werror=dev
-        -DCMAKE_WARN_DEPRECATED="OFF"
+        -DCMAKE_WARN_DEPRECATED="ON"
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
+        -DFLAMEGPU_SEATBELTS="${{ env.FLAMEGPU_SEATBELTS }}"
+        -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
         -DFLAMEGPU_ENABLE_NVTX="ON"
