@@ -1,0 +1,1141 @@
+From da51d42b1c2280f74d918a61791339e15a71fc5c Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Tue, 5 Aug 2025 18:47:21 +0100
+Subject: [PATCH 01/24] CMake: Fix error on windows using TARGET_FILE to launch
+ dynamically created binaries
+
+---
+ CMakeLists.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index b341304..d569a4f 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -100,7 +100,7 @@ function(add_stringify_command arg)
+   add_custom_command(
+       OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${arg}.jit
+       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+-      COMMAND ./stringify ${CMAKE_CURRENT_SOURCE_DIR}/${arg} > ${arg}.jit
++      COMMAND $<TARGET_FILE:stringify> ${CMAKE_CURRENT_SOURCE_DIR}/${arg} > ${arg}.jit
+       DEPENDS stringify)
+ endfunction()
+ add_executable(jitify2_preprocess jitify2_preprocess.cpp)
+@@ -118,7 +118,7 @@ add_custom_command(
+     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/jitify2_test_kernels.cu.jit.hpp
+            ${CMAKE_CURRENT_BINARY_DIR}/jitify2_test_kernels.cu.headers.jit.cpp
+     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+-    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/jitify2_preprocess -i --minify
++    COMMAND $<TARGET_FILE:jitify2_preprocess> -i --minify
+                 -o ${CMAKE_CURRENT_BINARY_DIR}
+                 -s jitify2_test_kernels.cu.headers
+                 jitify2_test_kernels.cu
+-- 
+2.34.1
+
+
+From 094b1b5c238d6c191714baedf39a7ac69546638f Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Tue, 5 Aug 2025 19:34:22 +0100
+Subject: [PATCH 02/24] CMake: Ensure the check target behaves with
+ single-target and multi-target generators.
+
+Provides ctest with the --build-config only if $<CONFIG> genex is not empty
+---
+ CMakeLists.txt | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d569a4f..6b12ece 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -172,8 +172,12 @@ foreach(test ${TESTS})
+ endforeach(test)
+ # Add "check" command that *builds and* runs tests, with verbose output.
+ # (The default "test" command neither builds nor gives verbose output).
+-add_custom_target(check ALL COMMAND ${CMAKE_CTEST_COMMAND} --verbose
+-                  DEPENDS ${TESTS})
++# --build-config is required for multi-config generators, and uses COMMAND_EXPAND_LISTS to ensure that the flag and value are not provided as a single string to ctest
++add_custom_target(check ALL
++    COMMAND ${CMAKE_CTEST_COMMAND} --verbose "$<IF:$<STREQUAL:$<CONFIG>,>,,--build-config;$<CONFIG>>"
++    DEPENDS ${TESTS}
++    COMMAND_EXPAND_LISTS
++)
+ 
+ # ----
+ # Docs
+-- 
+2.34.1
+
+
+From dc03bd9c80df9a416cd3df4262cafce787ed1921 Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Tue, 5 Aug 2025 18:43:10 +0100
+Subject: [PATCH 03/24] Suppress C4996 warnigns under MSVC
+
+---
+ CMakeLists.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6b12ece..0003b7a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -8,7 +8,7 @@ set (CMAKE_CXX_STANDARD 17)
+ set (CMAKE_CUDA_STANDARD 17)  # Doesn't work?
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ")
+ if (MSVC)
+-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
++  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX -D_CRT_SECURE_NO_WARNINGS")
+   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2")
+ else()
+   set(CMAKE_CXX_FLAGS
+@@ -30,7 +30,7 @@ endif()
+ set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
+ if (MSVC)
+   set(CMAKE_CUDA_FLAGS
+-    "${CMAKE_CUDA_FLAGS} -Xcompiler=\"/WX\" -rdc=true")
++    "${CMAKE_CUDA_FLAGS} -Xcompiler=\"/WX\" -D_CRT_SECURE_NO_WARNINGS -rdc=true")
+   set(CMAKE_CUDA_FLAGS_RELEASE
+     "${CMAKE_CUDA_FLAGS_RELEASE} -O3 -Xcompiler=\"/O2\"")
+ else()
+-- 
+2.34.1
+
+
+From 6a5b09751042007a96dc29cf5cdf27a2408a89e3 Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Tue, 5 Aug 2025 18:43:46 +0100
+Subject: [PATCH 04/24] Fix C4129 unrecognised character escape sequence
+ warnings on windows
+
+---
+ jitify2.hpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/jitify2.hpp b/jitify2.hpp
+index a32e001..2f57565 100644
+--- a/jitify2.hpp
++++ b/jitify2.hpp
+@@ -4137,7 +4137,7 @@ inline const char* guess_cuda_home() {
+     if (env_cuda_home) return env_cuda_home;
+     // Guess the default location.
+ #if defined _WIN32 || defined _WIN64
+-    return "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA";
++    return "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA";
+ #else
+     return "/usr/local/cuda";
+ #endif
+-- 
+2.34.1
+
+
+From 93a1809f088d1847360731535573e24f7402e4c3 Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Tue, 5 Aug 2025 18:44:17 +0100
+Subject: [PATCH 05/24] Fix MSVC error C2110: '+': cannot add two pointers
+
+---
+ jitify2.hpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/jitify2.hpp b/jitify2.hpp
+index 2f57565..a0dadad 100644
+--- a/jitify2.hpp
++++ b/jitify2.hpp
+@@ -4206,7 +4206,7 @@ inline std::string make_temp_dir() {
+   char tmpdir[JITIFY_PATH_MAX + 1];
+   // Note: tmpdir is guaranteed to end with a '\'.
+   if (!GetTempPath2A(sizeof(tmpdir), tmpdir)) return "";
+-  std::string path = tmpdir + "__jitify_" + std::to_string(uid);
++  std::string path = std::string(tmpdir) + "__jitify_" + std::to_string(uid);
+   if (::_mkdir(path.c_str()) != 0) return "";
+   return path;
+ #else
+-- 
+2.34.1
+
+
+From d44ad3722cfe35bcbe6c2e764103f5699e604e2d Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Tue, 5 Aug 2025 18:46:14 +0100
+Subject: [PATCH 06/24] Fix MSVC error C2026: string too big
+
+Fixed by splitting the string literal into two adjacent string literals.
+---
+ jitify2.hpp | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/jitify2.hpp b/jitify2.hpp
+index a0dadad..47c8531 100644
+--- a/jitify2.hpp
++++ b/jitify2.hpp
+@@ -6626,7 +6626,8 @@ struct __add_reference_helper<_Tp, true> {
+ };
+ template <typename _Tp>
+ struct add_reference : public __add_reference_helper<_Tp> {};
+-
++)"
++R"(
+ namespace __jitify_detail {
+ template <typename T>
+ struct is_int_or_cref {
+-- 
+2.34.1
+
+
+From 80e72ae6a187be1097a10d93ae7d149a712deb16 Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Tue, 5 Aug 2025 19:09:51 +0100
+Subject: [PATCH 07/24] Use std::invoke_result_t for >= C++17 in place of
+ std::result_of
+
+---
+ jitify2_test.cu | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/jitify2_test.cu b/jitify2_test.cu
+index 2aae9d2..f1ba855 100644
+--- a/jitify2_test.cu
++++ b/jitify2_test.cu
+@@ -2528,7 +2528,11 @@ bool read_binary_file(const char* filename, std::string* contents) {
+ template <class JitifyObjectMaker>
+ void check_or_update_serialization_goldens(
+     JitifyObjectMaker make_jitify_object) {
++#if __cplusplus >= 201703L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
++  using JitifyObject = std::invoke_result_t<JitifyObjectMaker>;
++#else  // __cplusplus >= 201703L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+   using JitifyObject = typename std::result_of<JitifyObjectMaker()>::type;
++#endif  // __cplusplus >= 201703L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+   constexpr size_t version = jitify2::serialization::kSerializationVersion;
+   std::string object_type_name = jitify2::reflection::reflect<JitifyObject>();
+   // Remove namespace prefix from type name.
+-- 
+2.34.1
+
+
+From 72a38c744b76d8a66af91e4ab998e9a084a1acbe Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Tue, 5 Aug 2025 19:12:33 +0100
+Subject: [PATCH 08/24] Suppress conversion from size_t to int warning with
+ explicit cast
+
+---
+ jitify2.hpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/jitify2.hpp b/jitify2.hpp
+index 47c8531..ebb9112 100644
+--- a/jitify2.hpp
++++ b/jitify2.hpp
+@@ -4117,7 +4117,7 @@ inline int run_system_command(const char* command,
+   if (output) {
+     output->clear();
+     std::array<char, 128> buffer;
+-    while (fgets(buffer.data(), buffer.size(), pipe)) {
++    while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe)) {
+       *output += buffer.data();
+     }
+   }
+-- 
+2.34.1
+
+
+From fb5e701f4b7814c0a9df5691bb0e61be5d8a7e2a Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Tue, 5 Aug 2025 19:35:13 +0100
+Subject: [PATCH 09/24] Suppress deprecated method warnings for
+ jtiify2::CompilerProgramData::nvvm in the test suite
+
+---
+ jitify2_test.cu | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/jitify2_test.cu b/jitify2_test.cu
+index f1ba855..8c4d221 100644
+--- a/jitify2_test.cu
++++ b/jitify2_test.cu
+@@ -1360,6 +1360,11 @@ TEST(Jitify2Test, InvalidPrograms) {
+   EXPECT_EQ(error.info("headers"), "");
+ }
+ 
++#if defined(_MSC_VER)
++  // Disable deprecation warnings under windows for use of deprecated nvvm() method
++  #pragma warning(push)
++  #pragma warning(disable : 4996)
++#endif  // _MSC_VER
+ TEST(Jitify2Test, CompileLTO_IR) {
+   static const char* const source = R"(
+ const int arch = __CUDA_ARCH__ / 10;
+@@ -1387,6 +1392,10 @@ const int arch = __CUDA_ARCH__ / 10;
+     EXPECT_EQ(arch, current_arch);
+   }
+ }
++#if defined(_MSC_VER)
++  // Restore warnings, re-enabling deprecated method warnings
++  #pragma warning(pop)
++#endif  // _MSC_VER
+ 
+ TEST(Jitify2Test, LinkMultiplePrograms) {
+   static const char* const source1 = R"(
+-- 
+2.34.1
+
+
+From 1ca0583b142ba94e19d238170401ef9005cc801c Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Tue, 5 Aug 2025 20:09:48 +0100
+Subject: [PATCH 10/24] Suppress NVCC warning 550-D set but never used variable
+ pch_verbose
+
+This should not be neccessary, but (void)pch_verbose; does not prevent this being raised
+---
+ jitify2.hpp | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/jitify2.hpp b/jitify2.hpp
+index ebb9112..3185b86 100644
+--- a/jitify2.hpp
++++ b/jitify2.hpp
+@@ -4531,7 +4531,24 @@ inline nvrtcResult compile_program_nvrtc(
+     header_sources_c.push_back(name_source.second.c_str());
+   }
+ 
++#if defined(__CUDACC__)
++  #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
++    #pragma nv_diag_suppress 550
++  #else  // __NVCC_DIAG_PRAGMA_SUPPORT__
++    #pragma diag_suppress 550
++  #endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
++#endif  // defined(__CUDACC__)
++
+   bool pch_verbose = true;
++
++#if defined(__CUDACC__)
++  #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
++    #pragma nv_diag_default 550
++  #else  // __NVCC_DIAG_PRAGMA_SUPPORT__
++    #pragma diag_default 550
++  #endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
++#endif  // #if defined(__CUDACC__)
++
+   std::vector<const char*> options_c;
+   options_c.reserve(options.size());
+   for (const Option& option : options) {
+-- 
+2.34.1
+
+
+From 0d629d81ecbe03d9aa0afdb8c1bc441a183fc5d1 Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Wed, 6 Aug 2025 16:08:18 +0100
+Subject: [PATCH 11/24] Remove the deletion of the Arg copy consturctor so it
+ is trivially copyable under MSVC
+
+---
+ example_headers/class_arg_kernel.cuh | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/example_headers/class_arg_kernel.cuh b/example_headers/class_arg_kernel.cuh
+index b452ba3..15d0999 100644
+--- a/example_headers/class_arg_kernel.cuh
++++ b/example_headers/class_arg_kernel.cuh
+@@ -50,9 +50,6 @@ class Managed {
+ struct Arg : public Managed {
+   const int x;
+   Arg(int x_) : x(x_) {}
+-
+-  // there can be no call to the copy constructor
+-  Arg(const Arg& arg) = delete;
+ };
+ 
+ template <typename T>
+-- 
+2.34.1
+
+
+From a4c8a3650ff805ebe47cd4b365ce227bdd00d063 Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Wed, 20 Aug 2025 17:52:29 +0100
+Subject: [PATCH 12/24] Check CUDA_PATH after JITIFY_CUDA_HOME and CUDA_HOME in
+ guess_cuda_home
+
+---
+ jitify2.hpp | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/jitify2.hpp b/jitify2.hpp
+index 3185b86..bae8518 100644
+--- a/jitify2.hpp
++++ b/jitify2.hpp
+@@ -4135,6 +4135,9 @@ inline const char* guess_cuda_home() {
+     if (env_jitify_cuda_home) return env_jitify_cuda_home;
+     const char* env_cuda_home = std::getenv("CUDA_HOME");
+     if (env_cuda_home) return env_cuda_home;
++    // CUDA_PATH is set by the CUDA installer on windows
++    const char* env_cuda_path = std::getenv("CUDA_PATH");
++    if (env_cuda_path) return env_cuda_path;
+     // Guess the default location.
+ #if defined _WIN32 || defined _WIN64
+     return "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA";
+-- 
+2.34.1
+
+
+From b477cbede0a252f323644bcb8ed8f225e5274ade Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Wed, 20 Aug 2025 17:53:30 +0100
+Subject: [PATCH 13/24] Windows: Use CUDA_VERSION from cuda.h as the fallback
+ default version in guess_cuda_home
+
+---
+ jitify2.hpp | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/jitify2.hpp b/jitify2.hpp
+index bae8518..76afcd0 100644
+--- a/jitify2.hpp
++++ b/jitify2.hpp
+@@ -4140,7 +4140,10 @@ inline const char* guess_cuda_home() {
+     if (env_cuda_path) return env_cuda_path;
+     // Guess the default location.
+ #if defined _WIN32 || defined _WIN64
+-    return "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA";
++    constexpr int cuda_version_major = CUDA_VERSION / 1000;
++    constexpr int cuda_version_minor = (CUDA_VERSION % 1000) / 10;
++    std::string default_path = std::string("C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v") + std::to_string(cuda_version_major) + "." + std::to_string(cuda_version_minor) + "\\";
++    return default_path.c_str();
+ #else
+     return "/usr/local/cuda";
+ #endif
+-- 
+2.34.1
+
+
+From 3d09df585b7b0eb6f4dacd1cb85c2027228b4798 Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Wed, 20 Aug 2025 17:54:58 +0100
+Subject: [PATCH 14/24] Wrap paths with quotes for run_system_command and -I
+ when required.
+
+This allows for cases where the path to nvcc includes spaces, such as the default CUDA toolkit installation location on Windows
+---
+ jitify2.hpp | 17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
+
+diff --git a/jitify2.hpp b/jitify2.hpp
+index 76afcd0..0b693ef 100644
+--- a/jitify2.hpp
++++ b/jitify2.hpp
+@@ -2786,6 +2786,15 @@ inline bool path_exists(const char* filename, bool* is_dir = nullptr) {
+   return ret;
+ }
+ 
++inline std::string quoted_path_if_needed(const std::string& p) {
++  // If a path includes spaces or single backslashes, the full path may need warpping with quotes when passed to run_system_command, either as the executable or an include path.
++  if (p.find(' ') == std::string::npos && p.find('\\') == std::string::npos) {
++    return p;
++  } else {
++    return "\"" + p + "\"";
++  }
++}
++
+ inline const char* get_current_executable_path() {
+   static const char* path = []() -> const char* {
+     static char buffer[JITIFY_PATH_MAX + 1] = {};
+@@ -4156,7 +4165,7 @@ class Nvcc {
+   std::string nvcc_path_;
+ 
+   static bool is_valid_nvcc(std::string nvcc_path) {
+-    return run_system_command((nvcc_path + " --version").c_str());
++    return run_system_command((quoted_path_if_needed(nvcc_path) + " --version").c_str());
+   }
+ 
+   static std::string find_nvcc_path() {
+@@ -4186,7 +4195,7 @@ class Nvcc {
+                  std::string* failure = nullptr) const {
+     // Note: We redirect stderr to stdout so that we capture it too.
+     const std::string command =
+-        detail::string_concat(nvcc_path_, " ", options, " ", "2>&1");
++        detail::string_concat(quoted_path_if_needed(nvcc_path_), " ", options, " ", "2>&1");
+     return run_system_command(command.c_str(), output, failure);
+   }
+ };
+@@ -4355,8 +4364,8 @@ class NvccProgram {
+     // Note: This ensures the cuda toolkit headers are found before any that
+     // were embedded during preprocessing (which probably won't work with nvcc).
+     options.emplace_back(
+-        "-I", detail::path_join(detail::guess_cuda_home(), "include"));
+-    options.emplace_back("-I", tmp_include_dir);
++        "-I", detail::quoted_path_if_needed(detail::path_join(detail::guess_cuda_home(), "include")));
++    options.emplace_back("-I", detail::quoted_path_if_needed(tmp_include_dir));
+ 
+     static const char* const kJitifyExpressionPrefix = "__jitify_expression";
+ 
+-- 
+2.34.1
+
+
+From 9826e87fd373fa0ca6303109bacf441977a38e43 Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Thu, 21 Aug 2025 15:35:12 +0100
+Subject: [PATCH 15/24] Windows: Use GetLongPathNameA to get the expanded
+ temporary directory path (no modified usernames)
+
+---
+ jitify2.hpp | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/jitify2.hpp b/jitify2.hpp
+index 0b693ef..8c5ee18 100644
+--- a/jitify2.hpp
++++ b/jitify2.hpp
+@@ -194,7 +194,7 @@
+ #include <dbghelp.h>      // For UndecorateSymbolName
+ #include <direct.h>       // For mkdir
+ #include <fcntl.h>        // For open, O_RDWR etc.
+-#include <fileapi.h>      // For GetTempPath2A
++#include <fileapi.h>      // For GetTempPath2A, GetLongPathNameA
+ #include <io.h>           // For _sopen_s
+ #include <process.h>      // For _getpid
+ #include <shlobj_core.h>  // For SHGetFolderPathA
+@@ -4221,6 +4221,8 @@ inline std::string make_temp_dir() {
+   char tmpdir[JITIFY_PATH_MAX + 1];
+   // Note: tmpdir is guaranteed to end with a '\'.
+   if (!GetTempPath2A(sizeof(tmpdir), tmpdir)) return "";
++  // Get the long-form of the tmpdir
++  GetLongPathNameA(tmpdir, tmpdir, sizeof(tmpdir));
+   std::string path = std::string(tmpdir) + "__jitify_" + std::to_string(uid);
+   if (::_mkdir(path.c_str()) != 0) return "";
+   return path;
+-- 
+2.34.1
+
+
+From a5e7028f7c68cab8a7256c0814100cc13a86c0f7 Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Thu, 21 Aug 2025 15:36:29 +0100
+Subject: [PATCH 16/24] Windows: Use std::filesystem::remove_all when built as
+ c++17 on windows in remove_all
+
+This enables removal of the temporary directory, suppressing a warning
+---
+ jitify2.hpp | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/jitify2.hpp b/jitify2.hpp
+index 8c5ee18..f977ea1 100644
+--- a/jitify2.hpp
++++ b/jitify2.hpp
+@@ -155,7 +155,7 @@
+ #include <type_traits>
+ #include <unordered_set>
+ 
+-#if __cplusplus >= 201703L
++#if JITIFY_CPLUSPLUS >= 201703L
+ #include <filesystem>
+ #endif
+ 
+@@ -4233,7 +4233,7 @@ inline std::string make_temp_dir() {
+ #endif
+ }
+ 
+-#if __cplusplus < 201703L && (!defined(_WIN32) && !defined(_WIN64))
++#if JITIFY_CPLUSPLUS < 201703L && (!defined(_WIN32) && !defined(_WIN64))
+ inline int delete_file_visitor(const char* path, const struct stat* sbuf,
+                                int type, struct FTW* ftwb) {
+   (void)sbuf;
+@@ -4244,11 +4244,11 @@ inline int delete_file_visitor(const char* path, const struct stat* sbuf,
+ #endif
+ 
+ inline bool remove_all(const std::string& path) {
+-#if __cplusplus >= 201703L
++#if JITIFY_CPLUSPLUS >= 201703L
+   std::error_code ec;
+   return std::filesystem::remove_all(path, ec) !=
+          static_cast<std::uintmax_t>(-1);
+-#else  // __cplusplus < 201703L
++#else  // JITIFY_CPLUSPLUS < 201703L
+ #if defined(_WIN32) || defined(_WIN64)
+   // TODO: Implement this if anyone cares about it.
+   return false;
+@@ -4261,7 +4261,7 @@ inline bool remove_all(const std::string& path) {
+   const int max_depth = 20;
+   return ::nftw(path.c_str(), delete_file_visitor, max_depth, flags) == 0;
+ #endif  // not Windows
+-#endif  // __cplusplus < 201703L
++#endif  // JITIFY_CPLUSPLUS < 201703L
+ }
+ 
+ class TempDirectory {
+-- 
+2.34.1
+
+
+From 4d8a5f292f20c781c76fae21a90e17ec195de400 Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Thu, 21 Aug 2025 15:38:04 +0100
+Subject: [PATCH 17/24] Windows: Fix expected cuda include dir index checked in
+ EncodedQuoteIncludes
+
+---
+ jitify2_test.cu | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/jitify2_test.cu b/jitify2_test.cu
+index 8c4d221..38dbb85 100644
+--- a/jitify2_test.cu
++++ b/jitify2_test.cu
+@@ -1023,9 +1023,16 @@ __global__ void my_kernel() {}
+   ASSERT_EQ(get_error(compiled), "");
+   // Note: The '2' in "I2@" here is the index of the cuda include dir amongst
+   // the "-I" options (excluding invalid paths like "foo/bar").
++  // This is 3 on windows.
++#if defined _WIN32 || defined _WIN64
++  EXPECT_TRUE(
++      preprog->header_sources().at("cuda_fp16.h").find("__jitify_I3@") !=
++      std::string::npos);
++#else  // defined _WIN32 || defined _WIN64
+   EXPECT_TRUE(
+       preprog->header_sources().at("cuda_fp16.h").find("__jitify_I2@") !=
+       std::string::npos);
++#endif  // defined _WIN32 || defined _WIN64
+   std::string cwd = jitify2::detail::get_real_path(".");
+   for (const auto& name_header : preprog->header_sources()) {
+     const std::string& header_name = name_header.first;
+-- 
+2.34.1
+
+
+From 48821418e40f70181dc29730f17a7937c98376b1 Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Fri, 22 Aug 2025 15:32:53 +0100
+Subject: [PATCH 18/24] Return the command exit code from run_system_command,
+ and check agianst 0 on usage for success
+
+Always reads from the pipe even when not capturing output, to ensure that a sigpipe is not raised which prevents the exit code of the underlying command from being accessed
+---
+ jitify2.hpp | 26 +++++++++++++++++++++-----
+ 1 file changed, 21 insertions(+), 5 deletions(-)
+
+diff --git a/jitify2.hpp b/jitify2.hpp
+index f977ea1..47b2476 100644
+--- a/jitify2.hpp
++++ b/jitify2.hpp
+@@ -4129,12 +4129,28 @@ inline int run_system_command(const char* command,
+     while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe)) {
+       *output += buffer.data();
+     }
++  } else {
++    // Must always read from the pipe for the exit code from the command to be available
++    std::array<char, 128> buffer;
++    while (fgets(buffer.data(), static_cast<int>(buffer.size()), pipe)) { }
+   }
+   const int result = JITIFY_PCLOSE(pipe);
+   if (result == -1 && failure) {
+     *failure = get_errno_string();
+   }
+-  return result;
++
++  // Extract the exit code from the called program if possible, otherwise return -1;
++  int exitCode = -1;
++  #ifdef _MSC_VER
++    // _pclose is documented as having the same return code format as for _cwait, but with the high and low order bytes swapped. However the _cwait docs do not describe a corresponding value. Just extracting the lsb seems to behave
++    exitCode = result & 0xFF;
++  #else
++    // Extract the exit code from the pclose result if it was a 'normal' exit
++    if (WIFEXITED(result)){
++      exitCode = WEXITSTATUS(result);
++    }
++  #endif
++  return exitCode;
+ }
+ #endif  // JITIFY_ENABLE_NVCC
+ 
+@@ -4165,7 +4181,7 @@ class Nvcc {
+   std::string nvcc_path_;
+ 
+   static bool is_valid_nvcc(std::string nvcc_path) {
+-    return run_system_command((quoted_path_if_needed(nvcc_path) + " --version").c_str());
++    return run_system_command((quoted_path_if_needed(nvcc_path) + " --version").c_str()) == 0;
+   }
+ 
+   static std::string find_nvcc_path() {
+@@ -4405,7 +4421,7 @@ class NvccProgram {
+     if (!options.find({"--dlink-time-opt, -dlto"}).empty()) {
+       options.emplace_back("-ltoir", "");
+       options.emplace_back(tmp_source_file, "");
+-      if (nvcc(options, &log_, error)) return infer_nvcc_error_type();
++      if (nvcc(options, &log_, error) != 0) return infer_nvcc_error_type();
+       if (!read_binary_file(tmp_ltoir_file, &nvvm_)) {
+         if (error) *error = "Failed to read binary file: " + tmp_ltoir_file;
+         return NVRTC_ERROR_PROGRAM_CREATION_FAILURE;
+@@ -4416,7 +4432,7 @@ class NvccProgram {
+     options.emplace_back("-ptx", "");
+     options.emplace_back(tmp_source_file, "");
+     options.emplace_back("-o", tmp_ptx_file);
+-    if (nvcc(options, &log_, error)) return infer_nvcc_error_type();
++    if (nvcc(options, &log_, error) != 0) return infer_nvcc_error_type();
+     options.pop_back();  // Remove -o option
+     options.pop_back();  // Remove source file
+     options.pop_back();  // Remove -ptx
+@@ -4456,7 +4472,7 @@ class NvccProgram {
+       options.emplace_back("-cubin", "");
+       options.emplace_back(tmp_ptx_file, "");
+       options.emplace_back("-o", tmp_cubin_file);
+-      if (nvcc(options, &log_, error)) {
++      if (nvcc(options, &log_, error) != 0) {
+         return NVRTC_ERROR_PROGRAM_CREATION_FAILURE;
+       }
+       if (!read_binary_file(tmp_cubin_file, &cubin_)) {
+-- 
+2.34.1
+
+
+From 37ddc14da67c05f1c61141c0c7a1bdd9ea7feb33 Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Tue, 2 Sep 2025 11:34:24 +0100
+Subject: [PATCH 19/24] Suppress warning #3013-D: a volatile function parameter
+ is deprecated in jitify2_test
+
+---
+ jitify2_test.cu | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/jitify2_test.cu b/jitify2_test.cu
+index 38dbb85..918db25 100644
+--- a/jitify2_test.cu
++++ b/jitify2_test.cu
+@@ -2016,6 +2016,14 @@ __global__ void enum_kernel() {}
+ 
+   Template type_kernel("type_kernel");
+ 
++#if defined(__CUDACC__)
++  #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
++    #pragma nv_diag_suppress 3013
++  #else  // __NVCC_DIAG_PRAGMA_SUPPORT__
++    #pragma diag_suppress 3013
++  #endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
++#endif  // defined(__CUDACC__)
++
+ #define JITIFY_TYPE_REFLECTION_TEST(T)                                   \
+   EXPECT_EQ(                                                             \
+       preprog->get_kernel(type_kernel.instantiate<T>())->lowered_name(), \
+@@ -2029,6 +2037,14 @@ __global__ void enum_kernel() {}
+ 
+ #undef JITIFY_TYPE_REFLECTION_TEST
+ 
++#if defined(__CUDACC__)
++  #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
++    #pragma nv_diag_default 3013
++  #else  // __NVCC_DIAG_PRAGMA_SUPPORT__
++    #pragma diag_default 3013
++  #endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
++#endif  // #if defined(__CUDACC__)
++
+   typedef Derived<float> derived_type;
+   const Base& base = derived_type();
+   EXPECT_EQ(preprog->get_kernel(type_kernel.instantiate(instance_of(base)))
+-- 
+2.34.1
+
+
+From 2c90d0288019e334d028edf66010d90d40fb1861 Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Tue, 2 Sep 2025 11:36:18 +0100
+Subject: [PATCH 20/24] c++20: Use std::invoke_result instead of std::result_of
+ depending on c++ standard
+
+std::result_of was deprecated in c++17 and removed in c++20.
+
+This was identified under MSVC in c++20
+---
+ jitify2.hpp | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/jitify2.hpp b/jitify2.hpp
+index 47b2476..c2ad6fd 100644
+--- a/jitify2.hpp
++++ b/jitify2.hpp
+@@ -9738,9 +9738,19 @@ class LRUFileCache {
+         file_suffix_(sanitize_filename(file_suffix)),
+         lock_file_name_(path_join(path_, file_prefix_ + "lock")) {}
+ 
++
++// std::result_of was deprecated in c++17 and removed in c++20.
++#if JITIFY_CPLUSPLUS >= 201703L
++  template <typename T>
++  using invoke_result_type = typename std::invoke_result<T>::type;
++#else  // JITIFY_CPLUSPLUS >= 201703L
++  template <typename T>
++  using invoke_result_type = typename std::result_of<T()>::type;
++#endif // JITIFY_CPLUSPLUS >= 201703L
++
+   template <class Construct, class Serialize, class Deserialize>
+   std::string get(const std::string& name,
+-                  typename std::result_of<Construct()>::type* result,
++                  invoke_result_type<Construct>* result,
+                   Construct construct, Serialize serialize,
+                   Deserialize deserialize, bool* hit = nullptr) const {
+     if (path_.empty() || max_size_ == 0) {
+-- 
+2.34.1
+
+
+From 6dda7aa72e1dbf40637d0a873a8f1534ac1283f6 Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Wed, 3 Sep 2025 16:35:58 +0100
+Subject: [PATCH 21/24] Use compute capabillity 75 for -arch tests for CUDA 13
+ support
+
+---
+ jitify2_test.cu | 30 +++++++++++++++++-------------
+ 1 file changed, 17 insertions(+), 13 deletions(-)
+
+diff --git a/jitify2_test.cu b/jitify2_test.cu
+index 918db25..078e972 100644
+--- a/jitify2_test.cu
++++ b/jitify2_test.cu
+@@ -1788,15 +1788,15 @@ TEST(Jitify2Test, Option) {
+ TEST(Jitify2Test, OptionsVec) {
+   OptionsVec options0;
+   EXPECT_TRUE(options0.ok());
+-  OptionsVec options1({Option("-arch", "sm_50"), Option("-G")});
++  OptionsVec options1({Option("-arch", "sm_75"), Option("-G")});
+   EXPECT_TRUE(options1.ok());
+-  StringVec options_sv({"-arch", "sm_50", "-G"});
++  StringVec options_sv({"-arch", "sm_75", "-G"});
+   OptionsVec options2(options_sv);
+   EXPECT_TRUE(options2.ok());
+-  OptionsVec options3({"-arch", "sm_50", "-G"});
++  OptionsVec options3({"-arch", "sm_75", "-G"});
+   EXPECT_TRUE(options3.ok());
+ 
+-  OptionsVec options({"--gpu-architecture", "compute_50", "-arch", "sm_50",
++  OptionsVec options({"--gpu-architecture", "compute_75", "-arch", "sm_75",
+                       "-maxrregcount=100", "-Ifoo", "-I=foo2", "--device-debug",
+                       "-G", "--restrict", "-restrict", "-lbar", "-l=bar2",
+                       "-lineinfo"});
+@@ -1804,12 +1804,12 @@ TEST(Jitify2Test, OptionsVec) {
+ 
+   EXPECT_EQ(options.size(), 12);
+   EXPECT_EQ(options.serialize(),
+-            StringVec({"--gpu-architecture", "compute_50", "-arch", "sm_50",
++            StringVec({"--gpu-architecture", "compute_75", "-arch", "sm_75",
+                        "-maxrregcount=100", "-Ifoo", "-I=foo2",
+                        "--device-debug", "-G", "--restrict", "-restrict",
+                        "-lbar", "-l=bar2", "-lineinfo"}));
+   EXPECT_EQ(options.serialize_canonical(),
+-            StringVec({"--gpu-architecture=compute_50", "-arch=sm_50",
++            StringVec({"--gpu-architecture=compute_75", "-arch=sm_75",
+                        "-maxrregcount=100", "-I=foo", "-I=foo2",
+                        "--device-debug", "-G", "--restrict", "-restrict",
+                        "-l=bar", "-l=bar2", "-lineinfo"}));
+@@ -1869,11 +1869,11 @@ const int arch = __CUDA_ARCH__ / 10;
+ 
+   // Test explicit virtual architecture (compile to PTX).
+   // Note: PTX is forwards compatible.
+-  program = preprocessed->compile("", {}, {"-arch=compute_50"});
++  program = preprocessed->compile("", {}, {"-arch=compute_75"});
+   ASSERT_GT(program->ptx().size(), 0);
+   ASSERT_EQ(program->cubin().size(), 0);
+   ASSERT_EQ(program->link()->load()->get_global_value("arch", &arch), "");
+-  EXPECT_EQ(arch, 50);
++  EXPECT_EQ(arch, 75);
+ 
+ #define JITIFY_EXPECT_CUBIN_SIZE_IF_AVAILABLE(cubin_size) \
+   do {                                                    \
+@@ -1908,7 +1908,7 @@ const int arch = __CUDA_ARCH__ / 10;
+ 
+   // Test that preprocessing and compilation use separate arch flags.
+   program = Program("arch_flags_program", source)
+-                ->preprocess({"-arch=sm_50"})
++                ->preprocess({"-arch=sm_75"})
+                 ->compile("", {}, {"-arch=sm_."});
+   EXPECT_GT(program->ptx().size(), 0);
+   JITIFY_EXPECT_CUBIN_SIZE_IF_AVAILABLE(program->cubin().size());
+@@ -1944,10 +1944,14 @@ const int arch = __CUDA_ARCH__ / 10;
+ 
+ #undef JITIFY_EXPECT_CUBIN_SIZE_IF_AVAILABLE
+ 
++#if CUDA_VERSION >= 13000
++  OptionsVec arch_flags = {"-arch=compute_75", "-arch=compute_80", "-arch=compute_86"};
++#else
++  OptionsVec arch_flags = {"-arch=compute_50", "-arch=compute_52", "-arch=compute_61"};
++#endif
+   // Test that multiple architectures can be specified for preprocessing.
+   program = Program("arch_flags_program", source)
+-                ->preprocess({"-arch=compute_50", "-arch=compute_52",
+-                              "-arch=compute_61"})
++                ->preprocess(arch_flags)
+                 ->compile("", {}, {"-arch=compute_."});
+   EXPECT_GT(program->ptx().size(), 0);
+   EXPECT_EQ(program->cubin().size(), 0);
+@@ -2302,7 +2306,7 @@ TEST(Jitify2Test, LibCudaCxx) {
+     // only supported for sm_60 and up on *nix and sm_70 and up on
+     // Windows."
+     Program("libcudacxx_program", source)
+-        ->preprocess({"-I" CUDA_INC_DIR, "-arch=compute_70",
++        ->preprocess({"-I" CUDA_INC_DIR, "-arch=compute_75",
+                       "-no-builtin-headers", "-no-preinclude-workarounds",
+                       "-no-system-headers-workaround",
+                       "-no-replace-pragma-once"})
+@@ -2315,7 +2319,7 @@ TEST(Jitify2Test, LibCudaCxx) {
+ __global__ void my_kernel() {}
+ )";
+   Program("libcudacxx_program", source)
+-      ->preprocess({"-I" CUDA_INC_DIR, "-arch=compute_70",
++      ->preprocess({"-I" CUDA_INC_DIR, "-arch=compute_75",
+                     "-no-builtin-headers", "-no-preinclude-workarounds",
+                     "-no-system-headers-workaround", "-no-replace-pragma-once"})
+       ->get_kernel("my_kernel");
+-- 
+2.34.1
+
+
+From 3b8babfb3c9d01c1d747b9ec1b909db658cf999f Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Wed, 3 Sep 2025 17:59:07 +0100
+Subject: [PATCH 22/24] CCCL/Thrust 3.0 requires c++17
+
+---
+ jitify2_test.cu | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/jitify2_test.cu b/jitify2_test.cu
+index 078e972..f071250 100644
+--- a/jitify2_test.cu
++++ b/jitify2_test.cu
+@@ -2180,8 +2180,10 @@ __global__ void my_kernel(thrust::counting_iterator<int> begin,
+   // Checks that basic Thrust headers can be compiled.
+ #if CUDA_VERSION < 11000
+   const char* cppstd = "-std=c++03";
+-#else
++#elif CUDA_VERSION < 13000
+   const char* cppstd = "-std=c++14";
++#else
++  const char* cppstd = "-std=c++17";
+ #endif
+   PreprocessedProgram preprog = Program("thrust_program", source)
+                                     ->preprocess({"-I" CUDA_INC_DIR, cppstd});
+-- 
+2.34.1
+
+
+From 9d116e4743cf18e6104cce2367b71161e63b8195 Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Wed, 3 Sep 2025 17:59:41 +0100
+Subject: [PATCH 23/24] CUDA 13.0 splits CCCL into a separate include
+ directory, which is required by some parts of the CTK (curand)
+
+---
+ CMakeLists.txt  |  8 ++++++++
+ jitify2_test.cu | 26 +++++++++++++-------------
+ 2 files changed, 21 insertions(+), 13 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0003b7a..03a08cc 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -46,9 +46,17 @@ endif()
+ find_package(CUDA REQUIRED) # Required for CUDA_INCLUDE_DIRS
+ 
+ # Add macro definitions used in tests.
++if (CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 13.0.0)
++list(GET CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES 0 cuda_inc_dir)
++list(GET CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES 1 cccl_inc_dir)
++add_compile_definitions(
++    CUDA_INC_DIR="${cuda_inc_dir}"
++    CUB_DIR="${cccl_inc_dir}")
++else()
+ add_compile_definitions(
+     CUDA_INC_DIR="${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}"
+     CUB_DIR=${CUDA_INC_DIR})
++endif()
+ # Copy the example_headers directory for use at runtime by tests.
+ file(COPY example_headers DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+ 
+diff --git a/jitify2_test.cu b/jitify2_test.cu
+index f071250..4f44f1b 100644
+--- a/jitify2_test.cu
++++ b/jitify2_test.cu
+@@ -1017,7 +1017,7 @@ __global__ void my_kernel() {}
+ )";
+   auto preprog = Program("my_program", source)
+                      ->preprocess({"-I.", "-Iexample_headers", "-Ifoo/bar",
+-                                   "-I" CUDA_INC_DIR});
++                                   "-I" CUDA_INC_DIR, "-I" CUB_DIR});
+   ASSERT_EQ(get_error(preprog), "");
+   auto compiled = preprog->compile();
+   ASSERT_EQ(get_error(compiled), "");
+@@ -1043,7 +1043,7 @@ __global__ void my_kernel() {}
+   }
+   // Repeat without "-I.", which will rely on the implicit current working
+   // directory include path for quote includes.
+-  preprog = Program("my_program", source)->preprocess({"-I" CUDA_INC_DIR});
++  preprog = Program("my_program", source)->preprocess({"-I" CUDA_INC_DIR, "-I" CUB_DIR});
+   compiled = preprog->compile();
+   ASSERT_EQ(get_error(compiled), "");
+   ASSERT_EQ(get_error(preprog), "");
+@@ -1171,7 +1171,7 @@ __device__ T cube(T x) { return x * x * x; }
+   // Note also that this isn't really recommended. It's likely better to use
+   // angle-includes, or to use "-include" to add a completely new header.
+   preprog = Program("my_program", source)
+-                ->preprocess({"-DUSE_QUOTE_INCLUDE", "-I" CUDA_INC_DIR});
++                ->preprocess({"-DUSE_QUOTE_INCLUDE", "-I" CUB_DIR, "-I" CUDA_INC_DIR});
+   ASSERT_EQ(get_error(preprog), "");
+   kernel = preprog->get_kernel(
+       "my_kernel<int>", {},
+@@ -2155,7 +2155,7 @@ __global__ void my_kernel() {}
+       Program("curand_program", source)
+           // Note: --remove-unused-globals is added to remove huge precomputed
+           // arrays that come from CURAND.
+-          ->preprocess({"-I" CUDA_INC_DIR, "--remove-unused-globals"})
++          ->preprocess({"-I" CUB_DIR, "-I" CUDA_INC_DIR, "--remove-unused-globals"})
+           ->get_kernel("my_kernel");
+   // TODO: Expand this test to actually call curand kernels and check outputs.
+   (void)kernel;
+@@ -2186,7 +2186,7 @@ __global__ void my_kernel(thrust::counting_iterator<int> begin,
+   const char* cppstd = "-std=c++17";
+ #endif
+   PreprocessedProgram preprog = Program("thrust_program", source)
+-                                    ->preprocess({"-I" CUDA_INC_DIR, cppstd});
++                                    ->preprocess({"-I" CUB_DIR, "-I" CUDA_INC_DIR, cppstd});
+   ASSERT_EQ(get_error(preprog), "");
+   ASSERT_EQ(get_error(preprog->compile()), "");
+ }
+@@ -2308,7 +2308,7 @@ TEST(Jitify2Test, LibCudaCxx) {
+     // only supported for sm_60 and up on *nix and sm_70 and up on
+     // Windows."
+     Program("libcudacxx_program", source)
+-        ->preprocess({"-I" CUDA_INC_DIR, "-arch=compute_75",
++        ->preprocess({"-I" CUB_DIR, "-I" CUDA_INC_DIR, "-arch=compute_75",
+                       "-no-builtin-headers", "-no-preinclude-workarounds",
+                       "-no-system-headers-workaround",
+                       "-no-replace-pragma-once"})
+@@ -2321,7 +2321,7 @@ TEST(Jitify2Test, LibCudaCxx) {
+ __global__ void my_kernel() {}
+ )";
+   Program("libcudacxx_program", source)
+-      ->preprocess({"-I" CUDA_INC_DIR, "-arch=compute_75",
++      ->preprocess({"-I" CUB_DIR, "-I" CUDA_INC_DIR, "-arch=compute_75",
+                     "-no-builtin-headers", "-no-preinclude-workarounds",
+                     "-no-system-headers-workaround", "-no-replace-pragma-once"})
+       ->get_kernel("my_kernel");
+@@ -2335,7 +2335,7 @@ TEST(Jitify2Test, LibCudaCxxAndBuiltinLimits) {
+ )";
+ 
+   PreprocessedProgram preprog =
+-      Program("limits_program", source)->preprocess({"-I" CUDA_INC_DIR});
++      Program("limits_program", source)->preprocess({"-I" CUB_DIR, "-I" CUDA_INC_DIR});
+   ASSERT_EQ(get_error(preprog), "");
+   CompiledProgram compiled = preprog->compile();
+   ASSERT_EQ(get_error(compiled), "");
+@@ -2349,7 +2349,7 @@ TEST(Jitify2Test, LibCudaCxxAndBuiltinTuple) {
+ )";
+ 
+   PreprocessedProgram preprog =
+-      Program("tuple_program", source)->preprocess({"-I" CUDA_INC_DIR});
++      Program("tuple_program", source)->preprocess({"-I" CUB_DIR, "-I" CUDA_INC_DIR});
+   ASSERT_EQ(get_error(preprog), "");
+   CompiledProgram compiled = preprog->compile();
+   ASSERT_EQ(get_error(compiled), "");
+@@ -2663,7 +2663,7 @@ __global__ void my_kernel() {}
+   for (int i = 0; i < 3; ++i) {
+     CompiledProgram compiled =
+         jitify2::Program(program_name, source)
+-            ->preprocess({"-I" CUDA_INC_DIR, "-pch"})
++            ->preprocess({"-I" CUB_DIR, "-I" CUDA_INC_DIR, "-pch"})
+             ->compile(Template("my_kernel").instantiate(i));
+     ASSERT_EQ(get_error(compiled), "");
+     // Check that PCH succeeded.
+@@ -2705,7 +2705,7 @@ __global__ void my_kernel() {}
+   // Start with PCH auto-resizing disabled.
+   CompiledProgram compiled =
+       jitify2::Program(program_name, source)
+-          ->preprocess({"-I" CUDA_INC_DIR, "-pch", "-no-pch-auto-resize"})
++          ->preprocess({"-I" CUB_DIR, "-I" CUDA_INC_DIR, "-pch", "-no-pch-auto-resize"})
+           ->compile(Template("my_kernel").instantiate(0));
+   ASSERT_EQ(get_error(compiled), "");
+   EXPECT_FALSE(compiled->log().find("creating precompiled header file") !=
+@@ -2718,7 +2718,7 @@ __global__ void my_kernel() {}
+ 
+   // Try again with PCH auto-resizing enabled.
+   compiled = jitify2::Program(program_name, source)
+-                 ->preprocess({"-I" CUDA_INC_DIR, "-pch"})
++                 ->preprocess({"-I" CUB_DIR, "-I" CUDA_INC_DIR, "-pch"})
+                  ->compile(Template("my_kernel").instantiate(1));
+   ASSERT_EQ(get_error(compiled), "");
+   EXPECT_FALSE(compiled->log().find("creating precompiled header file") !=
+@@ -2731,7 +2731,7 @@ __global__ void my_kernel() {}
+ 
+   // This time PCH generation should succeed.
+   compiled = jitify2::Program(program_name, source)
+-                 ->preprocess({"-I" CUDA_INC_DIR, "-pch"})
++                 ->preprocess({"-I" CUB_DIR, "-I" CUDA_INC_DIR, "-pch"})
+                  ->compile(Template("my_kernel").instantiate(2));
+   ASSERT_EQ(get_error(compiled), "");
+   EXPECT_TRUE(compiled->log().find("creating precompiled header file") !=
+-- 
+2.34.1
+
+
+From 184c588d14d0d2250d5139ef00afdc3d4c45ef42 Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Thu, 4 Sep 2025 13:00:06 +0100
+Subject: [PATCH 24/24] Fixup: CCCL serparate include directory for CUDA 13
+ under linux
+
+---
+ CMakeLists.txt | 34 ++++++++++++++++++++++++++--------
+ 1 file changed, 26 insertions(+), 8 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 03a08cc..a03f2c5 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -47,15 +47,33 @@ find_package(CUDA REQUIRED) # Required for CUDA_INCLUDE_DIRS
+ 
+ # Add macro definitions used in tests.
+ if (CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 13.0.0)
+-list(GET CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES 0 cuda_inc_dir)
+-list(GET CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES 1 cccl_inc_dir)
+-add_compile_definitions(
+-    CUDA_INC_DIR="${cuda_inc_dir}"
+-    CUB_DIR="${cccl_inc_dir}")
++  # CCCL's include directories have moved in CUDA 13 compared to CUDA 12.
++  # On Windows, CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES includes both include paths, which must be separated before including in compile definitions.
++  # On *nix, only the main ctk include dir is included
++  # It may be cleaner to switch to the more modern find_package(CUDAToolkit) and find_package(CCCL)
++  list(LENGTH CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES ctk_inc_dirs_length)
++  if (ctk_inc_dirs_length GREATER 1)
++    list(GET CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES 0 cuda_inc_dir)
++    list(GET CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES 1 cccl_inc_dir)
++  else()
++    list(GET CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES 0 cuda_inc_dir)
++    # Check the default location within the CTK if not in the variable.
++    if (EXISTS "${cuda_inc_dir}/cccl")
++      set(cccl_inc_dir "${cuda_inc_dir}/cccl")
++    else()
++      set(cccl_inc_dir "${cuda_inc_dir}")
++    endif()
++  endif()
++  add_compile_definitions(
++      CUDA_INC_DIR="${cuda_inc_dir}"
++      CUB_DIR="${cccl_inc_dir}")
++  unset(cccl_inc_dir)
++  unset(cuda_inc_dir)
++  unset(inc_dirs_length)
+ else()
+-add_compile_definitions(
+-    CUDA_INC_DIR="${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}"
+-    CUB_DIR=${CUDA_INC_DIR})
++  add_compile_definitions(
++      CUDA_INC_DIR="${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}"
++      CUB_DIR=${CUDA_INC_DIR})
+ endif()
+ # Copy the example_headers directory for use at runtime by tests.
+ file(COPY example_headers DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+-- 
+2.34.1
+
