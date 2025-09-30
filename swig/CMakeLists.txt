@@ -6,13 +6,6 @@ if(POLICY CMP0169)
     cmake_policy(SET CMP0169 OLD)
 endif()
 
-# Set some policy behaviours for SWIG
-
-# As the URL method is used for download, set the policy if available
-if(POLICY CMP0135)
-  cmake_policy(SET CMP0135 NEW)
-endif()
-
 # Ensure custom Find* modules are avialable
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/../cmake/modules/ ${CMAKE_MODULE_PATH})
 
