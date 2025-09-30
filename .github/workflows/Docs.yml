@@ -28,12 +28,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # Downgrade CMake while some dependencies are not CMake 4 compatible. See https://github.com/FLAMEGPU/FLAMEGPU2/issues/1276
-    - name: Install CMake < 4.0
-      uses: jwlawson/actions-setup-cmake@802fa1a2c4e212495c05bf94dba2704a92a472be
-      with:
-        cmake-version: '3.x'
-
     - name: Install doxygen >= 1.9.0 + other dependencies
       run: |
         # Install graphviz + dependencies to build doxygen from source
