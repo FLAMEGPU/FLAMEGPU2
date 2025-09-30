@@ -1,9 +1,6 @@
 message(STATUS "-----Configuring Project: ${PROJECT_NAME}-----")
 include_guard(DIRECTORY)
 
-# Policy to enable use of separate device link options, introduced in CMake 3.18
-cmake_policy(SET CMP0105 NEW)
-
 # Add custom modules directory
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/modules/ ${CMAKE_MODULE_PATH})
 
