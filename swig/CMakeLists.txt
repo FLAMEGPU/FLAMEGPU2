@@ -1,10 +1,6 @@
 # Minimum CMake version 3.25.2 for CUDA --std=c++20
 cmake_minimum_required(VERSION 3.25.2...4.1.1 FATAL_ERROR)
 include(FetchContent)
-# Temporary CMake >= 3.30 fix https://github.com/FLAMEGPU/FLAMEGPU2/issues/1223
-if(POLICY CMP0169)
-    cmake_policy(SET CMP0169 OLD)
-endif()
 
 # Ensure custom Find* modules are avialable
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/../cmake/modules/ ${CMAKE_MODULE_PATH})
@@ -70,87 +66,85 @@ if(NOT SWIG_FOUND)
 
     if(WIN32)
         # Download pre-compiled swig on windows.
+        # Specify an invalid SOURCE_SUBDIR to prevent FetchContent_MakeAvailable from adding the CMakeLists.txt
         FetchContent_Declare(
             swig
             URL      http://prdownloads.sourceforge.net/swig/swigwin-${FLAMEGPU_SWIG_DOWNLOAD}.zip
             # URL_HASH #@todo - make sure the hash of the download is good?
+            SOURCE_SUBDIR "do_not_use_add_subirectory"
         )
-        FetchContent_GetProperties(swig)
-        if(NOT swig_POPULATED)
-            message(STATUS "[swig] Downloading swigwin-${FLAMEGPU_SWIG_DOWNLOAD}.zip")
-            # Download
-            FetchContent_Populate(swig)
-            
-            # Set variables used by find_swig to find swig.
-            # Set locally and in the cache for subsequent invocations of CMake
-            set(SWIG_EXECUTABLE "${swig_SOURCE_DIR}/swig.exe")
-            set(SWIG_EXECUTABLE "${swig_SOURCE_DIR}/swig.exe" CACHE FILEPATH "Path to SWIG executable")
-        endif()
+        # Download
+        FetchContent_MakeAvailable(swig)            
+        # Set variables used by find_swig to find swig.
+        # Set locally and in the cache for subsequent invocations of CMake
+        set(SWIG_EXECUTABLE "${swig_SOURCE_DIR}/swig.exe")
+        set(SWIG_EXECUTABLE "${swig_SOURCE_DIR}/swig.exe" CACHE FILEPATH "Path to SWIG executable")
     else()
         # Under linux, download the .tar.gz, extract, build and install.
         # This must be done at configure time, as FindSwig requires the swig executable.
         # FetchContent allows download at configure time, but must use execute_process to run commands at configure time.
 
         # Download from sourceforge not github, github releases require several extra tools to build (bison, yacc, autoconfigure, automake), and we want to keep dependencies light. 
+        # Specify an invalid SOURCE_SUBDIR to prevent FetchContent_MakeAvailable from adding the CMakeLists.txt
         FetchContent_Declare(
             swig
             URL      https://downloads.sourceforge.net/project/swig/swig/swig-${FLAMEGPU_SWIG_DOWNLOAD}/swig-${FLAMEGPU_SWIG_DOWNLOAD}.tar.gz
             # URL_HASH #@todo - make sure the hash of the download is good?
+            SOURCE_SUBDIR "do_not_use_add_subirectory"
         )
-        FetchContent_GetProperties(swig)
-        if(NOT swig_POPULATED)
-            # Quitely Find PCRE (Swig < 4.1) or PCRE2 >= swig 4.1. If not found, emit a warning, but do not error (incase cmake/modules/FindPCRE.cmake is not perfect)
-            if (FLAMEGPU_SWIG_DOWNLOAD VERSION_LESS "4.1")
-                find_package(PCRE QUIET)
-                message("a")
-                if(NOT PCRE_FOUND)
-                    message(
-                        WARNING "  Swig ${FLAMEGPU_SWIG_DOWNLOAD} requires 'pcre-config', but PCRE could not be found.\n"
-                        "  Swig compilation from source may fail.\n"
-                        "  If so, please insall PCRE with development dependencies, e.g.:\n"
-                        "  - On DEB-based distributions (Debian, Ubuntu, etc): apt-get install libpcre3-dev\n"
-                        "  - On RPM-based distributions (Fedora, RHEL, etc): dnf install libpcre-devel"
-                    )
-                endif()
-            else()
-                find_package(PCRE2 QUIET)
-                if(NOT PCRE2_FOUND)
-                    message(
-                        WARNING "  Swig ${FLAMEGPU_SWIG_DOWNLOAD} requires 'pcre2-config', but PCRE could not be found.\n"
-                        "  Swig compilation from source may fail.\n"
-                        "  If so, please insall PCRE with development dependencies, e.g.:\n"
-                        "  - On DEB-based distributions (Debian, Ubuntu, etc): apt-get install libpcre2-dev\n"
-                        "  - On DNF-based distributions (Fedora, RHEL, etc): dnf install libpcre2-devel"
-                    )
-                endif()
-            endif()
-
-            # Ensure that autotools/automake is available, as required to build swig from source.
-            find_program(AUTOMAKE_EXECUTABLE NAMES automake)
-            find_program(ACLOCAL_EXECUTABLE NAMES aclocal)
-            if(NOT AUTOMAKE_EXECUTABLE OR NOT ACLOCAL_EXECUTABLE)
+        # Quitely Find PCRE (Swig < 4.1) or PCRE2 >= swig 4.1. If not found, emit a warning, but do not error (incase cmake/modules/FindPCRE.cmake is not perfect)
+        if (FLAMEGPU_SWIG_DOWNLOAD VERSION_LESS "4.1")
+            find_package(PCRE QUIET)
+            message("a")
+            if(NOT PCRE_FOUND)
                 message(
-                    FATAL_ERROR "  Building Swig ${FLAMEGPU_SWIG_DOWNLOAD} from source requires automake, but it could not be found\n"
-                    "  Please insall automake, e.g.:\n"
-                    "  - On DEB-based distributions (Debian, Ubuntu, etc): apt-get install automake\n"
-                    "  - On DNF-based distributions (Fedora, RHEL, etc): dnf install automake"
+                    WARNING "  Swig ${FLAMEGPU_SWIG_DOWNLOAD} requires 'pcre-config', but PCRE could not be found.\n"
+                    "  Swig compilation from source may fail.\n"
+                    "  If so, please insall PCRE with development dependencies, e.g.:\n"
+                    "  - On DEB-based distributions (Debian, Ubuntu, etc): apt-get install libpcre3-dev\n"
+                    "  - On RPM-based distributions (Fedora, RHEL, etc): dnf install libpcre-devel"
                 )
             endif()
-
-            find_package(BISON)
-            if(NOT BISON_FOUND)
+        else()
+            find_package(PCRE2 QUIET)
+            if(NOT PCRE2_FOUND)
                 message(
-                    FATAL_ERROR "  Buidling Swig ${FLAMEGPU_SWIG_DOWNLOAD} from source requires 'bison', but it could not be found\n"
-                    "  Please insall bison, e.g.:\n"
-                    "  - On DEB-based distributions (Debian, Ubuntu, etc): apt-get install bison\n"
-                    "  - On DNF-based distributions (Fedora, RHEL, etc): dnf install bison"
+                    WARNING "  Swig ${FLAMEGPU_SWIG_DOWNLOAD} requires 'pcre2-config', but PCRE could not be found.\n"
+                    "  Swig compilation from source may fail.\n"
+                    "  If so, please insall PCRE with development dependencies, e.g.:\n"
+                    "  - On DEB-based distributions (Debian, Ubuntu, etc): apt-get install libpcre2-dev\n"
+                    "  - On DNF-based distributions (Fedora, RHEL, etc): dnf install libpcre2-devel"
                 )
             endif()
+        endif()
 
-            message(STATUS "[swig] Downloading swig-${FLAMEGPU_SWIG_DOWNLOAD}.tar.gz")
-            # Download the content
-            FetchContent_Populate(swig)
+        # Ensure that autotools/automake is available, as required to build swig from source.
+        find_program(AUTOMAKE_EXECUTABLE NAMES automake)
+        find_program(ACLOCAL_EXECUTABLE NAMES aclocal)
+        if(NOT AUTOMAKE_EXECUTABLE OR NOT ACLOCAL_EXECUTABLE)
+            message(
+                FATAL_ERROR "  Building Swig ${FLAMEGPU_SWIG_DOWNLOAD} from source requires automake, but it could not be found\n"
+                "  Please insall automake, e.g.:\n"
+                "  - On DEB-based distributions (Debian, Ubuntu, etc): apt-get install automake\n"
+                "  - On DNF-based distributions (Fedora, RHEL, etc): dnf install automake"
+            )
+        endif()
 
+        find_package(BISON)
+        if(NOT BISON_FOUND)
+            message(
+                FATAL_ERROR "  Buidling Swig ${FLAMEGPU_SWIG_DOWNLOAD} from source requires 'bison', but it could not be found\n"
+                "  Please insall bison, e.g.:\n"
+                "  - On DEB-based distributions (Debian, Ubuntu, etc): apt-get install bison\n"
+                "  - On DNF-based distributions (Fedora, RHEL, etc): dnf install bison"
+            )
+        endif()
+
+        message(STATUS "[swig] Downloading swig-${FLAMEGPU_SWIG_DOWNLOAD}.tar.gz")
+        # Download the content
+        FetchContent_MakeAvailable(swig)
+
+        if(NOT EXISTS "${swig_BINARY_DIR}/bin/swig")
             # Set some paths for error files in case things go wrong.
             set(swig_configure_ERROR_FILE "${swig_BINARY_DIR}/swig-error-configue.log")
             set(swig_make_ERROR_FILE "${swig_BINARY_DIR}/swig-error-make.log")
