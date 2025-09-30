@@ -3,12 +3,7 @@
 ###################################
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/modules/ ${CMAKE_MODULE_PATH})
-
 include(FetchContent)
-# Temporary CMake >= 3.30 fix https://github.com/FLAMEGPU/FLAMEGPU2/issues/1223
-if(POLICY CMP0169)
-    cmake_policy(SET CMP0169 OLD)
-endif()
 
 # Set the minimum supported CCCL version, and the version to fetch
 # using find_package(version) means it's up to CCCL's cmake to determine if newer versions are compatible, but this will likely need changing for CUDA 13, when CCCL is planned to have a major version bump (and drop CUDA 11 support).
@@ -43,7 +38,8 @@ if(CCCL_FOUND)
     mark_as_advanced(FETCHCONTENT_QUIET)
 # If CCCL does need downloading, fetch it and find it (no need to add_subdirectory)
 else()
-    # Declare information about where and what we want from thrust.
+    # Declare information about where and what we want from cccl.
+    # Specify an invalid SOURCE_SUBDIR to prevent FetchContent_MakeAvailable from adding the CMakeLists.txt
     FetchContent_Declare(
         cccl
         GIT_REPOSITORY https://github.com/NVIDIA/CCCL.git
@@ -51,22 +47,22 @@ else()
         GIT_SHALLOW    0 # @todo - set this back to 1.
         GIT_PROGRESS   ON
         # UPDATE_DISCONNECTED   ON
+        SOURCE_SUBDIR "do_not_use_add_subirectory"
     )
-    # Fetch and populate the content if required.
+    # Fetch the content if required.
     FetchContent_GetProperties(cccl)
-    if(NOT cccl_POPULATED)
-        message(STATUS "Fetching CCCL ${CCCL_DOWNLOAD_TAG}")
-        FetchContent_Populate(cccl)
-        # Use find_package for CCLL, only looking for the fetched version.
-        # This creates a non-system target due to nvcc magic to avoid the cuda toolkit version being used instead, so warnings are not suppressible without push/pop macros.
-        find_package(CCCL REQUIRED CONFIG
-            PATHS "${cccl_SOURCE_DIR}"
-            NO_CMAKE_PATH
-            NO_CMAKE_ENVIRONMENT_PATH
-            NO_SYSTEM_ENVIRONMENT_PATH
-            NO_CMAKE_PACKAGE_REGISTRY
-            NO_CMAKE_SYSTEM_PATH)
-    endif()
+    message(STATUS "Fetching CCCL ${CCCL_DOWNLOAD_TAG}")
+    FetchContent_MakeAvailable(cccl)
+    # Use find_package for CCLL, only looking for the fetched version.
+    # This creates a non-system target due to nvcc magic to avoid the cuda toolkit version being used instead, so warnings are not suppressible without push/pop macros.
+    find_package(CCCL REQUIRED CONFIG
+        PATHS "${cccl_SOURCE_DIR}"
+        NO_CMAKE_PATH
+        NO_CMAKE_ENVIRONMENT_PATH
+        NO_SYSTEM_ENVIRONMENT_PATH
+        NO_CMAKE_PACKAGE_REGISTRY
+        NO_CMAKE_SYSTEM_PATH)
+
     # Mark some CACHE vars as advanced for a cleaner CMake GUI
     mark_as_advanced(FETCHCONTENT_QUIET)
     mark_as_advanced(FETCHCONTENT_BASE_DIR)

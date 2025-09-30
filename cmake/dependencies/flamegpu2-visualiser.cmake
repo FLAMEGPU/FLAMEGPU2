@@ -4,10 +4,6 @@
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/modules/ ${CMAKE_MODULE_PATH})
 include(FetchContent)
-# Temporary CMake >= 3.30 fix https://github.com/FLAMEGPU/FLAMEGPU2/issues/1223
-if(POLICY CMP0169)
-    cmake_policy(SET CMP0169 OLD)
-endif()
 
 # Set the visualiser repo and tag to use unless overridden by the user.
 set(DEFAULT_FLAMEGPU_VISUALISATION_GIT_VERSION "f46aa474e2703d5589d2fd7e8a7fe89fe35004b4")
@@ -69,13 +65,9 @@ else()
         GIT_TAG        ${FLAMEGPU_VISUALISATION_GIT_VERSION}
         GIT_PROGRESS   ON
     )
+    FetchContent_MakeAvailable(flamegpu_visualiser)
     FetchContent_GetProperties(flamegpu_visualiser)
-    if(NOT flamegpu_visualiser_POPULATED)
-        message(STATUS "using flamegpu_visualiser ${FLAMEGPU_VISUALISATION_GIT_VERSION} from ${FLAMEGPU_VISUALISATION_REPOSITORY}")
-        FetchContent_Populate(flamegpu_visualiser)
-        # Add the project as a subdirectory
-        add_subdirectory(${flamegpu_visualiser_SOURCE_DIR} ${flamegpu_visualiser_BINARY_DIR} EXCLUDE_FROM_ALL)
-    endif()
+    message(STATUS "using flamegpu_visualiser ${FLAMEGPU_VISUALISATION_GIT_VERSION} from ${FLAMEGPU_VISUALISATION_REPOSITORY}")
 endif()
 # Mark some CACHE vars advanced for a cleaner GUI
 mark_as_advanced(FETCHCONTENT_SOURCE_DIR_FLAMEGPU_VISUALISER)
