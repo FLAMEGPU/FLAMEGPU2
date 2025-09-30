@@ -2,10 +2,6 @@
 # glm #
 #######
 
-# As the URL method is used for download, set the policy if available
-if(POLICY CMP0135)
-  cmake_policy(SET CMP0135 NEW)
-endif()
 # Temporary CMake >= 3.30 fix https://github.com/FLAMEGPU/FLAMEGPU2/issues/1223
 if(POLICY CMP0169)
     cmake_policy(SET CMP0169 OLD)
