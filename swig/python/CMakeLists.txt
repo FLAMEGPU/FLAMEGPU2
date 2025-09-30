@@ -1,5 +1,5 @@
 # Minimum CMake version 3.25.2 for CUDA --std=c++20
-cmake_minimum_required(VERSION 3.25.2...3.29 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.25.2...4.1.1 FATAL_ERROR)
 
 # Defines multiple CMake targets and custom commands to build swig bindings, create a python wheel and (optionally) install it into a venv.
 # defines `pyflamegpu` - the user-facing target which creates the wheel.

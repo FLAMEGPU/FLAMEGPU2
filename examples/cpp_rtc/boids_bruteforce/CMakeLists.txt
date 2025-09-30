@@ -1,5 +1,5 @@
 # Minimum CMake version 3.25.2 for CUDA --std=c++20
-cmake_minimum_required(VERSION 3.25.2...3.29 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.25.2...4.1.1 FATAL_ERROR)
 
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../.. REALPATH)
