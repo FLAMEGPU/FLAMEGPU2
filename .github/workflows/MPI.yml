@@ -37,7 +37,7 @@ jobs:
             hostcxx: gcc-11
             os: ubuntu-22.04
         python:
-          - "3.9"
+          - "3.10"
         mpi:
           - lib: "openmpi"
             version: "apt" # MPI 3.1
