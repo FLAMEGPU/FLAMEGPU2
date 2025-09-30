@@ -4,7 +4,6 @@
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/modules/ ${CMAKE_MODULE_PATH})
 include(FetchContent)
-cmake_policy(SET CMP0079 NEW)
 # Temporary CMake >= 3.30 fix https://github.com/FLAMEGPU/FLAMEGPU2/issues/1223
 if(POLICY CMP0169)
     cmake_policy(SET CMP0169 OLD)
