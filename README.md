@@ -1,6 +1,6 @@
 # FLAME GPU 2
 
-[![MIT License](https://img.shields.io/github/license/FLAMEGPU/FLAMEGPU2)](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/LICENSE.md)
+[![AGPL-3.0 License](https://img.shields.io/badge/license-AGPL--3.0-blue)](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/LICENSE.md)
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/FLAMEGPU/FLAMEGPU2?include_prereleases)](https://github.com/FLAMEGPU/FLAMEGPU2/releases/latest)
 [![GitHub issues](https://img.shields.io/github/issues/FLAMEGPU/FLAMEGPU2)](https://github.com/FLAMEGPU/FLAMEGPU2/issues)
 [![DOI](https://zenodo.org/badge/34064755.svg)](https://zenodo.org/badge/latestdoi/34064755)
@@ -330,7 +330,7 @@ To run the python test suite:
 
 ## Usage Statistics (Telemetry)
 
-Support for academic software is dependant on evidence of impact. Without evidence it is difficult/impossible to justify investment to add features and provide maintenance. We collect a minimal amount of anonymous usage data so that we can gather usage statistics that enable us to continue to develop the software under a free and permissible licence.
+Support for academic software is dependant on evidence of impact. Without evidence it is difficult/impossible to justify investment to add features and provide maintenance. We collect a minimal amount of anonymous usage data so that we can gather usage statistics that enable us to continue to develop the software under a free and permissible license.
 
 Information is collected when a simulation, ensemble or test suite run have completed.
 
@@ -367,7 +367,10 @@ Alternatively, [CITATION.cff](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/
 
 ## License
 
-FLAME GPU is distributed under the [MIT Licence](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/LICENSE.md).
+FLAME GPU is available under two licenses:
+
+- [AGPL-3.0-only license](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/LICENSE.md) for open source usage
+- A commercial licenses for cases where the use of the open source AGPL-licensed version is not possible or desirable. Please see [flamegpu.com/download/license/](https://flamegpu.com/download/license/) for more information.
 
 ## Known issues
 
