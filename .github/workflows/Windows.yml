@@ -59,7 +59,7 @@ jobs:
         exclude:
           # Exclude VIS=ON for oldest cuda of each major version
           - cudacxx:
-              cuda: "12.0.0"
+              cuda: "12.4.0"
             VISUALISATION: "ON"
           # Exclude beltsoff builds for all but the most recent cuda
           - cudacxx:
@@ -67,25 +67,12 @@ jobs:
             config:
               name: "Beltsoff"
           - cudacxx:
-              cuda: "12.0.0"
+              cuda: "12.4.0"
             config:
               name: "Beltsoff"
           # Exclude beltsoff vis builds to keep the matrix lighter.
           - config:
               name: "Beltsoff"
-            VISUALISATION: "ON"
-        include:
-          # Add an explicit CUDA 12.0 build for windows without Python
-          - cudacxx:
-              cuda: "12.0.0"
-              cuda_arch: "50"
-              hostcxx: "Visual Studio 17 2022"
-              os: windows-2022
-            python: ""
-            config:
-              name: "Release"
-              config: "Release"
-              SEATBELTS: "ON"
             VISUALISATION: "ON"
     # Name the job based on matrix/env options
     name: "build (${{ matrix.cudacxx.cuda }}, ${{matrix.python}}, ${{ matrix.VISUALISATION }}, ${{ matrix.config.name }}, ${{ matrix.cudacxx.os }})"
