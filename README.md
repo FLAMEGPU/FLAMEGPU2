@@ -373,4 +373,3 @@ For a full list of known issues pleases see the [Issue Tracker](https://github.c
 
 + Warnings and a loss of performance due to hash collisions in device code ([#356](https://github.com/FLAMEGPU/FLAMEGPU2/issues/356))
 + Multiple known areas where performance can be improved (e.g. [#449](https://github.com/FLAMEGPU/FLAMEGPU2/issues/449), [#402](https://github.com/FLAMEGPU/FLAMEGPU2/issues/402))
-+ CUDA 12.2+ suffers from poor RTC compilation times, to be fixed in a future release ([#1118](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1118)).

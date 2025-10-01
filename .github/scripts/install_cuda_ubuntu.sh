@@ -14,7 +14,8 @@ CUDA_PACKAGES_IN=(
     "cuda-nvtx"
     "cuda-nvrtc-dev"
     "libcurand-dev" # 11-0+
-    "cuda-cccl" # 11.4+, provides cub and thrust. On 11.3 knwon as cuda-thrust-11-3
+    "cuda-cccl" # 11.4+, provides cub and thrust. On 11.3 known as cuda-thrust-11-3
+    "libnvjitlink-dev" # 12.0+
 )
 
 ## -------------------
@@ -104,8 +105,11 @@ do :
             continue
         fi
     fi
+    # libnvjitlink not required prior to CUDA 12.0
+    if [[ ${package} == libnvjitlink-dev* ]] && version_lt "$CUDA_VERSION_MAJOR_MINOR" "12.0" ;then
+        continue
     # CUDA 11+ includes lib* / lib*-dev packages, which if they existed previously where cuda-cu*- / cuda-cu*-dev-
-    if [[ ${package} == libcu* ]] && version_lt "$CUDA_VERSION_MAJOR_MINOR" "11.0" ; then
+    elif [[ ${package} == lib* ]] && version_lt "$CUDA_VERSION_MAJOR_MINOR" "11.0" ; then
         package="${package/libcu/cuda-cu}"
     fi
     # Build the full package name and append to the string.

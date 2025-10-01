@@ -672,6 +672,11 @@ if(FLAMEGPU_ENABLE_NVTX AND TARGET NVTX::nvtx)
     unset(nvtxversion)
 endif()
 
+# Jitify2 requires separate compilation options for older linux kernels (i.e. manylinux2014).
+# This is detected in cmake/CheckCompilerFunctionality.cmake and a boolean internal cache variable is stores if this is required or not.
+if(FLAMEGPU__FILE_OFFSET_BITS_64_REQUIRED)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC "_FILE_OFFSET_BITS=64")
+endif()
 target_link_libraries(${PROJECT_NAME} PUBLIC Jitify::jitify)
 # jitify is included in public headers, so this definiition must be public too.
 target_compile_definitions(${PROJECT_NAME} PUBLIC "JITIFY_PRINT_LOG")

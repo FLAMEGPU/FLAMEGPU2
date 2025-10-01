@@ -282,7 +282,6 @@ jobs:
       run: >
         cmake . -B "${{ env.BUILD_DIR }}"
         -G "${{ env.HOSTCXX }}" -A x64
-        -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF"
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
@@ -585,7 +584,6 @@ jobs:
       run: >
         cmake . -B "${{ env.BUILD_DIR }}"
         -G "${{ env.HOSTCXX }}" -A x64
-        -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF"
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"

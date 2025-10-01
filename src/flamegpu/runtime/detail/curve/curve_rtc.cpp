@@ -1,6 +1,11 @@
 #include <sstream>
 #include <set>
 #include <string>
+#include <memory>
+#ifndef _MSC_VER
+// abi::__cxa_demangle()
+#include <cxxabi.h>
+#endif
 
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 #include "flamegpu/exception/FLAMEGPUException.h"
@@ -8,21 +13,14 @@
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
 #include "flamegpu/detail/cuda.cuh"
 
-// jitify include for demangle
-#ifdef _MSC_VER
-#pragma warning(push, 2)
-#include "jitify/jitify.hpp"
-#pragma warning(pop)
-#else
-#include "jitify/jitify.hpp"
-#endif
+#include "jitify/jitify2.hpp"
 
 namespace flamegpu {
 namespace detail {
 namespace curve {
 
 
-const char* CurveRTCHost::curve_rtc_dynamic_h_template = R"###(dynamic/curve_rtc_dynamic.h
+const char* CurveRTCHost::curve_rtc_dynamic_h_template = R"###(
 #line 1 "$FILENAME"
 #ifndef CURVE_RTC_DYNAMIC_H_
 #define CURVE_RTC_DYNAMIC_H_
@@ -1472,7 +1470,22 @@ std::string CurveRTCHost::getVariableSymbolName() {
 
 std::string CurveRTCHost::demangle(const char* verbose_name) {
 #ifndef _MSC_VER
-    std::string s = jitify::reflection::detail::demangle_cuda_symbol(verbose_name);
+    // Implementation from Jitify1
+    size_t bufsize = 0;
+    char* buf = nullptr;
+    std::string s;
+    int status;
+    auto demangled_ptr = std::unique_ptr<char, decltype(free)*>(
+        abi::__cxa_demangle(verbose_name, buf, &bufsize, &status), free);
+    if (status == 0) {
+        s = demangled_ptr.get();  // all worked as expected
+    } else if (status == -2) {
+        s = verbose_name;  // we interpret this as plain C name
+    } else if (status == -1) {
+        THROW exception::UnknownInternalError("memory allocation failure in __cxa_demangle");
+    } else if (status == -3) {
+        THROW exception::UnknownInternalError("invalid argument to __cxa_demangle");
+    }
 #else
     // Jitify removed the required demangle function, this is a basic clone of what was being done in earlier version
     // It's possible jitify::reflection::detail::demangle_native_type() would work, however that requires type_info, not type_index
@@ -1520,12 +1533,13 @@ void CurveRTCHost::updateEnvCache(const void *env_ptr, const size_t bufferLen) {
             bufferLen, agent_data_offset);
     }
 }
-void CurveRTCHost::updateDevice_async(const jitify::experimental::KernelInstantiation& instance, cudaStream_t stream) {
+void CurveRTCHost::updateDevice_async(const jitify2::KernelData& instance, cudaStream_t stream) {
     // Move count buffer into h_data_buffer first
     memcpy(h_data_buffer + count_data_offset, count_buffer.data(), count_buffer.size() * sizeof(unsigned int));
     // The namespace is required here, but not in other uses of getVariableSymbolName.
     std::string cache_var_name = std::string("flamegpu::detail::curve::") + getVariableSymbolName();
-    CUdeviceptr d_var_ptr = instance.get_global_ptr(cache_var_name.c_str());
+    CUdeviceptr d_var_ptr;
+    instance.program().get_global_ptr(cache_var_name.c_str(), &d_var_ptr);
     gpuErrchkDriverAPI(cuMemcpyHtoDAsync(d_var_ptr, h_data_buffer, data_buffer_size, stream));
 }
 
