@@ -62,9 +62,10 @@ This is used to build the FLAMEGPU2 library, examples, tests and documentation.
 Building FLAME GPU has the following requirements. There are also optional dependencies which are required for some components, such as Documentation or Python bindings.
 
 + [CMake](https://cmake.org/download/) `>= 3.25.2`
-+ [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 12.0` and a [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 5.0` NVIDIA GPU.
-  + FLAME GPU aims to support the 2 most recent major CUDA versions, currently `12` and `13`
-    + On Windows, CUDA >= 12.4 is required for some optional features (python support)
++ [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 12.0` (Linux) or `>= 12.4` (Windows)
+  + FLAME GPU aims to support the 2 most recent major CUDA versions, currently `12` and `13`.
+  + For native Windows builds, CUDA `12.0-12.3` may work for some but not all parts of FLAME GPU due to c++20 compilation issues and MSVC support.
+  + A [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 5.0` (CUDA 12.x) or `>= 7.5` (CUDA 13.x) NVIDIA GPU is required for execution.
 + C++20 capable C++ compiler (host), compatible with the installed CUDA version
   + [Microsoft Visual Studio 2022](https://visualstudio.microsoft.com/) (Windows)
     + *Note:* Visual Studio must be installed before the CUDA toolkit is installed. See the [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) for more information.
@@ -80,7 +81,7 @@ Optionally:
   + On Windows, CUDA >= 12.4 is required for python integration
 + [swig](http://www.swig.org/) `>= 4.1.0` for python integration (with c++20 support)
   + Swig >= `4.1.0` will be automatically downloaded by CMake if not provided (if possible).
-  + Swig `4.2.0` is problematic
+  + Swig `4.2.0` and `4.2.1` is known to encounter issues in some cases. Consider using an alternate SWIG version
 + MPI (e.g. [MPICH](https://www.mpich.org/), [OpenMPI](https://www.open-mpi.org/)) for distributed ensemble support
   + MPI 3.0+ tested, older MPIs may work but not tested.
 + [FLAMEGPU2-visualiser](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser) dependencies

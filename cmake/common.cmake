@@ -136,14 +136,28 @@ endif(FLAMEGPU_ENABLE_NVTX)
 
 # Set the minimum supported cuda version, if not already set.
 # Currently duplicated due to docs only build logic.
-# CUDA 11.2 is the current minimum supported version.
+# CUDA 12.0 is the current minimum supported version.
 if(NOT DEFINED MINIMUM_SUPPORTED_CUDA_VERSION)
-    set(MINIMUM_SUPPORTED_CUDA_VERSION 11.2)
+    set(MINIMUM_SUPPORTED_CUDA_VERSION 12.0)
     # Require a minimum cuda version
     if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_SUPPORTED_CUDA_VERSION})
         message(FATAL_ERROR "CUDA version must be at least ${MINIMUM_SUPPORTED_CUDA_VERSION}")
     endif()
 endif()
+
+# Warn about CUDA < 12.4 on Windows, but only once per invocation?
+if (MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 12.4)
+    if (NOT MSVC_CUDA_LT_124_SHOWN)
+        message(WARNING
+            " Parts of flamegpu may fail to build with MSVC and CUDA < 12.4 due to compilation errors under c++20.\n"
+            " \n"
+            " Please consider upgrading to CUDA >= 12.4."
+            " \n"
+        )
+        set(MSVC_CUDA_LT_124_SHOWN TRUE PARENT_SCOPE )
+    endif()
+endif()
+
 
 # Invlude the cpplint camake, which provides a function to create a lint target.
 include(${CMAKE_CURRENT_LIST_DIR}/cpplint.cmake)

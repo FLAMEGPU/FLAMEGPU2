@@ -49,8 +49,8 @@ if(CMAKE_CUDA_COMPILER)
     flamegpu_set_cuda_architectures()
 endif()
 
-# Set the minimum supported CUDA VERSION. 
-set(MINIMUM_SUPPORTED_CUDA_VERSION 11.2)
+# Set the minimum supported CUDA VERSION.
+set(MINIMUM_SUPPORTED_CUDA_VERSION 12.0)
 
 # If the CUDA compiler is too old, trigger a docs only build.
 if(NOT DOCUMENTATION_ONLY_BUILD AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_SUPPORTED_CUDA_VERSION})
