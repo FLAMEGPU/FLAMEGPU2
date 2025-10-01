@@ -11,7 +11,7 @@ if(POLICY CMP0169)
 endif()
 
 # Set the visualiser repo and tag to use unless overridden by the user.
-set(DEFAULT_FLAMEGPU_VISUALISATION_GIT_VERSION "ee91d5601e846f9f06bc44608e96424b51dd5dd2")
+set(DEFAULT_FLAMEGPU_VISUALISATION_GIT_VERSION "f46aa474e2703d5589d2fd7e8a7fe89fe35004b4")
 set(DEFAULT_FLAMEGPU_VISUALISATION_REPOSITORY "https://github.com/FLAMEGPU/FLAMEGPU2-visualiser.git")
 
 # Set a VISUSLAITION_ROOT cache entry so it is available in the GUI to override the location if required
