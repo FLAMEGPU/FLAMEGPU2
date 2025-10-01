@@ -1139,3 +1139,89 @@ index 03a08cc..a03f2c5 100644
 -- 
 2.34.1
 
+From 366da2f04063008b3dc8f8119d5b8a0845c84ae7 Mon Sep 17 00:00:00 2001
+From: Peter Heywood <peethwd@gmail.com>
+Date: Wed, 1 Oct 2025 09:52:12 +0100
+Subject: [PATCH 1/2] CUDA 13 / CCCL3 incompatible redefinition fix. This may
+ not be the correct fix
+
+---
+ jitify2.hpp | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/jitify2.hpp b/jitify2.hpp
+index c2ad6fd..6fd93ae 100644
+--- a/jitify2.hpp
++++ b/jitify2.hpp
+@@ -5649,14 +5649,14 @@ static const char* const jitsafe_header_stdint_h = R"(
+ #define UINT16_MAX USHRT_MAX
+ #define UINT32_MAX UINT_MAX
+ #define UINT64_MAX ULLONG_MAX
+-#define INTPTR_MIN LONG_MIN
+-#define INTMAX_MIN LLONG_MIN
+-#define INTPTR_MAX LONG_MAX
+-#define INTMAX_MAX LLONG_MAX
+-#define UINTPTR_MAX ULONG_MAX
+-#define UINTMAX_MAX ULLONG_MAX
+-#define PTRDIFF_MIN INTPTR_MIN
+-#define PTRDIFF_MAX INTPTR_MAX
++#define INTPTR_MIN INT64_MIN
++#define INTMAX_MIN INT64_MIN
++#define INTPTR_MAX INT64_MAX
++#define INTMAX_MAX INT64_MAX
++#define UINTPTR_MAX UINT64_MAX
++#define UINTMAX_MAX UINT64_MAX
++#define PTRDIFF_MIN INT64_MIN
++#define PTRDIFF_MAX INT64_MAX
+ #define SIZE_MAX UINT64_MAX
+ #define _JITIFY_WCHAR_T_IS_UNSIGNED ((wchar_t)-1 >= 0)
+ #define WCHAR_MIN                                                      \
+--
+2.33.0.windows.2
+
+
+From 3917d4036024587a056ca96080b658a98f8cb9da Mon Sep 17 00:00:00 2001
+From: Basit Ayantunde <rlamarrr@gmail.com>
+Date: Thu, 25 Sep 2025 12:38:15 +0100
+Subject: [PATCH 2/2] fix narrowing conversion
+
+---
+ jitify2.hpp | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/jitify2.hpp b/jitify2.hpp
+index 6fd93ae..1da69d9 100644
+--- a/jitify2.hpp
++++ b/jitify2.hpp
+@@ -6130,23 +6130,23 @@ struct numeric_limits<bool>
+     : public __jitify_detail::IntegerLimits<bool, false, true, 1> {};
+ template <>
+ struct numeric_limits<char>
+-    : public __jitify_detail::IntegerLimits<char, CHAR_MIN, CHAR_MAX> {};
++    : public __jitify_detail::IntegerLimits<char, static_cast<char>(CHAR_MIN), static_cast<char>(CHAR_MAX)> {};
+ template <>
+ struct numeric_limits<signed char>
+-    : public __jitify_detail::IntegerLimits<signed char, SCHAR_MIN, SCHAR_MAX> {
++    : public __jitify_detail::IntegerLimits<signed char, static_cast<signed char>(SCHAR_MIN), static_cast<signed char>(SCHAR_MAX)> {
+ };
+ template <>
+ struct numeric_limits<unsigned char>
+-    : public __jitify_detail::IntegerLimits<unsigned char, 0, UCHAR_MAX> {};
++    : public __jitify_detail::IntegerLimits<unsigned char, 0, static_cast<unsigned char>(UCHAR_MAX)> {};
+ template <>
+ struct numeric_limits<wchar_t>
+-    : public __jitify_detail::IntegerLimits<wchar_t, WCHAR_MIN, WCHAR_MAX> {};
++    : public __jitify_detail::IntegerLimits<wchar_t, static_cast<wchar_t>(WCHAR_MIN), static_cast<wchar_t>(WCHAR_MAX)> {};
+ template <>
+ struct numeric_limits<short>
+-    : public __jitify_detail::IntegerLimits<short, SHRT_MIN, SHRT_MAX> {};
++    : public __jitify_detail::IntegerLimits<short, static_cast<short>(SHRT_MIN), static_cast<short>(SHRT_MAX)> {};
+ template <>
+ struct numeric_limits<unsigned short>
+-    : public __jitify_detail::IntegerLimits<unsigned short, 0, USHRT_MAX> {};
++    : public __jitify_detail::IntegerLimits<unsigned short, 0, static_cast<unsigned short>(USHRT_MAX)> {};
+ template <>
+ struct numeric_limits<int>
+     : public __jitify_detail::IntegerLimits<int, INT_MIN, INT_MAX> {};
+--
+2.33.0.windows.2
