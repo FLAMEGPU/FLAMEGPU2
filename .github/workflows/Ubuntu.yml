@@ -44,7 +44,7 @@ jobs:
             hostcxx: gcc-10
             os: ubuntu-22.04
         python:
-          - "3.12"
+          - "3.14"
         config:
           - name: "Release"
             config: "Release"
@@ -120,6 +120,7 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON }}
+        allow-prereleases: true
 
     # @todo - is some/all of this still required when using select Python?
     - name: Install python dependencies
