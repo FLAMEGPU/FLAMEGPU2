@@ -77,7 +77,16 @@ Similarly if submitting a new example model, it will need to include it's own `C
 This ensure that users on both Linux and Windows can continue to build FLAME GPU 2.
 
 ## License
-By contributing your code, you agree to license your contribution under the [MIT License](LICENSE.md).
+
+FLAME GPU is available under two licenses:
+
+- [AGPL-3.0-only license](https://github.com/FLAMEGPU/FLAMEGPU2/blob/master/LICENSE.md) for open source usage
+- A commercial licenses for cases where the use of the open source AGPL-licensed version is not possible or desirable. Please see [flamegpu.com/license/download/](https://flamegpu.com/download/license/) for more information.
+
+### Contributor License Agreement (CLA)
+
+Before we can accept your pull request, you need to sign our [CLA](https://flamegpu.com/cla/) so that we can redistribute any changes via our dual license model.
+Our CLA assistant should check and prompt you to sign the CLA when you create your pull request.
 
 ## Creating a Release
 
