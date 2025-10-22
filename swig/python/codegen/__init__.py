@@ -42,12 +42,8 @@ def translate(function: Union[str, Callable]) -> str:
         tree = ast.parse(function_source)
         # Filter constants
         module_members = inspect.getmembers(module);
-        # Emulate inspect.get_annotations() (requires python 3.10+)
-        module_annontations = {}
-        for mem in module_members:
-            if mem[0] == "__annotations__":
-                module_annontations = mem[1]
-                break
+        # Requires python 3.10+
+        module_annontations = inspect.get_annotations(module)
         prepend_c_source = ""
         # Find all annotated variables
         for key, val in module_annontations.items():

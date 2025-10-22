@@ -44,7 +44,7 @@ jobs:
             hostcxx: gcc-10
             os: ubuntu-22.04
         python:
-          - "3.12"
+          - "3.14"
         config:
           - name: "Release"
             config: "Release"
