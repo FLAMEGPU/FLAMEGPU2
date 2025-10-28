@@ -77,7 +77,7 @@ Optionally:
 
 + [cpplint](https://github.com/cpplint/cpplint) for linting code
 + [Doxygen](http://www.doxygen.nl/) to build the documentation
-+ [Python](https://www.python.org/) `>= 3.9` for python integration
++ [Python](https://www.python.org/) `>= 3.10` for python integration
   + With `setuptools`, `wheel`, `build` and optionally `venv` python packages installed
   + On Windows, CUDA >= 12.4 is required for python integration
 + [swig](http://www.swig.org/) `>= 4.1.0` for python integration (with c++20 support)
