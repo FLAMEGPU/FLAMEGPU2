@@ -45,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 + Circles example logging has been updated to truncate log files ([#1301](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1301))
 + Switched to TelemetryDeck v2.0 API ([#1300](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1300))
 + Improved CMake warnings for unsupported CUDA versions ([#1296](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1296))
-+ Changed default use of `patchelf` on linux to off ([#1299](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1299))
++ Changed default use of `patchelf` on linux to `OFF` ([#1299](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1299))
 + Improved device exception message for bucket messaging ([#1298](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1298))
 + Upgrade to CCCL 2.3.2 support ([#1155](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1155))
 + CI updated GitHub actions to Ubuntu 24.04 Workflows ([#1295](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1295))
