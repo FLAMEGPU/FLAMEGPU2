@@ -500,7 +500,7 @@ void CUDASimulation::spatialSortAgent_async(const std::string& funcName, const s
     int blockSize = 0;  // The launch configurator returned block size
     int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
     int gridSize = 0;  // The actual grid size needed, based on input size
-    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, calculateSpatialHash, 0, state_list_size);
+    gpuErrchk(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, calculateSpatialHash, 0, state_list_size));
 
     //! Round up according to CUDAAgent state list size
     gridSize = (state_list_size + blockSize - 1) / blockSize;
@@ -734,7 +734,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 // switch between normal and RTC agent function condition
                 if (func_des->condition) {
                     // calculate the grid block size for agent function condition
-                    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->condition, 0, state_list_size);
+                    gpuErrchk(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->condition, 0, state_list_size));
 
                     //! Round up according to CUDAAgent state list size
                     gridSize = (state_list_size + blockSize - 1) / blockSize;
@@ -756,7 +756,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     const jitify2::KernelData& instance = cuda_agent.getRTCInstantiation(func_condition_identifier);
                     // calculate the grid block size for main agent function
                     CUfunction cu_func = (CUfunction)instance.function();
-                    cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size);
+                    gpuErrchkDriverAPI(cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size));
                     //! Round up according to CUDAAgent state list size
                     gridSize = (state_list_size + blockSize - 1) / blockSize;
                     // launch the kernel
@@ -984,7 +984,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 const jitify2::KernelData& instance = cuda_agent.getRTCInstantiation(func_name);
                 // calculate the grid block size for main agent function
                 CUfunction cu_func = (CUfunction)instance.function();
-                cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size);
+                gpuErrchkDriverAPI(cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size));
                 //! Round up according to CUDAAgent state list size
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
                 // launch the kernel
