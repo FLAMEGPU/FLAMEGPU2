@@ -55,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-+ Removed Windows 2019 from itHub action workflows ([#1293](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1293))
++ Removed Windows 2019 from GitHub action workflows ([#1293](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1293))
 + Removed CUDA 11 support ([#1302](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1302))
 + Removed support for Python < 3.10 ([#1320](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1320))
 
