@@ -57,6 +57,33 @@ namespace {
             return std::unique_ptr<detail::Timer>(new detail::SteadyClockTimer());
         }
     }
+
+    /**
+     * Given a jitify2::KernelData, gets the CUfunction for the current CUDA context, regardless of if context-independent loading is being used or not
+     *
+     * Jitify 2 may (or may not) be using context-independent loading, leading to `jitify2::KernelData::function` returning a `CUkernel` or a `CUfunction`.
+     * The Driver API method `cuOccupancyMaxPotentialBlockSize` expects a CUfunction, but is documented as "the API can also be used with context-less kernel CUkernel by querying the handle using cuLibraryGetKernel() and then passing it to the API by casting to CUfunction. Here, the context to use for calculations will be the current context."
+     * For older drivers, such as R550, not calling `cuLibraryGetKernel` first results in a runtime error. Newer drivers, such as R580, appear to implicitly make this call and proceed normally.
+     *
+     * This method always returns the CUfunction for the jitify2::KernelData that is valid in the the current context.
+     *
+     * @param instance the jitify2::KernelData instance
+     * @return the CUfunction for the jitify2::KernelData in the current CUDA context
+     */
+    CUfunction cuFunctionFromJitify2KernelData(const jitify2::KernelData& instance) {
+        // Use a templated lambda so that both sides of the if constexpr do not need to compile (but msut be syntacitally valid)
+        auto handler = []<typename T>(T cu_kernel_or_func) -> CUfunction {
+            if constexpr (std::is_same_v<T, CUkernel>) {
+                CUfunction cu_func = NULL;
+                gpuErrchkDriverAPI(cuKernelGetFunction(&cu_func, cu_kernel_or_func));
+                return cu_func;
+            } else {
+                // If not a CUKernel, we assume this is must be a CUfunction
+                return static_cast<CUfunction>(cu_kernel_or_func);
+            }
+        };
+        return handler(instance.function());
+    }
 }  // anonymous namespace
 
 CUDASimulation::CUDASimulation(const ModelDescription& _model, int argc, const char** argv, bool _isSWIG)
@@ -755,7 +782,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     // get instantiation
                     const jitify2::KernelData& instance = cuda_agent.getRTCInstantiation(func_condition_identifier);
                     // calculate the grid block size for main agent function
-                    CUfunction cu_func = (CUfunction)instance.function();
+                    CUfunction cu_func = cuFunctionFromJitify2KernelData(instance);
                     gpuErrchkDriverAPI(cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size));
                     //! Round up according to CUDAAgent state list size
                     gridSize = (state_list_size + blockSize - 1) / blockSize;
@@ -983,7 +1010,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 // get instantiation
                 const jitify2::KernelData& instance = cuda_agent.getRTCInstantiation(func_name);
                 // calculate the grid block size for main agent function
-                CUfunction cu_func = (CUfunction)instance.function();
+                CUfunction cu_func = cuFunctionFromJitify2KernelData(instance);
                 gpuErrchkDriverAPI(cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size));
                 //! Round up according to CUDAAgent state list size
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
