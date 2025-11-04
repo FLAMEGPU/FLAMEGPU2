@@ -111,15 +111,51 @@ Foreach ($package in $CUDA_PACKAGES) {
         echo "Warning: $package.$PLATFORM.relative_path is missing, unable to download"
         continue
     }
-    # Download the package.
+    # Download the package, retrying if the download or etraction fails, or the SHA did not match, up to a maximum number of times
+    $attempt = 0
+    $max_retry = 3
+    $sleep_seconds = 10
+    $download_extract_success = $false
     $package_url = "$($REDIST_ROOT)/$($manifest.$package.$PLATFORM.relative_path)"
     $package_zip = Split-Path -Path $package_url -Leaf
     $package_dir = [System.IO.Path]::GetFileNameWithoutExtension($package_zip)
+    $expected_sha256 = "$($manifest.$package.$PLATFORM.sha256)"
+    do {
+        $attempt++
+        $retry_needed = $false
+        try {
+            echo "Downloading $package from $package_url"
+            Invoke-WebRequest -Uri $package_url -OutFile $package_zip -ErrorAction Stop
+            echo "Checking zip sha256 matches ${expected_sha256}"
+            $zip_sha256 = (Get-Filehash -Algorithm SHA256 -Path $package_zip -ErrorAction Stop).Hash
+            if ($zip_sha256 -ieq $expected_sha256) {
+                Write-Host "SHA256 match for $package"
+                echo "Extracting $package_zip"
+                Expand-Archive -Path $package_zip -DestinationPath . -Force -ErrorAction Stop
+                # Flag to exit the do while
+                $download_extract_success = $true
+            } else {
+                Write-Warning "SHA256 for $package does not match. $zip_sha256 != $expected_sha256"
+                $retry_needed = $true
+            }
+        } catch {
+            Write-Warning "Failed to download or extract ${package} (attempt $attempt): $($_.Exception.Message)"
+            $retry_needed = $true
+        }
+        # Cleanup and sleep if retrying
+        if ($retry_needed -and $attempt -lt $max_retry) {
+            if (Test-Path -Path $package_zip) {
+                Remove-Item -Path $package_zip -Force
+            }
+            Start-Sleep -Seconds $sleep_seconds
+        }
+    } while (-not $download_extract_success -and $attempt -lt $max_retry)
+    # If the do while exitied wihtout success ful exctraction, give up.
+    if (-not $download_extract_success) {
+        Write-Error "Failed to download and extract $package after $max_retry attempts."
+        exit 1
+    }
 
-    echo "Downloading $package from $package_url"
-    Invoke-WebRequest -Uri $package_url -OutFile $package_zip
-    echo "Extracting $package_zip"
-    Expand-Archive -Path $package_zip -DestinationPath . -Force
     # 'install' the package (I.e. copy to the expected location). some packages need special handling
     if ($package -eq "visual_studio_integration") {
         # Install build customisations, assuming consistnet packaging from nvidia
