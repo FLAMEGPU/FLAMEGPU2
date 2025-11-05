@@ -39,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 + Switch from c++17 to c++20, CMake >= 3.25.2 is now required ([#1302](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1302))
 + Windows Visual Studio 2019 support is removed ([#1302](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1302))
 + Removed support for Python < 3.10 and added 3.13 and 3.14. Supported Python versions are now 3.10-3.14 ([#1320](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1320),[#1318](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1318), [#1320](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1320) respectively)
-+ CI Updated support for ManyLinux 2_28 and removal of ManyLinux2014 from GitHub actions. Python wheels will now require `glibc` >= 2.28 unless built from source. ([#1228](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1228))
++ Produce Python wheels on CI using ManyLinux_2_28 instead of ManyLinux2014. Python wheels will now require `glibc` >= 2.28 unless built from source. ([#1228](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1228))
 
 ### Changed
 
