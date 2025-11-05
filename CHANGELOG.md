@@ -21,6 +21,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 -->
 
+## [2.0.0-rc.3] - 2025-11-05
+
+### Added
+
++ Added CMake 4 support ([#1315](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1315))
++ CUDA 13 Support added ([#1302](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1302))
++ Migration to Jitify2 adding significant RTC kernel compilation speed-ups (using patch until [#146](https://github.com/NVIDIA/jitify/pull/146) is merged) ([#1150](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1150))
++ Added CUDA 12.8 and 12.9 to known CUDA downloads for windows ([#1296](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1296))
++ Added HostEnvironmentDirectedGraph::Iterator to allow vertex and edge iteration ([#183](https://github.com/FLAMEGPU/FLAMEGPU2-docs/pull/183))
+
+### Changed (Breaking)
+
++ Added `nlohmann::json` (replacing RapidJSON) with some breaking changes for nan/inf ([#1277](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1277)). Any special limit values (e.g. +/- nan/inf) are written to JSON as `NULL` and read from JSON as `NaN`.
++ The latest version change in licensing terms from MIT to a [dual license model of AGPL 3.0 and commercial](https://flamegpu.com/download/license/). This requires user contributions to sign our CLA ([#1313](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1313))
++ Removed CUDA 11 support which removes support for Kepler (`sm_35`) hardware. I.e. CUDA Supported versions are now 12.x to 13.x (Windows requires >= 12.4) ([#1302](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1302))
++ Switch from c++17 to c++20, CMake >= 3.25.2 is now required ([#1302](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1302))
++ Windows Visual Studio 2019 support is removed ([#1302](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1302))
++ Removed support for Python < 3.10 and added 3.13 and 3.14. Supported Python versions are now 3.10-3.14 ([#1320](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1320),[#1318](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1318), [#1320](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1320) respectively)
++ Produce Python wheels on CI using ManyLinux_2_28 instead of ManyLinux2014. Python wheels will now require `glibc` >= 2.28 unless built from source. ([#1228](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1228))
+
+### Changed
+
++ CI Windows CUDA install method updated to use faster redist packages ([#1314](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1314))
++ CI Windows builds now have a timeout to catch occasional hanging of workflow ([#1305](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1305))
++ CI Draft release workflow installs `setuptools` and `wheel` for all Python versions ([1306](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1306)) 
++ Circles example logging has been updated to truncate log files ([#1301](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1301))
++ Switched to TelemetryDeck v2.0 API ([#1300](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1300))
++ Improved CMake warnings for unsupported CUDA versions ([#1296](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1296))
++ Changed default use of `patchelf` on linux to `OFF` ([#1299](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1299))
++ Improved device exception message for bucket messaging ([#1298](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1298))
++ Upgrade to CCCL 2.3.2 support ([#1155](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1155))
++ CI updated GitHub actions to Ubuntu 24.04 Workflows ([#1295](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1295))
++ Improved README.md guidance on selecting CUDA versions for CMake ([#1272](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1272/files))
++ Correction to error message for conflicting agent functions ([#1267](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1267))
+
+### Removed
+
++ Removed Windows 2019 from GitHub action workflows ([#1293](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1293))
+
+### Fixed
+
++ Fix for module annotations within Python 3.14 for agent Python functions ([1324](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1324))
++ Fix for wrapped spatial messages where there is a non matching environment and radius configuration ([#1182](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1182))
++ Fix to multi-arch system test failures ([#1297](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1297))
++ Fix to AgentID to prevent issues with regeneration and syncing ([#1270](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1270))
++ Fix to Test `DependencyGraphTest.UnattachedFunctionWarning` which was broke by previous change in [#0a7456e](https://github.com/FLAMEGPU/FLAMEGPU2/commit/0a7456eacc2a755e41f4a3d608dae71a265cf252) ([#1268](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1268))
++ Fix to DeviceAgentVector::setVariable which was not syncing correctly ([#1266](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1266))
++ Fix telemetry suppression notice option to be available when telemetry is disabled ([#1262](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1262))
+
 ## [2.0.0-rc.2] - 2024-11-22
 
 ### Added
@@ -351,7 +400,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initial alpha release of FLAME GPU 2.0.0, a CUDA C++ / python3 library for agent based simulations
 
-[Unreleased]: https://github.com/FLAMEGPU/FLAMEGPU2/compare/v2.0.0-rc.2...HEAD
+[Unreleased]: https://github.com/FLAMEGPU/FLAMEGPU2/compare/v2.0.0-rc.3...HEAD
+[2.0.0-rc.3]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc.3
 [2.0.0-rc.2]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc.2
 [2.0.0-rc.1]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc.1
 [2.0.0-rc]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc

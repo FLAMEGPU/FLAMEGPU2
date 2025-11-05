@@ -5,8 +5,8 @@ title: "FLAME GPU"
 license: AGPL-3.0-only
 repository-code: "https://github.com/FLAMEGPU/FLAMEGPU2"
 url: "https://flamegpu.com"
-version: "2.0.0-rc.2"
-date-released: 2024-11-22
+version: "2.0.0-rc.3"
+date-released: 2025-11-05
 type: software
 authors: 
   - given-names: Paul
