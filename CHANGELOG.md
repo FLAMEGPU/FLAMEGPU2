@@ -35,7 +35,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 + Added `nlohmann::json` (replacing RapidJSON) with some breaking changes for nan/inf ([#1277](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1277)). Any special limit values (e.g. +/- nan/inf) are written to JSON as `NULL` and read from JSON as `NaN`.
 + The latest version change in licensing terms from MIT to a [dual license model of AGPL 3.0 and commercial](https://flamegpu.com/download/license/). This requires user contributions to sign our CLA ([#1313](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1313))
-+ Removed CUDA 11 support which removes support for Kepler (`sm_35`) hardware. I.e. CUDA Supported versions are now 12.x to 13.x (Windows requires >12.4). This requires C++20 and CMake ?= 2.25.2. Windows Visual Studio 2019 support is also removed. ([#1302](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1302))
++ Removed CUDA 11 support which removes support for Kepler (`sm_35`) hardware. I.e. CUDA Supported versions are now 12.x to 13.x (Windows requires >= 12.4) ([#1302](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1302))
++ Switch from c++17 to c++20, CMake >= 3.25.2 is now required ([#1302](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1302))
++ Windows Visual Studio 2019 support is removed ([#1302](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1302))
 + Removed support for Python < 3.10 and added 3.13 and 3.14. Supported Python versions are now 3.10-3.14 ([#1320](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1320),[#1318](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1318), [#1320](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1320) respectively)
 + CI Updated support for ManyLinux 2_28 and removal of ManyLinux2014 from GitHub actions. Python wheels will now require `glibc` >= 2.28 unless built from source. ([#1228](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1228))
 
