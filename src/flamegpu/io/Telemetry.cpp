@@ -250,16 +250,11 @@ bool Telemetry::sendData(std::string telemetry_data) {
     // Initialise from the env var is needed. A ctor might be nicer.
     initialiseFromEnvironmentIfNeeded();
 
-    // Maximum duration curl to attempt to connect to the endpoint
-    const float CURL_CONNECT_TIMEOUT = 0.5;
-    // Maximum total duration for the curl call, including connection and payload
-    const float CURL_MAX_TIME = 1.0;
     // Silent curl command (-s) and redirect response output to null
-    std::string null;
 #if _WIN32
-    null = "nul";
+     std::string null = "nul";
 #else
-    null = "/dev/null";
+     std::string null = "/dev/null";
 #endif
 
     // Escape quotes, which surround the data payload when passed to curl.
@@ -273,8 +268,10 @@ bool Telemetry::sendData(std::string telemetry_data) {
     curl_command << "curl";
     curl_command << " -s";
     curl_command << " -o " << null;
-    curl_command << " --connect-timeout " << std::to_string(CURL_CONNECT_TIMEOUT);
-    curl_command << " --max-time " << std::to_string(CURL_MAX_TIME);
+    // Maximum duration curl to attempt to connect to the endpoint
+    curl_command << " --connect-timeout 0.5";
+    // Maximum total duration for the curl call, including connection and payload
+    curl_command << " --max-time 1.0";
     curl_command << " -X POST '" << std::string(TELEMETRY_ENDPOINT) << "'";
     curl_command << " -H 'Content-Type: application/json; charset=utf-8'";
     curl_command << " --data-raw \"" << telemetry_data << "\"";
