@@ -400,7 +400,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initial alpha release of FLAME GPU 2.0.0, a CUDA C++ / python3 library for agent based simulations
 
-[Unreleased]: https://github.com/FLAMEGPU/FLAMEGPU2/compare/v2.0.0-rc.2...HEAD
+[Unreleased]: https://github.com/FLAMEGPU/FLAMEGPU2/compare/v2.0.0-rc.3...HEAD
 [2.0.0-rc.3]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc.3
 [2.0.0-rc.2]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc.2
 [2.0.0-rc.1]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc.1
