@@ -272,8 +272,8 @@ bool Telemetry::sendData(std::string telemetry_data) {
     curl_command << " --connect-timeout 0.5";
     // Maximum total duration for the curl call, including connection and payload
     curl_command << " --max-time 1.0";
-    curl_command << " -X POST '" << std::string(TELEMETRY_ENDPOINT) << "'";
-    curl_command << " -H 'Content-Type: application/json; charset=utf-8'";
+    curl_command << " -X POST \"" << std::string(TELEMETRY_ENDPOINT) << "\"";
+    curl_command << " -H \"Content-Type: application/json; charset=utf-8\"";
     curl_command << " --data-raw \"" << telemetry_data << "\"";
     curl_command << " > " << null << " 2>&1";
     // capture the return value
