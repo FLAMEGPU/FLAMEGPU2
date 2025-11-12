@@ -30,6 +30,13 @@ int getComputeCapability(int deviceIndex);
 int minimumCompiledComputeCapability();
 
 /**
+ * Get the compute capability integers used when building compute_capability.cu in a string for use in error messages
+ *
+ * @return string of compute capabilties used when compiling compute_capability.cu
+ */
+std::string compiledCompiledComputeCapabilitiesString();
+
+/**
  * Check that the current executable has been built with a low enough compute capability for the current device.
  * This assumes JIT support is enabled for future (major) architectures.
  * If __CUDA_ARCH_LIST__ could not be used to extract a minimum compiled architecture, no decision can be made so it is assumed to be successful.
