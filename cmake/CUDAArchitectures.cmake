@@ -185,51 +185,8 @@ function(flamegpu_set_cuda_architectures)
         endif()
     else()
         # Otherwise, set a mulit-arch default for good compatibility and performacne
-        # If we're using CMake >= 3.23, we can just use all-major, though we then have to find the minimum a different way?
-        if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.23")
-            set(CMAKE_CUDA_ARCHITECTURES "all-major")
-        else()
-            # For CMake < 3.23, we have to make our own all-major equivalent.
-            # If we have nvcc help outut, we can generate this from all the elements that end with a 0 (and the first element if it does not.)
-            if(SUPPORTED_CUDA_ARCHITECTURES_NVCC_COUNT GREATER 0)
-                # If the lowest support arch is not major, add it to the default
-                list(GET SUPPORTED_CUDA_ARCHITECTURES_NVCC 0 lowest_supported)
-                if(NOT lowest_supported MATCHES "0$")
-                    list(APPEND default_archs ${lowest_supported})
-                endif()
-                unset(lowest_supported)
-                # For each architecture, if it is major add it to the default list
-                foreach(ARCH IN LISTS SUPPORTED_CUDA_ARCHITECTURES_NVCC)
-                    if(ARCH MATCHES "0$")
-                        list(APPEND default_archs ${ARCH})
-                    endif()
-                endforeach()
-            else()
-                # If nvcc help output parsing failed, just use an informed guess option from CUDA 12.0
-                set(default_archs "35;50;60;70;80")
-                if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.8)
-                    list(APPEND default_archs "90")
-                endif()
-                if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 12.0)
-                    list(REMOVE_ITEM default_archs "35")
-                endif()
-                message(AUTHOR_WARNING
-                    "  ${CMAKE_CURRENT_FUNCTION} failed to parse NVCC --help output for default architecture generation\n"
-                    "  Using ${default_archs} based on CUDA 11.2 to 11.8."
-                )
-            endif()
-            # We actually want real for each arch, then virtual for the final, but only for library-provided values, to only embed one arch worth of ptx.
-            # So grab the last element of the list
-            list(GET default_archs -1 final)
-            # append -real to each element, to not embed ptx for that arch too
-            list(TRANSFORM default_archs APPEND "-real")
-            # add the -virtual version of the final element
-            list(APPEND default_archs "${final}-virtual")
-            # Set the value
-            set(CMAKE_CUDA_ARCHITECTURES ${default_archs})
-            #unset local vars
-            unset(default_archs)
-        endif()
+        # As we require CMake >= 3.23 (and CUDA >= 12 which includes all-major), we can just use all-major
+        set(CMAKE_CUDA_ARCHITECTURES "all-major")
     endif()
     # Promote the value to the parent's scope, where it is needed on the first invokation (might be fine with cache, but just incase)
     set(CMAKE_CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}" PARENT_SCOPE)
