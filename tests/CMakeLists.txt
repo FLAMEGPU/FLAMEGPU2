@@ -146,9 +146,6 @@ macro(create_test_project)
     target_include_directories("${PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
     # Add the targets we depend on (this does link and include)
     target_link_libraries("${PROJECT_NAME}" PRIVATE GTest::gtest)
-    # Pass a tests specific compiler definition for checking CMAKE_CUDA_ARCHITECTURES behaviour
-    flamegpu_get_minimum_cuda_architecture(min_cuda_arch)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE FLAMEGPU_TEST_MIN_CUDA_ARCH=${min_cuda_arch})
     # Put Within Tests filter
     flamegpu_set_target_folder("${PROJECT_NAME}" "Tests")
     # Set the default (visual studio) debugger configure_file

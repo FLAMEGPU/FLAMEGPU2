@@ -1,6 +1,7 @@
 #include <nvrtc.h>
 
 #include <cassert>
+#include <array>
 #include <vector>
 #include <string>
 
@@ -10,6 +11,19 @@
 
 namespace flamegpu {
 namespace detail {
+
+namespace {
+    /**
+     * Templated variadic template constexpr method which returns a std::array from a number of arguments
+     *
+     * @parameter values multiple arguments which should all be of the same (int) type
+     */
+    template <typename... Args>
+    constexpr auto macro_to_array(Args... values) {
+        constexpr std::size_t N = sizeof...(Args);
+        return std::array<int, N>{ (static_cast<int>(values))... };
+    }
+}  // namespace
 
 int compute_capability::getComputeCapability(int deviceIndex) {
     int major = 0;
@@ -36,12 +50,19 @@ int compute_capability::getComputeCapability(int deviceIndex) {
 }
 
 int compute_capability::minimumCompiledComputeCapability() {
-    #if defined(FLAMEGPU_MIN_CUDA_ARCH)
-        return FLAMEGPU_MIN_CUDA_ARCH;
-    #else
-        // Return 0 as a default minimum?
-        return 0;
+    // extract the 0th value from the __CUDA_ARCH_LIST__ macro, and int divide by 10 to get a 2 or 3 digit integer compute capability
+    #if defined(__CUDA_ARCH_LIST__)
+        // Macro wrapper for getting the __CUDA_ARCH_LIST__ as a std::array of int
+        #define MACRO_TO_ARRAY_WRAPPER() macro_to_array<int>(__CUDA_ARCH_LIST__)
+        auto archs = MACRO_TO_ARRAY_WRAPPER();
+        #undef MACRO_TO_ARRAY_WRAPPER
+        if (archs.size() >= 1) {
+            // return the 0th item int divided by 10
+            return archs[0] / 10;
+        }
     #endif
+    // If the macro was not defined, or no architectures were found, return 0
+    return 0;
 }
 
 bool compute_capability::checkComputeCapability(int deviceIndex) {
