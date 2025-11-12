@@ -1,6 +1,7 @@
 #include <cuda_runtime.h>
 
 #include <algorithm>
+#include <string>
 #include <vector>
 #include "flamegpu/detail/compute_capability.cuh"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
@@ -68,6 +69,21 @@ TEST(TestUtilComputeCapability, minimumCompiledComputeCapability) {
         EXPECT_EQ(min_arch, rec_min_arch);
     #else
         EXPECT_EQ(min_arch, 0);
+    #endif
+}
+
+// Test getting the string of compute capabilities used
+TEST(TestUtilComputeCapability, compiledCompiledComputeCapabilitiesString) {
+    const std::string arch_list_str = detail::compute_capability::compiledCompiledComputeCapabilitiesString();
+    // If the macro is defined, the returned value should be a string of atleast 2 characters, containing only integers and semi-colons.
+    #if defined(__CUDA_ARCH_LIST__)
+        // Check that the minimum number of expected characters is included
+        EXPECT_GE(arch_list_str.length(), 2);
+        // Check that there are no unexpected characters
+        EXPECT_EQ(arch_list_str.find_first_not_of("0123456789;"), std::string::npos);
+    #else
+        // If the macro is not defined, the empty string should be returned
+        EXPECT_EQ(arch_list_str, "");
     #endif
 }
 

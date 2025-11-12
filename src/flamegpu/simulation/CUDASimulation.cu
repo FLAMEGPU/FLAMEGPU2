@@ -1548,8 +1548,9 @@ void CUDASimulation::applyConfig_derived() {
     // Check the compute capability of the device, throw an exception if not valid for the executable.
     if (!detail::compute_capability::checkComputeCapability(static_cast<int>(config.device_id))) {
         int min_cc = detail::compute_capability::minimumCompiledComputeCapability();
+        std::string compiled_ccs = detail::compute_capability::compiledCompiledComputeCapabilitiesString();
         int cc = detail::compute_capability::getComputeCapability(static_cast<int>(config.device_id));
-        THROW exception::InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capability %d and above. Device %u is compute capability %d. Rebuild for SM_%d.", min_cc, config.device_id, cc, cc);
+        THROW exception::InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capabilities \"%s\". Rebuild including compute capability <= %d for device %u.", compiled_ccs.c_str(), cc, config.device_id);
     }
 
     cudaStatus = cudaSetDevice(static_cast<int>(config.device_id));
@@ -1599,8 +1600,9 @@ void CUDASimulation::initialiseSingletons() {
         // Check the compute capability of the device, throw an exception if not valid for the executable.
         if (!detail::compute_capability::checkComputeCapability(static_cast<int>(config.device_id))) {
             int min_cc = detail::compute_capability::minimumCompiledComputeCapability();
+            std::string compiled_ccs = detail::compute_capability::compiledCompiledComputeCapabilitiesString();
             int cc = detail::compute_capability::getComputeCapability(static_cast<int>(config.device_id));
-            THROW exception::InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capability %d and above. Device %u is compute capability %d. Rebuild for SM_%d.", min_cc, config.device_id, cc, cc);
+            THROW exception::InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capabilities \"%s\". Rebuild including compute capability <= %d for device %u.", compiled_ccs.c_str(), cc, config.device_id);
         }
         gpuErrchk(cudaGetDevice(&deviceInitialised));
         // Get references to all required singleton and store in the instance.

@@ -65,6 +65,30 @@ int compute_capability::minimumCompiledComputeCapability() {
     return 0;
 }
 
+std::string compute_capability::compiledCompiledComputeCapabilitiesString() {
+    // Get a std::array<int> containign the values from the macro, via another macro
+    #if defined(__CUDA_ARCH_LIST__)
+        // Macro wrapper for getting the __CUDA_ARCH_LIST__ as a std::array of int
+        #define MACRO_TO_ARRAY_WRAPPER() macro_to_array<int>(__CUDA_ARCH_LIST__)
+        auto archs = MACRO_TO_ARRAY_WRAPPER();
+        #undef MACRO_TO_ARRAY_WRAPPER
+        // Build a semi-colon separated string (as CMAKE_CUDA_ARCHITECTURES must be space-separated)
+        bool first = true;
+        std::string result = "";
+        for (const int& arch : archs) {
+            if (!first) {
+                result += ";";
+            }
+            // div by 10, as __CUDA_ARCH_LIST values have an extra 0 appended to them
+            result += std::to_string(arch / 10);
+            first = false;
+        }
+        return result;
+    #else
+        return std::array<int, 1>{0};
+    #endif
+}
+
 bool compute_capability::checkComputeCapability(int deviceIndex) {
     // If the compile time minimum architecture is defined, fetch the device's compute capability and check that the executable (probably) supports this device.
     if (getComputeCapability(deviceIndex) < minimumCompiledComputeCapability()) {
