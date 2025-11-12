@@ -532,10 +532,6 @@ else()
     target_compile_definitions(${PROJECT_NAME} PUBLIC $<IF:$<CONFIG:Debug>,FLAMEGPU_SEATBELTS=1,FLAMEGPU_SEATBELTS=0>)
 endif()
 
-# Detect and forward the minimum CMAKE_CUDA_ARCHITECTURES value to the compiler, if possible. This is only used in a library source file so can be private.
-flamegpu_get_minimum_cuda_architecture(min_cuda_arch)
-target_compile_definitions(${PROJECT_NAME} PRIVATE FLAMEGPU_MIN_CUDA_ARCH=${min_cuda_arch})
-
 # Select the curand engine to use for FLAMEGPU, used in include, so must match the library build (PUBLIC)
 string(TOUPPER FLAMEGPU_CURAND_ENGINE FLAMEGPU_CURAND_ENGINE_UPPER)
 if(${FLAMEGPU_CURAND_ENGINE_UPPER} STREQUAL "MRG")

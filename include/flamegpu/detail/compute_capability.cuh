@@ -20,14 +20,20 @@ int getComputeCapability(int deviceIndex);
 
 /**
  * Get the minimum compute capability which this file was compiled for.
- * Specified via the FLAMEGPU_MIN_CUDA_ARCH macro, as __CUDA_ARCH__ is only defined for device compilation.
+ *
+ * Extracts the first element from `__CUDA_ARCH_LIST__` which is an ordered list of integer architectures passed to nvcc, with the 0th value being the lowest.
+ *
+ * __CUDA_ARCH_LIST__ values are 3 or 4 digits long, with SM_80 becoming 800, or SM_103 becoming 1030, so they are scaled back down to match SM_ notation.
+ *
+ * @return the minimum compute capability from __CUDA_ARCH_LIST__ as a 2+ digit integer, i.e. 80 for SM_80, or 0 if __CUDA_ARCH_LIST__ was undefined
  */
 int minimumCompiledComputeCapability();
 
 /**
  * Check that the current executable has been built with a low enough compute capability for the current device.
  * This assumes JIT support is enabled for future (major) architectures.
- * If the compile time macro FLAMEGPU_MIN_CUDA_ARCH was not specified or incorrectly detected, no decision can be made so it is assumed to be successful.
+ * If __CUDA_ARCH_LIST__ could not be used to extract a minimum compiled architecture, no decision can be made so it is assumed to be successful.
+ * If a or f post-fixed architectures are used, this check may also be insufficient for forwards compatibilty, but this requires an SM >= 100 device to test this on.
  * @param deviceIndex the index of the device to be checked.
  * @return boolean indicating if the executable can run on the specified device.
  */

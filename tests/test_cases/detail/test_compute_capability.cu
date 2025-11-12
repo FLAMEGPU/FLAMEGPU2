@@ -1,5 +1,6 @@
 #include <cuda_runtime.h>
 
+#include <algorithm>
 #include <vector>
 #include "flamegpu/detail/compute_capability.cuh"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
@@ -31,14 +32,42 @@ TEST(TestUtilComputeCapability, getComputeCapability) {
     EXPECT_ANY_THROW(detail::compute_capability::getComputeCapability(-1));
     EXPECT_ANY_THROW(detail::compute_capability::getComputeCapability(device_count));
 }
-
+/**
+ * Base case for getting the minium value integer value from a macro-defined list of integers using recursion.
+ *
+ * @param a the integer to
+ * @return a
+ */
+constexpr int recursive_min_arg(int a) {
+    return a;
+}
+/**
+ * Recursive method to get the the minium value integer value from a macro-defined list of integers provided as independent arguments
+ *
+ * @param a the current minimum
+ * @param tail the remaining arguments to find the minimum of
+ */
+template <typename... Args>
+constexpr int recursive_min_arg(int a, Args... tail) {
+    return std::min(a, recursive_min_arg(tail...));
+}
 // Test getting the minimum compiled cuda capabillity.
 TEST(TestUtilComputeCapability, minimumCompiledComputeCapability) {
     // If the macro is defined, the returned value should match, otherwise it should be 0.
-    #if defined(FLAMEGPU_TEST_MIN_CUDA_ARCH)
-        EXPECT_EQ(detail::compute_capability::minimumCompiledComputeCapability(), FLAMEGPU_TEST_MIN_CUDA_ARCH);
+    const int min_arch = detail::compute_capability::minimumCompiledComputeCapability();
+    #if defined(__CUDA_ARCH_LIST__)
+        // First check that the min_arch is atleast valid for the cuda compiler used, for known cuda compilers
+        #if __CUDACC_VER_MAJOR__ >= 13
+            EXPECT_GE(min_arch, 75);
+        #elif __CUDAACC_VER_MARJOR__ >= 12
+            EXPECT_GE(min_arch, 50);
+        #endif
+        // Instead of using the same approach to extract the 0th element from the macro, which would be redundant, instead use the recursive approach just implemented in this test file and make sure they agree.
+        #define MIN_INT_FROM_MACROLIST(...) recursive_min_arg(__VA_ARGS__)
+        int rec_min_arch = MIN_INT_FROM_MACROLIST(__CUDA_ARCH_LIST__) / 10;
+        EXPECT_EQ(min_arch, rec_min_arch);
     #else
-        EXPECT_EQ(detail::compute_capability::minimumCompiledComputeCapability(), 0);
+        EXPECT_EQ(min_arch, 0);
     #endif
 }
 
