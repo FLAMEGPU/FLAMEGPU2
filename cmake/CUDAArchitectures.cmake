@@ -96,15 +96,15 @@ function(flamegpu_set_cuda_architectures)
     # Query NVCC for the acceptable SM values, this is used in multiple places
     if(NOT DEFINED SUPPORTED_CUDA_ARCHITECTURES_NVCC)
         execute_process(COMMAND ${CMAKE_CUDA_COMPILER} "--help" OUTPUT_VARIABLE NVCC_HELP_STR ERROR_VARIABLE NVCC_HELP_STR)
-        # Match all comptue_XX or sm_XXs
-        string(REGEX MATCHALL "'(sm|compute)_[0-9]+'" SUPPORTED_CUDA_ARCHITECTURES_NVCC "${NVCC_HELP_STR}" )
-        # Strip just the numeric component
-        string(REGEX REPLACE "'(sm|compute)_([0-9]+)'" "\\2" SUPPORTED_CUDA_ARCHITECTURES_NVCC "${SUPPORTED_CUDA_ARCHITECTURES_NVCC}" )
+        # Match all comptue_XX or sm_XX or lto_XX values, including single lowercase letter suffixes (a or f only supported so far, but allowing flexibility)
+        string(REGEX MATCHALL "'(sm|compute|lto)_([0-9]+[a-z]?)'" SUPPORTED_CUDA_ARCHITECTURES_NVCC "${NVCC_HELP_STR}" )
+        # Strip out just the portiaon after the _, which is the value for CMAKE_CUDA_ARCHITECTURES
+        string(REGEX REPLACE "'(sm|compute|lto)_([0-9]+[a-z]?)'" "\\2" SUPPORTED_CUDA_ARCHITECTURES_NVCC "${SUPPORTED_CUDA_ARCHITECTURES_NVCC}" )
         # Remove dupes and sort to build the correct list of supported CUDA_ARCH.
         list(REMOVE_DUPLICATES SUPPORTED_CUDA_ARCHITECTURES_NVCC)
         list(REMOVE_ITEM SUPPORTED_CUDA_ARCHITECTURES_NVCC "")
         list(SORT SUPPORTED_CUDA_ARCHITECTURES_NVCC)
-        # Store the supported arch's once and only once. This could be a cache  var given the cuda compiler should not be able to change without clearing th cache?
+        # Store the supported arch's once and only once in the parent scope.
         set(SUPPORTED_CUDA_ARCHITECTURES_NVCC ${SUPPORTED_CUDA_ARCHITECTURES_NVCC} PARENT_SCOPE)
     endif()
     list(LENGTH SUPPORTED_CUDA_ARCHITECTURES_NVCC SUPPORTED_CUDA_ARCHITECTURES_NVCC_COUNT)
@@ -166,22 +166,33 @@ function(flamegpu_set_cuda_architectures)
             set(using_keyword_arch TRUE)
         endif()
         # Cmake 3.18+ expects a list of 1 or more <sm>, <sm>-real or <sm>-virtual.
-        # CMake isn't aware of the exact SMS supported by the CUDA version afiak, but we have already queired nvcc for this (once and only once)
-        # If nvcc parsing worked and a single keyword option is not being used, attempt the validation:
-        if(SUPPORTED_CUDA_ARCHITECTURES_NVCC_COUNT GREATER 0 AND NOT using_keyword_arch)
-            # Transform a copy of the list of supported architectures, to hopefully just contain numbers
+        # CMake isn't aware of the exact SMS supported by the CUDA version afiak, but we have already queried nvcc for this (once and only once)
+        # If nvcc parsing worked and a single keyword option is not being used, attempt the validation
+        # But do not emit this more than once per invocation of CMake. parent scope wasn't enough in this case so using a global property
+        get_property(
+            WARNING_EMITTED
+            GLOBAL PROPERTY
+            __flamegpu_set_cuda_architectures_warning_emitted
+        )
+        if(SUPPORTED_CUDA_ARCHITECTURES_NVCC_COUNT GREATER 0 AND NOT using_keyword_arch AND NOT WARNING_EMITTED)
+            # Transform a copy of the list of requested architectures, removing -real and -virutal CMake components
             set(archs ${CMAKE_CUDA_ARCHITECTURES})
             list(TRANSFORM archs REPLACE "(\-real|\-virtual)" "")
-            # If any of the specified architectures are not in the nvcc reported list, error.
+            # If any of the specified architectures are not in the nvcc reported list, raise a warning
             foreach(ARCH IN LISTS archs)
                 if(NOT ARCH IN_LIST SUPPORTED_CUDA_ARCHITECTURES_NVCC)
-                    message(FATAL_ERROR
-                        " CMAKE_CUDA_ARCHITECTURES value `${ARCH}` is not supported by nvcc ${CMAKE_CUDA_COMPILER_VERSION}.\n"
+                    message(WARNING
+                        " CMAKE_CUDA_ARCHITECTURES value `${ARCH}` may not be supported by nvcc ${CMAKE_CUDA_COMPILER_VERSION}, compilation may fail\n"
                         " Supported architectures based on nvcc --help: \n"
                         "   ${SUPPORTED_CUDA_ARCHITECTURES_NVCC}\n")
                 endif()
             endforeach()
-            unset(archs)
+            # set the global property so this is not re-emitted for each project()
+            set_property(
+                GLOBAL PROPERTY
+                __flamegpu_set_cuda_architectures_warning_emitted
+                TRUE
+            )
         endif()
     else()
         # Otherwise, set a mulit-arch default for good compatibility and performacne
