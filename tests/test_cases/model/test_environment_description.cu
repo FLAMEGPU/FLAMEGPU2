@@ -186,8 +186,8 @@ void ExceptionPropertyLength_test() {
     EnvironmentDescription ed = model.Environment();
     std::array<T, ARRAY_TEST_LEN> b;
     std::array<T, 1> _b1 = {};
-    std::array<T, ARRAY_TEST_LEN + 1> _b2;
-    std::array<T, ARRAY_TEST_LEN * 2> _b3;
+    std::array<T, ARRAY_TEST_LEN + 1> _b2 = {};
+    std::array<T, ARRAY_TEST_LEN * 2> _b3 = {};
     ed.newProperty<T, ARRAY_TEST_LEN>("a", b);
     auto fn1 = &EnvironmentDescription::setProperty<T, 1>;
     auto fn2 = &EnvironmentDescription::setProperty<T, ARRAY_TEST_LEN + 1>;
