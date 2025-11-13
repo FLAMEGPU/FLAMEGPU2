@@ -21,6 +21,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 -->
 
+
+## [2.0.0-rc.4] - 2025-11-18
+
+### Changed (Breaking)
+
++ Fix an unintended breaking change to agent variable and environment property logging was introduced in `v2.0.0-rc.3`. In JSON agent and environment output files, individual scalar values were output as lists containing a single element, rather than the single scalar value. The behaviour now matches the older beahaviour ([#1340](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1340))
+
+### Changed
+
++ Improve `InvalidCUDAComputeCapability` exception messages using `__CUDA_ARCH_LIST__` ([#1043](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1043), [#1342](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1342))
+
+### Fixed
+
++ Fixes incorrect `InvalidCUDAComputeCapability` exception when compiling with `all-major` (default) or `all` ([#1339](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1339), [#1342](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1342))
++ Fixes custom handling of `CMAKE_CUDA_ARCHITECTURES` to support `a` and `f` post-fixed compute capabilities such as `90a` ([#1284](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1284), [#1342](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1342))
++ Addresses GCC 15 `-Wmaybe-uninitialised` warning in the test suite ([#1343](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1315))
+
+
 ## [2.0.0-rc.3] - 2025-11-05
 
 ### Added
@@ -400,7 +418,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initial alpha release of FLAME GPU 2.0.0, a CUDA C++ / python3 library for agent based simulations
 
-[Unreleased]: https://github.com/FLAMEGPU/FLAMEGPU2/compare/v2.0.0-rc.3...HEAD
+[Unreleased]: https://github.com/FLAMEGPU/FLAMEGPU2/compare/v2.0.0-rc.4...HEAD
+[2.0.0-rc.4]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc.4
 [2.0.0-rc.3]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc.3
 [2.0.0-rc.2]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc.2
 [2.0.0-rc.1]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc.1
