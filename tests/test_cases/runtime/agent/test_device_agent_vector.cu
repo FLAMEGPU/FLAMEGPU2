@@ -1716,6 +1716,39 @@ TEST(DeviceAgentVectorTest, AgentID_MultipleStatesUniqueIDs3) {
     }
     ASSERT_EQ(ids.size(), 5 * POP_SIZE);  // No collisions
 }
+FLAMEGPU_HOST_FUNCTION(std_move_dav) {
+    // Broken way
+    auto foo_agent = std::move(FLAMEGPU->agent("agent").getPopulationData());
+    // Expected way
+    // flamegpu::DeviceAgentVector foo_agent = FLAMEGPU->agent("agent").getPopulationData();
+}
+TEST(DeviceAgentVectorTest, std_move_bug) {
+    // Bug identified in https://github.com/FLAMEGPU/FLAMEGPU2/discussions/1345#discussioncomment-14982363
+    // If a `flamegpu::DeviceAgentVector` is `std::move`d
+    // It appears at host function return, the (implicit) destructor is triggered
+    // This has the effect that when the DeviceAgentVector is cleaned up, and attempts to sync agents
+    // The `flamegpu::DeviceAgentVector::cuda_agent_state` variable is reset from "default" to ""
+    
+    const uint32_t POP_SIZE = 100;
+    // Create agents via AgentVector to two agent states
+    // DeviceAgentVector Birth creates new agent in both states (in the middle of the current agents)
+    // Store agent IDs to an agent variable inside model
+    // Export agents and check their IDs are unique
+    // Also check that the id's copied during model match those at export
+
+    ModelDescription model("test");
+    AgentDescription agent = model.newAgent("agent");
+    agent.newVariable<id_t>("foo", 0);
+
+    auto layer_a = model.newLayer();
+    layer_a.addHostFunction(std_move_dav);
+
+    AgentVector pop_in(agent, POP_SIZE);
+
+    CUDASimulation sim(model);
+
+    ASSERT_NO_THROW(sim.step());
+}
 
 }  // namespace DeviceAgentVectorTest
 }  // namespace flamegpu
