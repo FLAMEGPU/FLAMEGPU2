@@ -47,6 +47,8 @@
 #include "flamegpu/simulation/LogFrame.h"
 #include "flamegpu/util/cleanup.h"
 #include "flamegpu/io/Telemetry.h"
+#include "flamegpu/io/JSONRunPlanWriter.h"
+#include "flamegpu/io/JSONRunPlanReader.h"
 
 // This include has no impact if FLAMEGPU_VISUALISATION is not defined
 #include "flamegpu/visualiser/visualiser_api.h"

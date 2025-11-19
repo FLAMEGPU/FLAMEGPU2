@@ -13,6 +13,9 @@ namespace flamegpu {
 RunPlan::RunPlan(const ModelDescription &model)
     : RunPlan(std::make_shared<std::unordered_map<std::string, EnvironmentData::PropData> const>(model.model->environment->properties),
       model.model->exitConditions.size() + model.model->exitConditionCallbacks.size() > 0) { }
+RunPlan::RunPlan(const std::shared_ptr<const ModelData> &model)
+    : RunPlan(std::make_shared<std::unordered_map<std::string, EnvironmentData::PropData> const>(model->environment->properties),
+        model->exitConditions.size() + model->exitConditionCallbacks.size() > 0) { }
 RunPlan::RunPlan(const std::shared_ptr<const std::unordered_map<std::string, EnvironmentData::PropData>>  &environment, const bool allow_0)
     : random_seed(0)
     , steps(1)

@@ -11,7 +11,9 @@
 #include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h"
 
 namespace flamegpu {
-
+namespace io {
+class JSONRunPlanReader;
+}
 class AgentDescription;
 class CAgentDescription;
 class CLayerDescription;
@@ -39,6 +41,7 @@ class ModelDescription {
     friend class LoggingConfig;
     friend class XMLStateReader;
     friend class JSONStateReader;
+    friend class io::JSONRunPlanReader;
  public:
     /**
      * Constructor
