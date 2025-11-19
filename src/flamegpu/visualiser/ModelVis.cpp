@@ -25,11 +25,16 @@ void ModelVisData::hookVis(std::shared_ptr<visualiser::ModelVisData>& vis, std::
     for (auto [key, buf] : map) {
         buf->setVisualisation(vis);
     }
+    // Can only lock the mutex after vis is retrieved
+    if (vis->visualiser)
+        vis->visualiser->lockDynamicLinesMutex();
     for (auto [name, graph] : graphs) {
         auto &graph_buffs = map.at(name);
         graph->constructGraph(graph_buffs);
         vis->rebuildEnvGraph(name);
     }
+    if (vis->visualiser)
+        vis->visualiser->releaseDynamicLinesMutex();
 }
 void ModelVisData::registerEnvProperties() {
     if (model.singletons && !env_registered) {
