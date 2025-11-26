@@ -24,11 +24,11 @@ setup(
   packages=find_namespace_packages(where='src'),
   package_dir={"": "src"},
   include_package_data=True,
+  license="AGPL-3.0-only",
   classifiers=[
   'Development Status :: 3 - Alpha',
   'Environment :: GPU :: NVIDIA CUDA :: @CUDAToolkit_VERSION_MAJOR@.@CUDAToolkit_VERSION_MINOR@',
   'Intended Audience :: Developers',
-  'License :: OSI Approved :: GNU Affero General Public License v3',
   'Operating System :: POSIX :: Linux',
   'Operating System :: Microsoft :: Windows',
   'Programming Language :: Python',
