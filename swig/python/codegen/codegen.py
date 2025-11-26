@@ -5,6 +5,7 @@ import os
 import tokenize
 import warnings
 from io import StringIO
+import inspect
 
 def interleave(inter, f, seq):
     """Call f on each item in seq, calling inter() in between.
@@ -111,7 +112,7 @@ class CodeGenerator:
                  }
 
 
-    def __init__(self, tree, file = sys.stdout):
+    def __init__(self, tree, file = sys.stdout, source = "PythonString", bypass_line_directive=False):
         """CodeGenerator(tree, file=sys.stdout) -> None.
          Print the source for tree to file."""
         self.f = file
@@ -127,6 +128,8 @@ class CodeGenerator:
         self._directed_graph_vars = []                # default
         self._directed_graph_in_iterator_var = None   # default
         self._directed_graph_out_iterator_var = None  # default
+        self._source = source
+        self._bypass_line_directive = bypass_line_directive
         self.dispatch(tree)
         print("", file=self.f)
         self.f.flush()
@@ -172,9 +175,12 @@ class CodeGenerator:
         return cpp_func_name
               
 
-    def fill(self, text = ""):
+    def fill(self, text = "", tree=None):
         "Indent a piece of text, according to the current indentation level"
-        self.f.write("\n"+"    "*self._indent + text)
+        self.f.write("\n")
+        if tree and not self._bypass_line_directive:
+            self.f.write(f'#line {tree.lineno} "{self._source}"\n')
+        self.f.write("    "*self._indent + text)
 
     def write(self, text):
         "Append a piece of text to the current line."
@@ -356,7 +362,7 @@ class CodeGenerator:
         This is a special case of a range based for loop in which iterator item returns a const reference to the message.
         Any user specified message value can be used.
         """
-        self.fill("for (const auto& ")
+        self.fill("for (const auto& ", tree=tree)
         self.dispatch(tree.target)
         self.write(" : ")
         # if simple message iterator
@@ -403,7 +409,7 @@ class CodeGenerator:
         This is a special case of a range based for loop in which iterator item returns a const reference to the edge.
         Any user specified graph value can be used.
         """
-        self.fill("for (const auto& ")
+        self.fill("for (const auto& ", tree=tree)
         self.dispatch(tree.target)
         self.write(" : ")
         # graph iterator only current has calls
@@ -690,7 +696,7 @@ class CodeGenerator:
         elif sys.version_info < (3,8,0) and isinstance(tree.value, ast.Str): # num required for python 3.7
             return 
         # otherwise treat like a normal expression
-        self.fill()
+        self.fill(tree=tree)
         self.dispatch(tree.value)
         self.write(";")
 
@@ -720,7 +726,7 @@ class CodeGenerator:
             self.RaiseError(t, "Assignment to multiple targets not supported")
         if not isinstance(t.targets[0], ast.Name):
             self.RaiseError(t, "Assignment to complex expressions not supported")
-        self.fill()
+        self.fill(tree=t)
         # check if target exists in locals
         if t.targets[0].id not in self._locals :
             # Special case, catch message.at() where a message is returned outside a message loop
@@ -752,7 +758,7 @@ class CodeGenerator:
         # check if target exists in locals
         if t.target.id not in self._locals :
             self.RaiseError(t, "Augmented assignment not permitted on variables not already assigned previously")
-        self.fill()
+        self.fill(tree=t)
         self.dispatch(t.target)
         self.write(" "+self.binop[t.op.__class__.__name__]+"= ")
         self.dispatch(t.value)
@@ -761,7 +767,7 @@ class CodeGenerator:
     def _AnnAssign(self, t):
         if not isinstance(t.target, ast.Name):
             self.RaiseError(t, "Augmented assignment to complex expressions not supported")
-        self.fill()
+        self.fill(tree=t)
         self.dispatchType(t.annotation)
         self.write(" ")
         self.dispatch(t.target)
@@ -774,7 +780,7 @@ class CodeGenerator:
         """
         Standard cpp like return with semicolon.
         """
-        self.fill("return")
+        self.fill("return", tree=t)
         if t.value:
             self.write(" ")
             self.dispatch(t.value)
@@ -857,12 +863,12 @@ class CodeGenerator:
         if t.decorator_list[0].attr == 'agent_function' and t.decorator_list[0].value.id == 'pyflamegpu':
             if getattr(t, "returns", False):
                 self.RaiseWarning(t, "Function definition return type not supported on 'pyflamegpu.agent_function'")
-            self.fill(f"FLAMEGPU_AGENT_FUNCTION({t.name}, ")
+            self.fill(f"FLAMEGPU_AGENT_FUNCTION({t.name}, ", tree=t)
             self.dispatchFGPUFunctionArgs(t)
             self.write(")")
         # FLAMEGPU_DEVICE_FUNCTION
         elif t.decorator_list[0].attr == 'device_function' and t.decorator_list[0].value.id == 'pyflamegpu':
-            self.fill(f"FLAMEGPU_DEVICE_FUNCTION ")
+            self.fill(f"FLAMEGPU_DEVICE_FUNCTION ", tree=t)
             if t.returns:
                 self.dispatchType(t.returns)
             else:
@@ -886,7 +892,7 @@ class CodeGenerator:
             if t.args.args:
                 self.RaiseWarning(t, "Agent function conditions does not support arguments. These will be discarded.")
             # write the agent function macro
-            self.fill(f"FLAMEGPU_AGENT_FUNCTION_CONDITION({t.name})")
+            self.fill(f"FLAMEGPU_AGENT_FUNCTION_CONDITION({t.name})", tree=t)
         else:
             self.RaiseError(t, "Function definition uses an unsupported decorator. Must use either 'pyflamegpu.agent_function', 'pyflamegpu.agent_function_condition' or 'pyflamegpu.device_function'")
         self.enter()
@@ -926,7 +932,7 @@ class CodeGenerator:
                 elif t.iter.func.id == "range":
                     # switch on different uses of range based on number of arguments
                     if len(t.iter.args) == 1:
-                        self.fill(f"for (int ")
+                        self.fill(f"for (int ", tree=t)
                         self.dispatch(t.target)
                         self.write("=0;")
                         self.dispatch(t.target)
@@ -936,7 +942,7 @@ class CodeGenerator:
                         self.dispatch(t.target)
                         self.write("++)")
                     elif len(t.iter.args) == 2:
-                        self.fill(f"for (int ")
+                        self.fill(f"for (int ", tree=t)
                         self.dispatch(t.target)
                         self.write("=")
                         self.dispatch(t.iter.args[0])
@@ -948,7 +954,7 @@ class CodeGenerator:
                         self.dispatch(t.target)
                         self.write("++)")
                     elif len(t.iter.args) == 3:
-                        self.fill(f"for (int ")
+                        self.fill(f"for (int ", tree=t)
                         self.dispatch(t.target)
                         self.write("=")
                         self.dispatch(t.iter.args[0])
@@ -989,7 +995,7 @@ class CodeGenerator:
         """
         Fairly straightforward translation to if, else if, else format
         """
-        self.fill("if (")
+        self.fill("if (", tree=t)
         self.dispatch(t.test)
         self.write(")")
         self.enter()
@@ -999,7 +1005,7 @@ class CodeGenerator:
         while (t.orelse and len(t.orelse) == 1 and
                isinstance(t.orelse[0], ast.If)):
             t = t.orelse[0]
-            self.fill("else if (")
+            self.fill("else if (", tree=t)
             self.dispatch(t.test)
             self.write(")")
             self.enter()
@@ -1007,7 +1013,7 @@ class CodeGenerator:
             self.leave()
         # final else
         if t.orelse:
-            self.fill("else")
+            self.fill("else", tree=t)
             self.enter()
             self.dispatch(t.orelse)
             self.leave()
@@ -1016,7 +1022,7 @@ class CodeGenerator:
         """
         Straightforward translation to c style while loop
         """
-        self.fill("while (")
+        self.fill("while (", tree=t)
         self.dispatch(t.test)
         self.write(")")
         self.enter()
@@ -1335,3 +1341,94 @@ class CodeGenerator:
 
     def _withitem(self, t):
         self.RaiseError(t, "With not supported")
+
+
+class ModuleExtractor:
+    """
+    Extracts a filtered version of a Python module source where:
+      - Functions are preserved only if they are global and their decorator matches 
+        one of the permitted ones (e.g. 'pyflamegpu.device_function') OR if it is the named
+        'pyflamegpu.agent_function'/'pyflamegpu.agent_function_condition'
+      - Everything else becomes a blank line (line numbers preserved).
+
+    This creates a pyflamegpu.codegen safe (I.e. Ignoring irrelevant host code) source file with 
+    line numbers preserved. Preservation of line numbers is useful so that compiler #line directives 
+    can be used to link C++ compilation errors back to originating python source file.
+    """
+    # Permitted function decorator for inclusion in transpilation 
+    preserved_function_decorators=["pyflamegpu.device_function"]
+
+    # agent function decorators
+    agent_function_decorators=[ "pyflamegpu.agent_function", "pyflamegpu.agent_function_condition"]
+
+    def __init__(self, module, agent_func_name):
+        self._module = module
+        self._filename = inspect.getsourcefile(module)
+        self._agent_func_name = agent_func_name
+        if self._filename is None:
+            raise ValueError(f"Cannot determine source file for module {module}")
+        with open(self._filename, "r", encoding="utf-8") as f:
+            self.source = f.read()
+        # create blank file with newlines
+        self._lines = self.source.splitlines(keepends=True)
+        self._output = [
+            ("\n" if line.endswith("\n") else "\n")
+            for line in self._lines
+        ]
+        self._tree = ast.parse(self.source, filename=self._filename)
+
+    def node_to_name(self, node: ast.AST) -> str:
+        """Convert AST nodes (Name, Attribute, Subscript, Constant[str]) to dotted names."""
+        if node is None:
+            return ""
+        if isinstance(node, ast.Name):
+            return node.id
+        if isinstance(node, ast.Attribute):
+            parts = []
+            cur = node
+            while isinstance(cur, ast.Attribute):
+                parts.append(cur.attr)
+                cur = cur.value
+            if isinstance(cur, ast.Name):
+                parts.append(cur.id)
+            parts.reverse()
+            return ".".join(parts)
+        if isinstance(node, ast.Subscript):
+            return self.node_to_name(node.value)
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            return node.value
+        return ""
+
+    def function_allowed(self, func: ast.FunctionDef) -> bool:
+        """Determines if a ast function node has a decorator from the list of allowed decorators"""      
+        for dec in func.decorator_list:
+            name = self.node_to_name(dec)
+            # decorator matches allowed decorator objects (by simple name)
+            if name in self.preserved_function_decorators:
+                return True
+            # else if it is an agent function or condition
+            if name in self.agent_function_decorators:
+                # return true if this is the named agent function or function condition
+                if func.name == self._agent_func_name:
+                    return True
+
+        return False
+
+    def preserve(self, start: int, end: int):
+        """Copy original source code lines into empty output for a given line span."""
+        for i in range(start - 1, end):
+            self._output[i] = self._lines[i]
+
+ 
+    def process(self) -> str:
+        """Return the transformed module source as a string."""
+        
+        # Iterate children of module as only care about globals
+        for node in self._tree.body:
+            # Functions with allowed decorators
+            if isinstance(node, (ast.FunctionDef)):
+                if self.function_allowed(node):
+                    self.preserve(node.lineno-1, node.end_lineno) # start from -1 to preserve decorator
+                    continue
+
+        return "".join(self._output)
