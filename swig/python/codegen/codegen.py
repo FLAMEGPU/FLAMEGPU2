@@ -6,10 +6,10 @@ import tokenize
 import warnings
 from io import StringIO
 import inspect
+import types
 
 def interleave(inter, f, seq):
-    """Call f on each item in seq, calling inter() in between.
-    """
+    """Call f on each item in seq, calling inter() in between.  """
     seq = iter(seq)
     try:
         f(next(seq))
@@ -35,7 +35,7 @@ class CodeGenerator:
     # basic types
     basic_arg_types = ['float', 'int']
     
-    # supported math constansts    
+    # supported math constants    
     mathconsts = {"pi": "M_PI",
                   "e": "M_E",
                   "inf": "INFINITY",
@@ -113,8 +113,9 @@ class CodeGenerator:
 
 
     def __init__(self, tree, file = sys.stdout, source = "PythonString", bypass_line_directive=False):
-        """CodeGenerator(tree, file=sys.stdout) -> None.
-         Print the source for tree to file."""
+        """ Prints the source for `tree` to `file`. 
+            If `bypass_line_directive` is set then this will avoid use of the C++ `#line` directive on each newline which sets the Python ``source`` (usually a filename) and line number. 
+        """
         self.f = file
         self.future_imports = []
         self._indent = 0
@@ -176,23 +177,25 @@ class CodeGenerator:
               
 
     def fill(self, text = "", tree=None):
-        "Indent a piece of text, according to the current indentation level"
+        """Indent a piece of text, according to the current indentation level
+        If the tree is available then output a line directive to link compiler errors with the originating Python source file and line.    
+        """
         self.f.write("\n")
         if tree and not self._bypass_line_directive:
             self.f.write(f'#line {tree.lineno} "{self._source}"\n')
         self.f.write("    "*self._indent + text)
 
     def write(self, text):
-        "Append a piece of text to the current line."
+        """Append a piece of text to the current line."""
         self.f.write(str(text))
 
     def enter(self):
-        "Print '{', and increase the indentation."
+        """Print '{', and increase the indentation."""
         self.write("{")
         self._indent += 1
 
     def leave(self):
-        "Decrease the indentation level and Print '}'"
+        """Decrease the indentation level and Print '}'"""
         self._indent -= 1
         self.fill("}")
         # Purge _locals of out of scope variables
@@ -201,7 +204,7 @@ class CodeGenerator:
             del self._locals[key]
 
     def dispatch(self, tree):
-        "Dispatcher function, dispatching tree type T to method _T."
+        """Dispatcher function, dispatching tree type T to method _T."""
         if isinstance(tree, list):
             for t in tree:
                 self.dispatch(t)
@@ -222,7 +225,8 @@ class CodeGenerator:
     
     def dispatchMacroEnvFunction(self, tree, tree_parent):
         """
-        Function will handle a getMacroEnvironment function (assuming it is correctly formatted (by checking with _deviceVariableFunctionName first))
+        Function will handle a getMacroEnvironment function assuming it is correctly formatted (by checking with _deviceVariableFunctionName first)
+        Tree must be a FunctionDef node.
         """
         cpp_func_name = "getMacroProperty"
         py_func = tree.attr
@@ -259,7 +263,8 @@ class CodeGenerator:
     def dispatchFGPUFunctionArgs(self, tree):
         """
         Handles arguments for a FLAME GPU function. Arguments must have syntax of `message_in: MessageInType, message_out: MessageOutType`
-        Type hinting is required to translate a type into a FLAME GPU Message type implementation
+        Type hinting is required to translate a type into a FLAME GPU Message type implementation.
+        Tree must be a FunctionDef node.
         """
         # reset the locals variable stack
         self._locals = {"pyflamegpu": 0}
@@ -1213,7 +1218,7 @@ class CodeGenerator:
         interleave(lambda: self.write(s), self.dispatch, t.values)
         self.write(")")
        
-    def _Attribute(self,t):
+    def _Attribute(self, t):
         """
         A very limited set of attributes are supported so these are fully evaluated here. Other places where attribute type expressions may occur will also evaluate them fully rather than recursively call this function.
         Attributes supported are only;
@@ -1361,7 +1366,9 @@ class ModuleExtractor:
     # agent function decorators
     agent_function_decorators=[ "pyflamegpu.agent_function", "pyflamegpu.agent_function_condition"]
 
-    def __init__(self, module, agent_func_name):
+    def __init__(self, module: types.ModuleType, agent_func_name: str):
+        """ ModuleExtractor requires a python module and the name of the python agent function.
+        """
         self._module = module
         self._filename = inspect.getsourcefile(module)
         self._agent_func_name = agent_func_name
@@ -1378,7 +1385,7 @@ class ModuleExtractor:
         self._tree = ast.parse(self.source, filename=self._filename)
 
     def node_to_name(self, node: ast.AST) -> str:
-        """Convert AST nodes (Name, Attribute, Subscript, Constant[str]) to dotted names."""
+        """Convert AST node (Name, Attribute, Subscript, Constant[str]) to dotted names."""
         if node is None:
             return ""
         if isinstance(node, ast.Name):
@@ -1400,7 +1407,7 @@ class ModuleExtractor:
         return ""
 
     def function_allowed(self, func: ast.FunctionDef) -> bool:
-        """Determines if a ast function node has a decorator from the list of allowed decorators"""      
+        """Determines if a ast FunctionDef node has a decorator from the list of allowed decorators"""      
         for dec in func.decorator_list:
             name = self.node_to_name(dec)
             # decorator matches allowed decorator objects (by simple name)
