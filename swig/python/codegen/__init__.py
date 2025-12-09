@@ -27,7 +27,7 @@ def translate(function: Union[str, Callable]) -> str:
         return codegen(tree)
     elif isinstance(function, Callable):
         module = inspect.getmodule(function)
-        # If no file attribute then its probably from a notebookc ell or some other dynamic (non file) location
+        # If no file attribute then its probably from a notebook cell or some other dynamic (non file) location
         source = "DynamicPython"
         if (hasattr(module, "__file__")):
             source = os.path.basename(module.__file__)
