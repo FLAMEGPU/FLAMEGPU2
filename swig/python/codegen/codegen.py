@@ -112,9 +112,10 @@ class CodeGenerator:
                  }
 
 
-    def __init__(self, tree, file = sys.stdout, source = "PythonString", bypass_line_directive=False):
+    def __init__(self, tree, file = sys.stdout, source = "PythonString", bypass_line_directive=False, source_line_offset=0):
         """ Prints the source for `tree` to `file`. 
             If `bypass_line_directive` is set then this will avoid use of the C++ `#line` directive on each newline which sets the Python ``source`` (usually a filename) and line number. 
+            Source line offset can be used to offset the source line by an integer value which is helpful for agent functions coming from dynamic sources such as Notebooks.
         """
         self.f = file
         self.future_imports = []
@@ -131,6 +132,9 @@ class CodeGenerator:
         self._directed_graph_out_iterator_var = None  # default
         self._source = source
         self._bypass_line_directive = bypass_line_directive
+        self._source_line_offset = 0
+        if isinstance (source_line_offset, int):
+            self._source_line_offset = source_line_offset
         self.dispatch(tree)
         print("", file=self.f)
         self.f.flush()
@@ -182,7 +186,10 @@ class CodeGenerator:
         """
         self.f.write("\n")
         if tree and not self._bypass_line_directive:
-            self.f.write(f'#line {tree.lineno} "{self._source}"\n')
+            line = tree.lineno + self._source_line_offset
+            if line < 1: #if offset results in zero or negative line number then set to 1 (which is min)
+                line = 1 
+            self.f.write(f'#line {line} "{self._source}"\n')
         self.f.write("    "*self._indent + text)
 
     def write(self, text):
