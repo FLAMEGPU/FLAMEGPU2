@@ -115,6 +115,14 @@ class DeviceMacroProperty : public ReadOnlyDeviceMacroProperty<T, I, J, K, W> {
      */
     __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& operator +=(T val);
     /**
+     * atomic add (and return the result)
+     * @param val The 2nd operand
+     * @return The result of the add operation
+     * Note, taking value of the returned object will fail, due to the risk of atomic conflicts
+     * @note Only suitable where T is type int32_t, uint32_t, uint64_t, float, double
+     */
+    __device__ __forceinline__ T addAtomic(T val);
+    /**
      * atomic subtraction
      * @param val The 2nd operand
      * @return a reference to this
@@ -123,13 +131,21 @@ class DeviceMacroProperty : public ReadOnlyDeviceMacroProperty<T, I, J, K, W> {
      */
     __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& operator -=(T val);
     /**
-     * atomic add
+     * atomic subtraction (and return the result)
+     * @param val The 2nd operand
+     * @return The return of the subtraction operation
+     * Note, taking value of the returned object will fail, due to the risk of atomic conflicts
+     * @note Only suitable where T is type int32_t or uint32_t
+     */
+    __device__ __forceinline__ T subAtomic(T val);
+    /**
+     * add
      * @param val The 2nd operand
      * @return (this + val)
      */
     __device__ __forceinline__ T operator+(T val) const;
     /**
-     * atomic subtraction
+     * subtraction
      * @param val The 2nd operand
      * @return (this - val)
      */
@@ -299,6 +315,24 @@ __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& DeviceMacroProper
     return *this;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
+__device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::addAtomic(const T val) {
+    static_assert(std::is_same<T, int32_t>::value ||
+        std::is_same<T, uint32_t>::value ||
+        std::is_same<T, uint64_t>::value ||
+        std::is_same<T, float>::value ||
+        std::is_same<T, double>::value, "atomic add only supports the types int32_t/uint32_t/uint64_t/float/double.");
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
+    if (I != 1 || J != 1 || K != 1 || W != 1) {
+        DTHROW("Indexing error, property has more dimensions.\n");
+        return { };
+    } else if (this->ptr == nullptr) {
+        return { };
+    }
+    this->setCheckWriteFlag();
+#endif
+    return atomicAdd(this->ptr, val) + val;
+}
+template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& DeviceMacroProperty<T, I, J, K, W>::operator-=(const T val) {
     static_assert(std::is_same<T, uint32_t>::value || std::is_same<T, int32_t>::value, "atomic subtract only supports the types int32_t/uint32_t.");
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
@@ -312,6 +346,20 @@ __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>& DeviceMacroProper
 #endif
     atomicSub(this->ptr, val);
     return *this;
+}
+template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
+__device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::subAtomic(const T val) {
+    static_assert(std::is_same<T, uint32_t>::value || std::is_same<T, int32_t>::value, "atomic subtract only supports the types int32_t/uint32_t.");
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
+    if (I != 1 || J != 1 || K != 1 || W != 1) {
+        DTHROW("Indexing error, property has more dimensions.\n");
+        return { };
+    } else if (this->ptr == nullptr) {
+        return { };
+    }
+    this->setCheckWriteFlag();
+#endif
+    return atomicSub(this->ptr, val) - val;
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::operator+(const T val) const {
