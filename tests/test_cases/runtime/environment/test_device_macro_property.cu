@@ -3,9 +3,11 @@
  * WriteRead: Check that FLAMEGPU_SEATBELTS catches a read after write in same agent fn
  * ReadWrite: Check that FLAMEGPU_SEATBELTS catches a write after read in same agent fn
  * add: Use DeviceAPI operator+=, then read the value back in a subsequent agent function
- * add2: Use DeviceAPI operator+, and read the returned result
+ * add2: Use DeviceAPI operator+, then read the value back in a subsequent agent function
+ * add3: Use DeviceAPI addAtomic, and read the returned result
  * sub: Use DeviceAPI operator-=, then read the value back in a subsequent agent function
- * sub2: Use DeviceAPI operator-, and read the returned result
+ * sub2: Use DeviceAPI operator-, then read the value back in a subsequent agent function
+ * sub3: Use DeviceAPI subAtomic, and read the returned result
  * preincrement: Use DeviceAPI operator++ (pre), check the results, then read the value back in a subsequent agent function
  * predecrement: Use DeviceAPI operator-- (pre), check the results, then read the value back in a subsequent agent function
  * postincrement: Use DeviceAPI operator++ (post), check the results, then read the value back in a subsequent agent function
@@ -164,10 +166,42 @@ TEST(DeviceMacroPropertyTest, add2) {
     cudaSimulation.setPopulationData(population);
     ASSERT_NO_THROW(cudaSimulation.simulate());
     ASSERT_NO_THROW(cudaSimulation.getPopulationData(population));
+    const unsigned int t_out1 = population.at(0).getVariable<unsigned int>("b");
+    ASSERT_EQ(13u, t_out1);
+    const unsigned int t_out2 = population.at(0).getVariable<unsigned int>("c");
+    ASSERT_EQ(1u, t_out2);
+}
+FLAMEGPU_AGENT_FUNCTION(Write_add3, flamegpu::MessageNone, flamegpu::MessageNone) {
+    FLAMEGPU->setVariable<unsigned int>("b", FLAMEGPU->environment.getMacroProperty<unsigned int>("int").addAtomic(FLAMEGPU->getVariable<unsigned int>("a")));
+    return flamegpu::ALIVE;
+}
+TEST(DeviceMacroPropertyTest, add3) {
+    ModelDescription model("device_env_test");
+    // Setup environment
+    model.Environment().newMacroProperty<unsigned int>("int");
+    // Setup agent fn
+    AgentDescription agent = model.newAgent("agent");
+    agent.newVariable<unsigned int>("a");
+    agent.newVariable<unsigned int>("b");
+    agent.newVariable<unsigned int>("c");
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_add2);
+    AgentFunctionDescription writeFn = agent.newFunction("write", Write_add3);
+    AgentFunctionDescription checkFn = agent.newFunction("check", Write_2check);
+    model.newLayer().addAgentFunction(initFn);
+    model.newLayer().addAgentFunction(writeFn);
+    model.newLayer().addAgentFunction(checkFn);
+    AgentVector population(agent, 1);
+    population[0].setVariable<unsigned int>("a", 12u);
+    // Do Sim
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.SimulationConfig().steps = 1;
+    cudaSimulation.setPopulationData(population);
+    ASSERT_NO_THROW(cudaSimulation.simulate());
+    ASSERT_NO_THROW(cudaSimulation.getPopulationData(population));
     const unsigned int t_out = population.at(0).getVariable<unsigned int>("b");
     ASSERT_EQ(13u, t_out);
     const unsigned int t_out2 = population.at(0).getVariable<unsigned int>("c");
-    ASSERT_EQ(1u, t_out2);
+    ASSERT_EQ(13u, t_out2);
 }
 FLAMEGPU_AGENT_FUNCTION(Init_sub, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->environment.getMacroProperty<unsigned int>("int").exchange(25);
@@ -237,6 +271,38 @@ TEST(DeviceMacroPropertyTest, sub2) {
     ASSERT_EQ(13u, t_out);
     const unsigned int t_out2 = population.at(0).getVariable<unsigned int>("c");
     ASSERT_EQ(25u, t_out2);
+}
+FLAMEGPU_AGENT_FUNCTION(Write_sub3, MessageNone, MessageNone) {
+    FLAMEGPU->setVariable<unsigned int>("b", FLAMEGPU->environment.getMacroProperty<unsigned int>("int").subAtomic(FLAMEGPU->getVariable<unsigned int>("a")));
+    return ALIVE;
+}
+TEST(DeviceMacroPropertyTest, sub3) {
+    ModelDescription model("device_env_test");
+    // Setup environment
+    model.Environment().newMacroProperty<unsigned int>("int");
+    // Setup agent fn
+    AgentDescription agent = model.newAgent("agent");
+    agent.newVariable<unsigned int>("a");
+    agent.newVariable<unsigned int>("b");
+    agent.newVariable<unsigned int>("c");
+    AgentFunctionDescription initFn = agent.newFunction("init", Init_sub);
+    AgentFunctionDescription writeFn = agent.newFunction("write", Write_sub3);
+    AgentFunctionDescription checkFn = agent.newFunction("check", Write_2check);
+    model.newLayer().addAgentFunction(initFn);
+    model.newLayer().addAgentFunction(writeFn);
+    model.newLayer().addAgentFunction(checkFn);
+    AgentVector population(agent, 1);
+    population[0].setVariable<unsigned int>("a", 12u);
+    // Do Sim
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.SimulationConfig().steps = 1;
+    cudaSimulation.setPopulationData(population);
+    ASSERT_NO_THROW(cudaSimulation.simulate());
+    ASSERT_NO_THROW(cudaSimulation.getPopulationData(population));
+    const unsigned int t_out = population.at(0).getVariable<unsigned int>("b");
+    ASSERT_EQ(13u, t_out);
+    const unsigned int t_out2 = population.at(0).getVariable<unsigned int>("c");
+    ASSERT_EQ(13u, t_out2);
 }
 FLAMEGPU_AGENT_FUNCTION(Init_postincrement, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->environment.getMacroProperty<unsigned int>("int").exchange(1);
