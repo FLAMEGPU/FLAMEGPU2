@@ -696,7 +696,7 @@ class CodeGenTest(unittest.TestCase):
                 astpretty.pprint(tree)
             except NameError:
                 pass
-        code = pyflamegpu.codegen.codegen(tree)
+        code = pyflamegpu.codegen.codegen(tree, bypass_line_directive=True)
         # remove new lines
         code = code.strip()
         expected = expected.strip()
@@ -714,7 +714,7 @@ class CodeGenTest(unittest.TestCase):
         with pytest.raises(pyflamegpu.codegen.CodeGenException) as e:
             tree = ast.parse(source.strip())
             # code generate
-            code = pyflamegpu.codegen.codegen(tree)
+            code = pyflamegpu.codegen.codegen(tree, bypass_line_directive=True)
         if EXCEPTION_MSG_CHECKING:
             assert exception_str in str(e.value)
            
