@@ -6,10 +6,6 @@
 [![DOI](https://zenodo.org/badge/34064755.svg)](https://zenodo.org/badge/latestdoi/34064755)
 [![Website](https://img.shields.io/badge/Website-flamegpu.com-d16525)](https://flamegpu.com)
 [![Userguide](https://img.shields.io/badge/Userguide-docs.flamegpu.com-fed43b)](https://docs.flamegpu.com)
-[![Ubuntu](https://github.com/FLAMEGPU/FLAMEGPU2/workflows/Ubuntu/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2/actions?query=workflow%3AUbuntu+branch%3Amaster)
-[![Windows](https://github.com/FLAMEGPU/FLAMEGPU2/workflows/Windows/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2/actions?query=workflow%3AWindows+branch%3Amaster)
-[![Lint](https://github.com/FLAMEGPU/FLAMEGPU2/workflows/Lint/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2/actions?query=workflow%3ALint+branch%3Amaster)
-[![Docs](https://github.com/FLAMEGPU/FLAMEGPU2/workflows/Docs/badge.svg?branch=master)](https://github.com/FLAMEGPU/FLAMEGPU2/actions?query=workflow%3ADocs+branch%3Amaster)
 
 FLAME GPU is a GPU accelerated agent-based simulation library for domain independent complex systems simulations.
 Version 2 is a complete re-write of the existing library offering greater flexibility, an improved interface for agent scripting and better research software engineering, with CUDA/C++ and Python interfaces.
