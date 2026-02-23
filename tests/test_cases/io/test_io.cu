@@ -802,5 +802,54 @@ TEST_F(IOTest3, BIN_EnvMacroPropertyWriteRead) {
     ::remove(BIN_FILE_NAME);
     ms->run(BIN_FILE_NAME);
 }
+
+FLAMEGPU_HOST_FUNCTION(ReadGraph) {
+    FLAMEGPU->environment.getDirectedGraph("graph").importGraph(JSON_FILE_NAME);
+}
+TEST(IOTest4, InvalidGraphArrayProperty) {
+    // Tests for bug resolved by https://github.com/FLAMEGPU/FLAMEGPU2/pull/1361
+    // If a JSON graph contained an unexpected array property
+    // The loading method would crash
+    const char* JSON_FILE_BODY = R"""(
+    {
+        "nodes": [
+          {
+            "id": "1"
+          },
+          {
+            "id": "2"
+          }
+        ],
+        "links": [
+          {
+            "source": "1",
+            "target" : "2",
+            "UNEXPECTED_ARRAY": [0, 1]
+          }
+        ]
+    }
+)""";
+    // Manually create test.json, containing the graph
+    // Import graph and expect exception
+    // Delete test.json
+    {
+        std::ofstream myfile;
+        myfile.open(JSON_FILE_NAME, std::ofstream::out | std::ofstream::trunc);
+        myfile << JSON_FILE_BODY;
+        myfile.close();
+    }
+
+    ModelDescription model("test_graph_io");
+    AgentDescription agent = model.newAgent("agent");
+    EnvironmentDescription env = model.Environment();
+    env.newDirectedGraph("graph");
+    auto layer_a = model.newLayer();
+    layer_a.addHostFunction(ReadGraph);
+    CUDASimulation sim(model);
+    sim.SimulationConfig().input_file = JSON_FILE_NAME;
+    EXPECT_NO_THROW(sim.step());  // The resolved bug caused an empty stack to be popped
+    // Cleanup
+    ASSERT_EQ(::remove(JSON_FILE_NAME), 0);
+}
 }  // namespace test_io
 }  // namespace flamegpu
