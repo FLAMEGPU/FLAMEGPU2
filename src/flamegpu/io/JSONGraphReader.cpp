@@ -147,6 +147,10 @@ class JSONAdjacencyGraphReader : public nlohmann::json_sax<nlohmann::json> {
                 if (current_index == 0) {
                     fprintf(stderr, "Input file '%s' contains unexpected vector property '%s', skipped during parse.\n", filename.c_str(), lastKey.c_str());
                 }
+                // Return mode to it's proper state
+                if (isArray == VariableArray) {
+                    mode.push(isArray);
+                }
                 return true;
             }
             const auto &var_data = f->second;
@@ -193,6 +197,10 @@ class JSONAdjacencyGraphReader : public nlohmann::json_sax<nlohmann::json> {
             if (f == metagraph.edgeProperties.end()) {
                 if (current_index == 0) {
                     fprintf(stderr, "Input file '%s' contains unexpected edge property '%s', skipped during parse.\n", filename.c_str(), lastKey.c_str());
+                }
+                // Return mode to it's proper state
+                if (isArray == VariableArray) {
+                    mode.push(isArray);
                 }
                 return true;
             }
