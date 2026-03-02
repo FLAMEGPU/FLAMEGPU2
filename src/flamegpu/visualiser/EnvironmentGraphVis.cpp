@@ -34,7 +34,8 @@ EnvironmentGraphVisData::EnvironmentGraphVisData(std::shared_ptr <EnvironmentDir
         z_varName = "z";
     }
 }
-void EnvironmentGraphVisData::constructGraph(const std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> &graph) {
+void EnvironmentGraphVisData::constructGraph(const std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> &_graph) {
+    const std::shared_ptr<const detail::CUDAEnvironmentDirectedGraphBuffers> graph = _graph;
     // Can't construct prior to initialisation
     if (!graph->getVertexCount() && !graph->getEdgeCount())
         return;
