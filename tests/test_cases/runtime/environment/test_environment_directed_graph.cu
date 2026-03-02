@@ -1532,6 +1532,88 @@ TEST(TestEnvironmentDirectedGraph, EdgeFromIDs) {
     }
 }
 
+
+FLAMEGPU_INIT_FUNCTION(BugHuntInit) {
+    flamegpu::HostEnvironmentDirectedGraph graph = FLAMEGPU->environment.getDirectedGraph("graph");
+    // Debug square track
+    graph.setVertexCount(4);
+
+    // Init 4 blank vertices
+    // Assigned large IDs so they are independent of index for easier debugging
+    auto vertices = graph.vertices();
+    const std::vector<int> vertex_ids = { 5001, 5002, 5003, 5004 };
+    for (auto& a : vertex_ids) {
+        vertices[a];
+    }
+
+    const std::vector<std::pair<int, int>> edge_src_dests = {
+        {5001, 5002}, {5002, 5003},
+        {5004, 5001}, {5003, 5004},
+    };
+    graph.setEdgeCount(edge_src_dests.size());
+    auto edges = graph.edges();
+    // Init all edges to build connectivity
+    for (auto& a : edge_src_dests) {
+        edges[a];
+    }
+}
+FLAMEGPU_AGENT_FUNCTION(BugHuntDevice, MessageNone, MessageNone) {
+    auto graph = FLAMEGPU->environment.getDirectedGraph("graph");
+    printf("Begin step\n");
+    for (int i = 0; i < 4; ++i) {
+        printf("%u, %u -> %u\n", i, graph.getEdgeSource(i), graph.getEdgeDestination(i));
+    }
+    return flamegpu::ALIVE;
+}
+FLAMEGPU_STEP_FUNCTION(BugHuntHost) {
+    flamegpu::HostEnvironmentDirectedGraph graph = FLAMEGPU->environment.getDirectedGraph("graph");
+    // Mark src_dest buffer as changed
+    const id_t t = graph.edges().atIndex(0).getDestinationVertexID();
+    auto f = graph.edges().atIndex(0);
+    f.setDestinationVertexID(t);
+}
+TEST(TestEnvironmentDirectedGraph, BugHunt) {
+    /**
+     * Attempt to reproduce a bug that was inadvertantly discovered due to a bug with graph visualisation.
+     * Graph visualisation was forcing the edge _src_dest property to be marked as modified each step.
+     * This caused it's values on the device to change between steps 0 and 1.
+     * Implying an incomplete rebuild was carried out, and IDs were nolonger being translated to index.
+     */
+    // Graph can have no edges
+    ModelDescription model("GraphTest");
+    EnvironmentDirectedGraphDescription graph = model.Environment().newDirectedGraph("graph");
+    graph.newVertexProperty<float>("x");
+    graph.newVertexProperty<float>("y");
+    AgentDescription agent = model.newAgent("agent");
+    agent.newFunction("fn2", BugHuntDevice);
+    // Init graph with known data
+    model.addInitFunction(BugHuntInit);
+    model.newLayer().addAgentFunction(BugHuntDevice);
+    model.newLayer().addHostFunction(BugHuntHost);
+
+    // Each agent checks 1 ID
+    AgentVector pop(agent, 1);
+
+    CUDASimulation sim(model);
+    sim.setPopulationData(pop);
+    sim.SimulationConfig().steps = 3;
+
+    //auto v = sim.getVisualisation();
+    //auto g = v.addGraph("graph");
+    //g.setXVertexProperty("x");
+    //g.setYVertexProperty("y");
+    //v.activate();
+
+    sim.simulate();
+
+    // Check results
+    sim.getPopulationData(pop);
+
+    for (const auto& result_agent : pop) {
+        //EXPECT_EQ(result_agent.getVariable<int>("result1"), 1);
+    }
+}
+
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 FLAMEGPU_AGENT_FUNCTION(DeviceGetVertex_SEATBELTS1, MessageNone, MessageNone) {
     FLAMEGPU->environment.getDirectedGraph("graph").getVertexProperty<float>("vertex_float", 10);
