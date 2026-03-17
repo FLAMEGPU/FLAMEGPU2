@@ -19,7 +19,9 @@
 #include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
 #include "flamegpu/runtime/environment/HostEnvironmentDirectedGraph.cuh"
 #include "flamegpu/simulation/CUDASimulation.h"
+#ifdef FLAMEGPU_VISUALISATION
 #include "flamegpu/visualiser/FLAMEGPU_Visualisation.h"
+#endif
 
 namespace flamegpu {
 
