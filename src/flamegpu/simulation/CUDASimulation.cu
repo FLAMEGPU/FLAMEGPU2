@@ -1267,7 +1267,8 @@ void CUDASimulation::simulate() {
     if (visualisation) {
         visualisation->updateBuffers();
     }
-    visualiser::ModelVis mv(visualisation, isSWIG);
+    visInfo = visInfo ? visInfo : std::make_shared<visualiser::VisInfo>();
+    visualiser::ModelVis mv(visualisation, isSWIG, visInfo);
     #endif
 
     // Run the required number of simulation steps.
@@ -1514,7 +1515,8 @@ void CUDASimulation::applyConfig_derived() {
     // Handle console_mode
 #ifdef FLAMEGPU_VISUALISATION
     if (visualisation) {
-        visualiser::ModelVis mv(visualisation, isSWIG);
+        visInfo = visInfo ? visInfo : std::make_shared<visualiser::VisInfo>();
+        visualiser::ModelVis mv(visualisation, isSWIG, visInfo);
         if (getSimulationConfig().console_mode) {
             mv.deactivate();
         } else {
@@ -1758,7 +1760,8 @@ visualiser::ModelVis CUDASimulation::getVisualisation() {
             visualisation->hookVis(visualisation, directed_graph_map);
         }
     }
-    return visualiser::ModelVis(visualisation, isSWIG);
+    visInfo = visInfo ? visInfo : std::make_shared<visualiser::VisInfo>();
+    return visualiser::ModelVis(visualisation, isSWIG, visInfo);
 }
 #endif
 

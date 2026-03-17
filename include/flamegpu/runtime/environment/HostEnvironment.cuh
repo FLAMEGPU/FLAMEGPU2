@@ -18,6 +18,8 @@
 #include "flamegpu/runtime/environment/HostMacroProperty.cuh"
 #include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
 #include "flamegpu/runtime/environment/HostEnvironmentDirectedGraph.cuh"
+#include "flamegpu/simulation/CUDASimulation.h"
+#include "flamegpu/visualiser/FLAMEGPU_Visualisation.h"
 
 namespace flamegpu {
 
@@ -244,15 +246,86 @@ std::vector<T> HostEnvironment::setPropertyArray(const std::string &name, const 
  */
 template<typename T>
 T HostEnvironment::getProperty(const std::string &name) const  {
-    return env_mgr->getProperty<T>(name);
+    if (name.length() && name[0] == '_') {
+        // Internal
+#ifdef FLAMEGPU_VISUALISATION
+        if (simulation.visInfo) {
+            if (name == "_ortho_zoom") {
+                return static_cast<T>(simulation.visInfo->orthoZoom);
+            } else if(name == "_ortho_enabled") {
+                return static_cast<T>(simulation.visInfo->isOrtho);
+            }
+            // @todo support vectors with GLM
+        } else {
+            THROW flamegpu::exception::UnknownInternalError("Visualisation info not ready.\n");
+        }
+        THROW flamegpu::exception::InvalidArgument("%s is not a valid internal environment property.", name.c_str());
+#else
+        THROW flamegpu::exception::InvalidArgument("_ prefixed environment properties are currently restricted to visualisation enabled runs.", name.c_str());
+#endif
+    } else {
+        return env_mgr->getProperty<T>(name);
+    }
 }
 template<typename T, flamegpu::size_type N>
 std::array<T, N> HostEnvironment::getProperty(const std::string &name) const  {
-    return env_mgr->getProperty<T, N>(name);
+    if (name.length() && name[0] == '_') {
+        // Internal
+#ifdef FLAMEGPU_VISUALISATION
+        if (simulation.visInfo) {
+            if (N == 3) {
+                if (name == "_view_pos") {
+                    return std::array<T, N>({
+                        static_cast<T>(simulation.visInfo->viewPos[0]),
+                        static_cast<T>(simulation.visInfo->viewPos[1]),
+                        static_cast<T>(simulation.visInfo->viewPos[2])
+                    });
+                } else if (name == "_view_dir") {
+                    return std::array<T, N>({
+                        static_cast<T>(simulation.visInfo->viewDir[0]),
+                        static_cast<T>(simulation.visInfo->viewDir[1]),
+                        static_cast<T>(simulation.visInfo->viewDir[2])
+                    });
+                }
+            } else {
+                THROW flamegpu::exception::InvalidArgument("Visualisation info arrays require length 3, %u != 3.", N);
+            }
+        } else {
+            THROW flamegpu::exception::UnknownInternalError("Visualisation info not ready.\n");
+        }
+        THROW flamegpu::exception::InvalidArgument("%s is not a valid internal environment property array.", name.c_str());
+#else
+        THROW flamegpu::exception::InvalidArgument("_ prefixed environment properties are currently restricted to visualisation enabled runs.", name.c_str());
+#endif
+    } else {
+        return env_mgr->getProperty<T, N>(name);
+    }
 }
 template<typename T, flamegpu::size_type N>
 T HostEnvironment::getProperty(const std::string &name, const flamegpu::size_type index) const  {
-    return env_mgr->getProperty<T, N>(name, index);
+    if (name.length() && name[0] == '_') {
+        // Internal
+#ifdef FLAMEGPU_VISUALISATION
+        if (simulation.visInfo) {
+            if (N == 3) {
+                if (name == "_view_pos") {
+                    return static_cast<T>(simulation.visInfo->viewPos[index]);
+                } else if (name == "_view_dir") {
+                    return static_cast<T>(simulation.visInfo->viewDir[index]);
+                }
+            } else {
+                THROW flamegpu::exception::InvalidArgument("Visualisation info arrays require length 3, %u != 3.", N);
+            }
+        } else {
+            THROW flamegpu::exception::UnknownInternalError("Visualisation info not ready.\n");
+        }
+        THROW flamegpu::exception::InvalidArgument("%s is not a valid internal environment property array.", name.c_str());
+#else
+        THROW flamegpu::exception::InvalidArgument("_ prefixed environment properties are currently restricted to visualisation enabled runs.", name.c_str());
+#endif     
+    } else {
+        return env_mgr->getProperty<T, N>(name, index);
+    }
 }
 #ifdef SWIG
 template<typename T>
