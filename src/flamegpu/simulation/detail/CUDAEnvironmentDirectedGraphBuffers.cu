@@ -459,7 +459,6 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
                 } else if (err_collision_range[1] > 0) {
                     THROW flamegpu::exception::UnknownInternalError("Graph contains invalid vertex IDs, %u vertices reported an ID that does not satisfy %u < ID < %u, in CUDAEnvironmentDirectedGraphBuffers::syncDevice_async()", err_collision_range[1], vertex_id_min, vertex_id_max);
                 }
-                printf("Built device vertex index map at: %p\n", d_vertex_index_map);
             }
             {  // Validate that edge source/dest pairs correspond to valid IDs
                 const auto& e_srcdest_b = edge_buffers.at(GRAPH_SOURCE_DEST_VARIABLE_NAME);

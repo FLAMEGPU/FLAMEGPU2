@@ -24,9 +24,9 @@ class CUDASimulation;
 class FLAMEGPU_Visualisation;
 
 namespace visualiser {
-    struct VisInfo;
+struct VisInfo;
 
-    struct ModelVisData {
+struct ModelVisData {
     /**
      * This class is constructed by/with a CUDASimulation
      * Constructor will be clarified later, once requirements are clearer

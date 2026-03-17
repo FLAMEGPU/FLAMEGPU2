@@ -254,7 +254,7 @@ T HostEnvironment::getProperty(const std::string &name) const  {
         if (simulation.visInfo) {
             if (name == "_ortho_zoom") {
                 return static_cast<T>(simulation.visInfo->orthoZoom);
-            } else if(name == "_ortho_enabled") {
+            } else if (name == "_ortho_enabled") {
                 return static_cast<T>(simulation.visInfo->isOrtho);
             }
             // @todo support vectors with GLM
@@ -324,7 +324,7 @@ T HostEnvironment::getProperty(const std::string &name, const flamegpu::size_typ
         THROW flamegpu::exception::InvalidArgument("%s is not a valid internal environment property array.", name.c_str());
 #else
         THROW flamegpu::exception::InvalidArgument("_ prefixed environment properties are currently restricted to visualisation enabled runs.", name.c_str());
-#endif     
+#endif
     } else {
         return env_mgr->getProperty<T, N>(name, index);
     }
