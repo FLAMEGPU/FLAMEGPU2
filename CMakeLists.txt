@@ -8,13 +8,6 @@ flamegpu_init_cuda_architectures()
 # Declare the project with no languages
 project(FLAMEGPU LANGUAGES NONE)
 
-# Detect if this is the top-level project or if it has been included by add_subdirectory. PROJECT_IS_TOP_LEVEL requires CMake 3.21
-if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_LIST_DIR}")
-  set(FLAMEGPU_PROJECT_IS_TOP_LEVEL ON)
-else()
-  set(FLAMEGPU_PROJECT_IS_TOP_LEVEL OFF)
-endif()
-
 # Find the root directory
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR} REALPATH)
 
@@ -72,21 +65,21 @@ endif()
 include(CMakeDependentOption)
 
 # Option to enable building all examples, defaults to ON if FLAMEGPU is the top level cmake, else OFF
-cmake_dependent_option(FLAMEGPU_BUILD_ALL_EXAMPLES "Enable building all FLAMEGPU examples" ON "FLAMEGPU_PROJECT_IS_TOP_LEVEL" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_ALL_EXAMPLES "Enable building all FLAMEGPU examples" ON "PROJECT_IS_TOP_LEVEL" OFF)
 
 # Options to enable building individual examples, if FLAMEGPU_BUILD_ALL_EXAMPLES is off. 
 # Dependent options hide these from the CMake GUI if FLAMEGPU_BUILD_ALL_EXAMPLES is on, or if it is not the top level project
-cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_BOIDS_BRUTEFORCE "Enable building examples/cpp/boids_bruteforce" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
-cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_BOIDS_SPATIAL3D "Enable building examples/cpp/boids_spatial3D" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
-cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_RTC_BOIDS_BRUTEFORCE "Enable building examples/cpp_rtc/boids_bruteforce" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
-cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_RTC_BOIDS_SPATIAL3D "Enable building examples/cpp_rtc/boids_spatial3D" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
-cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_CIRCLES_BRUTEFORCE "Enable building examples/cpp/circles_bruteforcespatial3D" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
-cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_CIRCLES_SPATIAL3D "Enable building examples/cpp/circles_spatial3D" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
-cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_GAME_OF_LIFE "Enable building examples/cpp/game_of_life" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
-cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_HOST_FUNCTIONS "Enable building examples/cpp/host_functions" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
-cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_ENSEMBLE "Enable building examples/cpp/ensemble" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
-cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_SUGARSCAPE "Enable building examples/cpp/sugarscape" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
-cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_DIFFUSION "Enable building examples/cpp/diffusion" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_BOIDS_BRUTEFORCE "Enable building examples/cpp/boids_bruteforce" OFF "PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_BOIDS_SPATIAL3D "Enable building examples/cpp/boids_spatial3D" OFF "PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_RTC_BOIDS_BRUTEFORCE "Enable building examples/cpp_rtc/boids_bruteforce" OFF "PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_RTC_BOIDS_SPATIAL3D "Enable building examples/cpp_rtc/boids_spatial3D" OFF "PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_CIRCLES_BRUTEFORCE "Enable building examples/cpp/circles_bruteforcespatial3D" OFF "PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_CIRCLES_SPATIAL3D "Enable building examples/cpp/circles_spatial3D" OFF "PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_GAME_OF_LIFE "Enable building examples/cpp/game_of_life" OFF "PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_HOST_FUNCTIONS "Enable building examples/cpp/host_functions" OFF "PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_ENSEMBLE "Enable building examples/cpp/ensemble" OFF "PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_SUGARSCAPE "Enable building examples/cpp/sugarscape" OFF "PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_DIFFUSION "Enable building examples/cpp/diffusion" OFF "PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
 
 option(FLAMEGPU_BUILD_PYTHON "Enable python bindings via SWIG" OFF)
 
