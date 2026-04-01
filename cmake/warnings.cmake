@@ -1,5 +1,7 @@
 include_guard(GLOBAL)
 
+message(AUTHOR_WARNING "hip warning setting, guard cuda warning setting")
+
 # Function to disable all (as many as possible) compiler warnings for a given target
 if(NOT COMMAND flamegpu_disable_compiler_warnings)
     function(flamegpu_disable_compiler_warnings)
