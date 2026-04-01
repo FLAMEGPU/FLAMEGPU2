@@ -9,14 +9,18 @@
 #include <unordered_map>
 #include <list>
 
-// include sub classes
+#ifdef FLAMEGPU_USE_CUDA
 #include "flamegpu/detail/JitifyCache.h"
+#endif
+
 #include "flamegpu/simulation/detail/CUDAAgentStateList.h"
 #include "flamegpu/model/AgentFunctionData.cuh"
 #include "flamegpu/model/SubAgentData.h"
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 #include "flamegpu/simulation/detail/AgentInterface.h"
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
+#include "flamegpu/detail/cuda.cuh"
+
 
 namespace flamegpu {
 class HostAPI;
@@ -39,6 +43,7 @@ class CUDAAgent : public AgentInterface {
     friend class CUDAEnvironmentDirectedGraphBuffers;
 
  public:
+#ifdef FLAMEGPU_USE_CUDA
     /**
      *  map of agent function name to RTC function instance
      */
@@ -48,6 +53,7 @@ class CUDAAgent : public AgentInterface {
      * Element type of CUDARTCFuncMap
      */
     typedef std::pair<const std::string, std::unique_ptr<jitify2::KernelData>> CUDARTCFuncMapPair;
+#endif  // FLAMEGPU_USE_CUDA
     /**
      * Normal constructor
      * @param description Agent description of the agent
@@ -66,7 +72,7 @@ class CUDAAgent : public AgentInterface {
         const CUDASimulation &_cudaSimulation,
         const std::unique_ptr<CUDAAgent> &master_agent,
         const std::shared_ptr<SubAgentData> &mapping);
-    /** 
+    /**
      * Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE
      * library so that can be accessed by name within a n agent function
      * @param func The function.
@@ -86,7 +92,7 @@ class CUDAAgent : public AgentInterface {
      * @param stream CUDA stream to be used for async CUDA operations
      * @note Scatter is required for initialising submodel vars
      */
-    void setPopulationData(const AgentVector& population, const std::string &state_name, detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
+    void setPopulationData(const AgentVector& population, const std::string &state_name, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
     /**
      * Copies population data the device buffers held by this object
      * To the hosts object (overwriting any existing agent data)
@@ -123,7 +129,7 @@ class CUDAAgent : public AgentInterface {
      * @param stream CUDA stream to be used for async CUDA operations
      * @see CUDAFatAgent::processDeath(unsigned int, const std::string &, unsigned int)
      */
-    void processDeath(const AgentFunctionData& func, detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
+    void processDeath(const AgentFunctionData& func, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
     /**
      * Transitions all active agents from the source state to the destination state
      * @param _src The source state
@@ -133,7 +139,7 @@ class CUDAAgent : public AgentInterface {
      * @param stream CUDA stream to be used for async CUDA operations
      * @see CUDAFatAgent::transitionState(unsigned int, const std::string &, const std::string &, unsigned int)
      */
-    void transitionState(const std::string &_src, const std::string &_dest, detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
+    void transitionState(const std::string &_src, const std::string &_dest, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
     /**
      * Scatters agents based on their output of the agent function condition
      * Agents which failed the condition are scattered to the front and marked as disabled
@@ -146,7 +152,7 @@ class CUDAAgent : public AgentInterface {
      * @note Named state must not already contain disabled agents
      * @note The disabled agents are re-enabled using clearFunctionCondition(const std::string &)
      */
-    void processFunctionCondition(const AgentFunctionData& func, detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
+    void processFunctionCondition(const AgentFunctionData& func, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
     /**
      * Scatters agents from the provided device buffer, this is used for host agent creation
      * The device buffer must be packed according to the param offsets
@@ -158,7 +164,7 @@ class CUDAAgent : public AgentInterface {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void scatterHostCreation(const std::string &state_name, unsigned int newSize, char *const d_inBuff, const VarOffsetStruct &offsets, detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
+    void scatterHostCreation(const std::string &state_name, unsigned int newSize, char *const d_inBuff, const VarOffsetStruct &offsets, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
     /**
      * Sorts all agent variables according to the positions stored inside Message Output scan buffer
      * @param state_name The state agents are scattered into
@@ -167,7 +173,7 @@ class CUDAAgent : public AgentInterface {
      * @param stream CUDA stream to be used for async CUDA operations
      * @see HostAgentAPI::sort(const std::string &, HostAgentAPI::Order, int, int)
      */
-    void scatterSort_async(const std::string &state_name, detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
+    void scatterSort_async(const std::string &state_name, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
     /**
      * Allocates a buffer for storing new agents into and
      * uses the cuRVE runtime to map variables for use with an agent function that has device agent birth
@@ -180,7 +186,7 @@ class CUDAAgent : public AgentInterface {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @note This method is async, the stream used it not synchronised
      */
-    void mapNewRuntimeVariables_async(const CUDAAgent& func_agent, const AgentFunctionData& func, unsigned int maxLen, detail::CUDAScatter &scatter, unsigned int instance_id, cudaStream_t stream, unsigned int streamId);
+    void mapNewRuntimeVariables_async(const CUDAAgent& func_agent, const AgentFunctionData& func, unsigned int maxLen, detail::CUDAScatter &scatter, unsigned int instance_id, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId);
     /**
      * Releases the buffer that was storing new age data
      * @param func The function.
@@ -195,15 +201,16 @@ class CUDAAgent : public AgentInterface {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void scatterNew(const AgentFunctionData& func, unsigned int newSize, detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream);
+    void scatterNew(const AgentFunctionData& func, unsigned int newSize, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
     /**
      * Reenables all disabled agents within the named state
      * @param state The named state to enable all agents within
      */
     void clearFunctionCondition(const std::string &state);
+#ifdef FLAMEGPU_USE_CUDA
     /**
      * Instantiates a RTC Agent function (or agent function condition) from agent function data description containing the source.
-     * 
+     *
      * Uses Jitify to create an instantiation of the program. Any compilation errors in the user provided agent function will be reported here.
      * @param func The Agent function data structure containing the src for the function
      * @param env Object containing environment properties for the simulation instance
@@ -214,6 +221,7 @@ class CUDAAgent : public AgentInterface {
      */
     void addInstantitateRTCFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager>& env, std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env,
         const std::unordered_map<std::string, std::shared_ptr<CUDAEnvironmentDirectedGraphBuffers>>& directed_graphs, bool function_condition = false);
+#endif  // FLAMEGPU_USE_CUDA
     /**
      * Instantiates the curve instance for an (non-RTC) Agent function (or agent function condition) from agent function data description containing the source.
      *
@@ -226,6 +234,7 @@ class CUDAAgent : public AgentInterface {
      */
     void addInstantitateFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager>& env, std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env,
         const std::unordered_map<std::string, std::shared_ptr<CUDAEnvironmentDirectedGraphBuffers>>& directed_graphs, bool function_condition = false);
+#ifdef FLAMEGPU_USE_CUDA
     /**
      * Returns the jitify kernel instantiation of the agent function.
      * Will throw an exception::InvalidAgentFunc excpetion if the function name does not have a valid instantiation
@@ -239,15 +248,20 @@ class CUDAAgent : public AgentInterface {
      * @note This should only be triggered during the CUDASimulation destructor
      */
     void destroyRTCInstances(bool context_alive);
+#endif  // FLAMEGPU_USE_CUDA
+
     /**
      * Returns the host interface for managing the curve instance for the named agent function
      * @param function_name The name of the agent's agent function, to return the curve instance for
      */
     detail::curve::HostCurve &getCurve(const std::string& function_name) const;
+#ifdef FLAMEGPU_USE_CUDA
     /**
      * Returns the CUDARTCFuncMap
      */
     const CUDARTCFuncMap& getRTCFunctions() const;
+#endif  // FLAMEGPU_USE_CUDA
+
     /**
      * Resets the number of agents in any unmapped statelists to 0
      * They count as unmapped if they are not mapped to a master state, sub mappings will be reset
@@ -255,7 +269,7 @@ class CUDAAgent : public AgentInterface {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void initUnmappedVars(CUDAScatter& scatter, unsigned int streamId, cudaStream_t stream);
+    void initUnmappedVars(CUDAScatter& scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
     /**
      * Initialises any agent variables within the CUDAFatAgentStateList of state which are not present in the agent-state's CUDAAgentStateList
      * @param state Affected state
@@ -265,7 +279,7 @@ class CUDAAgent : public AgentInterface {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void initExcludedVars(const std::string& state, unsigned int count, unsigned int offset, CUDAScatter& scatter, unsigned int streamId, cudaStream_t stream);
+    void initExcludedVars(const std::string& state, unsigned int count, unsigned int offset, CUDAScatter& scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
     /**
      * Resets the number of agents in every statelist to 0
      */
@@ -283,7 +297,7 @@ class CUDAAgent : public AgentInterface {
      * @param retainData If true existing buffer data is retained
      * @param stream The stream to be used for memcpys if data is retained
      */
-    void resizeState(const std::string &state, unsigned int minSize, bool retainData, cudaStream_t stream);
+    void resizeState(const std::string &state, unsigned int minSize, bool retainData, flamegpu::detail::cuda::Stream_t stream);
     /**
      * Updates the number of alive agents, does not affect disabled agents or change agent data
      * @param state The state to affect
@@ -315,7 +329,7 @@ class CUDAAgent : public AgentInterface {
      * @param stream The CUDAStream to use for CUDA operations
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      */
-    void assignIDs(HostAPI &hostapi, CUDAScatter& scatter, cudaStream_t stream, unsigned int streamId);
+    void assignIDs(HostAPI &hostapi, CUDAScatter& scatter, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId);
     /**
      * Used to allow HostAgentAPI to store a persistent DeviceAgentVector
      * @param state_name Agent state to affect
@@ -338,7 +352,7 @@ class CUDAAgent : public AgentInterface {
      * Validates all IDs for contained agents, if any share an ID (which is not ID_NOT_SET) an exception is thrown
      * @throws exception::AgentIDCollision If the contained agent populations contain multiple agents with the same ID
      */
-    void validateIDCollisions(cudaStream_t stream) const;
+    void validateIDCollisions(flamegpu::detail::cuda::Stream_t stream) const;
     /**
      * Sums the size required for all variables
      */
@@ -378,6 +392,7 @@ class CUDAAgent : public AgentInterface {
      * The parent model
      */
     const CUDASimulation &cudaSimulation;
+#ifdef FLAMEGPU_USE_CUDA
     /**
      * map between function_name (or function_name_condition) and the jitify instance
      */
@@ -387,6 +402,7 @@ class CUDAAgent : public AgentInterface {
      * This allows access to the header data cache, for updating curve
      */
     CUDARTCHeaderMap rtc_header_map;
+#endif  // FLAMEGPU_USE_CUDA
     /**
      * map between function name (or function_name_condition) and the curve interface
      * This allows access for updating curve

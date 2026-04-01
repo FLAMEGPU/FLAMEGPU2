@@ -11,7 +11,7 @@ bool wddm::deviceIsWDDM(int deviceIndex) {
     }
     // Ensure deviceIndex is valid.
     int deviceCount = 0;
-    flamegpu::detail::gpuCheck(cudaGetDeviceCount(&deviceCount));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&deviceCount));
     if (deviceIndex >= deviceCount) {
         // Throw an excpetion if the device index is bad.
         THROW exception::InvalidCUDAdevice();
@@ -31,7 +31,7 @@ bool wddm::deviceIsWDDM(int deviceIndex) {
 bool wddm::deviceIsWDDM() {
     // Get the current device
     int currentDeviceIndex = 0;
-    flamegpu::detail::gpuCheck(cudaGetDevice(&currentDeviceIndex));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDevice)(&currentDeviceIndex));
     // Get the wddm status for that device
     bool isWDDM = wddm::deviceIsWDDM(currentDeviceIndex);
     return isWDDM;

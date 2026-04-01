@@ -11,6 +11,7 @@
 
 #include "flamegpu/simulation/AgentVector.h"
 #include "flamegpu/simulation/detail/CUDAFatAgentStateList.h"  // VariableBuffer
+#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
 namespace detail {
@@ -45,7 +46,7 @@ class DeviceAgentVector_impl : protected AgentVector {
      */
     DeviceAgentVector_impl(detail::CUDAAgent& _cuda_agent, const std::string& cuda_agent_state,
         const VarOffsetStruct& _agentOffsets, std::vector<NewAgentStorage>& _newAgentData,
-        detail::CUDAScatter& scatter, unsigned int streamId, cudaStream_t stream);
+        detail::CUDAScatter& scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
     /**
      * Copy operations are disabled
      */
@@ -361,7 +362,7 @@ class DeviceAgentVector_impl : protected AgentVector {
 
     detail::CUDAScatter& scatter;
     const unsigned int streamId;
-    const cudaStream_t stream;
+    const flamegpu::detail::cuda::Stream_t stream;
 };
 
 }  // namespace flamegpu

@@ -5,6 +5,7 @@
 #include <set>
 #include <iostream>
 #include <string>
+#include <fstream>
 
 namespace flamegpu {
 

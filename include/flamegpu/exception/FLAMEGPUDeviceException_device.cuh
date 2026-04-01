@@ -1,8 +1,10 @@
 #ifndef INCLUDE_FLAMEGPU_EXCEPTION_FLAMEGPUDEVICEEXCEPTION_DEVICE_CUH_
 #define INCLUDE_FLAMEGPU_EXCEPTION_FLAMEGPUDEVICEEXCEPTION_DEVICE_CUH_
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>  // Required for blockIdx, when not built using nvcc / nvrtc. In which case this header file is invalid anyway. It it still required to improve MSVC intellisense though?
+#endif
 
 #include <cstring>
 
