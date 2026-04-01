@@ -30,6 +30,10 @@ jobs:
       matrix:
         cudacxx:
           # CUDA 13
+          - cuda: "13.2"
+            cuda_arch: "75"
+            hostcxx: gcc-14
+            os: ubuntu-24.04
           - cuda: "13.0"
             cuda_arch: "75"
             hostcxx: gcc-13
