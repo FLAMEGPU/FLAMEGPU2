@@ -1,5 +1,6 @@
 # Minimum CMake version 3.25.2 for CUDA --std=c++20
-cmake_minimum_required(VERSION 3.25.2...4.1.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.25.2...4.3.0 FATAL_ERROR)
+
 include(FetchContent)
 
 # Ensure custom Find* modules are avialable
