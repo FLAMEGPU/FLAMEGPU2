@@ -1,7 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_ENVIRONMENT_DEVICEENVIRONMENT_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_ENVIRONMENT_DEVICEENVIRONMENT_CUH_
 
-// #include <cuda_runtime.h>
 #include <string>
 #include <cassert>
 

@@ -1,4 +1,6 @@
+#ifdef FLAMEGPU_USE_CUDA
 #include <nvrtc.h>
+#endif  // FLAMEGPU_USE_CUDA
 
 #include <cassert>
 #include <array>
@@ -7,11 +9,12 @@
 
 #include "flamegpu/detail/compute_capability.cuh"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
-
+#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
 namespace detail {
 
+#ifdef FLAMEGPU_USE_CUDA
 namespace {
     /**
      * Templated variadic template constexpr method which returns a std::array from a number of arguments
@@ -36,7 +39,7 @@ int compute_capability::getComputeCapability(int deviceIndex) {
 
     // Ensure deviceIndex is valid.
     int deviceCount = 0;
-    flamegpu::detail::gpuCheck(cudaGetDeviceCount(&deviceCount));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&deviceCount));
     if (deviceIndex >= deviceCount) {
         // Throw an excpetion if the device index is bad.
         THROW exception::InvalidCUDAdevice();
@@ -133,6 +136,14 @@ int compute_capability::selectAppropraiteComputeCapability(const int target, con
     return maxArch;
 }
 
+#endif  // FLAMEGPU_USE_CUDA
+
+#ifdef FLAMEGPU_USE_CUDA
+    using DeviceProp_t = cudaDeviceProp;
+#endif  // FLAMEGPU_USE_CUDA
+#ifdef FLAMEGPU_USE_HIP
+    using DeviceProp_t = hipDeviceProp_t;
+#endif  // FLAMEGPU_USE_HIP
 
 const std::string compute_capability::getDeviceName(int deviceIndex) {
     // Throw an exception if the deviceIndex is negative.
@@ -142,14 +153,14 @@ const std::string compute_capability::getDeviceName(int deviceIndex) {
 
     // Ensure deviceIndex is valid.
     int deviceCount = 0;
-    flamegpu::detail::gpuCheck(cudaGetDeviceCount(&deviceCount));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&deviceCount));
     if (deviceIndex >= deviceCount) {
         // Throw an excpetion if the device index is bad.
         THROW exception::InvalidCUDAdevice();
     }
     // Load device properties
-    cudaDeviceProp prop;
-    cudaGetDeviceProperties(&prop, deviceIndex);
+    DeviceProp_t prop;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceProperties)(&prop, deviceIndex));
 
     return std::string(prop.name);
 }
@@ -159,7 +170,7 @@ const std::string compute_capability::getDeviceNames(std::set<int> devices) {
     bool first = true;
     // Get the count of devices
     int deviceCount = 0;
-    flamegpu::detail::gpuCheck(cudaGetDeviceCount(&deviceCount));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&deviceCount));
     // If no devices were passed in, add each device to the set of devices.
     if (devices.size() == 0) {
         for (int i = 0; i < deviceCount; i++) {
@@ -177,8 +188,8 @@ const std::string compute_capability::getDeviceNames(std::set<int> devices) {
             THROW exception::InvalidCUDAdevice();
         }
         // Load device properties
-        cudaDeviceProp prop;
-        cudaGetDeviceProperties(&prop, device_id);
+        DeviceProp_t prop;
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceProperties)(&prop, device_id));
         if (!first)
             device_names.append(", ");
         device_names.append(prop.name);

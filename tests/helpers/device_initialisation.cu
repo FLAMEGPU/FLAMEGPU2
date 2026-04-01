@@ -1,8 +1,13 @@
 #include "helpers/device_initialisation.h"
+
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda.h>
+#endif
+
 #include <stdio.h>
 #include <cstdio>
 #include "flamegpu/flamegpu.h"
+#include "gtest/gtest.h"
 
 namespace flamegpu {
 namespace tests {
@@ -12,6 +17,7 @@ namespace {
 }  // namespace
 
 void runCUDASimulationContextCreationTest() {
+#ifdef FLAMEGPU_USE_CUDA
     // Create a very simple model to enable creation of a CUDASimulation
     ModelDescription m("model");
     m.newAgent("agent");
@@ -43,6 +49,10 @@ void runCUDASimulationContextCreationTest() {
     _CUDASimulationContextCreation_result = ctxBefore == NULL && ctxAfter != NULL;
     // Run the simulation.
     c.simulate();
+#else  // FLAMEGPU_USE_CUDA
+    // Not a GTEST directly, so do not actually skip
+    // GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 /**

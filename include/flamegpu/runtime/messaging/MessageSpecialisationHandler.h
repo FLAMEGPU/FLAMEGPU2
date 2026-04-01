@@ -1,6 +1,8 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_MESSAGESPECIALISATIONHANDLER_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_MESSAGING_MESSAGESPECIALISATIONHANDLER_H_
 
+#include "flamegpu/detail/cuda.cuh"
+
 namespace flamegpu {
 namespace detail {
 class CUDAScatter;
@@ -24,7 +26,7 @@ class MessageSpecialisationHandler {
      * @param streamId Index of stream specific structures used
      * @param stream The CUDAStream to use for CUDA operations
      */
-    virtual void init(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) = 0;
+    virtual void init(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream) = 0;
     /**
      * Constructs an index for the message data structure (e.g. Partition boundary matrix for spatial message types)
      * This is called the first time messages are read, after new messages have been output
@@ -32,12 +34,12 @@ class MessageSpecialisationHandler {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream The CUDAStream to use for CUDA operations
      */
-    virtual void buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) { }
+    virtual void buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream) { }
     /**
      * Allocates memory for the constructed index.
      * The memory allocation is checked by build index.
      */
-    virtual void allocateMetaDataDevicePtr(cudaStream_t stream) { }
+    virtual void allocateMetaDataDevicePtr(flamegpu::detail::cuda::Stream_t stream) { }
     /**
      * Releases memory for the constructed index.
      */

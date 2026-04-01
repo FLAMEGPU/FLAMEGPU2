@@ -1,7 +1,9 @@
 #ifndef INCLUDE_FLAMEGPU_UTIL_DSTRING_H_
 #define INCLUDE_FLAMEGPU_UTIL_DSTRING_H_
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
+#endif
 
 namespace flamegpu {
 namespace util {
