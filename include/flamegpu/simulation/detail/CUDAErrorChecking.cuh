@@ -1,13 +1,16 @@
 #ifndef INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDAERRORCHECKING_CUH_
 #define INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDAERRORCHECKING_CUH_
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
+#endif
 
 #include <source_location>
 #include <string>
 // #include <stdexcept>
 #include "flamegpu/exception/FLAMEGPUException.h"
+#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
 namespace detail {
@@ -19,12 +22,13 @@ namespace detail {
  * @param line Line no where errorcode was reported (e.g. __LINE__)
  * @throws CUDAError If code != cudaSuccess
  */
-inline void gpuAssert(cudaError_t code, const char *file, int line) {
-    if (code != cudaSuccess) {
-        THROW exception::CUDAError("CUDA Error: %s(%d): %s %s", file, line, cudaGetErrorName(code), cudaGetErrorString(code));
+inline void gpuAssert(flamegpu::detail::cuda::Error_t code, const char *file, int line) {
+    if (code != FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) {
+        THROW exception::CUDAError("CUDA Error: %s(%d): %s %s", file, line, FLAMEGPU_GPU_RUNTIME_SYMBOL(GetErrorName)(code), FLAMEGPU_GPU_RUNTIME_SYMBOL(GetErrorString)(code));
     }
 }
 
+#ifdef FLAMEGPU_USE_CUDA
  /**
   * Error check function for safe CUDA API calling
   * @param code CUDA Driver API return code
@@ -38,6 +42,7 @@ inline void gpuAssert(CUresult code, const char* file, int line) {
         THROW exception::CUDAError("CUDA Driver Error: %s(%d): %s", file, line, cuGetErrorString(code, &error_str));
     }
 }
+#endif
 
  /**
   * Error check function for checking for the most recent error
@@ -49,9 +54,9 @@ inline void gpuAssert(CUresult code, const char* file, int line) {
   */
 inline void gpuLaunchAssert(const char *file, int line) {
 #ifdef _DEBUG
-    gpuAssert(cudaDeviceSynchronize(), file, line);
+    gpuAssert(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceSynchronize)(), file, line);
 #endif
-    gpuAssert(cudaPeekAtLastError(), file, line);
+    gpuAssert(FLAMEGPU_GPU_RUNTIME_SYMBOL(PeekAtLastError)(), file, line);
 }
 
 /**

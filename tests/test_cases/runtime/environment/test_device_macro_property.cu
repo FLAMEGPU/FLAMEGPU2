@@ -796,6 +796,7 @@ TEST(DeviceMacroPropertyTest, exchange_float) {
     ASSERT_EQ(15.0f, t_out);
 }
 
+#ifdef FLAMEGPU_USE_CUDA
 const char* WriteRead_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(WriteRead, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->environment.getMacroProperty<unsigned int>("int") += FLAMEGPU->getVariable<unsigned int>("a");
@@ -803,11 +804,13 @@ FLAMEGPU_AGENT_FUNCTION(WriteRead, flamegpu::MessageNone, flamegpu::MessageNone)
     return flamegpu::ALIVE;
 }
 )###";
+#endif  // FLAMEGPU_USE_CUDA
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 TEST(DeviceMacroPropertyTest, RTC_WriteRead) {
 #else
 TEST(DeviceMacroPropertyTest, DISABLED_RTC_WriteRead) {
 #endif
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("device_env_test");
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
@@ -824,8 +827,12 @@ TEST(DeviceMacroPropertyTest, DISABLED_RTC_WriteRead) {
     cudaSimulation.SimulationConfig().steps = 1;
     cudaSimulation.setPopulationData(population);
     EXPECT_THROW(cudaSimulation.simulate(), flamegpu::exception::DeviceError);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
+#ifdef FLAMEGPU_USE_CUDA
 const char* Init_add_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(Init_add, flamegpu::MessageNone, flamegpu::MessageNone) {
     FLAMEGPU->environment.getMacroProperty<unsigned int>("int").exchange(1);
@@ -844,8 +851,10 @@ FLAMEGPU_AGENT_FUNCTION(Read_add, flamegpu::MessageNone, flamegpu::MessageNone) 
     return flamegpu::ALIVE;
 }
 )###";
+#endif  // FLAMEGPU_USE_CUDA
 
 TEST(DeviceMacroPropertyTest, RTC_add) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("device_env_test");
     // Setup environment
     model.Environment().newMacroProperty<unsigned int>("int");
@@ -869,6 +878,9 @@ TEST(DeviceMacroPropertyTest, RTC_add) {
     ASSERT_NO_THROW(cudaSimulation.getPopulationData(population));
     const unsigned int t_out = population.at(0).getVariable<unsigned int>("b");
     ASSERT_EQ(13u, t_out);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 }  // namespace

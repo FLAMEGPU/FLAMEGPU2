@@ -543,7 +543,7 @@ __device__ id_t DeviceAPI<MessageIn, MessageOut>::AgentOut::getID() const {
 #endif
     return ID_NOT_SET;
 }
-#ifdef __CUDACC__
+#if defined(__CUDACC__) || defined(__HIPCC__)
 template<typename MessageIn, typename MessageOut>
 __device__ void DeviceAPI<MessageIn, MessageOut>::AgentOut::genID() const {
     // Only called internally, so no need to check nextID != nullptr
