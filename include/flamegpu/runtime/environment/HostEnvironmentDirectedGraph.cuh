@@ -9,6 +9,8 @@
 
 #include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
 #include "flamegpu/defines.h"
+#include "flamegpu/detail/cuda.cuh"
+
 
 namespace flamegpu {
 
@@ -21,7 +23,7 @@ class HostEnvironmentDirectedGraph {
     // Windows/Python edge case, if an exception is thrown this object is destructed super late
     // So be extra safe with weak ptr
     std::weak_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> directed_graph;
-    const cudaStream_t stream;
+    const flamegpu::detail::cuda::Stream_t stream;
 #ifdef FLAMEGPU_ADVANCED_API
     detail::CUDAScatter &scatter;
     const unsigned int streamID;
@@ -30,7 +32,7 @@ class HostEnvironmentDirectedGraph {
  public:
     class VertexMap;
     class EdgeMap;
-    HostEnvironmentDirectedGraph(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>& _directed_graph, cudaStream_t _stream, detail::CUDAScatter& _scatter, unsigned int _streamID);
+    HostEnvironmentDirectedGraph(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>& _directed_graph, flamegpu::detail::cuda::Stream_t _stream, detail::CUDAScatter& _scatter, unsigned int _streamID);
     // Graph Structure Modifiers
     /**
      * Attempts to import edge and vertex data from the specified file
@@ -119,9 +121,9 @@ class HostEnvironmentDirectedGraph {
      */
     class VertexMap {
         std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> directed_graph;
-        const cudaStream_t stream;
+        const flamegpu::detail::cuda::Stream_t stream;
         friend VertexMap HostEnvironmentDirectedGraph::vertices();
-        VertexMap(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> directed_graph, cudaStream_t stream);
+        VertexMap(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> directed_graph, flamegpu::detail::cuda::Stream_t stream);
 
      public:
         class Vertex;
@@ -150,13 +152,13 @@ class HostEnvironmentDirectedGraph {
         Vertex atIndex(unsigned int index);
          class Vertex {
              std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> directed_graph;
-             const cudaStream_t stream;
+             const flamegpu::detail::cuda::Stream_t stream;
              unsigned int vertex_index;
              friend Vertex VertexMap::operator[](id_t);
              friend struct Iterator;
 
           public:
-             Vertex(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, cudaStream_t _stream, id_t _vertex_id, bool is_index = false);
+             Vertex(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, flamegpu::detail::cuda::Stream_t _stream, id_t _vertex_id, bool is_index = false);
              /**
               * Set the id for the current vertex
               * @param vertex_id The value to set the current vertex's id
@@ -220,7 +222,7 @@ class HostEnvironmentDirectedGraph {
             using pointer = Vertex*;
             using reference = Vertex&;
 
-            Iterator(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const cudaStream_t _stream, difference_type _index)
+            Iterator(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const flamegpu::detail::cuda::Stream_t _stream, difference_type _index)
                 : directed_graph(std::move(_directed_graph))
                 , stream(_stream)
                 , vertex(directed_graph, _stream, _index, true) {}
@@ -237,7 +239,7 @@ class HostEnvironmentDirectedGraph {
 
          private:
             std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> directed_graph;
-            cudaStream_t stream;
+            flamegpu::detail::cuda::Stream_t stream;
             mutable Vertex vertex;
         };
 
@@ -265,9 +267,9 @@ class HostEnvironmentDirectedGraph {
      */
     class EdgeMap {
         std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> directed_graph;
-        const cudaStream_t stream;
+        const flamegpu::detail::cuda::Stream_t stream;
         friend EdgeMap HostEnvironmentDirectedGraph::edges();
-        EdgeMap(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> directed_graph, cudaStream_t stream);
+        EdgeMap(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> directed_graph, flamegpu::detail::cuda::Stream_t stream);
         typedef std::pair<id_t, id_t> SrcDestPair;
 
      public:
@@ -298,14 +300,14 @@ class HostEnvironmentDirectedGraph {
         Edge atIndex(unsigned int index);
         class Edge {
             std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> directed_graph;
-            const cudaStream_t stream;
+            const flamegpu::detail::cuda::Stream_t stream;
             unsigned int edge_index;
             friend Edge EdgeMap::operator[](SrcDestPair);
             friend struct Iterator;
 
          public:
-            Edge(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, cudaStream_t _stream, id_t _source_vertex_id, id_t _dest_vertex_id);
-            Edge(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, cudaStream_t _stream, unsigned int edge_index);
+            Edge(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, flamegpu::detail::cuda::Stream_t _stream, id_t _source_vertex_id, id_t _dest_vertex_id);
+            Edge(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, flamegpu::detail::cuda::Stream_t _stream, unsigned int edge_index);
             /**
              * Set the source vertex's id for the current edge
              * @param source_vertex_id The value to set the current edge's source vertex id
@@ -383,7 +385,7 @@ class HostEnvironmentDirectedGraph {
             using pointer = Edge*;
             using reference = Edge&;
 
-            Iterator(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const cudaStream_t _stream, difference_type _index)
+            Iterator(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const flamegpu::detail::cuda::Stream_t _stream, difference_type _index)
                 : directed_graph(std::move(_directed_graph))
                 , stream(_stream)
                 , edge(directed_graph, _stream, _index) {}
@@ -400,7 +402,7 @@ class HostEnvironmentDirectedGraph {
 
          private:
             std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> directed_graph;
-            cudaStream_t stream;
+            flamegpu::detail::cuda::Stream_t stream;
             mutable Edge edge;
         };
 

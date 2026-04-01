@@ -287,7 +287,7 @@ void XMLStateWriter::writeMacroEnvironment(const std::shared_ptr<const detail::C
                     continue;
                 // Copy data
                 const size_t element_ct = std::accumulate(prop.elements.begin(), prop.elements.end(), 1, std::multiplies<unsigned int>());
-                flamegpu::detail::gpuCheck(cudaMemcpy(t_buffer, prop.d_ptr, element_ct * prop.type_size, cudaMemcpyDeviceToHost));
+                flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Memcpy)(t_buffer, prop.d_ptr, element_ct * prop.type_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost)));
 
                 tinyxml2::XMLElement* pListElement = doc->NewElement(name.c_str());
                 pListElement->SetAttribute("type", prop.type.name());

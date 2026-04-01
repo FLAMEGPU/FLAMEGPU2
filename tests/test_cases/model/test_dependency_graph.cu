@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <string>
 #include <iostream>
+#include <fstream>
 
 #include "flamegpu/flamegpu.h"
 

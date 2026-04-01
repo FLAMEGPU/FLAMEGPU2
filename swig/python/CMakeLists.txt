@@ -1,6 +1,13 @@
 # Minimum CMake version 3.25.2 for CUDA --std=c++20
 cmake_minimum_required(VERSION 3.25.2...4.3.0 FATAL_ERROR)
 
+# FLAMEGPU_BUILD_PYTHON is not currently compatible with FLAMEGPU_GPU=HIP
+if (FLAMEGPU_BUILD_PYTHON AND FLAMEGPU_GPU STREQUAL "HIP")
+    message(FATAL_ERROR
+        "  FLAMEGPU_BUILD_PYTHON is not currently compatible with FLAMEGPU_GPU=${FLAMEGPU_GPU}.\n"
+        "  See https://github.com/FLAMEGPU/FLAMEGPU2/issues/1368 for more information.\n"
+    )
+endif()
 
 # Defines multiple CMake targets and custom commands to build swig bindings, create a python wheel and (optionally) install it into a venv.
 # defines `pyflamegpu` - the user-facing target which creates the wheel.
