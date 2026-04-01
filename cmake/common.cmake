@@ -11,10 +11,15 @@ include(${FLAMEGPU_ROOT}/cmake/OutOfSourceOnly.cmake)
 # Ensure there are no spaces in the build directory path
 include(${FLAMEGPU_ROOT}/cmake/CheckBinaryDirPathForSpaces.cmake)
 
+# Ensure that CUDA/HIP have been enabled. This A(along with the subsequent architecture output requires that a project() has been created before including this file.
+# This also handles CUDA/HIP version support in a single location.
+include(${FLAMEGPU_ROOT}/cmake/enable_languages.cmake)
+flamegpu_enable_languages()
+
 # Ensure that cmake functions for handling CMAKE_CUDA_ARCHITECTURES are available
 include(${FLAMEGPU_ROOT}/cmake/CUDAArchitectures.cmake)
 # Emit a message once and only once per configure of the chosen architectures?
-if(DEFINED CMAKE_CUDA_ARCHITECTURES AND NOT flamegpu_printed_cmake_cuda_architectures)
+if(CMAKE_CUDA_LANGUAGE_ENABLED AND DEFINED CMAKE_CUDA_ARCHITECTURES AND NOT flamegpu_printed_cmake_cuda_architectures)
     message(STATUS "CUDA Architectures: ${CMAKE_CUDA_ARCHITECTURES}")
     get_directory_property(hasParent PARENT_DIRECTORY)
     if(hasParent)
@@ -23,10 +28,26 @@ if(DEFINED CMAKE_CUDA_ARCHITECTURES AND NOT flamegpu_printed_cmake_cuda_architec
     unset(hasParent)
 endif()
 
+if(CMAKE_HIP_LANGUAGE_ENABLED AND DEFINED CMAKE_HIP_ARCHITECTURES AND NOT flamegpu_printed_cmake_hip_architectures)
+    message(STATUS "HIP Architectures: ${CMAKE_HIP_ARCHITECTURES}")
+    get_directory_property(hasParent PARENT_DIRECTORY)
+    if(hasParent)
+        set(flamegpu_printed_cmake_hip_architectures TRUE PARENT_SCOPE)
+    endif()
+    unset(hasParent)
+endif()
+
 # Ensure that other dependencies are downloaded and available. 
 # As flamegpu is a static library, linking only only occurs at consumption not generation, so dependent targets must also know of PRIVATE shared library dependencies such as tinyxml2, as well any intentionally public dependencies (for include dirs)
-include(${CMAKE_CURRENT_LIST_DIR}/dependencies/CCCL.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/dependencies/Jitify.cmake)
+if (CMAKE_CUDA_COMPILER_LOADED)
+    include(${CMAKE_CURRENT_LIST_DIR}/dependencies/CCCL.cmake)
+    include(${CMAKE_CURRENT_LIST_DIR}/dependencies/Jitify.cmake)
+endif()
+if (CMAKE_HIP_COMPILER_LOADED)
+    # Todo: put this into dependencies? 
+    find_package(rocthrust REQUIRED)
+    find_package(hipcub REQUIRED)
+endif()
 include(${CMAKE_CURRENT_LIST_DIR}/dependencies/Tinyxml2.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/dependencies/nlohmann_json.cmake)
 if(FLAMEGPU_ENABLE_GLM)
@@ -39,23 +60,25 @@ set(CMAKE_SKIP_INSTALL_RULES TRUE)
 set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL "" FORCE)
 
 # Option to enable/disable NVTX markers for improved profiling
+# Todo: generic NVTX/ROCTx flag instead. Deprecating this one? 
 option(FLAMEGPU_ENABLE_NVTX "Build with NVTX markers enabled" OFF)
 
-# Option to enable verbose PTXAS output
-option(FLAMEGPU_VERBOSE_PTXAS "Enable verbose PTXAS output" OFF)
+# Option to enable verbose PTXAS output (CUDA Only)
+option(FLAMEGPU_VERBOSE_PTXAS "Enable verbose PTXAS output (CUDA only)" OFF)
 mark_as_advanced(FLAMEGPU_VERBOSE_PTXAS)
 
 # Option to promote compilation warnings to error, useful for strict CI
 option(FLAMEGPU_WARNINGS_AS_ERRORS "Promote compilation warnings to errors" OFF)
 
 # Option to change curand engine used for CUDA random generation
+# Todo: should FLAMEGPU_CURAND_ENGINGE be renamed? This would be a breaking change though...
 set(FLAMEGPU_CURAND_ENGINE "PHILOX" CACHE STRING "The curand engine to use. Suitable options: \"PHILOX\", \"XORWOW\", \"MRG\"")
 set_property(CACHE FLAMEGPU_CURAND_ENGINE PROPERTY STRINGS PHILOX XORWOW MRG)
 mark_as_advanced(FLAMEGPU_CURAND_ENGINE)
 
 # If CUDA >= 11.2, add an option to control the use of NVCC_THREADS
 set(DEFAULT_FLAMEGPU_NVCC_THREADS 2)
-if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.2)
+if(CMAKE_CUDA_COMPILER_LOADED AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.2)
     # The number of threads to use defaults to 2, telling the compiler to use up to 2 threads when multiple arch's are specified.
     # Setting this value to 0 would use as many threads as possible.
     # In some cases, this may increase total runtime due to excessive thread creation, and lowering the number of threads, or lowering the value of `-j` passed to cmake may be beneficial.
@@ -89,70 +112,75 @@ endif()
 # Ask Cmake to output compile_commands.json (if supported). This is useful for vscode include paths, clang-tidy/clang-format etc
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "Control the output of compile_commands.json")
 
-# Use the FindCUDATooklit package (CMake > 3.17) to find other parts of the cuda toolkit not provided by the CMake language support
-find_package(CUDAToolkit REQUIRED)
+if (CMAKE_CUDA_COMPILER_LOADED)
+    # Use the FindCUDATooklit package (CMake > 3.17) to find other parts of the cuda toolkit not provided by the CMake language support
+    find_package(CUDAToolkit REQUIRED)
 
-# Control how we link against the cuda runtime library (CMake >= 3.17)
-# We may wish to use static or none instead, subject to python library handling.
-set(CMAKE_CUDA_RUNTIME_LIBRARY shared)
+    # Control how we link against the cuda runtime library (CMake >= 3.17)
+    # We may wish to use static or none instead, subject to python library handling.
+    set(CMAKE_CUDA_RUNTIME_LIBRARY shared)
 
-# Ensure the cuda driver API is available, and save it to the list of link targets.
-if(NOT TARGET CUDA::cuda_driver)
-    message(FATAL_ERROR "CUDA::cuda_driver is required.")
-endif()
+    # Ensure the cuda driver API is available, and save it to the list of link targets.
+    if(NOT TARGET CUDA::cuda_driver)
+        message(FATAL_ERROR "CUDA::cuda_driver is required.")
+    endif()
 
-# Ensure the nvrtc is available, and save it to the list of link targets.
-if(NOT TARGET CUDA::nvrtc)
-    message(FATAL_ERROR "CUDA::nvrtc is required.")
-endif()
+    # Ensure the nvrtc is available, and save it to the list of link targets.
+    if(NOT TARGET CUDA::nvrtc)
+        message(FATAL_ERROR "CUDA::nvrtc is required.")
+    endif()
 
-# Ensure that jitify is available. Must be available at binary link time due to flamegpu being a static library. This check may be redundant.
-if(NOT TARGET Jitify::jitify)
-    message(FATAL_ERROR "Jitify is a required dependency")
-endif()
+    # Ensure that jitify is available. Must be available at binary link time due to flamegpu being a static library. This check may be redundant.
+    if(NOT TARGET Jitify::jitify)
+        message(FATAL_ERROR "Jitify is a required dependency")
+    endif()
 
-# Ensure that 
-
-# @todo - why do we not have to link against curand? Is that only required for the host API? Use CUDA::curand if required.
-
-# If NVTX is enabled, find the library and update variables accordingly. 
-if(FLAMEGPU_ENABLE_NVTX)
-    # Find the nvtx library using custom cmake module, providing imported targets
-    # Do not use CUDA::nvToolsExt as this always uses NVTX1 not 3.
-    # See https://gitlab.kitware.com/cmake/cmake/-/issues/21377
-    find_package(NVTX)
-    # If the targets were not found, emit a warning 
-    if(NOT TARGET NVTX::nvtx)
-        # If not found, emit a warning and continue without NVTX
-        message(WARNING "NVTX could not be found. Proceeding with FLAMEGPU_ENABLE_NVTX=OFF")
-        if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-            SET(FLAMEGPU_ENABLE_NVTX "OFF" PARENT_SCOPE)
+    # If NVTX is enabled, find the library and update variables accordingly. 
+    if(FLAMEGPU_ENABLE_NVTX)
+        # Find the nvtx library using custom cmake module, providing imported targets
+        # Do not use CUDA::nvToolsExt as this always uses NVTX1 not 3.
+        # See https://gitlab.kitware.com/cmake/cmake/-/issues/21377
+        find_package(NVTX)
+        # If the targets were not found, emit a warning 
+        if(NOT TARGET NVTX::nvtx)
+            # If not found, emit a warning and continue without NVTX
+            message(WARNING "NVTX could not be found. Proceeding with FLAMEGPU_ENABLE_NVTX=OFF")
+            if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+                SET(FLAMEGPU_ENABLE_NVTX "OFF" PARENT_SCOPE)
+            endif()
         endif()
-    endif()
-endif(FLAMEGPU_ENABLE_NVTX)
-
-# Set the minimum supported cuda version, if not already set.
-# Currently duplicated due to docs only build logic.
-# CUDA 12.0 is the current minimum supported version.
-if(NOT DEFINED MINIMUM_SUPPORTED_CUDA_VERSION)
-    set(MINIMUM_SUPPORTED_CUDA_VERSION 12.0)
-    # Require a minimum cuda version
-    if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_SUPPORTED_CUDA_VERSION})
-        message(FATAL_ERROR "CUDA version must be at least ${MINIMUM_SUPPORTED_CUDA_VERSION}")
-    endif()
+    endif(FLAMEGPU_ENABLE_NVTX)
 endif()
 
-# Warn about CUDA < 12.4 on Windows, but only once per invocation?
-if (MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 12.4)
-    if (NOT MSVC_CUDA_LT_124_SHOWN)
-        message(WARNING
-            " Parts of flamegpu may fail to build with MSVC and CUDA < 12.4 due to compilation errors under c++20.\n"
-            " \n"
-            " Please consider upgrading to CUDA >= 12.4."
-            " \n"
-        )
-        set(MSVC_CUDA_LT_124_SHOWN TRUE PARENT_SCOPE )
-    endif()
+if (CMAKE_HIP_COMPILER_LOADED)
+    # Ensure that HIP is found for link targets
+    find_package(HIP REQUIRED)
+
+    # Control how we link against the HIP runtime library (CMake >= 3.21)
+    # This is an undocumented CMake variable https://gitlab.kitware.com/cmake/cmake/-/work_items/25128
+    # We may wish to use static or none instead, subject to python library handling.
+    set(CMAKE_HIP_RUNTIME_LIBRARY shared)
+
+    # hiprtc is it's own cmake package and target, separate to the hip package
+    # Todo: Enable this check when adding hiprtc support
+    # find_package(hiprtc REQUIRED)
+    # if(NOT TARGET hiprtc::hiprtc)
+    #     message(FATAL_ERROR "hiprtc::hiprtc is a required dependency")
+    # endif()
+
+    # 
+    if(FLAMEGPU_ENABLE_NVTX)
+        # roctx is part or the rocprofiler-sdk, atleast in rocm 7.2.0, proabbly 6.2+?
+        # https://github.com/ROCm/roctracer/issues/56#issuecomment-2375400996
+        find_package(rocprofiler-sdk-roctx)
+        if(NOT TARGET rocprofiler-sdk-roctx::rocprofiler-sdk-roctx)
+            message(WARNING "ROCTx could not be found. Proceeding with FLAMEGPU_ENABLE_NVTX=OFF")
+            if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+                SET(FLAMEGPU_ENABLE_NVTX "OFF" PARENT_SCOPE)
+            endif()
+        endif()
+    endif(FLAMEGPU_ENABLE_NVTX)
+
 endif()
 
 
@@ -172,6 +200,8 @@ function(flamegpu_common_compiler_settings)
         ""
         ${ARGN}
     )
+
+    message(AUTHOR_WARNING "flamegpu_common_compiler_settings for hip")
 
     # Ensure that a target has been passed, and that it is a valid target.
     if(NOT CCS_TARGET)
@@ -267,11 +297,19 @@ function(flamegpu_target_cxx20)
         message(FATAL_ERROR "${CMAKE_CURRENT_FUNCTION}: TARGET '${FTC_TARGET}' is not a valid target")
     endif()
     target_compile_features(${FTC_TARGET} PUBLIC cxx_std_20)
-    target_compile_features(${FTC_TARGET} PUBLIC cuda_std_20)
     set_property(TARGET ${FTC_TARGET} PROPERTY CXX_EXTENSIONS OFF)
-    set_property(TARGET ${FTC_TARGET} PROPERTY CUDA_EXTENSIONS OFF)
     set_property(TARGET ${FTC_TARGET} PROPERTY CXX_STANDARD_REQUIRED ON)
-    set_property(TARGET ${FTC_TARGET} PROPERTY CUDA_STANDARD_REQUIRED ON)
+
+    if(CMAKE_CUDA_COMPILER_LOADED)
+        target_compile_features(${FTC_TARGET} PUBLIC cuda_std_20)
+        set_property(TARGET ${FTC_TARGET} PROPERTY CUDA_EXTENSIONS OFF)
+        set_property(TARGET ${FTC_TARGET} PROPERTY CUDA_STANDARD_REQUIRED ON)
+    endif()
+    if(CMAKE_HIP_COMPILER_LOADED)
+        target_compile_features(${FTC_TARGET} PUBLIC cuda_std_20)
+        set_property(TARGET ${FTC_TARGET} PROPERTY CUDA_EXTENSIONS OFF)
+        set_property(TARGET ${FTC_TARGET} PROPERTY CUDA_STANDARD_REQUIRED ON)
+    endif()
 endfunction()
 
 function(flamegpu_copy_runtime_dependencies) 
@@ -350,9 +388,9 @@ function(flamegpu_setup_source_groups)
 
     # Filter out header and source files which CANNOT use TREE
     set(SRC_GROUP_MANUAL_HEADERS "${SRC_GROUP_MANUAL}")
-    list(FILTER SRC_GROUP_MANUAL_HEADERS INCLUDE REGEX ".*\.(h|hpp|cuh)$")
+    list(FILTER SRC_GROUP_MANUAL_HEADERS INCLUDE REGEX ".*\.(h|hpp|cuh|hiph)$")
     set(SRC_GROUP_MANUAL_SOURCES "${SRC_GROUP_MANUAL}")
-    list(FILTER SRC_GROUP_MANUAL_SOURCES EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
+    list(FILTER SRC_GROUP_MANUAL_SOURCES EXCLUDE REGEX ".*\.(h|hpp|cuh|hiph)$")
     # Apply source group filters WITHOUT TREE, using CMake's default "Header Files" and "Source Files" for consistency
     # These will just be placed in the root of the folder, as we cannot have a ../ type setup in sources, so no point bothering with directories
     source_group("Header Files" FILES ${SRC_GROUP_MANUAL_HEADERS})
@@ -377,6 +415,15 @@ function(flamegpu_add_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
         add_subdirectory("${FLAMEGPU_ROOT}/src" "${PROJECT_ROOT}/FLAMEGPU")
     endif()
 
+    # Ensure that .cuh files are treated as hip if using hip
+    if(CMAKE_HIP_COMPILER)
+        foreach(source_file IN LISTS SRC)
+            if(source_file MATCHES "\\.cu$")
+                set_source_files_properties(${source_file} PROPERTIES LANGUAGE HIP)
+            endif()
+        endforeach()
+    endif()
+
     # Define which source files are required for the target executable
     add_executable(${NAME} ${SRC})
 
@@ -390,13 +437,21 @@ function(flamegpu_add_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     flamegpu_target_cxx20(TARGET "${NAME}")
 
     # Enable RDC for the target
-    set_property(TARGET ${NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
+    if(CMAKE_CUDA_COMPILER_LOADED)
+        set_property(TARGET ${NAME}  PROPERTY CUDA_SEPARABLE_COMPILATION ON)
+    endif()
+    if(CMAKE_HIP_COMPILER_LOADED)
+        target_compile_options(${NAME} PUBLIC $<$<COMPILE_LANGUAGE:HIP>:-fgpu-rdc>)
+        target_link_options(${NAME} PUBLIC -fgpu-rdc --hip-link)
+        # Ensure that HIP is used as the linker. linking aginast hip::device forces -x hip to be passed to the linker, which the host compiler might not understand (i.e. gcc)
+        set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE HIP)
+    endif()
 
     # Link against the flamegpu static library target.
     target_link_libraries(${NAME} PRIVATE flamegpu)
     # Workaround for incremental rebuilds on MSVC, where device link was not being performed.
     # https://github.com/FLAMEGPU/FLAMEGPU2/issues/483
-    if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.1")
+    if(CMAKE_CUDA_COMPILER_LOADED AND MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.1")
         # Provide the absolute path to the lib file, rather than the relative version cmake provides.
         target_link_libraries(${NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE:flamegpu>")
     endif()
@@ -432,6 +487,15 @@ function(flamegpu_add_library NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
         add_subdirectory("${FLAMEGPU_ROOT}/src" "${PROJECT_ROOT}/FLAMEGPU")
     endif()
 
+    # Ensure that .cuh files are treated as hip if using hip
+    if(CMAKE_HIP_COMPILER)
+        foreach(source_file IN LISTS SRC)
+            if(source_file MATCHES "\\.cu$")
+                set_source_files_properties(${source_file} PROPERTIES LANGUAGE HIP)
+            endif()
+        endforeach()
+    endif()
+
     # Define which source files are required for the target executable
     add_library(${NAME} STATIC ${SRC})
 
@@ -445,13 +509,20 @@ function(flamegpu_add_library NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
     flamegpu_target_cxx20(TARGET "${NAME}")
 
     # Enable RDC for the target
-    set_property(TARGET ${NAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)
+    if(CMAKE_CUDA_COMPILER_LOADED)
+        set_property(TARGET ${NAME}  PROPERTY CUDA_SEPARABLE_COMPILATION ON)
+    endif()
+    if(CMAKE_HIP_COMPILER_LOADED)
+        target_compile_options(${NAME} PUBLIC $<$<COMPILE_LANGUAGE:HIP>:-fgpu-rdc>)
+        target_link_options(${NAME} PUBLIC -fgpu-rdc --hip-link)
+    endif()
 
     # Link against the flamegpu static library target.
     target_link_libraries(${NAME} PRIVATE flamegpu)
+
     # Workaround for incremental rebuilds on MSVC, where device link was not being performed.
     # https://github.com/FLAMEGPU/FLAMEGPU2/issues/483
-    if(MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.1")
+    if(CMAKE_CUDA_COMPILER_LOADED AND MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.1")
         # Provide the absolute path to the lib file, rather than the relative version cmake provides.
         target_link_libraries(${NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$<TARGET_FILE:flamegpu>")
     endif()

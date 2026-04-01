@@ -8,22 +8,19 @@ get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 # Include versioning CMake logic, to set the project version 
 include(${FLAMEGPU_ROOT}/cmake/version.cmake)
 
-# Include CMake Logic and call a method to record user-provided CMAKE_CUDA_ARCHITECTURES
-include(${FLAMEGPU_ROOT}/cmake/CUDAArchitectures.cmake)
-flamegpu_init_cuda_architectures()
+# Include CMake Logic and call a method to record user-provided CUDA/HIP architectures
+include(${FLAMEGPU_ROOT}/cmake/GPUArchitectures.cmake)
+flamegpu_init_gpu_architectures()
 
-# Set the project  with no languages iniitailly, in case of doxygen only builds.
+# Set the project with no languages initially, in case of doxygen only builds.
 project(flamegpu LANGUAGES NONE VERSION ${FLAMEGPU_VERSION})
 
-# See what languages are supported. Must be called within a project.
-# This is primarily here incase someone targets src/CMakeFiles.txt directly
-include(CheckLanguage)
-include(CheckCXXCompilerFlag)
-check_language(CXX)
-check_language(CUDA)
-if(CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
-    #Not able to build code, so just make docs
-    message("Suitable compilers for building code not found.\n" "Attempting generation of minimal documentation only project.")
+# Enable C/CXX/CUDA/HIP as required, and set the GPU architectures to use
+include(${FLAMEGPU_ROOT}/cmake/enable_languages.cmake)
+flamegpu_enable_languages()
+
+# If no CUDA or HIP compiler, it must be a docs only build and early exit
+if(NOT (CMAKE_CUDA_COMPILER_LOADED OR CMAKE_HIP_COMPILER_LOADED))
     include(${FLAMEGPU_ROOT}/cmake/dependencies/doxygen.cmake)
     if(${FLAMEGPU_BUILD_API_DOCUMENTATION})
         flamegpu_create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}" "")
@@ -31,18 +28,10 @@ if(CMAKE_CUDA_COMPILER STREQUAL NOTFOUND)
     return()
 endif()
 
-# Enable the required languages for compilation
-enable_language(C)
-enable_language(CXX)
-enable_language(CUDA)
-
-# Set CMAKE_CUDA_ARCHITECTURES now CUDA is enabled
-flamegpu_set_cuda_architectures()
-
 # Ensure this is not an in-source build
 include(${FLAMEGPU_ROOT}/cmake/OutOfSourceOnly.cmake)
 
-# include for dependent modules
+# include for dependent options
 include(CMakeDependentOption)
 
 # option to opt-out of sharing usage statistics, reads from the env var FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT first which is treated as a cmake bool if it is defined.
@@ -55,7 +44,7 @@ endif()
 option(FLAMEGPU_SHARE_USAGE_STATISTICS "Support for academic software is dependant on evidence of impact. Enabling this sends anonymous usage statistics so that we can continue to develop it under a free license." ${FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT})
 unset(FLAMEGPU_SHARE_USAGE_STATISTICS_DEFAULT)
 
-# dependet option to suppress the telemetry notice if telemetry is off.
+# dependent option to suppress the telemetry notice if telemetry is off.
 set (FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE_DEFAULT OFF)
 # If the environment variable is defined and is truth-y, turn it on.
 if (DEFINED ENV{FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE} AND "$ENV{FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE}")
@@ -64,7 +53,7 @@ endif()
 cmake_dependent_option(FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE "Suppress notice encouraging telemetry to be enabled, which is emitted once per binary execution if telemetry is disabled." ${FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE_DEFAULT} "NOT FLAMEGPU_SHARE_USAGE_STATISTICS" ${FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE_DEFAULT} )
 unset(FLAMEGPU_TELEMETRY_SUPPRESS_NOTICE_DEFAULT)
 
-# advanced developer option to switch telemetery to a test mode, which is reported separately on telemetry hub.
+# advanced developer option to switch telemetry to a test mode, which is reported separately on telemetry hub.
 set (FLAMEGPU_TELEMETRY_TEST_MODE_DEFAULT OFF)
 # If the environment variable is defined and is truth-y, turn it on.
 if (DEFINED ENV{FLAMEGPU_TELEMETRY_TEST_MODE} AND "$ENV{FLAMEGPU_TELEMETRY_TEST_MODE}")
@@ -80,6 +69,13 @@ option(FLAMEGPU_SEATBELTS "Enable runtime checks which harm performance for rele
 
 # Option to enable/disable building the flamegpu visualiser into the flamegpu
 option(FLAMEGPU_VISUALISATION "Enable FLAMEGPU visualisation support" OFF)
+# FLAMEGPU_VISUALISATION is not currently compatible with FLAMEGPU_GPU=HIP
+if (FLAMEGPU_VISUALISATION AND FLAMEGPU_GPU STREQUAL "HIP")
+    message(FATAL_ERROR
+        "  FLAMEGPU_VISUALISATION is not currently compatible with FLAMEGPU_GPU=${FLAMEGPU_GPU}.\n"
+        "  See https://github.com/FLAMEGPU/FLAMEGPU2/issues/1369 for more information.\n"
+    )
+endif()
 
 # Option to enable/disable the default status of JitifyCache
 option(FLAMEGPU_RTC_DISK_CACHE "Enable caching of RTC kernels to disk by default (this can still be overridden programatically)." ON)
@@ -99,10 +95,23 @@ unset(FLAMEGPU_ENABLE_LINT_FLAMEGPU_DEFAULT)
 
 # Option to enable/disable MPI support
 option(FLAMEGPU_ENABLE_MPI "Enable MPI support for distributed ensembles" OFF)
+# FLAMEGPU_ENABLE_MPI is not currently compatible with FLAMEGPU_GPU=HIP
+if (FLAMEGPU_ENABLE_MPI AND FLAMEGPU_GPU STREQUAL "HIP")
+    message(FATAL_ERROR
+        "  FLAMEGPU_ENABLE_MPI is not currently compatible with FLAMEGPU_GPU=${FLAMEGPU_GPU}.\n"
+        "  See https://github.com/FLAMEGPU/FLAMEGPU2/issues/1371 for more information.\n"
+    )
+endif()
 
 # Option to enable GLM support and put GLM on the include path
 option(FLAMEGPU_ENABLE_GLM "Experimental: Make GLM available to flamegpu2 projects on the include path" OFF)
 mark_as_advanced(FLAMEGPU_ENABLE_GLM)
+if (FLAMEGPU_ENABLE_GLM AND FLAMEGPU_GPU STREQUAL "HIP")
+    message(WARNING
+        "  FLAMEGPU_ENABLE_GLM support with FLAMEGPU_GPU=${FLAMEGPU_GPU} is currently untested and may not be compatible.\n"
+        "  See https://github.com/FLAMEGPU/FLAMEGPU2/issues/1376 for more information.\n"
+    )
+endif()
 
 # Option to enable the "advanced API" - access to high performance internals that may break at any time 
 option(FLAMEGPU_ENABLE_ADVANCED_API "Enable advanced API functionality (C++ only), providing access to internal sim components for high-performance extensions." OFF)
@@ -491,18 +500,35 @@ unset(SRC_GROUP_MANUAL_HEADERS)
 unset(SRC_GROUP_MANUAL_SOURCES)
 unset(SRC_GROUP_MANUAL)
 
-# Create the library target and set various properties
 
-# Define which source files are required for the target executable
+# Ensure that .cuh files are treated as hip if using hip
+if(CMAKE_HIP_COMPILER)
+    foreach(source_file IN LISTS ALL_SRC)
+        if(source_file MATCHES "\\.cu$")
+            set_source_files_properties(${source_file} PROPERTIES LANGUAGE HIP)
+        endif()
+    endforeach()
+endif()
+
+
+# Create the library target and set various properties
 add_library(${PROJECT_NAME} STATIC ${ALL_SRC})
 
 # Require C++20 as a public target property for C++ and CUDA, with no extensions, and the standard is required
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
-target_compile_features(${PROJECT_NAME} PUBLIC cuda_std_20)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_EXTENSIONS OFF)
-set_property(TARGET ${PROJECT_NAME} PROPERTY CUDA_EXTENSIONS OFF)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
-set_property(TARGET ${PROJECT_NAME} PROPERTY CUDA_STANDARD_REQUIRED ON)
+
+if(CMAKE_CUDA_COMPILER_LOADED)
+    target_compile_features(${PROJECT_NAME} PUBLIC cuda_std_20)
+    set_property(TARGET ${PROJECT_NAME} PROPERTY CUDA_EXTENSIONS OFF)
+    set_property(TARGET ${PROJECT_NAME} PROPERTY CUDA_STANDARD_REQUIRED ON)
+endif()
+if(CMAKE_HIP_COMPILER_LOADED)
+    target_compile_features(${PROJECT_NAME} PUBLIC hip_std_20)
+    set_property(TARGET ${PROJECT_NAME} PROPERTY HIP_EXTENSIONS OFF)
+    set_property(TARGET ${PROJECT_NAME} PROPERTY HIP_STANDARD_REQUIRED ON)
+endif()
 
 # Add the library headers as public so they are forwarded on.
 target_include_directories(${PROJECT_NAME} PUBLIC "${FLAMEGPU_ROOT}/include")
@@ -638,12 +664,15 @@ if (FLAMEGPU_RTC_EXPORT_SOURCES)
 endif ()
 
 # Enable RDC
-set_property(TARGET ${PROJECT_NAME}  PROPERTY CUDA_SEPARABLE_COMPILATION ON)
+if(CMAKE_CUDA_COMPILER_LOADED)
+    set_property(TARGET ${PROJECT_NAME}  PROPERTY CUDA_SEPARABLE_COMPILATION ON)
+endif()
+if(CMAKE_HIP_COMPILER_LOADED)
+    target_compile_options(${PROJECT_NAME} PUBLIC $<$<COMPILE_LANGUAGE:HIP>:-fgpu-rdc>)
+    target_link_options(${PROJECT_NAME} PUBLIC -fgpu-rdc --hip-link)
+endif()
 
 # Link against dependency targets / directories.
-
-# CCCL for Cub and thrust (and libcudacxx) targets are not imported targets, so they do not use -isystem, so warnings must be suppressed as pragmas if required. This is due to nvcc magic implicit include directory search ordering
-target_link_libraries(${PROJECT_NAME} PUBLIC CCCL::CCCL)
 
 # tinyxml2 static library
 target_link_libraries(${PROJECT_NAME} PRIVATE Tinyxml2::tinyxml2)
@@ -651,36 +680,49 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Tinyxml2::tinyxml2)
 # If nlohmann_json was found, add it to the include dirs.
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::nvrtc)
+if(CMAKE_CUDA_COMPILER_LOADED)
+    target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::cuda_driver)
+    # CCCL for Cub and thrust (and libcudacxx) targets are not imported targets, so they do not use -isystem, so warnings must be suppressed as pragmas if required. This is due to nvcc magic implicit include directory search ordering
+    target_link_libraries(${PROJECT_NAME} PUBLIC CCCL::CCCL)
+    # core cuda libs
+    target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::nvrtc)
+endif()
 
-target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::cuda_driver)
+if(CMAKE_HIP_COMPILER_LOADED)
+    target_link_libraries(${PROJECT_NAME} PUBLIC hip::host)
+    target_link_libraries(${PROJECT_NAME} PUBLIC hip::device)
+    # cccl equivalents
+    target_link_libraries(${PROJECT_NAME} PUBLIC roc::rocthrust)
+    target_link_libraries(${PROJECT_NAME} PUBLIC hip::hipcub)
+    set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE HIP)
+endif()
 
-if(FLAMEGPU_ENABLE_NVTX AND TARGET NVTX::nvtx)
-    target_link_libraries(${PROJECT_NAME} PUBLIC NVTX::nvtx)
-    # Get the version to set a definition value 
-    # Interface targets only support the version property from 3.19
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
+if(CMAKE_CUDA_COMPILER_LOADED)
+    if(FLAMEGPU_ENABLE_NVTX AND TARGET NVTX::nvtx)
+        target_link_libraries(${PROJECT_NAME} PUBLIC NVTX::nvtx)
+        # Get the version to set a definition value (req CMake >= 3.19)
         get_target_property(nvtxversion NVTX::nvtx VERSION)
-    else()
-        # fallback to the old cmake var.
-        set(nvtxversion ${NVTX_VERSION})
+        target_compile_definitions(${PROJECT_NAME} PUBLIC "FLAMEGPU_USE_NVTX=${nvtxversion}")
+        unset(nvtxversion)
     endif()
-    target_compile_definitions(${PROJECT_NAME} PUBLIC "FLAMEGPU_USE_NVTX=${nvtxversion}")
-    unset(nvtxversion)
+endif()
+if(CMAKE_HIP_COMPILER_LOADED)
+    if(FLAMEGPU_ENABLE_NVTX AND TARGET rocprofiler-sdk-roctx::rocprofiler-sdk-roctx)
+        target_link_libraries(${PROJECT_NAME} PUBLIC rocprofiler-sdk-roctx::rocprofiler-sdk-roctx)
+        # Todo: Verify that rocprofiler-sdk-roctx does have the NVTXv3 interface, and/or remove v1 support and this variable.
+        target_compile_definitions(${PROJECT_NAME} PUBLIC "FLAMEGPU_USE_NVTX=3")
+    endif()
 endif()
 
-# Jitify2 requires separate compilation options for older linux kernels (i.e. manylinux2014).
-# This is detected in cmake/CheckCompilerFunctionality.cmake and a boolean internal cache variable is stores if this is required or not.
-if(FLAMEGPU__FILE_OFFSET_BITS_64_REQUIRED)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC "_FILE_OFFSET_BITS=64")
-endif()
-target_link_libraries(${PROJECT_NAME} PUBLIC Jitify::jitify)
-# jitify is included in public headers, so this definiition must be public too.
-target_compile_definitions(${PROJECT_NAME} PUBLIC "JITIFY_PRINT_LOG")
-
-# If gcc < 9, needs to link against stdc++fs
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
-    target_link_libraries(${PROJECT_NAME} PUBLIC stdc++fs)
+if(CMAKE_CUDA_COMPILER_LOADED)
+    # Jitify2 requires separate compilation options for older linux kernels (i.e. manylinux2014).
+    # This is detected in cmake/enable_languages.cmake and a boolean internal cache variable is stores if this is required or not.
+    if(FLAMEGPU__FILE_OFFSET_BITS_64_REQUIRED)
+        target_compile_definitions(${PROJECT_NAME} PUBLIC "_FILE_OFFSET_BITS=64")
+    endif()
+    target_link_libraries(${PROJECT_NAME} PUBLIC Jitify::jitify)
+    # jitify is included in public headers, so this definiition must be public too.
+    target_compile_definitions(${PROJECT_NAME} PUBLIC "JITIFY_PRINT_LOG")
 endif()
 
 # Link against dl if available. This used to be implied from somewhere...

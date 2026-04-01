@@ -1,15 +1,17 @@
 # Minimum CMake version 3.25.2 for CUDA --std=c++20
 cmake_minimum_required(VERSION 3.25.2...4.3.0 FATAL_ERROR)
 
+# Find the root directory
+get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR} REALPATH)
+
 # Include and call some CMake to record initial state of CMAKE_CUDA_ARCHITECTURES for later use
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/CUDAArchitectures.cmake)
-flamegpu_init_cuda_architectures()
+# Todo: Generalise this for hip as well, ideally without breaking back compat of standalone examples while warning to change?
+
+include(${FLAMEGPU_ROOT}/cmake/GPUArchitectures.cmake)
+flamegpu_init_gpu_architectures()
 
 # Declare the project with no languages
 project(FLAMEGPU LANGUAGES NONE)
-
-# Find the root directory
-get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR} REALPATH)
 
 # Ensure this is not an in-source build
 include(${FLAMEGPU_ROOT}/cmake/OutOfSourceOnly.cmake)
@@ -18,42 +20,15 @@ include(${FLAMEGPU_ROOT}/cmake/OutOfSourceOnly.cmake)
 set(CMAKE_SKIP_INSTALL_RULES TRUE)
 set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL ""  FORCE)
 
-# If sufficiently new and working CXX / CUDA compilers are not available, then documentation only build is the only option.
-set(DOCUMENTATION_ONLY_BUILD OFF)
+# Include a CMake file which handles language support selection, choosing between CUDA, HIP, or documentation only.
+include(${FLAMEGPU_ROOT}/cmake/enable_languages.cmake)
 
-# Check compiler functionailty, as there are known issues in some cases, but version checks are not always sufficient.
-include(./cmake/CheckCompilerFunctionality.cmake)
-# If this returned a negative result, set the docs only build. 
-if(NOT FLAMEGPU_CheckCompilerFunctionality_RESULT)
-    set(DOCUMENTATION_ONLY_BUILD ON)      
-    message(STATUS "Documentation-only build: due to compiler compatability version. See prior warnings.")
-endif()
+# Call the macro which enables the appropriate languages for the current project.
+flamegpu_enable_languages()
 
-# If the checks passed, enable CXX and CUDA languages
-include(CheckLanguage)
-check_language(CXX)
-if(CMAKE_CXX_COMPILER)
-    enable_language(CXX)
-endif()
-check_language(CUDA)
-if(CMAKE_CUDA_COMPILER)
-    enable_language(CUDA)
-    # Set CMAKE_CUDA_ARCHITECTURES correctly, now CUDA is enabled.
-    flamegpu_set_cuda_architectures()
-endif()
-
-# Set the minimum supported CUDA VERSION.
-set(MINIMUM_SUPPORTED_CUDA_VERSION 12.0)
-
-# If the CUDA compiler is too old, trigger a docs only build.
-if(NOT DOCUMENTATION_ONLY_BUILD AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_SUPPORTED_CUDA_VERSION})
-    set(DOCUMENTATION_ONLY_BUILD ON)
-    message(STATUS "Documentation-only build: CUDA ${MINIMUM_SUPPORTED_CUDA_VERSION} or greater is required for compilation.")
-endif()
-
-# If CUDA is not available, or the minimum version is too low only build the docs.
-if(DOCUMENTATION_ONLY_BUILD)
-    # Not able to build code, so just make docs    
+# If FLAMEGPU_GPU was set to OFF, and API documentation building is enabled, create the docs only target
+# Todo: Abstract this somewhere?
+if(NOT (CMAKE_CUDA_COMPILER_LOADED OR CMAKE_HIP_COMPILER_LOADED))
     include(./cmake/dependencies/doxygen.cmake)
     if(${FLAMEGPU_BUILD_API_DOCUMENTATION})
         flamegpu_create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}" "")
@@ -82,6 +57,13 @@ cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_SUGARSCAPE "Enable building exampl
 cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_DIFFUSION "Enable building examples/cpp/diffusion" OFF "PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
 
 option(FLAMEGPU_BUILD_PYTHON "Enable python bindings via SWIG" OFF)
+# FLAMEGPU_BUILD_PYTHON is not currently compatible with FLAMEGPU_GPU=HIP
+if (FLAMEGPU_BUILD_PYTHON AND FLAMEGPU_GPU STREQUAL "HIP")
+    message(FATAL_ERROR
+        "  FLAMEGPU_BUILD_PYTHON is not currently compatible with FLAMEGPU_GPU=${FLAMEGPU_GPU}.\n"
+        "  See https://github.com/FLAMEGPU/FLAMEGPU2/issues/1368 for more information.\n"
+    )
+endif()
 
 # Option to enable/disable tests.
 option(FLAMEGPU_BUILD_TESTS "Enable building tests" OFF)
@@ -114,12 +96,6 @@ endif()
 if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_BOIDS_SPATIAL3D)
     add_subdirectory(examples/cpp/boids_spatial3D)
 endif()
-if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_RTC_BOIDS_BRUTEFORCE)
-    add_subdirectory(examples/cpp_rtc/boids_bruteforce)
-endif()
-if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_RTC_BOIDS_SPATIAL3D)
-    add_subdirectory(examples/cpp_rtc/boids_spatial3D)
-endif()
 if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_CIRCLES_BRUTEFORCE)
     add_subdirectory(examples/cpp/circles_bruteforce)
 endif()
@@ -140,6 +116,15 @@ if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_SUGARSCAPE)
 endif()
 if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_DIFFUSION)
     add_subdirectory(examples/cpp/diffusion)
+endif()
+# RTC models are currently CUDA only
+if (CMAKE_CUDA_COMPILER_ENABLED)
+    if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_RTC_BOIDS_BRUTEFORCE)
+        add_subdirectory(examples/cpp_rtc/boids_bruteforce)
+    endif()
+    if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_RTC_BOIDS_SPATIAL3D)
+        add_subdirectory(examples/cpp_rtc/boids_spatial3D)
+    endif()
 endif()
 # Add the tests directory (if required)
 if(FLAMEGPU_BUILD_TESTS OR FLAMEGPU_BUILD_TESTS_DEV)
