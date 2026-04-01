@@ -57,7 +57,7 @@ TEST(FLAMEGPUExceptionTest, setLocation) {
     EXPECT_STREQ(ce.what(), expected_what.c_str());
 }
 
-// Define a new class extending FALMEGPUException which does not take a default_message in the constructor.
+// Define a new class extending FLAMEGPUException which does not take a default_message in the constructor.
 
 }  // namespace test_flamegpu_exception
 }  // namespace flamegpu

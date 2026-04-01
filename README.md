@@ -58,16 +58,23 @@ This is used to build the FLAMEGPU2 library, examples, tests and documentation.
 Building FLAME GPU has the following requirements. There are also optional dependencies which are required for some components, such as Documentation or Python bindings.
 
 + [CMake](https://cmake.org/download/) `>= 3.25.2`
-+ [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 12.4`
-  + FLAME GPU aims to support the 2 most recent major CUDA versions, currently `12` and `13`.
-  + Due to compiler issues on multiple platforms we have dropped support for CUDA `12.0`-`12.3`, requiring `>= 12.4`
-  + A [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 5.0` (CUDA 12.x) or `>= 7.5` (CUDA 13.x) NVIDIA GPU is required for execution.
-+ C++20 capable C++ compiler (host), compatible with the installed CUDA version
-  + [Microsoft Visual Studio 2022/2026](https://visualstudio.microsoft.com/) (Windows)
++ CUDA for NVIDIA GPUs, or HIP/ROCm for AMD GPUS
+  + [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 12.4`
+    + FLAME GPU aims to support the 2 most recent major CUDA versions, currently `12` and `13`.
+    + Due to compiler issues on multiple platforms we have dropped support for CUDA `12.0`-`12.3`, requiring `>= 12.4`
+    + A [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 5.0` (CUDA 12.x) or `>= 7.5` (CUDA 13.x) NVIDIA GPU is required for execution.
+  + [ROCm/HIP](https://rocm.docs.amd.com/en/latest/) `>= 7.x` (Linux only)
+    + ROCm/HIP support in FLAME GPU is under active development. Not all features are available. Other ROCm versions are unsupported but may work.
+    + An AMD GPU [with ROCm support](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/system-requirements.html#supported-gpus) is required for execution 
++ C++20 capable C++ compiler (host), compatible with the installed CUDA/ROCm version
+  + Windows: [Microsoft Visual Studio 2022/2026](https://visualstudio.microsoft.com/) (CUDA-only)
     + *Note:* Visual Studio must be installed before the CUDA toolkit is installed. See the [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) for more information.
     + *Note:* Windows 11 SDK (10.0.22000.0) component is required within the Visual Studio (in latest versions this is default for C++ Desktop Development workloads even even on Windows 10). Windows 10 *must* be updated to build 19045 (22H2) or later to support this at runtime.
     + *Note:* Visual Studio 2026 requires CUDA >= 13.2
-  + [make](https://www.gnu.org/software/make/) and [GCC](https://gcc.gnu.org/) `>= 11` (Linux)
+  + Linux: [make](https://www.gnu.org/software/make/) or [Ninja](https://ninja-build.org/) with:
+    + [GCC](https://gcc.gnu.org/) `>= 11` compatible with your CUDA installation
+    + `clang` / `amdclang++` / `hipcc` compatible wih your HIP/ROCm installation
+      + *Note:* You may need to explicitly set `amdclang++`/`hipcc` as the host compiler, as GCC cannot be used for CXX objects due to `HIP/ROCm`'s CMake enforcing `-x hip` for CXX objects which link against HIP/ROCm targets.
 + [git](https://git-scm.com/)
 
 Optionally:
@@ -88,6 +95,9 @@ Optionally:
   + [FreeType](http://www.freetype.org/)  *(font loading)*
   + [DevIL](http://openil.sourceforge.net/)  *(image loading)*
   + [Fontconfig](https://www.fontconfig.org/)  *(Linux only, font detection)*
+
+> [!WARNING]
+> ROCm/AMD GPU support is under development. Some features such as Visualisation are not yet supported.
 
 ### Building with CMake
 

@@ -14,6 +14,7 @@
 #include "flamegpu/runtime/messaging/MessageBruteForce.h"
 #include "flamegpu/runtime/messaging/MessageSortingType.h"
 #include "flamegpu/detail/type_decode.h"
+#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
 
@@ -45,19 +46,19 @@ class MessageBruteForce::CUDAModelHandler : public MessageSpecialisationHandler 
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream The CUDAStream to use for CUDA operations
      */
-    void init(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) override;
+    void init(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream) override;
     /**
      * Updates the length of the messagelist stored on device
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream The CUDAStream to use for CUDA operations
      */
-    void buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) override;
+    void buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream) override;
     /**
      * Allocates memory for the constructed index.
      * The memory allocation is checked by build index.
      */
-    void allocateMetaDataDevicePtr(cudaStream_t stream) override;
+    void allocateMetaDataDevicePtr(flamegpu::detail::cuda::Stream_t stream) override;
     /**
      * Releases memory for the constructed index.
      */

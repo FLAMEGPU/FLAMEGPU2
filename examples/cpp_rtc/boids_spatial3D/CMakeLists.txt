@@ -1,19 +1,25 @@
 # Minimum CMake version 3.25.2 for CUDA --std=c++20
 cmake_minimum_required(VERSION 3.25.2...4.3.0 FATAL_ERROR)
 
-
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../.. REALPATH)
 
-# Handle CMAKE_CUDA_ARCHITECTURES gracefully
-include(${FLAMEGPU_ROOT}/cmake/CUDAArchitectures.cmake)
-flamegpu_init_cuda_architectures(PROJECT rtc_boids_spatial3D)
+# Handle CUDA/HIP Architectures gracefully
+include(${FLAMEGPU_ROOT}/cmake/GPUArchitectures.cmake)
+flamegpu_init_gpu_architectures(PROJECT rtc_boids_spatial3D)
 
 # Name the project and enable required languages
-project(rtc_boids_spatial3D CXX CUDA)
+project(rtc_boids_spatial3D LANGUAGES NONE)
 
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
+
+if (FLAMEGPU_GPU STREQUAL "HIP")
+    message(FATAL_ERROR
+        "  RTC models are not currently compatible with FLAMEGPU_GPU=${FLAMEGPU_GPU}.\n"
+        "  See https://github.com/FLAMEGPU/FLAMEGPU2/issues/1368 for more information.\n"
+    )
+endif()
 
 # Define output location of binary files
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/)
