@@ -31,6 +31,10 @@ jobs:
       matrix:
         cudacxx:
           # CUDA 13
+          - cuda: "13.2.0"
+            cuda_arch: "75"
+            hostcxx: "Visual Studio 17 2022"
+            os: windows-2022
           - cuda: "13.0.0"
             cuda_arch: "75"
             hostcxx: "Visual Studio 17 2022"
