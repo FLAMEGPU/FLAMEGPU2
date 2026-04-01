@@ -15,7 +15,7 @@ namespace flamegpu {
 namespace io {
 
 namespace {
-void writeAnyVertex(nlohmann::ordered_json& j, const std::pair<std::string, Variable> &var, const unsigned int index, const std::shared_ptr<const detail::CUDAEnvironmentDirectedGraphBuffers>& directed_graph, cudaStream_t stream) {
+void writeAnyVertex(nlohmann::ordered_json& j, const std::pair<std::string, Variable> &var, const unsigned int index, const std::shared_ptr<const detail::CUDAEnvironmentDirectedGraphBuffers>& directed_graph, flamegpu::detail::cuda::Stream_t stream) {
     size_type foo = 0;
     // Output value
     if (var.second.elements == 1) {
@@ -78,7 +78,7 @@ void writeAnyVertex(nlohmann::ordered_json& j, const std::pair<std::string, Vari
         }
     }
 }
-void writeAnyEdge(nlohmann::ordered_json& j, const std::pair<std::string, Variable> &var, const unsigned int index, const std::shared_ptr<const detail::CUDAEnvironmentDirectedGraphBuffers>& directed_graph, cudaStream_t stream) {
+void writeAnyEdge(nlohmann::ordered_json& j, const std::pair<std::string, Variable> &var, const unsigned int index, const std::shared_ptr<const detail::CUDAEnvironmentDirectedGraphBuffers>& directed_graph, flamegpu::detail::cuda::Stream_t stream) {
     size_type foo = 0;
     // Output value
     if (var.second.elements == 1) {
@@ -141,7 +141,7 @@ void writeAnyEdge(nlohmann::ordered_json& j, const std::pair<std::string, Variab
         }
     }
 }
-void toAdjancencyLike(nlohmann::ordered_json &j, const std::shared_ptr<const detail::CUDAEnvironmentDirectedGraphBuffers>& directed_graph, cudaStream_t stream) {
+void toAdjancencyLike(nlohmann::ordered_json &j, const std::shared_ptr<const detail::CUDAEnvironmentDirectedGraphBuffers>& directed_graph, flamegpu::detail::cuda::Stream_t stream) {
     const EnvironmentDirectedGraphData &data = directed_graph->getDescription();
     // Vertices
     if (directed_graph->getVertexCount()) {
@@ -191,7 +191,7 @@ void toAdjancencyLike(nlohmann::ordered_json &j, const std::shared_ptr<const det
 }  // namespace
 
 void JSONGraphWriter::saveAdjacencyLike(const std::string& filepath,
-    const std::shared_ptr<const detail::CUDAEnvironmentDirectedGraphBuffers>& directed_graph, cudaStream_t stream, bool pretty_print) {
+    const std::shared_ptr<const detail::CUDAEnvironmentDirectedGraphBuffers>& directed_graph, flamegpu::detail::cuda::Stream_t stream, bool pretty_print) {
     // Init writer
     nlohmann::ordered_json j;
     toAdjancencyLike(j, directed_graph, stream);

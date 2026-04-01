@@ -1,6 +1,8 @@
 #include "flamegpu/runtime/detail/curve/Curve.cuh"
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
+#endif
 
 #include <string>
 #include <cstring>

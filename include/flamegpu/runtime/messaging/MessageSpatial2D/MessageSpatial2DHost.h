@@ -7,6 +7,7 @@
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/runtime/messaging/MessageSpatial2D.h"
 #include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h"
+#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
 
@@ -37,7 +38,7 @@ class MessageSpatial2D::CUDAModelHandler : public MessageSpecialisationHandler {
      * @param streamId Index of stream specific structures used
      * @param stream The CUDAStream to use for CUDA operations
      */
-    void init(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) override;
+    void init(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream) override;
     /**
      * Reconstructs the partition boundary matrix
      * This should be called before reading newly output messages
@@ -45,12 +46,12 @@ class MessageSpatial2D::CUDAModelHandler : public MessageSpecialisationHandler {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream The CUDAStream to use for CUDA operations
      */
-    void buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) override;
+    void buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream) override;
     /**
      * Allocates memory for the constructed index.
      * The memory allocation is checked by build index.
      */
-    void allocateMetaDataDevicePtr(cudaStream_t stream) override;
+    void allocateMetaDataDevicePtr(flamegpu::detail::cuda::Stream_t stream) override;
     /**
      * Releases memory for the constructed index.
      */
@@ -67,7 +68,7 @@ class MessageSpatial2D::CUDAModelHandler : public MessageSpecialisationHandler {
      * So this is only called from the constructor.
      * If it were called elsewhere, it would need to be changed to resize d_histogram too
      */
-    void resizeCubTemp(cudaStream_t stream);
+    void resizeCubTemp(flamegpu::detail::cuda::Stream_t stream);
     /**
      * Resizes the key value store, this scales with agent count
      * @param newSize The new number of agents to represent
