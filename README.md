@@ -63,9 +63,10 @@ Building FLAME GPU has the following requirements. There are also optional depen
   + For native Windows builds, CUDA `12.0-12.3` may work for some but not all parts of FLAME GPU due to c++20 compilation issues and MSVC support.
   + A [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 5.0` (CUDA 12.x) or `>= 7.5` (CUDA 13.x) NVIDIA GPU is required for execution.
 + C++20 capable C++ compiler (host), compatible with the installed CUDA version
-  + [Microsoft Visual Studio 2022](https://visualstudio.microsoft.com/) (Windows)
+  + [Microsoft Visual Studio 2022/2026](https://visualstudio.microsoft.com/) (Windows)
     + *Note:* Visual Studio must be installed before the CUDA toolkit is installed. See the [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) for more information.
     + *Note:* Windows 11 SDK (10.0.22000.0) component is required within the Visual Studio (in latest versions this is default for C++ Desktop Development workloads even even on Windows 10). Windows 10 *must* be updated to build 19045 (22H2) or later to support this at runtime.
+    + *Note:* Visual Studio 2026 requires CUDA >= 13.2
   + [make](https://www.gnu.org/software/make/) and [GCC](https://gcc.gnu.org/) `>= 10` (Linux)
 + [git](https://git-scm.com/)
 
