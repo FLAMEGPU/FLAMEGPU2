@@ -158,6 +158,9 @@ macro(flamegpu_enable_languages)
             endif()
         endif()
 
+        # Emit warnings for known compiler versions that may cause errors, but that are not detected by compilation testing
+        _flamegpu_languages_warn_win_cu124()
+
         # Double check cxx20 is Ok with hip/cuda
         _flamegpu_check_source_compiles_cuda_std()
         _flamegpu_check_source_compiles_hip_std()
@@ -373,7 +376,7 @@ function(_flamegpu_check_source_compiles_cuda_vector_tuple)
     ]] _FLAMEGPU_CHECK_GCC_CUDA_VECTOR_TUPLE_V0)
 
     if (NOT _FLAMEGPU_CHECK_GCC_CUDA_VECTOR_TUPLE_V0)
-        message(AUTHOR_WARNING
+        message(WARNING
             "std::vector<std::tuple<>>::push_back cannot be compiled with ${CMAKE_CUDA_COMPILER_ID} ${CMAKE_CUDA_COMPILER_VERSION} and ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION} with --std=c++${_flamegpu_cxx_std}.\n"
             "Consider using a different ${CMAKE_CUDA_COMPILER_ID} and ${CMAKE_CXX_COMPILER_ID} combination as errors may be encountered.\n"
             "See https://github.com/FLAMEGPU/FLAMEGPU2/issues/650"
@@ -420,5 +423,22 @@ function(_flamegpu_check_source_compiles_file_offset_bits_64)
         set(FLAMEGPU__FILE_OFFSET_BITS_64_REQUIRED TRUE CACHE INTERNAL "if _FILE_OFFSET_BITS=64 required for jitify2")
     else()
         set(FLAMEGPU__FILE_OFFSET_BITS_64_REQUIRED FALSE CACHE INTERNAL "if _FILE_OFFSET_BITS=64 required for jitify2")
+    endif()
+endfunction()
+
+
+# Internal function which will emit a single warning per CMake confugration that CUDA < 12.4 on Windows in theory should work, 
+# but in practice might not due to compilation errors under c++20 on Windows, which we cannot reliably test fixes for.
+function(_flamegpu_languages_warn_win_cu124)
+    if (MSVC AND CMAKE_CUDA_COMPILER_LOADED AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 12.4)
+        if (NOT MSVC_CUDA_LT_124_SHOWN)
+            message(WARNING
+                " Parts of flamegpu may fail to build with MSVC and CUDA < 12.4 due to compilation errors under c++20.\n"
+                " \n"
+                " Please consider upgrading to CUDA >= 12.4."
+                " \n"
+            )
+            set(MSVC_CUDA_LT_124_SHOWN TRUE PARENT_SCOPE )
+        endif()
     endif()
 endfunction()

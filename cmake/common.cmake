@@ -11,6 +11,11 @@ include(${FLAMEGPU_ROOT}/cmake/OutOfSourceOnly.cmake)
 # Ensure there are no spaces in the build directory path
 include(${FLAMEGPU_ROOT}/cmake/CheckBinaryDirPathForSpaces.cmake)
 
+# Ensure that CUDA/HIP have been enabled. This A(along with the subsequent architecture output requires that a project() has been created before including this file.
+# This also handles CUDA/HIP version support in a single location.
+include(${FLAMEGPU_ROOT}/cmake/enable_languages.cmake)
+flamegpu_enable_languages()
+
 # Ensure that cmake functions for handling CMAKE_CUDA_ARCHITECTURES are available
 include(${FLAMEGPU_ROOT}/cmake/CUDAArchitectures.cmake)
 # Emit a message once and only once per configure of the chosen architectures?
@@ -39,7 +44,9 @@ if (CMAKE_CUDA_COMPILER_LOADED)
     include(${CMAKE_CURRENT_LIST_DIR}/dependencies/Jitify.cmake)
 endif()
 if (CMAKE_HIP_COMPILER_LOADED)
-    message(AUTHOR_WARNING "find hip thrust/cub?")
+    # Todo: put this into dependencies? 
+    find_package(rocthrust REQUIRED)
+    find_package(hipcub REQUIRED)
 endif()
 include(${CMAKE_CURRENT_LIST_DIR}/dependencies/Tinyxml2.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/dependencies/nlohmann_json.cmake)
@@ -53,27 +60,25 @@ set(CMAKE_SKIP_INSTALL_RULES TRUE)
 set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL "" FORCE)
 
 # Option to enable/disable NVTX markers for improved profiling
-message(AUTHOR_WARNING "Unified NVTX and ROCTX option (with deprecated FLAMEGPU_ENABLE_NVTX?)")
+# Todo: generic NVTX/ROCTx flag instead. Deprecating this one? 
 option(FLAMEGPU_ENABLE_NVTX "Build with NVTX markers enabled" OFF)
 
-# Option to enable verbose PTXAS output
-message(AUTHOR_WARNING "make FLAMEGPU_VERBOSE_PTXAS CUDA only")
-option(FLAMEGPU_VERBOSE_PTXAS "Enable verbose PTXAS output" OFF)
+# Option to enable verbose PTXAS output (CUDA Only)
+option(FLAMEGPU_VERBOSE_PTXAS "Enable verbose PTXAS output (CUDA only)" OFF)
 mark_as_advanced(FLAMEGPU_VERBOSE_PTXAS)
 
 # Option to promote compilation warnings to error, useful for strict CI
 option(FLAMEGPU_WARNINGS_AS_ERRORS "Promote compilation warnings to errors" OFF)
 
 # Option to change curand engine used for CUDA random generation
-message(AUTHOR_WARNING "CURAND_ENGINE option for hip?")
+# Todo: should FLAMEGPU_CURAND_ENGINGE be renamed? This would be a breaking change though...
 set(FLAMEGPU_CURAND_ENGINE "PHILOX" CACHE STRING "The curand engine to use. Suitable options: \"PHILOX\", \"XORWOW\", \"MRG\"")
 set_property(CACHE FLAMEGPU_CURAND_ENGINE PROPERTY STRINGS PHILOX XORWOW MRG)
 mark_as_advanced(FLAMEGPU_CURAND_ENGINE)
 
 # If CUDA >= 11.2, add an option to control the use of NVCC_THREADS
-message(AUTHOR_WARNING "DEFAULT_FLAMEGPU_NVCC_THREADS option for hip?")
 set(DEFAULT_FLAMEGPU_NVCC_THREADS 2)
-if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.2)
+if(CMAKE_CUDA_COMPILER_LOADED AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.2)
     # The number of threads to use defaults to 2, telling the compiler to use up to 2 threads when multiple arch's are specified.
     # Setting this value to 0 would use as many threads as possible.
     # In some cases, this may increase total runtime due to excessive thread creation, and lowering the number of threads, or lowering the value of `-j` passed to cmake may be beneficial.
@@ -145,44 +150,37 @@ if (CMAKE_CUDA_COMPILER_LOADED)
             endif()
         endif()
     endif(FLAMEGPU_ENABLE_NVTX)
-
-
-    # Set the minimum supported cuda version, if not already set.
-    # Currently duplicated due to docs only build logic.
-    # CUDA 12.0 is the current minimum supported version.
-    message(AUTHOR_WARNING "TODO Handle this nicer, via enable_languages?")
-    if(NOT DEFINED MINIMUM_SUPPORTED_CUDA_VERSION)
-        set(MINIMUM_SUPPORTED_CUDA_VERSION 12.0)
-        # Require a minimum cuda version
-        if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_SUPPORTED_CUDA_VERSION})
-            message(FATAL_ERROR "CUDA version must be at least ${MINIMUM_SUPPORTED_CUDA_VERSION}")
-        endif()
-    endif()
-
-    # Warn about CUDA < 12.4 on Windows, but only once per invocation?
-    message(AUTHOR_WARNING "TODO - move this to enable_languages?")
-    if (MSVC AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 12.4)
-        if (NOT MSVC_CUDA_LT_124_SHOWN)
-            message(WARNING
-                " Parts of flamegpu may fail to build with MSVC and CUDA < 12.4 due to compilation errors under c++20.\n"
-                " \n"
-                " Please consider upgrading to CUDA >= 12.4."
-                " \n"
-            )
-            set(MSVC_CUDA_LT_124_SHOWN TRUE PARENT_SCOPE )
-        endif()
-    endif()
 endif()
 
 if (CMAKE_HIP_COMPILER_LOADED)
     # Ensure that HIP is found for link targets
     find_package(HIP REQUIRED)
 
-    # Control how we link against the cuda runtime library (CMake >= 3.17)
+    # Control how we link against the HIP runtime library (CMake >= 3.21)
+    # This is an undocumented CMake variable https://gitlab.kitware.com/cmake/cmake/-/work_items/25128
     # We may wish to use static or none instead, subject to python library handling.
-    set(CMAKE_CUDA_RUNTIME_LIBRARY shared)
+    set(CMAKE_HIP_RUNTIME_LIBRARY shared)
 
-    message(AUTHOR_WARNING "Do more similar things to the above cuda block")
+    # hiprtc is it's own cmake package and target, separate to the hip package
+    # Todo: Enable this check when adding hiprtc support
+    # find_package(hiprtc REQUIRED)
+    # if(NOT TARGET hiprtc::hiprtc)
+    #     message(FATAL_ERROR "hiprtc::hiprtc is a required dependency")
+    # endif()
+
+    # 
+    if(FLAMEGPU_ENABLE_NVTX)
+        # roctx is part or the rocprofiler-sdk, atleast in rocm 7.2.0, proabbly 6.2+?
+        # https://github.com/ROCm/roctracer/issues/56#issuecomment-2375400996
+        find_package(rocprofiler-sdk-roctx)
+        if(NOT TARGET rocprofiler-sdk-roctx::rocprofiler-sdk-roctx)
+            message(WARNING "ROCTx could not be found. Proceeding with FLAMEGPU_ENABLE_NVTX=OFF")
+            if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+                SET(FLAMEGPU_ENABLE_NVTX "OFF" PARENT_SCOPE)
+            endif()
+        endif()
+    endif(FLAMEGPU_ENABLE_NVTX)
+
 endif()
 
 
@@ -347,7 +345,6 @@ function(flamegpu_copy_runtime_dependencies)
 endfunction()
 
 function(flamegpu_setup_source_groups)
-    message(AUTHOR_WARNING "flamegpu_setup_source_groups for hip. File extenisons?")
     cmake_parse_arguments(
         FSSG
         ""
@@ -391,9 +388,9 @@ function(flamegpu_setup_source_groups)
 
     # Filter out header and source files which CANNOT use TREE
     set(SRC_GROUP_MANUAL_HEADERS "${SRC_GROUP_MANUAL}")
-    list(FILTER SRC_GROUP_MANUAL_HEADERS INCLUDE REGEX ".*\.(h|hpp|cuh)$")
+    list(FILTER SRC_GROUP_MANUAL_HEADERS INCLUDE REGEX ".*\.(h|hpp|cuh|hiph)$")
     set(SRC_GROUP_MANUAL_SOURCES "${SRC_GROUP_MANUAL}")
-    list(FILTER SRC_GROUP_MANUAL_SOURCES EXCLUDE REGEX ".*\.(h|hpp|cuh)$")
+    list(FILTER SRC_GROUP_MANUAL_SOURCES EXCLUDE REGEX ".*\.(h|hpp|cuh|hiph)$")
     # Apply source group filters WITHOUT TREE, using CMake's default "Header Files" and "Source Files" for consistency
     # These will just be placed in the root of the folder, as we cannot have a ../ type setup in sources, so no point bothering with directories
     source_group("Header Files" FILES ${SRC_GROUP_MANUAL_HEADERS})

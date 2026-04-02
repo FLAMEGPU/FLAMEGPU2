@@ -681,36 +681,37 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Tinyxml2::tinyxml2)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
 if(CMAKE_CUDA_COMPILER_LOADED)
+    target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::cuda_driver)
     # CCCL for Cub and thrust (and libcudacxx) targets are not imported targets, so they do not use -isystem, so warnings must be suppressed as pragmas if required. This is due to nvcc magic implicit include directory search ordering
     target_link_libraries(${PROJECT_NAME} PUBLIC CCCL::CCCL)
     # core cuda libs
     target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::nvrtc)
-    target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::cuda_driver)
 endif()
+
 if(CMAKE_HIP_COMPILER_LOADED)
-    message(AUTHOR_WARNING "todo: hip cub/thrust/rtc")
     target_link_libraries(${PROJECT_NAME} PUBLIC hip::host)
     target_link_libraries(${PROJECT_NAME} PUBLIC hip::device)
+    # cccl equivalents
+    target_link_libraries(${PROJECT_NAME} PUBLIC roc::rocthrust)
+    target_link_libraries(${PROJECT_NAME} PUBLIC hip::hipcub)
     set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE HIP)
 endif()
 
 if(CMAKE_CUDA_COMPILER_LOADED)
     if(FLAMEGPU_ENABLE_NVTX AND TARGET NVTX::nvtx)
         target_link_libraries(${PROJECT_NAME} PUBLIC NVTX::nvtx)
-        # Get the version to set a definition value 
-        # Interface targets only support the version property from 3.19
-        if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
-            get_target_property(nvtxversion NVTX::nvtx VERSION)
-        else()
-            # fallback to the old cmake var.
-            set(nvtxversion ${NVTX_VERSION})
-        endif()
+        # Get the version to set a definition value (req CMake >= 3.19)
+        get_target_property(nvtxversion NVTX::nvtx VERSION)
         target_compile_definitions(${PROJECT_NAME} PUBLIC "FLAMEGPU_USE_NVTX=${nvtxversion}")
         unset(nvtxversion)
     endif()
 endif()
 if(CMAKE_HIP_COMPILER_LOADED)
-    message(AUTHOR_WARNING "handle ROCTX")
+    if(FLAMEGPU_ENABLE_NVTX AND TARGET rocprofiler-sdk-roctx::rocprofiler-sdk-roctx)
+        target_link_libraries(${PROJECT_NAME} PUBLIC rocprofiler-sdk-roctx::rocprofiler-sdk-roctx)
+        # Todo: Verify that rocprofiler-sdk-roctx does have the NVTXv3 interface, and/or remove v1 support and this variable.
+        target_compile_definitions(${PROJECT_NAME} PUBLIC "FLAMEGPU_USE_NVTX=3")
+    endif()
 endif()
 
 if(CMAKE_CUDA_COMPILER_LOADED)
