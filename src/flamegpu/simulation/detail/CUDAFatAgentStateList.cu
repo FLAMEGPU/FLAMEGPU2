@@ -48,8 +48,8 @@ CUDAFatAgentStateList::CUDAFatAgentStateList(const CUDAFatAgentStateList& other)
 }
 CUDAFatAgentStateList::~CUDAFatAgentStateList() {
     for (const auto &buff : variables_unique) {
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(buff->data));
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(buff->data_swap));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(buff->data));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(buff->data_swap));
     }
 }
 void CUDAFatAgentStateList::addSubAgentVariables(
@@ -90,25 +90,25 @@ void CUDAFatAgentStateList::resize(const unsigned int minSize, const bool retain
         const size_t var_size = buff->type_size * buff->elements;
         const size_t buff_size = var_size * newSize;
         // Free old swap buffer
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(buff->data_swap));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(buff->data_swap));
         // Allocate new buffer to swap
-        gpuErrchk(cudaMalloc(&buff->data_swap, buff_size));
+        flamegpu::detail::gpuCheck(cudaMalloc(&buff->data_swap, buff_size));
         // Copy old data to new buffer in swap
         if (retainData && buff->data) {
             const size_t active_len = aliveAgents * var_size;
             // const size_t inactive_len = (newSize - aliveAgents) * var_size;
             // Copy across old data (TODO: We could improve this by doing a scatter for all variables at once)
-            gpuErrchk(cudaMemcpyAsync(buff->data_swap, buff->data, active_len, cudaMemcpyDeviceToDevice, stream));
+            flamegpu::detail::gpuCheck(cudaMemcpyAsync(buff->data_swap, buff->data, active_len, cudaMemcpyDeviceToDevice, stream));
             // Zero remaining new data (This will be overwritten before use, so redundant)
-            // gpuErrchk(cudaMemsetAsync(reinterpret_cast<char*>(buff->data_swap) + active_len, 0, inactive_len, stream));
+            // flamegpu::detail::gpuCheck(cudaMemsetAsync(reinterpret_cast<char*>(buff->data_swap) + active_len, 0, inactive_len, stream));
         } else {
             // Zero remaining new data (This will be overwritten before use, so redundant)
-            // gpuErrchk(cudaMemsetAsync(buff->data_swap, 0, buff_size, stream));
+            // flamegpu::detail::gpuCheck(cudaMemsetAsync(buff->data_swap, 0, buff_size, stream));
         }
     }
     if (retainData) {
         // Ensure copies have finished, before we free the buffers!
-        gpuErrchk(cudaStreamSynchronize(stream));
+        flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));
     }
     for (auto& buff : variables_unique) {
         const size_t var_size = buff->type_size * buff->elements;
@@ -116,9 +116,9 @@ void CUDAFatAgentStateList::resize(const unsigned int minSize, const bool retain
         // Swap buffers
         std::swap(buff->data_swap, buff->data);
         // Free old swap buffer
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(buff->data_swap));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(buff->data_swap));
         // Allocate new buffer to swap
-        gpuErrchk(cudaMalloc(&buff->data_swap, buff_size));
+        flamegpu::detail::gpuCheck(cudaMalloc(&buff->data_swap, buff_size));
         // Update condition list
         assert(disabledAgents == 0);
         buff->data_condition = buff->data;

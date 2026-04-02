@@ -29,15 +29,15 @@ class CUDAEventTimer : public virtual Timer {
     startEventRecorded(false),
     stopEventRecorded(false),
     synced(false) {
-        gpuErrchk(cudaEventCreate(&this->startEvent));
-        gpuErrchk(cudaEventCreate(&this->stopEvent));
+        flamegpu::detail::gpuCheck(cudaEventCreate(&this->startEvent));
+        flamegpu::detail::gpuCheck(cudaEventCreate(&this->stopEvent));
     }
     /** 
      * Destroys the cudaEvents created by this instance
      */
     ~CUDAEventTimer() {
-        gpuErrchk(cudaEventDestroy(this->startEvent));
-        gpuErrchk(cudaEventDestroy(this->stopEvent));
+        flamegpu::detail::gpuCheck(cudaEventDestroy(this->startEvent));
+        flamegpu::detail::gpuCheck(cudaEventDestroy(this->stopEvent));
         this->startEvent = NULL;
         this->stopEvent = NULL;
     }
@@ -45,7 +45,7 @@ class CUDAEventTimer : public virtual Timer {
      * Record the start event, resetting the syncronisation flag.
      */
     void start() override {
-        gpuErrchk(cudaEventRecord(this->startEvent));
+        flamegpu::detail::gpuCheck(cudaEventRecord(this->startEvent));
         this->startEventRecorded = true;
         this->stopEventRecorded = false;
         this->synced = false;
@@ -54,7 +54,7 @@ class CUDAEventTimer : public virtual Timer {
      * Record the stop event, resetting the syncronisation flag.
      */
     void stop() override {
-        gpuErrchk(cudaEventRecord(this->stopEvent));
+        flamegpu::detail::gpuCheck(cudaEventRecord(this->stopEvent));
         this->stopEventRecorded = true;
         this->synced = false;
     }
@@ -97,8 +97,8 @@ class CUDAEventTimer : public virtual Timer {
         if (!stopEventRecorded) {
             THROW exception::TimerException("stop() must be called prior to getElapsed*");
         }
-        gpuErrchk(cudaEventSynchronize(this->stopEvent));
-        gpuErrchk(cudaEventElapsedTime(&this->ms, this->startEvent, this->stopEvent));
+        flamegpu::detail::gpuCheck(cudaEventSynchronize(this->stopEvent));
+        flamegpu::detail::gpuCheck(cudaEventElapsedTime(&this->ms, this->startEvent, this->stopEvent));
         synced = true;
     }
 

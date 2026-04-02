@@ -153,9 +153,9 @@ template<typename T>
 void HostAPI::resizeOutputSpace(const unsigned int items) {
     if (sizeof(T) * items > d_output_space_size) {
         if (d_output_space_size) {
-            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_output_space));
+            flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_output_space));
         }
-        gpuErrchk(cudaMalloc(&d_output_space, sizeof(T) * items));
+        flamegpu::detail::gpuCheck(cudaMalloc(&d_output_space, sizeof(T) * items));
         d_output_space_size = sizeof(T) * items;
     }
 }

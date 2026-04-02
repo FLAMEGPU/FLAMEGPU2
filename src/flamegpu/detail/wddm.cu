@@ -11,7 +11,7 @@ bool wddm::deviceIsWDDM(int deviceIndex) {
     }
     // Ensure deviceIndex is valid.
     int deviceCount = 0;
-    gpuErrchk(cudaGetDeviceCount(&deviceCount));
+    flamegpu::detail::gpuCheck(cudaGetDeviceCount(&deviceCount));
     if (deviceIndex >= deviceCount) {
         // Throw an excpetion if the device index is bad.
         THROW exception::InvalidCUDAdevice();
@@ -21,7 +21,7 @@ bool wddm::deviceIsWDDM(int deviceIndex) {
     #ifdef _MSC_VER
         int tccDriver = 0;
         // Load device attributes
-        gpuErrchk(cudaDeviceGetAttribute(&tccDriver, cudaDevAttrTccDriver, deviceIndex));
+        flamegpu::detail::gpuCheck(cudaDeviceGetAttribute(&tccDriver, cudaDevAttrTccDriver, deviceIndex));
         // Compute the return value
         isWDDM = !tccDriver;
     #endif
@@ -31,7 +31,7 @@ bool wddm::deviceIsWDDM(int deviceIndex) {
 bool wddm::deviceIsWDDM() {
     // Get the current device
     int currentDeviceIndex = 0;
-    gpuErrchk(cudaGetDevice(&currentDeviceIndex));
+    flamegpu::detail::gpuCheck(cudaGetDevice(&currentDeviceIndex));
     // Get the wddm status for that device
     bool isWDDM = wddm::deviceIsWDDM(currentDeviceIndex);
     return isWDDM;

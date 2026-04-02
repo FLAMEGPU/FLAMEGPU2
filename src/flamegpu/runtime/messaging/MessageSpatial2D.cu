@@ -75,17 +75,17 @@ __global__ void atomicHistogram2D(
 void MessageSpatial2D::CUDAModelHandler::init(detail::CUDAScatter &, unsigned int, cudaStream_t stream) {
     allocateMetaDataDevicePtr(stream);
     // Set PBM to 0
-    gpuErrchk(cudaMemsetAsync(hd_data.PBM, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
-    gpuErrchk(cudaStreamSynchronize(stream));  // This could probably be skipped/delayed safely
+    flamegpu::detail::gpuCheck(cudaMemsetAsync(hd_data.PBM, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
+    flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));  // This could probably be skipped/delayed safely
 }
 
 void MessageSpatial2D::CUDAModelHandler::allocateMetaDataDevicePtr(cudaStream_t stream) {
     if (d_data == nullptr) {
-        gpuErrchk(cudaMalloc(&d_histogram, (binCount + 1) * sizeof(unsigned int)));
-        gpuErrchk(cudaMalloc(&hd_data.PBM, (binCount + 1) * sizeof(unsigned int)));
-        gpuErrchk(cudaMalloc(&d_data, sizeof(MetaData)));
-        gpuErrchk(cudaMemcpyAsync(d_data, &hd_data, sizeof(MetaData), cudaMemcpyHostToDevice, stream));
-        gpuErrchk(cudaStreamSynchronize(stream));
+        flamegpu::detail::gpuCheck(cudaMalloc(&d_histogram, (binCount + 1) * sizeof(unsigned int)));
+        flamegpu::detail::gpuCheck(cudaMalloc(&hd_data.PBM, (binCount + 1) * sizeof(unsigned int)));
+        flamegpu::detail::gpuCheck(cudaMalloc(&d_data, sizeof(MetaData)));
+        flamegpu::detail::gpuCheck(cudaMemcpyAsync(d_data, &hd_data, sizeof(MetaData), cudaMemcpyHostToDevice, stream));
+        flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));
         resizeCubTemp(stream);
     }
 }
@@ -93,18 +93,18 @@ void MessageSpatial2D::CUDAModelHandler::allocateMetaDataDevicePtr(cudaStream_t 
 void MessageSpatial2D::CUDAModelHandler::freeMetaDataDevicePtr() {
     if (d_data != nullptr) {
         d_CUB_temp_storage_bytes = 0;
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_CUB_temp_storage));
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_histogram));
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(hd_data.PBM));
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_data));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_CUB_temp_storage));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_histogram));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(hd_data.PBM));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_data));
         d_CUB_temp_storage = nullptr;
         d_histogram = nullptr;
         hd_data.PBM = nullptr;
         d_data = nullptr;
         if (d_keys) {
             d_keys_vals_storage_bytes = 0;
-            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_keys));
-            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_vals));
+            flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_keys));
+            flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_vals));
             d_keys = nullptr;
             d_vals = nullptr;
         }
@@ -115,15 +115,15 @@ void MessageSpatial2D::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter
     flamegpu::util::nvtx::Range range{"MessageSpatial2D::CUDAModelHandler::buildIndex"};
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     if (!MESSAGE_COUNT) {
-        gpuErrchk(cudaMemsetAsync(hd_data.PBM, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
-        gpuErrchk(cudaStreamSynchronize(stream));
+        flamegpu::detail::gpuCheck(cudaMemsetAsync(hd_data.PBM, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
+        flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));
         return;
     }
     resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count
     {  // Build atomic histogram
-        gpuErrchk(cudaMemsetAsync(d_histogram, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
+        flamegpu::detail::gpuCheck(cudaMemsetAsync(d_histogram, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
         int blockSize;  // The launch configurator returned block size
-        gpuErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(&blockSize, atomicHistogram2D, 32, 0));  // Randomly 32
+        flamegpu::detail::gpuCheck(cudaOccupancyMaxActiveBlocksPerMultiprocessor(&blockSize, atomicHistogram2D, 32, 0));  // Randomly 32
                                                                                                          // Round up according to array size
         int gridSize = (MESSAGE_COUNT + blockSize - 1) / blockSize;
         atomicHistogram2D <<<gridSize, blockSize, 0, stream >>>(d_data, d_keys, d_vals, d_histogram, MESSAGE_COUNT,
@@ -131,29 +131,29 @@ void MessageSpatial2D::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter
             reinterpret_cast<float*>(this->sim_message.getReadPtr("y")));
     }
     {  // Scan (sum), to finalise PBM
-        gpuErrchk(cub::DeviceScan::ExclusiveSum(d_CUB_temp_storage, d_CUB_temp_storage_bytes, d_histogram, hd_data.PBM, binCount + 1, stream));
+        flamegpu::detail::gpuCheck(cub::DeviceScan::ExclusiveSum(d_CUB_temp_storage, d_CUB_temp_storage_bytes, d_histogram, hd_data.PBM, binCount + 1, stream));
     }
     {  // Reorder messages
        // Copy messages from d_messages to d_messages_swap, in hash order
         scatter.pbm_reorder(streamId, stream, this->sim_message.getMessageData().variables, this->sim_message.getReadList(), this->sim_message.getWriteList(), MESSAGE_COUNT, d_keys, d_vals, hd_data.PBM);
         this->sim_message.swap();
-        gpuErrchk(cudaStreamSynchronize(stream));  // Not striclty neceesary while pbm_reorder is synchronous.
+        flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));  // Not striclty neceesary while pbm_reorder is synchronous.
     }
     {  // Fill PBM and Message Texture Buffers
-       // gpuErrchk(cudaBindTexture(nullptr, d_texMessages, d_agents, sizeof(glm::vec4) * MESSAGE_COUNT));
-       // gpuErrchk(cudaBindTexture(nullptr, d_texPBM, d_PBM, sizeof(unsigned int) * (binCount + 1)));
+       // flamegpu::detail::gpuCheck(cudaBindTexture(nullptr, d_texMessages, d_agents, sizeof(glm::vec4) * MESSAGE_COUNT));
+       // flamegpu::detail::gpuCheck(cudaBindTexture(nullptr, d_texPBM, d_PBM, sizeof(unsigned int) * (binCount + 1)));
     }
 }
 
 void MessageSpatial2D::CUDAModelHandler::resizeCubTemp(cudaStream_t stream) {
     size_t bytesCheck = 0;
-    gpuErrchk(cub::DeviceScan::ExclusiveSum(nullptr, bytesCheck, hd_data.PBM, d_histogram, binCount + 1, stream));
+    flamegpu::detail::gpuCheck(cub::DeviceScan::ExclusiveSum(nullptr, bytesCheck, hd_data.PBM, d_histogram, binCount + 1, stream));
     if (bytesCheck > d_CUB_temp_storage_bytes) {
         if (d_CUB_temp_storage) {
-            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_CUB_temp_storage));
+            flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_CUB_temp_storage));
         }
         d_CUB_temp_storage_bytes = bytesCheck;
-        gpuErrchk(cudaMalloc(&d_CUB_temp_storage, d_CUB_temp_storage_bytes));
+        flamegpu::detail::gpuCheck(cudaMalloc(&d_CUB_temp_storage, d_CUB_temp_storage_bytes));
     }
 }
 
@@ -161,12 +161,12 @@ void MessageSpatial2D::CUDAModelHandler::resizeKeysVals(const unsigned int newSi
     size_t bytesCheck = newSize * sizeof(unsigned int);
     if (bytesCheck > d_keys_vals_storage_bytes) {
         if (d_keys) {
-            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_keys));
-            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_vals));
+            flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_keys));
+            flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_vals));
         }
         d_keys_vals_storage_bytes = bytesCheck;
-        gpuErrchk(cudaMalloc(&d_keys, d_keys_vals_storage_bytes));
-        gpuErrchk(cudaMalloc(&d_vals, d_keys_vals_storage_bytes));
+        flamegpu::detail::gpuCheck(cudaMalloc(&d_keys, d_keys_vals_storage_bytes));
+        flamegpu::detail::gpuCheck(cudaMalloc(&d_vals, d_keys_vals_storage_bytes));
     }
 }
 

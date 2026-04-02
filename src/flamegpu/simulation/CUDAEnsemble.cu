@@ -180,12 +180,12 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
             d = devices.erase(d);
             --d;
         } else {
-            gpuErrchk(cudaSetDevice(*d));
-            gpuErrchk(flamegpu::detail::cuda::cudaFree(nullptr));
+            flamegpu::detail::gpuCheck(cudaSetDevice(*d));
+            flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(nullptr));
         }
     }
     // Return to device 0 (or check original device first?)
-    gpuErrchk(cudaSetDevice(0));
+    flamegpu::detail::gpuCheck(cudaSetDevice(0));
 
     // If there are no devices left (and mpi is not being used), we need to error as the work cannot be executed.
 #ifndef FLAMEGPU_ENABLE_MPI
@@ -563,7 +563,7 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
                 device_string.erase(0, pos + 1);
             }
             int ct = -1;
-            gpuErrchk(cudaGetDeviceCount(&ct));
+            flamegpu::detail::gpuCheck(cudaGetDeviceCount(&ct));
             if (max_id >= ct) {
                 fprintf(stderr, "Device id %u exceeds available CUDA devices %d\n", max_id, ct);
                 printHelp(argv[0]);

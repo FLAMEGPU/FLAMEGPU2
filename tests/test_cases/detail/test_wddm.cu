@@ -24,7 +24,7 @@ TEST(TestUtilWDDM, deviceIsWDDM) {
         #ifdef _MSC_VER
             int tccDriver = 0;
             // Get if the driver is TCC or not
-            gpuErrchk(cudaDeviceGetAttribute(&tccDriver, cudaDevAttrTccDriver, i));
+            flamegpu::detail::gpuCheck(cudaDeviceGetAttribute(&tccDriver, cudaDevAttrTccDriver, i));
             // WDDM driver is if not the tcc driver, and on windows.
             reference = !tccDriver;
         #endif
@@ -38,12 +38,12 @@ TEST(TestUtilWDDM, deviceIsWDDM) {
 
     // Also check for the current device.
     int currentDeviceIndex = 0;
-    gpuErrchk(cudaGetDevice(&currentDeviceIndex));
+    flamegpu::detail::gpuCheck(cudaGetDevice(&currentDeviceIndex));
     bool reference = false;
     #ifdef _MSC_VER
         int tccDriver = 0;
         // Get if the driver is TCC or not
-        gpuErrchk(cudaDeviceGetAttribute(&tccDriver, cudaDevAttrTccDriver, currentDeviceIndex));
+        flamegpu::detail::gpuCheck(cudaDeviceGetAttribute(&tccDriver, cudaDevAttrTccDriver, currentDeviceIndex));
         // WDDM driver is if not the tcc driver, and on windows.
         reference = !tccDriver;
     #endif

@@ -37,7 +37,7 @@ HostAPI::HostAPI(CUDASimulation &_agentModel,
 HostAPI::~HostAPI() {
     // @todo - cuda is not allowed in destructor
     if (d_output_space_size) {
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_output_space));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_output_space));
         d_output_space_size = 0;
     }
 }

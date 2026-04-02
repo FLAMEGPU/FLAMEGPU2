@@ -31,7 +31,7 @@ __global__ void initToThreadIndex(unsigned int *output, unsigned int threadCount
 
 void HostAgentAPI::fillTIDArray_async(unsigned int *buffer, unsigned int threadCount, cudaStream_t stream) {
     initToThreadIndex<<<(threadCount/512)+1, 512, 0, stream>>>(buffer, threadCount);
-    gpuErrchkLaunch();
+    flamegpu::detail::gpuCheckLaunch();
 }
 
 __global__ void sortBuffer_kernel(char *dest, char*src, unsigned int *position, size_t typeLen, unsigned int threadCount) {
@@ -43,7 +43,7 @@ __global__ void sortBuffer_kernel(char *dest, char*src, unsigned int *position, 
 
 void HostAgentAPI::sortBuffer_async(void *dest, void*src, unsigned int *position, size_t typeLen, unsigned int threadCount, cudaStream_t stream) {
     sortBuffer_kernel<<<(threadCount/512)+1, 512, 0, stream >>>(static_cast<char*>(dest), static_cast<char*>(src), position, typeLen, threadCount);
-    gpuErrchkLaunch();
+    flamegpu::detail::gpuCheckLaunch();
 }
 
 DeviceAgentVector HostAgentAPI::getPopulationData() {

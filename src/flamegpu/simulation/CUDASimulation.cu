@@ -75,7 +75,7 @@ namespace {
         auto handler = []<typename T>(T cu_kernel_or_func) -> CUfunction {
             if constexpr (std::is_same_v<T, CUkernel>) {
                 CUfunction cu_func = NULL;
-                gpuErrchkDriverAPI(cuKernelGetFunction(&cu_func, cu_kernel_or_func));
+            flamegpu::detail::gpuCheck(cuKernelGetFunction(&cu_func, cu_kernel_or_func));
                 return cu_func;
             } else {
                 // If not a CUKernel, we assume this is must be a CUfunction
@@ -224,9 +224,9 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
 CUDASimulation::~CUDASimulation() {
     // Ensure we destruct with the right device, otherwise we could dealloc pointers on the wrong device
     int t_device_id = -1;
-    gpuErrchk(cudaGetDevice(&t_device_id));
+    flamegpu::detail::gpuCheck(cudaGetDevice(&t_device_id));
     if (t_device_id != deviceInitialised && deviceInitialised != -1) {
-        gpuErrchk(cudaSetDevice(deviceInitialised));
+        flamegpu::detail::gpuCheck(cudaSetDevice(deviceInitialised));
     }
 
     submodel_map.clear();  // Test
@@ -258,7 +258,7 @@ CUDASimulation::~CUDASimulation() {
 
     // Reset the active device if not the device used for this simulation
     if (t_device_id != deviceInitialised) {
-        gpuErrchk(cudaSetDevice(t_device_id));
+        flamegpu::detail::gpuCheck(cudaSetDevice(t_device_id));
     }
 }
 
@@ -527,7 +527,7 @@ void CUDASimulation::spatialSortAgent_async(const std::string& funcName, const s
     int blockSize = 0;  // The launch configurator returned block size
     int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
     int gridSize = 0;  // The actual grid size needed, based on input size
-    gpuErrchk(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, calculateSpatialHash, 0, state_list_size));
+    flamegpu::detail::gpuCheck(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, calculateSpatialHash, 0, state_list_size));
 
     //! Round up according to CUDAAgent state list size
     gridSize = (state_list_size + blockSize - 1) / blockSize;
@@ -563,7 +563,7 @@ void CUDASimulation::spatialSortAgent_async(const std::string& funcName, const s
             gridDim,
             state_list_size);
     }
-    gpuErrchkLaunch();
+    flamegpu::detail::gpuCheckLaunch();
 
     assert(host_api);
     // Calculate max bit (cub::DeviceRadixSort end bit is exclusive and 0-indexed)
@@ -761,7 +761,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 // switch between normal and RTC agent function condition
                 if (func_des->condition) {
                     // calculate the grid block size for agent function condition
-                    gpuErrchk(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->condition, 0, state_list_size));
+                    flamegpu::detail::gpuCheck(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, func_des->condition, 0, state_list_size));
 
                     //! Round up according to CUDAAgent state list size
                     gridSize = (state_list_size + blockSize - 1) / blockSize;
@@ -776,14 +776,14 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     state_list_size,
                     t_rng,
                     scanFlag_agentDeath);
-                    gpuErrchkLaunch();
+                    flamegpu::detail::gpuCheckLaunch();
                 } else {  // RTC function
                     std::string func_condition_identifier = func_name + "_condition";
                     // get instantiation
                     const jitify2::KernelData& instance = cuda_agent.getRTCInstantiation(func_condition_identifier);
                     // calculate the grid block size for main agent function
                     CUfunction cu_func = cuFunctionFromJitify2KernelData(instance);
-                    gpuErrchkDriverAPI(cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size));
+                    flamegpu::detail::gpuCheck(cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size));
                     //! Round up according to CUDAAgent state list size
                     gridSize = (state_list_size + blockSize - 1) / blockSize;
                     // launch the kernel
@@ -797,7 +797,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     if (!a.empty()) {
                         THROW exception::InvalidAgentFunc("There was a problem launching the runtime agent function condition '%s': %s", func_des->rtc_func_condition_name.c_str(), a.c_str());
                     }
-                    gpuErrchkLaunch();
+                    flamegpu::detail::gpuCheckLaunch();
                 }
 
                 totalThreads += state_list_size;
@@ -1005,13 +1005,13 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     scanFlag_agentDeath,
                     scanFlag_messageOutput,
                     scanFlag_agentOutput);
-                gpuErrchkLaunch();
+            flamegpu::detail::gpuCheckLaunch();
             } else {      // assume this is a runtime specified agent function
                 // get instantiation
                 const jitify2::KernelData& instance = cuda_agent.getRTCInstantiation(func_name);
                 // calculate the grid block size for main agent function
                 CUfunction cu_func = cuFunctionFromJitify2KernelData(instance);
-                gpuErrchkDriverAPI(cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size));
+            flamegpu::detail::gpuCheck(cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size));
                 //! Round up according to CUDAAgent state list size
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
                 // launch the kernel
@@ -1030,7 +1030,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 if (!a.empty()) {
                     THROW exception::InvalidAgentFunc("There was a problem launching the runtime agent function '%s': %s", func_name.c_str(), a.c_str());
                 }
-                gpuErrchkLaunch();
+                flamegpu::detail::gpuCheckLaunch();
             }
             totalThreads += state_list_size;
             ++streamIdx;
@@ -1432,14 +1432,14 @@ void CUDASimulation::setPopulationData(AgentVector& population, const std::strin
         visualisation->updateBuffers();
     }
 #endif
-    gpuErrchk(cudaDeviceSynchronize());
+    flamegpu::detail::gpuCheck(cudaDeviceSynchronize());
     agent_ids_have_init = false;
 }
 void CUDASimulation::getPopulationData(AgentVector& population, const std::string& state_name) {
     // Ensure singletons have been initialised
     initialiseSingletons();
     flamegpu::util::nvtx::Range range{"CUDASimulation::getPopulationData()"};
-    gpuErrchk(cudaDeviceSynchronize());
+    flamegpu::detail::gpuCheck(cudaDeviceSynchronize());
     auto it = agent_map.find(population.getAgentName());
     if (it == agent_map.end()) {
         THROW exception::InvalidAgent("Agent '%s' was not found, "
@@ -1448,7 +1448,7 @@ void CUDASimulation::getPopulationData(AgentVector& population, const std::strin
     }
     // This call hierarchy validates agent desc matches and state is valid
     it->second->getPopulationData(population, state_name);
-    gpuErrchk(cudaDeviceSynchronize());
+    flamegpu::detail::gpuCheck(cudaDeviceSynchronize());
 }
 detail::CUDAAgent& CUDASimulation::getCUDAAgent(const std::string& agent_name) const {
     CUDAAgentMap::const_iterator it;
@@ -1558,7 +1558,7 @@ void CUDASimulation::applyConfig_derived() {
         THROW exception::InvalidCUDAdevice("Unknown error setting CUDA device to '%d'. (%d available)", config.device_id, device_count);
     }
     // Call cudaFree to initialise the context early
-    gpuErrchk(cudaFree(nullptr));
+    flamegpu::detail::gpuCheck(cudaFree(nullptr));
 
     // Get the unique ID of the current cuda context, to prevent unsafe stream destruction post flamegpu::cleanup for CUDA 12+
 #if __CUDACC_VER_MAJOR__ >= 12
@@ -1604,7 +1604,7 @@ void CUDASimulation::initialiseSingletons() {
             int cc = detail::compute_capability::getComputeCapability(static_cast<int>(config.device_id));
             THROW exception::InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capabilities \"%s\". Rebuild including compute capability <= %d for device %u.", compiled_ccs.c_str(), cc, config.device_id);
         }
-        gpuErrchk(cudaGetDevice(&deviceInitialised));
+        flamegpu::detail::gpuCheck(cudaGetDevice(&deviceInitialised));
         // Get references to all required singleton and store in the instance.
         singletons = new Singletons((!submodel)?
             detail::EnvironmentManager::create(*model->environment) :
@@ -1676,7 +1676,7 @@ void CUDASimulation::initialiseSingletons() {
         singletonsInitialised = true;
     } else {
         int t = -1;
-        gpuErrchk(cudaGetDevice(&t));
+        flamegpu::detail::gpuCheck(cudaGetDevice(&t));
         if (t != deviceInitialised) {
             THROW exception::CUDAError("CUDASimulation initialised on device %d, but stepped on device %d.\n", deviceInitialised, t);
         }
@@ -1803,10 +1803,10 @@ void CUDASimulation::processHostAgentCreation(const unsigned int streamId) {
                     if (size_req > t_bufflen) {
                         if (t_buff) {
                             free(t_buff);
-                            gpuErrchk(flamegpu::detail::cuda::cudaFree(dt_buff));
+                            flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(dt_buff));
                         }
                         t_buff = reinterpret_cast<char*>(malloc(size_req));
-                        gpuErrchk(cudaMalloc(&dt_buff, size_req));
+                        flamegpu::detail::gpuCheck(cudaMalloc(&dt_buff, size_req));
                         t_bufflen = size_req;
                     }
                 }
@@ -1815,7 +1815,7 @@ void CUDASimulation::processHostAgentCreation(const unsigned int streamId) {
                     memcpy(t_buff + (i*offsets.totalSize), state.second[i].data, offsets.totalSize);
                 }
                 // Copy t_buff to device
-                gpuErrchk(cudaMemcpyAsync(dt_buff, t_buff, size_req, cudaMemcpyHostToDevice, this->getStream(streamId)));
+                flamegpu::detail::gpuCheck(cudaMemcpyAsync(dt_buff, t_buff, size_req, cudaMemcpyHostToDevice, this->getStream(streamId)));
                 // Scatter to device
                 auto &cudaagent = agent_map.at(agent.first);
                 cudaagent->scatterHostCreation(state.first, static_cast<unsigned int>(state.second.size()), dt_buff, offsets, this->singletons->scatter, streamId, this->getStream(streamId));
@@ -1827,7 +1827,7 @@ void CUDASimulation::processHostAgentCreation(const unsigned int streamId) {
     // Release temp memory
     if (t_buff) {
         free(t_buff);
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(dt_buff));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(dt_buff));
     }
 }
 
@@ -1916,10 +1916,10 @@ void CUDASimulation::initMacroEnvironment() {
                 "this should have been caught during file parsing, "
                 "in CUDASimulation::initMacroEnvironment()\n", name.c_str(), static_cast<unsigned int>(buff.size()), elements * it->second.type_size);
         } else {
-            gpuErrchk(cudaMemcpyAsync(it->second.d_ptr, buff.data(), buff.size() * sizeof(char), cudaMemcpyHostToDevice, stream));
+            flamegpu::detail::gpuCheck(cudaMemcpyAsync(it->second.d_ptr, buff.data(), buff.size() * sizeof(char), cudaMemcpyHostToDevice, stream));
         }
     }
-    gpuErrchk(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));
     // Clear init
     macro_env_init.clear();
 }
@@ -1932,13 +1932,13 @@ void CUDASimulation::resetLog() {
     run_log->step_log_frequency = step_log_config ? step_log_config->frequency : 0;
     if (run_log->performance_specs.device_name.empty() || CUDAConfig().device_id != previous_device_id) {
         cudaDeviceProp d_props = {};
-        gpuErrchk(cudaGetDeviceProperties(&d_props, CUDAConfig().device_id));
+        flamegpu::detail::gpuCheck(cudaGetDeviceProperties(&d_props, CUDAConfig().device_id));
         run_log->performance_specs.device_name = d_props.name;
         previous_device_id = CUDAConfig().device_id;
     }
-    gpuErrchk(cudaDeviceGetAttribute(&run_log->performance_specs.device_cc_major, cudaDevAttrComputeCapabilityMajor, CUDAConfig().device_id));
-    gpuErrchk(cudaDeviceGetAttribute(&run_log->performance_specs.device_cc_minor,  cudaDevAttrComputeCapabilityMinor, CUDAConfig().device_id));
-    gpuErrchk(cudaRuntimeGetVersion(&run_log->performance_specs.cuda_version));
+    flamegpu::detail::gpuCheck(cudaDeviceGetAttribute(&run_log->performance_specs.device_cc_major, cudaDevAttrComputeCapabilityMajor, CUDAConfig().device_id));
+    flamegpu::detail::gpuCheck(cudaDeviceGetAttribute(&run_log->performance_specs.device_cc_minor,  cudaDevAttrComputeCapabilityMinor, CUDAConfig().device_id));
+    flamegpu::detail::gpuCheck(cudaRuntimeGetVersion(&run_log->performance_specs.cuda_version));
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     run_log->performance_specs.seatbelts = true;
 #else
@@ -2028,7 +2028,7 @@ void CUDASimulation::createStreams(const unsigned int nStreams) {
     unsigned int totalStreams = std::max(nStreams, 1u);
     while (streams.size() < totalStreams) {
         cudaStream_t stream = 0;
-        gpuErrchk(cudaStreamCreate(&stream));
+        flamegpu::detail::gpuCheck(cudaStreamCreate(&stream));
         streams.push_back(stream);
     }
 }
@@ -2067,7 +2067,7 @@ void CUDASimulation::destroyStreams() {
     if (safeToDestroy) {
         // Destroy streams.
         for (auto stream : streams) {
-            gpuErrchk(cudaStreamDestroy(stream));
+            flamegpu::detail::gpuCheck(cudaStreamDestroy(stream));
         }
     }
     streams.clear();
@@ -2091,7 +2091,7 @@ void CUDASimulation::safeDestroyJitify() {
 void CUDASimulation::synchronizeAllStreams() {
     // Sync streams.
     for (auto stream : streams) {
-        gpuErrchk(cudaStreamSynchronize(stream));
+        flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));
     }
 }
 

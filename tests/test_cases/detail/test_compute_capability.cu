@@ -22,8 +22,8 @@ TEST(TestUtilComputeCapability, getComputeCapability) {
         // Manually get the arch as the reference.
         int major = 0;
         int minor = 0;
-        gpuErrchk(cudaDeviceGetAttribute(&major, cudaDevAttrComputeCapabilityMajor, i));
-        gpuErrchk(cudaDeviceGetAttribute(&minor, cudaDevAttrComputeCapabilityMinor, i));
+        flamegpu::detail::gpuCheck(cudaDeviceGetAttribute(&major, cudaDevAttrComputeCapabilityMajor, i));
+        flamegpu::detail::gpuCheck(cudaDeviceGetAttribute(&minor, cudaDevAttrComputeCapabilityMinor, i));
         int reference = (10 * major) + minor;
         // The function should return the reference value.
         EXPECT_EQ(detail::compute_capability::getComputeCapability(i), reference);

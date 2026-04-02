@@ -13,19 +13,19 @@ void MessageBruteForce::CUDAModelHandler::init(detail::CUDAScatter &, unsigned i
     allocateMetaDataDevicePtr(stream);
     // Allocate messages
     hd_metadata.length = 0;  // This value should already be 0
-    gpuErrchk(cudaMemcpyAsync(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice, stream));
-    gpuErrchk(cudaStreamSynchronize(stream));  // This could probably be skipped/delayed safely
+    flamegpu::detail::gpuCheck(cudaMemcpyAsync(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice, stream));
+    flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));  // This could probably be skipped/delayed safely
 }
 
 void MessageBruteForce::CUDAModelHandler::allocateMetaDataDevicePtr(cudaStream_t stream) {
     if (d_metadata == nullptr) {
-        gpuErrchk(cudaMalloc(&d_metadata, sizeof(MetaData)));
+        flamegpu::detail::gpuCheck(cudaMalloc(&d_metadata, sizeof(MetaData)));
     }
 }
 
 void MessageBruteForce::CUDAModelHandler::freeMetaDataDevicePtr() {
     if (d_metadata != nullptr) {
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_metadata));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_metadata));
     }
     d_metadata = nullptr;
 }
@@ -34,8 +34,8 @@ void MessageBruteForce::CUDAModelHandler::buildIndex(detail::CUDAScatter &, unsi
     unsigned int newLength = this->sim_message.getMessageCount();
     if (newLength != hd_metadata.length) {
         hd_metadata.length = newLength;
-        gpuErrchk(cudaMemcpyAsync(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice, stream));  // Not Pinned
-        gpuErrchk(cudaStreamSynchronize(stream));  // This could probably be skipped/delayed safely if in the right stream
+        flamegpu::detail::gpuCheck(cudaMemcpyAsync(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice, stream));  // Not Pinned
+        flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));  // This could probably be skipped/delayed safely if in the right stream
     }
 }
 
