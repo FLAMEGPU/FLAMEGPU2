@@ -177,7 +177,7 @@ void CUDAMessage::swap(bool isOptional, unsigned int newMessageCount, detail::CU
         // Check if we need to resize cub storage
         auto& cub_temp = scatter.CubTemp(streamId);
         size_t tempByte = 0;
-        gpuErrchk(cub::DeviceScan::ExclusiveSum(
+        flamegpu::detail::gpuCheck(cub::DeviceScan::ExclusiveSum(
             nullptr,
             tempByte,
             scanCfg.d_ptrs.scan_flag,
@@ -185,7 +185,7 @@ void CUDAMessage::swap(bool isOptional, unsigned int newMessageCount, detail::CU
             max_list_size + 1,
             stream));
         cub_temp.resize(tempByte);
-        gpuErrchk(cub::DeviceScan::ExclusiveSum(
+        flamegpu::detail::gpuCheck(cub::DeviceScan::ExclusiveSum(
             cub_temp.getPtr(),
             cub_temp.getSize(),
             scanCfg.d_ptrs.scan_flag,

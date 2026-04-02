@@ -279,7 +279,7 @@ CurveRTCHost::CurveRTCHost() : header(CurveRTCHost::curve_rtc_dynamic_h_template
 }
 
 CurveRTCHost::~CurveRTCHost() {
-    gpuErrchk(flamegpu::detail::cuda::cudaFreeHost(h_data_buffer));
+    flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFreeHost(h_data_buffer));
 }
 
 void CurveRTCHost::registerAgentVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
@@ -1406,7 +1406,7 @@ void CurveRTCHost::initDataBuffer() {
         THROW exception::InvalidOperation("CurveRTCHost::initDataBuffer() should only be called once, during the init chain.\n");
     }
     // Alloc buffer
-    gpuErrchk(cudaMallocHost(&h_data_buffer, data_buffer_size));
+    flamegpu::detail::gpuCheck(cudaMallocHost(&h_data_buffer, data_buffer_size));
     // Notify all variables of their ptr to store data in cache
     size_t ct = 0;
     for (auto &element : agent_variables) {
@@ -1540,7 +1540,7 @@ void CurveRTCHost::updateDevice_async(const jitify2::KernelData& instance, cudaS
     std::string cache_var_name = std::string("flamegpu::detail::curve::") + getVariableSymbolName();
     CUdeviceptr d_var_ptr;
     instance.program().get_global_ptr(cache_var_name.c_str(), &d_var_ptr);
-    gpuErrchkDriverAPI(cuMemcpyHtoDAsync(d_var_ptr, h_data_buffer, data_buffer_size, stream));
+    flamegpu::detail::gpuCheck(cuMemcpyHtoDAsync(d_var_ptr, h_data_buffer, data_buffer_size, stream));
 }
 
 }  // namespace curve
