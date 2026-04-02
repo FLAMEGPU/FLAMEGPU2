@@ -201,8 +201,6 @@ function(flamegpu_common_compiler_settings)
         ${ARGN}
     )
 
-    message(AUTHOR_WARNING "flamegpu_common_compiler_settings for hip")
-
     # Ensure that a target has been passed, and that it is a valid target.
     if(NOT CCS_TARGET)
         message( FATAL_ERROR "${CMAKE_CURRENT_FUNCTION}: 'TARGET' argument required")
@@ -211,32 +209,32 @@ function(flamegpu_common_compiler_settings)
     endif()
 
     # Enable -lineinfo for Release builds, for improved profiling output.
-    # CMAKE >=3.19 required for multivalue CONFIG:
     target_compile_options(${CCS_TARGET} PRIVATE "$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>,$<CONFIG:RelWithDebInfo>>>:-lineinfo>")
 
-    # Set an NVCC flag which allows host constexpr to be used on the device.
+    # admclang/rocm does not have lineinfo, just -g/-gline-tables-only, so just add -gline-tabels-only to Release and MinSizeRel configs
+    # Todo: Verify any runtime cost of this. 
+    target_compile_options(${CCS_TARGET} PRIVATE "$<$<AND:$<COMPILE_LANGUAGE:HIP>,$<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>>>:-gline-tables-only>")
+
+    # Set an NVCC flag which allows host constexpr to be used on the device, this is effectively default in hip/clang?
     target_compile_options(${CCS_TARGET} PUBLIC "$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>")
 
-    # MSVC handling of SYSTEM for external includes, present in 19.10+
+    # MSVC specifics
     if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        # MSVC handling of SYSTEM for external includes, present in 19.10+
         # These flags don't currently have any effect on how CMake passes system-private includes to msvc (VS 2017+)
         set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I")
         set(CMAKE_INCLUDE_SYSTEM_FLAG_CUDA "/external:I")
-        # VS 2017+
         target_compile_options(${CCS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:/experimental:external>")
-    endif()
-
-    # Enable parallel compilation
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        # Enable parallel compilation
         target_compile_options(${CCS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler /MP>")
         target_compile_options(${CCS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:/MP>")
     endif()
 
-    # If CUDA 11.2+, can build multiple architectures in parallel. 
+    # CUDA (>=11.2) can build multiple architectures in parallel. There is not an AMD equivalent.
     # Note this will be multiplicative against the number of threads launched for parallel cmake build, which may lead to processes being killed, or excessive memory being consumed.
-    if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "11.2" AND DEFINED FLAMEGPU_NVCC_THREADS)
+    if(CMAKE_CUDA_COMPILER_LOADED AND DEFINED FLAMEGPU_NVCC_THREADS)
         set(FLAMEGPU_NVCC_THREADS_INTEGER -1})
-    # If its a number GE 0, use that, this is false for truthy values
+        # If its a number GE 0, use that, this is false for truthy values
         if(FLAMEGPU_NVCC_THREADS GREATER_EQUAL 0)
             set(FLAMEGPU_NVCC_THREADS_INTEGER ${FLAMEGPU_NVCC_THREADS})
         # If it is not set, use a hardcoded sensible default 2.
@@ -252,7 +250,7 @@ function(flamegpu_common_compiler_settings)
     endif()
 
     # Enable verbose ptxas output if required 
-    if(FLAMEGPU_VERBOSE_PTXAS)
+    if(CMKAE_CUDA_COMPILER_LOADED AND FLAMEGPU_VERBOSE_PTXAS)
         target_compile_options(${CCS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xptxas -v>")
     endif()
     
