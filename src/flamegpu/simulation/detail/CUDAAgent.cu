@@ -199,50 +199,50 @@ void CUDAAgent::validateIDCollisions(cudaStream_t stream) const {
     if (!agentCount) return;
     // Allocate buffers we will use
     id_t * d_keysIn = nullptr, *d_keysOut = nullptr;
-    gpuErrchk(cudaMalloc(&d_keysIn, sizeof(id_t) * agentCount));
-    gpuErrchk(cudaMalloc(&d_keysOut, sizeof(id_t) * agentCount));
+    flamegpu::detail::gpuCheck(cudaMalloc(&d_keysIn, sizeof(id_t) * agentCount));
+    flamegpu::detail::gpuCheck(cudaMalloc(&d_keysOut, sizeof(id_t) * agentCount));
     // Copy agent IDs to keysIn buff
     ptrdiff_t buffOffset = 0;
     for (const auto& s : state_map) {
         const unsigned int t_size = s.second->getSize();
-        gpuErrchk(cudaMemcpyAsync(d_keysIn + buffOffset, s.second->getVariablePointer(ID_VARIABLE_NAME), t_size * sizeof(id_t), cudaMemcpyDeviceToDevice, stream));
+        flamegpu::detail::gpuCheck(cudaMemcpyAsync(d_keysIn + buffOffset, s.second->getVariablePointer(ID_VARIABLE_NAME), t_size * sizeof(id_t), cudaMemcpyDeviceToDevice, stream));
         buffOffset += t_size;
     }
     // Sort agent ids into d_keysOut
     void* d_temp_storage = nullptr;
     size_t temp_storage_bytes = 0;
-    gpuErrchk(cub::DeviceRadixSort::SortKeys(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount, 0, sizeof(id_t) * 8, stream));
-    gpuErrchk(cudaMalloc(&d_temp_storage, temp_storage_bytes));
-    gpuErrchk(cub::DeviceRadixSort::SortKeys(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount, 0, sizeof(id_t) * 8, stream));
+    flamegpu::detail::gpuCheck(cub::DeviceRadixSort::SortKeys(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount, 0, sizeof(id_t) * 8, stream));
+    flamegpu::detail::gpuCheck(cudaMalloc(&d_temp_storage, temp_storage_bytes));
+    flamegpu::detail::gpuCheck(cub::DeviceRadixSort::SortKeys(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount, 0, sizeof(id_t) * 8, stream));
     // Reset d_keysIn
-    gpuErrchk(cudaMemsetAsync(d_keysIn, 0, sizeof(id_t) * agentCount, stream));
+    flamegpu::detail::gpuCheck(cudaMemsetAsync(d_keysIn, 0, sizeof(id_t) * agentCount, stream));
     // Launch a kernel to set flags if keys overlap their neighbour
     const unsigned int blockSize = 1024;
     const unsigned int blocks = ((agentCount-1) / blockSize) + 1;
     generateCollisionFlags<<<blocks, blockSize, 0, stream>>>(d_keysOut, d_keysIn, agentCount-1, ID_NOT_SET);
-    gpuErrchkLaunch();
+    flamegpu::detail::gpuCheckLaunch();
     // Check whether any flags were set
     size_t temp_storage_bytes2 = 0;
-    gpuErrchk(cub::DeviceReduce::Sum(nullptr, temp_storage_bytes2, d_keysIn, d_keysOut, agentCount - 1, stream));
+    flamegpu::detail::gpuCheck(cub::DeviceReduce::Sum(nullptr, temp_storage_bytes2, d_keysIn, d_keysOut, agentCount - 1, stream));
     if (temp_storage_bytes2 > temp_storage_bytes) {
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_temp_storage));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_temp_storage));
         temp_storage_bytes = temp_storage_bytes2;
-        gpuErrchk(cudaMalloc(&d_temp_storage, temp_storage_bytes));
+        flamegpu::detail::gpuCheck(cudaMalloc(&d_temp_storage, temp_storage_bytes));
     }
-    gpuErrchk(cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount - 1, stream));
+    flamegpu::detail::gpuCheck(cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount - 1, stream));
     id_t flagsSet = 0;
-    gpuErrchk(cudaMemcpyAsync(&flagsSet, d_keysOut, sizeof(id_t), cudaMemcpyDeviceToHost, stream));
+    flamegpu::detail::gpuCheck(cudaMemcpyAsync(&flagsSet, d_keysOut, sizeof(id_t), cudaMemcpyDeviceToHost, stream));
     // Cleanup
-    gpuErrchk(flamegpu::detail::cuda::cudaFree(d_temp_storage));
-    gpuErrchk(flamegpu::detail::cuda::cudaFree(d_keysIn));
-    gpuErrchk(flamegpu::detail::cuda::cudaFree(d_keysOut));
+    flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_temp_storage));
+    flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_keysIn));
+    flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_keysOut));
     if (flagsSet) {
         THROW exception::AgentIDCollision("%u agents of type '%s' share an ID with another agent of the same type, "
             "you may need to explicitly reset agent IDs for 1 or more populations before adding them to the CUDASimulation, "
             "in CUDAAgent::validateIDCollisions()\n",
             static_cast<unsigned int>(flagsSet), agent_description.name.c_str());
     }
-    gpuErrchk(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));
 }
 /**
  * Returns the number of alive and active agents in the named state

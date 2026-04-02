@@ -39,7 +39,7 @@ HostCurve::HostCurve()
 }
 HostCurve::~HostCurve() {
     if (d_curve_table) {
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_curve_table));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_curve_table));
         d_curve_table = nullptr;
     }
 }
@@ -47,7 +47,7 @@ void HostCurve::initialiseDevice() {
     // Don't lock mutex here, do it in the calling method
     if (!d_curve_table) {
         // get a host pointer to d_hashes and d_variables
-        gpuErrchk(cudaMalloc(&d_curve_table, sizeof(CurveTable)));
+        flamegpu::detail::gpuCheck(cudaMalloc(&d_curve_table, sizeof(CurveTable)));
     }
 }
 
@@ -161,7 +161,7 @@ void HostCurve::updateDevice_async(const cudaStream_t stream) {
     // Initialise the device (if required)
     assert(d_curve_table);  // No reason for this to ever fail.
     // Copy
-    gpuErrchk(cudaMemcpyAsync(d_curve_table, &h_curve_table, sizeof(CurveTable), cudaMemcpyHostToDevice, stream));
+    flamegpu::detail::gpuCheck(cudaMemcpyAsync(d_curve_table, &h_curve_table, sizeof(CurveTable), cudaMemcpyHostToDevice, stream));
 }
 const CurveTable *HostCurve::getDevicePtr() const {
     return d_curve_table;

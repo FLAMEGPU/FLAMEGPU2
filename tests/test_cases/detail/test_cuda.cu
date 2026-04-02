@@ -13,10 +13,10 @@ TEST(TestUtilDetailCuda, cudaFree) {
     int * d_ptr = nullptr;
     cudaError_t status = cudaSuccess;
     // manually allocate a device pointer
-    gpuErrchk(cudaMalloc(&d_ptr, sizeof(int)));
+    flamegpu::detail::gpuCheck(cudaMalloc(&d_ptr, sizeof(int)));
     // Validate that the ptr is a valid device pointer
     cudaPointerAttributes attributes = {};
-    gpuErrchk(cudaPointerGetAttributes(&attributes, d_ptr));
+    flamegpu::detail::gpuCheck(cudaPointerGetAttributes(&attributes, d_ptr));
     EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
     // call the wrapped cuda free method
     status = detail::cuda::cudaFree(d_ptr);
@@ -24,7 +24,7 @@ TEST(TestUtilDetailCuda, cudaFree) {
     EXPECT_EQ(status, cudaSuccess);
     // The pointer will still have a non nullptr value, but it will no longer be a valid device ptr.
     EXPECT_NE(d_ptr, nullptr);
-    gpuErrchk(cudaPointerGetAttributes(&attributes, d_ptr));
+    flamegpu::detail::gpuCheck(cudaPointerGetAttributes(&attributes, d_ptr));
     EXPECT_EQ(attributes.type, cudaMemoryTypeUnregistered);
     // Try a double free.
     status = detail::cuda::cudaFree(d_ptr);
@@ -33,10 +33,10 @@ TEST(TestUtilDetailCuda, cudaFree) {
     // reset the ptr
     d_ptr = nullptr;
     // Allocate the pointer again
-    gpuErrchk(cudaMalloc(&d_ptr, sizeof(int)));
+    flamegpu::detail::gpuCheck(cudaMalloc(&d_ptr, sizeof(int)));
     // Validate that the ptr is a valid device pointer
     attributes = {};
-    gpuErrchk(cudaPointerGetAttributes(&attributes, d_ptr));
+    flamegpu::detail::gpuCheck(cudaPointerGetAttributes(&attributes, d_ptr));
     EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
     // Trigger a device reset
     cudaDeviceReset();
@@ -50,10 +50,10 @@ TEST(TestUtilDetailCuda, cudaFreeHost) {
     int * p_ptr = nullptr;
     cudaError_t status = cudaSuccess;
     // manually allocate a page-locked host pointer
-    gpuErrchk(cudaMallocHost(&p_ptr, sizeof(int)));
+    flamegpu::detail::gpuCheck(cudaMallocHost(&p_ptr, sizeof(int)));
     // Validate that the ptr is a valid page-locked host pointer
     cudaPointerAttributes attributes = {};
-    gpuErrchk(cudaPointerGetAttributes(&attributes, p_ptr));
+    flamegpu::detail::gpuCheck(cudaPointerGetAttributes(&attributes, p_ptr));
     // this appears to return cudaMemoryTypeHost, even though it should return cudaMemoryTypeHost
     EXPECT_EQ(attributes.type, cudaMemoryTypeHost);
     // call the wrapped cuda free method
@@ -62,7 +62,7 @@ TEST(TestUtilDetailCuda, cudaFreeHost) {
     EXPECT_EQ(status, cudaSuccess);
     // The pointer will still have a non nullptr value, but it will no longer be a valid page-locked ptr.
     EXPECT_NE(p_ptr, nullptr);
-    gpuErrchk(cudaPointerGetAttributes(&attributes, p_ptr));
+    flamegpu::detail::gpuCheck(cudaPointerGetAttributes(&attributes, p_ptr));
     EXPECT_EQ(attributes.type, cudaMemoryTypeUnregistered);
 
     // Try a double free.
@@ -72,10 +72,10 @@ TEST(TestUtilDetailCuda, cudaFreeHost) {
     // reset the ptr
     p_ptr = nullptr;
     // Allocate the pointer again
-    gpuErrchk(cudaMallocHost(&p_ptr, sizeof(int)));
+    flamegpu::detail::gpuCheck(cudaMallocHost(&p_ptr, sizeof(int)));
     // Validate that the ptr is a valid page-locked host pointer
     attributes = {};
-    gpuErrchk(cudaPointerGetAttributes(&attributes, p_ptr));
+    flamegpu::detail::gpuCheck(cudaPointerGetAttributes(&attributes, p_ptr));
     // this appears to return cudaMemoryTypeHost, even though it should return cudaMemoryTypeHost
     EXPECT_EQ(attributes.type, cudaMemoryTypeHost);
     // Trigger a device reset
@@ -88,15 +88,15 @@ TEST(TestUtilDetailCuda, cudaFreeHost) {
 // Test that getting the primary context works, Difficult to trigger failure cases for this method, so coverage is subpar.
 TEST(TestUtilDetailCuda, cuDevicePrimaryContextIsActive) {
     // Make sure device 0 is active for this test.
-    gpuErrchk(cudaSetDevice(0));
+    flamegpu::detail::gpuCheck(cudaSetDevice(0));
     // Initialise a cudaContext, incase it somehow hasn't been already.
-    gpuErrchk(cudaFree(0));
+    flamegpu::detail::gpuCheck(cudaFree(0));
     // check if the primary context is active or not for device 0, it shoudl be.
     bool isActive = false;
     isActive = detail::cuda::cuDevicePrimaryContextIsActive(0);
     EXPECT_EQ(isActive, true);
     // Call device reset and check again without establishing a new context, it should not be active.
-    gpuErrchk(cudaDeviceReset());
+    flamegpu::detail::gpuCheck(cudaDeviceReset());
     isActive = detail::cuda::cuDevicePrimaryContextIsActive(0);
     EXPECT_EQ(isActive, false);
     // Check that exceptions will be raised correctly when passing bad device ordinals.
@@ -104,7 +104,7 @@ TEST(TestUtilDetailCuda, cuDevicePrimaryContextIsActive) {
     EXPECT_THROW(detail::cuda::cuDevicePrimaryContextIsActive(-1), exception::InvalidCUDAdevice);
     // First grab the device count, to check for exceptions when the device ordinal is too big.
     int deviceCount = 0;
-    gpuErrchk(cudaGetDeviceCount(&deviceCount));
+    flamegpu::detail::gpuCheck(cudaGetDeviceCount(&deviceCount));
     if (deviceCount > 0) {
         // Expect an exception if the ordinal is too big.
         EXPECT_THROW(detail::cuda::cuDevicePrimaryContextIsActive(deviceCount), exception::InvalidCUDAdevice);

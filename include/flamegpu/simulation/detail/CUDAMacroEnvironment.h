@@ -51,7 +51,7 @@ class CUDAMacroEnvironment {
             , is_sub(false) { }
         ~MacroEnvProp() {
             if (d_ptr && !is_sub) {
-                gpuErrchk(flamegpu::detail::cuda::cudaFree(d_ptr));
+                flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_ptr));
             }
         }
         MacroEnvProp(const MacroEnvProp& other) = delete;
