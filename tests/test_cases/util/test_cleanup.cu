@@ -28,22 +28,22 @@ FLAMEGPU_AGENT_FUNCTION(alive, MessageNone, MessageNone) {
 TEST(TestCleanup, Explicit) {
     // Allocate some arbitrary device memory.
     int * d_int = nullptr;
-    gpuErrchk(cudaMalloc(&d_int, sizeof(int)));
+    flamegpu::detail::gpuCheck(cudaMalloc(&d_int, sizeof(int)));
     // Validate that the ptr is a valid device pointer
     cudaPointerAttributes attributes = {};
-    gpuErrchk(cudaPointerGetAttributes(&attributes, d_int));
+    flamegpu::detail::gpuCheck(cudaPointerGetAttributes(&attributes, d_int));
     EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
 
     // Call the cleanup method
     flamegpu::util::cleanup();
 
     // Assert that the pointer is no logner valid - i.e. the device was actually reset
-    gpuErrchk(cudaPointerGetAttributes(&attributes, d_int));
+    flamegpu::detail::gpuCheck(cudaPointerGetAttributes(&attributes, d_int));
     EXPECT_NE(attributes.type, cudaMemoryTypeDevice);
 
     // Free explicit device memory, if it was valid (to get the correct error)
     if (attributes.type == cudaMemoryTypeDevice) {
-        gpuErrchk(cudaFree(d_int));
+        flamegpu::detail::gpuCheck(cudaFree(d_int));
     }
     d_int = nullptr;
 }

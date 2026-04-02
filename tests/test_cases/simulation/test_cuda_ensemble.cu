@@ -837,10 +837,10 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDASimulation_rtc) {
 TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc) {
     // Allocate some arbitraty device memory.
     int * d_int = nullptr;
-    gpuErrchk(cudaMalloc(&d_int, sizeof(int)));
+    flamegpu::detail::gpuCheck(cudaMalloc(&d_int, sizeof(int)));
     // Validate that the ptr is a valid device pointer
     cudaPointerAttributes attributes = {};
-    gpuErrchk(cudaPointerGetAttributes(&attributes, d_int));
+    flamegpu::detail::gpuCheck(cudaPointerGetAttributes(&attributes, d_int));
     EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
 
     // Add extra layer of scope, so the ensemble get's dtor'd incase the dtor triggers a reset
@@ -878,12 +878,12 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc) {
     }
 
     // At this point, the manually allocated data should still be valid, i.e. cudaMemoryTypeDevice
-    gpuErrchk(cudaPointerGetAttributes(&attributes, d_int));
+    flamegpu::detail::gpuCheck(cudaPointerGetAttributes(&attributes, d_int));
     EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
 
     // Free explicit device memory, if it was valid (to get the correct error)
     if (attributes.type == cudaMemoryTypeDevice) {
-        gpuErrchk(cudaFree(d_int));
+        flamegpu::detail::gpuCheck(cudaFree(d_int));
     }
     d_int = nullptr;
 }
@@ -1041,10 +1041,10 @@ TEST(TestCUDAEnsemble, TruncationOff_Exit) {
 TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc_rtc) {
     // Allocate some arbitraty device memory.
     int * d_int = nullptr;
-    gpuErrchk(cudaMalloc(&d_int, sizeof(int)));
+    flamegpu::detail::gpuCheck(cudaMalloc(&d_int, sizeof(int)));
     // Validate that the ptr is a valid device pointer
     cudaPointerAttributes attributes = {};
-    gpuErrchk(cudaPointerGetAttributes(&attributes, d_int));
+    flamegpu::detail::gpuCheck(cudaPointerGetAttributes(&attributes, d_int));
     EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
 
     // Add extra layer of scope, so the ensemble get's dtor'd incase the dtor triggers a reset
@@ -1082,12 +1082,12 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc_rtc) {
     }
 
     // At this point, the manually allocated data should still be valid, i.e. cudaMemoryTypeDevice
-    gpuErrchk(cudaPointerGetAttributes(&attributes, d_int));
+    flamegpu::detail::gpuCheck(cudaPointerGetAttributes(&attributes, d_int));
     EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
 
     // Free explicit device memory, if it was valid (to get the correct error)
     if (attributes.type == cudaMemoryTypeDevice) {
-        gpuErrchk(cudaFree(d_int));
+        flamegpu::detail::gpuCheck(cudaFree(d_int));
     }
     d_int = nullptr;
 }

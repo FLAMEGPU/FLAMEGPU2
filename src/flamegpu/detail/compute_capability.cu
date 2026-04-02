@@ -36,14 +36,14 @@ int compute_capability::getComputeCapability(int deviceIndex) {
 
     // Ensure deviceIndex is valid.
     int deviceCount = 0;
-    gpuErrchk(cudaGetDeviceCount(&deviceCount));
+    flamegpu::detail::gpuCheck(cudaGetDeviceCount(&deviceCount));
     if (deviceIndex >= deviceCount) {
         // Throw an excpetion if the device index is bad.
         THROW exception::InvalidCUDAdevice();
     }
     // Load device attributes
-    gpuErrchk(cudaDeviceGetAttribute(&minor, cudaDevAttrComputeCapabilityMinor, deviceIndex));
-    gpuErrchk(cudaDeviceGetAttribute(&major, cudaDevAttrComputeCapabilityMajor, deviceIndex));
+    flamegpu::detail::gpuCheck(cudaDeviceGetAttribute(&minor, cudaDevAttrComputeCapabilityMinor, deviceIndex));
+    flamegpu::detail::gpuCheck(cudaDeviceGetAttribute(&major, cudaDevAttrComputeCapabilityMajor, deviceIndex));
     // Compute the arch integer value.
     int arch = (10 * major) + minor;
     return arch;
@@ -157,7 +157,7 @@ const std::string compute_capability::getDeviceName(int deviceIndex) {
 
     // Ensure deviceIndex is valid.
     int deviceCount = 0;
-    gpuErrchk(cudaGetDeviceCount(&deviceCount));
+    flamegpu::detail::gpuCheck(cudaGetDeviceCount(&deviceCount));
     if (deviceIndex >= deviceCount) {
         // Throw an excpetion if the device index is bad.
         THROW exception::InvalidCUDAdevice();
@@ -174,7 +174,7 @@ const std::string compute_capability::getDeviceNames(std::set<int> devices) {
     bool first = true;
     // Get the count of devices
     int deviceCount = 0;
-    gpuErrchk(cudaGetDeviceCount(&deviceCount));
+    flamegpu::detail::gpuCheck(cudaGetDeviceCount(&deviceCount));
     // If no devices were passed in, add each device to the set of devices.
     if (devices.size() == 0) {
         for (int i = 0; i < deviceCount; i++) {

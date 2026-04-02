@@ -16,7 +16,7 @@ CubTemporaryMemory::CubTemporaryMemory()
 CubTemporaryMemory::~CubTemporaryMemory() {
     // @todo - cuda is not allowed in destructor
     if (d_cub_temp) {
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_cub_temp));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_cub_temp));
         d_cub_temp_size = 0;
     }
 }
@@ -24,9 +24,9 @@ void CubTemporaryMemory::resize(const size_t newSize) {
     if (newSize > d_cub_temp_size) {
         flamegpu::util::nvtx::Range range{"CubTemporaryMemory::resizeTempStorage"};
         if (d_cub_temp) {
-            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_cub_temp));
+            flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_cub_temp));
         }
-        gpuErrchk(cudaMalloc(&d_cub_temp, newSize));
+        flamegpu::detail::gpuCheck(cudaMalloc(&d_cub_temp, newSize));
         d_cub_temp_size = newSize;
     }
 }
