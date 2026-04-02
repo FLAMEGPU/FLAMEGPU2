@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.25.2...4.3.0 FATAL_ERROR)
 #[[[
 # Handle CMAKE_CUDA_ARCHITECTURES/CMAKE_HIP_ARCHITECTURES gracefully, allowing library CMakeLists.txt to provide a sane library default if not user-specified
 #
@@ -69,15 +70,15 @@ endfunction()
 # Set the CMAKE_CUDA_ARCHITECTURES/CMAKE_HIP_ARCHITECTURES value to the environment/cache provided value, or generate a CUDA/HIP version-appropriate default value for a library (i.e all-major or equivalent)
 #
 # For CUDA:
-#     If the ENV{CUDAARCHS}, or CMAKE_CUDA_ARCHITECTURES cache variable did not specify a value before the CUDA language was enabled, use build an version-appropriate default for a llibrary, based on the CMake and NVCC version.
+#     If the ENV{CUDAARCHS}, or CMAKE_CUDA_ARCHITECTURES cache variable did not specify a value before the CUDA language was enabled, use a CUDA version-appropriate default for a llibrary, based on the CMake and NVCC version.
 #     Effectively all-major (-real for all major architectures, and PTX for the most recent)
 #
 #     If the user provided a value, it will be validated against nvcc --help unless NO_VALIDATE_ARCHITECTURES is set, or was set in a previous call to flamegpu_init_gpu_architectures without a PROJECT.
 # 
-# For HIP:
-#    Todo: figure this out
-#    Todo: what is the sensible default for HIP?
-#    Todo: what bout hip but with PLATFORM=nvidia? should re-use the cuda bits somehow.
+# For HIP (with CMAKE_HIP_PLATFORM=amd):
+#    If CMAKE_HIP_ARCHITECTURES cache variable did not specify a value before the HIP language was enabled, use a HIP version-appropriate default for a library, based on the CMake and HIP compiler verisions
+#    This should effectively be the equivalent to all-major
+#    Todo: what about hip but with PLATFORM=nvidia? should re-use the cuda bits somehow.
 #
 # CUDA or HIP must be enabled as a language prior to this method being called.
 # Todo: This will be a problem for project-name injection that is also CUDA/HIP compatible. Might have to remove that option...
@@ -93,11 +94,10 @@ function(flamegpu_set_gpu_architectures)
         ""
         ${ARGN}
     )
-    # This function requires that the CUDA language is enabled on the current project.
+    # This function requires that CUDA or HIP language is enabled on the current project.
     if(NOT (CMAKE_CUDA_COMPILER_LOADED OR CMAKE_HIP_COMPILER_LOADED))
         # If in the injected project code, give a different error message
-        # Todo: is this still viable?
-        # Todo: update messages to account for HIP
+        # Todo: is it still viable to support injection of this method? given the project may enable languages?
         if(DEFINED flamegpu_IN_PROJECT_INCLUDE AND flamegpu_IN_PROJECT_INCLUDE)
             message(FATAL_ERROR
             "  ${CMAKE_CURRENT_FUNCTION} requires the CUDA or HIP language to be enabled\n"
@@ -113,7 +113,7 @@ function(flamegpu_set_gpu_architectures)
 
     endif()
 
-    # Handle CUDA (Todo: handle hip with nvidia the same way?)
+    # Handle CUDA (Todo: hip but with CUDA as the backend?)
     if (CMAKE_CUDA_COMPILER_LOADED)
         # Query NVCC for the acceptable SM values, this is used in multiple places
         if(NOT DEFINED SUPPORTED_CUDA_ARCHITECTURES_NVCC)
@@ -141,12 +141,6 @@ function(flamegpu_set_gpu_architectures)
             set(using_keyword_arch FALSE)
             # native requires CMake >= 3.24, and must be the only option.
             if("native" IN_LIST CMAKE_CUDA_ARCHITECTURES)
-                # Error if CMake is too old
-                if(CMAKE_VERSION VERSION_LESS 3.24)
-                    message(FATAL_ERROR
-                        " CMAKE_CUDA_ARCHITECTURES value `native` requires CMake >= 3.24.\n"
-                        " CMAKE_CUDA_ARCHITECTURES=\"${CMAKE_CUDA_ARCHITECTURES}\"")
-                endif()
                 # Error if there are multiple architectures specified.
                 if(arch_count GREATER 1)
                     message(FATAL_ERROR
@@ -157,12 +151,6 @@ function(flamegpu_set_gpu_architectures)
             endif()
             # all requires 3.23, and must be the sole value.
             if("all" IN_LIST CMAKE_CUDA_ARCHITECTURES)
-                # Error if CMake is too old
-                if(CMAKE_VERSION VERSION_LESS 3.23)
-                    message(FATAL_ERROR
-                        " CMAKE_CUDA_ARCHITECTURES value `all` requires CMake >= 3.23.\n"
-                        " CMAKE_CUDA_ARCHITECTURES=\"${CMAKE_CUDA_ARCHITECTURES}\"")
-                endif()
                 # Error if there are multiple architectures specified.
                 if(arch_count GREATER 1)
                     message(FATAL_ERROR
@@ -173,12 +161,6 @@ function(flamegpu_set_gpu_architectures)
             endif()
             # all-major requires 3.23, and must be the sole value.
             if("all-major" IN_LIST CMAKE_CUDA_ARCHITECTURES)
-                # Error if CMake is too old
-                if(CMAKE_VERSION VERSION_LESS 3.23)
-                    message(FATAL_ERROR
-                        " CMAKE_CUDA_ARCHITECTURES value `all-major` requires CMake >= 3.23.\n"
-                        " CMAKE_CUDA_ARCHITECTURES=\"${CMAKE_CUDA_ARCHITECTURES}\"")
-                endif()
                 # Error if there are multiple architectures specified.
                 if(arch_count GREATER 1)
                     message(FATAL_ERROR
@@ -226,6 +208,14 @@ function(flamegpu_set_gpu_architectures)
         # Promote the value to the cache for reconfigure persistence, as the enable_language sets it on the cache
         set(CMAKE_CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}" CACHE STRING "CUDA architectures" FORCE)
     elseif(CMAKE_HIP_COMPILER_LOADED)
-        message(AUTHOR_WARNING "Todo: implement flamegpu_set_gpu_architectures for HIP")
+        # I cannot find a good, way to programatically get a list of (major) device architectrues for a given version of rocm. 
+        # rocm_agent_enumerator --all only lists architectures in this machine
+        # amdclang --target=amdgcn-amd-amdhsa --print-supported-cpus lists all possible gpu architectures for this version of clang, including those not officially supported by this rocm release
+        # and there are 53 listed for rocm 7.2 (amdclang --target=amdgcn-amd-amdhsa --print-supported-cpus |& grep gfx | sort | uniq | wc -l ))
+        # https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/system-requirements.html for 7.2.1 included 9 supported architectures gfx1201;gfx1200;gfx1101;gfx1100;gfx1030;gfx950;gfx942;gfx90a;gfx908
+        # The ROCm on Radeon and Ryzen docs (https://rocm.docs.amd.com/projects/radeon-ryzen/en/latest/docs/compatibility/compatibilityryz/native_linux/native_linux_compatibility.html) include some additioanl architectrues, but seems to be very partial support.
+        # Generic architectures are the closest thing to building for SM_50 and it running on 52. I.e. gfx10-1-generic, but this might not be available for all supported families (https://rocm.docs.amd.com/projects/llvm-project/en/latest/conceptual/code-portability.html#generic-code-objects)
+        # As this is so hard to detect, we probably just leave default as to use the native build and document this? Then for any redistributable CI either list everything, or use the -generic architectures (whcich could be extracted via --target=amdgcn-amd-amdhsa --print-supported-cpus)?
+        message(AUTHOR_WARNING "Todo: implement flamegpu_set_gpu_architectures for HIP. This is non trivial.")
     endif()
 endfunction()
