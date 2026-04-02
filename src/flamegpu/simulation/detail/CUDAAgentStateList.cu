@@ -122,8 +122,8 @@ void CUDAAgentStateList::setAgentData(const AgentVector& population, CUDAScatter
             const void* v_data = population.data(_var.first);
 
             // copy the host data to the GPU
-            gpuErrchk(cudaMemcpyAsync(_var.second->data, v_data, var_elements * var_size * data_count, cudaMemcpyHostToDevice, stream));
-            gpuErrchk(cudaStreamSynchronize(stream));
+            flamegpu::detail::gpuCheck(cudaMemcpyAsync(_var.second->data, v_data, var_elements * var_size * data_count, cudaMemcpyHostToDevice, stream));
+            flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));
         }
     }
     // Update alive count etc
@@ -150,7 +150,7 @@ void CUDAAgentStateList::getAgentData(AgentVector& population) const {
             void* v_data = const_cast<void*>(static_cast<const AgentVector&>(population).data(_var.first));
 
             // copy the host data to the GPU
-            gpuErrchk(cudaMemcpy(v_data, _var.second->data, var_elements * var_size * data_count, cudaMemcpyDeviceToHost));
+            flamegpu::detail::gpuCheck(cudaMemcpy(v_data, _var.second->data, var_elements * var_size * data_count, cudaMemcpyDeviceToHost));
         }
     }
     population._size = data_count;  // Private AgentVector::resize() does not update size
@@ -192,7 +192,7 @@ unsigned int CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int
         // Check if we need to resize cub storage
         auto& cub_temp = scatter.CubTemp(streamId);
         size_t tempByte = 0;
-        gpuErrchk(cub::DeviceScan::ExclusiveSum(
+        flamegpu::detail::gpuCheck(cub::DeviceScan::ExclusiveSum(
             nullptr,
             tempByte,
             scanCfg.d_ptrs.scan_flag,
@@ -201,14 +201,14 @@ unsigned int CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int
             stream));
         cub_temp.resize(tempByte);
         // Perform scan
-        gpuErrchk(cub::DeviceScan::ExclusiveSum(
+        flamegpu::detail::gpuCheck(cub::DeviceScan::ExclusiveSum(
             cub_temp.getPtr(),
             cub_temp.getSize(),
             scanCfg.d_ptrs.scan_flag,
             scanCfg.d_ptrs.position,
             newSize + 1,
             stream));
-        gpuErrchk(cudaStreamSynchronize(stream));
+        flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));
         // Resize if necessary
         // @todo? this could be improved by checking scan result for the actual size, rather than max size)
         resize(parent_list->getSizeWithDisabled() + newSize, true, stream);
