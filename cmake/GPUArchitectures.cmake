@@ -216,6 +216,6 @@ function(flamegpu_set_gpu_architectures)
         # The ROCm on Radeon and Ryzen docs (https://rocm.docs.amd.com/projects/radeon-ryzen/en/latest/docs/compatibility/compatibilityryz/native_linux/native_linux_compatibility.html) include some additioanl architectrues, but seems to be very partial support.
         # Generic architectures are the closest thing to building for SM_50 and it running on 52. I.e. gfx10-1-generic, but this might not be available for all supported families (https://rocm.docs.amd.com/projects/llvm-project/en/latest/conceptual/code-portability.html#generic-code-objects)
         # As this is so hard to detect, we probably just leave default as to use the native build and document this? Then for any redistributable CI either list everything, or use the -generic architectures (whcich could be extracted via --target=amdgcn-amd-amdhsa --print-supported-cpus)?
-        message(AUTHOR_WARNING "Todo: implement flamegpu_set_gpu_architectures for HIP. This is non trivial.")
+        # message(AUTHOR_WARNING "Todo: implement flamegpu_set_gpu_architectures for HIP. This is non trivial.")
     endif()
 endfunction()
