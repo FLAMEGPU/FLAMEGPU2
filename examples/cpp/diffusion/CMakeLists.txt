@@ -10,7 +10,7 @@ include(${FLAMEGPU_ROOT}/cmake/GPUArchitectures.cmake)
 flamegpu_init_gpu_architectures(PROJECT diffusion)
 
 # Name the project and enable required languages
-project(diffusion CXX LANGUAGES NONE)
+project(diffusion LANGUAGES NONE)
 
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
