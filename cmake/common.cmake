@@ -135,7 +135,7 @@ endif(FLAMEGPU_ENABLE_NVTX)
 # Currently duplicated due to docs only build logic.
 # CUDA 12.0 is the current minimum supported version.
 if(NOT DEFINED MINIMUM_SUPPORTED_CUDA_VERSION)
-    set(MINIMUM_SUPPORTED_CUDA_VERSION 12.0)
+    set(MINIMUM_SUPPORTED_CUDA_VERSION 12.4)
     # Require a minimum cuda version
     if(CMAKE_CUDA_COMPILER_VERSION VERSION_LESS ${MINIMUM_SUPPORTED_CUDA_VERSION})
         message(FATAL_ERROR "CUDA version must be at least ${MINIMUM_SUPPORTED_CUDA_VERSION}")

@@ -41,27 +41,27 @@ void MessageArray3D::CUDAModelHandler::init(detail::CUDAScatter &scatter, unsign
     for (auto &var : this->sim_message.getMessageData().variables) {
         // Elements is harmless, futureproof for arrays support
         // hd_metadata.length is used, as message array can be longer than message count
-        gpuErrchk(cudaMemsetAsync(write_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length, stream));
-        gpuErrchk(cudaMemsetAsync(read_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length, stream));
+        flamegpu::detail::gpuCheck(cudaMemsetAsync(write_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length, stream));
+        flamegpu::detail::gpuCheck(cudaMemsetAsync(read_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length, stream));
     }
-    gpuErrchk(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));
 }
 void MessageArray3D::CUDAModelHandler::allocateMetaDataDevicePtr(cudaStream_t stream) {
     if (d_metadata == nullptr) {
-        gpuErrchk(cudaMalloc(&d_metadata, sizeof(MetaData)));
-        gpuErrchk(cudaMemcpyAsync(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice, stream));
-        gpuErrchk(cudaStreamSynchronize(stream));
+        flamegpu::detail::gpuCheck(cudaMalloc(&d_metadata, sizeof(MetaData)));
+        flamegpu::detail::gpuCheck(cudaMemcpyAsync(d_metadata, &hd_metadata, sizeof(MetaData), cudaMemcpyHostToDevice, stream));
+        flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));
     }
 }
 
 void MessageArray3D::CUDAModelHandler::freeMetaDataDevicePtr() {
     if (d_metadata != nullptr) {
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_metadata));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_metadata));
     }
     d_metadata = nullptr;
 
     if (d_write_flag) {
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_write_flag));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_write_flag));
     }
     d_write_flag = nullptr;
     d_write_flag_len = 0;
@@ -74,7 +74,7 @@ void MessageArray3D::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, 
     for (auto &var : this->sim_message.getMessageData().variables) {
         // Elements is harmless, futureproof for arrays support
         // hd_metadata.length is used, as message array can be longer than message count
-        gpuErrchk(cudaMemsetAsync(write_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length, stream));
+        flamegpu::detail::gpuCheck(cudaMemsetAsync(write_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length, stream));
     }
 
     // Reorder messages
@@ -84,10 +84,10 @@ void MessageArray3D::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, 
         if (d_write_flag_len < MESSAGE_COUNT) {
             // Increase length
             if (d_write_flag) {
-                gpuErrchk(flamegpu::detail::cuda::cudaFree(d_write_flag));
+                flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_write_flag));
             }
             d_write_flag_len = static_cast<unsigned int>(MESSAGE_COUNT * 1.1f);
-            gpuErrchk(cudaMalloc(&d_write_flag, sizeof(unsigned int) * d_write_flag_len));
+            flamegpu::detail::gpuCheck(cudaMalloc(&d_write_flag, sizeof(unsigned int) * d_write_flag_len));
         }
         t_d_write_flag = d_write_flag;
     }
@@ -99,7 +99,7 @@ void MessageArray3D::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, 
         this->sim_message.setMessageCount(hd_metadata.length);
     // Detect errors
     // TODO
-    gpuErrchk(cudaStreamSynchronize(stream));  // Redundant: Array msg reorder has a sync
+    flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));  // Redundant: Array msg reorder has a sync
 }
 
 /// <summary>

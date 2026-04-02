@@ -39,7 +39,7 @@ jobs:
             hostcxx: gcc-toolset-13
             os: ubuntu-24.04
           # CUDA 12
-          - cuda: "12.0"
+          - cuda: "12.4"
             cuda_arch: "50"
             hostcxx: gcc-toolset-12
             os: ubuntu-24.04
