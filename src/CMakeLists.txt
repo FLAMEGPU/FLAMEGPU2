@@ -530,6 +530,15 @@ if(CMAKE_HIP_COMPILER_LOADED)
     set_property(TARGET ${PROJECT_NAME} PROPERTY HIP_STANDARD_REQUIRED ON)
 endif()
 
+# Add compiler definitions to identify if CUDA or HIP are in use.
+# This allows correct guarding of includes when CUDA/HIP predefined macros are not always available (i.e. in pure CXX files, where types may be needed)
+if(CMAKE_CUDA_COMPILER_LOADED)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC "FLAMEGPU_USE_CUDA")
+endif()
+if(CMAKE_HIP_COMPILER_LOADED)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC "FLAMEGPU_USE_HIP")
+endif()
+
 # Add the library headers as public so they are forwarded on.
 target_include_directories(${PROJECT_NAME} PUBLIC "${FLAMEGPU_ROOT}/include")
 # Add any private headers.
