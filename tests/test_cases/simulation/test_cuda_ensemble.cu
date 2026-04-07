@@ -383,13 +383,10 @@ TEST(TestCUDAEnsemble, verbosity) {
     model.addInitFunction(simulateInit);
     model.addExitFunction(simulateExit);
     // Crete a small runplan, using a different number of steps per sim.
-    uint64_t expectedResult = 0;
     flamegpu::RunPlanVector plans(model, planCount);
     for (uint32_t idx = 0; idx < plans.size(); idx++) {
         auto& plan = plans[idx];
         plan.setSteps(idx + 1);  // Can't have 0 steps without exit condition
-        // Increment the expected result based on the number of steps.
-        expectedResult += (idx + 1) * populationSize;
     }
     // Create an ensemble
     flamegpu::CUDAEnsemble ensemble(model);
@@ -762,13 +759,10 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDASimulation) {
     model.newLayer().addAgentFunction(simulateAgentFn);
     model.addInitFunction(simulateInit);
     // Crete a small runplan, using a different number of steps per sim.
-    uint64_t expectedResult = 0;
     flamegpu::RunPlanVector plans(model, planCount);
     for (uint32_t idx = 0; idx < plans.size(); idx++) {
         auto &plan = plans[idx];
         plan.setSteps(idx + 1);  // Can't have 0 steps without exit condition
-        // Increment the expected result based on the number of steps.
-        expectedResult += (idx + 1) * populationSize;
     }
 
     // Create and use but do not destroy a CUDASimulation, so it can be used to check for device reset issues later
@@ -803,13 +797,10 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDASimulation_rtc) {
     model.newLayer().addAgentFunction("Agent", "simulateAgentFn");
     model.addInitFunction(simulateInit);
     // Crete a small runplan, using a different number of steps per sim.
-    uint64_t expectedResult = 0;
     flamegpu::RunPlanVector plans(model, planCount);
     for (uint32_t idx = 0; idx < plans.size(); idx++) {
         auto &plan = plans[idx];
         plan.setSteps(idx + 1);  // Can't have 0 steps without exit condition
-        // Increment the expected result based on the number of steps.
-        expectedResult += (idx + 1) * populationSize;
     }
 
     // Create and use but do not destroy a CUDASimulation, so it can be used to check for device reset issues later
@@ -860,13 +851,10 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc) {
         model.newLayer().addAgentFunction(simulateAgentFn);
         model.addInitFunction(simulateInit);
         // Crete a small runplan, using a different number of steps per sim.
-        uint64_t expectedResult = 0;
         flamegpu::RunPlanVector plans(model, planCount);
         for (uint32_t idx = 0; idx < plans.size(); idx++) {
             auto &plan = plans[idx];
             plan.setSteps(idx + 1);  // Can't have 0 steps without exit condition
-            // Increment the expected result based on the number of steps.
-            expectedResult += (idx + 1) * populationSize;
         }
         // Create an ensemble
         flamegpu::CUDAEnsemble ensemble(model);
@@ -1064,13 +1052,10 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc_rtc) {
         model.newLayer().addAgentFunction("Agent", "simulateAgentFn");
         model.addInitFunction(simulateInit);
         // Crete a small runplan, using a different number of steps per sim.
-        uint64_t expectedResult = 0;
         flamegpu::RunPlanVector plans(model, planCount);
         for (uint32_t idx = 0; idx < plans.size(); idx++) {
             auto &plan = plans[idx];
             plan.setSteps(idx + 1);  // Can't have 0 steps without exit condition
-            // Increment the expected result based on the number of steps.
-            expectedResult += (idx + 1) * populationSize;
         }
         // Create an ensemble
         flamegpu::CUDAEnsemble ensemble(model);
