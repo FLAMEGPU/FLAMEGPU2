@@ -48,6 +48,7 @@ else()
         GIT_PROGRESS   ON
         # UPDATE_DISCONNECTED   ON
         SOURCE_SUBDIR "do_not_use_add_subirectory"
+        SYSTEM
     )
     # Fetch the content if required.
     FetchContent_GetProperties(cccl)
