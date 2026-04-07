@@ -54,7 +54,7 @@ static constexpr bool ENABLED = false;
  * @param label label for the NVTX marker
  * @note The number of pushes must match the number of pops.
  */
-static inline void push(const char * label) {
+inline void push(const char * label) {
     // Only do anything if nvtx is enabled, but also need to macro guard things from the  guarded headers
     #if defined(FLAMEGPU_USE_NVTX)
         if constexpr (ENABLED) {
@@ -89,7 +89,7 @@ static inline void push(const char * label) {
  * Method to pop an NVTX marker for improved profiling, if NVTX is enabled at configuration time.
  * @note the number of pops must match the number of pushes.
  */
-static inline void pop() {
+inline void pop() {
     // Only do anything if nvtx is enabled
     #if defined(FLAMEGPU_USE_NVTX)
         if constexpr (ENABLED) {
