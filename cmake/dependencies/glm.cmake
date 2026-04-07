@@ -10,6 +10,7 @@ FetchContent_Declare(
     glm
     URL            "https://github.com/g-truc/glm/archive/66062497b104ca7c297321bd0e970869b1e6ece5.zip"
     SOURCE_SUBDIR "do_not_use_add_subirectory"
+    SYSTEM
 )
 FetchContent_GetProperties(glm)
 FetchContent_MakeAvailable(glm)
