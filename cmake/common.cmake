@@ -76,9 +76,9 @@ set(FLAMEGPU_CURAND_ENGINE "PHILOX" CACHE STRING "The curand engine to use. Suit
 set_property(CACHE FLAMEGPU_CURAND_ENGINE PROPERTY STRINGS PHILOX XORWOW MRG)
 mark_as_advanced(FLAMEGPU_CURAND_ENGINE)
 
-# If CUDA >= 11.2, add an option to control the use of NVCC_THREADS
+# If CUDA, add an option to control the use of NVCC_THREADS (CUDA >= 11.2)
 set(DEFAULT_FLAMEGPU_NVCC_THREADS 2)
-if(CMAKE_CUDA_COMPILER_LOADED AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.2)
+if(CMAKE_CUDA_COMPILER_LOADED)
     # The number of threads to use defaults to 2, telling the compiler to use up to 2 threads when multiple arch's are specified.
     # Setting this value to 0 would use as many threads as possible.
     # In some cases, this may increase total runtime due to excessive thread creation, and lowering the number of threads, or lowering the value of `-j` passed to cmake may be beneficial.
