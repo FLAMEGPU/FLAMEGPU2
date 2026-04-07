@@ -105,7 +105,6 @@ inline bool cuDevicePrimaryContextIsActive(int ordinal) {
     return false;
 }
 
-#if __CUDACC_VER_MAJOR__ >= 12
 /**
  * use the CUDA 12+ driver api to get the unique id of the current CUDA context, with error checking.
  * This method will silenlty consume any cuda errors, as it is expected to (potentially) be called during CUDA shutdown.
@@ -127,7 +126,6 @@ inline std::uint64_t cuGetCurrentContextUniqueID() {
     }
     return std::numeric_limits<std::uint64_t>::max();
 }
-#endif  // __CUDACC_VER_MAJOR__ >= 12
 
 }  // namespace cuda
 }  // namespace detail

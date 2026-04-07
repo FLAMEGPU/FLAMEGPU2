@@ -429,7 +429,7 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
 #endif
 
 // pass the c++ language dialect. It may be better to explicitly pass this from CMake.
-#if defined(__cplusplus) && __cplusplus >= 202002L && defined(__CUDACC_VER_MAJOR__) && __CUDACC_VER_MAJOR__ >= 12
+#if defined(__cplusplus) && __cplusplus >= 202002L
     options.push_back("--std=c++20");
 #endif
 

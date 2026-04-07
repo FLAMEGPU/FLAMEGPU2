@@ -99,9 +99,8 @@ bool compute_capability::checkComputeCapability(int deviceIndex) {
 }
 
 std::vector<int> compute_capability::getNVRTCSupportedComputeCapabilties() {
-// NVRTC included with CUDA 11.2+ includes methods to query the supported architectures and CUDA from 11.2+
-// Also changes the soname rules such that nvrtc.11.2.so is vald for all nvrtc >= 11.2, and libnvrtc.12.so for CUDA 12.x etc, so this is different at runtime not compile time for future versions, so use the methods
-#if (__CUDACC_VER_MAJOR__ > 11) || ((__CUDACC_VER_MAJOR__ == 11) && __CUDACC_VER_MINOR__ >= 2)
+    // NVRTC included with CUDA 11.2+ includes methods to query the supported architectures and CUDA from 11.2+
+    // Also changes the soname rules such that nvrtc.11.2.so is vald for all nvrtc >= 11.2, and libnvrtc.12.so for CUDA 12.x etc, so this is different at runtime not compile time for future versions, so use the methods
     nvrtcResult nvrtcStatus = NVRTC_SUCCESS;
     int nvrtcNumSupportedArchs = 0;
     // Query the number of architecture flags supported by this nvrtc, to allocate enough memory
@@ -118,20 +117,6 @@ std::vector<int> compute_capability::getNVRTCSupportedComputeCapabilties() {
     }
     // If any of the above functions failed, we have no idea what arch's are supported, so assume none are?
     return {};
-// Older CUDA's do not support this, but this is simple to hard-code for CUDA 11.0/11.1 (and CUDA 10.x).
-// CUDA 11.1 supports 35 to 86
-#elif (__CUDACC_VER_MAJOR__ == 11) && __CUDACC_VER_MINOR__ == 1
-    return {35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75, 80, 86};
-// CUDA 11.0 supports 35 to 80
-#elif (__CUDACC_VER_MAJOR__ == 11) && __CUDACC_VER_MINOR__ == 0
-    return {35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75, 80};
-// CUDA 10.x supports 30 to 75
-#elif (__CUDACC_VER_MAJOR__ >= 10)
-    return {30, 32, 35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75};
-// This should be all cases for FLAME GPU 2, but leave the fallback branch just in case
-#else
-    return {};
-#endif
 }
 
 int compute_capability::selectAppropraiteComputeCapability(const int target, const std::vector<int>& architectures) {
