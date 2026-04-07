@@ -106,9 +106,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model, b
     , singletons(nullptr)
     , singletonsInitialised(false)
     , rtcInitialised(false)
-#if __CUDACC_VER_MAJOR__ >= 12
     , cudaContextID(std::numeric_limits<std::uint64_t>::max())
-#endif  // __CUDACC_VER_MAJOR__ >= 12
     , isPureRTC(detectPureRTC(model))
     , isSWIG(_isSWIG) {
     initOffsetsAndMap();
@@ -164,9 +162,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
     , singletons(nullptr)
     , singletonsInitialised(false)
     , rtcInitialised(false)
-#if __CUDACC_VER_MAJOR__ >= 12
     , cudaContextID(std::numeric_limits<std::uint64_t>::max())
-#endif  // __CUDACC_VER_MAJOR__ >= 12
     , isPureRTC(master_model->isPureRTC)
     , isSWIG(master_model->isSWIG) {
     initOffsetsAndMap();
@@ -1561,9 +1557,7 @@ void CUDASimulation::applyConfig_derived() {
     flamegpu::detail::gpuCheck(cudaFree(nullptr));
 
     // Get the unique ID of the current cuda context, to prevent unsafe stream destruction post flamegpu::cleanup for CUDA 12+
-#if __CUDACC_VER_MAJOR__ >= 12
     this->cudaContextID = flamegpu::detail::cuda::cuGetCurrentContextUniqueID();
-#endif  // __CUDACC_VER_MAJOR__ >= 12
 
     // Apply changes to submodels
     for (auto &sm : submodel_map) {
@@ -2059,11 +2053,8 @@ void CUDASimulation::destroyStreams() {
     Instead, we can use the CUDA driver API to check the primary context is correct / valid for the device, and if it is attempt to destroy the stream, which works for CUDA 11.x.
     CUDA 12.x however claims the ctx is active for the specified device, even after a reset. Getting the active context returns the same handle after a reset, so we cannot store and compare CUcontexts, but CUDA 12 does include a new method to get the unique ID for a context which we can store and check is a match.
     */
-    bool safeToDestroy = flamegpu::detail::cuda::cuDevicePrimaryContextIsActive(deviceInitialised);
-    #if __CUDACC_VER_MAJOR__ >= 12
-        std::uint64_t currentContextID = flamegpu::detail::cuda::cuGetCurrentContextUniqueID();
-        safeToDestroy = safeToDestroy && currentContextID == this->cudaContextID;
-    #endif  // __CUDACC_VER_MAJOR__ >= 12
+    std::uint64_t currentContextID = flamegpu::detail::cuda::cuGetCurrentContextUniqueID();
+    bool safeToDestroy = flamegpu::detail::cuda::cuDevicePrimaryContextIsActive(deviceInitialised) && currentContextID == this->cudaContextID;
     if (safeToDestroy) {
         // Destroy streams.
         for (auto stream : streams) {
@@ -2077,11 +2068,8 @@ void CUDASimulation::safeDestroyJitify() {
     if (deviceInitialised == -1)
         return;
     // See note in destroyStreams()
-    bool safeToDestroy = flamegpu::detail::cuda::cuDevicePrimaryContextIsActive(deviceInitialised);
-#if __CUDACC_VER_MAJOR__ >= 12
     std::uint64_t currentContextID = flamegpu::detail::cuda::cuGetCurrentContextUniqueID();
-    safeToDestroy = safeToDestroy && currentContextID == this->cudaContextID;
-#endif  // __CUDACC_VER_MAJOR__ >= 12
+    bool safeToDestroy = flamegpu::detail::cuda::cuDevicePrimaryContextIsActive(deviceInitialised) && currentContextID == this->cudaContextID;
     // Destroy any RTC functions
     for (auto &[_, ca] : agent_map) {
         ca->destroyRTCInstances(safeToDestroy);
