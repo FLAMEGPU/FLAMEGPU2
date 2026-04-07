@@ -442,6 +442,7 @@ function(flamegpu_add_executable NAME SRC FLAMEGPU_ROOT PROJECT_ROOT IS_EXAMPLE)
         target_compile_options(${NAME} PUBLIC $<$<COMPILE_LANGUAGE:HIP>:-fgpu-rdc>)
         target_link_options(${NAME} PUBLIC -fgpu-rdc --hip-link)
         # Ensure that HIP is used as the linker. linking aginast hip::device forces -x hip to be passed to the linker, which the host compiler might not understand (i.e. gcc)
+        # This does not ensure g++ can be used for CXX objects however, as linking against roc::rocthrust, hip::hipcub also pollute with -x hip. 
         set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE HIP)
     endif()
 

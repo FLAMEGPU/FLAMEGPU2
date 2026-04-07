@@ -169,6 +169,7 @@ macro(flamegpu_enable_languages)
         _flamegpu_check_source_compiles_cxx_filesystem()
         _flamegpu_check_source_compiles_cuda_chrono()
         _flamegpu_check_source_compiles_cuda_vector_tuple()
+        _flamegpu_check_source_compilers_hip_cxx_xhip()
 
         # Set cache variables which can only be determined by compilation 
         _flamegpu_check_source_compiles_file_offset_bits_64()
@@ -382,6 +383,50 @@ function(_flamegpu_check_source_compiles_cuda_vector_tuple)
             "See https://github.com/FLAMEGPU/FLAMEGPU2/issues/650"
         )
     endif()
+endfunction()
+
+
+# Internal function that emits a warning if compiling a CXX file with -x hip fails
+# hip::device (for rocm 7.2.0 atleast) includes '-x hip' in INTERFACE_COMPILE_OPTIONS from lib/cmake/hip-config-amd.cmake
+# This is applied to all targets regardless of the langauge, so if the CXX (or C) compiler is not hip aware, errors will likely occur.
+# This is just a warning, not an error incase HIP behaviour becomes sane in the future, and this check occurs before the call to find_package(HIP)
+function(_flamegpu_check_source_compilers_hip_cxx_xhip)
+    # Do nothing if on MSVC, or if not using HIP
+    if(MSVC OR NOT CMAKE_HIP_COMPILER_LOADED)
+        return()
+    endif()
+
+    # Early exit if this has already been ran
+    if(DEFINED CACHE{_FLAMEGPU_CHECK_HIP_CXX_X_HIP_V0})
+        return()
+    endif()
+
+    # Set local scope variables that impact the check 
+    set(CMAKE_CXX_STANDARD ${_flamegpu_cxx_std})
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_HIP_STANDARD ${_flamegpu_cxx_std})
+    set(CMAKE_HIP_STANDARD_REQUIRED ON)
+    # set the -x hip flag which will probably cause errors
+    set(CMAKE_REQUIRED_FLAGS "-x hip")
+    # Only build a static library, as -x hip will be an error if passed to the linker.
+    # this is a check_source_compilers limitation, try_compile could be used instead.
+    set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
+
+    # Compile the following snippet
+    check_source_compiles(CXX [[
+        int main (int argc, char * argv[]) {
+            return 0;
+        }
+    ]] _FLAMEGPU_CHECK_HIP_CXX_X_HIP_V0)
+
+    if (NOT _FLAMEGPU_CHECK_HIP_CXX_X_HIP_V0)
+        message(WARNING
+            "  ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION} fails to compile with '-x hip'\n"
+            "  Compilation errors are likely to occur due to INTERFACE_COMPILE_OPTIONS from hip::device likely including '-x hip'\n"
+            "  Consider using an alternate CXX compiler which is hip-aware, via CMAKE_CXX_COMPILER such as hipcc or amdclang++\n"
+        )
+    endif()
+
 endfunction()
 
 # Internal function to check if the _FILE_OFFSET_BITS=64 is required for Jitify2 or not on linux. 

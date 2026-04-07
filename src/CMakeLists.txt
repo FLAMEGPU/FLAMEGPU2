@@ -690,6 +690,7 @@ endif()
 
 if(CMAKE_HIP_COMPILER_LOADED)
     target_link_libraries(${PROJECT_NAME} PUBLIC hip::host)
+    # hip::device infects the CXX compiler with -x hip via INTERFACE_COMPILE_OPTIONS. Transitive vai roc::rocthrust and hip::hipcub. I.e. eveything must go through hip.
     target_link_libraries(${PROJECT_NAME} PUBLIC hip::device)
     # cccl equivalents
     target_link_libraries(${PROJECT_NAME} PUBLIC roc::rocthrust)
