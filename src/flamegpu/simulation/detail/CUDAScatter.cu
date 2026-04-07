@@ -1,6 +1,9 @@
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
+#endif
+
 #include <vector>
 #include <cassert>
 #include <cstdio>

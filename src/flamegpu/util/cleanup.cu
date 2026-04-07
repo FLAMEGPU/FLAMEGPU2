@@ -4,7 +4,10 @@
 #include <mpi.h>
 #endif
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
+#endif
+
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/detail/JitifyCache.h"
 

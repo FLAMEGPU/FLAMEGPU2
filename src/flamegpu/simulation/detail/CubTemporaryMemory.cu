@@ -1,5 +1,8 @@
 #include "flamegpu/simulation/detail/CubTemporaryMemory.cuh"
+
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
+#endif
 
 #include <cassert>
 

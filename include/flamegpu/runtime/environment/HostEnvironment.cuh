@@ -1,8 +1,10 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_ENVIRONMENT_HOSTENVIRONMENT_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_ENVIRONMENT_HOSTENVIRONMENT_CUH_
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>  // Required for FLAMEGPU_SEATBELTS=OFF builds for some reason.
+#endif
 
 #include <unordered_map>
 #include <array>

@@ -1,7 +1,9 @@
 #ifndef INCLUDE_FLAMEGPU_DETAIL_CUDAEVENTTIMER_CUH_
 #define INCLUDE_FLAMEGPU_DETAIL_CUDAEVENTTIMER_CUH_
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
+#endif
 
 #include "flamegpu/detail/Timer.h"
 #include "flamegpu/exception/FLAMEGPUException.h"

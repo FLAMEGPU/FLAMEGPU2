@@ -1,5 +1,8 @@
+#ifdef FLAMEGPU_USE_CUDA
 #include <nvrtc.h>
 #include <cuda.h>
+#endif
+
 #include <fstream>
 #include <iostream>
 #include <sstream>

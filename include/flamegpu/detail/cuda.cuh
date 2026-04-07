@@ -1,8 +1,10 @@
 #ifndef INCLUDE_FLAMEGPU_DETAIL_CUDA_CUH_
 #define INCLUDE_FLAMEGPU_DETAIL_CUDA_CUH_
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
 #include <cuda.h>
+#endif
 
 #ifndef __CUDACC_RTC__
 #include <limits>

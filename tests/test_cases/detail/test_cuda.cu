@@ -1,4 +1,6 @@
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
+#endif
 
 #include <vector>
 #include "flamegpu/detail/cuda.cuh"

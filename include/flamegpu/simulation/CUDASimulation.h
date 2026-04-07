@@ -1,7 +1,9 @@
 #ifndef INCLUDE_FLAMEGPU_SIMULATION_CUDASIMULATION_H_
 #define INCLUDE_FLAMEGPU_SIMULATION_CUDASIMULATION_H_
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda.h>
+#endif
 
 #include <atomic>
 #include <memory>

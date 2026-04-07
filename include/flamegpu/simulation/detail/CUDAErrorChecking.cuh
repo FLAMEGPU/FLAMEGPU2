@@ -1,8 +1,10 @@
 #ifndef INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDAERRORCHECKING_CUH_
 #define INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDAERRORCHECKING_CUH_
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
+#endif
 
 #include <source_location>
 #include <string>

@@ -1,5 +1,9 @@
 #include "helpers/device_initialisation.h"
+
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda.h>
+#endif
+
 #include <stdio.h>
 #include <cstdio>
 #include "flamegpu/flamegpu.h"

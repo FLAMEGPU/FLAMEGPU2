@@ -1,7 +1,9 @@
 #ifndef INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDAMACROENVIRONMENT_H_
 #define INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDAMACROENVIRONMENT_H_
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
+#endif
 
 #include <map>
 #include <utility>
