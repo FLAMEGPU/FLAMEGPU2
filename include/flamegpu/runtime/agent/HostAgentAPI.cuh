@@ -992,10 +992,10 @@ void HostAgentAPI::sort_async(const std::string & variable1, Order order1, const
         // pair sort values
         if (order2 == Asc) {
             thrust::stable_sort_by_key(thrust::cuda::par.on(stream), thrust::device_ptr<Var2T>(keys2), thrust::device_ptr<Var2T>(keys2 + agentCount),
-            thrust::device_ptr<unsigned int>(vals), thrust::less<Var2T>());
+            thrust::device_ptr<unsigned int>(vals), std::less<>());
         } else {
             thrust::stable_sort_by_key(thrust::cuda::par.on(stream), thrust::device_ptr<Var2T>(keys2), thrust::device_ptr<Var2T>(keys2 + agentCount),
-            thrust::device_ptr<unsigned int>(vals), thrust::greater<Var2T>());
+            thrust::device_ptr<unsigned int>(vals), std::greater<>());
         }
         gpuErrchkLaunch();
         // sort keys1 based on this order
@@ -1006,10 +1006,10 @@ void HostAgentAPI::sort_async(const std::string & variable1, Order order1, const
         // pair sort
         if (order1 == Asc) {
             thrust::stable_sort_by_key(thrust::cuda::par.on(stream), thrust::device_ptr<Var1T>(keys1), thrust::device_ptr<Var1T>(keys1 + agentCount),
-            thrust::device_ptr<unsigned int>(vals), thrust::less<Var1T>());
+            thrust::device_ptr<unsigned int>(vals), std::less<>());
         } else {
             thrust::stable_sort_by_key(thrust::cuda::par.on(stream), thrust::device_ptr<Var1T>(keys1), thrust::device_ptr<Var1T>(keys1 + agentCount),
-            thrust::device_ptr<unsigned int>(vals), thrust::greater<Var1T>());
+            thrust::device_ptr<unsigned int>(vals), std::greater<>());
         }
         gpuErrchkLaunch();
     }
