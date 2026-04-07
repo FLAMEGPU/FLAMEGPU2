@@ -154,7 +154,7 @@ endif()
 
 if (CMAKE_HIP_COMPILER_LOADED)
     # Ensure that HIP is found for link targets
-    find_package(HIP REQUIRED)
+    find_package(hip REQUIRED)
 
     # Control how we link against the HIP runtime library (CMake >= 3.21)
     # This is an undocumented CMake variable https://gitlab.kitware.com/cmake/cmake/-/work_items/25128
