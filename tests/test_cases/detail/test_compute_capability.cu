@@ -60,7 +60,7 @@ TEST(TestUtilComputeCapability, minimumCompiledComputeCapability) {
         // First check that the min_arch is atleast valid for the cuda compiler used, for known cuda compilers
         #if __CUDACC_VER_MAJOR__ >= 13
             EXPECT_GE(min_arch, 75);
-        #elif __CUDAACC_VER_MARJOR__ >= 12
+        #else
             EXPECT_GE(min_arch, 50);
         #endif
         // Instead of using the same approach to extract the 0th element from the macro, which would be redundant, instead use the recursive approach just implemented in this test file and make sure they agree.
@@ -114,23 +114,8 @@ TEST(TestUtilComputeCapability, checkComputeCapability) {
  */
 TEST(TestUtilComputeCapability, getNVRTCSupportedComputeCapabilties) {
     std::vector<int> architectures = detail::compute_capability::getNVRTCSupportedComputeCapabilties();
-
     // CUDA 11.2+ we do not know what values or how many this should return, so just assume a non zero number will be returned (in case of future additions / removals)
-    #if (__CUDACC_VER_MAJOR__ > 11) || ((__CUDACC_VER_MAJOR__ == 11) && __CUDACC_VER_MINOR__ >= 2)
-        EXPECT_GT(architectures.size(), 0);
-    // CUDA 11.1 suports 35 to 86, (13 arch's)
-    #elif (__CUDACC_VER_MAJOR__ == 11) && __CUDACC_VER_MINOR__ == 1
-        EXPECT_EQ(architectures.size(), 13);
-    // CUDA 11.0 supports 35 to 80 (12 arch's)
-    #elif (__CUDACC_VER_MAJOR__ == 11) && __CUDACC_VER_MINOR__ == 0
-        EXPECT_EQ(architectures.size(), 12);
-    // CUDA 10.x supports 30 to 75 (13 arch's)
-    #elif (__CUDACC_VER_MAJOR__ >= 10)
-        EXPECT_EQ(architectures.size(), 13);
-    // Otherwise there will be 0.
-    #else
-        EXPECT_EQ(architectures.size(), 0);
-    #endif
+    EXPECT_GT(architectures.size(), 0);
 }
 
 /**

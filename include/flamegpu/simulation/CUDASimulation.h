@@ -671,7 +671,6 @@ class CUDASimulation : public Simulation {
      */
     static bool detectPureRTC(const std::shared_ptr<const ModelData>& _model);
 
-#if __CUDACC_VER_MAJOR__ >= 12
     /**
      * The unique ID for the CUDA context used for stream creation for this instance. This is only available in CUDA 12+.
      * This is used to ensure that streams can safely be destroyed in CUDA 12, even if the device has been reset.
@@ -679,7 +678,6 @@ class CUDASimulation : public Simulation {
      * Cannot use cuStream querying methods, as it is UB to specify an invalid stream to these methods, resulting in segfaults
      */
     std::uint64_t cudaContextID;
-#endif  // __CUDACC_VER_MAJOR__ >= 12
 
  protected:
     /**
