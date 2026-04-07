@@ -980,7 +980,7 @@ class MessageArray2D::In {
             DTHROW("%u is not a valid radius for accessing Array2D message lists.\n", radius);
         } else if ((radius * 2) + 1 > metadata->dimensions[0] ||
                    (radius * 2) + 1 > metadata->dimensions[1]) {
-            unsigned int min_r = metadata->dimensions[0] < metadata->dimensions[1] ? metadata->dimensions[0] : metadata->dimensions[1];
+            [[maybe_unused]] unsigned int min_r = metadata->dimensions[0] < metadata->dimensions[1] ? metadata->dimensions[0] : metadata->dimensions[1];
             min_r = min_r % 2 == 0 ? min_r - 2: min_r - 1;
             min_r /= 2;
             DTHROW("%u is not a valid radius for accessing Array2D message lists, as the diameter of messages accessed exceeds one or more of the message list dimensions (%u, %u)."
@@ -1044,7 +1044,7 @@ class MessageArray2D::In {
             DTHROW("%u is not a valid radius for accessing Array2D message lists.\n", radius);
         } else if ((radius * 2) + 1 > metadata->dimensions[0] ||
                    (radius * 2) + 1 > metadata->dimensions[1]) {
-            unsigned int min_r = metadata->dimensions[0] < metadata->dimensions[1] ? metadata->dimensions[0] : metadata->dimensions[1];
+            [[maybe_unused]] unsigned int min_r = metadata->dimensions[0] < metadata->dimensions[1] ? metadata->dimensions[0] : metadata->dimensions[1];
             min_r = min_r % 2 == 0 ? min_r - 2: min_r - 1;
             min_r /= 2;
             DTHROW("%u is not a valid radius for accessing Array2D message lists, as the diameter of messages accessed exceeds one or more of the message list dimensions (%u, %u)."
