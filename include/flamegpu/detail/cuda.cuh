@@ -4,6 +4,18 @@
 #ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
 #include <cuda.h>
+#define FLAMEGPU_GPU_RUNTIME_PREFIX cuda
+#define FLAMEGPU_GPU_DRIVER_PREFIX cu
+#define FLAMEGPU_GPU_RUNTIME_PREFIX_UPPER CUDA
+#define FLAMEGPU_GPU_DRIVER_PREFIX_UPPER CU
+#endif
+
+#ifdef FLAMEGPU_USE_HIP
+#include <hip/hip_runtime.h>
+#define FLAMEGPU_GPU_RUNTIME_PREFIX hip
+#define FLAMEGPU_GPU_DRIVER_PREFIX hip
+#define FLAMEGPU_GPU_RUNTIME_PREFIX_UPPER HIP
+#define FLAMEGPU_GPU_DRIVER_PREFIX_UPPER HIP
 #endif
 
 #ifndef __CUDACC_RTC__
@@ -21,26 +33,73 @@ namespace detail {
  */
 namespace cuda {
 
+// Define macros for the lazy cuda/hip abstraction layer. This requires multiple macros for string manipulation
+#define FLAMEGPU_GPU_CONCAT_INNER(a, b) a ## b
+#define FLAMEGPU_GPU_CONCAT(a, b) FLAMEGPU_GPU_CONCAT_INNER(a, b)
+
+#if defined(FLAMEGPU_GPU_RUNTIME_PREFIX) && defined(FLAMEGPU_GPU_DRIVER_PREFIX)
+#define FLAMEGPU_GPU_RUNTIME_SYMBOL(STMT) FLAMEGPU_GPU_CONCAT(FLAMEGPU_GPU_RUNTIME_PREFIX, STMT)
+#define FLAMEGPU_GPU_DRIVER_SYMBOL(STMT) FLAMEGPU_GPU_CONCAT(FLAMEGPU_GPU_DRIVER_PREFIX, STMT)
+#else
+#define FLAMEGPU_GPU_RUNTIME_SYMBOL(STMT) STMT
+#define FLAMEGPU_GPU_DRIVER_SYMBOL(STMT) STMT
+#error "CUDA or HIP must be enabled"
+#endif
+
+// Using statement for cuda/hip error_t, which is part of the private API?
+// Todo: Should this just use the macro instead?
+// Should this actually be in detail?
+#if defined(FLAMEGPU_USE_CUDA)
+using Error_t = cudaError_t;
+#elif defined(FLAMEGPU_USE_HIP)
+using Error_t = hipError_t;
+#else
+// naked struct for intellisense, this should never occur for actual compilation
+typedef struct error* Error_t;
+#endif
+
+// Using statement for cuda/hip streams, which are part of the public API
+// Todo: should this just use the macro instead? Should this actually be in detail?
+#if defined(FLAMEGPU_USE_CUDA)
+using Stream_t = cudaStream_t;
+#elif defined(FLAMEGPU_USE_HIP)
+using Stream_t = hipStream_t;
+#else
+// naked struct for intellisense, this should never occur for actual compilation
+typedef struct stream* Stream_t;
+#endif
+
+
+// pointerAttributes is _t in hip :(
+#if defined(FLAMEGPU_USE_CUDA)
+using PointerAttributes_t = cudaPointerAttributes;
+#elif defined(FLAMEGPU_USE_HIP)
+using PointerAttributes_t = hipPointerAttribute_t;
+#else
+// naked struct for intellisense, this should never occur for actual compilation
+typedef struct pointerAttribtues* PointerAttributes_t;
+#endif
+
 /**
  * Wrapped cudaFree which checks that the pointer is a valid device pointer in the current CUDA context prior to deallocation.
  * This also prevents double free errors from being raised, as the pointer attributes in that case are the same as a reset device, would need to check the primary context too?
  * @param devPtr device pointer to memory to free
  * @return forward the cuda error status from the inner cudaFree call
  */
-inline cudaError_t cudaFree(void* devPtr) {
-    cudaError_t status = cudaSuccess;
+inline Error_t cudaFree(void* devPtr) {
+    Error_t status = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
     // Check the pointer attributes to detect if it is a valid ptr for the current context.
     // @todo - version which checks the device ordinal is a match for the active context too, potentially flip-flopping the device.
-    cudaPointerAttributes attributes = {};
-    status = cudaPointerGetAttributes(&attributes, devPtr);
+    PointerAttributes_t attributes = {};
+    status = FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, devPtr);
     // valid device pointers have a type of cudaMemoryTypeDevice (2), or we could check the device is non negative (and matching the current device index?), or the devicePointer will be non null.
-    if (status == cudaSuccess && attributes.type == cudaMemoryTypeDevice) {
-        status = ::cudaFree(devPtr);
+    if (status == FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) && attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice)) {
+        status = ::FLAMEGPU_GPU_RUNTIME_SYMBOL(Free)(devPtr);
         // Forward any status on
         return status;
     }
-    // If the pointer attributes were not correct, return cudaSuccess to avoid bad error checking.
-    return cudaSuccess;
+    // If the pointer attributes were not correct, return FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) to avoid bad error checking.
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
 }
 
 /**
@@ -49,20 +108,20 @@ inline cudaError_t cudaFree(void* devPtr) {
  * @param devPtr pointer to memory to free
  * @return forward the cuda error status from the inner cudaFreeHost call
  */
-inline cudaError_t cudaFreeHost(void* devPtr) {
-    cudaError_t status = cudaSuccess;
+inline Error_t cudaFreeHost(void* devPtr) {
+    Error_t status = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
     // Check the pointer attributes to detect if it is a valid ptr for the current context.
     // @todo - version which checks the device ordinal is a match for the active context too, potentially flip-flopping the device.
-    cudaPointerAttributes attributes = {};
-    status = cudaPointerGetAttributes(&attributes, devPtr);
+    PointerAttributes_t attributes = {};
+    status = FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, devPtr);
     // valid pointers allocated using cudaMallocHost have a type of cudaMemoryTypeHost
-    if (status == cudaSuccess && attributes.type == cudaMemoryTypeHost) {
-        status = ::cudaFreeHost(devPtr);
+    if (status == FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) && attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeHost)) {
+        status = ::FLAMEGPU_GPU_RUNTIME_SYMBOL(FreeHost)(devPtr);
         // Forward on any cuda errors returned.
         return status;
     }
-    // If the pointer attributes were not correct, return cudaSuccess to avoid bad error checking.
-    return cudaSuccess;
+    // If the pointer attributes were not correct, return FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) to avoid bad error checking.
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
 }
 
 /**
@@ -72,6 +131,7 @@ inline cudaError_t cudaFreeHost(void* devPtr) {
  * @return bool indicating if primary context for the given device is active or not
  */
 inline bool cuDevicePrimaryContextIsActive(int ordinal) {
+#ifdef FLAMEGPU_USE_CUDA
     // Throw an exception if a negative device ordinal is passed
     if (ordinal < 0) {
         THROW exception::InvalidCUDAdevice("CUDA Device ordinals must be non-negative integers, in detail::cuda::cuDevicePrimaryContextIsActive()");
@@ -105,6 +165,10 @@ inline bool cuDevicePrimaryContextIsActive(int ordinal) {
     }
     // If we could not return the active state, return false.
     return false;
+#else
+    // Todo: Don't think hip has an equivalent to this? @todo
+    return true;
+#endif
 }
 
 /**
@@ -113,6 +177,7 @@ inline bool cuDevicePrimaryContextIsActive(int ordinal) {
  * @return the unique id for the CUDA context
  */
 inline std::uint64_t cuGetCurrentContextUniqueID() {
+#ifdef FLAMEGPU_USE_CUDA
     static_assert(sizeof(unsigned long long int) == sizeof(std::uint64_t));  // NOLINT
     CUresult cuErr = CUDA_SUCCESS;
     // Get the handle to the current context
@@ -127,6 +192,10 @@ inline std::uint64_t cuGetCurrentContextUniqueID() {
         }
     }
     return std::numeric_limits<std::uint64_t>::max();
+#else
+    // Todo: Don't think hip has an equivalent to this? @todo
+    return std::numeric_limits<std::uint64_t>::max();
+#endif
 }
 
 }  // namespace cuda
