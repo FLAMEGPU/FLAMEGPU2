@@ -15,6 +15,7 @@ FetchContent_Declare(
     GIT_PROGRESS   ON
     # UPDATE_DISCONNECTED   ON
     SOURCE_SUBDIR "do_not_use_add_subirectory"
+    SYSTEM
 )
 FetchContent_GetProperties(jitify)
 # Download content but do not use add_subdirectory
