@@ -61,9 +61,8 @@ if(NOT COMMAND flamegpu_set_high_warning_level)
         else()
             # Assume using GCC/Clang which Wall is relatively sane for. 
             target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wall$<COMMA>-Wsign-compare>")
-            target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:HIP>:SHELL:-Wall -Wsign-compare>")
-            target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wall>")
-            target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wsign-compare>")
+            target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX,HIP>:-Wall>")
+            target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX,HIP>:-Wsign-compare>")
             # Reorder errors for device code are caused by some cub/thrust versions (< 2.1.0?), but can be suppressed by pragmas successfully (11.3+) under linux
             if(CMAKE_CUDA_COMPILER_LOADED)
                 target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--Wreorder>")
