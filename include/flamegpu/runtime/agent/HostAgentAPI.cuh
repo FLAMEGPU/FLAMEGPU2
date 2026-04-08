@@ -128,7 +128,7 @@ struct funcName ## _impl {\
 };\
 funcName ## _impl funcName;\
 template<typename InT, typename OutT>\
-__device__ __forceinline__ OutT funcName ## _impl::unary_function<InT, OutT>::operator()(const InT &a) const
+__host__ __device__ __forceinline__ OutT funcName ## _impl::unary_function<InT, OutT>::operator()(const InT &a) const
 
 /**
  * Collection of HostAPI functions related to agents
