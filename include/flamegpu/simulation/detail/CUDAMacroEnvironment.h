@@ -85,7 +85,7 @@ class CUDAMacroEnvironment {
     /**
      * Performs CUDA allocations, and registers CURVE variables
      */
-    void init(cudaStream_t stream);
+    void init(flamegpu::detail::cuda::Stream_t stream);
     /**
      * Performs CUDA allocations, and registers CURVE variables
      * Initialises submodel mappings too
@@ -94,7 +94,7 @@ class CUDAMacroEnvironment {
      * @param stream The CUDAStream to use for CUDA operations
      * @note This must be called after the master model CUDAMacroEnvironment has init
      */
-    void init(const SubEnvironmentData& mapping, std::shared_ptr<const detail::CUDAMacroEnvironment> master_macro_env, cudaStream_t stream);
+    void init(const SubEnvironmentData& mapping, std::shared_ptr<const detail::CUDAMacroEnvironment> master_macro_env, flamegpu::detail::cuda::Stream_t stream);
     /**
      * Release all CUDA allocations, and unregisters CURVE variables
      */
@@ -103,6 +103,7 @@ class CUDAMacroEnvironment {
      * Register the properties to the provided RTC header
      * @param curve_header The RTC header to act upon
      */
+#ifdef FLAMEGPU_USE_CUDA
     void mapRTCVariables(detail::curve::CurveRTCHost& curve_header) const;
     /**
      * Release the properties to the provided RTC header
@@ -113,6 +114,7 @@ class CUDAMacroEnvironment {
      * Register (and set) all owned macro properties within the specified curve instance
      * @param curve The curve instance to act upon
      */
+#endif  // FLAMEGPU_USE_CUDA
     void registerCurveVariables(detail::curve::HostCurve &curve) const;
 
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
@@ -120,7 +122,7 @@ class CUDAMacroEnvironment {
      * Reset the flags used by seatbelts to catch potential race conditions
      * @param streams Streams to async reset over
      */
-    void resetFlagsAsync(const std::vector<cudaStream_t>& streams);
+    void resetFlagsAsync(const std::vector<flamegpu::detail::cuda::Stream_t>& streams);
     /**
      * Returns the current state of the device read flag for the named macro property
      * @param property_name Name of the macro property to query
@@ -176,7 +178,7 @@ class CUDAMacroEnvironment {
     const CUDASimulation& cudaSimulation;
     std::map<std::string, MacroEnvProp> properties;
     std::map<std::string, std::weak_ptr<HostMacroProperty_MetaData>> host_cache;
-    cudaStream_t stream = nullptr;
+    flamegpu::detail::cuda::Stream_t stream = nullptr;
 };
 
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>

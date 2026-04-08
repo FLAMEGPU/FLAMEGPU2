@@ -827,7 +827,7 @@ TEST(TestCUDASimulation, setEnvironmentProperty) {
 TEST(TestCUDASimulation, SimulationWithExistingCUDAMalloc) {
     // Allocate some arbitraty device memory.
     int * d_int = nullptr;
-    flamegpu::detail::gpuCheck(cudaMalloc(&d_int, sizeof(int)));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_int, sizeof(int)));
     // Validate that the ptr is a valid device pointer
     cudaPointerAttributes attributes = {};
     flamegpu::detail::gpuCheck(cudaPointerGetAttributes(&attributes, d_int));

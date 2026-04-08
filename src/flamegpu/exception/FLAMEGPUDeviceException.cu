@@ -32,7 +32,7 @@ DeviceExceptionBuffer *DeviceExceptionManager::getDevicePtr(const unsigned int s
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_buffer[streamId], sizeof(DeviceExceptionBuffer)));
     }
     // @todo - We might need a sync here in some cases? Tests all pass without it.
-    // flamegpu::detail::gpuCheck(cudaDeviceSynchronize());
+    // flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceSynchronize)());
 
     // Memset and return buffer
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_buffer[streamId], 0, sizeof(DeviceExceptionBuffer), stream));

@@ -1,5 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_AGENT_HOSTAGENTAPI_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_AGENT_HOSTAGENTAPI_CUH_
+#ifdef FLAMEGPU_USE_CUDA
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #pragma warning(disable : 4706 4834)
@@ -10,10 +11,10 @@
 #pragma diag_suppress 1719
 #endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
 #include <cub/cub.cuh>
-#include <thrust/count.h>
-#include <thrust/device_ptr.h>
-#include <thrust/sort.h>
-#include <thrust/execution_policy.h>
+#include <thrust/count.h>  // NOLINT(build/include)
+#include <thrust/device_ptr.h>  // NOLINT(build/include)
+#include <thrust/sort.h>  // NOLINT(build/include)
+#include <thrust/execution_policy.h>  // NOLINT(build/include)
 #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
 #pragma nv_diag_default 1719
 #else
@@ -22,6 +23,21 @@
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif  // _MSC_VER
+#endif  // FLAMEGPU_USE_CUDA
+
+#ifdef FLAMEGPU_USE_HIP
+#include <hipcub/hipcub.hpp>
+#include <thrust/count.h>  // NOLINT(build/include)
+#include <thrust/device_ptr.h>  // NOLINT(build/include)
+#include <thrust/sort.h>  // NOLINT(build/include)
+#include <thrust/execution_policy.h>   // NOLINT(build/include)
+// namepspace alias so cub:: can be used
+namespace cub = hipcub;
+// Ensure that thrust::cuda:: is usable, but actually thrust::hip
+namespace thrust {
+    namespace cuda = hip;
+}  // namespace thrust
+#endif
 
 #include <algorithm>
 #include <string>
@@ -40,6 +56,7 @@
 #include "flamegpu/simulation/AgentLoggingConfig_Reductions.cuh"
 #include "flamegpu/simulation/AgentLoggingConfig_SumReturn.h"
 #include "flamegpu/detail/type_decode.h"
+#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
 
@@ -315,7 +332,7 @@ class HostAgentAPI {
      * @param length Length of the buffer (how many unsigned ints can it hold)
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    static void fillTIDArray_async(unsigned int *d_buffer, unsigned int length, cudaStream_t stream);
+    static void fillTIDArray_async(unsigned int *d_buffer, unsigned int length, flamegpu::detail::cuda::Stream_t stream);
     /**
      * Sorts a buffer by the positions array, used for multi variable agent sorts
      * @param dest Device pointer to buffer for sorted data to be placed
@@ -325,7 +342,7 @@ class HostAgentAPI {
      * @param length Length of the buffer (how many items it can it hold)
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    static void sortBuffer_async(void *dest, void*src, unsigned int *position, size_t typeLen, unsigned int length, cudaStream_t stream);
+    static void sortBuffer_async(void *dest, void*src, unsigned int *position, size_t typeLen, unsigned int length, flamegpu::detail::cuda::Stream_t stream);
     /**
      * Wraps cub::DeviceReduce::Sum()
      * @param variable The agent variable to perform the sum reduction across
@@ -340,7 +357,7 @@ class HostAgentAPI {
      * @note Method is async, result may not arrive until stream is synchronised
      */
     template<typename InT, typename OutT>
-    void sum_async(const std::string& variable, OutT& result, cudaStream_t stream, unsigned int streamId) const;
+    void sum_async(const std::string& variable, OutT& result, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId) const;
     /**
      * Returns the mean and standard deviation of the specified variable in the agent population
      * The return value is a pair, where the first item holds the mean and the second item the standard deviation.
@@ -355,7 +372,7 @@ class HostAgentAPI {
      * @note Not actually async, would need a big rewrite (and to stop using the shared device symbol?)
      */
     template<typename InT>
-    void meanStandardDeviation_async(const std::string& variable, std::pair<double, double>& result, cudaStream_t stream, unsigned int streamId) const;
+    void meanStandardDeviation_async(const std::string& variable, std::pair<double, double>& result, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId) const;
     /**
      * Wraps cub::DeviceReduce::Min()
      * @param variable The agent variable to perform the lowerBound reduction across
@@ -369,7 +386,7 @@ class HostAgentAPI {
      * @note Method is async, result may not arrive until stream is synchronised
      */
     template<typename InT>
-    void min_async(const std::string& variable, InT& result, cudaStream_t stream, unsigned int streamId) const;
+    void min_async(const std::string& variable, InT& result, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId) const;
     /**
      * Wraps cub::DeviceReduce::Max()
      * @param variable The agent variable to perform the upperBound reduction across
@@ -383,7 +400,7 @@ class HostAgentAPI {
      * @note Method is async, result may not arrive until stream is synchronised
      */
     template<typename InT>
-    void max_async(const std::string& variable, InT& result, cudaStream_t stream, unsigned int streamId) const;
+    void max_async(const std::string& variable, InT& result, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId) const;
     /**
      * Wraps thrust::count(), to count the number of occurences of the provided value
      * @param variable The agent variable to perform the count reduction across
@@ -396,7 +413,7 @@ class HostAgentAPI {
      * @note Not actually async, uses thrust method that doesn't support async, uses specified stream though
      */
     template<typename InT>
-    unsigned int count_async(const std::string& variable, InT value, cudaStream_t stream) const;
+    unsigned int count_async(const std::string& variable, InT value, flamegpu::detail::cuda::Stream_t stream) const;
     /**
      * Wraps cub::DeviceHistogram::HistogramEven()
      * @param variable The agent variable to perform the reduction across
@@ -414,7 +431,7 @@ class HostAgentAPI {
      * @note Method is async, result may not arrive until stream is synchronised
      */
     template<typename InT, typename OutT>
-    void histogramEven_async(const std::string& variable, unsigned int histogramBins, InT lowerBound, InT upperBound, std::vector<OutT> &result, cudaStream_t stream, unsigned int streamId) const;
+    void histogramEven_async(const std::string& variable, unsigned int histogramBins, InT lowerBound, InT upperBound, std::vector<OutT> &result, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId) const;
     /**
      * Wraps cub::DeviceReduce::Reduce(), to perform a reduction with a custom operator
      * @param variable The agent variable to perform the reduction across
@@ -430,7 +447,7 @@ class HostAgentAPI {
      * @note Method is async, result may not arrive until stream is synchronised
      */
     template<typename InT, typename reductionOperatorT>
-    void reduce_async(const std::string& variable, reductionOperatorT reductionOperator, InT init, InT &result, cudaStream_t stream, unsigned int streamId) const;
+    void reduce_async(const std::string& variable, reductionOperatorT reductionOperator, InT init, InT &result, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId) const;
     /**
      * Wraps thrust::transformReduce(), to perform a custom transform on values before performing a custom reduction
      * @param variable The agent variable to perform the reduction across
@@ -445,7 +462,7 @@ class HostAgentAPI {
      * @note Not actually async, uses thrust method that doesn't support async, uses specified stream though
      */
     template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
-    OutT transformReduce_async(const std::string& variable, transformOperatorT transformOperator, reductionOperatorT reductionOperator, OutT init, cudaStream_t stream) const;
+    OutT transformReduce_async(const std::string& variable, transformOperatorT transformOperator, reductionOperatorT reductionOperator, OutT init, flamegpu::detail::cuda::Stream_t stream) const;
     /**
      * Sorts agents according to the named variable
      * @param variable The agent variable to sort the agents according to
@@ -462,7 +479,7 @@ class HostAgentAPI {
      * @note The sort provides no guarantee of stability
      */
     template<typename VarT>
-    void sort_async(const std::string& variable, Order order, int beginBit, int endBit, cudaStream_t stream, unsigned int streamId);
+    void sort_async(const std::string& variable, Order order, int beginBit, int endBit, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId);
     /**
      * Sort agents according to two variables e.g. [1:c, 3:b, 1:b, 1:a] -> [1:a, 1:b, 1:c, 3:b]
      * @param variable1 This variable will be the main direction that agents are sorted
@@ -479,7 +496,7 @@ class HostAgentAPI {
      * @note Not actually async, uses thrust method that doesn't support async, uses specified stream though
      */
     template<typename Var1T, typename Var2T>
-    void sort_async(const std::string& variable1, Order order1, const std::string& variable2, Order order2, cudaStream_t stream, unsigned int streamId);
+    void sort_async(const std::string& variable1, Order order1, const std::string& variable2, Order order2, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId);
     /**
      * Parent HostAPI
      */
@@ -513,18 +530,18 @@ template<typename InT>
 InT HostAgentAPI::sum(const std::string &variable) const {
     InT rtn;
     sum_async<InT, InT>(variable, rtn, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(cudaStreamSynchronize(this->api.stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
     return rtn;
 }
 template<typename InT, typename OutT>
 OutT HostAgentAPI::sum(const std::string& variable) const {
     OutT rtn;
     sum_async<InT, OutT>(variable, rtn, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(cudaStreamSynchronize(this->api.stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
     return rtn;
 }
 template<typename InT, typename OutT>
-void HostAgentAPI::sum_async(const std::string &variable, OutT &result, const cudaStream_t stream, const unsigned int streamId) const {
+void HostAgentAPI::sum_async(const std::string &variable, OutT &result, const flamegpu::detail::cuda::Stream_t stream, const unsigned int streamId) const {
     static_assert(sizeof(InT) <= sizeof(OutT), "Template arg OutT should not be of a smaller size than InT");
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
@@ -555,17 +572,17 @@ void HostAgentAPI::sum_async(const std::string &variable, OutT &result, const cu
     api.resizeOutputSpace<OutT>();
     flamegpu::detail::gpuCheck(cub::DeviceReduce::Sum(cub_temp.getPtr(), cub_temp.getSize(), reinterpret_cast<InT*>(var_ptr), reinterpret_cast<OutT*>(api.d_output_space), static_cast<int>(agentCount), stream));
     flamegpu::detail::gpuCheckLaunch();
-    flamegpu::detail::gpuCheck(cudaMemcpyAsync(&result, api.d_output_space, sizeof(OutT), cudaMemcpyDeviceToHost, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(&result, api.d_output_space, sizeof(OutT), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
 }
 template<typename InT>
 std::pair<double, double> HostAgentAPI::meanStandardDeviation(const std::string& variable) const {
     std::pair<double, double> rtn;
     meanStandardDeviation_async<InT>(variable, rtn, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(cudaStreamSynchronize(this->api.stream));  // Redundant, meanStandardDeviation_async() is not truly async
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));  // Redundant, meanStandardDeviation_async() is not truly async
     return rtn;
 }
 template<typename InT>
-void HostAgentAPI::meanStandardDeviation_async(const std::string& variable, std::pair<double, double> &result, const cudaStream_t stream, const unsigned int streamId) const {
+void HostAgentAPI::meanStandardDeviation_async(const std::string& variable, std::pair<double, double> &result, const flamegpu::detail::cuda::Stream_t stream, const unsigned int streamId) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -591,12 +608,12 @@ void HostAgentAPI::meanStandardDeviation_async(const std::string& variable, std:
     // Calculate mean (We could make this more efficient by leaving sum in device mem?)
     typename sum_input_t<InT>::result_t sum_result;
     sum_async<InT, typename sum_input_t<InT>::result_t>(variable, sum_result, stream, streamId);
-    flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
     const double mean = sum_result / static_cast<double>(agentCount);
     // Then for each number: subtract the Mean and square the result
     // Then work out the mean of those squared differences.
     auto lock = std::unique_lock<std::mutex>(detail::STANDARD_DEVIATION_MEAN_mutex);
-    flamegpu::detail::gpuCheck(cudaMemcpyToSymbolAsync(detail::STANDARD_DEVIATION_MEAN, &mean, sizeof(double), 0, cudaMemcpyHostToDevice, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyToSymbolAsync)(detail::STANDARD_DEVIATION_MEAN, &mean, sizeof(double), 0, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
     const double variance = transformReduce_async<InT, double>(variable, detail::standard_deviation_subtract_mean, detail::standard_deviation_add, 0, stream) / static_cast<double>(agentCount);
     lock.unlock();
     // Take the square root of that and we are done!
@@ -606,11 +623,11 @@ template<typename InT>
 InT HostAgentAPI::min(const std::string& variable) const {
     InT rtn;
     min_async<InT>(variable, rtn, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(cudaStreamSynchronize(this->api.stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
     return rtn;
 }
 template<typename InT>
-void HostAgentAPI::min_async(const std::string &variable, InT& result, const cudaStream_t stream, const unsigned int streamId) const {
+void HostAgentAPI::min_async(const std::string &variable, InT& result, const flamegpu::detail::cuda::Stream_t stream, const unsigned int streamId) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -642,17 +659,17 @@ void HostAgentAPI::min_async(const std::string &variable, InT& result, const cud
     api.resizeOutputSpace<InT>();
     flamegpu::detail::gpuCheck(cub::DeviceReduce::Min(cub_temp.getPtr(), cub_temp.getSize(), reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount), stream));
     flamegpu::detail::gpuCheckLaunch();
-    flamegpu::detail::gpuCheck(cudaMemcpyAsync(&result, api.d_output_space, sizeof(InT), cudaMemcpyDeviceToHost, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(&result, api.d_output_space, sizeof(InT), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
 }
 template<typename InT>
 InT HostAgentAPI::max(const std::string& variable) const {
     InT rtn;
     max_async<InT>(variable, rtn, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(cudaStreamSynchronize(this->api.stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
     return rtn;
 }
 template<typename InT>
-void HostAgentAPI::max_async(const std::string &variable, InT &result, const cudaStream_t stream, const unsigned int streamId) const {
+void HostAgentAPI::max_async(const std::string &variable, InT &result, const flamegpu::detail::cuda::Stream_t stream, const unsigned int streamId) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -683,14 +700,14 @@ void HostAgentAPI::max_async(const std::string &variable, InT &result, const cud
     api.resizeOutputSpace<InT>();
     flamegpu::detail::gpuCheck(cub::DeviceReduce::Max(cub_temp.getPtr(), cub_temp.getSize(), reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount), stream));
     flamegpu::detail::gpuCheckLaunch();
-    flamegpu::detail::gpuCheck(cudaMemcpyAsync(&result, api.d_output_space, sizeof(InT), cudaMemcpyDeviceToHost, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(&result, api.d_output_space, sizeof(InT), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
 }
 template<typename InT>
 unsigned int HostAgentAPI::count(const std::string &variable, InT value) const {
     return count_async<InT>(variable, value, this->api.stream);
 }
 template<typename InT>
-unsigned int HostAgentAPI::count_async(const std::string& variable, InT value, const cudaStream_t stream) const {
+unsigned int HostAgentAPI::count_async(const std::string& variable, InT value, const flamegpu::detail::cuda::Stream_t stream) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -720,18 +737,18 @@ template<typename InT>
 std::vector<unsigned int> HostAgentAPI::histogramEven(const std::string &variable, unsigned int histogramBins, InT lowerBound, InT upperBound) const {
     std::vector<unsigned int> rtn;
     histogramEven_async<InT, unsigned int>(variable, histogramBins, lowerBound, upperBound, rtn, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(cudaStreamSynchronize(this->api.stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
     return rtn;
 }
 template<typename InT, typename OutT>
 std::vector<OutT> HostAgentAPI::histogramEven(const std::string &variable, unsigned int histogramBins, InT lowerBound, InT upperBound) const {
     std::vector<OutT> rtn;
     histogramEven_async<InT, OutT>(variable, histogramBins, lowerBound, upperBound, rtn, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(cudaStreamSynchronize(this->api.stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
     return rtn;
 }
 template<typename InT, typename OutT>
-void HostAgentAPI::histogramEven_async(const std::string &variable, unsigned int histogramBins, InT lowerBound, InT upperBound, std::vector<OutT>& result, const cudaStream_t stream, const unsigned int streamId) const {
+void HostAgentAPI::histogramEven_async(const std::string &variable, unsigned int histogramBins, InT lowerBound, InT upperBound, std::vector<OutT>& result, const flamegpu::detail::cuda::Stream_t stream, const unsigned int streamId) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -770,17 +787,17 @@ void HostAgentAPI::histogramEven_async(const std::string &variable, unsigned int
         reinterpret_cast<InT*>(var_ptr), reinterpret_cast<OutT*>(api.d_output_space), histogramBins + 1, lowerBound, upperBound, static_cast<int>(agentCount), stream));
     flamegpu::detail::gpuCheckLaunch();
     result.resize(histogramBins);
-    flamegpu::detail::gpuCheck(cudaMemcpyAsync(result.data(), api.d_output_space, histogramBins * sizeof(OutT), cudaMemcpyDeviceToHost, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(result.data(), api.d_output_space, histogramBins * sizeof(OutT), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
 }
 template<typename InT, typename reductionOperatorT>
 InT HostAgentAPI::reduce(const std::string &variable, reductionOperatorT reductionOperator, InT init) const {
     InT rtn;
     reduce_async<InT, reductionOperatorT>(variable, reductionOperator, init, rtn, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(cudaStreamSynchronize(this->api.stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
     return rtn;
 }
 template<typename InT, typename reductionOperatorT>
-void HostAgentAPI::reduce_async(const std::string & variable, reductionOperatorT /*reductionOperator*/, InT init, InT &result, const cudaStream_t stream, const unsigned int streamId) const {
+void HostAgentAPI::reduce_async(const std::string & variable, reductionOperatorT /*reductionOperator*/, InT init, InT &result, const flamegpu::detail::cuda::Stream_t stream, const unsigned int streamId) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -814,14 +831,14 @@ void HostAgentAPI::reduce_async(const std::string & variable, reductionOperatorT
     flamegpu::detail::gpuCheck(cub::DeviceReduce::Reduce(cub_temp.getPtr(), cub_temp.getSize(), reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space),
         static_cast<int>(agentCount), typename reductionOperatorT::template binary_function<InT>(), init, stream));
     flamegpu::detail::gpuCheckLaunch();
-    flamegpu::detail::gpuCheck(cudaMemcpyAsync(&result, api.d_output_space, sizeof(InT), cudaMemcpyDeviceToHost, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(&result, api.d_output_space, sizeof(InT), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
 }
 template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
 OutT HostAgentAPI::transformReduce(const std::string &variable, transformOperatorT transformOperator, reductionOperatorT reductionOperator, OutT init) const {
     return transformReduce_async<InT, OutT, transformOperatorT, reductionOperatorT>(variable, transformOperator, reductionOperator, init, this->api.stream);
 }
 template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
-OutT HostAgentAPI::transformReduce_async(const std::string &variable, transformOperatorT /*transformOperator*/, reductionOperatorT /*reductionOperator*/, OutT init, cudaStream_t stream) const {
+OutT HostAgentAPI::transformReduce_async(const std::string &variable, transformOperatorT /*transformOperator*/, reductionOperatorT /*reductionOperator*/, OutT init, flamegpu::detail::cuda::Stream_t stream) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -852,10 +869,10 @@ OutT HostAgentAPI::transformReduce_async(const std::string &variable, transformO
 template<typename VarT>
 void HostAgentAPI::sort(const std::string &variable, Order order, int beginBit, int endBit) {
     sort_async<VarT>(variable, order, beginBit, endBit, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(cudaStreamSynchronize(this->api.stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
 }
 template<typename VarT>
-void HostAgentAPI::sort_async(const std::string & variable, Order order, int beginBit, int endBit, const cudaStream_t stream, const unsigned int streamId) {
+void HostAgentAPI::sort_async(const std::string & variable, Order order, int beginBit, int endBit, const flamegpu::detail::cuda::Stream_t stream, const unsigned int streamId) {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream || this->api.streamId != streamId) {
@@ -891,7 +908,7 @@ void HostAgentAPI::sort_async(const std::string & variable, Order order, int beg
     // Create array of TID (use scanflag_death.position)
     fillTIDArray_async(vals_in, agentCount, stream);
     // Create array of agent values (use scanflag_death.scan_flag)
-    flamegpu::detail::gpuCheck(cudaMemcpyAsync(keys_in, var_ptr, total_variable_buffer_size, cudaMemcpyDeviceToDevice, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(keys_in, var_ptr, total_variable_buffer_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice), stream));
     // Check if we need to resize cub storage
     auto& cub_temp = api.scatter.CubTemp(streamId);
     // Resize cub storage
@@ -920,10 +937,10 @@ void HostAgentAPI::sort_async(const std::string & variable, Order order, int beg
 template<typename Var1T, typename Var2T>
 void HostAgentAPI::sort(const std::string &variable1, Order order1, const std::string &variable2, Order order2) {
     sort_async<Var1T, Var2T>(variable1, order1, variable2, order2, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(cudaStreamSynchronize(this->api.stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
 }
 template<typename Var1T, typename Var2T>
-void HostAgentAPI::sort_async(const std::string & variable1, Order order1, const std::string & variable2, Order order2, const cudaStream_t stream, const unsigned int streamId) {
+void HostAgentAPI::sort_async(const std::string & variable1, Order order1, const std::string & variable2, Order order2, const flamegpu::detail::cuda::Stream_t stream, const unsigned int streamId) {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream || this->api.streamId != streamId) {
@@ -967,7 +984,7 @@ void HostAgentAPI::sort_async(const std::string & variable1, Order order1, const
         // Fill
         void *keys1b = scan.Config(detail::CUDAScanCompaction::Type::AGENT_DEATH, streamId).d_ptrs.position;
         void *var_ptr = agent.getStateVariablePtr(stateName, variable1);
-        flamegpu::detail::gpuCheck(cudaMemcpyAsync(keys1b, var_ptr, total_variable_buffer_size, cudaMemcpyDeviceToDevice, stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(keys1b, var_ptr, total_variable_buffer_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice), stream));
     }
     // Fill array with var2 keys
     {
@@ -978,7 +995,7 @@ void HostAgentAPI::sort_async(const std::string & variable1, Order order1, const
         // Fill
         void *keys2 = scan.Config(detail::CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId).d_ptrs.scan_flag;
         void *var_ptr = agent.getStateVariablePtr(stateName, variable2);
-        flamegpu::detail::gpuCheck(cudaMemcpyAsync(keys2, var_ptr, total_variable_buffer_size, cudaMemcpyDeviceToDevice, stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(keys2, var_ptr, total_variable_buffer_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice), stream));
     }
     // Define our buffers (here, after resize)
     Var1T *keys1 = reinterpret_cast<Var1T *>(scan.Config(detail::CUDAScanCompaction::Type::AGENT_DEATH, streamId).d_ptrs.scan_flag);

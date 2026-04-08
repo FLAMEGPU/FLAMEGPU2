@@ -15,6 +15,7 @@
 #include <list>
 #include <memory>
 
+#ifdef FLAMEGPU_USE_CUDA
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #pragma warning(disable : 4706 4834)
@@ -33,8 +34,17 @@
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif  // _MSC_VER
+#endif
 
+#ifdef FLAMEGPU_USE_HIP
+#include <hipcub/hipcub.hpp>
+// namepspace alias so cub:: can be used
+namespace cub = hipcub;
+#endif
+
+#ifdef FLAMEGPU_USE_CUDA
 #include "jitify/jitify2.hpp"
+#endif
 
 #include "flamegpu/version.h"
 #include "flamegpu/simulation/detail/CUDAFatAgent.h"
@@ -118,8 +128,10 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const unsigne
 
         // Map variables to agent function (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
         if (!func.rtc_func_name.empty()) {
+#ifdef FLAMEGPU_USE_CUDA
             auto& rtc_header = getRTCHeader(func.name);
             memcpy(rtc_header.getAgentVariableCachePtr(mmp.first.c_str()), &d_ptr, sizeof(void*));
+#endif  // FLAMEGPU_USE_CUDA
         } else {
             auto& curve = getCurve(func.name);
             curve.setAgentVariable(mmp.first, d_ptr, agent_count);
@@ -127,9 +139,11 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const unsigne
 
         // Map variables to agent function conditions (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
         if (!func.rtc_func_condition_name.empty()) {
+#ifdef FLAMEGPU_USE_CUDA
             auto& rtc_header = getRTCHeader(func.name + "_condition");
             memcpy(rtc_header.getAgentVariableCachePtr(mmp.first.c_str()), &d_ptr, sizeof(void*));
             rtc_header.setAgentVariableCount(mmp.first, agent_count);
+#endif  // FLAMEGPU_USE_CUDA
         } else if (func.condition) {
             auto& curve = getCurve(func.name + "_condition");
             curve.setAgentVariable(mmp.first, d_ptr, agent_count);
@@ -137,7 +151,7 @@ void CUDAAgent::mapRuntimeVariables(const AgentFunctionData& func, const unsigne
     }
 }
 
-void CUDAAgent::setPopulationData(const AgentVector& population, const std::string& state_name, CUDAScatter& scatter, const unsigned int streamId, const cudaStream_t stream) {
+void CUDAAgent::setPopulationData(const AgentVector& population, const std::string& state_name, CUDAScatter& scatter, const unsigned int streamId, const flamegpu::detail::cuda::Stream_t stream) {
     // Validate agent state
     auto our_state = state_map.find(state_name);
     if (our_state == state_map.end()) {
@@ -186,7 +200,7 @@ __global__ void generateCollisionFlags(const id_t* d_sortedKeys, id_t* d_flagsOu
         }
     }
 }
-void CUDAAgent::validateIDCollisions(cudaStream_t stream) const {
+void CUDAAgent::validateIDCollisions(flamegpu::detail::cuda::Stream_t stream) const {
     flamegpu::util::nvtx::Range range{"CUDAAgent::validateIDCollisions"};
     // All data is on device, so use a device technique to check for collisions
     // Sort agent IDs, have a simple kernel check for neighbouring ID collisions to set a flag
@@ -202,23 +216,23 @@ void CUDAAgent::validateIDCollisions(cudaStream_t stream) const {
     if (!agentCount) return;
     // Allocate buffers we will use
     id_t * d_keysIn = nullptr, *d_keysOut = nullptr;
-    flamegpu::detail::gpuCheck(cudaMalloc(&d_keysIn, sizeof(id_t) * agentCount));
-    flamegpu::detail::gpuCheck(cudaMalloc(&d_keysOut, sizeof(id_t) * agentCount));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_keysIn, sizeof(id_t) * agentCount));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_keysOut, sizeof(id_t) * agentCount));
     // Copy agent IDs to keysIn buff
     ptrdiff_t buffOffset = 0;
     for (const auto& s : state_map) {
         const unsigned int t_size = s.second->getSize();
-        flamegpu::detail::gpuCheck(cudaMemcpyAsync(d_keysIn + buffOffset, s.second->getVariablePointer(ID_VARIABLE_NAME), t_size * sizeof(id_t), cudaMemcpyDeviceToDevice, stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(d_keysIn + buffOffset, s.second->getVariablePointer(ID_VARIABLE_NAME), t_size * sizeof(id_t), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice), stream));
         buffOffset += t_size;
     }
     // Sort agent ids into d_keysOut
     void* d_temp_storage = nullptr;
     size_t temp_storage_bytes = 0;
     flamegpu::detail::gpuCheck(cub::DeviceRadixSort::SortKeys(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount, 0, sizeof(id_t) * 8, stream));
-    flamegpu::detail::gpuCheck(cudaMalloc(&d_temp_storage, temp_storage_bytes));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_temp_storage, temp_storage_bytes));
     flamegpu::detail::gpuCheck(cub::DeviceRadixSort::SortKeys(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount, 0, sizeof(id_t) * 8, stream));
     // Reset d_keysIn
-    flamegpu::detail::gpuCheck(cudaMemsetAsync(d_keysIn, 0, sizeof(id_t) * agentCount, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_keysIn, 0, sizeof(id_t) * agentCount, stream));
     // Launch a kernel to set flags if keys overlap their neighbour
     const unsigned int blockSize = 1024;
     const unsigned int blocks = ((agentCount-1) / blockSize) + 1;
@@ -230,11 +244,11 @@ void CUDAAgent::validateIDCollisions(cudaStream_t stream) const {
     if (temp_storage_bytes2 > temp_storage_bytes) {
         flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_temp_storage));
         temp_storage_bytes = temp_storage_bytes2;
-        flamegpu::detail::gpuCheck(cudaMalloc(&d_temp_storage, temp_storage_bytes));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_temp_storage, temp_storage_bytes));
     }
     flamegpu::detail::gpuCheck(cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount - 1, stream));
     id_t flagsSet = 0;
-    flamegpu::detail::gpuCheck(cudaMemcpyAsync(&flagsSet, d_keysOut, sizeof(id_t), cudaMemcpyDeviceToHost, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(&flagsSet, d_keysOut, sizeof(id_t), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
     // Cleanup
     flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_temp_storage));
     flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_keysIn));
@@ -245,7 +259,7 @@ void CUDAAgent::validateIDCollisions(cudaStream_t stream) const {
             "in CUDAAgent::validateIDCollisions()\n",
             static_cast<unsigned int>(flagsSet), agent_description.name.c_str());
     }
-    flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
 }
 /**
  * Returns the number of alive and active agents in the named state
@@ -275,7 +289,7 @@ unsigned int CUDAAgent::getStateAllocatedSize(const std::string &state) const {
     }
     return sm->second->getAllocatedSize();
 }
-void CUDAAgent::resizeState(const std::string& state, const unsigned int minimumSize, const bool retainData, const cudaStream_t stream) {
+void CUDAAgent::resizeState(const std::string& state, const unsigned int minimumSize, const bool retainData, const flamegpu::detail::cuda::Stream_t stream) {
     // check the cuda agent state map to find the correct state list
     const auto& sm = state_map.find(state);
 
@@ -312,25 +326,25 @@ void *CUDAAgent::getStateVariablePtr(const std::string &state_name, const std::s
     }
     return sm->second->getVariablePointer(variable_name);
 }
-void CUDAAgent::processDeath(const AgentFunctionData& func, detail::CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t stream) {
+void CUDAAgent::processDeath(const AgentFunctionData& func, detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::cuda::Stream_t stream) {
     // Optionally process agent death
     if (func.has_agent_death) {
         // Agent death operates on all mapped vars, so handled by fat agent
         fat_agent->processDeath(fat_index, func.initial_state, scatter, streamId, stream);
     }
 }
-void CUDAAgent::transitionState(const std::string &_src, const std::string &_dest, detail::CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t stream) {
+void CUDAAgent::transitionState(const std::string &_src, const std::string &_dest, detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::cuda::Stream_t stream) {
     // All mapped vars need to transition too, so handled by fat agent
     fat_agent->transitionState(fat_index, _src, _dest, scatter, streamId, stream);
 }
-void CUDAAgent::processFunctionCondition(const AgentFunctionData& func, detail::CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t stream) {
+void CUDAAgent::processFunctionCondition(const AgentFunctionData& func, detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::cuda::Stream_t stream) {
     // Optionally process function condition
     if ((func.condition) || (!func.rtc_func_condition_name.empty())) {
         // Agent function condition operates on all mapped vars, so handled by fat agent
         fat_agent->processFunctionCondition(fat_index, func.initial_state, scatter, streamId, stream);
     }
 }
-void CUDAAgent::scatterHostCreation(const std::string &state_name, const unsigned int newSize, char *const d_inBuff, const VarOffsetStruct &offsets, detail::CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t stream) {
+void CUDAAgent::scatterHostCreation(const std::string &state_name, const unsigned int newSize, char *const d_inBuff, const VarOffsetStruct &offsets, detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::cuda::Stream_t stream) {
     auto sm = state_map.find(state_name);
     if (sm == state_map.end()) {
         THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
@@ -339,7 +353,7 @@ void CUDAAgent::scatterHostCreation(const std::string &state_name, const unsigne
     }
     sm->second->scatterHostCreation(newSize, d_inBuff, offsets, scatter, streamId, stream);
 }
-void CUDAAgent::scatterSort_async(const std::string &state_name, detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
+void CUDAAgent::scatterSort_async(const std::string &state_name, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream) {
     auto sm = state_map.find(state_name);
     if (sm == state_map.end()) {
         THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
@@ -348,7 +362,7 @@ void CUDAAgent::scatterSort_async(const std::string &state_name, detail::CUDASca
     }
     sm->second->scatterSort_async(scatter, streamId, stream);
 }
-void CUDAAgent::mapNewRuntimeVariables_async(const CUDAAgent& func_agent, const AgentFunctionData& func, unsigned int maxLen, detail::CUDAScatter &scatter, unsigned int instance_id, cudaStream_t stream, unsigned int streamId) {
+void CUDAAgent::mapNewRuntimeVariables_async(const CUDAAgent& func_agent, const AgentFunctionData& func, unsigned int maxLen, detail::CUDAScatter &scatter, unsigned int instance_id, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId) {
     // Confirm agent output is set
     if (auto oa = func.agent_output.lock()) {
         // check the cuda agent state map to find the correct state list for functions starting state
@@ -408,9 +422,11 @@ void CUDAAgent::mapNewRuntimeVariables_async(const CUDAAgent& func_agent, const 
                 auto& curve = func_agent.getCurve(func.name);  // @todo stop map hammering
                 curve.setAgentOutputVariable(mmp.first, d_ptr, maxLen);
             } else  {
+#ifdef FLAMEGPU_USE_CUDA
                 auto& rtc_header = func_agent.getRTCHeader(func.name);
                 memcpy(rtc_header.getNewAgentVariableCachePtr(mmp.first.c_str()), &d_ptr, sizeof(void*));
                 rtc_header.setNewAgentVariableCount(mmp.first, maxLen);
+#endif  // FLAMEGPU_USE_CUDA
             }
         }
     }
@@ -432,7 +448,7 @@ void CUDAAgent::releaseNewBuffer(const AgentFunctionData& func) {
     }
 }
 
-void CUDAAgent::scatterNew(const AgentFunctionData& func, const unsigned int newSize, detail::CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t stream) {
+void CUDAAgent::scatterNew(const AgentFunctionData& func, const unsigned int newSize, detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::cuda::Stream_t stream) {
     // Confirm agent output is set
     if (auto oa = func.agent_output.lock()) {
         auto sm = state_map.find(func.agent_output_state);
@@ -463,6 +479,7 @@ void CUDAAgent::clearFunctionCondition(const std::string &state) {
     fat_agent->setConditionState(fat_index, state, 0);
 }
 
+#ifdef FLAMEGPU_USE_CUDA
 void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager> &env, std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env,
     const std::unordered_map<std::string, std::shared_ptr<CUDAEnvironmentDirectedGraphBuffers>>& directed_graphs, bool function_condition) {
     // Generate the dynamic curve header
@@ -591,6 +608,7 @@ void CUDAAgent::addInstantitateRTCFunction(const AgentFunctionData& func, const 
         rtc_func_map.insert(CUDARTCFuncMap::value_type(func.name + "_condition", std::move(kernel_inst)));
     }
 }
+#endif  // FLAMEGPU_USE_CUDA
 
 void CUDAAgent::addInstantitateFunction(const AgentFunctionData& func, const std::shared_ptr<EnvironmentManager>& env, std::shared_ptr<const detail::CUDAMacroEnvironment> macro_env, const std::unordered_map<std::string, std::shared_ptr<CUDAEnvironmentDirectedGraphBuffers>>& directed_graphs, bool function_condition) {
     // Generate the host curve instance
@@ -659,6 +677,7 @@ void CUDAAgent::addInstantitateFunction(const AgentFunctionData& func, const std
     curve_map.insert(std::unordered_map<std::string, std::shared_ptr<detail::curve::HostCurve>>::value_type(key_name, std::move(curve)));
 }
 
+#ifdef FLAMEGPU_USE_CUDA
 const jitify2::KernelData& CUDAAgent::getRTCInstantiation(const std::string &function_name) const {
     CUDARTCFuncMap::const_iterator mm = rtc_func_map.find(function_name);
     if (mm == rtc_func_map.end()) {
@@ -688,6 +707,7 @@ detail::curve::CurveRTCHost& CUDAAgent::getRTCHeader(const std::string &function
 
     return *mm->second;
 }
+#endif  // FLAMEGPU_USE_CUDA
 detail::curve::HostCurve& CUDAAgent::getCurve(const std::string &function_name) const {
     auto mm = curve_map.find(function_name);
     if (mm == curve_map.end()) {
@@ -699,16 +719,18 @@ detail::curve::HostCurve& CUDAAgent::getCurve(const std::string &function_name) 
     return *mm->second;
 }
 
+#ifdef FLAMEGPU_USE_CUDA
 const CUDAAgent::CUDARTCFuncMap& CUDAAgent::getRTCFunctions() const {
     return rtc_func_map;
 }
+#endif  // FLAMEGPU_USE_CUDA
 
-void CUDAAgent::initUnmappedVars(detail::CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t stream) {
+void CUDAAgent::initUnmappedVars(detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::cuda::Stream_t stream) {
     for (auto &s : state_map) {
         s.second->initUnmappedVars(scatter, streamId, stream);
     }
 }
-void CUDAAgent::initExcludedVars(const std::string &state, const unsigned int count, const unsigned int offset, CUDAScatter& scatter, const unsigned int streamId, const cudaStream_t stream) {
+void CUDAAgent::initExcludedVars(const std::string &state, const unsigned int count, const unsigned int offset, CUDAScatter& scatter, const unsigned int streamId, const flamegpu::detail::cuda::Stream_t stream) {
     // check the cuda agent state map to find the correct state list
     const auto& sm = state_map.find(state);
 
@@ -752,7 +774,7 @@ id_t CUDAAgent::nextID(unsigned int count) {
 id_t* CUDAAgent::getDeviceNextID() {
     return fat_agent->getDeviceNextID();
 }
-void CUDAAgent::assignIDs(HostAPI& hostapi, detail::CUDAScatter &scatter, cudaStream_t stream, const unsigned int streamId) {
+void CUDAAgent::assignIDs(HostAPI& hostapi, detail::CUDAScatter &scatter, flamegpu::detail::cuda::Stream_t stream, const unsigned int streamId) {
     fat_agent->assignIDs(hostapi, scatter, stream, streamId);
 }
 

@@ -19,6 +19,8 @@
 #include "flamegpu/runtime/detail/curve/HostCurve.cuh"
 #include "flamegpu/detail/type_decode.h"
 #include "flamegpu/detail/Any.h"
+#include "flamegpu/detail/cuda.cuh"
+
 
 namespace flamegpu {
 struct SubEnvironmentData;
@@ -254,7 +256,7 @@ class EnvironmentManager : public std::enable_shared_from_this<EnvironmentManage
      * Copies the environment property cache to a device buffer
      * @param stream Cuda stream to perform memcpys on
      */
-    void updateDevice_async(cudaStream_t stream) const;
+    void updateDevice_async(flamegpu::detail::cuda::Stream_t stream) const;
     /**
      * Returns the minimum buffer size required to call updateDevice_async()
      *

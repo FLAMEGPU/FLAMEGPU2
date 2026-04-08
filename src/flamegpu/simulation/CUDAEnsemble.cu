@@ -139,8 +139,8 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
     // Workout how many devices and runner we will be executing
     // if MPI is enabled, This will throw exceptions if any rank has 0 GPUs visible, prior to device allocation preventing issues where rank 0 would not be participating.
     int device_count = -1;
-    cudaError_t cudaStatus = cudaGetDeviceCount(&device_count);
-    if (cudaStatus != cudaSuccess) {
+    flamegpu::detail::cuda::Error_t cudaStatus = FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&device_count);
+    if (cudaStatus != FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) {
         THROW exception::InvalidCUDAdevice("Error finding CUDA devices!  Do you have a CUDA-capable GPU installed?, in CUDAEnsemble::simulate()");
     }
     if (device_count == 0) {
@@ -172,7 +172,12 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
 
     // Check that each device is capable, and init cuda context
     for (auto d = devices.begin(); d != devices.end(); ++d) {
+        // todo: HIP equiavalent
+#ifdef FLAMEGPU_USE_CUDA
         if (!detail::compute_capability::checkComputeCapability(*d)) {
+#else  // FALMEGPU_USE_CUDA
+        if (false) {
+#endif  // FLAMEGPU_USE_CUDA
             // Emit a warning unless quiet verbosity was specified.
             if (config.verbosity >= Verbosity::Default) {
                 fprintf(stderr, "FLAMEGPU2 has not been built with an appropriate compute capability for device %d, this device will not be used.\n", *d);
@@ -180,12 +185,12 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
             d = devices.erase(d);
             --d;
         } else {
-            flamegpu::detail::gpuCheck(cudaSetDevice(*d));
+            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(*d));
             flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(nullptr));
         }
     }
     // Return to device 0 (or check original device first?)
-    flamegpu::detail::gpuCheck(cudaSetDevice(0));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(0));
 
     // If there are no devices left (and mpi is not being used), we need to error as the work cannot be executed.
 #ifndef FLAMEGPU_ENABLE_MPI
@@ -563,7 +568,7 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
                 device_string.erase(0, pos + 1);
             }
             int ct = -1;
-            flamegpu::detail::gpuCheck(cudaGetDeviceCount(&ct));
+            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&ct));
             if (max_id >= ct) {
                 fprintf(stderr, "Device id %u exceeds available CUDA devices %d\n", max_id, ct);
                 printHelp(argv[0]);

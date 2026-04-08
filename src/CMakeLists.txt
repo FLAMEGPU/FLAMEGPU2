@@ -295,6 +295,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/util/nvtx.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/StringPair.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/Any.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/detail/demangle.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/type_decode.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/compute_capability.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/curand.cuh
@@ -391,6 +392,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONGraphWriter.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/Telemetry.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/util/cleanup.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/detail/demangle.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/detail/compute_capability.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/detail/wddm.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/detail/JitifyCache.cu
@@ -693,7 +695,7 @@ if(CMAKE_CUDA_COMPILER_LOADED)
     target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::cuda_driver)
     # CCCL for Cub and thrust (and libcudacxx) targets are not imported targets, so they do not use -isystem, so warnings must be suppressed as pragmas if required. This is due to nvcc magic implicit include directory search ordering
     target_link_libraries(${PROJECT_NAME} PUBLIC CCCL::CCCL)
-    # core cuda libs
+    target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::curand)
     target_link_libraries(${PROJECT_NAME} PUBLIC CUDA::nvrtc)
 endif()
 
@@ -701,10 +703,11 @@ if(CMAKE_HIP_COMPILER_LOADED)
     target_link_libraries(${PROJECT_NAME} PUBLIC hip::host)
     # hip::device infects the CXX compiler with -x hip via INTERFACE_COMPILE_OPTIONS. Transitive vai roc::rocthrust and hip::hipcub. I.e. eveything must go through hip.
     target_link_libraries(${PROJECT_NAME} PUBLIC hip::device)
+    set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE HIP)
     # cccl equivalents
     target_link_libraries(${PROJECT_NAME} PUBLIC roc::rocthrust)
     target_link_libraries(${PROJECT_NAME} PUBLIC hip::hipcub)
-    set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE HIP)
+    target_link_libraries(${PROJECT_NAME} PUBLIC hip::hiprand)
 endif()
 
 if(CMAKE_CUDA_COMPILER_LOADED)

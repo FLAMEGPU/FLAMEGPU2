@@ -49,7 +49,7 @@ void HostCurve::initialiseDevice() {
     // Don't lock mutex here, do it in the calling method
     if (!d_curve_table) {
         // get a host pointer to d_hashes and d_variables
-        flamegpu::detail::gpuCheck(cudaMalloc(&d_curve_table, sizeof(CurveTable)));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_curve_table, sizeof(CurveTable)));
     }
 }
 
@@ -158,12 +158,12 @@ int HostCurve::size() const {
     }
     return rtn;
 }
-void HostCurve::updateDevice_async(const cudaStream_t stream) {
+void HostCurve::updateDevice_async(const flamegpu::detail::cuda::Stream_t stream) {
     flamegpu::util::nvtx::Range range{"HostCurve::updateDevice_async()"};
     // Initialise the device (if required)
     assert(d_curve_table);  // No reason for this to ever fail.
     // Copy
-    flamegpu::detail::gpuCheck(cudaMemcpyAsync(d_curve_table, &h_curve_table, sizeof(CurveTable), cudaMemcpyHostToDevice, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(d_curve_table, &h_curve_table, sizeof(CurveTable), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
 }
 const CurveTable *HostCurve::getDevicePtr() const {
     return d_curve_table;

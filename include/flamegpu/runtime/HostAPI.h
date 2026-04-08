@@ -2,7 +2,7 @@
 #define INCLUDE_FLAMEGPU_RUNTIME_HOSTAPI_H_
 
 #ifdef FLAMEGPU_USE_CUDA
-#include <cuda_runtime.h>  // required for cudaStream_t. This doesn't require nvcc however, as no device code.
+#include <cuda_runtime.h>  // required for flamegpu::detail::cuda::Stream_t. This doesn't require nvcc however, as no device code.
 #endif
 
 #include <string>
@@ -64,7 +64,7 @@ class HostAPI {
         const std::shared_ptr<detail::CUDAMacroEnvironment> &macro_env,
         CUDADirectedGraphMap &directed_graph_map,
         unsigned int streamId,
-        cudaStream_t stream);
+        flamegpu::detail::cuda::Stream_t stream);
     /**
      * Frees held device memory
      */
@@ -116,9 +116,9 @@ class HostAPI {
 
 #ifdef FLAMEGPU_ADVANCED_API
     /**
-     * Returns the cudaStream_t assigned to the current instance of HostAPI (and it's child objects)
+     * Returns the flamegpu::detail::cuda::Stream_t assigned to the current instance of HostAPI (and it's child objects)
      */
-    cudaStream_t getCUDAStream() { return stream; }
+    flamegpu::detail::cuda::Stream_t getCUDAStream() { return stream; }
 #endif
 
  private:
@@ -149,7 +149,7 @@ class HostAPI {
     /**
      * CUDA stream object for CUDA operations
      */
-    cudaStream_t stream;
+    flamegpu::detail::cuda::Stream_t stream;
 };
 
 template<typename T>
@@ -158,7 +158,7 @@ void HostAPI::resizeOutputSpace(const unsigned int items) {
         if (d_output_space_size) {
             flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_output_space));
         }
-        flamegpu::detail::gpuCheck(cudaMalloc(&d_output_space, sizeof(T) * items));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_output_space, sizeof(T) * items));
         d_output_space_size = sizeof(T) * items;
     }
 }

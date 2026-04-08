@@ -30,6 +30,15 @@ namespace detail {
  * Collection of cuda related utility methods for internal use.
  * Mostly to allow for graceful handling of device resets when cuda is called by dtors
  * @todo - we should check for unified addressing support prior to use of cudaPointerGetAttributes, but it should be available for all valid flamegpu targets (x64 linux and windows). Tegra's might be an edge case.
+ 
+ Todo:
+    - Split this into several headers, inside and outside detail:
+    - flamegpu/gpu/macros.h
+      - macros for the gpu abstraction layer.
+    - flamegpu/gpu/types.h
+      - typedefs for the gpu abstraction layer, that are public-facing.
+    - flamegpu/gpu/detail/gpu.cuh/cu, i.e wrapped cudaFree (which will aslo be warpped hip free)
+    - flamegpu/gpu/detail/...
  */
 namespace cuda {
 
@@ -48,6 +57,7 @@ namespace cuda {
 
 // Using statement for cuda/hip error_t, which is part of the private API?
 // Todo: Should this just use the macro instead?
+// Todo: Move type definitions and macros for this to a separate header for lighter includes? flamegpu/gpu/types.h or similar, and then flamegpu/gpu/macros.h and flamegpu/gpu/
 // Should this actually be in detail?
 #if defined(FLAMEGPU_USE_CUDA)
 using Error_t = cudaError_t;

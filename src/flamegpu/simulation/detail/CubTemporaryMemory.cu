@@ -29,7 +29,7 @@ void CubTemporaryMemory::resize(const size_t newSize) {
         if (d_cub_temp) {
             flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_cub_temp));
         }
-        flamegpu::detail::gpuCheck(cudaMalloc(&d_cub_temp, newSize));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_cub_temp, newSize));
         d_cub_temp_size = newSize;
     }
 }

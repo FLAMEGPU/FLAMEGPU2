@@ -19,6 +19,7 @@
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/runtime/messaging.h"
 
+#ifdef FLAMEGPU_USE_CUDA
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #pragma warning(disable : 4706 4834)
@@ -37,6 +38,13 @@
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif  // _MSC_VER
+#endif  // FLAMEGPU_USE_CUDA
+
+#ifdef FLAMEGPU_USE_HIP
+#include <hipcub/hipcub.hpp>
+// namepspace alias so cub:: can be used
+namespace cub = hipcub;
+#endif
 
 namespace flamegpu {
 namespace detail {
@@ -61,7 +69,7 @@ const MessageBruteForce::Data& CUDAMessage::getMessageData() const {
     return message_description;
 }
 
-void CUDAMessage::resize(unsigned int newSize, detail::CUDAScatter &scatter, cudaStream_t stream, unsigned int streamId, unsigned int keepLen) {
+void CUDAMessage::resize(unsigned int newSize, detail::CUDAScatter &scatter, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId, unsigned int keepLen) {
     // Only grow currently
     if (newSize > max_list_size) {
         const unsigned int _keep_len = std::min(max_list_size, keepLen);
@@ -92,10 +100,10 @@ void CUDAMessage::setMessageCount(const unsigned int _message_count) {
     }
     message_count = _message_count;
 }
-void CUDAMessage::init(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
+void CUDAMessage::init(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream) {
     specialisation_handler->init(scatter, streamId, stream);
 }
-void CUDAMessage::zeroAllMessageData(cudaStream_t stream) {
+void CUDAMessage::zeroAllMessageData(flamegpu::detail::cuda::Stream_t stream) {
     if (!message_list) {
         THROW exception::InvalidMessageData("MessageList '%s' is not yet allocated, in CUDAMessage::swap()\n", message_description.name.c_str());
     }
@@ -124,11 +132,13 @@ void CUDAMessage::mapReadRuntimeVariables(const AgentFunctionData& func, const C
             unsigned int length = this->getMessageCount();  // check to see if it is equal to pop
             curve.setMessageInputVariable(mmp.first, d_ptr, length);
         } else {
+#ifdef FLAMEGPU_USE_CUDA
             // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
             // Copy data to rtc header cache
             auto &rtc_header = cuda_agent.getRTCHeader(func.name);
             memcpy(rtc_header.getMessageInVariableCachePtr(mmp.first.c_str()), &d_ptr, sizeof(void*));
             rtc_header.setMessageInVariableCount(mmp.first, this->getMessageCount());
+#endif  // FLAMEGPU_USE_CUDA
         }
     }
 }
@@ -139,7 +149,7 @@ void *CUDAMessage::getReadPtr(const std::string &var_name) {
     }
     return message_list->getReadMessageListVariablePointer(var_name);
 }
-void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int writeLen, cudaStream_t stream) const {
+void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int writeLen, flamegpu::detail::cuda::Stream_t stream) const {
     // check that the message list has been allocated
     if (!message_list) {
         THROW exception::InvalidMessageData("Error: Initial message list for message '%s' has not been allocated, "
@@ -157,12 +167,15 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
             // maximum population size
             unsigned int length = writeLen;  // check to see if it is equal to pop
             curve.setMessageOutputVariable(mmp.first, d_ptr, length);
-        } else {
+        }
+        else {
+#ifdef FLAMEGPU_USE_CUDA
             // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
             // Copy data to rtc header cache
             auto& rtc_header = cuda_agent.getRTCHeader(func.name);
             memcpy(rtc_header.getMessageOutVariableCachePtr(mmp.first.c_str()), &d_ptr, sizeof(void*));
             rtc_header.setMessageOutVariableCount(mmp.first, this->getMessageCount());
+#endif  // FLAMEGPU_USE_CUDA
         }
     }
 
@@ -170,7 +183,7 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
     specialisation_handler->allocateMetaDataDevicePtr(stream);
 }
 
-void CUDAMessage::swap(bool isOptional, unsigned int newMessageCount, detail::CUDAScatter &scatter, cudaStream_t stream, unsigned int streamId) {
+void CUDAMessage::swap(bool isOptional, unsigned int newMessageCount, detail::CUDAScatter &scatter, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId) {
     if (!message_list) {
         THROW exception::InvalidMessageData("MessageList '%s' is not yet allocated, in CUDAMessage::swap()\n", message_description.name.c_str());
     }
@@ -215,7 +228,7 @@ void CUDAMessage::swap() {
     message_list->swap();
 }
 
-void CUDAMessage::buildIndex(detail::CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t stream) {
+void CUDAMessage::buildIndex(detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::cuda::Stream_t stream) {
     // Build the index if required.
     if (pbm_construction_required) {
         specialisation_handler->buildIndex(scatter, streamId, stream);

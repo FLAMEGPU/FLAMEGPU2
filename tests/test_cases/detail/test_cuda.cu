@@ -15,7 +15,7 @@ TEST(TestUtilDetailCuda, cudaFree) {
     int * d_ptr = nullptr;
     cudaError_t status = cudaSuccess;
     // manually allocate a device pointer
-    flamegpu::detail::gpuCheck(cudaMalloc(&d_ptr, sizeof(int)));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_ptr, sizeof(int)));
     // Validate that the ptr is a valid device pointer
     cudaPointerAttributes attributes = {};
     flamegpu::detail::gpuCheck(cudaPointerGetAttributes(&attributes, d_ptr));
@@ -35,7 +35,7 @@ TEST(TestUtilDetailCuda, cudaFree) {
     // reset the ptr
     d_ptr = nullptr;
     // Allocate the pointer again
-    flamegpu::detail::gpuCheck(cudaMalloc(&d_ptr, sizeof(int)));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_ptr, sizeof(int)));
     // Validate that the ptr is a valid device pointer
     attributes = {};
     flamegpu::detail::gpuCheck(cudaPointerGetAttributes(&attributes, d_ptr));

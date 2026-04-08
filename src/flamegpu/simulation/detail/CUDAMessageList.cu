@@ -20,14 +20,14 @@ namespace detail {
 * CUDAMessageList class
 * @brief populates CUDA message map
 */
-CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message, detail::CUDAScatter &scatter, cudaStream_t stream, unsigned int streamId)
+CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message, detail::CUDAScatter &scatter, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId)
     : message(cuda_message) {
     // allocate message lists
     allocateDeviceMessageList(d_list);
     allocateDeviceMessageList(d_swap_list);
     zeroDeviceMessageList_async(d_list, stream);
     zeroDeviceMessageList_async(d_swap_list, stream);
-    flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
 }
 
 /**
@@ -61,17 +61,17 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMessageMap &memory_map) {
 
 #ifdef UNIFIED_GPU_MEMORY
         // unified memory allocation
-        flamegpu::detail::gpuCheck(cudaMallocManaged(reinterpret_cast<void**>(&d_ptr), var_size *  message.getMaximumListSize()))
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MallocManaged)(reinterpret_cast<void**>(&d_ptr), var_size *  message.getMaximumListSize()))
 #else
         // non unified memory allocation
-        flamegpu::detail::gpuCheck(cudaMalloc(reinterpret_cast<void**>(&d_ptr), var_size * message.getMaximumListSize()));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(reinterpret_cast<void**>(&d_ptr), var_size * message.getMaximumListSize()));
 #endif
 
         // store the pointer in the map
         memory_map.insert(CUDAMessageMap::value_type(var_name, d_ptr));
     }
 }
-void CUDAMessageList::resize(CUDAScatter& scatter, cudaStream_t stream, unsigned int streamId, unsigned int keep_len) {
+void CUDAMessageList::resize(CUDAScatter& scatter, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId, unsigned int keep_len) {
     // Release d_swap_list, we don't retain this data
     releaseDeviceMessageList(d_swap_list);
     // Allocate the new d_list
@@ -95,7 +95,7 @@ void CUDAMessageList::resize(CUDAScatter& scatter, cudaStream_t stream, unsigned
     // Zero any new buffers with undefined data
     zeroDeviceMessageList_async(d_list, stream, keep_len);
     zeroDeviceMessageList_async(d_swap_list, stream);
-    flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
 }
 
 void CUDAMessageList::releaseDeviceMessageList(CUDAMessageMap& memory_map) {
@@ -107,7 +107,7 @@ void CUDAMessageList::releaseDeviceMessageList(CUDAMessageMap& memory_map) {
     memory_map.clear();
 }
 
-void CUDAMessageList::zeroDeviceMessageList_async(CUDAMessageMap& memory_map, cudaStream_t stream, unsigned int skip_offset) {
+void CUDAMessageList::zeroDeviceMessageList_async(CUDAMessageMap& memory_map, flamegpu::detail::cuda::Stream_t stream, unsigned int skip_offset) {
     if (skip_offset >= message.getMaximumListSize())
         return;
     // for each device pointer in the cuda memory map set the values to 0
@@ -117,7 +117,7 @@ void CUDAMessageList::zeroDeviceMessageList_async(CUDAMessageMap& memory_map, cu
         const size_t var_size = var.type_size * var.elements;
 
         // set the memory to zero
-        flamegpu::detail::gpuCheck(cudaMemsetAsync(static_cast<char*>(mm.second) + (var_size * skip_offset), 0, var_size * (message.getMaximumListSize() - skip_offset), stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(static_cast<char*>(mm.second) + (var_size * skip_offset), 0, var_size * (message.getMaximumListSize() - skip_offset), stream));
     }
 }
 
@@ -142,10 +142,10 @@ void* CUDAMessageList::getWriteMessageListVariablePointer(std::string variable_n
     return mm->second;
 }
 
-void CUDAMessageList::zeroMessageData(cudaStream_t stream) {
+void CUDAMessageList::zeroMessageData(flamegpu::detail::cuda::Stream_t stream) {
     zeroDeviceMessageList_async(d_list, stream);
     zeroDeviceMessageList_async(d_swap_list, stream);
-    flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
 }
 
 
@@ -153,7 +153,7 @@ void CUDAMessageList::swap() {
     std::swap(d_list, d_swap_list);
 }
 
-unsigned int CUDAMessageList::scatter(unsigned int newCount, detail::CUDAScatter &scatter, cudaStream_t stream, unsigned int streamId, bool append) {
+unsigned int CUDAMessageList::scatter(unsigned int newCount, detail::CUDAScatter &scatter, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId, bool append) {
     if (append) {
         unsigned int oldCount = message.getMessageCount();
         return oldCount + scatter.scatter(streamId,
@@ -173,7 +173,7 @@ unsigned int CUDAMessageList::scatter(unsigned int newCount, detail::CUDAScatter
             0);
     }
 }
-unsigned int CUDAMessageList::scatterAll(unsigned int newCount, detail::CUDAScatter &scatter, cudaStream_t stream, unsigned int streamId) {
+unsigned int CUDAMessageList::scatterAll(unsigned int newCount, detail::CUDAScatter &scatter, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId) {
     unsigned int oldCount = message.getMessageCount();
     return oldCount + scatter.scatterAll(streamId,
         stream,

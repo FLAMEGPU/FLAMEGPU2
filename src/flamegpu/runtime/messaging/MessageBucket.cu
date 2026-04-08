@@ -5,6 +5,7 @@
 #include <memory>
 #include <limits>
 
+#ifdef FLAMEGPU_USE_CUDA
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #pragma warning(disable : 4706 4834)
@@ -23,6 +24,13 @@
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif  // _MSC_VER
+#endif  // FLAMEGPU_USE_CUDA
+
+#ifdef FLAMEGPU_USE_HIP
+#include <hipcub/hipcub.hpp>
+// namepspace alias so cub:: can be used
+namespace cub = hipcub;
+#endif
 
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/simulation/detail/CUDAMessage.h"
@@ -63,20 +71,20 @@ __global__ void atomicHistogram1D(
     bin_sub_index[index] = bin_idx;
 }
 
-void MessageBucket::CUDAModelHandler::init(detail::CUDAScatter &, unsigned int, cudaStream_t stream) {
+void MessageBucket::CUDAModelHandler::init(detail::CUDAScatter &, unsigned int, flamegpu::detail::cuda::Stream_t stream) {
     allocateMetaDataDevicePtr(stream);
     // Set PBM to 0
-    flamegpu::detail::gpuCheck(cudaMemsetAsync(hd_data.PBM, 0x00000000, (bucketCount + 1) * sizeof(unsigned int), stream));
-    flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(hd_data.PBM, 0x00000000, (bucketCount + 1) * sizeof(unsigned int), stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
 }
 
-void MessageBucket::CUDAModelHandler::allocateMetaDataDevicePtr(cudaStream_t stream) {
+void MessageBucket::CUDAModelHandler::allocateMetaDataDevicePtr(flamegpu::detail::cuda::Stream_t stream) {
     if (d_data == nullptr) {
-        flamegpu::detail::gpuCheck(cudaMalloc(&d_histogram, (bucketCount + 1) * sizeof(unsigned int)));
-        flamegpu::detail::gpuCheck(cudaMalloc(&hd_data.PBM, (bucketCount + 1) * sizeof(unsigned int)));
-        flamegpu::detail::gpuCheck(cudaMalloc(&d_data, sizeof(MetaData)));
-        flamegpu::detail::gpuCheck(cudaMemcpyAsync(d_data, &hd_data, sizeof(MetaData), cudaMemcpyHostToDevice, stream));
-        flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_histogram, (bucketCount + 1) * sizeof(unsigned int)));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&hd_data.PBM, (bucketCount + 1) * sizeof(unsigned int)));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_data, sizeof(MetaData)));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(d_data, &hd_data, sizeof(MetaData), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
         resizeCubTemp();
     }
 }
@@ -102,20 +110,20 @@ void MessageBucket::CUDAModelHandler::freeMetaDataDevicePtr() {
     }
 }
 
-void MessageBucket::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
+void MessageBucket::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream) {
     flamegpu::util::nvtx::Range range{"MessageBucket::CUDAModelHandler::buildIndex"};
     // Cuda operations all occur within the stream, so only a final sync is required.s
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     if (!MESSAGE_COUNT) {
-        flamegpu::detail::gpuCheck(cudaMemsetAsync(hd_data.PBM, 0x00000000, (bucketCount + 1) * sizeof(unsigned int), stream));
-        flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(hd_data.PBM, 0x00000000, (bucketCount + 1) * sizeof(unsigned int), stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
         return;
     }
     resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count
     {  // Build atomic histogram
-        flamegpu::detail::gpuCheck(cudaMemsetAsync(d_histogram, 0x00000000, (bucketCount + 1) * sizeof(unsigned int), stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_histogram, 0x00000000, (bucketCount + 1) * sizeof(unsigned int), stream));
         int blockSize;  // The launch configurator returned block size
-        flamegpu::detail::gpuCheck(cudaOccupancyMaxActiveBlocksPerMultiprocessor(&blockSize, atomicHistogram1D, 32, 0));  // Randomly 32
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxActiveBlocksPerMultiprocessor)(&blockSize, atomicHistogram1D, 32, 0));  // Randomly 32
                                                                                                          // Round up according to array size
         int gridSize = (MESSAGE_COUNT + blockSize - 1) / blockSize;
         atomicHistogram1D <<<gridSize, blockSize, 0, stream >>>(d_data, d_keys, d_vals, d_histogram, MESSAGE_COUNT,
@@ -128,7 +136,7 @@ void MessageBucket::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, u
        // Copy messages from d_messages to d_messages_swap, in hash order
         scatter.pbm_reorder(streamId, stream, this->sim_message.getMessageData().variables, this->sim_message.getReadList(), this->sim_message.getWriteList(), MESSAGE_COUNT, d_keys, d_vals, hd_data.PBM);
         this->sim_message.swap();
-        flamegpu::detail::gpuCheck(cudaStreamSynchronize(stream));  // Not strictly necessary while pbm_reorder is synchronous.
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));  // Not strictly necessary while pbm_reorder is synchronous.
     }
     {  // Fill PBM and Message Texture Buffers
        // flamegpu::detail::gpuCheck(cudaBindTexture(nullptr, d_texMessages, d_agents, sizeof(glm::vec4) * MESSAGE_COUNT));
@@ -144,7 +152,7 @@ void MessageBucket::CUDAModelHandler::resizeCubTemp() {
             flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_CUB_temp_storage));
         }
         d_CUB_temp_storage_bytes = bytesCheck;
-        flamegpu::detail::gpuCheck(cudaMalloc(&d_CUB_temp_storage, d_CUB_temp_storage_bytes));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_CUB_temp_storage, d_CUB_temp_storage_bytes));
     }
 }
 
@@ -156,8 +164,8 @@ void MessageBucket::CUDAModelHandler::resizeKeysVals(const unsigned int newSize)
             flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_vals));
         }
         d_keys_vals_storage_bytes = bytesCheck;
-        flamegpu::detail::gpuCheck(cudaMalloc(&d_keys, d_keys_vals_storage_bytes));
-        flamegpu::detail::gpuCheck(cudaMalloc(&d_vals, d_keys_vals_storage_bytes));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_keys, d_keys_vals_storage_bytes));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_vals, d_keys_vals_storage_bytes));
     }
 }
 

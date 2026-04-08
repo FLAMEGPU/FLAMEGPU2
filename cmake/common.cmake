@@ -47,6 +47,7 @@ if (CMAKE_HIP_COMPILER_LOADED)
     # Todo: put this into dependencies? 
     find_package(rocthrust REQUIRED)
     find_package(hipcub REQUIRED)
+    find_package(hiprand REQUIRED)
 endif()
 include(${CMAKE_CURRENT_LIST_DIR}/dependencies/Tinyxml2.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/dependencies/nlohmann_json.cmake)

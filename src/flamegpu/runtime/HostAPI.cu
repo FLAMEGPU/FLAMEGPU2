@@ -22,7 +22,7 @@ HostAPI::HostAPI(CUDASimulation &_agentModel,
     const std::shared_ptr<detail::CUDAMacroEnvironment>& macro_env,
     CUDADirectedGraphMap &directed_graph_map,
     const unsigned int _streamId,
-    cudaStream_t _stream)
+    flamegpu::detail::cuda::Stream_t _stream)
     : random(rng)
     , environment(_agentModel, env, macro_env, directed_graph_map, _scatter, _streamId, _stream)
     , agentModel(_agentModel)

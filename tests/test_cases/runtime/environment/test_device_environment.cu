@@ -178,16 +178,16 @@ class DeviceEnvironmentTest : public testing::Test {
         int32_t _int32_t_out = 0;
         uint64_t _uint64_t_out = 0;
         int64_t _int64_t_out = 0;
-        cudaMemcpyToSymbol(float_out, &_float_out, sizeof(float));
-        cudaMemcpyToSymbol(double_out, &_double_out, sizeof(uint8_t));
-        cudaMemcpyToSymbol(uint8_t_out, &_uint8_t_out, sizeof(uint8_t));
-        cudaMemcpyToSymbol(int8_t_out, &_int8_t_out, sizeof(int8_t));
-        cudaMemcpyToSymbol(uint16_t_out, &_uint16_t_out, sizeof(uint16_t));
-        cudaMemcpyToSymbol(int16_t_out, &_int16_t_out, sizeof(int16_t));
-        cudaMemcpyToSymbol(uint32_t_out, &_uint32_t_out, sizeof(uint32_t));
-        cudaMemcpyToSymbol(int32_t_out, &_int32_t_out, sizeof(int32_t));
-        cudaMemcpyToSymbol(uint64_t_out, &_uint64_t_out, sizeof(uint64_t));
-        cudaMemcpyToSymbol(int64_t_out, &_int64_t_out, sizeof(int64_t));
+        FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyToSymbol)(float_out, &_float_out, sizeof(float));
+        FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyToSymbol)(double_out, &_double_out, sizeof(uint8_t));
+        FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyToSymbol)(uint8_t_out, &_uint8_t_out, sizeof(uint8_t));
+        FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyToSymbol)(int8_t_out, &_int8_t_out, sizeof(int8_t));
+        FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyToSymbol)(uint16_t_out, &_uint16_t_out, sizeof(uint16_t));
+        FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyToSymbol)(int16_t_out, &_int16_t_out, sizeof(int16_t));
+        FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyToSymbol)(uint32_t_out, &_uint32_t_out, sizeof(uint32_t));
+        FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyToSymbol)(int32_t_out, &_int32_t_out, sizeof(int32_t));
+        FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyToSymbol)(uint64_t_out, &_uint64_t_out, sizeof(uint64_t));
+        FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyToSymbol)(int64_t_out, &_int64_t_out, sizeof(int64_t));
     }
 
     void TearDown() override {

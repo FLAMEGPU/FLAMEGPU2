@@ -106,8 +106,8 @@ __global__ void agent_function_wrapper(
         d_agent_output_nextID,
         d_rng,
         scanFlag_agentOutput,
-        MessageIn::In(in_messagelist_metadata),
-        MessageOut::Out(out_messagelist_metadata, scanFlag_messageOutput));
+        typename MessageIn::In(in_messagelist_metadata),
+        typename MessageOut::Out(out_messagelist_metadata, scanFlag_messageOutput));
 
     // call the user specified device function
     AGENT_STATUS flag = AgentFunction()(&api);
