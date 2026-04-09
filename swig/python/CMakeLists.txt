@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.25.2...4.3.0 FATAL_ERROR)
 
 # Defines multiple CMake targets and custom commands to build swig bindings, create a python wheel and (optionally) install it into a venv.
 # defines `pyflamegpu` - the user-facing target which creates the wheel.
-# It depends on `pyflamegpu_swig` which performs the expensive swig phase (i.e. pyflamepgu.dll/so/pyd).
+# It depends on `pyflamegpu_swig` which performs the expensive swig phase (i.e. pyflamegpu.dll/so/pyd).
 
 # Define a few advanced options which are only relevant to this file
 # By default, build into a venv, otherwise it is set to ON anyway. 
