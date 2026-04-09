@@ -175,7 +175,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
         // todo: HIP equiavalent
 #ifdef FLAMEGPU_USE_CUDA
         if (!detail::compute_capability::checkComputeCapability(*d)) {
-#else  // FALMEGPU_USE_CUDA
+#else  // FLAMEGPU_USE_CUDA
         if (false) {
 #endif  // FLAMEGPU_USE_CUDA
             // Emit a warning unless quiet verbosity was specified.
