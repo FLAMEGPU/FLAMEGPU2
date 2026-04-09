@@ -1854,6 +1854,7 @@ TEST(TestEnvironmentDirectedGraph, Test_ID_NotInUse_SEATBELTS) {
     EXPECT_THROW(sim.step(), exception::DeviceError);
 }
 TEST(TestEnvironmentDirectedGraph_RTC, Test_DeviceGetVertex_SEATBELTS1) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("GraphTest");
     EnvironmentDirectedGraphDescription graph = model.Environment().newDirectedGraph("graph");
 
@@ -1883,8 +1884,12 @@ TEST(TestEnvironmentDirectedGraph_RTC, Test_DeviceGetVertex_SEATBELTS1) {
     sim.setPopulationData(pop);
 
     EXPECT_THROW(sim.step(), exception::DeviceError);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 TEST(TestEnvironmentDirectedGraph_RTC, Test_DeviceGetEdge_SEATBELTS1) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("GraphTest");
     EnvironmentDirectedGraphDescription graph = model.Environment().newDirectedGraph("graph");
 
@@ -1914,6 +1919,9 @@ TEST(TestEnvironmentDirectedGraph_RTC, Test_DeviceGetEdge_SEATBELTS1) {
     sim.setPopulationData(pop);
 
     EXPECT_THROW(sim.step(), exception::DeviceError);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 #else
 TEST(TestEnvironmentDirectedGraph, DISABLED_Test_DeviceGetVertex_SEATBELTS1) { }

@@ -1337,6 +1337,7 @@ TEST(DeviceAgentCreationTest, AgentID_DeviceBirth_MultipleAgents) {
     ASSERT_EQ(ids.size(), pop_out_b.size());
 }
 TEST(DeviceAgentCreationTest, AgentID_RTC_MultipleStatesUniqueIDs) {
+#ifdef FLAMEGPU_USE_CUDA
     // Create agents via AgentVector to two agent states
     // All agents birth a new agent
     // Store agent IDs to an agent variable inside model
@@ -1434,6 +1435,9 @@ FLAMEGPU_AGENT_FUNCTION(DeviceBirth, flamegpu::MessageNone, flamegpu::MessageNon
             ASSERT_EQ(a.getID(), pairings.at(a.getVariable<id_t>("id_other")));
         }
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 FLAMEGPU_AGENT_FUNCTION(MandatoryOutputArray, MessageNone, MessageNone) {

@@ -1020,6 +1020,7 @@ TEST(TestMessage_Array2D, ArrayVariable) {
         ASSERT_EQ(v[2], index[1] * 11);
     }
 }
+#ifdef FLAMEGPU_USE_CUDA
 const char* rtc_ArrayOut_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MessageNone, flamegpu::MessageArray2D) {
     const unsigned int x = FLAMEGPU->getVariable<unsigned int, 2>("index", 0);
@@ -1042,7 +1043,9 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageArray2D, flamegpu::MessageNone
     return flamegpu::ALIVE;
 }
 )###";
+#endif  // FLAMEGPU_USE_CUDA
 TEST(TestRTCMessage_Array2D, ArrayVariable) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription m(MODEL_NAME);
     MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
@@ -1080,6 +1083,9 @@ TEST(TestRTCMessage_Array2D, ArrayVariable) {
         ASSERT_EQ(v[1], index[1] * 7);
         ASSERT_EQ(v[2], index[1] * 11);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 #if defined(FLAMEGPU_USE_GLM)

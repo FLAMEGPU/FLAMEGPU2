@@ -1253,6 +1253,7 @@ const char* rtc_slowAgentFunction = R"###(
  * Test dectecting RTC concurrency for the simple unintersting case.
  */
 RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, RTCLayerConcurrency) {
+#ifdef FLAMEGPU_USE_CUDA
     // Define a model with multiple agent types
     ModelDescription m("rtc_concurrency_test");
 
@@ -1289,6 +1290,9 @@ RELEASE_ONLY_TEST(TestCUDASimulationConcurrency, RTCLayerConcurrency) {
     float speedup = concurrentLayerSpeedup(TIMING_REPETITIONS, s, populations);
     // Assert that a speedup was achieved.
     EXPECT_GE(speedup, SPEEDUP_THRESHOLD);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 }  // namespace test_cuda_simulation_concurrency

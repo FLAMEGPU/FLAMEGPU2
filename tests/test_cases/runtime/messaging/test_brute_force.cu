@@ -601,7 +601,7 @@ TEST(TestMessage_BruteForce, PersistenceOn) {
     EXPECT_NO_THROW(cudaSimulation.simulate());
 }
 
-
+#ifdef FLAMEGPU_USE_CUDA
 const char* rtc_ArrayOut_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MessageNone, flamegpu::MessageBruteForce) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
@@ -626,7 +626,9 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageBruteForce, flamegpu::MessageN
     return flamegpu::ALIVE;
 }
 )###";
+#endif  // FLAMEGPU_USE_CUDA
 TEST(TestRTCMessage_BruteForce, ArrayVariable) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription m(MODEL_NAME);
     MessageBruteForce::Description message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
     message.newVariable<unsigned int, 3>("v");
@@ -661,6 +663,9 @@ TEST(TestRTCMessage_BruteForce, ArrayVariable) {
         ASSERT_EQ(v[1], index * 7);
         ASSERT_EQ(v[2], index * 11);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 #if defined(FLAMEGPU_USE_GLM)

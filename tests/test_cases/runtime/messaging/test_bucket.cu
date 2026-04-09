@@ -734,6 +734,7 @@ TEST(TestMessage_Bucket, ArrayVariable) {
         ASSERT_EQ(v[2], index * 11);
     }
 }
+#ifdef FLAMEGPU_USE_CUDA
 const char* rtc_ArrayOut_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MessageNone, flamegpu::MessageBucket) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
@@ -755,7 +756,9 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageBucket, flamegpu::MessageNone)
     return flamegpu::ALIVE;
 }
 )###";
+#endif  // FLAMEGPU_USE_CUDA
 TEST(TestRTCMessage_Bucket, ArrayVariable) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription m(MODEL_NAME);
     MessageBucket::Description message = m.newMessage<MessageBucket>(MESSAGE_NAME);
     message.setBounds(0, AGENT_COUNT);
@@ -790,6 +793,9 @@ TEST(TestRTCMessage_Bucket, ArrayVariable) {
         ASSERT_EQ(v[1], index * 7);
         ASSERT_EQ(v[2], index * 11);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 #if defined(FLAMEGPU_USE_GLM)
@@ -843,6 +849,7 @@ TEST(TestMessage_Bucket, ArrayVariable_glm) {
         ASSERT_EQ(v[2], index * 11);
     }
 }
+#ifdef FLAMEGPU_USE_CUDA
 const char* rtc_ArrayOut_func_glm = R"###(
 FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MessageNone, flamegpu::MessageBucket) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
@@ -861,7 +868,9 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageBucket, flamegpu::MessageNone)
     return flamegpu::ALIVE;
 }
 )###";
+#endif FLAMEGPU_USE_CUDA
 TEST(TestRTCMessage_Bucket, ArrayVariable_glm) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription m(MODEL_NAME);
     MessageBucket::Description message = m.newMessage<MessageBucket>(MESSAGE_NAME);
     message.setBounds(0, AGENT_COUNT);
@@ -896,6 +905,9 @@ TEST(TestRTCMessage_Bucket, ArrayVariable_glm) {
         ASSERT_EQ(v[1], index * 7);
         ASSERT_EQ(v[2], index * 11);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 #else
 TEST(TestMessage_Bucket, DISABLED_ArrayVariable_glm) { }

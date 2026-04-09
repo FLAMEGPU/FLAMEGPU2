@@ -14,6 +14,7 @@ namespace flamegpu {
 
 // Test the getting of a device's compute capability.
 TEST(TestUtilComputeCapability, getComputeCapability) {
+#ifdef FLAMEGPU_USE_CUDA
     // Get the number of cuda devices
     int device_count = 0;
     if (cudaSuccess != cudaGetDeviceCount(&device_count) || device_count <= 0) {
@@ -34,6 +35,9 @@ TEST(TestUtilComputeCapability, getComputeCapability) {
     // If the function is given a bad index, it should throw.
     EXPECT_ANY_THROW(detail::compute_capability::getComputeCapability(-1));
     EXPECT_ANY_THROW(detail::compute_capability::getComputeCapability(device_count));
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 /**
  * Base case for getting the minium value integer value from a macro-defined list of integers using recursion.
@@ -56,6 +60,7 @@ constexpr int recursive_min_arg(int a, Args... tail) {
 }
 // Test getting the minimum compiled cuda capabillity.
 TEST(TestUtilComputeCapability, minimumCompiledComputeCapability) {
+#ifdef FLAMEGPU_USE_CUDA
     // If the macro is defined, the returned value should match, otherwise it should be 0.
     const int min_arch = detail::compute_capability::minimumCompiledComputeCapability();
     #if defined(__CUDA_ARCH_LIST__)
@@ -72,10 +77,14 @@ TEST(TestUtilComputeCapability, minimumCompiledComputeCapability) {
     #else
         EXPECT_EQ(min_arch, 0);
     #endif
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 // Test getting the string of compute capabilities used
 TEST(TestUtilComputeCapability, compiledCompiledComputeCapabilitiesString) {
+#ifdef FLAMEGPU_USE_CUDA
     const std::string arch_list_str = detail::compute_capability::compiledCompiledComputeCapabilitiesString();
     // If the macro is defined, the returned value should be a string of atleast 2 characters, containing only integers and semi-colons.
     #if defined(__CUDA_ARCH_LIST__)
@@ -87,10 +96,14 @@ TEST(TestUtilComputeCapability, compiledCompiledComputeCapabilitiesString) {
         // If the macro is not defined, the empty string should be returned
         EXPECT_EQ(arch_list_str, "");
     #endif
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 // Test checking the compute capability of a specific device.
 TEST(TestUtilComputeCapability, checkComputeCapability) {
+#ifdef FLAMEGPU_USE_CUDA
     // Get the number of cuda devices
     int device_count = 0;
     if (cudaSuccess != cudaGetDeviceCount(&device_count) || device_count <= 0) {
@@ -108,6 +121,9 @@ TEST(TestUtilComputeCapability, checkComputeCapability) {
     // If the function is given a bad index, it should throw and the result is irrelevant.
     EXPECT_ANY_THROW(detail::compute_capability::checkComputeCapability(-1));
     EXPECT_ANY_THROW(detail::compute_capability::checkComputeCapability(device_count));
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 /**
@@ -115,15 +131,20 @@ TEST(TestUtilComputeCapability, checkComputeCapability) {
  * This depends on the CUDA version used, and the dynamically linked nvrtc (when CUDA >= 11.2) so this is not ideal to test. 
  */
 TEST(TestUtilComputeCapability, getNVRTCSupportedComputeCapabilties) {
+#ifdef FLAMEGPU_USE_CUDA
     std::vector<int> architectures = detail::compute_capability::getNVRTCSupportedComputeCapabilties();
     // CUDA 11.2+ we do not know what values or how many this should return, so just assume a non zero number will be returned (in case of future additions / removals)
     EXPECT_GT(architectures.size(), 0);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 /**
  * Test that given an ascending order of compute capabilities, and a target compute capability, greatest value which is LE the target is found, or 0 otherwise.
  */
 TEST(TestUtilComputeCapability, selectAppropraiteComputeCapability) {
+#ifdef FLAMEGPU_USE_CUDA
     // Check an exact match should be found
     EXPECT_EQ(detail::compute_capability::selectAppropraiteComputeCapability(86, {86}), 86);
     // Check a miss but with a lower value returns the lower value
@@ -149,6 +170,9 @@ TEST(TestUtilComputeCapability, selectAppropraiteComputeCapability) {
     EXPECT_EQ(detail::compute_capability::selectAppropraiteComputeCapability(86, CUDA_10_0_ARCHES), 75);
     EXPECT_EQ(detail::compute_capability::selectAppropraiteComputeCapability(60, CUDA_10_0_ARCHES), 60);
     EXPECT_EQ(detail::compute_capability::selectAppropraiteComputeCapability(30, CUDA_10_0_ARCHES), 30);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 }  // namespace flamegpu

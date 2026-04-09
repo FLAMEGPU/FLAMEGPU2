@@ -8,6 +8,11 @@
 #include "flamegpu/flamegpu.h"
 
 #include "gtest/gtest.h"
+
+#if FLAMEGPU_USE_HIP
+using cudaPointerAttributes = hipPointerAttribute_t;
+#endif
+
 namespace flamegpu {
 namespace tests {
 namespace test_cleanup {
@@ -32,20 +37,20 @@ TEST(TestCleanup, Explicit) {
     int * d_int = nullptr;
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_int, sizeof(int)));
     // Validate that the ptr is a valid device pointer
-    cudaPointerAttributes attributes = {};
-    flamegpu::detail::gpuCheck(cudaPointerGetAttributes(&attributes, d_int));
-    EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
+    flamegpu::detail::cuda::PointerAttributes_t attributes = {};
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, d_int));
+    EXPECT_EQ(attributes.type, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice));
 
     // Call the cleanup method
     flamegpu::util::cleanup();
 
     // Assert that the pointer is no logner valid - i.e. the device was actually reset
-    flamegpu::detail::gpuCheck(cudaPointerGetAttributes(&attributes, d_int));
-    EXPECT_NE(attributes.type, cudaMemoryTypeDevice);
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, d_int));
+    EXPECT_NE(attributes.type, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice));
 
     // Free explicit device memory, if it was valid (to get the correct error)
-    if (attributes.type == cudaMemoryTypeDevice) {
-        flamegpu::detail::gpuCheck(cudaFree(d_int));
+    if (attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice)) {
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Free)(d_int));
     }
     d_int = nullptr;
 }

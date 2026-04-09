@@ -11,6 +11,7 @@ namespace flamegpu {
 
 // Test getting the WDDM status of a device.
 TEST(TestUtilWDDM, deviceIsWDDM) {
+#ifdef FLAMEGPU_USE_CUDA
     // The output of these methods depends on the device it is running on, and will not be easy to mock.
     // Instead, it compares the computed value by the library against a locally calculated value, likely using the same code as in the implementation.
 
@@ -50,5 +51,8 @@ TEST(TestUtilWDDM, deviceIsWDDM) {
         reference = !tccDriver;
     #endif
     EXPECT_EQ(detail::wddm::deviceIsWDDM(), reference);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 }  // namespace flamegpu

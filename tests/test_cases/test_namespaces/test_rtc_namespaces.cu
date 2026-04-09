@@ -34,6 +34,7 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_explicit, flamegpu::MessageBruteForce, f
 
 
 TEST(RTCNamespaceTest, AgentFunctionsExplicit) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription m("model");
     MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
@@ -67,6 +68,9 @@ TEST(RTCNamespaceTest, AgentFunctionsExplicit) {
     for (AgentVector::Agent ai : pop) {
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 // Test via the using declarations, i.e. using flamegpu::ALIVE
@@ -97,6 +101,7 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_declaration, MessageBruteForce, MessageN
 
 
 TEST(RTCNamespaceTest, AgentFunctionsDeclaration) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription m("model");
     MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
@@ -130,6 +135,9 @@ TEST(RTCNamespaceTest, AgentFunctionsDeclaration) {
     for (AgentVector::Agent ai : pop) {
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 // Test via the using directives (which outside of rtc will be a lint failure), i.e. using namespace flamegpu
@@ -156,6 +164,7 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_directive, MessageBruteForce, MessageNon
 
 
 TEST(RTCNamespaceTest, AgentFunctionsDirective) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription m("model");
     MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
@@ -189,6 +198,9 @@ TEST(RTCNamespaceTest, AgentFunctionsDirective) {
     for (AgentVector::Agent ai : pop) {
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 
@@ -223,7 +235,7 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_named, MessageBruteForce, MessageNone) {
 )###";
 
 
-TEST(RTCNamespaceTest, AgentFunctionsNamed) {
+TEST(RTCNamespaceTest, AgentFunctionsNamed) {#ifdef FLAMEGPU_USE_CUDA
     ModelDescription m("model");
     MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
@@ -257,6 +269,9 @@ TEST(RTCNamespaceTest, AgentFunctionsNamed) {
     for (AgentVector::Agent ai : pop) {
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
  */
 
@@ -284,6 +299,7 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_alias, fgpu::MessageBruteForce, fgpu::Me
 
 
 TEST(RTCNamespaceTest, AgentFunctionsAlias) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription m("model");
     MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
@@ -317,6 +333,9 @@ TEST(RTCNamespaceTest, AgentFunctionsAlias) {
     for (AgentVector::Agent ai : pop) {
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 // Test aliasing the flamegpu namespace, but accessing using a mix (to check that message type comparisons work)
@@ -343,6 +362,7 @@ FLAMEGPU_AGENT_FUNCTION(message_in_func_alias_mixed, flamegpu::MessageBruteForce
 
 
 TEST(RTCNamespaceTest, AgentFunctionsAliasMixed) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription m("model");
     MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
@@ -376,6 +396,9 @@ TEST(RTCNamespaceTest, AgentFunctionsAliasMixed) {
     for (AgentVector::Agent ai : pop) {
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 
