@@ -806,6 +806,9 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                         THROW exception::InvalidAgentFunc("There was a problem launching the runtime agent function condition '%s': %s", func_des->rtc_func_condition_name.c_str(), a.c_str());
                     }
                     flamegpu::detail::gpuCheckLaunch();
+#else  // FLAMEGPU_USE_CUDA
+                    // Raise an error on AMD for now, RTC functions are not yet implemetned
+                    THROW exception::NotImplementedError("RTC not yet implemented for HIP\n");
 #endif  // FLAMEGPU_USE_CUDA
                 }
 
@@ -1043,6 +1046,9 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     THROW exception::InvalidAgentFunc("There was a problem launching the runtime agent function '%s': %s", func_name.c_str(), a.c_str());
                 }
                 flamegpu::detail::gpuCheckLaunch();
+#else  // FLAMEGPU_USE_CUDA
+                // Raise an error on AMD for now, RTC functions are not yet implemetned
+                THROW exception::NotImplementedError("RTC not yet implemented for HIP\n");
 #endif  // FLAMEGPU_USE_CUDA
             }
             totalThreads += state_list_size;
@@ -1735,6 +1741,9 @@ void CUDASimulation::initialiseRTC() {
 #ifdef FLAMEGPU_USE_CUDA
                     // create CUDA agent RTC function by calling addInstantitateRTCFunction on CUDAAgent with AgentFunctionData
                     a_it->second->addInstantitateRTCFunction(*it_f->second, singletons->environment, macro_env, directed_graph_map);
+#else  // FLAMEGPU_USE_CUDA
+                    // Raise an error on AMD for now, RTC functions are not yet implemetned
+                    THROW exception::NotImplementedError("RTC not yet implemented for HIP\n");
 #endif  // FLAMEGPU_USE_CUDA
                 } else {
                     // Init curve for non-rtc functions
@@ -1745,6 +1754,9 @@ void CUDASimulation::initialiseRTC() {
 #ifdef FLAMEGPU_USE_CUDA
                     // create CUDA agent RTC function condition by calling addInstantitateRTCFunction on CUDAAgent with AgentFunctionData
                     a_it->second->addInstantitateRTCFunction(*it_f->second, singletons->environment, macro_env, directed_graph_map, true);
+#else  // FLAMEGPU_USE_CUDA
+                    // Raise an error on AMD for now, RTC functions are not yet implemetned
+                    THROW exception::NotImplementedError("RTC not yet implemented for HIP\n");
 #endif  // FLAMEGPU_USE_CUDA
                 } else if (it_f->second->condition) {
                     // Init curve for non-rtc function conditionss
