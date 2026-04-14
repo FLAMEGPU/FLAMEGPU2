@@ -59,8 +59,6 @@ class JSONStateWriter : public StateWriter {
     bool environment_written = false;
     bool macro_environment_written = false;
     bool agents_written = false;
-    // Dirty workaround for PrettyWriter overloads not being virtual
-    bool newline_purge_required = false;
     std::string outputPath;
     std::fstream outStream;
 
