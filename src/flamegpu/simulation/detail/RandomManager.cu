@@ -109,7 +109,7 @@ detail::curandState *RandomManager::resize(size_type _length, flamegpu::detail::
     return d_random_state;
 }
 __global__ void init_curand(detail::curandState *d_random_state, unsigned int threadCount, uint64_t seed, flamegpu::size_type offset) {
-    int id = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned int id = blockIdx.x * blockDim.x + threadIdx.x;
     if (id < threadCount) {
         FLAMEGPU_GPU_DRIVER_SYMBOL(rand_init)(seed, offset + id, 0, &d_random_state[offset + id]);
     }
