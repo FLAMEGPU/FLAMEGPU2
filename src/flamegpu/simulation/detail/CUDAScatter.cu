@@ -85,7 +85,7 @@ __global__ void scatter_generic(
     const unsigned int out_index_offset = 0,
     const unsigned int scatter_all_count = 0) {
     // global thread index
-    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+    unsigned int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     if (index >= threadCount) return;
 
@@ -103,7 +103,7 @@ __global__ void scatter_position_generic(
     CUDAScatter::ScatterData *scatter_data,
     const unsigned int scatter_len) {
     // global thread index
-    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+    unsigned int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     if (index >= threadCount) return;
 
@@ -119,7 +119,7 @@ __global__ void scatter_all_generic(
     const unsigned int scatter_len,
     const unsigned int out_index_offset = 0) {
     // global thread index
-    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+    unsigned int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     if (index >= threadCount) return;
     for (unsigned int i = 0; i < scatter_len; ++i) {
@@ -292,7 +292,7 @@ __global__ void pbm_reorder_generic(
     CUDAScatter::ScatterData *scatter_data,
     const unsigned int scatter_len) {
     // global thread index
-    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+    unsigned int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     if (index >= threadCount) return;
 
@@ -363,7 +363,7 @@ __global__ void scatter_new_agents(
     const unsigned int scatter_len,
     const unsigned int out_index_offset) {
     // global thread index
-    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+    unsigned int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     if (index >= threadCount) return;
 
@@ -418,7 +418,7 @@ __global__ void broadcastInitKernel(
     const unsigned int scatter_len,
     const unsigned int out_index_offset) {
     // global thread index
-    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+    unsigned int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     if (index >= threadCount) return;
 
@@ -559,7 +559,7 @@ __global__ void reorder_array_messages(
     const unsigned int scatter_len
 ) {
     // global thread index
-    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+    unsigned int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     if (index >= threadCount) return;
 
