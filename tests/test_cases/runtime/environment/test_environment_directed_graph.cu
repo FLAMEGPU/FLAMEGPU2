@@ -1402,8 +1402,6 @@ FLAMEGPU_HOST_FUNCTION(InitGraph_SameSrcDest) {
 FLAMEGPU_AGENT_FUNCTION(CheckGraphSameSrcDest, MessageNone, MessageNone) {
     auto graph = FLAMEGPU->environment.getDirectedGraph("graph");
     // Can still access vertex data
-    const unsigned int id = graph.getVertexID(FLAMEGPU->getIndex());
-    const unsigned int id_minus_1 = graph.getVertexProperty<int>("foo", FLAMEGPU->getIndex());
     for (auto &edge : graph.inEdges(FLAMEGPU->getIndex())) {
         if (edge.getEdgeSource() == FLAMEGPU->getIndex()) {
             FLAMEGPU->setVariable<int>("result1", 1);
@@ -1783,17 +1781,17 @@ FLAMEGPU_HOST_FUNCTION(InitGraph_NonContiguousIDs_SEATBELTS) {
 }
 FLAMEGPU_AGENT_FUNCTION(ID_OutOfRangeGreater, MessageNone, MessageNone) {
     auto graph = FLAMEGPU->environment.getDirectedGraph("graph");
-    const unsigned int my_vertex_index = graph.getVertexIndex(ID_OFFSET + (ID_AGENT_COUNT * 2) - 1);
+    [[maybe_unused]] const unsigned int my_vertex_index = graph.getVertexIndex(ID_OFFSET + (ID_AGENT_COUNT * 2) - 1);
     return flamegpu::ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(ID_OutOfRangeLesser, MessageNone, MessageNone) {
     auto graph = FLAMEGPU->environment.getDirectedGraph("graph");
-    const unsigned int my_vertex_index = graph.getVertexIndex(ID_OFFSET - 1);
+    [[maybe_unused]] const unsigned int my_vertex_index = graph.getVertexIndex(ID_OFFSET - 1);
     return flamegpu::ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(ID_NotInUse, MessageNone, MessageNone) {
     auto graph = FLAMEGPU->environment.getDirectedGraph("graph");
-    const unsigned int my_vertex_index = graph.getVertexIndex(ID_OFFSET + 1);
+    [[maybe_unused]] const unsigned int my_vertex_index = graph.getVertexIndex(ID_OFFSET + 1);
     return flamegpu::ALIVE;
 }
 TEST(TestEnvironmentDirectedGraph, Test_ID_OutOfRangeGreater_SEATBELTS) {
