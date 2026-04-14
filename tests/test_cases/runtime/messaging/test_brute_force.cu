@@ -323,7 +323,7 @@ FLAMEGPU_AGENT_FUNCTION(countBF, MessageBruteForce, MessageNone) {
     unsigned int count = 0;
     // Count how many messages we received (including our own)
     // This is all those which fall within the 3x3 Moore neighbourhood
-    for (const auto &message : FLAMEGPU->message_in) {
+    for ([[maybe_unused]] const auto &message : FLAMEGPU->message_in) {
         count++;
     }
     FLAMEGPU->setVariable<unsigned int>("count", count);
@@ -459,7 +459,6 @@ FLAMEGPU_AGENT_FUNCTION(out_simple, MessageNone, MessageBruteForce) {
 }
 // Agent function which iterates read in mesasges and sums the ID
 FLAMEGPU_AGENT_FUNCTION(in_simple, MessageBruteForce, MessageNone) {
-    const int id = FLAMEGPU->getVariable<int>("id");
     unsigned int count = 0;
     unsigned int sum = 0;
     for (auto &m : FLAMEGPU->message_in) {
