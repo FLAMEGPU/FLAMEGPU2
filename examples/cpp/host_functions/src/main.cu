@@ -1,3 +1,4 @@
+#include <cinttypes>
 #include <cstdio>
 #include <vector>
 
@@ -12,7 +13,7 @@ FLAMEGPU_AGENT_FUNCTION(device_function, flamegpu::MessageNone, flamegpu::Messag
     const uint64_t prop_uint64_1 = FLAMEGPU->environment.getProperty<uint64_t, 3>("uint64_t", 1);
     const uint64_t prop_uint64_2 = FLAMEGPU->environment.getProperty<uint64_t, 3>("uint64_t", 2);
     if (blockIdx.x * blockDim.x + threadIdx.x == 0) {
-        printf("Agent Function[Thread 0]! Properties(Float: %g, int16: %hd, uint64[3]: {%llu, %llu, %llu})\n", prop_float, prop_int16, prop_uint64_0, prop_uint64_1, prop_uint64_2);
+        printf("Agent Function[Thread 0]! Properties(Float: %g, int16: %hd, uint64[3]: {%" PRIu64 ", %" PRIu64 ", %" PRIu64 "})\n", prop_float, prop_int16, prop_uint64_0, prop_uint64_1, prop_uint64_2);
     }
     return flamegpu::ALIVE;
 }
