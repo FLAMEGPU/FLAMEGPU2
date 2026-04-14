@@ -129,7 +129,7 @@ FLAMEGPU_AGENT_FUNCTION(SlowFnMessage, MessageBruteForce, MessageNone) {
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(FastFnMessage, MessageNone, MessageBruteForce) {
-    const int x = FLAMEGPU->getVariable<int>("x");
+    [[maybe_unused]] const int x = FLAMEGPU->getVariable<int>("x");
     FLAMEGPU->message_out.setVariable<int>("x", 1);
     return ALIVE;
 }
