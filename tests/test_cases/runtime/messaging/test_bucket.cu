@@ -867,7 +867,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageBucket, flamegpu::MessageNone)
     return flamegpu::ALIVE;
 }
 )###";
-#endif FLAMEGPU_USE_CUDA
+#endif  // FLAMEGPU_USE_CUDA
 TEST(TestRTCMessage_Bucket, ArrayVariable_glm) {
 #ifdef FLAMEGPU_USE_CUDA
     ModelDescription m(MODEL_NAME);
