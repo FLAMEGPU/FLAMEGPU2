@@ -330,7 +330,6 @@ FLAMEGPU_AGENT_FUNCTION(out_simple, MessageNone, MessageBucket) {
 }
 // Agent function which iterates read in mesasges and sums the ID, from a single bin.
 FLAMEGPU_AGENT_FUNCTION(in_simple, MessageBucket, MessageNone) {
-    const int id = FLAMEGPU->getVariable<int>("id");
     unsigned int count = 0;
     unsigned int sum = 0;
     for (auto &m : FLAMEGPU->message_in(0)) {

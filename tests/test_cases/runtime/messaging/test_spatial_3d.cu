@@ -498,7 +498,7 @@ FLAMEGPU_AGENT_FUNCTION(count3D, MessageSpatial3D, MessageNone) {
     unsigned int count = 0;
     // Count how many messages we received (including our own)
     // This is all those which fall within the 3x3x3 Moore neighbourhood
-    for (const auto &message : FLAMEGPU->message_in(0, 0, 0)) {
+    for ([[maybe_unused]] const auto &message : FLAMEGPU->message_in(0, 0, 0)) {
         count++;
     }
     FLAMEGPU->setVariable<unsigned int>("count", count);
@@ -986,7 +986,7 @@ FLAMEGPU_AGENT_FUNCTION(in_wrapped_EnvDimsNotFactor, MessageSpatial3D, MessageNo
     const float x1 = FLAMEGPU->getVariable<float>("x");
     const float y1 = FLAMEGPU->getVariable<float>("y");
     const float z1 = FLAMEGPU->getVariable<float>("z");
-    for (auto &t : FLAMEGPU->message_in.wrap(x1, y1, z1)) {
+    for ([[maybe_unused]] auto &t : FLAMEGPU->message_in.wrap(x1, y1, z1)) {
         // Do nothing, it should throw a device exception
     }
     return ALIVE;
@@ -1108,7 +1108,7 @@ FLAMEGPU_AGENT_FUNCTION(in_bounds_not_factor, MessageSpatial3D, MessageNone) {
     const float z1 = FLAMEGPU->getVariable<float>("z");
     unsigned int count = 0;
     // Count how many messages we received (including our own)
-    for (const auto& message : FLAMEGPU->message_in(x1, y1, z1)) {
+    for ([[maybe_unused]] const auto& message : FLAMEGPU->message_in(x1, y1, z1)) {
         ++count;
     }
     FLAMEGPU->setVariable<unsigned int>("count", count);

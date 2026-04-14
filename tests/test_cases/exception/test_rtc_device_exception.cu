@@ -13,7 +13,7 @@ namespace flamegpu {
 #endif
 
 namespace test_rtc_device_exception {
-const unsigned int AGENT_COUNT = 64;
+[[maybe_unused]] const unsigned int AGENT_COUNT = 64;
 
 /**
  * Test that exceptions on getVariable() work

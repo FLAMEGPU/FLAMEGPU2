@@ -707,7 +707,6 @@ FLAMEGPU_AGENT_FUNCTION(OutSimpleXY, MessageNone, MessageArray2D) {
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(MooreWTestXYC, MessageArray2D, MessageNone) {
-    const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
     const unsigned int y = FLAMEGPU->getVariable<unsigned int>("y");
     const unsigned int COMRADIUS = FLAMEGPU->environment.getProperty<unsigned int>("COMRADIUS");
@@ -836,7 +835,6 @@ TEST(TestMessage_Array2D, MooreWrapR2NonUniform) {
 }
 
 FLAMEGPU_AGENT_FUNCTION(MooreTestXYC, MessageArray2D, MessageNone) {
-    const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
     const unsigned int y = FLAMEGPU->getVariable<unsigned int>("y");
     const unsigned int COMRADIUS = FLAMEGPU->environment.getProperty<unsigned int>("COMRADIUS");
@@ -1252,10 +1250,11 @@ FLAMEGPU_AGENT_FUNCTION(IterateAB, MessageArray2D, MessageNone) {
     // Iterate message list counting how many messages were read.
     unsigned int count = 0;
     for (const auto &message : FLAMEGPU->message_in.wrap(x, y, COMRADIUS)) {
-        const unsigned int m_a = message.getVariable<unsigned int>("a");
-        const unsigned int m_b = message.getVariable<unsigned int>("b");
+        [[maybe_unused]] const unsigned int m_a = message.getVariable<unsigned int>("a");
+        [[maybe_unused]] const unsigned int m_b = message.getVariable<unsigned int>("b");
         count++;
     }
+    static_cast<void>(count);  // suppress -Wunused-but-set-warning
     // Don't actually do anything, the function just needs to take the message list as input.
     return ALIVE;
 }
@@ -1270,9 +1269,10 @@ FLAMEGPU_AGENT_FUNCTION(IterateA, MessageArray2D, MessageNone) {
     // Iterate message list counting how many messages were read.
     unsigned int count = 0;
     for (const auto &message : FLAMEGPU->message_in.wrap(x, y, COMRADIUS)) {
-        const unsigned int m_a = message.getVariable<unsigned int>("a");
+        [[maybe_unused]] const unsigned int m_a = message.getVariable<unsigned int>("a");
         count++;
     }
+    static_cast<void>(count);  // suppress -Wunused-but-set-warning
     // Don't actually do anything, the function just needs to take the message list as input.
     return ALIVE;
 }
