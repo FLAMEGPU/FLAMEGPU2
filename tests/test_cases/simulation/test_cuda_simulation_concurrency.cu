@@ -183,6 +183,7 @@ FLAMEGPU_AGENT_FUNCTION(SlowOptionalMessageInputAgentFunction, MessageBruteForce
         vSum += message.getVariable<float>("v");
         count += 1;
     }
+    static_cast<void>(count);  // suppress -Wunused-but-set-warning
     // if(FLAMEGPU->getVariable<unsigned int>("id") == 0) {
     //     printf("agent 0 read %u messages\n", count);
     // }
