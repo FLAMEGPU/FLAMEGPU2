@@ -6,7 +6,7 @@ namespace flamegpu {
 
 
 namespace test_rtc_device_api {
-const unsigned int AGENT_COUNT = 64;
+[[maybe_unused]] const unsigned int AGENT_COUNT = 64;
 
 const char* rtc_empty_agent_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
