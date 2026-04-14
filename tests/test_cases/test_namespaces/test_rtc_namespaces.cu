@@ -8,7 +8,7 @@
 
 namespace flamegpu {
 namespace test_rtc_namespaces {
-const unsigned int AGENT_COUNT = 32;
+[[maybe_unused]] const unsigned int AGENT_COUNT = 32;
 
 // All agent functions require specialising the Message type, regardless of wheter it is None or not, so not point testing without message output being involved.
 
