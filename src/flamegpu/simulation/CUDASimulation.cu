@@ -998,12 +998,8 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     #endif
 
             if (func_des->func) {   // compile time specified agent function launch
-                // calculate the grid block size for main agent function
-                flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, func_des->func, 0, state_list_size));
-                //! Round up according to CUDAAgent state list size
-                gridSize = (state_list_size + blockSize - 1) / blockSize;
-
-                (func_des->func)<<<gridSize, blockSize, 0, this->getStream(streamIdx)>>> (
+                printf("func!! %u\n", state_list_size);
+                (func_des->func)(
     #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
                     error_buffer,
     #endif
@@ -1018,8 +1014,10 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     t_rng,
                     scanFlag_agentDeath,
                     scanFlag_messageOutput,
-                    scanFlag_agentOutput);
-            flamegpu::detail::gpuCheckLaunch();
+                    scanFlag_agentOutput,
+                    this->getStream(streamIdx));
+                printf("launched\n");
+                flamegpu::detail::gpuCheckLaunch();
             } else {      // assume this is a runtime specified agent function
 #ifdef FLAMEGPU_USE_CUDA
                 // get instantiation

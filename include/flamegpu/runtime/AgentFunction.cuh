@@ -11,6 +11,8 @@
 #include "flamegpu/defines.h"
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 #include "flamegpu/runtime/AgentFunction_shim.cuh"
+#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #ifndef __CUDACC_RTC__
 #include "flamegpu/runtime/detail/curve/DeviceCurve.cuh"
 #endif
@@ -119,6 +121,113 @@ __global__ void agent_function_wrapper(
         DTHROW("Agent death must be enabled per agent function when defining the model.\n");
 #endif
     }
+}
+
+/**
+ * Type signiature of a wrapper function for launching the AgentFunctionWrapper.
+ * 
+ * This is required for HIP, where using the address of __global__ functions appears to be UB - works in some cases but not others.
+ * 
+ * Todo: Better docstrings, stream etc
+ */
+
+typedef void(AgentFunctionLauncher)(
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
+    exception::DeviceExceptionBuffer *error_buffer,
+#endif
+#ifndef __CUDACC_RTC__
+    const detail::curve::CurveTable *d_curve_table,
+    const char* d_agent_name,
+    const char* d_state_name,
+    const char* d_env_buffer,
+#endif
+    id_t *d_agent_output_nextID,
+    const unsigned int popNo,
+    const void *in_messagelist_metadata,
+    const void *out_messagelist_metadata,
+    detail::curandState *d_rng,
+    unsigned int *scanFlag_agentDeath,
+    unsigned int *scanFlag_messageOutput,
+    unsigned int *scanFlag_agentOutput,
+    flamegpu::detail::cuda::Stream_t stream);
+
+
+/**
+ * Templated host wrapper for (non-blocking) launching a (wrapped) agent function on the GPU, including occupancy API handling. 
+ * 
+ * @param error_buffer Buffer used for detecting and reporting exception::DeviceErrors (flamegpu must be built with FLAMEGPU_SEATBELTS enabled for this to be used)
+ * @param d_curve_table Pointer to curve hash table in device memory
+ * @param d_agent_name Pointer to agent name string
+ * @param d_state_name Pointer to agent state string
+ * @param d_env_buffer Pointer to env buffer in device memory
+ * @param d_agent_output_nextID If agent output is enabled, this points to a global memory src of the next suitable agent id, this will be atomically incremented at birth
+ * @param popNo Total number of agents executing the function (number of threads launched)
+ * @param in_messagelist_metadata Pointer to the MessageIn metadata struct, it is interpreted by MessageIn
+ * @param out_messagelist_metadata Pointer to the MessageOut metadata struct, it is interpreted by MessageOut
+ * @param d_rng Array of curand states for this kernel
+ * @param scanFlag_agentDeath Scanflag array for agent death
+ * @param scanFlag_messageOutput Scanflag array for optional message output
+ * @param scanFlag_agentOutput Scanflag array for optional agent output
+ * @param stream Stream to launch the kernel in
+ * @tparam AgentFunction The modeller defined agent function (defined as FLAMEGPU_AGENT_FUNCTION in model code)
+ * @tparam MessageIn Message handler for input messages (e.g. MessageNone, MessageBruteForce, MessageSpatial3D)
+ * @tparam MessageOut Message handler for output messages (e.g. MessageNone, MessageBruteForce, MessageSpatial3D)
+ */
+template<typename AgentFunction, typename MessageIn, typename MessageOut>
+void agent_function_launcher(
+#if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
+    exception::DeviceExceptionBuffer *error_buffer,
+#endif
+#ifndef __CUDACC_RTC__
+    const detail::curve::CurveTable* __restrict__ d_curve_table,
+    const char* d_agent_name,
+    const char* d_state_name,
+    const char* d_env_buffer,
+#endif
+    id_t *d_agent_output_nextID,
+    const unsigned int popNo,
+    const void *in_messagelist_metadata,
+    const void *out_messagelist_metadata,
+    detail::curandState *d_rng,
+    unsigned int *scanFlag_agentDeath,
+    unsigned int *scanFlag_messageOutput,
+    unsigned int *scanFlag_agentOutput,
+    flamegpu::detail::cuda::Stream_t stream) {
+    printf("agent_function_launcher popSize=%u\n", popNo);
+
+    // Early exit if no threads to launch
+    if (popNo == 0) {
+        printf("return\n");
+        // return;
+    }
+
+    // Compute the grid and block size, maximising GPU occupancy
+    int blockSize = 0;
+    int minGridSize = 0;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, agent_function_wrapper<AgentFunction, MessageIn, MessageOut>, 0, popNo));
+    int gridSize = (popNo + blockSize - 1) / blockSize;
+    printf("launching kernel with <<<%d,%d,0,%p>>>\n", gridSize, blockSize, stream);
+
+    // Launch the kernel gridSize, blockSizes
+    agent_function_wrapper<AgentFunction, MessageIn, MessageOut><<<gridSize, blockSize, 0, stream>>>(
+    #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
+        error_buffer,
+    #endif
+        d_curve_table,
+        d_agent_name,
+        d_state_name,
+        d_env_buffer,
+        d_agent_output_nextID,
+        popNo,
+        in_messagelist_metadata,
+        out_messagelist_metadata,
+        d_rng,
+        scanFlag_agentDeath,
+        scanFlag_messageOutput,
+        scanFlag_agentOutput);
+    
+    // Check for errors during the launch
+    flamegpu::detail::gpuCheckLaunch();
 }
 
 }  // namespace flamegpu

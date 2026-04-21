@@ -32,7 +32,8 @@ class DeviceAPI;
 #define FLAMEGPU_AGENT_FUNCTION(funcName, message_in, message_out)\
 struct funcName ## _impl {\
     __device__ __forceinline__ flamegpu::AGENT_STATUS operator()(flamegpu::DeviceAPI<message_in, message_out> *FLAMEGPU) const;\
-    static constexpr flamegpu::AgentFunctionWrapper *fnPtr() { return &flamegpu::agent_function_wrapper<funcName ## _impl, message_in, message_out>; }\
+    /*static constexpr flamegpu::AgentFunctionWrapper *fnPtr() { return &flamegpu::agent_function_wrapper<funcName ## _impl, message_in, message_out>; }*/\
+    static constexpr flamegpu::AgentFunctionLauncher *fnPtr() { return &flamegpu::agent_function_launcher<funcName ## _impl, message_in, message_out>; }\
     static std::type_index inType() { return std::type_index(typeid(message_in)); }\
     static std::type_index outType() { return std::type_index(typeid(message_out)); }\
 };\
