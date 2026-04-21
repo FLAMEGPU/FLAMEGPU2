@@ -27,6 +27,10 @@
 
 FLAMEGPU_AGENT_FUNCTION(metabolise_and_growback, flamegpu::MessageNone, flamegpu::MessageNone) {
     int sugar_level = FLAMEGPU->getVariable<int>("sugar_level");
+    int tid = threadIdx.x + blockDim.x * blockIdx.x;
+    if (tid < 32) {
+        printf("sugar_level %d=%d\n", tid, sugar_level);
+    }
     int env_sugar_level = FLAMEGPU->getVariable<int>("env_sugar_level");
     int env_max_sugar_level = FLAMEGPU->getVariable<int>("env_max_sugar_level");
     int status = FLAMEGPU->getVariable<int>("status");
