@@ -32,10 +32,10 @@ struct AgentFunctionData {
     std::weak_ptr<const ModelData> model;
 
     /**
-     * The cuda kernel entry point for executing the agent function
-     * @see void agent_function_wrapper(detail::curve::Curve::NamespaceHash, detail::curve::Curve::NamespaceHash, detail::curve::Curve::NamespaceHash, detail::curve::Curve::NamespaceHash, const int, const void *, const unsigned int, const unsigned int)
+     * Host function which launches the wrapper kernel containing the agent function
+     * @see struct AgentFunctionLauncher(detail::curve::Curve::NamespaceHash, detail::curve::Curve::NamespaceHash, detail::curve::Curve::NamespaceHash, detail::curve::Curve::NamespaceHash, const int, const void *, const unsigned int, const unsigned int)
      */
-    AgentFunctionWrapper *func;
+    AgentFunctionLauncher func;
     /**
      * The string representing the RTC defined agent function
      */
@@ -137,11 +137,11 @@ struct AgentFunctionData {
      * Normal constructor, only to be called by AgentDescription
      * @param _parent Parent agent description
      * @param function_name User defined name of the agent function
-     * @param agent_function Pointer to compile time agent function
+     * @param agent_function Pointer to host launcher for compile time agent function
      * @param in_type String form of the input message type
      * @param out_type String form of the output message type
      */
-    AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionWrapper *agent_function, const std::string &in_type, const std::string &out_type);
+    AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionLauncher agent_function, const std::string &in_type, const std::string &out_type);
     /**
      * Normal constructor for RTC function, only to be called by AgentDescription
      * @param _parent Parent agent description
