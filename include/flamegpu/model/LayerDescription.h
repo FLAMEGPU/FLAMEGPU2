@@ -263,7 +263,7 @@ void LayerDescription::addAgentFunction(AgentFn /*af*/) {
         THROW exception::InvalidLayerMember("A layer containing host functions, may not also contain agent functions, "
             "in LayerDescription::addAgentFunction()\n");
     }
-    AgentFunctionLauncher * func_compare = AgentFn::fnPtr();
+    AgentFunctionLauncher func_compare = AgentFn::fnPtr();
     // Find the matching agent function in model hierarchy
     auto mdl = layer->model.lock();
     if (!mdl) {

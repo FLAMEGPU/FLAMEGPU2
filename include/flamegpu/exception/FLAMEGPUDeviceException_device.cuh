@@ -17,7 +17,7 @@ namespace exception {
 /**
  * This allows us to write DTHROW("My Error message: %d", 12); or similar to report an error in device code
  */
-#ifdef __CUDACC__
+#if defined(__CUDACC__) || defined(__HIPCC__) 
 #define DTHROW flamegpu::exception::DeviceException::create(__FILE__, __LINE__).setMessage
 #else
 // Just trying to make host compiler happy when it sees device code by mistake
@@ -64,7 +64,7 @@ struct DeviceExceptionBuffer {
      */
     unsigned int arg_offset;
 };
-#ifdef __CUDACC__
+#if defined(__CUDACC__) || defined(__HIPCC__)
 /**
  * This class is used on device for reporting errors
  * It should be used indirectly via the DTHROW macro
@@ -147,9 +147,9 @@ class DeviceException {
             // Copy line no
             sm()->device_exception->line_no = line;
             // Copy block/thread indices
-            const uint3 bid3 = blockIdx;
+            const uint3 bid3 = make_uint3(blockIdx.x, blockIdx.y, blockIdx.z);  // blockIdx in hip is not trivially castable to a uint3.
             memcpy(sm()->device_exception->block_id, &bid3, sizeof(unsigned int) * 3);
-            const uint3 tid3 = threadIdx;
+            const uint3 tid3 = make_uint3(threadIdx.x, blockIdx.y, blockIdx.z);
             memcpy(sm()->device_exception->thread_id, &tid3, sizeof(unsigned int) * 3);
         }
     }

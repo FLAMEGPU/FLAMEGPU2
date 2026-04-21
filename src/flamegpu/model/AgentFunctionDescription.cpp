@@ -86,7 +86,7 @@ bool CAgentFunctionDescription::hasAgentOutput() const {
 bool CAgentFunctionDescription::hasFunctionCondition() const {
     return function->condition != nullptr;
 }
-AgentFunctionLauncher* CAgentFunctionDescription::getFunctionPtr() const {
+AgentFunctionLauncher CAgentFunctionDescription::getFunctionPtr() const {
     return function->func;
 }
 AgentFunctionConditionWrapper* CAgentFunctionDescription::getConditionPtr() const {

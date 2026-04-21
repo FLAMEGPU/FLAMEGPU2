@@ -33,9 +33,9 @@ struct AgentFunctionData {
 
     /**
      * Host function which launches the wrapper kernel containing the agent function
-     * @see void agent_function_launcher(detail::curve::Curve::NamespaceHash, detail::curve::Curve::NamespaceHash, detail::curve::Curve::NamespaceHash, detail::curve::Curve::NamespaceHash, const int, const void *, const unsigned int, const unsigned int)
+     * @see struct AgentFunctionLauncher(detail::curve::Curve::NamespaceHash, detail::curve::Curve::NamespaceHash, detail::curve::Curve::NamespaceHash, detail::curve::Curve::NamespaceHash, const int, const void *, const unsigned int, const unsigned int)
      */
-    AgentFunctionLauncher *func;
+    AgentFunctionLauncher func;
     /**
      * The string representing the RTC defined agent function
      */
@@ -141,7 +141,7 @@ struct AgentFunctionData {
      * @param in_type String form of the input message type
      * @param out_type String form of the output message type
      */
-    AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionLauncher *agent_function, const std::string &in_type, const std::string &out_type);
+    AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionLauncher agent_function, const std::string &in_type, const std::string &out_type);
     /**
      * Normal constructor for RTC function, only to be called by AgentDescription
      * @param _parent Parent agent description

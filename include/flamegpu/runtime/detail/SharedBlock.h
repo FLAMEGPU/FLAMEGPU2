@@ -33,7 +33,7 @@ struct SharedBlock {
  * Returns a pointer to a common item in shared memory
  */
 __forceinline__ __device__ SharedBlock *sm() {
-#ifdef __CUDACC__
+#if defined(__CUDACC__) || defined(__HIPCC__) 
     __shared__ SharedBlock _sm;
     return &_sm;
 #else

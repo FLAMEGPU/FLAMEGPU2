@@ -11,7 +11,7 @@
 
 namespace flamegpu {
 
-AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionLauncher *agent_function, const std::string &in_type, const std::string &out_type)
+AgentFunctionData::AgentFunctionData(std::shared_ptr<AgentData> _parent, const std::string &function_name, AgentFunctionLauncher agent_function, const std::string &in_type, const std::string &out_type)
     : model(_parent->model)
     , func(agent_function)
     , initial_state(_parent->initial_state)
