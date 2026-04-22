@@ -50,6 +50,7 @@ void runCUDASimulationContextCreationTest() {
     // Run the simulation.
     c.simulate();
 #else  // FLAMEGPU_USE_CUDA
+    // Not a GTEST directly, so do not actually skip
     // GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }

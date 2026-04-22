@@ -57,8 +57,12 @@ FLAMEGPU_EXIT_FUNCTION(ExitIncrementCounterSlow) {
 }
 
 TEST(TestCUDASimulation, ApplyConfigDerivedContextCreation) {
+#ifdef FLAMEGPU_USE_CUDA
     // Simply get the result from the method provided by the helper file.
     ASSERT_TRUE(getCUDASimulationContextCreationTestResult());
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 // Test that the CUDASimulation applyConfig_derived works for multiple GPU device_id values (if available)
 TEST(TestCUDASimulation, AllDeviceIdValues) {
