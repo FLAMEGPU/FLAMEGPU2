@@ -96,7 +96,7 @@ __global__ void agent_function_wrapper(
     detail::curve::DeviceCurve::init(d_curve_table);
 #endif
 
-    #if defined(__CUDACC__) || defined(__HIPCC__) // @todo - This should not be required. This template should only ever be processed by a CUDA compiler.
+    #if defined(__CUDACC__) || defined(__HIPCC__)  // @todo - This should not be required. This template should only ever be processed by a CUDA compiler.
     // Sync the block after Thread 0 has written to shared.
     __syncthreads();
     #endif  // defined(__CUDACC__) || defined(__HIPCC__)
@@ -231,12 +231,11 @@ struct AgentFunctionLauncherHelper {
             scanFlag_agentDeath,
             scanFlag_messageOutput,
             scanFlag_agentOutput);
-        
+
         // Check for errors during the launch
         flamegpu::detail::gpuCheckLaunch();
 
         #endif  // defined(__CUDACC__) || defined(__HIPCC__)
-
     }
 };
 

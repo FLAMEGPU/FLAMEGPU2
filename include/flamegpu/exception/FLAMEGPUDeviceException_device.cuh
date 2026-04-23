@@ -17,7 +17,7 @@ namespace exception {
 /**
  * This allows us to write DTHROW("My Error message: %d", 12); or similar to report an error in device code
  */
-#if defined(__CUDACC__) || defined(__HIPCC__) 
+#if defined(__CUDACC__) || defined(__HIPCC__)
 #define DTHROW flamegpu::exception::DeviceException::create(__FILE__, __LINE__).setMessage
 #else
 // Just trying to make host compiler happy when it sees device code by mistake

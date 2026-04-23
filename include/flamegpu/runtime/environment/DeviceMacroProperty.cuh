@@ -505,7 +505,7 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::CAS(T compare, 
 #else
 #pragma diag_suppress = initialization_not_reachable
 #endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
-#endif // defined(__CUDACC__)
+#endif  // defined(__CUDACC__)
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::exchange(T val) {
     static_assert(std::is_same<T, int32_t>::value ||
