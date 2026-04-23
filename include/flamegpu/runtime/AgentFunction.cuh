@@ -196,6 +196,8 @@ struct AgentFunctionLauncherHelper {
         flamegpu::detail::cuda::Stream_t stream) {
         printf("AgentFunctionLauncher::agent_function_launcher popSize=%u\n", popNo);
 
+        #if defined(__CUDACC__) || defined(__HIPCC__)
+
         // Early exit if no threads to launch
         if (popNo == 0) {
             printf("return\n");
@@ -231,6 +233,9 @@ struct AgentFunctionLauncherHelper {
         
         // Check for errors during the launch
         flamegpu::detail::gpuCheckLaunch();
+
+        #endif  // defined(__CUDACC__) || defined(__HIPCC__)
+
     }
 };
 
