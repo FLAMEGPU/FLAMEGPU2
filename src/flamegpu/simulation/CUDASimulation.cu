@@ -525,15 +525,18 @@ void CUDASimulation::spatialSortAgent_async(const std::string& funcName, const s
 
     void* binIndexPtr = cuda_agent.getStateVariablePtr(state, "_auto_sort_bin_index");
 
-    // Compute occupancy
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
-    // flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, calculateSpatialHash, 0, state_list_size));
-    blockSize = 32; // Todo: temporary
+    // Compute the grid and block size
+    #if defined(FLAMEGPU_USE_HIP)
+    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    int blockSize = 128;
+    #else 
+    int blockSize = 0;
+    int minGridSize = 0;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, calculateSpatialHash, 0, state_list_size));
+    #endif  // defined(FLAMEGPU_USE_HIP)
 
-    //! Round up according to CUDAAgent state list size
-    gridSize = (state_list_size + blockSize - 1) / blockSize;
+    // Round up according to CUDAAgent state list size
+    int gridSize = (state_list_size + blockSize - 1) / blockSize;
 
     unsigned int sm_size = 0;
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
@@ -768,9 +771,12 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 // switch between normal and RTC agent function condition
                 if (func_des->condition) {
                     // calculate the grid block size for agent function condition
-                    // flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, func_des->condition, 0, state_list_size));
-                    blockSize = 32; // Todo: temporary
-
+                    #if defined(FLAMEGPU_USE_HIP)
+                    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+                    blockSize = 128;
+                    #else 
+                    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, func_des->condition, 0, state_list_size));
+                    #endif  // defined(FLAMEGPU_USE_HIP)
                     //! Round up according to CUDAAgent state list size
                     gridSize = (state_list_size + blockSize - 1) / blockSize;
                     (func_des->condition) <<<gridSize, blockSize, 0, this->getStream(streamIdx)>>> (

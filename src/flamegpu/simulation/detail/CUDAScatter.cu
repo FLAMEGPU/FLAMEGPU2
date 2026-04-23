@@ -155,14 +155,17 @@ unsigned int CUDAScatter::scatter(
     const unsigned int out_index_offset,
     const bool invert_scan_flag,
     const unsigned int scatter_all_count) {
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
-    // calculate the grid block size for main agent function
-    // flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, scatter_generic<unsigned int*>, 0, itemCount));
-    blockSize = 32; // Todo: temporary
-    //! Round up according to CUDAAgent state list size
-    gridSize = (itemCount + blockSize - 1) / blockSize;
+    // calculate the grid block size
+    #if defined(FLAMEGPU_USE_HIP)
+    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    int blockSize = 128;
+    #else
+    int blockSize = 0;
+    int minGridSize = 0;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, scatter_generic<unsigned int*>, 0, itemCount));
+    #endif  // defined(FLAMEGPU_USE_HIP)
+    int gridSize = (itemCount + blockSize - 1) / blockSize;
+
     // Make sure we have enough space to store scatterdata
     streamResources[streamResourceId].resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
@@ -212,14 +215,17 @@ void CUDAScatter::scatterPosition_async(
     unsigned int *position,
     const std::vector<ScatterData> &sd,
     unsigned int itemCount) {
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
-    // calculate the grid block size for main agent function
-    // flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, scatter_position_generic, 0, itemCount));
-    blockSize = 32;  // Todo: temporary
-    //! Round up according to CUDAAgent state list size
-    gridSize = (itemCount + blockSize - 1) / blockSize;
+    // calculate the grid block size
+    #if defined(FLAMEGPU_USE_HIP)
+    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    int blockSize = 128;
+    #else
+    int blockSize = 0;
+    int minGridSize = 0;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, scatter_position_generic, 0, itemCount));
+    #endif  // defined(FLAMEGPU_USE_HIP)
+    int gridSize = (itemCount + blockSize - 1) / blockSize;
+
     // Make sure we have enough space to store scatterdata
     streamResources[streamResourceId].resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
@@ -249,15 +255,18 @@ unsigned int CUDAScatter::scatterAll(
     const unsigned int out_index_offset) {
     if (!itemCount)
         return itemCount;  // No work to do
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
 
-                       // calculate the grid block size for main agent function
-    // flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, scatter_all_generic, 0, itemCount));
-    blockSize = 32; // Todo: temporary
-    //! Round up according to CUDAAgent state list size
-    gridSize = (itemCount + blockSize - 1) / blockSize;
+    // calculate the grid block size
+    #if defined(FLAMEGPU_USE_HIP)
+    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    int blockSize = 128;
+    #else
+    int blockSize = 0;
+    int minGridSize = 0;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, scatter_all_generic, 0, itemCount));
+    #endif  // defined(FLAMEGPU_USE_HIP)
+    int gridSize = (itemCount + blockSize - 1) / blockSize;
+
     streamResources[streamResourceId].resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
@@ -322,15 +331,17 @@ void CUDAScatter::pbm_reorder(
         return;
     }
 
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
+    // calculate the grid block size
+    #if defined(FLAMEGPU_USE_HIP)
+    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    int blockSize = 128;
+    #else
+    int blockSize = 0;
+    int minGridSize = 0;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, pbm_reorder_generic, 0, itemCount));
+    #endif  // defined(FLAMEGPU_USE_HIP)
+    int gridSize = (itemCount + blockSize - 1) / blockSize;
 
-                       // calculate the grid block size for main agent function
-    // flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, pbm_reorder_generic, 0, itemCount));
-    blockSize = 32; // Todo: temporary
-    //! Round up according to CUDAAgent state list size
-    gridSize = (itemCount + blockSize - 1) / blockSize;
     // for each variable, scatter from swap to regular
     std::vector<ScatterData> sd;
     for (const auto &v : vars) {
@@ -389,15 +400,18 @@ void CUDAScatter::scatterNewAgents(
     const unsigned int outIndexOffset) {
     // 1 thread per agent variable
     const unsigned int threadCount = static_cast<unsigned int>(sd.size()) * inCount;
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
 
-    // calculate the grid block size for main agent function
-    // flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, scatter_new_agents, 0, threadCount));
-    blockSize = 32; // Todo: temporary
-    //! Round up according to CUDAAgent state list size
-    gridSize = (threadCount + blockSize - 1) / blockSize;
+    // calculate the grid block size
+    #if defined(FLAMEGPU_USE_HIP)
+    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    int blockSize = 128;
+    #else
+    int blockSize = 0;
+    int minGridSize = 0;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, scatter_new_agents, 0, threadCount));
+    #endif  // defined(FLAMEGPU_USE_HIP)
+    int gridSize = (threadCount + blockSize - 1) / blockSize;
+
     streamResources[streamResourceId].resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
@@ -455,15 +469,18 @@ void CUDAScatter::broadcastInit_async(
     if (vars.size() == 0) return;
     // 1 thread per agent variable
     const unsigned int threadCount = static_cast<unsigned int>(vars.size()) * inCount;
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
+    
+    // calculate the grid block size
+    #if defined(FLAMEGPU_USE_HIP)
+    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    int blockSize = 128;
+    #else
+    int blockSize = 0;
+    int minGridSize = 0;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, broadcastInitKernel, 0, threadCount));
+    #endif  // defined(FLAMEGPU_USE_HIP)
+    int gridSize = (threadCount + blockSize - 1) / blockSize;
 
-    // calculate the grid block size for main agent function
-    // flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, broadcastInitKernel, 0, threadCount));
-    blockSize = 32; // Todo: temporary
-    //! Round up according to CUDAAgent state list size
-    gridSize = (threadCount + blockSize - 1) / blockSize;
     // Calculate memory usage (crudely in multiples of ScatterData)
     ptrdiff_t offset = 0;
     for (const auto &v : vars) {
@@ -513,15 +530,18 @@ void CUDAScatter::broadcastInit_async(
     unsigned int outIndexOffset) {
     // 1 thread per agent variable
     const unsigned int threadCount = static_cast<unsigned int>(vars.size()) * inCount;
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
 
-    // calculate the grid block size for main agent function
-    // flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, broadcastInitKernel, 0, threadCount));
-    blockSize = 32; // Todo: temporary
-    //! Round up according to CUDAAgent state list size
-    gridSize = (threadCount + blockSize - 1) / blockSize;
+    // calculate the grid block size
+    #if defined(FLAMEGPU_USE_HIP)
+    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    int blockSize = 128;
+    #else
+    int blockSize = 0;
+    int minGridSize = 0;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, broadcastInitKernel, 0, threadCount));
+    #endif  // defined(FLAMEGPU_USE_HIP)
+    int gridSize = (threadCount + blockSize - 1) / blockSize;
+
     // Calculate memory usage (crudely in multiples of ScatterData)
     std::vector<ScatterData> sd;
     ptrdiff_t offset = 0;
@@ -599,14 +619,18 @@ void CUDAScatter::arrayMessageReorder(
     if (itemCount > array_length) {
         THROW exception::ArrayMessageWriteConflict("Too many messages output for array message structure (%u > %u).\n", itemCount, array_length);
     }
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
-                       // calculate the grid block size for main agent function
-    // flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, reorder_array_messages, 0, itemCount));
-    blockSize = 32; // Todo: temporary
-    //! Round up according to CUDAAgent state list size
-    gridSize = (itemCount + blockSize - 1) / blockSize;
+
+    // calculate the grid block size
+    #if defined(FLAMEGPU_USE_HIP)
+    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    int blockSize = 128;
+    #else
+    int blockSize = 0;
+    int minGridSize = 0;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, reorder_array_messages, 0, itemCount));
+    #endif  // defined(FLAMEGPU_USE_HIP)
+    int gridSize = (itemCount + blockSize - 1) / blockSize;
+    
     unsigned int *d_position = nullptr;
     // Build AoS -> AoS list
     std::vector<ScatterData> sd;

@@ -204,12 +204,17 @@ struct AgentFunctionLauncherHelper {
             // return;
         }
 
-        // Compute the grid and block size, maximising GPU occupancy
-        int blockSize = 0;
+        // Compute the grid and block size
+        #if defined(FLAMEGPU_USE_HIP)
+        // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+        int blockSize = 128;
+        #else 
+        // Use occupancy API for CUDA
         int minGridSize = 0;
-        blockSize = 32;
-        // using KernelPtrType = decltype(&agent_function_wrapper<AgentFunction, MessageIn, MessageOut>);
-        // flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)<KernelPtrType>(&minGridSize, &blockSize, agent_function_wrapper<AgentFunction, MessageIn, MessageOut>, 0, popNo));
+        int blockSize = 0;
+        using KernelPtrType = decltype(&agent_function_wrapper<AgentFunction, MessageIn, MessageOut>);
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)<KernelPtrType>(&minGridSize, &blockSize, agent_function_wrapper<AgentFunction, MessageIn, MessageOut>, 0, popNo));
+        #endif  // defined(FLAMEGPU_USE_HIP)
         int gridSize = (popNo + blockSize - 1) / blockSize;
         printf("launching kernel with <<<%d,%d,0,%p>>>\n", gridSize, blockSize, stream);
 
