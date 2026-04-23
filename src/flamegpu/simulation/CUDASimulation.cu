@@ -529,7 +529,7 @@ void CUDASimulation::spatialSortAgent_async(const std::string& funcName, const s
     #if defined(FLAMEGPU_USE_HIP)
     // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
     int blockSize = 128;
-    #else 
+    #else
     int blockSize = 0;
     int minGridSize = 0;
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, calculateSpatialHash, 0, state_list_size));
@@ -774,7 +774,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     #if defined(FLAMEGPU_USE_HIP)
                     // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
                     blockSize = 128;
-                    #else 
+                    #else
                     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, func_des->condition, 0, state_list_size));
                     #endif  // defined(FLAMEGPU_USE_HIP)
                     //! Round up according to CUDAAgent state list size

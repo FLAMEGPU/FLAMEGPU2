@@ -205,7 +205,7 @@ struct AgentFunctionLauncherHelper {
         #if defined(FLAMEGPU_USE_HIP)
         // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
         int blockSize = 128;
-        #else 
+        #else
         // Use occupancy API for CUDA
         int minGridSize = 0;
         int blockSize = 0;

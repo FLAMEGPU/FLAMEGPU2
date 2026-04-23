@@ -469,7 +469,7 @@ void CUDAScatter::broadcastInit_async(
     if (vars.size() == 0) return;
     // 1 thread per agent variable
     const unsigned int threadCount = static_cast<unsigned int>(vars.size()) * inCount;
-    
+
     // calculate the grid block size
     #if defined(FLAMEGPU_USE_HIP)
     // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
@@ -630,7 +630,7 @@ void CUDAScatter::arrayMessageReorder(
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, reorder_array_messages, 0, itemCount));
     #endif  // defined(FLAMEGPU_USE_HIP)
     int gridSize = (itemCount + blockSize - 1) / blockSize;
-    
+
     unsigned int *d_position = nullptr;
     // Build AoS -> AoS list
     std::vector<ScatterData> sd;
