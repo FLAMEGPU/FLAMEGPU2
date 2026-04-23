@@ -758,10 +758,6 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     continue;
                 }
 
-                int blockSize = 0;  // The launch configurator returned block size
-                int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-                int gridSize = 0;  // The actual grid size needed, based on input size
-
                 //  Agent function condition kernel wrapper args
                 detail::curandState *t_rng = d_rng + totalThreads;
                 unsigned int *scanFlag_agentDeath = this->singletons->scatter.Scan().Config(detail::CUDAScanCompaction::Type::AGENT_DEATH, streamIdx).d_ptrs.scan_flag;
@@ -773,12 +769,14 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     // calculate the grid block size for agent function condition
                     #if defined(FLAMEGPU_USE_HIP)
                     // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
-                    blockSize = 128;
+                    int blockSize = 128;
                     #else
+                    int blockSize = 0;
+                    int minGridSize = 0;
                     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, func_des->condition, 0, state_list_size));
                     #endif  // defined(FLAMEGPU_USE_HIP)
                     //! Round up according to CUDAAgent state list size
-                    gridSize = (state_list_size + blockSize - 1) / blockSize;
+                    int gridSize = (state_list_size + blockSize - 1) / blockSize;
                     (func_des->condition) <<<gridSize, blockSize, 0, this->getStream(streamIdx)>>> (
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
                     error_buffer,
@@ -793,15 +791,16 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     flamegpu::detail::gpuCheckLaunch();
                 } else {  // RTC function
 #ifdef FLAMEGPU_USE_CUDA
-
                     std::string func_condition_identifier = func_name + "_condition";
                     // get instantiation
                     const jitify2::KernelData& instance = cuda_agent.getRTCInstantiation(func_condition_identifier);
                     // calculate the grid block size for main agent function
                     CUfunction cu_func = cuFunctionFromJitify2KernelData(instance);
+                    int blockSize = 0;
+                    int minGridSize = 0;
                     flamegpu::detail::gpuCheck(cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size));
                     //! Round up according to CUDAAgent state list size
-                    gridSize = (state_list_size + blockSize - 1) / blockSize;
+                    int gridSize = (state_list_size + blockSize - 1) / blockSize;
                     // launch the kernel
                     jitify2::ErrorMsg a = instance.configure(gridSize, blockSize, 0, this->getStream(streamIdx))->launch_raw({
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
@@ -992,10 +991,6 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 continue;
             }
 
-            int blockSize = 0;  // The launch configurator returned block size
-            int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-            int gridSize = 0;  // The actual grid size needed, based on input size
-
             // Agent function kernel wrapper args
             detail::curandState *t_rng = d_rng + totalThreads;
             unsigned int *scanFlag_agentDeath = func_des->has_agent_death ? this->singletons->scatter.Scan().Config(detail::CUDAScanCompaction::Type::AGENT_DEATH, streamIdx).d_ptrs.scan_flag : nullptr;
@@ -1030,7 +1025,10 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 const jitify2::KernelData& instance = cuda_agent.getRTCInstantiation(func_name);
                 // calculate the grid block size for main agent function
                 CUfunction cu_func = cuFunctionFromJitify2KernelData(instance);
-            flamegpu::detail::gpuCheck(cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size));
+                int blockSize = 0;  // The launch configurator returned block size
+                int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
+                int gridSize = 0;  // The actual grid size needed, based on input size
+                flamegpu::detail::gpuCheck(cuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, cu_func, 0, 0, state_list_size));
                 //! Round up according to CUDAAgent state list size
                 gridSize = (state_list_size + blockSize - 1) / blockSize;
                 // launch the kernel
