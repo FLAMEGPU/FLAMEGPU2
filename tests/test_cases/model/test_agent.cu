@@ -55,7 +55,7 @@ TEST(AgentDescriptionTest, functions) {
     EXPECT_EQ(f1.getName(), FUNCTION_NAME1);
     EXPECT_EQ(f2.getName(), FUNCTION_NAME2);
     {
-        // TODO: DO NOT MERGE 
+        // TODO: DO NOT MERGE
         // AgentFunctionLauncher *_a = &agent_function_launcher<agent_fn1_impl, MessageNone, MessageNone>;
         // EXPECT_EQ(f1.getFunctionPtr(), _a);
         // AgentFunctionLauncher *_b = &agent_function_launcher<agent_fn2_impl, MessageNone, MessageNone>;
