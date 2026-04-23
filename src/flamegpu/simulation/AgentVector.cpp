@@ -522,6 +522,7 @@ void AgentVector::pop_back() {
 }
 void AgentVector::resize(size_type count) {
     _requireLength();
+    _requireAll();  // bugfix: HIP/ROCM DeviceAgentVectorTest.AgentID_MultipleStatesUniqueIDs failure due to 0-initialised IDs being overwritten by a D2H copy from uninitialised device memory
     const size_type old_size = _size;
     internal_resize(count, true);
     _size = count;
