@@ -1006,7 +1006,6 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     #endif
 
             if (func_des->func) {   // compile time specified agent function launch
-                printf("func!! %u\n", state_list_size);
                 (func_des->func)(
     #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
                     error_buffer,
@@ -1024,7 +1023,6 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                     scanFlag_messageOutput,
                     scanFlag_agentOutput,
                     this->getStream(streamIdx));
-                printf("launched\n");
                 flamegpu::detail::gpuCheckLaunch();
             } else {      // assume this is a runtime specified agent function
 #ifdef FLAMEGPU_USE_CUDA

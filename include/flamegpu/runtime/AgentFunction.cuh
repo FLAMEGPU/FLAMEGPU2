@@ -194,14 +194,11 @@ struct AgentFunctionLauncherHelper {
         unsigned int *scanFlag_messageOutput,
         unsigned int *scanFlag_agentOutput,
         flamegpu::detail::cuda::Stream_t stream) {
-        printf("AgentFunctionLauncher::agent_function_launcher popSize=%u\n", popNo);
-
         #if defined(__CUDACC__) || defined(__HIPCC__)
 
         // Early exit if no threads to launch
         if (popNo == 0) {
-            printf("return\n");
-            // return;
+            return;
         }
 
         // Compute the grid and block size
@@ -216,7 +213,6 @@ struct AgentFunctionLauncherHelper {
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)<KernelPtrType>(&minGridSize, &blockSize, agent_function_wrapper<AgentFunction, MessageIn, MessageOut>, 0, popNo));
         #endif  // defined(FLAMEGPU_USE_HIP)
         int gridSize = (popNo + blockSize - 1) / blockSize;
-        printf("launching kernel with <<<%d,%d,0,%p>>>\n", gridSize, blockSize, stream);
 
         // Launch the kernel gridSize, blockSizes
         agent_function_wrapper<AgentFunction, MessageIn, MessageOut><<<gridSize, blockSize, 0, stream>>>(
