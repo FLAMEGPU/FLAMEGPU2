@@ -87,6 +87,7 @@ cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_HOST_FUNCTIONS "Enable building ex
 cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_ENSEMBLE "Enable building examples/cpp/ensemble" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
 cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_SUGARSCAPE "Enable building examples/cpp/sugarscape" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
 cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_DIFFUSION "Enable building examples/cpp/diffusion" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_BEESANDBEES "Enable building examples/cpp/beesandbees" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
 
 option(FLAMEGPU_BUILD_PYTHON "Enable python bindings via SWIG" OFF)
 
@@ -147,6 +148,9 @@ if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_SUGARSCAPE)
 endif()
 if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_DIFFUSION)
     add_subdirectory(examples/cpp/diffusion)
+endif()
+if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_BEESANDBEES)
+    add_subdirectory(examples/cpp/beesandbees)
 endif()
 # Add the tests directory (if required)
 if(FLAMEGPU_BUILD_TESTS OR FLAMEGPU_BUILD_TESTS_DEV)
