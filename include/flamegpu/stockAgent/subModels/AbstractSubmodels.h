@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_STOCKAGENT_ABSTRACTSUBMODELS_H_
-#define INCLUDE_FLAMEGPU_STOCKAGENT_ABSTRACTSUBMODELS_H_
+#ifndef INCLUDE_FLAMEGPU_STOCKAGENT_SUBMODELS_ABSTRACTSUBMODELS_H_
+#define INCLUDE_FLAMEGPU_STOCKAGENT_SUBMODELS_ABSTRACTSUBMODELS_H_
 
 #include "flamegpu/flamegpu.h"
 
@@ -12,9 +12,7 @@ namespace submodels {
      * Submodels can be nested within other submodels, allowing for hierarchical organization of code.
      */
     class AbstractSubmodel {
-    public:
-
-        
+     public:
         virtual void validate() = 0;
         virtual ~AbstractSubmodel() = default;
     };
@@ -24,4 +22,4 @@ namespace submodels {
 }  // namespace stockAgent
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_STOCKAGENT_ABSTRACTSUBMODELS_H_
+#endif  // INCLUDE_FLAMEGPU_STOCKAGENT_SUBMODELS_ABSTRACTSUBMODELS_H_

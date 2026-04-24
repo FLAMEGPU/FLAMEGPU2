@@ -1,10 +1,14 @@
-#include "flamegpu/flamegpu.h"
 #include "flamegpu/stockAgent/subModels/AddOneAgent.h"
+
 #include <map>
 #include <string>
 #include <memory>
+#include <vector>
 
-using namespace std;
+#include "flamegpu/flamegpu.h"
+
+using std::string;
+using std::map;
 
 namespace flamegpu {
 namespace stockAgent {
@@ -48,7 +52,7 @@ namespace {
                 int ty = empty_y[choice];
                 FLAMEGPU->setVariable<int>("target_x", tx);
                 FLAMEGPU->setVariable<int>("target_y", ty);
-                
+
                 FLAMEGPU->message_out.setVariable<id_t>("requester_id", FLAMEGPU->getID());
                 FLAMEGPU->message_out.setVariable<float>("priority", FLAMEGPU->getVariable<float>("priority"));
                 FLAMEGPU->message_out.setLocation(tx, ty);
@@ -88,7 +92,7 @@ namespace {
                 FLAMEGPU->setVariable<int>("y", ty);
                 FLAMEGPU->setVariable<int>("moved_this_step", 1);
             }
-        } 
+        }
 
         return ALIVE;
     }
@@ -113,7 +117,7 @@ namespace {
             agent.setVariable<int>("target_y", -1);
         }
     }
-}
+}  // namespace
 
 SubModelDescription AddOneAgent::addOneAgentSubmodel(ModelDescription &model, int ENV_SIZE_X, int ENV_SIZE_Y) {
     ModelDescription sub_model_move("movement_submodel");
@@ -151,7 +155,7 @@ void AddOneAgent::setAgent(const string& parent_name,
     }
 
     auto agent_map = this->smm->bindAgent(INTERNAL_AGENT_NAME, parent_name, auto_map, auto_map);
-    
+
     for (auto const& [internal_var, parent_var] : var_map) {
         agent_map.mapVariable(internal_var, parent_var);
     }
@@ -181,13 +185,13 @@ void AddOneAgent::setMessages(AgentDescription &movingAgent, int ENV_SIZE_X, int
     f1.setInitialState("active");
     f1.setEndState("active");
     f1.setMessageOutput("occupancy_status");
-    
+
     auto f2 = movingAgent.newFunction("movingAgent_request_move", movingAgent_request_move);
     f2.setInitialState("active");
     f2.setEndState("active");
     f2.setMessageInput("occupancy_status");
     f2.setMessageOutput("move_requests");
-    
+
     auto f3 = movingAgent.newFunction("movingAgent_execute_move", movingAgent_execute_move);
     f3.setInitialState("active");
     f3.setEndState("active");
@@ -207,12 +211,17 @@ void AddOneAgent::validate() {
 
     try {
         auto sub_agent = this->smm->getSubAgent(INTERNAL_AGENT_NAME);
-        
+
         // Mandatory mappings check
         sub_agent.getVariableMapping("x");
         sub_agent.getVariableMapping("y");
         sub_agent.getVariableMapping("priority");
 
+        // Mandatory state mapping check
+        sub_agent.getStateMapping("active");
+    } catch (const exception::InvalidAgentState& e) {
+        string msg = "AddOneAgent submodel missing required state binding: " + string(e.what());
+        throw exception::InvalidAgentState(msg.c_str());
     } catch (const exception::InvalidSubAgentName& e) {
         string msg = "AddOneAgent submodel missing required agent binding: " + string(e.what());
         throw exception::InvalidSubAgentName(msg.c_str());
@@ -222,6 +231,6 @@ void AddOneAgent::validate() {
     }
 }
 
-} // namespace submodels
-} // namespace stockAgent
-} // namespace flamegpu
+}  // namespace submodels
+}  // namespace stockAgent
+}  // namespace flamegpu

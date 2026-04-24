@@ -1,10 +1,12 @@
-#ifndef INCLUDE_FLAMEGPU_STOCKAGENT_SUBMODELS_ADDONE_H_
-#define INCLUDE_FLAMEGPU_STOCKAGENT_SUBMODELS_ADDONE_H_
+#ifndef INCLUDE_FLAMEGPU_STOCKAGENT_SUBMODELS_ADDONEAGENT_H_
+#define INCLUDE_FLAMEGPU_STOCKAGENT_SUBMODELS_ADDONEAGENT_H_
 
-#include "AbstractSubmodels.h"
 #include <map>
 #include <string>
 #include <memory>
+
+#include "AbstractSubmodels.h"
+
 
 namespace flamegpu {
 namespace stockAgent {
@@ -54,4 +56,4 @@ class AddOneAgent : public AbstractSubmodel {
 }  // namespace stockAgent
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_STOCKAGENT_SUBMODELS_ADDONE_H_
+#endif  // INCLUDE_FLAMEGPU_STOCKAGENT_SUBMODELS_ADDONEAGENT_H_
