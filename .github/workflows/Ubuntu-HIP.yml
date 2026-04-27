@@ -38,7 +38,7 @@ jobs:
             hostcxx: hipcc
             os: ubuntu-24.04
           # HIP 7.0 with a Vega/CDNA Datacentre GPU (oldest we will support?)
-          - hip: "7.2"
+          - hip: "7.0"
             hip_arch: "gfx9-generic"
             hostcxx: hipcc
             os: ubuntu-24.04
