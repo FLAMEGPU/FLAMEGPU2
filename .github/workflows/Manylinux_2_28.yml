@@ -36,49 +36,42 @@ jobs:
           # CUDA 13
           - cuda: "13.0"
             cuda_arch: "75"
+            hostcxx: gcc-toolset-12
+            os: ubuntu-24.04
+          - cuda: "13.0"
+            cuda_arch: "75"
             hostcxx: gcc-toolset-11
             os: ubuntu-24.04
+          - cuda: "13.0"
+            cuda_arch: "75"
+            hostcxx: gcc-toolset-10
+            os: ubuntu-24.04
           # CUDA 12
-          - cuda: "12.9"
-            cuda_arch: "50"
-            hostcxx: gcc-toolset-12
-            os: ubuntu-24.04
-          - cuda: "12.8"
-            cuda_arch: "50"
-            hostcxx: gcc-toolset-12
-            os: ubuntu-24.04
-          - cuda: "12.6"
-            cuda_arch: "50"
-            hostcxx: gcc-toolset-12
-            os: ubuntu-24.04
-          - cuda: "12.5"
+          - cuda: "12.4"
             cuda_arch: "50"
             hostcxx: gcc-toolset-12
             os: ubuntu-24.04
           - cuda: "12.4"
             cuda_arch: "50"
-            hostcxx: gcc-toolset-12
+            hostcxx: gcc-toolset-11
             os: ubuntu-24.04
-          - cuda: "12.3"
+          - cuda: "12.4"
             cuda_arch: "50"
-            hostcxx: gcc-toolset-12
+            hostcxx: gcc-toolset-10
             os: ubuntu-24.04
           - cuda: "12.2"
             cuda_arch: "50"
             hostcxx: gcc-toolset-12
             os: ubuntu-24.04
-          - cuda: "12.1"
+          - cuda: "12.2"
             cuda_arch: "50"
-            hostcxx: gcc-toolset-12
+            hostcxx: gcc-toolset-11
             os: ubuntu-24.04
-          - cuda: "12.0"
+          - cuda: "12.2"
             cuda_arch: "50"
-            hostcxx: gcc-toolset-12
+            hostcxx: gcc-toolset-10
             os: ubuntu-24.04
-          - cuda: "12.0"
-            cuda_arch: "50"
-            hostcxx: gcc-toolset-12
-            os: ubuntu-24.04
+
         python:
           - "3.14"
         config:
@@ -86,7 +79,7 @@ jobs:
             config: "Release"
             SEATBELTS: "ON"
         VISUALISATION:
-          - "ON"
+          # - "ON"
           - "OFF"
 
     # Name the job based on matrix/env options
