@@ -78,6 +78,12 @@ jobs:
         hip: ${{ env.HIP }}
       run: .github/scripts/install_hip_ubuntu.sh
 
+    - name: Install/Select host compiler (HIPCC only)
+      run: |
+        echo "CC=hipcc" >> $GITHUB_ENV
+        echo "CXX=hipcc" >> $GITHUB_ENV
+        echo "HIPCXX=hipcc" >> $GITHUB_ENV
+
     - name: Add custom problem matchers for annotations
       run: echo "::add-matcher::.github/problem-matchers.json"
 
