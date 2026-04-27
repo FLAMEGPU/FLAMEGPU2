@@ -179,21 +179,21 @@ class MessageArray3D::In {
              * Returns the x array offset of message relative to the search origin
              * @note This value is unwrapped, so will always return a value within the search radius
              */
-            __device__ size_type getOffsetX() const {
+            __device__ int getOffsetX() const {
                 return relative_cell[0];
             }
             /**
              * Returns the y array offset of message relative to the search origin
              * @note This value is unwrapped, so will always return a value within the search radius
              */
-            __device__ size_type getOffsetY() const {
+            __device__ int getOffsetY() const {
                 return relative_cell[1];
             }
             /**
              * Returns the z array offset of message relative to the search origin
              * @note This value is unwrapped, so will always return a value within the search radius
              */
-            __device__ size_type getOffsetZ() const {
+            __device__ int getOffsetZ() const {
                 return relative_cell[2];
             }
             /**
@@ -643,21 +643,21 @@ class MessageArray3D::In {
              * Returns the x array offset of message relative to the search origin
              * @note This value is unwrapped, so will always return a value within the search radius
              */
-            __device__ size_type getOffsetX() const {
+            __device__ int getOffsetX() const {
                 return relative_cell[0];
             }
             /**
              * Returns the y array offset of message relative to the search origin
              * @note This value is unwrapped, so will always return a value within the search radius
              */
-            __device__ size_type getOffsetY() const {
+            __device__ int getOffsetY() const {
                 return relative_cell[1];
             }
             /**
              * Returns the z array offset of message relative to the search origin
              * @note This value is unwrapped, so will always return a value within the search radius
              */
-            __device__ size_type getOffsetZ() const {
+            __device__ int getOffsetZ() const {
                 return relative_cell[2];
             }
             /**
