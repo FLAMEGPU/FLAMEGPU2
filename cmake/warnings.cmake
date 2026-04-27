@@ -131,6 +131,8 @@ if(NOT COMMAND flamegpu_suppress_some_compiler_warnings)
                 target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-restrict>")
                 target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wno-restrict>")
             endif()
+        elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wno-unused-private-field>")
         endif()
         # Generic OS/host compiler warning suppressions
         # Ensure NVCC outputs warning numbers
@@ -149,6 +151,12 @@ if(NOT COMMAND flamegpu_suppress_some_compiler_warnings)
         # "Note: the layout of aggregates containing vectors with x-byte allignment has changed in GCC 5
         if(CMAKE_SYSTEM_PROCESSOR STREQUAL "ppc64le" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 10)
             target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:>-Wno-psabi")
+        endif()
+        # HIP-only warning suppressions
+        if(CMAKE_HIP_COMPILER_LOADED)
+            if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:HIP>:-Wno-unused-private-field>")
+            endif()
         endif()
     endfunction()
 endif()
