@@ -42,10 +42,6 @@ jobs:
             cuda_arch: "75"
             hostcxx: gcc-toolset-11
             os: ubuntu-24.04
-          - cuda: "13.0"
-            cuda_arch: "75"
-            hostcxx: gcc-toolset-10
-            os: ubuntu-24.04
           # CUDA 12
           - cuda: "12.4"
             cuda_arch: "50"
@@ -55,10 +51,6 @@ jobs:
             cuda_arch: "50"
             hostcxx: gcc-toolset-11
             os: ubuntu-24.04
-          - cuda: "12.4"
-            cuda_arch: "50"
-            hostcxx: gcc-toolset-10
-            os: ubuntu-24.04
           - cuda: "12.2"
             cuda_arch: "50"
             hostcxx: gcc-toolset-12
@@ -67,9 +59,14 @@ jobs:
             cuda_arch: "50"
             hostcxx: gcc-toolset-11
             os: ubuntu-24.04
-          - cuda: "12.2"
+          # CU 12.0/12.1 might actually be ok with gcc 11 but not 12?
+          - cuda: "12.1"
             cuda_arch: "50"
-            hostcxx: gcc-toolset-10
+            hostcxx: gcc-toolset-11
+            os: ubuntu-24.04
+          - cuda: "12.0"
+            cuda_arch: "50"
+            hostcxx: gcc-toolset-11
             os: ubuntu-24.04
 
         python:
