@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.25.2...4.3.0 FATAL_ERROR)
 #[[[
-# Handle CMAKE_CUDA_ARCHITECTURES/CMAKE_HIP_ARCHITECTURES gracefully, allowing library CMakeLists.txt to provide a sane library default if not user-specified
+# Handle CMAKE_CUDA_ARCHITECTURES/CMAKE_HIP_ARCHITECTURES gracefully, allowing library CMakeLists.txt to provide a sane library default.
 #
 # CMAKE_CUDA_ARCHITECTURES is a CMake >= 3.18 feature which controls code generation options for CUDA device code.
 # The initial value can be set using the CMake Cache variable CMAKE_CUDA_ARCHITECTURES or the CUDAARCHS environment variable.
@@ -9,19 +9,20 @@ cmake_minimum_required(VERSION 3.25.2...4.3.0 FATAL_ERROR)
 # The initial value can be set using the CMake Cache variable CMAKE_HIP_ARCHITECTURES
 # The value is interpreted based on CMAKE_HIP_PLATFORM which controls if HIP is compiled for AMD or Nvidia devices.
 #
-# If CMAKE_CUDA_ARCHITECTURES/CMAKE_HIP_ARCHITECTURES is not provided by a users, CMake will default to a (probably) compiler-provide default value in project/enable_language commands, e.g. 75 for CUDA 13.x.
+# If CMAKE_CUDA_ARCHITECTURES/CMAKE_HIP_ARCHITECTURES is not provided by a user, CMake will default to a (probably) compiler-provide default value in project/enable_language commands, e.g. 75 for CUDA 13.x, gfx1100 for a machine with AMD 7900XTX
 # From this point, we cannot distinguish if the value was user-provided or the CMake default, to override it with a sensible library default (all-major or equivalent).
 # This CMake module allows us to set a library default for when users do not provide a specific value, through CMake project injection.
 #
 # Note: This was formally CUDAArchitectures.cmake, but has been generalised for CUDA/HIP.
 #
 # Todo: Should we block CMAKE_HIP_PLATFORM=NVIDIA so we don't have to test / support it? 
+# Todo: Should we just fully drop CMake-based library default and invalid arch warnings for consistent CUDA & AMD behaviour? always just use the system default but strongly encourage users to set the value they care about? Would be a lot simpler and get rid of the pre-project call users have to make for this to work. Might be nicer to keep the method around though but deprecated and a noop for a while atleast. 
 #
 #]]
 include_guard(GLOBAL)
 
 #[[[
-# Initialise the CMAKE_CUDA_ARCHITECTURES/CMAKE_HIP_ARCHITECTURES from the environment, CACHE or a sane programmatic default as appropriate
+# Store the pre-language enable status CMAKE_CUDA_ARCHITECTURES/CMAKE_HIP_ARCHITECTURES from the environment, CACHE or a sane programmatic default as appropriate
 #
 # Call this method prior to the first (or all) project commands, to store the initial state of CMAKE_CUDA_ARCHITECTURES/ENV{CUDAARCHS}/CMAKE_HIP_ARCHITECTURES, enabling custom library-provided default if not specified
 # 
@@ -42,7 +43,8 @@ function(flamegpu_init_gpu_architectures)
     )
     # Detect if there are user provided architectures or not, from the cache or environment.
     # This must always be done for all possible GPU architecture sources, as we do not know at this point if HIP or CUDA will be used.
-    # Todo: does this need to be split between cuda and hip? how should ENV{CUDAARCHS} be handled for CMAKE_HIP_PLATFORM=nvidia?
+    # Todo: does this need to be split between cuda and hip? 
+    # Todo: how should ENV{CUDAARCHS} be handled for CMAKE_HIP_PLATFORM=nvidia?
     set(flamegpu_ARCH_FROM_ENV_OR_CACHE FALSE)
     if(DEFINED CMAKE_CUDA_ARCHITECTURES OR DEFINED ENV{CUDAARCHS} OR DEFINED CMAKE_HIP_ARCHITECTURES)
         set(flamegpu_ARCH_FROM_ENV_OR_CACHE TRUE)
@@ -94,24 +96,6 @@ function(flamegpu_set_gpu_architectures)
         ""
         ${ARGN}
     )
-    # This function requires that CUDA or HIP language is enabled on the current project.
-    if(NOT (CMAKE_CUDA_COMPILER_LOADED OR CMAKE_HIP_COMPILER_LOADED))
-        # If in the injected project code, give a different error message
-        # Todo: is it still viable to support injection of this method? given the project may enable languages?
-        if(DEFINED flamegpu_IN_PROJECT_INCLUDE AND flamegpu_IN_PROJECT_INCLUDE)
-            message(FATAL_ERROR
-            "  ${CMAKE_CURRENT_FUNCTION} requires the CUDA or HIP language to be enabled\n"
-            "  Please either:\n"
-            # "  *  use project(<project-name> LANGUAGES CUDA)\n"
-            "  *  call flamegpu_init_gpu_architectures() without the PROJECT argument, and explicitly call ${CMAKE_CURRENT_FUNCTION}() after flamegpu_enable_languages() / enable_language(CUDA) / enable_language(HIP).")
-        else()
-            # not in project injection, so only suggest enabled
-            message(FATAL_ERROR
-            "  ${CMAKE_CURRENT_FUNCTION} requires the CUDA or HIP language to be enabled.\n"
-            "  Please call flamegpu_enable_languages(), enable_language(CUDA) or enable_language(HIP) prior to ${CMAKE_CURRENT_FUNCTION}()")
-        endif()
-
-    endif()
 
     # Handle CUDA (Todo: hip but with CUDA as the backend?)
     if (CMAKE_CUDA_COMPILER_LOADED)
@@ -217,5 +201,22 @@ function(flamegpu_set_gpu_architectures)
         # Generic architectures are the closest thing to building for SM_50 and it running on 52. I.e. gfx10-1-generic, but this might not be available for all supported families (https://rocm.docs.amd.com/projects/llvm-project/en/latest/conceptual/code-portability.html#generic-code-objects)
         # As this is so hard to detect, we probably just leave default as to use the native build and document this? Then for any redistributable CI either list everything, or use the -generic architectures (whcich could be extracted via --target=amdgcn-amd-amdhsa --print-supported-cpus)?
         # message(AUTHOR_WARNING "Todo: implement flamegpu_set_gpu_architectures for HIP. This is non trivial.")
+    else()
+        # Todo: Delete the following as we cannot safely warn/error in this method due to use via project injection? 
+        # Neither HIP nor CUDA are enabled, so do nothing with the architectures?
+        # Due to this function being injected into project() commands, we cannot error here if neither was enabled,
+        # and a warning may even be too strong. 
+        # if(DEFINED flamegpu_IN_PROJECT_INCLUDE AND flamegpu_IN_PROJECT_INCLUDE)
+        #     message(FATAL_ERROR
+        #     "  ${CMAKE_CURRENT_FUNCTION} requires the CUDA or HIP language to be enabled\n"
+        #     "  Please either:\n"
+        #     # "  *  use project(<project-name> LANGUAGES CUDA)\n"
+        #     "  *  call flamegpu_init_gpu_architectures() without the PROJECT argument, and explicitly call ${CMAKE_CURRENT_FUNCTION}() after flamegpu_enable_languages() / enable_language(CUDA) / enable_language(HIP).")
+        # else()
+        #     # not in project injection, so only suggest enabled
+        #     message(FATAL_ERROR
+        #     "  ${CMAKE_CURRENT_FUNCTION} requires the CUDA or HIP language to be enabled.\n"
+        #     "  Please call flamegpu_enable_languages(), enable_language(CUDA) or enable_language(HIP) prior to ${CMAKE_CURRENT_FUNCTION}()")
+        # endif()
     endif()
 endfunction()
