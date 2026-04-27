@@ -124,7 +124,7 @@ inline Error_t cudaFreeHost(void* devPtr) {
     // @todo - version which checks the device ordinal is a match for the active context too, potentially flip-flopping the device.
     PointerAttributes_t attributes = {};
     status = FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, devPtr);
-    // valid pointers allocated using cudaMallocHost have a type of cudaMemoryTypeHost
+    // valid pointers allocated using cudaHostAlloc have a type of cudaMemoryTypeHost
     if (status == FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) && attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeHost)) {
         status = ::FLAMEGPU_GPU_RUNTIME_SYMBOL(FreeHost)(devPtr);
         // Forward on any cuda errors returned.
