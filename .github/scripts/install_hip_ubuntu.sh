@@ -11,6 +11,7 @@ HIP_PACKAGES_IN=(
     "rocm-hip-runtime-dev"
     "rocthrust-dev"
     "hipcub-dev"
+    "rocrand-dev"
     "hiprand-dev"
     "rocprofiler-sdk-roctx"
 )
