@@ -175,7 +175,7 @@ class CUDAMacroEnvironment {
     std::shared_ptr<HostMacroProperty_MetaData> getHostPropertyMetadata(const std::string property_name);
 
  private:
-    const CUDASimulation& cudaSimulation;
+    [[maybe_unused]] const CUDASimulation& cudaSimulation;
     std::map<std::string, MacroEnvProp> properties;
     std::map<std::string, std::weak_ptr<HostMacroProperty_MetaData>> host_cache;
     flamegpu::detail::cuda::Stream_t stream = nullptr;

@@ -173,7 +173,7 @@ class CUDAMessage {
     /**
      * A reference to the cuda model which this object belongs to
      */
-    const CUDASimulation& cudaSimulation;
+    [[maybe_unused]] const CUDASimulation& cudaSimulation;
 };
 
 }  // namespace detail
