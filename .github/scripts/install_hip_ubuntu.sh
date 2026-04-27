@@ -133,20 +133,20 @@ $USE_SUDO apt install -y rocm-hip-runtime-dev${HIP_MAJOR_MINOR_PATCH}
 ## Set environment vars / vars to be propagated
 ## -----------------
 
-HIP_PATH=/opt/rocm-${HIP_MAJOR_MINOR_PATCH}
-echo "HIP_PATH=${HIP_PATH}"
-export HIP_PATH=${HIP_PATH}
-export PATH="$HIP_PATH/bin:$PATH"
-export LD_LIBRARY_PATH="$HIP_PATH/lib:$LD_LIBRARY_PATH"
+ROCM_PATH=/opt/rocm-${HIP_MAJOR_MINOR_PATCH}
+echo "ROCM_PATH=${ROCM_PATH}"
+export ROCM_PATH=${ROCM_PATH}
+export PATH="$ROCM_PATH/bin:$PATH"
+export LD_LIBRARY_PATH="$ROCM_PATH/lib:$LD_LIBRARY_PATH"
 
 # Check hipcc is now available.
 hipcc -V
 
 # If executed on github actions, make the appropriate echo statements to update the environment
 if [[ $GITHUB_ACTIONS ]]; then
-    # Set paths for subsequent steps, using ${HIP_PATH}
-    echo "Adding HIP ${HIP_MAJOR_MINOR_PATCH} to HIP_PATH, PATH and LD_LIBRARY_PATH"
-    echo "HIP_PATH=${HIP_PATH}" >> $GITHUB_ENV
-    echo "${HIP_PATH}/bin" >> $GITHUB_PATH
-    echo "LD_LIBRARY_PATH=${HIP_PATH}/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+    # Set paths for subsequent steps, using ${ROCM_PATH}
+    echo "Adding HIP ${HIP_MAJOR_MINOR_PATCH} to ROCM_PATH, PATH and LD_LIBRARY_PATH"
+    echo "ROCM_PATH=${ROCM_PATH}" >> $GITHUB_ENV
+    echo "${ROCM_PATH}/bin" >> $GITHUB_PATH
+    echo "LD_LIBRARY_PATH=${ROCM_PATH}/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
 fi
