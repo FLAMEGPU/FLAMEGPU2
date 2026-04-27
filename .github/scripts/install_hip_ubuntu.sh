@@ -128,3 +128,25 @@ $USE_SUDO apt update
 # Install packages.
 # Todo: Install as few pacakges as possible to reduce installation size/time?
 $USE_SUDO apt install -y rocm-hip-runtime-dev${HIP_MAJOR_MINOR_PATCH}
+
+## -----------------
+## Set environment vars / vars to be propagated
+## -----------------
+
+HIP_PATH=/opt/rocm-${HIP_MAJOR_MINOR_PATCH}
+echo "HIP_PATH=${HIP_PATH}"
+export HIP_PATH=${HIP_PATH}
+export PATH="$HIP_PATH/bin:$PATH"
+export LD_LIBRARY_PATH="$HIP_PATH/lib:$LD_LIBRARY_PATH"
+
+# Check hipcc is now available.
+hipcc -V
+
+# If executed on github actions, make the appropriate echo statements to update the environment
+if [[ $GITHUB_ACTIONS ]]; then
+    # Set paths for subsequent steps, using ${HIP_PATH}
+    echo "Adding HIP ${HIP_MAJOR_MINOR_PATCH} to HIP_PATH, PATH and LD_LIBRARY_PATH"
+    echo "HIP_PATH=${HIP_PATH}" >> $GITHUB_ENV
+    echo "${HIP_PATH}/bin" >> $GITHUB_PATH
+    echo "LD_LIBRARY_PATH=${HIP_PATH}/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+fi
