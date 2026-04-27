@@ -38,15 +38,15 @@ class CUDAScatter {
          using iterator_category = std::random_access_iterator_tag;
          __host__ __device__ explicit InversionIterator(unsigned int *_p) : p(_p) { }
 
-         __device__ InversionIterator &operator=(const InversionIterator&other) { p = other.p; return *this; }
-         __device__ InversionIterator operator++ (int a) { p += a;  return *this; }
-         __device__ InversionIterator operator++ () { p++;  return *this; }
-         __device__ unsigned int operator *() { return invert(*p); }
-         __device__ InversionIterator operator+(const int b) const { return InversionIterator(p + b); }
-         __device__ InversionIterator operator-(const int b) const { return InversionIterator(p - b); }  // for hipcub
-         __device__ unsigned int operator[](int b) const { return  invert(p[b]); }
+         __host__ __device__ InversionIterator &operator=(const InversionIterator&other) { p = other.p; return *this; }
+         __host__ __device__ InversionIterator operator++ (int a) { p += a;  return *this; }
+         __host__ __device__ InversionIterator operator++ () { p++;  return *this; }
+         __host__ __device__ unsigned int operator *() { return invert(*p); }
+         __host__ __device__ InversionIterator operator+(const int b) const { return InversionIterator(p + b); }
+         __host__ __device__ InversionIterator operator-(const int b) const { return InversionIterator(p - b); }  // for hipcub
+         __host__ __device__ unsigned int operator[](int b) const { return  invert(p[b]); }
       private:
-         __device__ unsigned int invert(unsigned int c) const { return c == 0 ? 1 : 0; }
+         __host__ __device__ unsigned int invert(unsigned int c) const { return c == 0 ? 1 : 0; }
          unsigned int *p;
      };
     /**
