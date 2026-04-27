@@ -6,6 +6,14 @@
 # Todo: 7.x is different thatn 6.x etc
 # Todo: Ubuntu version differences
 
+# Define the hip packages to install, in a version agnostic way, targetting as few as required for CI to succeed
+HIP_PACKAGES_IN=(
+    "rocm-hip-runtime-dev"
+    "rocthrust-dev"
+    "hipcub-dev"
+    "hiprand-dev"
+    "rocprofiler-sdk-roctx"
+)
 
 ## -------------------
 ## Bash functions
@@ -99,6 +107,18 @@ if [ -z ${UBUNTU_VERSION} ]; then
     exit 1
 fi
 
+## ------------------------------
+## Select HIP packages to install
+## ------------------------------
+# build  a space-separated list of packages to install via apt
+HIP_PACKAGES=""
+for package in "${HIP_PACKAGES_IN[@]}"
+do : 
+    # Append the hip version to the pacakge name
+    HIP_PACKAGES+=" ${package}${HIP_MAJOR_MINOR_PATCH}"
+done
+echo "HIP_PACKAGES ${HIP_PACKAGES}"
+
 # enable command printing for CI debugging
 set -x
 
@@ -126,8 +146,7 @@ EOF
 $USE_SUDO apt update
 
 # Install packages.
-# Todo: Install as few pacakges as possible to reduce installation size/time?
-$USE_SUDO apt install -y rocm-hip-runtime-dev${HIP_MAJOR_MINOR_PATCH}
+$USE_SUDO apt install -y ${HIP_PACKAGES}
 
 ## -----------------
 ## Set environment vars / vars to be propagated
@@ -136,6 +155,7 @@ $USE_SUDO apt install -y rocm-hip-runtime-dev${HIP_MAJOR_MINOR_PATCH}
 ROCM_PATH=/opt/rocm-${HIP_MAJOR_MINOR_PATCH}
 echo "ROCM_PATH=${ROCM_PATH}"
 export ROCM_PATH=${ROCM_PATH}
+export HIP_CLANG_PATH="$ROCM_PATH/lib/llvm/bin:$HIP_CLANG_PATH"
 export PATH="$ROCM_PATH/bin:$PATH"
 export LD_LIBRARY_PATH="$ROCM_PATH/lib:$LD_LIBRARY_PATH"
 
@@ -147,6 +167,7 @@ if [[ $GITHUB_ACTIONS ]]; then
     # Set paths for subsequent steps, using ${ROCM_PATH}
     echo "Adding HIP ${HIP_MAJOR_MINOR_PATCH} to ROCM_PATH, PATH and LD_LIBRARY_PATH"
     echo "ROCM_PATH=${ROCM_PATH}" >> $GITHUB_ENV
+    echo "HIP_CLANG_PATH=${HIP_CLANG_PATH}" >> $GITHUB_ENV
     echo "${ROCM_PATH}/bin" >> $GITHUB_PATH
-    echo "LD_LIBRARY_PATH=${ROCM_PATH}/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+    echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
 fi
