@@ -155,7 +155,6 @@ $USE_SUDO apt install -y ${HIP_PACKAGES}
 ROCM_PATH=/opt/rocm-${HIP_MAJOR_MINOR_PATCH}
 echo "ROCM_PATH=${ROCM_PATH}"
 export ROCM_PATH=${ROCM_PATH}
-export HIP_CLANG_PATH="$ROCM_PATH/lib/llvm/bin:$HIP_CLANG_PATH"
 export PATH="$ROCM_PATH/bin:$PATH"
 export LD_LIBRARY_PATH="$ROCM_PATH/lib:$LD_LIBRARY_PATH"
 
@@ -167,7 +166,6 @@ if [[ $GITHUB_ACTIONS ]]; then
     # Set paths for subsequent steps, using ${ROCM_PATH}
     echo "Adding HIP ${HIP_MAJOR_MINOR_PATCH} to ROCM_PATH, PATH and LD_LIBRARY_PATH"
     echo "ROCM_PATH=${ROCM_PATH}" >> $GITHUB_ENV
-    echo "HIP_CLANG_PATH=${HIP_CLANG_PATH}" >> $GITHUB_ENV
     echo "${ROCM_PATH}/bin" >> $GITHUB_PATH
-    echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+    echo "LD_LIBRARY_PATH=${ROCM_PATH}/bin/:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
 fi
