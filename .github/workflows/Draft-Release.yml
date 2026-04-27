@@ -85,7 +85,7 @@ jobs:
       VISUALISATION: ${{ matrix.VISUALISATION }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Install CUDA
       if: ${{ startswith(env.OS, 'ubuntu') && env.CUDA != '' }}
@@ -104,7 +104,7 @@ jobs:
 
     - name: Select Python
       if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ env.PYTHON }}
 
@@ -235,7 +235,7 @@ jobs:
       NVCC_PREPEND_FLAGS: "-D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH --allow-unsupported-compiler"
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Install CUDA (Windows)
       if: ${{ runner.os == 'Windows' && env.CUDA != '' }}
@@ -253,7 +253,7 @@ jobs:
 
     - name: Select Python
       if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ env.PYTHON }}
 
@@ -366,7 +366,7 @@ jobs:
       VISUALISATION: ${{ matrix.VISUALISATION }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
    # Downgrade the gcc-toolset in the image based on the build matrix
     - name: Install RHEL gcc-toolset (EL 8)
@@ -476,7 +476,7 @@ jobs:
     # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
     - name: Upload Wheel Artifacts
       if: ${{ env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ env.ARTIFACT_NAME }}
         path: ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/*.whl
@@ -543,7 +543,7 @@ jobs:
       NVCC_PREPEND_FLAGS: "-D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH --allow-unsupported-compiler"
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Install CUDA (Windows)
       if: ${{ runner.os == 'Windows' && env.CUDA != '' }}
@@ -561,7 +561,7 @@ jobs:
 
     - name: Select Python
       if: ${{ env.PYTHON != '' && env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ env.PYTHON }}
 
@@ -604,7 +604,7 @@ jobs:
     # Use a unique name per job matrix run, to avoid a risk of corruption according to the docs (although it should work with unique filenames)
     - name: Upload Wheel Artifacts
       if: ${{env.FLAMEGPU_BUILD_PYTHON == 'ON' }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ env.ARTIFACT_NAME }}
         path: ${{ env.BUILD_DIR }}/lib/${{ env.CONFIG }}/python/dist/*.whl
@@ -622,12 +622,12 @@ jobs:
     if: ${{ success() && startsWith(github.ref, 'refs/tags/v') && github.event_name != 'workflow_dispatch' && github.event_name != 'pull_request' }}
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     # Download python wheels from previous jobs.
     - name: Download Wheel Artifacts
       id: download
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         path: artifacts
 

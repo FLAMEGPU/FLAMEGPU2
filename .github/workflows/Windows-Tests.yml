@@ -65,7 +65,7 @@ jobs:
       NVCC_PREPEND_FLAGS: "-D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH --allow-unsupported-compiler"
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Install CUDA (Windows)
       if: ${{ runner.os == 'Windows' && env.CUDA != '' }}

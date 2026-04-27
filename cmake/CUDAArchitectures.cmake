@@ -7,7 +7,7 @@ include_guard(GLOBAL)
 # Include the new version of this file
 include(${CMAKE_CURRENT_LIST_DIR}/GPUArchitectures.cmake)
 
-# This method is deprecated. Use flamegpu_set_gpu_architectures from GPUArchitectures.cmake instead
+# This method is deprecated. Use flamegpu_init_gpu_architectures from GPUArchitectures.cmake instead
 function(flamegpu_init_cuda_architectures)
     # Issue a deprecation warning
     message(AUTHOR_WARNING
