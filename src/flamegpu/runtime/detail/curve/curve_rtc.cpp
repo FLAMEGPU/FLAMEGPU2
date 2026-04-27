@@ -1404,7 +1404,7 @@ void CurveRTCHost::initDataBuffer() {
         THROW exception::InvalidOperation("CurveRTCHost::initDataBuffer() should only be called once, during the init chain.\n");
     }
     // Alloc buffer
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MallocHost)(&h_data_buffer, data_buffer_size));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(HostAlloc)(&h_data_buffer, data_buffer_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(HostAllocDefault)));
     // Notify all variables of their ptr to store data in cache
     size_t ct = 0;
     for (auto &element : agent_variables) {
