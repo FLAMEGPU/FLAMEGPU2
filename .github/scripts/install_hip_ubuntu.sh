@@ -86,11 +86,11 @@ echo "UBUNTU_VERSION: ${UBUNTU_VERSION}"
 
 # If we don't know the HIP_MAJOR or MINOR, error.
 if [ -z "${HIP_MAJOR}" ] ; then
-    echo "Error: Unknown CUDA Major version. Aborting."
+    echo "Error: Unknown HIP Major version. Aborting."
     exit 1
 fi
 if [ -z "${HIP_MINOR}" ] ; then
-    echo "Error: Unknown CUDA Minor version. Aborting."
+    echo "Error: Unknown HIP Minor version. Aborting."
     exit 1
 fi
 # If we don't know the Ubuntu version, error.

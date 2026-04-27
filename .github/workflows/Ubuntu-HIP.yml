@@ -75,7 +75,7 @@ jobs:
     - name: Install HIP
       if: ${{ startswith(env.OS, 'ubuntu') && env.HIP != '' }}
       env:
-        cuda: ${{ env.HIP }}
+        hip: ${{ env.HIP }}
       run: .github/scripts/install_hip_ubuntu.sh
 
     - name: Add custom problem matchers for annotations
