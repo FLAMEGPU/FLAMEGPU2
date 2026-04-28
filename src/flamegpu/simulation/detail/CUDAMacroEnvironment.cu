@@ -10,6 +10,8 @@
 #include "flamegpu/model/AgentFunctionData.cuh"
 #include "flamegpu/model/SubEnvironmentData.h"
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -22,7 +24,7 @@ CUDAMacroEnvironment::CUDAMacroEnvironment(const EnvironmentData& description, c
     }
 }
 
-void CUDAMacroEnvironment::init(flamegpu::detail::cuda::Stream_t _stream) {
+void CUDAMacroEnvironment::init(flamegpu::detail::gpu::Stream_t _stream) {
     this->stream = _stream;
     for (auto &prop : properties) {
         if (!prop.second.d_ptr) {
@@ -41,7 +43,7 @@ void CUDAMacroEnvironment::init(flamegpu::detail::cuda::Stream_t _stream) {
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(_stream));
 }
 
-void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, std::shared_ptr<const detail::CUDAMacroEnvironment> master_macro_env, flamegpu::detail::cuda::Stream_t _stream) {
+void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, std::shared_ptr<const detail::CUDAMacroEnvironment> master_macro_env, flamegpu::detail::gpu::Stream_t _stream) {
     this->stream = _stream;
     // Map local properties
     for (auto& prop : properties) {
@@ -118,7 +120,7 @@ std::shared_ptr<HostMacroProperty_MetaData> CUDAMacroEnvironment::getHostPropert
     return nullptr;
 }
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
-void CUDAMacroEnvironment::resetFlagsAsync(const std::vector<flamegpu::detail::cuda::Stream_t> &streams) {
+void CUDAMacroEnvironment::resetFlagsAsync(const std::vector<flamegpu::detail::gpu::Stream_t> &streams) {
     unsigned int i = 0;
     for (const auto& prop : properties) {
         if (prop.second.d_ptr) {

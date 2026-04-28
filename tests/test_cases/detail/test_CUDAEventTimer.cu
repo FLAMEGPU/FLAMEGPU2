@@ -3,6 +3,7 @@
 #include "flamegpu/detail/CUDAEventTimer.cuh"
 #include "flamegpu/detail/wddm.cuh"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
 
 #include "gtest/gtest.h"
 namespace flamegpu {
