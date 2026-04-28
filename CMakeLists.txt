@@ -4,12 +4,6 @@ cmake_minimum_required(VERSION 3.25.2...4.3.0 FATAL_ERROR)
 # Find the root directory
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR} REALPATH)
 
-# Include and call some CMake to record initial state of CMAKE_CUDA_ARCHITECTURES for later use
-# Todo: Generalise this for hip as well, ideally without breaking back compat of standalone examples while warning to change?
-
-include(${FLAMEGPU_ROOT}/cmake/GPUArchitectures.cmake)
-flamegpu_init_gpu_architectures()
-
 # Declare the project with no languages
 project(FLAMEGPU LANGUAGES NONE)
 

@@ -177,8 +177,8 @@ cmake --build . --target all
 | `CMAKE_BUILD_TYPE`                   | `Release` / `Debug` / `MinSizeRel` / `RelWithDebInfo` | Select the build configuration for single-target generators such as `make`   |
 | `FLAMEGPU_USE_CUDA`                  | `ON`, `OFF` | Enable CUDA / NVIDIA GPU support |
 | `FLAMEGPU_USE_HIP`                   | `ON`, `OFF` | Enable HIP / ROCm / AMD GPU support |
-| `CMAKE_CUDA_ARCHITECTURES`           | e.g `60`, `"60;70"`         | [CUDA Compute Capabilities][cuda-CC] to build/optimise for, as a `;` separated list. See [CMAKE_CUDA_ARCHITECTURES][cmake-CCA]. Defaults to `all-major` or equivalent. Alternatively use the `CUDAARCHS` environment variable. |
-| `CMAKE_HIP_ARCHITECTURES`            | e.g `gfx942`, `"gfx942;gfx1100"`         | [HIP/ROCM LLVM target][hip-llvm-target] to build/optimise for, as a `;` separated list. See [CMAKE_HIP_ARCHITECTURES][cmake-CHA]. |
+| `CMAKE_CUDA_ARCHITECTURES`           | e.g `60`, `"60;70"`         | [CUDA Compute Capabilities][cuda-CC] to build/optimise for, as a `;` separated list. See [CMAKE_CUDA_ARCHITECTURES][cmake-CCA]. Defaults to a value provided by the NVCC. Alternatively use the `CUDAARCHS` environment variable. |
+| `CMAKE_HIP_ARCHITECTURES`            | e.g `gfx942`, `"gfx942;gfx1100"`         | [HIP/ROCM LLVM target][hip-llvm-target] to build/optimise for, as a `;` separated list. See [CMAKE_HIP_ARCHITECTURES][cmake-CHA]. Defaults to a value appropriate for the `CMAKE_HIP_PLATFORM` |
 | `FLAMEGPU_SEATBELTS`                 | `ON`/`OFF`                  | Enable / Disable additional runtime checks which harm performance but increase usability. Default `ON`     |
 | `FLAMEGPU_BUILD_PYTHON`              | `ON`/`OFF`                  | Enable Python target `pyflamegpu` via Swig. Default `OFF`. Python packages `setuptools`, `build` & `wheel` required |
 | `FLAMEGPU_BUILD_PYTHON_VENV`         | `ON`/`OFF`                  | Use a python `venv` when building the python Swig target. Default `ON`. Python package `venv` required     |

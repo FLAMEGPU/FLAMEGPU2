@@ -8,10 +8,6 @@ get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 # Include versioning CMake logic, to set the project version 
 include(${FLAMEGPU_ROOT}/cmake/version.cmake)
 
-# Include CMake Logic and call a method to record user-provided CUDA/HIP architectures
-include(${FLAMEGPU_ROOT}/cmake/GPUArchitectures.cmake)
-flamegpu_init_gpu_architectures()
-
 # Set the project with no languages initially, in case of doxygen only builds.
 project(flamegpu LANGUAGES NONE VERSION ${FLAMEGPU_VERSION})
 
