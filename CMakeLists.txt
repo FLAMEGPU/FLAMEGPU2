@@ -112,7 +112,7 @@ if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_DIFFUSION)
     add_subdirectory(examples/cpp/diffusion)
 endif()
 # RTC models are currently CUDA only
-if (CMAKE_CUDA_COMPILER_ENABLED)
+if (FLAMEGPU_GPU STREQUAL "CUDA")
     if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_RTC_BOIDS_BRUTEFORCE)
         add_subdirectory(examples/cpp_rtc/boids_bruteforce)
     endif()
