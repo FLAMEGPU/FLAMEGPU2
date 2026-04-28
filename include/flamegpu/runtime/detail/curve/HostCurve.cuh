@@ -10,7 +10,7 @@
 
 #include "flamegpu/runtime/detail/curve/Curve.cuh"
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 namespace detail {
@@ -81,7 +81,7 @@ class HostCurve {
      * 1 memcpy to device is always performed, CURVE does not track whether it has been changed internally.
      * @param stream cuda stream for the copy
      */
-    void updateDevice_async(flamegpu::detail::cuda::Stream_t stream);
+    void updateDevice_async(flamegpu::detail::gpu::Stream_t stream);
 
  private:
      void registerVariable(VariableHash variable_hash, std::type_index type, size_t type_size, unsigned int elements);

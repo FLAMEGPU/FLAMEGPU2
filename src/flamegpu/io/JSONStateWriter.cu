@@ -17,6 +17,7 @@
 #include "flamegpu/util/StringPair.h"
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
 #include "flamegpu/simulation/detail/CUDAMacroEnvironment.h"
+#include "flamegpu/detail/gpu/macros.hpp"
 
 namespace flamegpu {
 namespace io {
