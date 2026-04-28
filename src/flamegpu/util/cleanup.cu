@@ -8,6 +8,7 @@
 #include <cuda_runtime.h>
 #endif
 
+#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/detail/JitifyCache.h"
 

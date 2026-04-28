@@ -6,6 +6,8 @@
 #include "flamegpu/util/cleanup.h"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/flamegpu.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 
 #include "gtest/gtest.h"
 
@@ -37,7 +39,7 @@ TEST(TestCleanup, Explicit) {
     int * d_int = nullptr;
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_int, sizeof(int)));
     // Validate that the ptr is a valid device pointer
-    flamegpu::detail::cuda::PointerAttributes_t attributes = {};
+    flamegpu::detail::gpu::PointerAttributes_t attributes = {};
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, d_int));
     EXPECT_EQ(attributes.type, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice));
 

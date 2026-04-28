@@ -3,8 +3,10 @@
 #endif
 
 #include <vector>
-#include "flamegpu/detail/cuda.cuh"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/cuda.cuh"
 
 #include "gtest/gtest.h"
 namespace flamegpu {
@@ -17,7 +19,7 @@ using cudaPointerAttributes = hipPointerAttribute_t;
 // Test that wrapped cudaFree works.
 TEST(TestUtilDetailCuda, cudaFree) {
     int * d_ptr = nullptr;
-    flamegpu::detail::cuda::Error_t status = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
+    flamegpu::detail::gpu::Error_t status = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
     // manually allocate a device pointer
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_ptr, sizeof(int)));
     // Validate that the ptr is a valid device pointer
@@ -54,7 +56,7 @@ TEST(TestUtilDetailCuda, cudaFree) {
 // Test that the wrapped cudaFreeHost works.
 TEST(TestUtilDetailCuda, cudaFreeHost) {
     int * p_ptr = nullptr;
-    flamegpu::detail::cuda::Error_t status = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
+    flamegpu::detail::gpu::Error_t status = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
     // manually allocate a page-locked host pointer
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(HostAlloc)(reinterpret_cast<void**>(&p_ptr), sizeof(int), FLAMEGPU_GPU_RUNTIME_SYMBOL(HostAllocDefault)));
     // Validate that the ptr is a valid page-locked host pointer

@@ -290,6 +290,8 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/util/dstring.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/nvtx.h
     ${FLAMEGPU_ROOT}/include/flamegpu/util/StringPair.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/macros.hpp
+    ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/types.hpp
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/Any.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/demangle.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/type_decode.h

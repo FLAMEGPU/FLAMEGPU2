@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "flamegpu/util/StringPair.h"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace jitify2 {
 class KernelData;
@@ -273,7 +273,7 @@ class CurveRTCHost {
      * @param stream The CUDA stream used for the cuda memcpy
      * @note This is async, the stream is non synchronised
      */
-    void updateDevice_async(const jitify2::KernelData& instance, flamegpu::detail::cuda::Stream_t stream);
+    void updateDevice_async(const jitify2::KernelData& instance, flamegpu::detail::gpu::Stream_t stream);
 
  protected:
    /**
