@@ -16,6 +16,7 @@
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/runtime/detail/curve/HostCurve.cuh"
 #include "flamegpu/runtime/environment/HostMacroProperty.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 // forward declare classes from other modules
@@ -85,7 +86,7 @@ class CUDAMacroEnvironment {
     /**
      * Performs CUDA allocations, and registers CURVE variables
      */
-    void init(flamegpu::detail::cuda::Stream_t stream);
+    void init(flamegpu::detail::gpu::Stream_t stream);
     /**
      * Performs CUDA allocations, and registers CURVE variables
      * Initialises submodel mappings too
@@ -94,7 +95,7 @@ class CUDAMacroEnvironment {
      * @param stream The CUDAStream to use for CUDA operations
      * @note This must be called after the master model CUDAMacroEnvironment has init
      */
-    void init(const SubEnvironmentData& mapping, std::shared_ptr<const detail::CUDAMacroEnvironment> master_macro_env, flamegpu::detail::cuda::Stream_t stream);
+    void init(const SubEnvironmentData& mapping, std::shared_ptr<const detail::CUDAMacroEnvironment> master_macro_env, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Release all CUDA allocations, and unregisters CURVE variables
      */
@@ -122,7 +123,7 @@ class CUDAMacroEnvironment {
      * Reset the flags used by seatbelts to catch potential race conditions
      * @param streams Streams to async reset over
      */
-    void resetFlagsAsync(const std::vector<flamegpu::detail::cuda::Stream_t>& streams);
+    void resetFlagsAsync(const std::vector<flamegpu::detail::gpu::Stream_t>& streams);
     /**
      * Returns the current state of the device read flag for the named macro property
      * @param property_name Name of the macro property to query
@@ -178,7 +179,7 @@ class CUDAMacroEnvironment {
     const CUDASimulation& cudaSimulation;
     std::map<std::string, MacroEnvProp> properties;
     std::map<std::string, std::weak_ptr<HostMacroProperty_MetaData>> host_cache;
-    flamegpu::detail::cuda::Stream_t stream = nullptr;
+    flamegpu::detail::gpu::Stream_t stream = nullptr;
 };
 
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>

@@ -13,6 +13,8 @@
 
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/util/nvtx.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -158,7 +160,7 @@ int HostCurve::size() const {
     }
     return rtn;
 }
-void HostCurve::updateDevice_async(const flamegpu::detail::cuda::Stream_t stream) {
+void HostCurve::updateDevice_async(const flamegpu::detail::gpu::Stream_t stream) {
     flamegpu::util::nvtx::Range range{"HostCurve::updateDevice_async()"};
     // Initialise the device (if required)
     assert(d_curve_table);  // No reason for this to ever fail.
