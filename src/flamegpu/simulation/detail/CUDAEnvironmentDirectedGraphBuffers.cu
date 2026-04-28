@@ -329,13 +329,13 @@ struct ReverseIterator {
     using iterator_category = std::random_access_iterator_tag;
     __host__ __device__ explicit ReverseIterator(unsigned int* _p) : p(_p) { }
 
-    // __device__ ReverseIterator& operator=(const ReverseIterator& other) = default;
-    __device__ ReverseIterator operator++ (int a) { p -= a;  return *this; }
-    __device__ ReverseIterator operator++ () { p--;  return *this; }
-    __device__ unsigned int &operator *() const { return *p; }
-    __device__ ReverseIterator operator+(const int& b) const { return ReverseIterator(p - b); }
-    __device__ ReverseIterator operator-(const int &b) const { return ReverseIterator(p + b); }  // for hipcub
-    __device__ unsigned int &operator[](int b) const { return *(p-b); }
+    // __host__ __device__ ReverseIterator& operator=(const ReverseIterator& other) = default;
+    __host__ __device__ ReverseIterator operator++ (int a) { p -= a;  return *this; }
+    __host__ __device__ ReverseIterator operator++ () { p--;  return *this; }
+    __host__ __device__ unsigned int &operator *() const { return *p; }
+    __host__ __device__ ReverseIterator operator+(const int& b) const { return ReverseIterator(p - b); }
+    __host__ __device__ ReverseIterator operator-(const int &b) const { return ReverseIterator(p + b); }  // for hipcub
+    __host__ __device__ unsigned int &operator[](int b) const { return *(p-b); }
     unsigned int* p;
 };
 // Borrowed from CUB DeviceScan docs
