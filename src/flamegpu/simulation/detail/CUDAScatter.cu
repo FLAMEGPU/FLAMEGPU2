@@ -15,6 +15,8 @@
 
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/simulation/detail/CUDAFatAgentStateList.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 #ifdef FLAMEGPU_USE_CUDA
@@ -129,7 +131,7 @@ __global__ void scatter_all_generic(
 
 unsigned int CUDAScatter::scatter(
     const unsigned int streamResourceId,
-    const flamegpu::detail::cuda::Stream_t stream,
+    const flamegpu::detail::gpu::Stream_t stream,
     const Type &messageOrAgent,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
@@ -148,7 +150,7 @@ unsigned int CUDAScatter::scatter(
 }
 unsigned int CUDAScatter::scatter(
     const unsigned int streamResourceId,
-    const flamegpu::detail::cuda::Stream_t stream,
+    const flamegpu::detail::gpu::Stream_t stream,
     const Type &messageOrAgent,
     const std::vector<ScatterData> &sd,
     const unsigned int itemCount,
@@ -194,7 +196,7 @@ unsigned int CUDAScatter::scatter(
 }
 void CUDAScatter::scatterPosition(
     unsigned int streamResourceId,
-    flamegpu::detail::cuda::Stream_t stream,
+    flamegpu::detail::gpu::Stream_t stream,
     Type messageOrAgent,
     const std::vector<ScatterData>& sd,
     unsigned int itemCount) {
@@ -203,7 +205,7 @@ void CUDAScatter::scatterPosition(
 }
 void CUDAScatter::scatterPosition_async(
     unsigned int streamResourceId,
-    flamegpu::detail::cuda::Stream_t stream,
+    flamegpu::detail::gpu::Stream_t stream,
     Type messageOrAgent,
     const std::vector<ScatterData>& sd,
     unsigned int itemCount) {
@@ -211,7 +213,7 @@ void CUDAScatter::scatterPosition_async(
 }
 void CUDAScatter::scatterPosition_async(
     unsigned int streamResourceId,
-    flamegpu::detail::cuda::Stream_t stream,
+    flamegpu::detail::gpu::Stream_t stream,
     unsigned int *position,
     const std::vector<ScatterData> &sd,
     unsigned int itemCount) {
@@ -238,7 +240,7 @@ void CUDAScatter::scatterPosition_async(
 }
 unsigned int CUDAScatter::scatterCount(
     const unsigned int streamResourceId,
-    const flamegpu::detail::cuda::Stream_t stream,
+    const flamegpu::detail::gpu::Stream_t stream,
     const Type &messageOrAgent,
     const unsigned int itemCount,
     const unsigned int scatter_all_count) {
@@ -249,7 +251,7 @@ unsigned int CUDAScatter::scatterCount(
 
 unsigned int CUDAScatter::scatterAll(
     const unsigned int streamResourceId,
-    const flamegpu::detail::cuda::Stream_t stream,
+    const flamegpu::detail::gpu::Stream_t stream,
     const std::vector<ScatterData> &sd,
     const unsigned int itemCount,
     const unsigned int out_index_offset) {
@@ -281,7 +283,7 @@ unsigned int CUDAScatter::scatterAll(
 }
 unsigned int CUDAScatter::scatterAll(
     const unsigned int streamResourceId,
-    const flamegpu::detail::cuda::Stream_t stream,
+    const flamegpu::detail::gpu::Stream_t stream,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,
@@ -318,7 +320,7 @@ __global__ void pbm_reorder_generic(
 
 void CUDAScatter::pbm_reorder(
     const unsigned int streamResourceId,
-    const flamegpu::detail::cuda::Stream_t stream,
+    const flamegpu::detail::gpu::Stream_t stream,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,
@@ -393,7 +395,7 @@ __global__ void scatter_new_agents(
 }
 void CUDAScatter::scatterNewAgents(
     const unsigned int streamResourceId,
-    const flamegpu::detail::cuda::Stream_t stream,
+    const flamegpu::detail::gpu::Stream_t stream,
     const std::vector<ScatterData> &sd,
     const size_t totalAgentSize,
     const unsigned int inCount,
@@ -452,7 +454,7 @@ __global__ void broadcastInitKernel(
 }
 void CUDAScatter::broadcastInit(
     unsigned int streamResourceId,
-    flamegpu::detail::cuda::Stream_t stream,
+    flamegpu::detail::gpu::Stream_t stream,
     const std::list<std::shared_ptr<VariableBuffer>> &vars,
     unsigned int inCount,
     unsigned int outIndexOffset) {
@@ -461,7 +463,7 @@ void CUDAScatter::broadcastInit(
 }
 void CUDAScatter::broadcastInit_async(
     unsigned int streamResourceId,
-    flamegpu::detail::cuda::Stream_t stream,
+    flamegpu::detail::gpu::Stream_t stream,
     const std::list<std::shared_ptr<VariableBuffer>>& vars,
     unsigned int inCount,
     unsigned int outIndexOffset) {
@@ -513,7 +515,7 @@ void CUDAScatter::broadcastInit_async(
 }
 void CUDAScatter::broadcastInit(
     unsigned int streamResourceId,
-    flamegpu::detail::cuda::Stream_t stream,
+    flamegpu::detail::gpu::Stream_t stream,
     const VariableMap& vars,
     void* const d_newBuff,
     unsigned int inCount,
@@ -523,7 +525,7 @@ void CUDAScatter::broadcastInit(
 }
 void CUDAScatter::broadcastInit_async(
     unsigned int streamResourceId,
-    flamegpu::detail::cuda::Stream_t stream,
+    flamegpu::detail::gpu::Stream_t stream,
     const VariableMap &vars,
     void * const d_newBuff,
     unsigned int inCount,
@@ -604,7 +606,7 @@ __global__ void reorder_array_messages(
 }
 void CUDAScatter::arrayMessageReorder(
     const unsigned int streamResourceId,
-    const flamegpu::detail::cuda::Stream_t stream,
+    const flamegpu::detail::gpu::Stream_t stream,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,

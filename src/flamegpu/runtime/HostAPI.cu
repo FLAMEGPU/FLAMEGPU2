@@ -9,6 +9,7 @@
 #include "flamegpu/simulation/Simulation.h"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/simulation/CUDASimulation.h"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -22,7 +23,7 @@ HostAPI::HostAPI(CUDASimulation &_agentModel,
     const std::shared_ptr<detail::CUDAMacroEnvironment>& macro_env,
     CUDADirectedGraphMap &directed_graph_map,
     const unsigned int _streamId,
-    flamegpu::detail::cuda::Stream_t _stream)
+    flamegpu::detail::gpu::Stream_t _stream)
     : random(rng)
     , environment(_agentModel, env, macro_env, directed_graph_map, _scatter, _streamId, _stream)
     , agentModel(_agentModel)

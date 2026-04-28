@@ -1,5 +1,6 @@
 #include "flamegpu/detail/wddm.cuh"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
 
 namespace flamegpu {
 namespace detail {

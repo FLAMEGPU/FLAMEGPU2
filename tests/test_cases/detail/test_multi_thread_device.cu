@@ -7,6 +7,7 @@
 #include "flamegpu/flamegpu.h"
 #include "gtest/gtest.h"
 #include "flamegpu/detail/compute_capability.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
