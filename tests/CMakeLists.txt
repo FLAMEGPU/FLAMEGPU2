@@ -112,9 +112,6 @@ SET(HELPERS_SRC
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 
-# Include CMake for managing CUDA/HIp architectures
-include(${FLAMEGPU_ROOT}/cmake/GPUArchitectures.cmake)
-
 # Include googletest as a dependency.
 include(${FLAMEGPU_ROOT}/cmake/dependencies/googletest.cmake)
 
@@ -123,13 +120,10 @@ if((FLAMEGPU_BUILD_TESTS OR FLAMEGPU_BUILD_TESTS_DEV) AND FLAMEGPU_ENABLE_GTEST_
     include(GoogleTest)
 endif()
 
-
 # Define a macro for creating a named test project/executable
 # create_test_suite(suite_name, suite_src)
 macro(create_test_project)
     enable_testing()
-    # Handle CUDA/HIP architectures and inject code into the tests project() command
-    flamegpu_init_gpu_architectures(PROJECT ${ARGV0})
     # Name the project and set languages
     project(${ARGV0} LANGUAGES NONE)
     # Include common rules.

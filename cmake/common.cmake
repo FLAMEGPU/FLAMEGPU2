@@ -16,8 +16,6 @@ include(${FLAMEGPU_ROOT}/cmake/CheckBinaryDirPathForSpaces.cmake)
 include(${FLAMEGPU_ROOT}/cmake/enable_languages.cmake)
 flamegpu_enable_languages()
 
-# Ensure that cmake functions for handling CMAKE_CUDA_ARCHITECTURES are available
-include(${FLAMEGPU_ROOT}/cmake/CUDAArchitectures.cmake)
 # Emit a message once and only once per configure of the chosen architectures?
 if(CMAKE_CUDA_LANGUAGE_ENABLED AND DEFINED CMAKE_CUDA_ARCHITECTURES AND NOT flamegpu_printed_cmake_cuda_architectures)
     message(STATUS "CUDA Architectures: ${CMAKE_CUDA_ARCHITECTURES}")
