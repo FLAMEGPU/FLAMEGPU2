@@ -85,7 +85,7 @@ class JSONAdjacencyGraphSizeReader : public nlohmann::json_sax<nlohmann::json> {
  * It stores it's current position within the hierarchy with mode, lastKey and current_variable_array_index
  */
 class JSONAdjacencyGraphReader : public nlohmann::json_sax<nlohmann::json> {
-    enum Mode{ Nop, Root, Nodes, Links, Node, Link, VariableArray };
+    enum Mode{ Nop, Root, Nodes, Links, Node, Link, VariableArray, Skip };
     std::stack<Mode> mode;
     std::string lastKey;
     std::string filename;
@@ -128,6 +128,8 @@ class JSONAdjacencyGraphReader : public nlohmann::json_sax<nlohmann::json> {
     unsigned int last_source = ID_NOT_SET, last_target = ID_NOT_SET;
 
  public:
+     bool skip_nodes = false;
+     bool skip_links = false;
      JSONAdjacencyGraphReader(const std::string &_filename,
         const std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>& _graph, cudaStream_t _stream)
         : filename(_filename)
@@ -136,6 +138,8 @@ class JSONAdjacencyGraphReader : public nlohmann::json_sax<nlohmann::json> {
         , metagraph(_graph->getDescription()) { }
     template<typename T>
     bool processValue(const T val) {
+        if (mode.top() == Skip)
+            return true;
         Mode isArray = Nop;
         if (mode.top() == VariableArray) {
             isArray = mode.top();
@@ -312,8 +316,9 @@ class JSONAdjacencyGraphReader : public nlohmann::json_sax<nlohmann::json> {
                 }
                 return true;
             }
+        } else if (mode.top() != Skip) {
+            THROW exception::JSONError("Unexpected string whilst parsing input file '%s', string properties are not supported.\n", filename.c_str());
         }
-        THROW exception::JSONError("Unexpected string whilst parsing input file '%s', string properties are not supported.\n", filename.c_str());
     }
     bool binary(binary_t&) {
         THROW exception::JSONError("Unexpected binary value whilst parsing input file '%s'.\n", filename.c_str());
@@ -322,9 +327,17 @@ class JSONAdjacencyGraphReader : public nlohmann::json_sax<nlohmann::json> {
         if (mode.empty()) {
             mode.push(Root);
         } else if (mode.top() == Nodes) {
-            mode.push(Node);
+            if (skip_nodes) {
+                mode.push(Skip);
+            } else {
+                mode.push(Node);
+            }
         } else if (mode.top() == Links) {
-            mode.push(Link);
+            if (skip_links) {
+                mode.push(Skip);
+            } else {
+                mode.push(Link);
+            }
         } else {
             THROW exception::JSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
         }
@@ -360,7 +373,7 @@ class JSONAdjacencyGraphReader : public nlohmann::json_sax<nlohmann::json> {
         if (mode.top() == VariableArray) {
             mode.pop();
             current_variable_array_index = 0;
-        } else {
+        } else if (mode.top() != Skip) {
             mode.pop();
             current_index = 0;
         }
@@ -389,8 +402,19 @@ void JSONGraphReader::loadAdjacencyLike(const std::string& filepath, const std::
     // Third reset the stream
     in.clear();
     in.seekg(0);
-    // Fourth parse the graph (and map string vertex IDs to integers)
+    // Fourth parse the graph nodes (and map string vertex IDs to integers)
     JSONAdjacencyGraphReader graphReader(filepath, directed_graph, stream);
+    graphReader.skip_nodes = false;
+    graphReader.skip_links = true;
+    if (!nlohmann::json::sax_parse(in, &graphReader)) {
+        THROW exception::JSONError("Reading graph from input file '%s' failed, in JSONGraphReader::loadAdjacencyLike()\n", filepath.c_str());
+    }
+    // Fifth reset the stream
+    in.clear();
+    in.seekg(0);
+    // sixth parse the graph links;
+    graphReader.skip_nodes = true;
+    graphReader.skip_links = false;
     if (!nlohmann::json::sax_parse(in, &graphReader)) {
         THROW exception::JSONError("Reading graph from input file '%s' failed, in JSONGraphReader::loadAdjacencyLike()\n", filepath.c_str());
     }
