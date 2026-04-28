@@ -19,7 +19,7 @@ include(CheckSourceCompiles)
 set(_FLAMEGPU_ENABLE_LANGUAGES_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 # Define the minimum supported CUDA and HIP versions
-set(MINIMUM_SUPPORTED_CUDA_VERSION 12.0)
+set(MINIMUM_SUPPORTED_CUDA_VERSION 12.4)
 set(MINIMUM_SUPPORTED_HIP_VERSION 7.0)
 
 # Set the std which is used in compilation testing examples
@@ -166,6 +166,7 @@ macro(flamegpu_enable_languages)
         _flamegpu_check_source_compiles_cxx_filesystem()
         _flamegpu_check_source_compiles_cuda_chrono()
         _flamegpu_check_source_compiles_cuda_vector_tuple()
+        _flamegpu_check_source_compiles_cuda_source_location()
         _flamegpu_check_source_compilers_hip_cxx_xhip()
 
         # Set cache variables which can only be determined by compilation 
@@ -320,7 +321,7 @@ function(_flamegpu_check_source_compiles_cuda_chrono)
     set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 
     # Compile the following snippet
-    check_source_compiles(CXX [[
+    check_source_compiles(CUDA [[
         #include <chrono>
         int main() { return 0; }
     ]] _FLAMEGPU_CHECK_GCC_CUDA_CHRONO_V0)
@@ -363,7 +364,7 @@ function(_flamegpu_check_source_compiles_cuda_vector_tuple)
     set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 
     # Compile the following snippet
-    check_source_compiles(CXX [[
+    check_source_compiles(CUDA [[
         #include <tuple>
         #include <vector>
         int main (int argc, char * argv[]) {
@@ -382,6 +383,39 @@ function(_flamegpu_check_source_compiles_cuda_vector_tuple)
     endif()
 endfunction()
 
+# Internal function to ensure that <source_location> can be used with the host compiler, i.e. GCC >= 11
+# Note: if the source snippet is changed, the internal variable name should be increased so that the snippet gets re-compiled.
+function(_flamegpu_check_source_compiles_cuda_source_location)
+    # Return early if not using CUDA with GCC
+    if (NOT (CMAKE_CUDA_COMPILER_LOADED AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
+        return()
+    endif()
+
+    # Set local scope variables that impact the check 
+    set(CMAKE_CXX_STANDARD ${_flamegpu_cxx_std})
+    set(CMAKE_CUDA_STANDARD ${_flamegpu_cxx_std})
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+
+    # Compile the following snippet
+    check_source_compiles(CUDA [[
+        #include <cstdio>
+        #include <source_location>
+        void print_file_line(const std::source_location loc = std::source_location::current()) {
+            printf("%s:%d\n", loc.file_name(), loc.line());
+        }
+        int main (int argc, char * argv[]) {
+            print_file_line();
+        }
+    ]] _FLAMEGPU_CHECK_GCC_CUDA_SOURCE_LOCATION_V0)
+
+    if (NOT _FLAMEGPU_CHECK_GCC_CUDA_SOURCE_LOCATION_V0)
+        message(FATAL_ERROR
+            "std::source_location::current() cannot be compiled with ${CMAKE_CUDA_COMPILER_ID} ${CMAKE_CUDA_COMPILER_VERSION} and ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION} with --std=c++${_flamegpu_cxx_std}.\n"
+            "GCC >= 11 is required, with CUDA >= 12.2"
+        )
+    endif()
+endfunction()
 
 # Internal function that emits a warning if compiling a CXX file with -x hip fails
 # hip::device (for rocm 7.2.0 atleast) includes '-x hip' in INTERFACE_COMPILE_OPTIONS from lib/cmake/hip-config-amd.cmake

@@ -59,9 +59,9 @@ Building FLAME GPU has the following requirements. There are also optional depen
 
 + [CMake](https://cmake.org/download/) `>= 3.25.2`
 + CUDA for NVIDIA GPUs, or HIP/ROCm for AMD GPUS
-  + [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 12.0` (Linux) or `>= 12.4` (Windows)
+  + [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 12.4`
     + FLAME GPU aims to support the 2 most recent major CUDA versions, currently `12` and `13`.
-    + For native Windows builds, CUDA `12.0-12.3` may work for some but not all parts of FLAME GPU due to c++20 compilation issues and MSVC support.
+    + Due to compiler issues on multiple platforms we have dropped support for CUDA `12.0`-`12.3`, requiring `>= 12.4`
     + A [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 5.0` (CUDA 12.x) or `>= 7.5` (CUDA 13.x) NVIDIA GPU is required for execution.
   + [ROCm/HIP](https://rocm.docs.amd.com/en/latest/) `>= 7.x` (Linux only)
     + ROCm/HIP support in FLAME GPU is under active development. Not all features are available. Other ROCm versions are unsupported but may work.
@@ -71,8 +71,8 @@ Building FLAME GPU has the following requirements. There are also optional depen
     + *Note:* Visual Studio must be installed before the CUDA toolkit is installed. See the [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) for more information.
     + *Note:* Windows 11 SDK (10.0.22000.0) component is required within the Visual Studio (in latest versions this is default for C++ Desktop Development workloads even even on Windows 10). Windows 10 *must* be updated to build 19045 (22H2) or later to support this at runtime.
   + Linux: [make](https://www.gnu.org/software/make/) or [Ninja](https://ninja-build.org/) with:
-    + [GCC](https://gcc.gnu.org/) `>= 10` compatible with your CUDA installation
-    + `amdclang++` / `hipcc` compatible wih your HIP/ROCm installation
+    + [GCC](https://gcc.gnu.org/) `>= 11` compatible with your CUDA installation
+    + `clang` / `amdclang++` / `hipcc` compatible wih your HIP/ROCm installation
       + *Note:* You may need to explicitly set `amdclang++`/`hipcc` as the host compiler, as GCC cannot be used for CXX objects due to `HIP/ROCm`'s CMake enforcing `-x hip` for CXX objects which link against HIP/ROCm targets.
 + [git](https://git-scm.com/)
 
@@ -82,7 +82,6 @@ Optionally:
 + [Doxygen](http://www.doxygen.nl/) to build the documentation
 + [Python](https://www.python.org/) `>= 3.10` for python integration
   + With `setuptools`, `wheel`, `build` and optionally `venv` python packages installed
-  + On Windows, CUDA >= 12.4 is required for python integration
 + [swig](http://www.swig.org/) `>= 4.1.0` for python integration (with c++20 support)
   + Swig >= `4.1.0` will be automatically downloaded by CMake if not provided (if possible).
   + Swig `4.2.0` and `4.2.1` is known to encounter issues in some cases. Consider using an alternate SWIG version
