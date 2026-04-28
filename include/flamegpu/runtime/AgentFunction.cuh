@@ -11,7 +11,8 @@
 #include "flamegpu/defines.h"
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 #include "flamegpu/runtime/AgentFunction_shim.cuh"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #ifndef __CUDACC_RTC__
 #include "flamegpu/runtime/detail/curve/DeviceCurve.cuh"
@@ -149,7 +150,7 @@ typedef void(*AgentFunctionLauncher)(
     unsigned int *scanFlag_agentDeath,
     unsigned int *scanFlag_messageOutput,
     unsigned int *scanFlag_agentOutput,
-    flamegpu::detail::cuda::Stream_t stream);
+    flamegpu::detail::gpu::Stream_t stream);
 
 
 /**
@@ -193,7 +194,7 @@ struct AgentFunctionLauncherHelper {
         unsigned int *scanFlag_agentDeath,
         unsigned int *scanFlag_messageOutput,
         unsigned int *scanFlag_agentOutput,
-        flamegpu::detail::cuda::Stream_t stream) {
+        flamegpu::detail::gpu::Stream_t stream) {
         #if defined(__CUDACC__) || defined(__HIPCC__)
 
         // Early exit if no threads to launch

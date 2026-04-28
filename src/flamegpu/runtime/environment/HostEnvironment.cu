@@ -16,11 +16,12 @@
 #include "flamegpu/io/StateReader.h"
 #include "flamegpu/io/StateReaderFactory.h"
 #include "flamegpu/simulation/CUDASimulation.h"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 HostEnvironment::HostEnvironment(CUDASimulation &_simulation, std::shared_ptr<detail::EnvironmentManager> env, std::shared_ptr<detail::CUDAMacroEnvironment> _macro_env,
-    CUDADirectedGraphMap& _directed_graph_map, detail::CUDAScatter& _scatter, const unsigned int _streamID, const flamegpu::detail::cuda::Stream_t _stream)
+    CUDADirectedGraphMap& _directed_graph_map, detail::CUDAScatter& _scatter, const unsigned int _streamID, const flamegpu::detail::gpu::Stream_t _stream)
     : env_mgr(std::move(env))
     , macro_env(std::move(_macro_env))
     , directed_graph_map(_directed_graph_map)

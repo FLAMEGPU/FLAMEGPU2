@@ -19,7 +19,7 @@
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/detail/compute_capability.cuh"
 #include "flamegpu/util/nvtx.h"
-
+#include "flamegpu/detail/gpu/macros.hpp"
 
 namespace flamegpu {
 namespace detail {
@@ -441,6 +441,9 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
 #else
     options.push_back("--define-macro=FLAMEGPU_SEATBELTS=0");
 #endif
+
+    // ensure NVRTC is aware CUDA is being used. This is currently the only RTC option
+    options.push_back("-DFLAMEGPU_USE_CUDA");
 
     // get the dynamically generated header from curve rtc
     headers.emplace("dynamic/curve_rtc_dynamic.h", dynamic_header);

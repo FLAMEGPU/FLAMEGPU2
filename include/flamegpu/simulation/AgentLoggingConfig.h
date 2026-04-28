@@ -11,6 +11,7 @@
 #include "flamegpu/simulation/AgentLoggingConfig_Reductions.cuh"
 #include "flamegpu/simulation/AgentLoggingConfig_SumReturn.h"
 #include "flamegpu/runtime/agent/HostAgentAPI.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
 
 namespace flamegpu {
 
