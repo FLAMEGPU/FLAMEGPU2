@@ -7,9 +7,9 @@ on:
     tags:
       - 'v*.*.*'
   # Or on pull_requests which mutate this CI workflow, using pr rather than push:branch to ensure that the merged state will be OK, as that is what is important here.
-  pull_request:
-    paths:
-      - ".github/workflows/Draft-Release.yml"
+  # pull_request:
+  #   paths:
+  #     - ".github/workflows/Draft-Release.yml"
   # Or trigger on manual dispatch. This will not produce a release, but will perform the thorough build.
   workflow_dispatch:
 
