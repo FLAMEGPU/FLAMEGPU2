@@ -65,7 +65,7 @@ class CUDAMessage {
      * @param streamId Index of stream specific structures used
      * @param stream The CUDAStream to use for CUDA operations
      */
-    void init(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
+    void init(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Updates message_count to equal newSize, internally reallocates buffer space if more space is required
      * @param newSize The number of messages that the buffer should be capable of storing
@@ -74,7 +74,7 @@ class CUDAMessage {
      * @param streamId Index of stream specific structures used
      * @param keepLen Number of existing messages worth of data to retain through the resize
      */
-    void resize(unsigned int newSize, detail::CUDAScatter &scatter, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId, unsigned int keepLen = 0);
+    void resize(unsigned int newSize, detail::CUDAScatter &scatter, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId, unsigned int keepLen = 0);
     /**
      * Uses the cuRVE runtime to map the variables used by the agent function to the cuRVE library so that can be accessed by name within a n agent function
      * The read runtime variables are to be used when reading messages
@@ -91,7 +91,7 @@ class CUDAMessage {
      * @param stream The CUDAStream to use for CUDA operations
      * @note swap() or scatter() should be called after the agent function has written messages
      */
-    void mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, unsigned int writeLen, flamegpu::detail::cuda::Stream_t stream) const;
+    void mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, unsigned int writeLen, flamegpu::detail::gpu::Stream_t stream) const;
     void *getReadPtr(const std::string &var_name);
     const CUDAMessageMap &getReadList() { return message_list->getReadList(); }
     const CUDAMessageMap &getWriteList() { return message_list->getWriteList(); }
@@ -104,7 +104,7 @@ class CUDAMessage {
      * @param streamId Index of stream specific structures used
      * @throw exception::InvalidCudaMessage If this is called before the internal buffers have been allocated
      */
-    void swap(bool isOptional, unsigned int newMessageCount, detail::CUDAScatter &scatter, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId);
+    void swap(bool isOptional, unsigned int newMessageCount, detail::CUDAScatter &scatter, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId);
     /**
      * Basic list swap with no additional actions
      */
@@ -121,14 +121,14 @@ class CUDAMessage {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
+    void buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
     const void *getMetaDataDevicePtr() const;
 
  protected:
     /** 
      * Zero all message variable data.
      */
-    void zeroAllMessageData(flamegpu::detail::cuda::Stream_t stream);
+    void zeroAllMessageData(flamegpu::detail::gpu::Stream_t stream);
 
  private:
      /**

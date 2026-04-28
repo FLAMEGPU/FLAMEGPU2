@@ -106,7 +106,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<const ModelData> &_model, b
     , macro_env(std::make_shared<detail::CUDAMacroEnvironment>(*_model->environment, *this))
     , config({})
     , run_log(std::make_unique<RunLog>())
-    , streams(std::vector<flamegpu::detail::cuda::Stream_t>())
+    , streams(std::vector<flamegpu::detail::gpu::Stream_t>())
     , singletons(nullptr)
     , singletonsInitialised(false)
     , rtcInitialised(false)
@@ -162,7 +162,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
     , step_count(0)
     , macro_env(std::make_shared<detail::CUDAMacroEnvironment>(*submodel_desc->submodel->environment, *this))
     , run_log(std::make_unique<RunLog>())
-    , streams(std::vector<flamegpu::detail::cuda::Stream_t>())
+    , streams(std::vector<flamegpu::detail::gpu::Stream_t>())
     , singletons(nullptr)
     , singletonsInitialised(false)
     , rtcInitialised(false)
@@ -462,7 +462,7 @@ void CUDASimulation::determineAgentsToSort() {
 }
 
 
-void CUDASimulation::spatialSortAgent_async(const std::string& funcName, const std::string& agentName, const std::string& state, const int mode, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId) {
+void CUDASimulation::spatialSortAgent_async(const std::string& funcName, const std::string& agentName, const std::string& state, const int mode, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId) {
     // Fetch the appropriate message name
     detail::CUDAAgent& cuda_agent = getCUDAAgent(agentName);
 
@@ -1545,7 +1545,7 @@ void CUDASimulation::applyConfig_derived() {
 #endif
 
 
-    flamegpu::detail::cuda::Error_t cudaStatus;
+    flamegpu::detail::gpu::Error_t cudaStatus;
     int device_count;
 
     // default device
@@ -1638,7 +1638,7 @@ void CUDASimulation::initialiseSingletons() {
         // Reinitialise random for this simulation instance
         singletons->rng.reseed(getSimulationConfig().random_seed);
 
-        flamegpu::detail::cuda::Stream_t stream_0 = getStream(0);
+        flamegpu::detail::gpu::Stream_t stream_0 = getStream(0);
 
         // Pass created RandomManager to host api
         host_api = std::make_unique<HostAPI>(*this, singletons->rng, singletons->scatter, agentOffsets, agentData, singletons->environment, macro_env, directed_graph_map, 0, stream_0);  // Host fns are currently all serial
@@ -1936,7 +1936,7 @@ void CUDASimulation::initMacroEnvironment() {
     if (mp_map.size() && !mp_map.begin()->second.d_ptr) {
         THROW exception::UnknownInternalError("CUDASimulation::initMacroEnvironment() called before macro environment initialised.");
     }
-    const flamegpu::detail::cuda::Stream_t stream = getStream(0);
+    const flamegpu::detail::gpu::Stream_t stream = getStream(0);
     // Set any properties loaded from file during arg parse stage
     for (const auto &[name, buff] : macro_env_init) {
         const auto it =  mp_map.find(name);
@@ -2077,13 +2077,13 @@ void CUDASimulation::createStreams(const unsigned int nStreams) {
     // There should always be atleast 1 stream, as some tests require the 0th stream even when there is no concurrent work to be done.
     unsigned int totalStreams = std::max(nStreams, 1u);
     while (streams.size() < totalStreams) {
-        flamegpu::detail::cuda::Stream_t stream = 0;
+        flamegpu::detail::gpu::Stream_t stream = 0;
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamCreate)(&stream));
         streams.push_back(stream);
     }
 }
 
-flamegpu::detail::cuda::Stream_t CUDASimulation::getStream(const unsigned int n) {
+flamegpu::detail::gpu::Stream_t CUDASimulation::getStream(const unsigned int n) {
     // Return the appropriate stream, unless concurrency is disabled in which case always stream 0.
     if (this->streams.size() <= n) {
         unsigned int nStreams = getMaximumLayerWidth();

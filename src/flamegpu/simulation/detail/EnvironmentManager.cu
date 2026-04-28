@@ -169,7 +169,7 @@ void EnvironmentManager::resetModel(const EnvironmentData& desc) {
         }
     }
 }
-void EnvironmentManager::updateDevice_async(const flamegpu::detail::cuda::Stream_t stream) const {
+void EnvironmentManager::updateDevice_async(const flamegpu::detail::gpu::Stream_t stream) const {
     if (!d_buffer_ready) {
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(d_buffer, h_buffer, h_buffer_len, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
         d_buffer_ready = true;

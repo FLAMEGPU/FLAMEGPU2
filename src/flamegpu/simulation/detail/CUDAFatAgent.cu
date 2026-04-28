@@ -110,7 +110,7 @@ void CUDAFatAgent::addSubAgent(
     mappedAgentCount++;
 }
 
-void CUDAFatAgent::processDeath(const unsigned int agent_fat_id, const std::string &state_name, detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::cuda::Stream_t stream) {
+void CUDAFatAgent::processDeath(const unsigned int agent_fat_id, const std::string &state_name, detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::gpu::Stream_t stream) {
     auto sm = states.find({agent_fat_id, state_name});
     if (sm == states.end()) {
         THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
@@ -144,7 +144,7 @@ void CUDAFatAgent::processDeath(const unsigned int agent_fat_id, const std::stri
     sm->second->scatterDeath(scatter, streamId, stream);
 }
 
-void CUDAFatAgent::transitionState(unsigned int agent_fat_id, const std::string &_src, const std::string &_dest, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream) {
+void CUDAFatAgent::transitionState(unsigned int agent_fat_id, const std::string &_src, const std::string &_dest, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream) {
     // Optionally process state transition
     if (_src != _dest) {
         auto src = states.find({agent_fat_id, _src});
@@ -191,7 +191,7 @@ void CUDAFatAgent::transitionState(unsigned int agent_fat_id, const std::string 
     }
 }
 
-void CUDAFatAgent::processFunctionCondition(const unsigned int agent_fat_id, const std::string &state_name, detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::cuda::Stream_t stream) {
+void CUDAFatAgent::processFunctionCondition(const unsigned int agent_fat_id, const std::string &state_name, detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::gpu::Stream_t stream) {
     auto sm = states.find({agent_fat_id, state_name});
     if (sm == states.end()) {
         THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
@@ -352,7 +352,7 @@ void CUDAFatAgent::notifyDeviceBirths(unsigned int newCount) {
     assert(t == _nextID);  // At the end of device birth they should be equal, as no host birth can occur between pre and post processing agent fn
 #endif
 }
-void CUDAFatAgent::assignIDs(HostAPI& hostapi, detail::CUDAScatter &scatter, flamegpu::detail::cuda::Stream_t stream, const unsigned int streamId) {
+void CUDAFatAgent::assignIDs(HostAPI& hostapi, detail::CUDAScatter &scatter, flamegpu::detail::gpu::Stream_t stream, const unsigned int streamId) {
     flamegpu::util::nvtx::Range range{"CUDAFatAgent::assignIDs"};
     if (agent_ids_have_init) return;
     id_t h_max = ID_NOT_SET;

@@ -30,7 +30,7 @@ class CUDAMessageList {
      /**
       * Initially allocates message lists based on cuda_message.getMaximumListSize()
       */
-    explicit CUDAMessageList(CUDAMessage& cuda_message, detail::CUDAScatter &scatter, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId);
+    explicit CUDAMessageList(CUDAMessage& cuda_message, detail::CUDAScatter &scatter, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId);
     /**
      * Frees all message list memory
      */
@@ -62,11 +62,11 @@ class CUDAMessageList {
      * @throw If keep_len exceeds the new buffer length
      * @note This class has no way of knowing if keep_len exceeds the old buffer length size
      */
-    void resize(CUDAScatter& scatter, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId = 0, unsigned int keep_len = 0);
+    void resize(CUDAScatter& scatter, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId = 0, unsigned int keep_len = 0);
     /**
      * Memset all variable arrays in each list to 0
      */
-    void zeroMessageData(flamegpu::detail::cuda::Stream_t stream);
+    void zeroMessageData(flamegpu::detail::gpu::Stream_t stream);
     /**
      * Swap d_list and d_swap_list
      */
@@ -80,7 +80,7 @@ class CUDAMessageList {
      * @param append If true scattered messages will append to the existing message list, otherwise truncate
      * @return Total number of messages now in list (includes old + new counts if appending)
      */
-    virtual unsigned int scatter(unsigned int newCount, detail::CUDAScatter &scatter, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId, bool append);
+    virtual unsigned int scatter(unsigned int newCount, detail::CUDAScatter &scatter, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId, bool append);
     /**
      * Copy all message data from d_swap_list to d_list
      * This ALWAYS performs and append to the existing message list count
@@ -91,7 +91,7 @@ class CUDAMessageList {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @return Total number of messages now in list (includes old + new counts)
      */
-    virtual unsigned int scatterAll(unsigned int newCount, detail::CUDAScatter &scatter, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId);
+    virtual unsigned int scatterAll(unsigned int newCount, detail::CUDAScatter &scatter, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId);
     /**
      * @return Returns the map<variable_name, device_ptr> for reading message data
      */
@@ -118,7 +118,7 @@ class CUDAMessageList {
      * @param stream The CUDAStream to use for CUDA operations
      * @param skip_offset Number of items at the start of the list to not zero
      */
-    void zeroDeviceMessageList_async(CUDAMessageMap &memory_map, flamegpu::detail::cuda::Stream_t stream, unsigned int skip_offset = 0);
+    void zeroDeviceMessageList_async(CUDAMessageMap &memory_map, flamegpu::detail::gpu::Stream_t stream, unsigned int skip_offset = 0);
 
  private:
      /**

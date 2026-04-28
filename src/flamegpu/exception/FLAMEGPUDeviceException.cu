@@ -22,7 +22,7 @@ DeviceExceptionManager::~DeviceExceptionManager() {
         flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(i));
     }
 }
-DeviceExceptionBuffer *DeviceExceptionManager::getDevicePtr(const unsigned int streamId, const flamegpu::detail::cuda::Stream_t stream) {
+DeviceExceptionBuffer *DeviceExceptionManager::getDevicePtr(const unsigned int streamId, const flamegpu::detail::gpu::Stream_t stream) {
     if (streamId >= detail::CUDAScanCompaction::MAX_STREAMS) {
         THROW exception::OutOfBoundsException("Stream id %u is out of bounds, %u >= %u, "
         "in FLAMEGPUDeviceException::getDevicePtr()\n", streamId, streamId, detail::CUDAScanCompaction::MAX_STREAMS);
@@ -39,7 +39,7 @@ DeviceExceptionBuffer *DeviceExceptionManager::getDevicePtr(const unsigned int s
     memset(&hd_buffer[streamId], 0, sizeof(DeviceExceptionBuffer));
     return d_buffer[streamId];
 }
-void DeviceExceptionManager::checkError(const std::string &function, const unsigned int streamId, const flamegpu::detail::cuda::Stream_t stream) {
+void DeviceExceptionManager::checkError(const std::string &function, const unsigned int streamId, const flamegpu::detail::gpu::Stream_t stream) {
     if (streamId >= detail::CUDAScanCompaction::MAX_STREAMS) {
         THROW exception::OutOfBoundsException("Stream id %u is out of bounds, %u >= %u, "
         "in FLAMEGPUDeviceException::checkError()\n", streamId, streamId, detail::CUDAScanCompaction::MAX_STREAMS);

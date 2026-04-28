@@ -503,7 +503,7 @@ class CUDASimulation : public Simulation {
     /**
      * Streams created within this cuda context for executing functions within layers in parallel
      */
-    std::vector<flamegpu::detail::cuda::Stream_t> streams;
+    std::vector<flamegpu::detail::gpu::Stream_t> streams;
 
     /** 
      * Ensure the correct number of streams exist.
@@ -515,7 +515,7 @@ class CUDASimulation : public Simulation {
      * In some cases, this may return the 0th stream based on class flags.
      * @return specified cudaStream
      */
-    flamegpu::detail::cuda::Stream_t getStream(const unsigned int n);
+    flamegpu::detail::gpu::Stream_t getStream(const unsigned int n);
 
     /**
      * Destroy all streams
@@ -553,7 +553,7 @@ class CUDASimulation : public Simulation {
      * Spatially sort the agents.
      * This should only be called within step();
      */
-    void spatialSortAgent_async(const std::string& funcName, const std::string& agentName, const std::string& state, const int mode, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId);
+    void spatialSortAgent_async(const std::string& funcName, const std::string& agentName, const std::string& state, const int mode, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId);
 
     constexpr static int Agent2D = 0;
     constexpr static int Agent3D = 1;

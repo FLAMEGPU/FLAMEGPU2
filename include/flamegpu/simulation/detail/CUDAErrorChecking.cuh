@@ -22,7 +22,7 @@ namespace detail {
  * @param line Line no where errorcode was reported (e.g. __LINE__)
  * @throws CUDAError If code != cudaSuccess
  */
-inline void gpuAssert(flamegpu::detail::cuda::Error_t code, const char *file, int line) {
+inline void gpuAssert(flamegpu::detail::gpu::Error_t code, const char *file, int line) {
     if (code != FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) {
         THROW exception::CUDAError("CUDA Error: %s(%d): %s %s", file, line, FLAMEGPU_GPU_RUNTIME_SYMBOL(GetErrorName)(code), FLAMEGPU_GPU_RUNTIME_SYMBOL(GetErrorString)(code));
     }

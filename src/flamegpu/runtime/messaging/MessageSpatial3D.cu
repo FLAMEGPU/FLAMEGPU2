@@ -79,14 +79,14 @@ __global__ void atomicHistogram3D(
     bin_sub_index[index] = bin_idx;
 }
 
-void MessageSpatial3D::CUDAModelHandler::init(detail::CUDAScatter &, unsigned int, flamegpu::detail::cuda::Stream_t stream) {
+void MessageSpatial3D::CUDAModelHandler::init(detail::CUDAScatter &, unsigned int, flamegpu::detail::gpu::Stream_t stream) {
     allocateMetaDataDevicePtr(stream);
     // Set PBM to 0
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(hd_data.PBM, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));  // This could probably be skipped/delayed safely
 }
 
-void MessageSpatial3D::CUDAModelHandler::allocateMetaDataDevicePtr(flamegpu::detail::cuda::Stream_t stream) {
+void MessageSpatial3D::CUDAModelHandler::allocateMetaDataDevicePtr(flamegpu::detail::gpu::Stream_t stream) {
     if (d_data == nullptr) {
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_histogram, (binCount + 1) * sizeof(unsigned int)));
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&hd_data.PBM, (binCount + 1) * sizeof(unsigned int)));
@@ -118,7 +118,7 @@ void MessageSpatial3D::CUDAModelHandler::freeMetaDataDevicePtr() {
     }
 }
 
-void MessageSpatial3D::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream) {
+void MessageSpatial3D::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream) {
     flamegpu::util::nvtx::Range range{"MessageSpatial3D::CUDAModelHandler::buildIndex"};
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     if (!MESSAGE_COUNT) {
@@ -153,7 +153,7 @@ void MessageSpatial3D::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter
     }
 }
 
-void MessageSpatial3D::CUDAModelHandler::resizeCubTemp(flamegpu::detail::cuda::Stream_t stream) {
+void MessageSpatial3D::CUDAModelHandler::resizeCubTemp(flamegpu::detail::gpu::Stream_t stream) {
     size_t bytesCheck = 0;
     flamegpu::detail::gpuCheck(cub::DeviceScan::ExclusiveSum(nullptr, bytesCheck, hd_data.PBM, d_histogram, binCount + 1, stream));
     if (bytesCheck > d_CUB_temp_storage_bytes) {

@@ -11,7 +11,7 @@ namespace flamegpu {
 
 DeviceAgentVector_impl::DeviceAgentVector_impl(detail::CUDAAgent& _cuda_agent, const std::string &_cuda_agent_state,
                                                const VarOffsetStruct& _agentOffsets, std::vector<NewAgentStorage>& _newAgentData,
-                                               detail::CUDAScatter& _scatter, const unsigned int _streamId, const flamegpu::detail::cuda::Stream_t _stream)
+                                               detail::CUDAScatter& _scatter, const unsigned int _streamId, const flamegpu::detail::gpu::Stream_t _stream)
     : AgentVector(_cuda_agent.getAgentDescription(), 0)
     , unbound_buffers_has_changed(false)
     , known_device_buffer_size(_cuda_agent.getStateSize(_cuda_agent_state))

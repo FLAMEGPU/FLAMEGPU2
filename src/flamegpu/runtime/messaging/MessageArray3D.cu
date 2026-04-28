@@ -30,7 +30,7 @@ MessageArray3D::CUDAModelHandler::CUDAModelHandler(detail::CUDAMessage &a)
     hd_metadata.length = d.dimensions[0] * d.dimensions[1] * d.dimensions[2];
 }
 
-void MessageArray3D::CUDAModelHandler::init(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream) {
+void MessageArray3D::CUDAModelHandler::init(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream) {
     allocateMetaDataDevicePtr(stream);
     // Allocate messages
     this->sim_message.resize(hd_metadata.length, scatter, stream, streamId);
@@ -46,7 +46,7 @@ void MessageArray3D::CUDAModelHandler::init(detail::CUDAScatter &scatter, unsign
     }
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
 }
-void MessageArray3D::CUDAModelHandler::allocateMetaDataDevicePtr(flamegpu::detail::cuda::Stream_t stream) {
+void MessageArray3D::CUDAModelHandler::allocateMetaDataDevicePtr(flamegpu::detail::gpu::Stream_t stream) {
     if (d_metadata == nullptr) {
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_metadata, sizeof(MetaData)));
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(d_metadata, &hd_metadata, sizeof(MetaData), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
@@ -66,7 +66,7 @@ void MessageArray3D::CUDAModelHandler::freeMetaDataDevicePtr() {
     d_write_flag = nullptr;
     d_write_flag_len = 0;
 }
-void MessageArray3D::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream) {
+void MessageArray3D::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream) {
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     // Zero the output arrays
     auto &read_list = this->sim_message.getReadList();

@@ -177,7 +177,7 @@ class CUDAFatAgentStateList {
      * @param retainData If true existing buffer data is retained
      * @param stream The stream to be used if data requires copying
      */
-    void resize(unsigned int minSize, bool retainData, flamegpu::detail::cuda::Stream_t stream);
+    void resize(unsigned int minSize, bool retainData, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Returns the number of alive and active agents in the state list
      */
@@ -203,7 +203,7 @@ class CUDAFatAgentStateList {
      * @param stream CUDA stream to be used for async CUDA operations
      * @return The number of agents that are still alive (this includes temporarily disabled agents due to agent function condition)
      */
-    unsigned int scatterDeath(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
+    unsigned int scatterDeath(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Scatters all living agents which failed the agent function condition into the swap buffer (there should be no disabled at this time)
      * This does not swap buffers or update disabledAgent)
@@ -213,7 +213,7 @@ class CUDAFatAgentStateList {
      * @return The number of agents that were scattered (the number of agents which failed the condition)
      * @see scatterAgentFunctionConditionTrue(unsigned int, unsigned int)
      */
-    unsigned int scatterAgentFunctionConditionFalse(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
+    unsigned int scatterAgentFunctionConditionFalse(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Scatters all living agents which passed the agent function condition into the swap buffer (there should be no disabled at this time)
      * Also swaps the buffers and sets the number of disabled agents
@@ -225,14 +225,14 @@ class CUDAFatAgentStateList {
      * @see scatterAgentFunctionConditionFalse(unsigned int)
      * @see setConditionState(unsigned int)
      */
-    unsigned int scatterAgentFunctionConditionTrue(unsigned int conditionFailCount, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
+    unsigned int scatterAgentFunctionConditionTrue(unsigned int conditionFailCount, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Sorts all agent variables according to the positions stored inside Message Output scan buffer
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void scatterSort_async(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
+    void scatterSort_async(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Set the number of disabled agents within the state list
      * Updates member var disabledAgents and data_condition for every item inside variables_unique
@@ -250,7 +250,7 @@ class CUDAFatAgentStateList {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void initVariables(std::set<std::shared_ptr<VariableBuffer>> &exclusionSet, const unsigned int initCount, const unsigned initOffset, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
+    void initVariables(std::set<std::shared_ptr<VariableBuffer>> &exclusionSet, const unsigned int initCount, const unsigned initOffset, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Returns the collection of unique variable buffers held by this CUDAFatAgentStateList
      */

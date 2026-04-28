@@ -1,6 +1,10 @@
 #ifndef INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDASCANCOMPACTION_H_
 #define INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDASCANCOMPACTION_H_
 
+// This should not be seen by NVRTC?
+#ifndef __CUDACC_RTC__
+
+#include <flamegpu/detail/gpu/types.hpp>
 #include <flamegpu/detail/cuda.cuh>
 
 namespace flamegpu {
@@ -63,7 +67,7 @@ struct CUDAScanCompactionConfig {
      * @param stream The CUDA stream used to execute the memset
      * @note This method is async, the cuda stream is not synchronised
      */
-    void zero_scan_flag_async(flamegpu::detail::cuda::Stream_t stream);
+    void zero_scan_flag_async(flamegpu::detail::gpu::Stream_t stream);
 };
 
 /**
@@ -113,7 +117,7 @@ class CUDAScanCompaction {
      * @param streamId The stream index of the scan flag buffer to be zerod
      * @note This method is async, the cuda stream is not synchronised
      */
-    void zero_async(const Type& type, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId);
+    void zero_async(const Type& type, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId);
     /**
      * Returns a const reference to the scan flag config structure for the specified stream and type
      * @param type The type of the scan flag buffer to return
@@ -139,5 +143,7 @@ class CUDAScanCompaction {
 
 }  // namespace detail
 }  // namespace flamegpu
+
+#endif  // __CUDACC_RTC__
 
 #endif  // INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDASCANCOMPACTION_H_

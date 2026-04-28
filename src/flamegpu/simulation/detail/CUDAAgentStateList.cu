@@ -79,7 +79,7 @@ CUDAAgentStateList::CUDAAgentStateList(
         }
     }
 }
-void CUDAAgentStateList::resize(const unsigned int minimumSize, const bool retainData, const flamegpu::detail::cuda::Stream_t stream) {
+void CUDAAgentStateList::resize(const unsigned int minimumSize, const bool retainData, const flamegpu::detail::gpu::Stream_t stream) {
     parent_list->resize(minimumSize, retainData, stream);
 }
 unsigned int CUDAAgentStateList::getSize() const {
@@ -103,7 +103,7 @@ void *CUDAAgentStateList::getVariablePointer(const std::string &variable_name) {
 
     return var->second->data_condition;
 }
-void CUDAAgentStateList::setAgentData(const AgentVector& population, CUDAScatter& scatter, const unsigned int streamId, const flamegpu::detail::cuda::Stream_t stream) {
+void CUDAAgentStateList::setAgentData(const AgentVector& population, CUDAScatter& scatter, const unsigned int streamId, const flamegpu::detail::gpu::Stream_t stream) {
     // Validate AgentData matches
     if (!population.matchesAgentType(agent.getAgentDescription())) {
         THROW exception::InvalidCudaAgentDesc("Agent description for agent '%s' does not match that of AgentVector, "
@@ -164,7 +164,7 @@ void CUDAAgentStateList::getAgentData(AgentVector& population) const {
     }
     population._size = data_count;  // Private AgentVector::resize() does not update size
 }
-void CUDAAgentStateList::scatterHostCreation(unsigned int newSize, char* const d_inBuff, const VarOffsetStruct & offsets, detail::CUDAScatter & scatter, const unsigned int streamId, const flamegpu::detail::cuda::Stream_t stream) {
+void CUDAAgentStateList::scatterHostCreation(unsigned int newSize, char* const d_inBuff, const VarOffsetStruct & offsets, detail::CUDAScatter & scatter, const unsigned int streamId, const flamegpu::detail::gpu::Stream_t stream) {
     // Resize agent list if required
     parent_list->resize(parent_list->getSizeWithDisabled() + newSize, true, stream);
     // Build scatter data
@@ -192,10 +192,10 @@ void CUDAAgentStateList::scatterHostCreation(unsigned int newSize, char* const d
     // Update number of alive agents
     parent_list->setAgentCount(parent_list->getSize() + newSize);
 }
-void CUDAAgentStateList::scatterSort_async(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream) {
+void CUDAAgentStateList::scatterSort_async(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream) {
     parent_list->scatterSort_async(scatter, streamId, stream);
 }
-unsigned int CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int newSize, detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::cuda::Stream_t stream) {
+unsigned int CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int newSize, detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::gpu::Stream_t stream) {
     if (newSize) {
         CUDAScanCompactionConfig &scanCfg = scatter.Scan().Config(CUDAScanCompaction::Type::AGENT_OUTPUT, streamId);
         // Check if we need to resize cub storage
@@ -260,7 +260,7 @@ unsigned int CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int
 bool CUDAAgentStateList::getIsSubStatelist() {
     return isSubStateList;
 }
-void CUDAAgentStateList::initUnmappedVars(detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::cuda::Stream_t stream) {
+void CUDAAgentStateList::initUnmappedVars(detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::gpu::Stream_t stream) {
     assert(parent_list->getSizeWithDisabled() == parent_list->getSize());
     if (parent_list->getSize()) {
         assert(isSubStateList);
@@ -270,7 +270,7 @@ void CUDAAgentStateList::initUnmappedVars(detail::CUDAScatter &scatter, const un
         }
     }
 }
-void CUDAAgentStateList::initExcludedVars(const unsigned int count, const unsigned int offset, CUDAScatter& scatter, const unsigned int streamId, const flamegpu::detail::cuda::Stream_t stream) {
+void CUDAAgentStateList::initExcludedVars(const unsigned int count, const unsigned int offset, CUDAScatter& scatter, const unsigned int streamId, const flamegpu::detail::gpu::Stream_t stream) {
     std::set<std::shared_ptr<VariableBuffer>> exclusionSet;
     for (auto& a : variables)
         exclusionSet.insert(a.second);

@@ -4,6 +4,7 @@
 #include <string>
 #include <type_traits>
 
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 #include "flamegpu/simulation/detail/CUDAScanCompaction.h"
 
@@ -24,8 +25,8 @@ class DeviceExceptionManager {
      * Free all device memory
      */
     ~DeviceExceptionManager();
-    DeviceExceptionBuffer *getDevicePtr(unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
-    void checkError(const std::string &function, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
+    DeviceExceptionBuffer *getDevicePtr(unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
+    void checkError(const std::string &function, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
 
  private:
     /**

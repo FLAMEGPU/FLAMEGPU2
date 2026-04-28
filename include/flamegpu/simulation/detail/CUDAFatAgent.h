@@ -97,7 +97,7 @@ class CUDAFatAgent {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void processDeath(unsigned int agent_fat_id, const std::string &state_name, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
+    void processDeath(unsigned int agent_fat_id, const std::string &state_name, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Transitions all active agents from the source state to the destination state
      * @param agent_fat_id The index of the CUDAAgent within this CUDAFatAgent
@@ -107,7 +107,7 @@ class CUDAFatAgent {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void transitionState(unsigned int agent_fat_id, const std::string &_src, const std::string &_dest, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
+    void transitionState(unsigned int agent_fat_id, const std::string &_src, const std::string &_dest, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Reads the flags set by an agent function condition in order to sort agents according to whether they passed or failed
      * Failed agents are sorted to the front and marked as disabled, passing agents are then sorted to the back
@@ -117,7 +117,7 @@ class CUDAFatAgent {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void processFunctionCondition(unsigned int agent_fat_id, const std::string &state_name, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
+    void processFunctionCondition(unsigned int agent_fat_id, const std::string &state_name, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Marks the specified number of agents within the specified statelist as disabled
      * @param agent_fat_id The index of the CUDAAgent within this CUDAFatAgent
@@ -167,7 +167,7 @@ class CUDAFatAgent {
      * @param stream The CUDAStream to use for CUDA operations
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      */
-    void assignIDs(HostAPI& hostapi, CUDAScatter& scatter, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId);
+    void assignIDs(HostAPI& hostapi, CUDAScatter& scatter, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId);
     /**
      * Resets the flag agent_ids_have_init
      */

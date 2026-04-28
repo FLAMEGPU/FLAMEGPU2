@@ -9,7 +9,7 @@
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
-void MessageBruteForce::CUDAModelHandler::init(detail::CUDAScatter &, unsigned int, flamegpu::detail::cuda::Stream_t stream) {
+void MessageBruteForce::CUDAModelHandler::init(detail::CUDAScatter &, unsigned int, flamegpu::detail::gpu::Stream_t stream) {
     allocateMetaDataDevicePtr(stream);
     // Allocate messages
     hd_metadata.length = 0;  // This value should already be 0
@@ -17,7 +17,7 @@ void MessageBruteForce::CUDAModelHandler::init(detail::CUDAScatter &, unsigned i
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));  // This could probably be skipped/delayed safely
 }
 
-void MessageBruteForce::CUDAModelHandler::allocateMetaDataDevicePtr(flamegpu::detail::cuda::Stream_t stream) {
+void MessageBruteForce::CUDAModelHandler::allocateMetaDataDevicePtr(flamegpu::detail::gpu::Stream_t stream) {
     if (d_metadata == nullptr) {
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_metadata, sizeof(MetaData)));
     }
@@ -30,7 +30,7 @@ void MessageBruteForce::CUDAModelHandler::freeMetaDataDevicePtr() {
     d_metadata = nullptr;
 }
 
-void MessageBruteForce::CUDAModelHandler::buildIndex(detail::CUDAScatter &, unsigned int, flamegpu::detail::cuda::Stream_t stream) {
+void MessageBruteForce::CUDAModelHandler::buildIndex(detail::CUDAScatter &, unsigned int, flamegpu::detail::gpu::Stream_t stream) {
     unsigned int newLength = this->sim_message.getMessageCount();
     if (newLength != hd_metadata.length) {
         hd_metadata.length = newLength;

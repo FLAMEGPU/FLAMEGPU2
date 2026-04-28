@@ -63,7 +63,7 @@ class CUDAEnvironmentDirectedGraphBuffers {
         /**
          * If host buffer is not ready, copy from device buffer
          */
-        void updateHostBuffer(size_type edge_count, flamegpu::detail::cuda::Stream_t stream) const;
+        void updateHostBuffer(size_type edge_count, flamegpu::detail::gpu::Stream_t stream) const;
     };
     const EnvironmentDirectedGraphData &graph_description;
     std::map<std::string, Buffer> vertex_buffers;
@@ -91,7 +91,7 @@ class CUDAEnvironmentDirectedGraphBuffers {
     // However, the ID->index map does not utilise any compression, so non-contiguous ID ranges may lead to out of memory errors.
     unsigned int *d_vertex_index_map = nullptr;
 
-    void allocateVertexBuffers(size_type count, flamegpu::detail::cuda::Stream_t stream);
+    void allocateVertexBuffers(size_type count, flamegpu::detail::gpu::Stream_t stream);
     void allocateEdgeBuffers(size_type count);
     void deallocateVertexBuffers();
     void deallocateEdgeBuffers();
@@ -133,7 +133,7 @@ class CUDAEnvironmentDirectedGraphBuffers {
      * @param count The number of vertices to allocate each buffer for
      * @param stream CUDA stream to be used if data must be copied back from device
      */
-    void setVertexCount(size_type count, flamegpu::detail::cuda::Stream_t stream);
+    void setVertexCount(size_type count, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Allocates and initialises the vertex buffers
      * @param count The number of edges to allocate each buffer for
@@ -162,7 +162,7 @@ class CUDAEnvironmentDirectedGraphBuffers {
      * @return The index of the vertex with the given ID
      * @throw exception::OutOfBoundsException If the number of vertices would exceed the vertex count configured via setVertexCount()
      */
-    unsigned int createIfNotExistVertex(id_t vertex_id, flamegpu::detail::cuda::Stream_t stream);
+    unsigned int createIfNotExistVertex(id_t vertex_id, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Attempt to assign the provided source_vertex_id and dest_vertex_id with an index inside h_vertex_index_map
      * @param source_vertex_id The ID of the source vertex of the edge to be created
@@ -171,12 +171,12 @@ class CUDAEnvironmentDirectedGraphBuffers {
      * @return The index of the edge with the given src and dest vertex IDs
      * @throw exception::OutOfBoundsException If the number of edges would exceed the edge count configured via setEdgeCount()
      */
-    unsigned int createIfNotExistEdge(id_t source_vertex_id, id_t dest_vertex_id, flamegpu::detail::cuda::Stream_t stream);
+    unsigned int createIfNotExistEdge(id_t source_vertex_id, id_t dest_vertex_id, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Returns the currently allocated device buffer for vertex IDs
      * @throw exception::OutOfBoundsException If the vertex buffers have not been allocated yet
      */
-    id_t* getVertexIDBuffer(flamegpu::detail::cuda::Stream_t stream);
+    id_t* getVertexIDBuffer(flamegpu::detail::gpu::Stream_t stream);
     /**
      * Returns the currently allocated device buffer for the specified vertex property
      * @param property_name The name of the property to set
@@ -189,7 +189,7 @@ class CUDAEnvironmentDirectedGraphBuffers {
      * @note If N is passed as 0, it will instead be set to the number of elements
      */
     template<typename T>
-    const T* getVertexPropertyBuffer(const std::string& property_name, size_type &N, flamegpu::detail::cuda::Stream_t stream) const;
+    const T* getVertexPropertyBuffer(const std::string& property_name, size_type &N, flamegpu::detail::gpu::Stream_t stream) const;
     /**
      * Returns the currently allocated device buffer for the specified vertex property
      * Additionally marks the device buffer as out of date, use the const version if you do not wish to change the buffer
@@ -203,7 +203,7 @@ class CUDAEnvironmentDirectedGraphBuffers {
      * @note If N is passed as 0, it will instead be set to the number of elements
      */
     template<typename T>
-    T* getVertexPropertyBuffer(const std::string& property_name, size_type &N, flamegpu::detail::cuda::Stream_t stream);
+    T* getVertexPropertyBuffer(const std::string& property_name, size_type &N, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Returns the currently allocated device buffer for the specified edge property
      * @param property_name The name of the property to set
@@ -216,7 +216,7 @@ class CUDAEnvironmentDirectedGraphBuffers {
      * @note If N is passed as 0, it will instead be set to the number of elements
      */
     template<typename T>
-    const T *getEdgePropertyBuffer(const std::string &property_name, size_type &N, flamegpu::detail::cuda::Stream_t stream) const;
+    const T *getEdgePropertyBuffer(const std::string &property_name, size_type &N, flamegpu::detail::gpu::Stream_t stream) const;
     /**
      * Returns the currently allocated device buffer for the specified edge property
      * Additionally marks the device buffer as out of date, use the const version if you do not wish to change the buffer
@@ -230,12 +230,12 @@ class CUDAEnvironmentDirectedGraphBuffers {
      * @note If N is passed as 0, it will instead be set to the number of elements
      */
     template<typename T>
-    T* getEdgePropertyBuffer(const std::string& property_name, size_type &N, flamegpu::detail::cuda::Stream_t stream);
+    T* getEdgePropertyBuffer(const std::string& property_name, size_type &N, flamegpu::detail::gpu::Stream_t stream);
 #ifdef SWIG
     template<typename T>
-    std::vector<T> getVertexPropertyArray(const std::string& property_name, const unsigned int vertex_index, flamegpu::detail::cuda::Stream_t stream) const;
+    std::vector<T> getVertexPropertyArray(const std::string& property_name, const unsigned int vertex_index, flamegpu::detail::gpu::Stream_t stream) const;
     template<typename T>
-    std::vector<T> getEdgePropertyArray(const std::string& property_name, const unsigned int edge_index, flamegpu::detail::cuda::Stream_t stream) const;
+    std::vector<T> getEdgePropertyArray(const std::string& property_name, const unsigned int edge_index, flamegpu::detail::gpu::Stream_t stream) const;
 #endif
     void markForRebuild() { requires_rebuild = true; }
     /**
@@ -245,7 +245,7 @@ class CUDAEnvironmentDirectedGraphBuffers {
      * @param streamID Stream index corresponding to stream resources to use
      * @param stream The cuda stream to perform CUDA operations on
      */
-    void syncDevice_async(detail::CUDAScatter& scatter, unsigned int streamID, flamegpu::detail::cuda::Stream_t stream);
+    void syncDevice_async(detail::CUDAScatter& scatter, unsigned int streamID, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Updates the vertex ID buffer
      * Updates the internal host map of ID->index
@@ -258,7 +258,7 @@ class CUDAEnvironmentDirectedGraphBuffers {
      * @note This affects how much memory is allocates for the vertex id -> index map
      * @throws exception::IDCollision If the ID is already assigned to a different vertex
      */
-    void setVertexID(unsigned int vertex_index, id_t vertex_id, flamegpu::detail::cuda::Stream_t stream);
+    void setVertexID(unsigned int vertex_index, id_t vertex_id, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Returns the index of the vertex with the given ID
      * @param vertex_id The ID of the vertex of which to return the index
@@ -315,7 +315,7 @@ class CUDAEnvironmentDirectedGraphBuffers {
     * @see getDestinationVertexID(unsigned int)
     * @throws exception::OutOfBoundsException If the index exceeds the number of edges
     */
-    id_t getSourceVertexID(unsigned int edge_index, flamegpu::detail::cuda::Stream_t stream) const;
+    id_t getSourceVertexID(unsigned int edge_index, flamegpu::detail::gpu::Stream_t stream) const;
     /**
     * Returns the destination vertex id of the edge with the given index
     * @param edge_index The index of the edge
@@ -326,7 +326,7 @@ class CUDAEnvironmentDirectedGraphBuffers {
     * @see getSourceVertexID(unsigned int)
     * @throws exception::OutOfBoundsException If the index exceeds the number of edges
     */
-    id_t getDestinationVertexID(unsigned int edge_index, flamegpu::detail::cuda::Stream_t stream) const;
+    id_t getDestinationVertexID(unsigned int edge_index, flamegpu::detail::gpu::Stream_t stream) const;
 #ifdef FLAMEGPU_VISUALISATION
     void setVisualisation(std::shared_ptr<visualiser::ModelVisData> &_visualisation) const {
         this->visualisation = _visualisation;
@@ -336,7 +336,7 @@ class CUDAEnvironmentDirectedGraphBuffers {
 
 
 template<typename T>
-const T* CUDAEnvironmentDirectedGraphBuffers::getVertexPropertyBuffer(const std::string& property_name, size_type &N, flamegpu::detail::cuda::Stream_t stream) const {
+const T* CUDAEnvironmentDirectedGraphBuffers::getVertexPropertyBuffer(const std::string& property_name, size_type &N, flamegpu::detail::gpu::Stream_t stream) const {
     if (!vertex_count) {
         THROW exception::OutOfBoundsException("Vertex buffers not yet allocated, in CUDAEnvironmentDirectedGraphBuffers::getVertexPropertyBuffer()");
     }
@@ -357,7 +357,7 @@ const T* CUDAEnvironmentDirectedGraphBuffers::getVertexPropertyBuffer(const std:
     return static_cast<T*>(vb.h_ptr);
 }
 template<typename T>
-T* CUDAEnvironmentDirectedGraphBuffers::getVertexPropertyBuffer(const std::string& property_name, size_type &N, flamegpu::detail::cuda::Stream_t stream) {
+T* CUDAEnvironmentDirectedGraphBuffers::getVertexPropertyBuffer(const std::string& property_name, size_type &N, flamegpu::detail::gpu::Stream_t stream) {
     if (!vertex_count) {
         THROW exception::OutOfBoundsException("Vertex buffers not yet allocated, in CUDAEnvironmentDirectedGraphBuffers::getVertexPropertyBuffer()");
     }
@@ -379,7 +379,7 @@ T* CUDAEnvironmentDirectedGraphBuffers::getVertexPropertyBuffer(const std::strin
     return static_cast<T*>(vb.h_ptr);
 }
 template<typename T>
-const T* CUDAEnvironmentDirectedGraphBuffers::getEdgePropertyBuffer(const std::string& property_name, size_type &N, flamegpu::detail::cuda::Stream_t stream) const {
+const T* CUDAEnvironmentDirectedGraphBuffers::getEdgePropertyBuffer(const std::string& property_name, size_type &N, flamegpu::detail::gpu::Stream_t stream) const {
     if (!edge_count) {
         THROW exception::OutOfBoundsException("Edge buffers not yet allocated, in CUDAEnvironmentDirectedGraphBuffers::getEdgePropertyBuffer()");
     }
@@ -400,7 +400,7 @@ const T* CUDAEnvironmentDirectedGraphBuffers::getEdgePropertyBuffer(const std::s
     return static_cast<T*>(eb.h_ptr);
 }
 template<typename T>
-T* CUDAEnvironmentDirectedGraphBuffers::getEdgePropertyBuffer(const std::string& property_name, size_type &N, flamegpu::detail::cuda::Stream_t stream) {
+T* CUDAEnvironmentDirectedGraphBuffers::getEdgePropertyBuffer(const std::string& property_name, size_type &N, flamegpu::detail::gpu::Stream_t stream) {
     if (!edge_count) {
         THROW exception::OutOfBoundsException("Edge buffers not yet allocated, in CUDAEnvironmentDirectedGraphBuffers::getEdgePropertyBuffer()");
     }
@@ -423,7 +423,7 @@ T* CUDAEnvironmentDirectedGraphBuffers::getEdgePropertyBuffer(const std::string&
 }
 #ifdef SWIG
 template<typename T>
-std::vector <T> CUDAEnvironmentDirectedGraphBuffers::getVertexPropertyArray(const std::string& property_name, const unsigned int vertex_index, flamegpu::detail::cuda::Stream_t stream) const {
+std::vector <T> CUDAEnvironmentDirectedGraphBuffers::getVertexPropertyArray(const std::string& property_name, const unsigned int vertex_index, flamegpu::detail::gpu::Stream_t stream) const {
     if (!vertex_count) {
         THROW exception::OutOfBoundsException("Vertex buffers not yet allocated, in CUDAEnvironmentDirectedGraphBuffers::getVertexPropertyArray()");
     }
@@ -444,7 +444,7 @@ std::vector <T> CUDAEnvironmentDirectedGraphBuffers::getVertexPropertyArray(cons
     return rtn;
 }
 template<typename T>
-std::vector<T> CUDAEnvironmentDirectedGraphBuffers::getEdgePropertyArray(const std::string& property_name, const unsigned int edge_index, flamegpu::detail::cuda::Stream_t stream) const {
+std::vector<T> CUDAEnvironmentDirectedGraphBuffers::getEdgePropertyArray(const std::string& property_name, const unsigned int edge_index, flamegpu::detail::gpu::Stream_t stream) const {
     if (!edge_count) {
         THROW exception::OutOfBoundsException("Edge buffers not yet allocated, in CUDAEnvironmentDirectedGraphBuffers::getEdgePropertyArray()");
     }

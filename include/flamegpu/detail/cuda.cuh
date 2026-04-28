@@ -1,27 +1,14 @@
 #ifndef INCLUDE_FLAMEGPU_DETAIL_CUDA_CUH_
 #define INCLUDE_FLAMEGPU_DETAIL_CUDA_CUH_
 
-#ifdef FLAMEGPU_USE_CUDA
-#include <cuda_runtime.h>
-#include <cuda.h>
-#define FLAMEGPU_GPU_RUNTIME_PREFIX cuda
-#define FLAMEGPU_GPU_DRIVER_PREFIX cu
-#define FLAMEGPU_GPU_RUNTIME_PREFIX_UPPER CUDA
-#define FLAMEGPU_GPU_DRIVER_PREFIX_UPPER CU
-#endif
-
-#ifdef FLAMEGPU_USE_HIP
-#include <hip/hip_runtime.h>
-#define FLAMEGPU_GPU_RUNTIME_PREFIX hip
-#define FLAMEGPU_GPU_DRIVER_PREFIX hip
-#define FLAMEGPU_GPU_RUNTIME_PREFIX_UPPER HIP
-#define FLAMEGPU_GPU_DRIVER_PREFIX_UPPER HIP
-#endif
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 
 #ifndef __CUDACC_RTC__
 #include <limits>
 #include <cstdint>
 #include "flamegpu/exception/FLAMEGPUException.h"
+#endif  // __CUDACC_RTC__
 
 namespace flamegpu {
 namespace detail {
@@ -32,63 +19,11 @@ namespace detail {
  * @todo - we should check for unified addressing support prior to use of cudaPointerGetAttributes, but it should be available for all valid flamegpu targets (x64 linux and windows). Tegra's might be an edge case.
  
  Todo:
-    - Split this into several headers, inside and outside detail:
-    - flamegpu/gpu/macros.h
-      - macros for the gpu abstraction layer.
-    - flamegpu/gpu/types.h
-      - typedefs for the gpu abstraction layer, that are public-facing.
-    - flamegpu/gpu/detail/gpu.cuh/cu, i.e wrapped cudaFree (which will aslo be warpped hip free)
-    - flamegpu/gpu/detail/...
+    - Rename / move / split into flamegpu::detail::gpu
  */
 namespace cuda {
-
-// Define macros for the lazy cuda/hip abstraction layer. This requires multiple macros for string manipulation
-#define FLAMEGPU_GPU_CONCAT_INNER(a, b) a ## b
-#define FLAMEGPU_GPU_CONCAT(a, b) FLAMEGPU_GPU_CONCAT_INNER(a, b)
-
-#if defined(FLAMEGPU_GPU_RUNTIME_PREFIX) && defined(FLAMEGPU_GPU_DRIVER_PREFIX)
-#define FLAMEGPU_GPU_RUNTIME_SYMBOL(STMT) FLAMEGPU_GPU_CONCAT(FLAMEGPU_GPU_RUNTIME_PREFIX, STMT)
-#define FLAMEGPU_GPU_DRIVER_SYMBOL(STMT) FLAMEGPU_GPU_CONCAT(FLAMEGPU_GPU_DRIVER_PREFIX, STMT)
-#else
-#define FLAMEGPU_GPU_RUNTIME_SYMBOL(STMT) STMT
-#define FLAMEGPU_GPU_DRIVER_SYMBOL(STMT) STMT
-#error "CUDA or HIP must be enabled"
-#endif
-
-// Using statement for cuda/hip error_t, which is part of the private API?
-// Todo: Should this just use the macro instead?
-// Todo: Move type definitions and macros for this to a separate header for lighter includes? flamegpu/gpu/types.h or similar, and then flamegpu/gpu/macros.h and flamegpu/gpu/
-// Should this actually be in detail?
-#if defined(FLAMEGPU_USE_CUDA)
-using Error_t = cudaError_t;
-#elif defined(FLAMEGPU_USE_HIP)
-using Error_t = hipError_t;
-#else
-// naked struct for intellisense, this should never occur for actual compilation
-typedef struct error* Error_t;
-#endif
-
-// Using statement for cuda/hip streams, which are part of the public API
-// Todo: should this just use the macro instead? Should this actually be in detail?
-#if defined(FLAMEGPU_USE_CUDA)
-using Stream_t = cudaStream_t;
-#elif defined(FLAMEGPU_USE_HIP)
-using Stream_t = hipStream_t;
-#else
-// naked struct for intellisense, this should never occur for actual compilation
-typedef struct stream* Stream_t;
-#endif
-
-
-// pointerAttributes is _t in hip :(
-#if defined(FLAMEGPU_USE_CUDA)
-using PointerAttributes_t = cudaPointerAttributes;
-#elif defined(FLAMEGPU_USE_HIP)
-using PointerAttributes_t = hipPointerAttribute_t;
-#else
-// naked struct for intellisense, this should never occur for actual compilation
-typedef struct pointerAttribtues* PointerAttributes_t;
-#endif
+// NVRTC shouldn't see these, host-only.
+#ifndef __CUDACC_RTC__
 
 /**
  * Wrapped cudaFree which checks that the pointer is a valid device pointer in the current CUDA context prior to deallocation.
@@ -96,11 +31,11 @@ typedef struct pointerAttribtues* PointerAttributes_t;
  * @param devPtr device pointer to memory to free
  * @return forward the cuda error status from the inner cudaFree call
  */
-inline Error_t cudaFree(void* devPtr) {
-    Error_t status = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
+inline flamegpu::detail::gpu::Error_t cudaFree(void* devPtr) {
+    flamegpu::detail::gpu::Error_t status = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
     // Check the pointer attributes to detect if it is a valid ptr for the current context.
     // @todo - version which checks the device ordinal is a match for the active context too, potentially flip-flopping the device.
-    PointerAttributes_t attributes = {};
+    flamegpu::detail::gpu::PointerAttributes_t attributes = {};
     status = FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, devPtr);
     // valid device pointers have a type of cudaMemoryTypeDevice (2), or we could check the device is non negative (and matching the current device index?), or the devicePointer will be non null.
     if (status == FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) && attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice)) {
@@ -118,11 +53,11 @@ inline Error_t cudaFree(void* devPtr) {
  * @param devPtr pointer to memory to free
  * @return forward the cuda error status from the inner cudaFreeHost call
  */
-inline Error_t cudaFreeHost(void* devPtr) {
-    Error_t status = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
+inline flamegpu::detail::gpu::Error_t cudaFreeHost(void* devPtr) {
+    flamegpu::detail::gpu::Error_t status = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
     // Check the pointer attributes to detect if it is a valid ptr for the current context.
     // @todo - version which checks the device ordinal is a match for the active context too, potentially flip-flopping the device.
-    PointerAttributes_t attributes = {};
+    flamegpu::detail::gpu::PointerAttributes_t attributes = {};
     status = FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, devPtr);
     // valid pointers allocated using cudaHostAlloc have a type of cudaMemoryTypeHost
     if (status == FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) && attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeHost)) {

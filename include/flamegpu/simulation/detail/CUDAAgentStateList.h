@@ -59,7 +59,7 @@ class CUDAAgentStateList {
      * @param stream The stream used to perform memcpys if data is retained
      * @see CUDAFatAgentStateList::resize(unsigned int, bool)
      */
-    void resize(unsigned int minimumSize, bool retainData, flamegpu::detail::cuda::Stream_t stream);
+    void resize(unsigned int minimumSize, bool retainData, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Returns the number of alive and active agents in the state list
      */
@@ -79,7 +79,7 @@ class CUDAAgentStateList {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void setAgentData(const AgentVector &data, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
+    void setAgentData(const AgentVector &data, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Retrieve agent data from the agent state list into agent state memory
      * @param data data Destination for agent data
@@ -96,14 +96,14 @@ class CUDAAgentStateList {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void scatterHostCreation(unsigned int newSize, char *const d_inBuff, const VarOffsetStruct &offsets, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
+    void scatterHostCreation(unsigned int newSize, char *const d_inBuff, const VarOffsetStruct &offsets, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Sorts all agent variables according to the positions stored inside Message Output scan buffer
      * @param scatter Scatter instance and scan arrays to be used (CUDASimulation::singletons->scatter)
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void scatterSort_async(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
+    void scatterSort_async(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Scatters agents from the currently assigned device agent birth buffer (see member variable newBuffs)
      * The device buffer must be packed in the same format as CUDAAgent::mapNewRuntimeVariables(const AgentFunctionData&, unsigned int, unsigned int)
@@ -114,7 +114,7 @@ class CUDAAgentStateList {
      * @param stream CUDA stream to be used for async CUDA operations
      * @return The number of newly birthed agents
      */
-    unsigned int scatterNew(void * d_newBuff, unsigned int newSize, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
+    unsigned int scatterNew(void * d_newBuff, unsigned int newSize, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Returns true if the state list is not the primary statelist (and is mapped to a master agent state)
      */
@@ -125,7 +125,7 @@ class CUDAAgentStateList {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void initUnmappedVars(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
+    void initUnmappedVars(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Initialises any agent variables within the CUDAFatAgentStateList which are not present in this CUDAAgentStateList
      * @param count Number of variables to init
@@ -134,7 +134,7 @@ class CUDAAgentStateList {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    void initExcludedVars(unsigned int count, unsigned int offset, CUDAScatter& scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream);
+    void initExcludedVars(unsigned int count, unsigned int offset, CUDAScatter& scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Returns the statelist to an empty state
      * This resets the size to 0.

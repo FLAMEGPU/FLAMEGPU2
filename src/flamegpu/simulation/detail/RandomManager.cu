@@ -85,7 +85,7 @@ void RandomManager::free() {
     freeDevice();
 }
 
-detail::curandState *RandomManager::resize(size_type _length, flamegpu::detail::cuda::Stream_t stream) {
+detail::curandState *RandomManager::resize(size_type _length, flamegpu::detail::gpu::Stream_t stream) {
     assert(growthModifier > 1.0);
     assert(shrinkModifier > 0.0);
     assert(shrinkModifier <= 1.0);
@@ -114,7 +114,7 @@ __global__ void init_curand(detail::curandState *d_random_state, unsigned int th
         FLAMEGPU_GPU_DRIVER_SYMBOL(rand_init)(seed, offset + id, 0, &d_random_state[offset + id]);
     }
 }
-void RandomManager::resizeDeviceArray(const size_type _length, flamegpu::detail::cuda::Stream_t stream) {
+void RandomManager::resizeDeviceArray(const size_type _length, flamegpu::detail::gpu::Stream_t stream) {
     // Mark that the device hsa now been initialised.
     deviceInitialised = true;
     if (_length > h_max_random_size) {

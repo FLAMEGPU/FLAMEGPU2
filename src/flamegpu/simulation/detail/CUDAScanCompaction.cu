@@ -17,7 +17,7 @@ void CUDAScanCompaction::resize(const unsigned int newCount, const Type& type, c
     configs[type][streamId].resize_scan_flag(newCount);
 }
 
-void CUDAScanCompaction::zero_async(const Type& type, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId) {
+void CUDAScanCompaction::zero_async(const Type& type, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId) {
     assert(streamId < MAX_STREAMS);
     assert(type < MAX_TYPES);
     configs[type][streamId].zero_scan_flag_async(stream);
@@ -46,7 +46,7 @@ void CUDAScanCompactionConfig::free_scan_flag() {
     }
 }
 
-void CUDAScanCompactionConfig::zero_scan_flag_async(flamegpu::detail::cuda::Stream_t stream) {
+void CUDAScanCompactionConfig::zero_scan_flag_async(flamegpu::detail::gpu::Stream_t stream) {
     if (d_ptrs.position) {
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_ptrs.position, 0, scan_flag_len * sizeof(unsigned int), stream));
     }

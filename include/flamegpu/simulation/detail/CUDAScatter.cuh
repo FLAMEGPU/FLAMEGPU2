@@ -101,7 +101,7 @@ class CUDAScatter {
      */
      unsigned int scatter(
         unsigned int streamResourceId,
-        flamegpu::detail::cuda::Stream_t stream,
+        flamegpu::detail::gpu::Stream_t stream,
         const Type &messageOrAgent,
         const VariableMap &vars,
         const std::map<std::string, void*> &in,
@@ -126,7 +126,7 @@ class CUDAScatter {
      */
     unsigned int scatter(
         unsigned int streamResourceId,
-        flamegpu::detail::cuda::Stream_t stream,
+        flamegpu::detail::gpu::Stream_t stream,
         const Type &messageOrAgent,
         const std::vector<ScatterData> &scatterData,
         unsigned int itemCount,
@@ -145,7 +145,7 @@ class CUDAScatter {
      */
     void scatterPosition_async(
         unsigned int streamResourceId,
-        flamegpu::detail::cuda::Stream_t stream,
+        flamegpu::detail::gpu::Stream_t stream,
         Type messageOrAgent,
         const std::vector<ScatterData>& scatterData,
         unsigned int itemCount);
@@ -161,13 +161,13 @@ class CUDAScatter {
      */
     void scatterPosition_async(
         unsigned int streamResourceId,
-        flamegpu::detail::cuda::Stream_t stream,
+        flamegpu::detail::gpu::Stream_t stream,
         unsigned int *position,
         const std::vector<ScatterData>& scatterData,
         unsigned int itemCount);
     void scatterPosition(
         unsigned int streamResourceId,
-        flamegpu::detail::cuda::Stream_t stream,
+        flamegpu::detail::gpu::Stream_t stream,
         Type messageOrAgent,
         const std::vector<ScatterData> &scatterData,
         unsigned int itemCount);
@@ -182,7 +182,7 @@ class CUDAScatter {
      */
     unsigned int scatterCount(
         unsigned int streamResourceId,
-        flamegpu::detail::cuda::Stream_t stream,
+        flamegpu::detail::gpu::Stream_t stream,
         const Type &messageOrAgent,
         unsigned int itemCount,
         unsigned int scatter_all_count = 0);
@@ -198,7 +198,7 @@ class CUDAScatter {
      */
     unsigned int scatterAll(
         unsigned int streamResourceId,
-        flamegpu::detail::cuda::Stream_t stream,
+        flamegpu::detail::gpu::Stream_t stream,
         const std::vector<ScatterData> &scatterData,
         unsigned int itemCount,
         unsigned int out_index_offset = 0);
@@ -214,7 +214,7 @@ class CUDAScatter {
      */
     unsigned int scatterAll(
         unsigned int streamResourceId,
-        flamegpu::detail::cuda::Stream_t stream,
+        flamegpu::detail::gpu::Stream_t stream,
         const VariableMap &vars,
         const std::map<std::string, void*> &in,
         const std::map<std::string, void*> &out,
@@ -236,7 +236,7 @@ class CUDAScatter {
      */
     void pbm_reorder(
         unsigned int streamResourceId,
-        flamegpu::detail::cuda::Stream_t stream,
+        flamegpu::detail::gpu::Stream_t stream,
         const VariableMap &vars,
         const std::map<std::string, void*> &in,
         const std::map<std::string, void*> &out,
@@ -256,7 +256,7 @@ class CUDAScatter {
      */
     void scatterNewAgents(
         unsigned int streamResourceId,
-        flamegpu::detail::cuda::Stream_t stream,
+        flamegpu::detail::gpu::Stream_t stream,
         const std::vector<ScatterData> &scatterData,
         size_t totalAgentSize,
         unsigned int inCount,
@@ -272,26 +272,26 @@ class CUDAScatter {
      */
     void broadcastInit_async(
         unsigned int streamResourceId,
-        flamegpu::detail::cuda::Stream_t stream,
+        flamegpu::detail::gpu::Stream_t stream,
         const std::list<std::shared_ptr<VariableBuffer>> &vars,
         unsigned int itemCount,
         unsigned int out_index_offset);
     void broadcastInit(
         unsigned int streamResourceId,
-        flamegpu::detail::cuda::Stream_t stream,
+        flamegpu::detail::gpu::Stream_t stream,
         const std::list<std::shared_ptr<VariableBuffer>>& vars,
         unsigned int itemCount,
         unsigned int out_index_offset);
     void broadcastInit_async(
         unsigned int streamResourceId,
-        flamegpu::detail::cuda::Stream_t stream,
+        flamegpu::detail::gpu::Stream_t stream,
         const VariableMap& vars,
         void* const d_newBuff,
         unsigned int itemCount,
         unsigned int out_index_offset);
     void broadcastInit(
         unsigned int streamResourceId,
-        flamegpu::detail::cuda::Stream_t stream,
+        flamegpu::detail::gpu::Stream_t stream,
         const VariableMap &vars,
         void * const d_newBuff,
         unsigned int itemCount,
@@ -310,7 +310,7 @@ class CUDAScatter {
      */
     void arrayMessageReorder(
         unsigned int streamResourceId,
-        flamegpu::detail::cuda::Stream_t stream,
+        flamegpu::detail::gpu::Stream_t stream,
         const VariableMap &vars,
         const std::map<std::string, void*> &in,
         const std::map<std::string, void*> &out,

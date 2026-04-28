@@ -69,7 +69,7 @@ void CUDAEnvironmentDirectedGraphBuffers::registerCurveInstance(const std::share
 void CUDAEnvironmentDirectedGraphBuffers::registerCurveInstance(const std::shared_ptr<detail::curve::CurveRTCHost>& curve) {
     rtc_curve_instances.push_back(std::weak_ptr(curve));
 }
-void CUDAEnvironmentDirectedGraphBuffers::allocateVertexBuffers(const size_type count, const flamegpu::detail::cuda::Stream_t stream) {
+void CUDAEnvironmentDirectedGraphBuffers::allocateVertexBuffers(const size_type count, const flamegpu::detail::gpu::Stream_t stream) {
     for (auto& v : graph_description.vertexProperties) {
         auto &vb = vertex_buffers.at(v.first);
         if (!vb.d_ptr) {
@@ -240,7 +240,7 @@ void CUDAEnvironmentDirectedGraphBuffers::deallocateEdgeBuffers() {
     h_edge_index_map.clear();
 }
 
-void CUDAEnvironmentDirectedGraphBuffers::setVertexCount(const size_type count, const flamegpu::detail::cuda::Stream_t stream) {
+void CUDAEnvironmentDirectedGraphBuffers::setVertexCount(const size_type count, const flamegpu::detail::gpu::Stream_t stream) {
     if (vertex_count) {
         deallocateVertexBuffers();
     }
@@ -278,7 +278,7 @@ void CUDAEnvironmentDirectedGraphBuffers::setEdgeCount(const size_type count) {
         }
     }
 }
-id_t* CUDAEnvironmentDirectedGraphBuffers::getVertexIDBuffer(const flamegpu::detail::cuda::Stream_t stream) {
+id_t* CUDAEnvironmentDirectedGraphBuffers::getVertexIDBuffer(const flamegpu::detail::gpu::Stream_t stream) {
     size_type element_ct = 1;
     return getVertexPropertyBuffer<id_t>(ID_VARIABLE_NAME, element_ct, stream);
 }
@@ -403,7 +403,7 @@ __global__ void translateSrcDest(id_t *edgeSrcDest, unsigned int *idMap, const u
         edgeSrcDest[thread_index * 2 + 0] = dest_id;
     }
 }
-void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& scatter, const unsigned int streamID, const flamegpu::detail::cuda::Stream_t stream) {
+void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& scatter, const unsigned int streamID, const flamegpu::detail::gpu::Stream_t stream) {
     bool has_changed = false;
     // Copy variable buffers to device
     if (vertex_count) {
@@ -625,7 +625,7 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
     }
 }
 
-void CUDAEnvironmentDirectedGraphBuffers::Buffer::updateHostBuffer(size_type edge_count, flamegpu::detail::cuda::Stream_t stream) const {
+void CUDAEnvironmentDirectedGraphBuffers::Buffer::updateHostBuffer(size_type edge_count, flamegpu::detail::gpu::Stream_t stream) const {
     if (ready == Device) {
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(h_ptr, d_ptr, edge_count * element_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
@@ -636,7 +636,7 @@ void CUDAEnvironmentDirectedGraphBuffers::resetVertexIDBounds() {
     vertex_id_min = std::numeric_limits<unsigned int>::max();
     vertex_id_max = std::numeric_limits<unsigned int>::min();
 }
-void CUDAEnvironmentDirectedGraphBuffers::setVertexID(unsigned int vertex_index, id_t vertex_id, flamegpu::detail::cuda::Stream_t stream) {
+void CUDAEnvironmentDirectedGraphBuffers::setVertexID(unsigned int vertex_index, id_t vertex_id, flamegpu::detail::gpu::Stream_t stream) {
     if (vertex_index >= vertex_count) {
         THROW exception::OutOfBoundsException("Vertex index exceeds bounds %u >= %u, "
             "in CUDAEnvironmentDirectedGraphBuffers::setVertexID()\n", vertex_index, vertex_count);
@@ -795,7 +795,7 @@ unsigned int CUDAEnvironmentDirectedGraphBuffers::getEdgeIndex(id_t src_vertex_i
     }
     return find->second;
 }
-id_t CUDAEnvironmentDirectedGraphBuffers::getSourceVertexID(unsigned int edge_index, flamegpu::detail::cuda::Stream_t stream) const {
+id_t CUDAEnvironmentDirectedGraphBuffers::getSourceVertexID(unsigned int edge_index, flamegpu::detail::gpu::Stream_t stream) const {
     if (edge_index >= edge_count) {
         THROW exception::OutOfBoundsException("Edge index exceeds bounds %u >= %u, "
             "in CUDAEnvironmentDirectedGraphBuffers::getSourceVertexID()\n", edge_index, edge_count);
@@ -810,7 +810,7 @@ id_t CUDAEnvironmentDirectedGraphBuffers::getSourceVertexID(unsigned int edge_in
     vb.updateHostBuffer(vertex_count, stream);
     return static_cast<id_t*>(vb.h_ptr)[vertex_index];
 }
-id_t CUDAEnvironmentDirectedGraphBuffers::getDestinationVertexID(unsigned int edge_index, flamegpu::detail::cuda::Stream_t stream) const {
+id_t CUDAEnvironmentDirectedGraphBuffers::getDestinationVertexID(unsigned int edge_index, flamegpu::detail::gpu::Stream_t stream) const {
     if (edge_index >= edge_count) {
         THROW exception::OutOfBoundsException("Edge index exceeds bounds %u >= %u, "
             "in CUDAEnvironmentDirectedGraphBuffers::getDestinationVertexID()\n", edge_index, edge_count);
@@ -827,7 +827,7 @@ id_t CUDAEnvironmentDirectedGraphBuffers::getDestinationVertexID(unsigned int ed
     return static_cast<id_t*>(vb.h_ptr)[vertex_index];
 }
 
-unsigned int CUDAEnvironmentDirectedGraphBuffers::createIfNotExistVertex(id_t vertex_id, const flamegpu::detail::cuda::Stream_t stream) {
+unsigned int CUDAEnvironmentDirectedGraphBuffers::createIfNotExistVertex(id_t vertex_id, const flamegpu::detail::gpu::Stream_t stream) {
     if (vertex_id == ID_NOT_SET) {
         THROW exception::IDOutOfBounds("Vertex ID of %u is not valid, "
             "in CUDAEnvironmentDirectedGraphBuffers::createIfNotExistVertex()\n", ID_NOT_SET);
@@ -852,7 +852,7 @@ unsigned int CUDAEnvironmentDirectedGraphBuffers::createIfNotExistVertex(id_t ve
     THROW exception::OutOfBoundsException("Creating vertex with ID %u would exceed available vertices (%u), "
         "in CUDAEnvironmentDirectedGraphBuffers::createIfNotExistVertex()\n", vertex_id, vertex_count);
 }
-unsigned int CUDAEnvironmentDirectedGraphBuffers::createIfNotExistEdge(id_t source_vertex_id, id_t dest_vertex_id, const flamegpu::detail::cuda::Stream_t stream) {
+unsigned int CUDAEnvironmentDirectedGraphBuffers::createIfNotExistEdge(id_t source_vertex_id, id_t dest_vertex_id, const flamegpu::detail::gpu::Stream_t stream) {
     if (source_vertex_id == ID_NOT_SET || dest_vertex_id== ID_NOT_SET) {
         THROW exception::IDOutOfBounds("Vertex ID of %u is not valid, "
             "in CUDAEnvironmentDirectedGraphBuffers::createIfNotExistEdge()\n", ID_NOT_SET);

@@ -17,7 +17,7 @@ struct HostMacroProperty_MetaData {
      * Constructor
      */
     HostMacroProperty_MetaData(void* _d_base_ptr, const std::array<unsigned int, 4>& _dims, size_t _type_size,
-        bool _device_read_flag, const std::string &name, flamegpu::detail::cuda::Stream_t _stream)
+        bool _device_read_flag, const std::string &name, flamegpu::detail::gpu::Stream_t _stream)
         : h_base_ptr(nullptr)
         , d_base_ptr(static_cast<char*>(_d_base_ptr))
         , dims(_dims)
@@ -81,7 +81,7 @@ struct HostMacroProperty_MetaData {
     bool has_changed;
     bool device_read_flag;
     std::string property_name;
-    flamegpu::detail::cuda::Stream_t stream;
+    flamegpu::detail::gpu::Stream_t stream;
 };
 
 /**

@@ -149,7 +149,7 @@ typedef void(*AgentFunctionLauncher)(
     unsigned int *scanFlag_agentDeath,
     unsigned int *scanFlag_messageOutput,
     unsigned int *scanFlag_agentOutput,
-    flamegpu::detail::cuda::Stream_t stream);
+    flamegpu::detail::gpu::Stream_t stream);
 
 
 /**
@@ -193,7 +193,7 @@ struct AgentFunctionLauncherHelper {
         unsigned int *scanFlag_agentDeath,
         unsigned int *scanFlag_messageOutput,
         unsigned int *scanFlag_agentOutput,
-        flamegpu::detail::cuda::Stream_t stream) {
+        flamegpu::detail::gpu::Stream_t stream) {
         #if defined(__CUDACC__) || defined(__HIPCC__)
 
         // Early exit if no threads to launch

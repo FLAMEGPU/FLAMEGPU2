@@ -332,7 +332,7 @@ class HostAgentAPI {
      * @param length Length of the buffer (how many unsigned ints can it hold)
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    static void fillTIDArray_async(unsigned int *d_buffer, unsigned int length, flamegpu::detail::cuda::Stream_t stream);
+    static void fillTIDArray_async(unsigned int *d_buffer, unsigned int length, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Sorts a buffer by the positions array, used for multi variable agent sorts
      * @param dest Device pointer to buffer for sorted data to be placed
@@ -342,7 +342,7 @@ class HostAgentAPI {
      * @param length Length of the buffer (how many items it can it hold)
      * @param stream CUDA stream to be used for async CUDA operations
      */
-    static void sortBuffer_async(void *dest, void*src, unsigned int *position, size_t typeLen, unsigned int length, flamegpu::detail::cuda::Stream_t stream);
+    static void sortBuffer_async(void *dest, void*src, unsigned int *position, size_t typeLen, unsigned int length, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Wraps cub::DeviceReduce::Sum()
      * @param variable The agent variable to perform the sum reduction across
@@ -357,7 +357,7 @@ class HostAgentAPI {
      * @note Method is async, result may not arrive until stream is synchronised
      */
     template<typename InT, typename OutT>
-    void sum_async(const std::string& variable, OutT& result, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId) const;
+    void sum_async(const std::string& variable, OutT& result, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId) const;
     /**
      * Returns the mean and standard deviation of the specified variable in the agent population
      * The return value is a pair, where the first item holds the mean and the second item the standard deviation.
@@ -372,7 +372,7 @@ class HostAgentAPI {
      * @note Not actually async, would need a big rewrite (and to stop using the shared device symbol?)
      */
     template<typename InT>
-    void meanStandardDeviation_async(const std::string& variable, std::pair<double, double>& result, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId) const;
+    void meanStandardDeviation_async(const std::string& variable, std::pair<double, double>& result, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId) const;
     /**
      * Wraps cub::DeviceReduce::Min()
      * @param variable The agent variable to perform the lowerBound reduction across
@@ -386,7 +386,7 @@ class HostAgentAPI {
      * @note Method is async, result may not arrive until stream is synchronised
      */
     template<typename InT>
-    void min_async(const std::string& variable, InT& result, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId) const;
+    void min_async(const std::string& variable, InT& result, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId) const;
     /**
      * Wraps cub::DeviceReduce::Max()
      * @param variable The agent variable to perform the upperBound reduction across
@@ -400,7 +400,7 @@ class HostAgentAPI {
      * @note Method is async, result may not arrive until stream is synchronised
      */
     template<typename InT>
-    void max_async(const std::string& variable, InT& result, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId) const;
+    void max_async(const std::string& variable, InT& result, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId) const;
     /**
      * Wraps thrust::count(), to count the number of occurences of the provided value
      * @param variable The agent variable to perform the count reduction across
@@ -413,7 +413,7 @@ class HostAgentAPI {
      * @note Not actually async, uses thrust method that doesn't support async, uses specified stream though
      */
     template<typename InT>
-    unsigned int count_async(const std::string& variable, InT value, flamegpu::detail::cuda::Stream_t stream) const;
+    unsigned int count_async(const std::string& variable, InT value, flamegpu::detail::gpu::Stream_t stream) const;
     /**
      * Wraps cub::DeviceHistogram::HistogramEven()
      * @param variable The agent variable to perform the reduction across
@@ -431,7 +431,7 @@ class HostAgentAPI {
      * @note Method is async, result may not arrive until stream is synchronised
      */
     template<typename InT, typename OutT>
-    void histogramEven_async(const std::string& variable, unsigned int histogramBins, InT lowerBound, InT upperBound, std::vector<OutT> &result, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId) const;
+    void histogramEven_async(const std::string& variable, unsigned int histogramBins, InT lowerBound, InT upperBound, std::vector<OutT> &result, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId) const;
     /**
      * Wraps cub::DeviceReduce::Reduce(), to perform a reduction with a custom operator
      * @param variable The agent variable to perform the reduction across
@@ -447,7 +447,7 @@ class HostAgentAPI {
      * @note Method is async, result may not arrive until stream is synchronised
      */
     template<typename InT, typename reductionOperatorT>
-    void reduce_async(const std::string& variable, reductionOperatorT reductionOperator, InT init, InT &result, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId) const;
+    void reduce_async(const std::string& variable, reductionOperatorT reductionOperator, InT init, InT &result, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId) const;
     /**
      * Wraps thrust::transformReduce(), to perform a custom transform on values before performing a custom reduction
      * @param variable The agent variable to perform the reduction across
@@ -462,7 +462,7 @@ class HostAgentAPI {
      * @note Not actually async, uses thrust method that doesn't support async, uses specified stream though
      */
     template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
-    OutT transformReduce_async(const std::string& variable, transformOperatorT transformOperator, reductionOperatorT reductionOperator, OutT init, flamegpu::detail::cuda::Stream_t stream) const;
+    OutT transformReduce_async(const std::string& variable, transformOperatorT transformOperator, reductionOperatorT reductionOperator, OutT init, flamegpu::detail::gpu::Stream_t stream) const;
     /**
      * Sorts agents according to the named variable
      * @param variable The agent variable to sort the agents according to
@@ -479,7 +479,7 @@ class HostAgentAPI {
      * @note The sort provides no guarantee of stability
      */
     template<typename VarT>
-    void sort_async(const std::string& variable, Order order, int beginBit, int endBit, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId);
+    void sort_async(const std::string& variable, Order order, int beginBit, int endBit, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId);
     /**
      * Sort agents according to two variables e.g. [1:c, 3:b, 1:b, 1:a] -> [1:a, 1:b, 1:c, 3:b]
      * @param variable1 This variable will be the main direction that agents are sorted
@@ -496,7 +496,7 @@ class HostAgentAPI {
      * @note Not actually async, uses thrust method that doesn't support async, uses specified stream though
      */
     template<typename Var1T, typename Var2T>
-    void sort_async(const std::string& variable1, Order order1, const std::string& variable2, Order order2, flamegpu::detail::cuda::Stream_t stream, unsigned int streamId);
+    void sort_async(const std::string& variable1, Order order1, const std::string& variable2, Order order2, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId);
     /**
      * Parent HostAPI
      */
@@ -541,7 +541,7 @@ OutT HostAgentAPI::sum(const std::string& variable) const {
     return rtn;
 }
 template<typename InT, typename OutT>
-void HostAgentAPI::sum_async(const std::string &variable, OutT &result, const flamegpu::detail::cuda::Stream_t stream, const unsigned int streamId) const {
+void HostAgentAPI::sum_async(const std::string &variable, OutT &result, const flamegpu::detail::gpu::Stream_t stream, const unsigned int streamId) const {
     static_assert(sizeof(InT) <= sizeof(OutT), "Template arg OutT should not be of a smaller size than InT");
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
@@ -582,7 +582,7 @@ std::pair<double, double> HostAgentAPI::meanStandardDeviation(const std::string&
     return rtn;
 }
 template<typename InT>
-void HostAgentAPI::meanStandardDeviation_async(const std::string& variable, std::pair<double, double> &result, const flamegpu::detail::cuda::Stream_t stream, const unsigned int streamId) const {
+void HostAgentAPI::meanStandardDeviation_async(const std::string& variable, std::pair<double, double> &result, const flamegpu::detail::gpu::Stream_t stream, const unsigned int streamId) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -627,7 +627,7 @@ InT HostAgentAPI::min(const std::string& variable) const {
     return rtn;
 }
 template<typename InT>
-void HostAgentAPI::min_async(const std::string &variable, InT& result, const flamegpu::detail::cuda::Stream_t stream, const unsigned int streamId) const {
+void HostAgentAPI::min_async(const std::string &variable, InT& result, const flamegpu::detail::gpu::Stream_t stream, const unsigned int streamId) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -669,7 +669,7 @@ InT HostAgentAPI::max(const std::string& variable) const {
     return rtn;
 }
 template<typename InT>
-void HostAgentAPI::max_async(const std::string &variable, InT &result, const flamegpu::detail::cuda::Stream_t stream, const unsigned int streamId) const {
+void HostAgentAPI::max_async(const std::string &variable, InT &result, const flamegpu::detail::gpu::Stream_t stream, const unsigned int streamId) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -707,7 +707,7 @@ unsigned int HostAgentAPI::count(const std::string &variable, InT value) const {
     return count_async<InT>(variable, value, this->api.stream);
 }
 template<typename InT>
-unsigned int HostAgentAPI::count_async(const std::string& variable, InT value, const flamegpu::detail::cuda::Stream_t stream) const {
+unsigned int HostAgentAPI::count_async(const std::string& variable, InT value, const flamegpu::detail::gpu::Stream_t stream) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -748,7 +748,7 @@ std::vector<OutT> HostAgentAPI::histogramEven(const std::string &variable, unsig
     return rtn;
 }
 template<typename InT, typename OutT>
-void HostAgentAPI::histogramEven_async(const std::string &variable, unsigned int histogramBins, InT lowerBound, InT upperBound, std::vector<OutT>& result, const flamegpu::detail::cuda::Stream_t stream, const unsigned int streamId) const {
+void HostAgentAPI::histogramEven_async(const std::string &variable, unsigned int histogramBins, InT lowerBound, InT upperBound, std::vector<OutT>& result, const flamegpu::detail::gpu::Stream_t stream, const unsigned int streamId) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -797,7 +797,7 @@ InT HostAgentAPI::reduce(const std::string &variable, reductionOperatorT reducti
     return rtn;
 }
 template<typename InT, typename reductionOperatorT>
-void HostAgentAPI::reduce_async(const std::string & variable, reductionOperatorT /*reductionOperator*/, InT init, InT &result, const flamegpu::detail::cuda::Stream_t stream, const unsigned int streamId) const {
+void HostAgentAPI::reduce_async(const std::string & variable, reductionOperatorT /*reductionOperator*/, InT init, InT &result, const flamegpu::detail::gpu::Stream_t stream, const unsigned int streamId) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -838,7 +838,7 @@ OutT HostAgentAPI::transformReduce(const std::string &variable, transformOperato
     return transformReduce_async<InT, OutT, transformOperatorT, reductionOperatorT>(variable, transformOperator, reductionOperator, init, this->api.stream);
 }
 template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
-OutT HostAgentAPI::transformReduce_async(const std::string &variable, transformOperatorT /*transformOperator*/, reductionOperatorT /*reductionOperator*/, OutT init, flamegpu::detail::cuda::Stream_t stream) const {
+OutT HostAgentAPI::transformReduce_async(const std::string &variable, transformOperatorT /*transformOperator*/, reductionOperatorT /*reductionOperator*/, OutT init, flamegpu::detail::gpu::Stream_t stream) const {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream) {
@@ -872,7 +872,7 @@ void HostAgentAPI::sort(const std::string &variable, Order order, int beginBit, 
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
 }
 template<typename VarT>
-void HostAgentAPI::sort_async(const std::string & variable, Order order, int beginBit, int endBit, const flamegpu::detail::cuda::Stream_t stream, const unsigned int streamId) {
+void HostAgentAPI::sort_async(const std::string & variable, Order order, int beginBit, int endBit, const flamegpu::detail::gpu::Stream_t stream, const unsigned int streamId) {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream || this->api.streamId != streamId) {
@@ -940,7 +940,7 @@ void HostAgentAPI::sort(const std::string &variable1, Order order1, const std::s
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
 }
 template<typename Var1T, typename Var2T>
-void HostAgentAPI::sort_async(const std::string & variable1, Order order1, const std::string & variable2, Order order2, const flamegpu::detail::cuda::Stream_t stream, const unsigned int streamId) {
+void HostAgentAPI::sort_async(const std::string & variable1, Order order1, const std::string & variable2, Order order2, const flamegpu::detail::gpu::Stream_t stream, const unsigned int streamId) {
     std::shared_ptr<DeviceAgentVector_impl> population = agent.getPopulationVec(stateName);
     if (population) {
         if (this->api.stream != stream || this->api.streamId != streamId) {

@@ -1475,7 +1475,7 @@ void CurveRTCHost::updateEnvCache(const void *env_ptr, const size_t bufferLen) {
             bufferLen, agent_data_offset);
     }
 }
-void CurveRTCHost::updateDevice_async(const jitify2::KernelData& instance, flamegpu::detail::cuda::Stream_t stream) {
+void CurveRTCHost::updateDevice_async(const jitify2::KernelData& instance, flamegpu::detail::gpu::Stream_t stream) {
     // Move count buffer into h_data_buffer first
     memcpy(h_data_buffer + count_data_offset, count_buffer.data(), count_buffer.size() * sizeof(unsigned int));
     // The namespace is required here, but not in other uses of getVariableSymbolName.
