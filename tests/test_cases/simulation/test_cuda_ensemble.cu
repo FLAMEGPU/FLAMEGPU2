@@ -6,6 +6,7 @@
 #include <set>
 
 #include "flamegpu/flamegpu.h"
+#include "flamegpu/detail/gpu/macros.hpp"
 
 #include "gtest/gtest.h"
 

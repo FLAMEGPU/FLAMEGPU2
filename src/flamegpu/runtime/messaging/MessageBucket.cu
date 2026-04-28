@@ -36,10 +36,11 @@ namespace cub = hipcub;
 #include "flamegpu/simulation/detail/CUDAMessage.h"
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/util/nvtx.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/cuda.cuh"
 
 #include "flamegpu/runtime/messaging/MessageBucket/MessageBucketHost.h"
-// #include "flamegpu/runtime/messaging/MessageBucket/MessageBucketDevice.cuh"
-#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
 MessageBucket::CUDAModelHandler::CUDAModelHandler(detail::CUDAMessage &a)
@@ -71,14 +72,14 @@ __global__ void atomicHistogram1D(
     bin_sub_index[index] = bin_idx;
 }
 
-void MessageBucket::CUDAModelHandler::init(detail::CUDAScatter &, unsigned int, flamegpu::detail::cuda::Stream_t stream) {
+void MessageBucket::CUDAModelHandler::init(detail::CUDAScatter &, unsigned int, flamegpu::detail::gpu::Stream_t stream) {
     allocateMetaDataDevicePtr(stream);
     // Set PBM to 0
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(hd_data.PBM, 0x00000000, (bucketCount + 1) * sizeof(unsigned int), stream));
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
 }
 
-void MessageBucket::CUDAModelHandler::allocateMetaDataDevicePtr(flamegpu::detail::cuda::Stream_t stream) {
+void MessageBucket::CUDAModelHandler::allocateMetaDataDevicePtr(flamegpu::detail::gpu::Stream_t stream) {
     if (d_data == nullptr) {
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_histogram, (bucketCount + 1) * sizeof(unsigned int)));
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&hd_data.PBM, (bucketCount + 1) * sizeof(unsigned int)));
@@ -110,7 +111,7 @@ void MessageBucket::CUDAModelHandler::freeMetaDataDevicePtr() {
     }
 }
 
-void MessageBucket::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::cuda::Stream_t stream) {
+void MessageBucket::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream) {
     flamegpu::util::nvtx::Range range{"MessageBucket::CUDAModelHandler::buildIndex"};
     // Cuda operations all occur within the stream, so only a final sync is required.s
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();

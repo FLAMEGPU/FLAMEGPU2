@@ -1,6 +1,8 @@
 #ifndef INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDAERRORCHECKING_CUH_
 #define INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDAERRORCHECKING_CUH_
 
+#ifndef __CUDACC_RTC__
+
 #ifdef FLAMEGPU_USE_CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -10,7 +12,8 @@
 #include <string>
 // #include <stdexcept>
 #include "flamegpu/exception/FLAMEGPUException.h"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 namespace detail {
@@ -22,7 +25,7 @@ namespace detail {
  * @param line Line no where errorcode was reported (e.g. __LINE__)
  * @throws CUDAError If code != cudaSuccess
  */
-inline void gpuAssert(flamegpu::detail::cuda::Error_t code, const char *file, int line) {
+inline void gpuAssert(flamegpu::detail::gpu::Error_t code, const char *file, int line) {
     if (code != FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) {
         THROW exception::CUDAError("CUDA Error: %s(%d): %s %s", file, line, FLAMEGPU_GPU_RUNTIME_SYMBOL(GetErrorName)(code), FLAMEGPU_GPU_RUNTIME_SYMBOL(GetErrorString)(code));
     }
@@ -84,5 +87,7 @@ inline void gpuCheckLaunch(const std::source_location loc = std::source_location
 
 }  // namespace detail
 }  // namespace flamegpu
+
+#endif  // __CUDACC_RTC__
 
 #endif  // INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDAERRORCHECKING_CUH_

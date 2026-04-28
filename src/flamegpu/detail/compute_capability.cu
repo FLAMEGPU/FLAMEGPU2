@@ -9,7 +9,7 @@
 
 #include "flamegpu/detail/compute_capability.cuh"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
 
 namespace flamegpu {
 namespace detail {
