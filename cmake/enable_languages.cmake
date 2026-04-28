@@ -15,22 +15,9 @@ include_guard(GLOBAL)
 include(CheckLanguage)
 include(CheckSourceCompiles)
 
-# Store the location of this file, so relative paths can be used inside macros (which exist in the scope of the caller)
-set(_FLAMEGPU_ENABLE_LANGUAGES_DIR "${CMAKE_CURRENT_LIST_DIR}")
-
-# Include other CMake files used for handling CUDA/HIP architectures
-include(${_FLAMEGPU_ENABLE_LANGUAGES_DIR}/CUDAArchitectures.cmake)
-
-# Define the minimum supported CUDA and HIP versions
-set(MINIMUM_SUPPORTED_CUDA_VERSION 12.4)
-set(MINIMUM_SUPPORTED_HIP_VERSION 7.0)  # patch version differs from the rocm package 
-
-# Set the std which is used in compilation testing examples
-set(_flamegpu_cxx_std 20)
-
 # Define a cache variable FLAMEGPU_GPU controlling the GPU API to use, defaulting to CUDA in the GUI.
 set(_FLAMEGPU_GPU_OPTIONS "CUDA;HIP;OFF")
-set(FLAMEGPU_GPU "CUDA" CACHE STRING "The GPU API to use. Choose from ${_FLAMEGPU_GPU_OPTIONS}. Use OFF for a documentation-only build." )
+set(FLAMEGPU_GPU "CUDA" CACHE STRING "The GPU API to use. Choose from ${_FLAMEGPU_GPU_OPTIONS}. Use OFF for a documentation-only build.")
 set_property(CACHE FLAMEGPU_GPU PROPERTY STRINGS ${_FLAMEGPU_GPU_OPTIONS})
 # Validate that FLAMEGPU_GPU is set to an allowed value
 if(NOT "${FLAMEGPU_GPU}" IN_LIST _FLAMEGPU_GPU_OPTIONS)
@@ -44,6 +31,13 @@ macro(flamegpu_enable_languages)
     if (NOT PROJECT_NAME)
         message(FATAL_ERROR "flamegpu_enable_languages must be called after a call to 'project()'")
     endif()
+
+    # Define some local variables in macro-scope so they are available when required (when included by other projects, i.e. templates)
+    # Define the minimum supported CUDA and HIP versions
+    set(MINIMUM_SUPPORTED_CUDA_VERSION 12.4)
+    set(MINIMUM_SUPPORTED_HIP_VERSION 7.0)  # patch version differs from the rocm package
+    # Set the std which is used in compilation testing examples
+    set(_flamegpu_cxx_std 20)
 
     # Check for Host and Device compiler support if not in an intentional documentation-only build
     if (NOT ${FLAMEGPU_GPU} STREQUAL "OFF")
@@ -75,7 +69,7 @@ macro(flamegpu_enable_languages)
                 # enable CUDA if it was found
                 enable_language(CUDA)
                 # Set the user-provided or flamegpu-default CMAKE_CUDA_ARCHITECTURES now the CUDA version is known
-                flamegpu_set_gpu_architectures()
+                # flamegpu_set_gpu_architectures()
             else()
                 # If CUDA could not be found, a fatal error is raised
                 # The error message varies in some cases, as we do not know exactly why CUDA support was not found, but can try to be helpful for some (msvc related) issues:
@@ -144,7 +138,7 @@ macro(flamegpu_enable_languages)
                 # Enable HIP if it was found
                 enable_language(HIP)
                 # Set the user-provided or flamegpu-default CMAKE_HIP_ARCHITECTURES now the CUDA version is known
-                flamegpu_set_gpu_architectures()
+                # flamegpu_set_gpu_architectures()
             else()
                 # If HIP could not be found, a fatal error is raised
                 message(FATAL_ERROR 
