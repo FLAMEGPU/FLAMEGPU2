@@ -290,18 +290,9 @@ function(_flamegpu_check_source_compiles_cxx_filesystem)
     ]] _FLAMEGPU_CHECK_CXX_FILESYSTEM_V0)
 
     if (NOT _FLAMEGPU_CHECK_CXX_FILESYSTEM_V0)
-        # If the GCC versions is known to be bad, give an appropriate error
-        if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.1)
-            message(FATAL_ERROR
-            "${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION} does not provide <std::filesystem> even in --std=c++17 mode.\n"
-            " Please use GCC >= 8.1.\n"
-            " \n")
-        else()
-            # If the gcc version is not a known problem, emit a generic error.
-            message(FATAL_ERROR
-                "<std::filesystem> error with ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}."
-            )
-        endif()
+        message(FATAL_ERROR
+            "<std::filesystem> error with ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}."
+        )
     endif()
 endfunction()
 
