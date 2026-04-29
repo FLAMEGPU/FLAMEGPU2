@@ -20,7 +20,7 @@ set(_FLAMEGPU_ENABLE_LANGUAGES_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 # Define the minimum supported CUDA and HIP versions
 set(MINIMUM_SUPPORTED_CUDA_VERSION 12.4)
-set(MINIMUM_SUPPORTED_HIP_VERSION 7.0)
+set(MINIMUM_SUPPORTED_HIP_VERSION 7.0)  # patch version differs from the rocm package 
 
 # Set the std which is used in compilation testing examples
 set(_flamegpu_cxx_std 20)
@@ -149,9 +149,13 @@ macro(flamegpu_enable_languages)
                 "  Please ensure HIP/ROCm >= ${MINIMUM_SUPPORTED_HIP_VERSION} is installed and discoverable by CMake, or request and alternative GPU backend via FLAMEGPU_GPU")
             endif()
 
+            # The CMAKE_HIP_COMPILER_VERSION is the clang version - not the hip/rocm version.
+            # Instead, we must find_package(hip) and query hip_VERSION, which has a differnt patch number than in the release number
+            find_package(hip REQUIRED CONFIG)
+
             # Ensure that the found HIP version is at least the minimum required by FLAMEGPU, otherwise raise an error.
-            if (CMAKE_HIP_COMPILER_VERSION VERSION_LESS ${MINIMUM_SUPPORTED_HIP_VERSION})
-                message(FATAL_ERROR "HIP ${MINIMUM_SUPPORTED_HIP_VERSION} or greater is required for compilation with FLAMEGPU_GPU=${FLAMEGPU_GPU}")
+            if (${hip_VERSION} VERSION_LESS ${MINIMUM_SUPPORTED_HIP_VERSION})
+                message(FATAL_ERROR "HIP ${MINIMUM_SUPPORTED_HIP_VERSION} or greater is required for compilation with FLAMEGPU_GPU=${FLAMEGPU_GPU} (found ${hip_VERSION})")
             endif()
         endif()
 
