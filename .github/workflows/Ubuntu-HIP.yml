@@ -46,9 +46,10 @@ jobs:
           - name: "Release"
             config: "Release"
             SEATBELTS: "ON"
-          - name: "Beltsoff"
-            config: "Release"
-            SEATBELTS: "OFF"
+          # Temp disabled to keep CI smaller
+          # - name: "Beltsoff"
+          #   config: "Release"
+          #   SEATBELTS: "OFF"
 
     # Name the job based on matrix/env options
     name: "build (${{ matrix.compilers.hip }}, ${{ matrix.config.name }}, ${{ matrix.compilers.os }})"
