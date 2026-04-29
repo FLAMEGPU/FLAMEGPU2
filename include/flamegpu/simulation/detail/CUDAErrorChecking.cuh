@@ -1,6 +1,8 @@
 #ifndef INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDAERRORCHECKING_CUH_
 #define INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDAERRORCHECKING_CUH_
 
+#ifndef __CUDACC_RTC__
+
 #ifdef FLAMEGPU_USE_CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -84,5 +86,7 @@ inline void gpuCheckLaunch(const std::source_location loc = std::source_location
 
 }  // namespace detail
 }  // namespace flamegpu
+
+#endif  //__CUDACC_RTC__
 
 #endif  // INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDAERRORCHECKING_CUH_

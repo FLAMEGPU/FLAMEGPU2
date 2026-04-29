@@ -1,9 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDASCANCOMPACTION_H_
 #define INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDASCANCOMPACTION_H_
 
-// This should not be seen by NVRTC?
-#ifndef __CUDACC_RTC__
-
 #include <flamegpu/detail/gpu/types.hpp>
 #include <flamegpu/detail/cuda.cuh>
 
@@ -143,7 +140,5 @@ class CUDAScanCompaction {
 
 }  // namespace detail
 }  // namespace flamegpu
-
-#endif  // __CUDACC_RTC__
 
 #endif  // INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDASCANCOMPACTION_H_

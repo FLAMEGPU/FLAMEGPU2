@@ -142,9 +142,9 @@ inline std::uint64_t cuGetCurrentContextUniqueID() {
     return std::numeric_limits<std::uint64_t>::max();
 #endif
 }
+#endif  // __CUDACC_RTC__
 
 }  // namespace cuda
 }  // namespace detail
 }  // namespace flamegpu
-#endif  // __CUDACC_RTC__
 #endif  // INCLUDE_FLAMEGPU_DETAIL_CUDA_CUH_

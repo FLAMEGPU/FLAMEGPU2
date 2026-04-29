@@ -21,7 +21,6 @@ namespace detail {
  */
 namespace gpu {
 
-
 // Using statement for cuda/hip streams, which are part of the public API
 // Todo: should this just use the macro instead? Should this be in detail seeing as it is used in parts of the (sortof) public API?
 #if defined(FLAMEGPU_USE_CUDA)

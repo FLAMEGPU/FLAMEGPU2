@@ -5,6 +5,7 @@
 
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 
