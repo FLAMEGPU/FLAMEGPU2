@@ -15,7 +15,7 @@
 #include <memory>
 
 #include "flamegpu/simulation/detail/CUDAMacroEnvironment.h"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
 #include "flamegpu/runtime/environment/HostMacroProperty.cuh"
 #include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"

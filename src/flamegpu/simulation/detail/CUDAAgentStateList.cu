@@ -12,7 +12,7 @@
 #include <set>
 
 #include "flamegpu/simulation/detail/CUDAAgent.h"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/simulation/AgentVector.h"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"

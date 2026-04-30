@@ -193,7 +193,6 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/MemoryVector.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/GenericMemoryVector.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/CUDAScanCompaction.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/CUDAErrorChecking.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/CubTemporaryMemory.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/CUDAMessageList.h
     ${FLAMEGPU_ROOT}/include/flamegpu/simulation/detail/CUDAMessage.h
@@ -286,6 +285,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/util/StringPair.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/macros.hpp
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/types.hpp
+    ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/gpu_api_error_checking.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/Any.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/demangle.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/type_decode.h

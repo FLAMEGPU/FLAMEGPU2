@@ -13,7 +13,7 @@
 #include <vector>
 #include <memory>
 
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/runtime/detail/curve/HostCurve.cuh"
 #include "flamegpu/runtime/environment/HostMacroProperty.cuh"
 #include "flamegpu/detail/gpu/types.hpp"
