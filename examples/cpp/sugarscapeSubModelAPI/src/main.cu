@@ -4,294 +4,291 @@
 #include <fstream>
 #include <array>
 #include <vector>
+#include <random>
+#include <numeric>
+#include <algorithm>
 
 #include "flamegpu/flamegpu.h"
 #include "flamegpu/stockAgent/subModels/SingleAgentDiscreteMovement.h"
 
-
-// Grid Size (the product of these is the agent count)
+// Grid Size
 #define GRID_WIDTH 256
 #define GRID_HEIGHT 256
 
-// Agent state variables
-#define AGENT_STATUS_UNOCCUPIED 0
-#define AGENT_STATUS_OCCUPIED 1
-#define AGENT_STATUS_MOVEMENT_REQUESTED 2
-#define AGENT_STATUS_MOVEMENT_UNRESOLVED 3
-
 // Growback variables
-#define SUGAR_GROWBACK_RATE 1
-#define SUGAR_MAX_CAPACITY 7
+#define SUGAR_GROWBACK_RATE 1.0f
+#define SUGAR_MAX_CAPACITY 7.0f
 
-// Visualisation mode (0=occupied/move status, 1=occupied/sugar/level)
-#define VIS_MODE 1
+/**
+ * Agent Functions
+ */
 
+// 1. Metabolise & Harvest: Bug eats the sugar at its new location and consumes energy
+// This runs AFTER movement, so current_cell_score is already updated by the submodel.
+FLAMEGPU_AGENT_FUNCTION(metabolise, flamegpu::MessageNone, flamegpu::MessageNone) {
+    float sugar = FLAMEGPU->getVariable<float>("sugar");
+    float metabolism = FLAMEGPU->getVariable<float>("metabolism");
+    float harvested = FLAMEGPU->getVariable<float>("current_cell_score");
 
-FLAMEGPU_AGENT_FUNCTION(metabolise_and_growback, flamegpu::MessageNone, flamegpu::MessageNone) {
-    int sugar_level = FLAMEGPU->getVariable<int>("sugar_level");
-    int env_sugar_level = FLAMEGPU->getVariable<int>("env_sugar_level");
-    int env_max_sugar_level = FLAMEGPU->getVariable<int>("env_max_sugar_level");
-    int status = FLAMEGPU->getVariable<int>("status");
-    // metabolise if occupied
-    if (status == AGENT_STATUS_OCCUPIED || status == AGENT_STATUS_MOVEMENT_UNRESOLVED) {
-        // store any sugar present in the cell
-        if (env_sugar_level > 0) {
-            sugar_level += env_sugar_level;
-            // Occupied cells are marked as -1 sugar.
-            env_sugar_level = -1;
-        }
+    // Add what we found and subtract what we used
+    sugar += harvested;
+    sugar -= metabolism;
 
-        // metabolise
-        sugar_level -= FLAMEGPU->getVariable<int>("metabolism");
+    // Death check
+    if (sugar <= 0.0f) {
+        return flamegpu::DEAD;
+    }
 
-        // check if agent dies
-        if (sugar_level == 0) {
-            status = AGENT_STATUS_UNOCCUPIED;
-            FLAMEGPU->setVariable<int>("agent_id", -1);
-            env_sugar_level = 0;
-            FLAMEGPU->setVariable<int>("metabolism", 0);
+    FLAMEGPU->setVariable<float>("sugar", sugar);
+    return flamegpu::ALIVE;
+}
+
+// 2. Growback: SugarCell grows sugar or is emptied if a bug is currently standing on it
+FLAMEGPU_AGENT_FUNCTION(growback, flamegpu::MessageNone, flamegpu::MessageNone) {
+    float sugar = FLAMEGPU->getVariable<float>("sugar");
+    float max_sugar = FLAMEGPU->getVariable<float>("max_sugar");
+    int is_occupied = FLAMEGPU->getVariable<int>("is_occupied");
+
+    if (is_occupied) {
+        // A bug is here, so it has eaten the sugar
+        sugar = 0.0f;
+    } else {
+        // Grow back
+        sugar += SUGAR_GROWBACK_RATE;
+        if (sugar > max_sugar) {
+            sugar = max_sugar;
         }
     }
 
-    // growback if unoccupied
-    if (status == AGENT_STATUS_UNOCCUPIED) {
-        env_sugar_level += SUGAR_GROWBACK_RATE;
-        if (env_sugar_level > env_max_sugar_level) {
-            env_sugar_level = env_max_sugar_level;
-        }
-    }
-
-    // set all active agents to unresolved as they may now want to move
-    if (status == AGENT_STATUS_OCCUPIED) {
-        status = AGENT_STATUS_MOVEMENT_UNRESOLVED;
-    }
-    FLAMEGPU->setVariable<int>("sugar_level", sugar_level);
-    FLAMEGPU->setVariable<int>("env_sugar_level", env_sugar_level);
-    FLAMEGPU->setVariable<int>("status", status);
-
+    FLAMEGPU->setVariable<float>("sugar", sugar);
     return flamegpu::ALIVE;
 }
 
 /**
- * Construct the common components of agent shared between both parent and submodel
+ * Step function to log simulation state to CSV
  */
-flamegpu::AgentDescription makeCoreAgent(flamegpu::ModelDescription &model) {
-    flamegpu::AgentDescription  agent = model.newAgent("agent");
-    agent.newVariable<unsigned int, 2>("pos");
-    agent.newVariable<int>("agent_id");
-    agent.newVariable<int>("status");
-    // agent specific variables
-    agent.newVariable<int>("sugar_level");
-    agent.newVariable<int>("metabolism");
-    // environment specific var
-    agent.newVariable<int>("env_sugar_level");
-    agent.newVariable<int>("env_max_sugar_level");
-#ifdef FLAMEGPU_VISUALISATION
-    // Redundant seperate floating point position vars for vis
-    agent.newVariable<float>("x");
-    agent.newVariable<float>("y");
-#endif
-    return agent;
+FLAMEGPU_STEP_FUNCTION(step_logger) {
+    unsigned int step = FLAMEGPU->getStepCounter();
+    unsigned int bug_count = FLAMEGPU->agent("bug").count();
+    printf("Step %u: bugs=%u\n", step, bug_count);
+
+    // Log bugs every step
+    static std::ofstream bug_log;
+    if (step == 0) {
+        bug_log.open("bugs_log.csv");
+        bug_log << "step,x,y,sugar,metabolism" << std::endl;
+    }
+    // getPopulationData returns a reference to a DeviceAgentVector_impl, so we must use a reference
+    auto& bug_pop = FLAMEGPU->agent("bug").getPopulationData();
+    for (const auto& bug : bug_pop) {
+        bug_log << step << "," << bug.getVariable<int>("x") << "," << bug.getVariable<int>("y") << "," << bug.getVariable<float>("sugar") << "," << bug.getVariable<float>("metabolism") << std::endl;
+    }
+
+    // Log cells every 10 steps to save space (and step 0)
+    static std::ofstream cell_log;
+    if (step == 0) {
+        cell_log.open("cells_log.csv");
+        cell_log << "step,x,y,sugar,max_sugar" << std::endl;
+    }
+    if (step % 10 == 0) {
+        auto& cell_pop = FLAMEGPU->agent("sugar_cell").getPopulationData();
+        for (const auto& cell : cell_pop) {
+            cell_log << step << "," << cell.getVariable<int>("x") << "," << cell.getVariable<int>("y") << "," << cell.getVariable<float>("sugar") << "," << cell.getVariable<float>("max_sugar") << std::endl;
+        }
+    }
 }
+
+/**
+ * Main
+ */
 int main(int argc, const char ** argv) {
-    flamegpu::util::nvtx::Range range{"main"};
-    flamegpu::util::nvtx::push("ModelDescription");
     flamegpu::ModelDescription model("Sugarscape");
-
-
-    flamegpu::stockAgent::submodels::SingleAgentDiscreteMovement move_sub_logic;
-
-    // Initialize the submodel
-    auto move_sub_desc = move_sub_logic.addSingleAgentDiscreteMovementSubmodel(model, GRID_WIDTH, GRID_HEIGHT);
-
-    // Bind parent agent to submodel
-    move_sub_logic.setMovingAgent("agent",
-        {
-            {"x", "x"},
-            {"y", "y"},
-            {"cell_score", "env_sugar_level"},
-            {"is_occupied", "status"}  // Use sugar level as the movement priority
-        },
-        {
-            // We MUST map the submodel's "active" state to our parent's state (default in this case)
-            {"active", flamegpu::ModelData::DEFAULT_STATE}
-        });
-
-
 
     /**
      * Agents
      */
-    {   // Per cell agent
-        flamegpu::AgentDescription  agent = makeCoreAgent(model);
-        // Functions
-        agent.newFunction("metabolise_and_growback", metabolise_and_growback);
-    }
+    // Bug Agent (The moving agent)
+    flamegpu::AgentDescription bug = model.newAgent("bug");
+    bug.newVariable<float>("sugar");
+    bug.newVariable<float>("metabolism");
+    bug.newVariable<int>("x");
+    bug.newVariable<int>("y");
+    bug.newVariable<int>("last_x", -1);
+    bug.newVariable<int>("last_y", -1);
+    bug.newVariable<int>("last_resources_x", -1);
+    bug.newVariable<int>("last_resources_y", -1);
+    bug.newVariable<float>("current_cell_score", 0.0f);
 
-
+    // SugarCell Agent (The environment agent)
+    flamegpu::AgentDescription sugar_cell = model.newAgent("sugar_cell");
+    sugar_cell.newVariable<int>("x");
+    sugar_cell.newVariable<int>("y");
+    sugar_cell.newVariable<float>("sugar");
+    sugar_cell.newVariable<float>("max_sugar");
+    sugar_cell.newVariable<int>("is_occupied", 0);
 
     /**
-     * Globals
+     * Submodel Configuration
      */
+    flamegpu::stockAgent::submodels::SingleAgentDiscreteMovement move_sub_logic;
+    auto move_sub_desc = move_sub_logic.addSingleAgentDiscreteMovementSubmodel(model, GRID_WIDTH, GRID_HEIGHT);
+
+    // Bind Bug to the submodel's moving agent
+    move_sub_logic.setMovingAgent("bug",
+        {
+            {"x", "x"},
+            {"y", "y"},
+            {"last_x", "last_x"},
+            {"last_y", "last_y"},
+            {"last_resources_x", "last_resources_x"},
+            {"last_resources_y", "last_resources_y"},
+            {"current_cell_score", "current_cell_score"}
+        },
+        {
+            {"active", flamegpu::ModelData::DEFAULT_STATE}
+        });
+
+    // Bind SugarCell to the submodel's environment agent
+    move_sub_logic.setEnvironmentAgent("sugar_cell",
+        {
+            {"x", "x"},
+            {"y", "y"},
+            {"is_occupied", "is_occupied"},
+            {"cell_score", "sugar"}
+        },
+        {
+            {"active", flamegpu::ModelData::DEFAULT_STATE}
+        });
+
+    /**
+     * Functions and Layers
+     */
+    bug.newFunction("metabolise", metabolise).setAllowAgentDeath(true);
+    sugar_cell.newFunction("growback", growback);
+
+    //  Layer 1: Movement
+    model.newLayer().addSubModel(move_sub_desc);
+
+    // Layer 2: Life logic (Metabolism and Growback can happen in parallel)
     {
-        // flamegpu::EnvironmentDescription  env = model.Environment();
+        auto l = model.newLayer();
+        l.addAgentFunction(metabolise);
+        l.addAgentFunction(growback);
     }
 
-    /**
-     * Control flow
-     */
-    {   // Layer #1
-        flamegpu::LayerDescription layer = model.newLayer();
-        layer.addAgentFunction(metabolise_and_growback);
-    }
-    {   // Layer #2
-        flamegpu::LayerDescription layer = model.newLayer();
-        layer.addSubModel(move_sub_desc);
-    }
-    flamegpu::util::nvtx::pop();
+    model.addStepFunction(step_logger);
 
     /**
-     * Create Model Runner
+     * Simulation Setup
      */
-    flamegpu::util::nvtx::push("CUDASimulation creation");
-    flamegpu::CUDASimulation  cudaSimulation(model);
-    flamegpu::util::nvtx::pop();
-
-    /**
-     * Create visualisation
-     * @note FLAMEGPU2 doesn't currently have proper support for discrete/2d visualisations
-     */
-#ifdef FLAMEGPU_VISUALISATION
-    flamegpu::visualiser::ModelVis visualisation = cudaSimulation.getVisualisation();
-    {
-        visualisation.setSimulationSpeed(2);
-        visualisation.setInitialCameraLocation(GRID_WIDTH / 2.0f, GRID_HEIGHT / 2.0f, 225.0f);
-        visualisation.setInitialCameraTarget(GRID_WIDTH / 2.0f, GRID_HEIGHT /2.0f, 0.0f);
-        visualisation.setCameraSpeed(0.001f * GRID_WIDTH);
-        visualisation.setOrthographic(true);
-        visualisation.setOrthographicZoomModifier(0.365f);
-        visualisation.setViewClips(0.1f, 5000);
-
-        auto agt = visualisation.addAgent("agent");
-        // Position vars are named x, y, z; so they are used by default
-        agt.setModel(flamegpu::visualiser::Stock::Models::CUBE);  // 5 unwanted faces!
-        agt.setModelScale(1.0f);
-#if VIS_MODE == 0
-            flamegpu::visualiser::DiscreteColor<int> cell_colors = flamegpu::visualiser::DiscreteColor<int>("status", flamegpu::visualiser::Color{"#666"});
-            cell_colors[AGENT_STATUS_UNOCCUPIED] = flamegpu::visualiser::Stock::Colors::RED;
-            cell_colors[AGENT_STATUS_OCCUPIED] = flamegpu::visualiser::Stock::Colors::GREEN;
-            cell_colors[AGENT_STATUS_MOVEMENT_REQUESTED] = flamegpu::visualiser::Stock::Colors::BLUE;  // Not possible, only occurs inside the submodel
-            cell_colors[AGENT_STATUS_MOVEMENT_UNRESOLVED] = flamegpu::visualiser::Stock::Colors::WHITE;
-            agt.setColor(cell_colors);
-#else
-            flamegpu::visualiser::DiscreteColor<int> cell_colors = flamegpu::visualiser::DiscreteColor<int>("env_sugar_level", flamegpu::visualiser::Stock::Palettes::Viridis(SUGAR_MAX_CAPACITY + 1), flamegpu::visualiser::Color{"#f00"});
-            agt.setColor(cell_colors);
-#endif
-    }
-    visualisation.activate();
-#endif
-
-    /**
-     * Initialisation
-     */
-    flamegpu::util::nvtx::push("CUDASimulation initialisation");
+    flamegpu::CUDASimulation cudaSimulation(model);
     cudaSimulation.initialise(argc, argv);
+    cudaSimulation.SimulationConfig().steps = 100;
+
+    // If no input file, generate a random starting state
     if (cudaSimulation.getSimulationConfig().input_file.empty()) {
-        std::mt19937_64 rng;
-        // Pre init, decide the sugar hotspots
+        std::mt19937_64 rng(42);
+        // Define sugar hotspots (spatial distribution of max_sugar)
         std::vector<std::array<unsigned int, 4>> sugar_hotspots;
         {
-            std::uniform_int_distribution<unsigned int> width_dist(0, GRID_WIDTH-1);
-            std::uniform_int_distribution<unsigned int> height_dist(0, GRID_HEIGHT-1);
-            // Each sugar hotspot has a radius of 3-15 blocks
-            std::uniform_int_distribution<unsigned int> radius_dist(5, 30);
-            // Hostpot area should cover around 50% of the map
+            std::uniform_int_distribution<unsigned int> width_dist(0, GRID_WIDTH - 1);
+            std::uniform_int_distribution<unsigned int> height_dist(0, GRID_HEIGHT - 1);
+            std::uniform_int_distribution<unsigned int> radius_dist(15, 45);
             float hotspot_area = 0;
-            while (hotspot_area < GRID_WIDTH * GRID_HEIGHT) {
+            while (hotspot_area < (GRID_WIDTH * GRID_HEIGHT) * 0.6f) {
                 unsigned int rad = radius_dist(rng);
-                std::array<unsigned int, 4> hs = {width_dist(rng), height_dist(rng), rad, SUGAR_MAX_CAPACITY };
+                std::array<unsigned int, 4> hs = {width_dist(rng), height_dist(rng), rad, (unsigned int)SUGAR_MAX_CAPACITY};
                 sugar_hotspots.push_back(hs);
                 hotspot_area += 3.141f * rad * rad;
             }
         }
 
+        // Generate a shuffled list of all grid indices to place bugs uniquely
+        std::vector<int> indices(GRID_WIDTH * GRID_HEIGHT);
+        std::iota(indices.begin(), indices.end(), 0);
+        std::shuffle(indices.begin(), indices.end(), rng);
 
-        // Currently population has not been init, so generate an agent population on the fly
-        const unsigned int CELL_COUNT = GRID_WIDTH * GRID_HEIGHT;
-        std::uniform_real_distribution<float> normal(0, 1);
-        std::uniform_int_distribution<int> agent_sugar_dist(0, SUGAR_MAX_CAPACITY * 2);
-        std::uniform_int_distribution<int> poor_env_sugar_dist(0, SUGAR_MAX_CAPACITY/2);
-        unsigned int i = 0;
-        unsigned int agent_id = 0;
-        flamegpu::AgentVector init_pop(model.Agent("agent"), CELL_COUNT);
+        const float bug_density = 0.05f;
+        const unsigned int BUG_COUNT = (unsigned int)((GRID_WIDTH * GRID_HEIGHT) * bug_density);
+
+        std::vector<bool> bug_at(GRID_WIDTH * GRID_HEIGHT, false);
+        flamegpu::AgentVector bug_pop(bug, BUG_COUNT);
+        std::uniform_real_distribution<float> bug_sugar_dist(10.0f, 30.0f);
+        std::uniform_real_distribution<float> bug_metabolism_dist(1.0f, 2.5f);
+
+        for (unsigned int i = 0; i < BUG_COUNT; ++i) {
+            int idx = indices[i];
+            bug_at[idx] = true;
+            auto instance = bug_pop[i];
+            instance.setVariable<int>("x", idx / GRID_HEIGHT);
+            instance.setVariable<int>("y", idx % GRID_HEIGHT);
+            instance.setVariable<float>("sugar", bug_sugar_dist(rng));
+            instance.setVariable<float>("metabolism", bug_metabolism_dist(rng));
+        }
+
+        flamegpu::AgentVector cell_pop(sugar_cell, GRID_WIDTH * GRID_HEIGHT);
         for (unsigned int x = 0; x < GRID_WIDTH; ++x) {
             for (unsigned int y = 0; y < GRID_HEIGHT; ++y) {
-                flamegpu::AgentVector::Agent instance = init_pop[i++];
-                instance.setVariable<unsigned int, 2>("pos", { x, y });
-                // TODO: How should these values be init?
-                // agent specific variables
-                // 10% chance of cell holding an agent
-                if (normal(rng) < 0.1) {
-                    instance.setVariable<int>("agent_id", agent_id++);
-                    instance.setVariable<int>("status", AGENT_STATUS_OCCUPIED);
-                    instance.setVariable<int>("sugar_level", agent_sugar_dist(rng)/2);  // Agent sugar dist 0-3, less chance of 0
-                    instance.setVariable<int>("metabolism", 6);
-                } else {
-                    instance.setVariable<int>("agent_id", -1);
-                    instance.setVariable<int>("status", AGENT_STATUS_UNOCCUPIED);
-                    instance.setVariable<int>("sugar_level", 0);
-                    instance.setVariable<int>("metabolism", 0);
-                }
-                // environment specific var
-                unsigned int env_sugar_lvl = 0;
-                const int hotspot_core_size = 5;
+                unsigned int idx = x * GRID_HEIGHT + y;
+                auto instance = cell_pop[idx];
+                instance.setVariable<int>("x", (int)x);
+                instance.setVariable<int>("y", (int)y);
+                instance.setVariable<int>("is_occupied", bug_at[idx] ? 1 : 0);
+
+                float max_val = 0;
                 for (auto &hs : sugar_hotspots) {
-                    // Workout the highest sugar lvl from a nearby hotspot
-                    int hs_x = static_cast<int>(std::get<0>(hs));
-                    int hs_y = static_cast<int>(std::get<1>(hs));
-                    unsigned int hs_rad = std::get<2>(hs);
-                    unsigned int hs_level = std::get<3>(hs);
-                    float hs_dist = static_cast<float>(sqrt(pow(hs_x-static_cast<int>(x), 2.0) + pow(hs_y-static_cast<int>(y), 2.0)));
-                    if (hs_dist <= hotspot_core_size) {
-                        unsigned int t = hs_level;
-                        env_sugar_lvl = t > env_sugar_lvl ? t : env_sugar_lvl;
-                    } else if (hs_dist <= hs_rad) {
-                        int non_core_len = hs_rad - hotspot_core_size;
-                        float dist_from_core = hs_dist - hotspot_core_size;
-                        unsigned int t = static_cast<unsigned int>(hs_level * (non_core_len - dist_from_core) / non_core_len);
-                        env_sugar_lvl = t > env_sugar_lvl ? t : env_sugar_lvl;
+                    float dx = (float)hs[0] - (float)x;
+                    float dy = (float)hs[1] - (float)y;
+                    float dist = sqrtf(dx*dx + dy*dy);
+                    if (dist < (float)hs[2]) {
+                        float v = (float)hs[3] * (1.0f - (dist / (float)hs[2]));
+                        if (v > max_val) max_val = v;
                     }
                 }
-                env_sugar_lvl = env_sugar_lvl < SUGAR_MAX_CAPACITY / 2 ? poor_env_sugar_dist(rng) : env_sugar_lvl;
-                instance.setVariable<int>("env_max_sugar_level", env_sugar_lvl);  // All cells begin at their local max sugar
-                instance.setVariable<int>("env_sugar_level", env_sugar_lvl);
-#ifdef FLAMEGPU_VISUALISATION
-                // Redundant separate floating point position vars for vis
-                instance.setVariable<float>("x", static_cast<float>(x));
-                instance.setVariable<float>("y", static_cast<float>(y));
-#endif
+                instance.setVariable<float>("max_sugar", max_val);
+                instance.setVariable<float>("sugar", max_val);
             }
         }
-        cudaSimulation.setPopulationData(init_pop);
+
+        cudaSimulation.setPopulationData(bug_pop);
+        cudaSimulation.setPopulationData(cell_pop);
     }
-    flamegpu::util::nvtx::pop();
 
     /**
-     * Execution
+     * Visualization
+     */
+#ifdef FLAMEGPU_VISUALISATION
+    flamegpu::visualiser::ModelVis visualisation = cudaSimulation.getVisualisation();
+    visualisation.setSimulationSpeed(2);
+    visualisation.setInitialCameraLocation(GRID_WIDTH / 2.0f, GRID_HEIGHT / 2.0f, 225.0f);
+    visualisation.setInitialCameraTarget(GRID_WIDTH / 2.0f, GRID_HEIGHT / 2.0f, 0.0f);
+    visualisation.setOrthographic(true);
+    visualisation.setOrthographicZoomModifier(0.365f);
+
+    auto bug_vis = visualisation.addAgent("bug");
+    bug_vis.setModel(flamegpu::visualiser::Stock::Models::CUBE);
+    bug_vis.setModelScale(0.8f);
+    bug_vis.setColor(flamegpu::visualiser::Stock::Colors::RED);
+
+    auto cell_vis = visualisation.addAgent("sugar_cell");
+    cell_vis.setModel(flamegpu::visualiser::Stock::Models::CUBE);
+    cell_vis.setModelScale(1.0f);
+
+    // Color cells based on sugar level
+    flamegpu::visualiser::DiscreteColor<float> cell_colors = flamegpu::visualiser::DiscreteColor<float>("sugar", flamegpu::visualiser::Stock::Palettes::Viridis((unsigned int)SUGAR_MAX_CAPACITY + 1));
+    cell_vis.setColor(cell_colors);
+
+    visualisation.activate();
+#endif
+
+    /**
+     * Run Simulation
      */
     cudaSimulation.simulate();
-
-    /**
-     * Export Pop
-     */
-    // cudaSimulation.exportData("end.xml");
 
 #ifdef FLAMEGPU_VISUALISATION
     visualisation.join();
 #endif
-
-    // Ensure profiling / memcheck work correctly
-    flamegpu::util::cleanup();
 
     return 0;
 }

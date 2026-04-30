@@ -100,8 +100,8 @@ FLAMEGPU_INIT_FUNCTION(createAgent) {
         bee.setVariable<int>("y", y);
         bee.setVariable<int>("last_x", -1);
         bee.setVariable<int>("last_y", -1);
-        bee.setVariable<int>("last_flower_x", -1);
-        bee.setVariable<int>("last_flower_y", -1);
+        bee.setVariable<int>("last_resources_x", -1);
+        bee.setVariable<int>("last_resources_y", -1);
         bee.setVariable<float>("hunger_level", FLAMEGPU->random.uniform<float>(0.0f, 100.0f));
         bee.setVariable<int>("wait", 0);
         bee.setVariable<float>("priority", 0.0f);
@@ -201,8 +201,8 @@ void define_model(ModelDescription &model) {
     bee.newVariable<int>("y");
     bee.newVariable<int>("last_x", -1);
     bee.newVariable<int>("last_y", -1);
-    bee.newVariable<int>("last_flower_x", -1);
-    bee.newVariable<int>("last_flower_y", -1);
+    bee.newVariable<int>("last_resources_x", -1);
+    bee.newVariable<int>("last_resources_y", -1);
     bee.newVariable<float>("hunger_level");
     bee.newVariable<int>("wait", 0);
     bee.newVariable<float>("priority", 0.0f);
@@ -222,8 +222,8 @@ void define_model(ModelDescription &model) {
             {"y", "y"},
             {"last_x", "last_x"},
             {"last_y", "last_y"},
-            {"last_flower_x", "last_flower_x"},
-            {"last_flower_y", "last_flower_y"},
+            {"last_resources_x", "last_resources_x"},
+            {"last_resources_y", "last_resources_y"},
             {"priority", "priority"},
             {"current_cell_score", "current_cell_score"}
         },

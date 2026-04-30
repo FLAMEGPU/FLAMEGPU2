@@ -59,8 +59,8 @@ namespace {
         int y = FLAMEGPU->getVariable<int>("y");
         int lx = FLAMEGPU->getVariable<int>("last_x");
         int ly = FLAMEGPU->getVariable<int>("last_y");
-        int lfx = FLAMEGPU->getVariable<int>("last_flower_x");
-        int lfy = FLAMEGPU->getVariable<int>("last_flower_y");
+        int lfx = FLAMEGPU->getVariable<int>("last_resources_x");
+        int lfy = FLAMEGPU->getVariable<int>("last_resources_y");
         float current_cell_score = FLAMEGPU->getVariable<float>("current_cell_score");
 
         float best_neighbor_score = -1e10f;
@@ -74,7 +74,7 @@ namespace {
 
             // Consider only unoccupied cells
             // AND exclude the cell we just came from (lx, ly)
-            // AND exclude the last flower we visited (lfx, lfy)
+            // AND exclude the last resource we visited (lfx, lfy)
             if (msg.getVariable<int>("is_occupied") == 0 && !(mx == lx && my == ly) && !(mx == lfx && my == lfy)) {
                 float n = msg.getVariable<float>("cell_score");
                 float tie_breaker = FLAMEGPU->random.uniform<float>();
@@ -162,11 +162,11 @@ namespace {
                 FLAMEGPU->setVariable<int>("y", y);
                 FLAMEGPU->setVariable<int>("moved_this_step", 1);
 
-                // If the new cell has nectar, update last_flower
+                // If the new cell has resources, update last_resources
                 float score = msg.getVariable<float>("cell_score");
                 if (score > 0.01f) {
-                    FLAMEGPU->setVariable<int>("last_flower_x", x);
-                    FLAMEGPU->setVariable<int>("last_flower_y", y);
+                    FLAMEGPU->setVariable<int>("last_resources_x", x);
+                    FLAMEGPU->setVariable<int>("last_resources_y", y);
                 }
             }
         }
@@ -233,8 +233,8 @@ flamegpu::SubModelDescription SingleAgentDiscreteMovement::addSingleAgentDiscret
     movingAgent.newVariable<int>("moved_this_step", 0);
     movingAgent.newVariable<int>("last_x", -1);
     movingAgent.newVariable<int>("last_y", -1);
-    movingAgent.newVariable<int>("last_flower_x", -1);
-    movingAgent.newVariable<int>("last_flower_y", -1);
+    movingAgent.newVariable<int>("last_resources_x", -1);
+    movingAgent.newVariable<int>("last_resources_y", -1);
 
     AgentDescription envAgent = sub_model_move.newAgent(INTERNAL_ENV_AGENT_NAME);
     envAgent.newState("active");
@@ -330,7 +330,43 @@ void SingleAgentDiscreteMovement::defineLayer(ModelDescription &smm) {
     smm.newLayer().addAgentFunction(envAgent_update_occupancy);
 }
 
-void SingleAgentDiscreteMovement::validate() { }
+void SingleAgentDiscreteMovement::validate() {
+    if (!this->is_initialized) {
+        throw exception::InvalidSubModel("SingleAgentDiscreteMovement submodel was not initialized. Call addSingleAgentDiscreteMovementSubmodel() first.");
+    }
+
+    try {
+        auto moving_agent = this->smm->getSubAgent(INTERNAL_MOVING_AGENT_NAME);
+        auto env_agent = this->smm->getSubAgent(INTERNAL_ENV_AGENT_NAME);
+
+        // Mandatory mappings check
+        moving_agent.getVariableMapping("x");
+        moving_agent.getVariableMapping("y");
+        moving_agent.getVariableMapping("last_x");
+        moving_agent.getVariableMapping("last_y");
+        moving_agent.getVariableMapping("last_resources_x");
+        moving_agent.getVariableMapping("last_resources_y");
+        moving_agent.getVariableMapping("current_cell_score");
+
+        env_agent.getVariableMapping("x");
+        env_agent.getVariableMapping("y");
+        env_agent.getVariableMapping("is_occupied");
+        env_agent.getVariableMapping("cell_score");
+
+        // Mandatory state mapping check
+        env_agent.getStateMapping("active");
+        moving_agent.getStateMapping("active");
+    } catch (const exception::InvalidAgentState& e) {
+        string msg = "SingleAgentDiscreteMovement submodel missing required state binding: " + string(e.what());
+        throw exception::InvalidAgentState(msg.c_str());
+    } catch (const exception::InvalidSubAgentName& e) {
+        string msg = "SingleAgentDiscreteMovement submodel missing required agent binding: " + string(e.what());
+        throw exception::InvalidSubAgentName(msg.c_str());
+    } catch (const exception::InvalidAgentVar& e) {
+        string msg = "SingleAgentDiscreteMovement submodel missing required variable mapping: " + string(e.what());
+        throw exception::InvalidAgentVar(msg.c_str());
+    }
+}
 
 }  // namespace submodels
 }  // namespace stockAgent

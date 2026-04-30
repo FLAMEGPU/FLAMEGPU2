@@ -6,10 +6,10 @@ get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../.. REALPA
 
 # Handle CMAKE_CUDA_ARCHITECTURES gracefully
 include(${FLAMEGPU_ROOT}/cmake/CUDAArchitectures.cmake)
-flamegpu_init_cuda_architectures(PROJECT sugarscape)
+flamegpu_init_cuda_architectures(PROJECT sugarscapeAI)
 
 # Name the project and enable required languages
-project(sugarscape CXX CUDA)
+project(sugarscapeAI CXX CUDA)
 
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
