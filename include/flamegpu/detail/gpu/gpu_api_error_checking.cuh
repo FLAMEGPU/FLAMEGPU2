@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDAERRORCHECKING_CUH_
-#define INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDAERRORCHECKING_CUH_
+#ifndef INCLUDE_FLAMEGPU_DETAIL_GPU_GPU_API_ERROR_CHECKING_CUH_
+#define INCLUDE_FLAMEGPU_DETAIL_GPU_GPU_API_ERROR_CHECKING_CUH_
 
 #ifndef __CUDACC_RTC__
 
@@ -10,7 +10,6 @@
 
 #include <source_location>
 #include <string>
-// #include <stdexcept>
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
@@ -19,11 +18,11 @@ namespace flamegpu {
 namespace detail {
 
 /**
- * Error check function for safe CUDA API calling
- * @param code CUDA Runtime API return code
+ * Error check function for safe CUDA/HIP API calling
+ * @param code CUDA/HIP Runtime API return code
  * @param file File where errorcode was reported (e.g. __FILE__)
  * @param line Line no where errorcode was reported (e.g. __LINE__)
- * @throws CUDAError If code != cudaSuccess
+ * @throws CUDAError If code != cudaSuccess / hipSuccess
  */
 inline void gpuAssert(flamegpu::detail::gpu::Error_t code, const char *file, int line) {
     if (code != FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) {
@@ -48,11 +47,11 @@ inline void gpuAssert(CUresult code, const char* file, int line) {
 #endif
 
  /**
-  * Error check function for checking for the most recent error
+  * Error check function for checking for the most recent GPU API error
   * @param file File where errorcode was reported (e.g. __FILE__)
   * @param line Line no where errorcode was reported (e.g. __LINE__)
-  * @throws CUDAError If code != cudaSuccess
-  * @see gpuAssert(cudaError_t code, const char *file, int line)
+  * @throws CUDAError If If code != cudaSuccess / hipSuccess
+  * @see gpuAssert(flamegpu::detail::gpu::Error_t code, const char *file, int line)
   * @note Only synchronises in debug builds
   */
 inline void gpuLaunchAssert(const char *file, int line) {
@@ -63,11 +62,13 @@ inline void gpuLaunchAssert(const char *file, int line) {
 }
 
 /**
- * Error check function for safe CUDA API calling, using source_location for a function rather than macro, avoiding global namespace pollution
+ * Error check function for safe CUDA/HIP API calling
  * 
- * @param code CUDA Error type, templated for runtime or device API calls.
+ * Uses source_location so this can be a namespace-scoped function rather than macro
+ * 
+ * @param code CUDA/HIP Error type, templated for runtime or device API calls.
  * @param loc std::source_location object, which when current() is used as the default argument the value represents the call site
- * @throws CUDAError if code != cudaSuccess
+ * @throws CUDAError if If code != cudaSuccess / hipSuccess
  */
 template <typename T>
 inline void gpuCheck(T code, const std::source_location loc = std::source_location::current()) {
@@ -75,19 +76,19 @@ inline void gpuCheck(T code, const std::source_location loc = std::source_locati
 }
 
 /**
- * Error checkinfg function for checking the most recent error, i.e. after a kernel launch. Non-macro variant using source_location
- * @throws CUDAError If code != cudaSuccess
- * @see gpuAssert(cudaError_t code, const char *file, int line)
+ * Error checking function for checking the most recent error, i.e. after a kernel launch
+ * 
+ * Uses source_location so this can be a namespace-scoped function rather than macro
+ * @throws CUDAError If code != cudaSuccess / hipSuccess
+ * @see gpuAssert(flamegpu::detail::gpu::Error_t code, const char *file, int line)
  * @note Only synchronises in debug builds
  */
 inline void gpuCheckLaunch(const std::source_location loc = std::source_location::current()) {
     flamegpu::detail::gpuLaunchAssert(loc.file_name(), loc.line());
 }
 
-
 }  // namespace detail
 }  // namespace flamegpu
 
 #endif  // __CUDACC_RTC__
-
-#endif  // INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDAERRORCHECKING_CUH_
+#endif  // INCLUDE_FLAMEGPU_DETAIL_GPU_GPU_API_ERROR_CHECKING_CUH_

@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 #include "flamegpu/detail/compute_capability.cuh"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 
 #include "gtest/gtest.h"
 namespace flamegpu {
