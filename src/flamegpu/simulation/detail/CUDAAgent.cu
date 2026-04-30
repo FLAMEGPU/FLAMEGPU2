@@ -49,7 +49,7 @@ namespace cub = hipcub;
 #include "flamegpu/version.h"
 #include "flamegpu/simulation/detail/CUDAFatAgent.h"
 #include "flamegpu/simulation/detail/CUDAAgentStateList.h"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/simulation/CUDASimulation.h"
 
 #include "flamegpu/model/AgentDescription.h"

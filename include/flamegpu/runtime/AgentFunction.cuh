@@ -13,7 +13,7 @@
 #include "flamegpu/runtime/AgentFunction_shim.cuh"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #ifndef __CUDACC_RTC__
 #include "flamegpu/runtime/detail/curve/DeviceCurve.cuh"
 #endif

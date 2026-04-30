@@ -12,7 +12,7 @@
 
 #include "flamegpu/model/EnvironmentDirectedGraphData.cuh"
 #include "flamegpu/defines.h"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/detail/type_decode.h"
 #include "flamegpu/util/StringPair.h"
 #include "flamegpu/detail/gpu/types.hpp"
