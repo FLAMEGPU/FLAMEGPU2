@@ -60,8 +60,10 @@ namespace cub = hipcub;
 #include "flamegpu/detail/compute_capability.cuh"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/runtime/agent/DeviceAgentVector_impl.h"
-#include "flamegpu/detail/cuda.cuh"
 #include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
 namespace detail {

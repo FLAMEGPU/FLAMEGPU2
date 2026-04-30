@@ -30,8 +30,10 @@
 #include "flamegpu/simulation/detail/SimRunner.h"
 #include "flamegpu/simulation/LogFrame.h"
 #include "flamegpu/simulation/detail/SimLogger.h"
-#include "flamegpu/detail/cuda.cuh"
 #include "flamegpu/io/Telemetry.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
 CUDAEnsemble::EnsembleConfig::EnsembleConfig()

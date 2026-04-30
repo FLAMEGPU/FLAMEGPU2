@@ -37,8 +37,10 @@ namespace cub = hipcub;
 #include "flamegpu/simulation/detail/CUDAMessage.h"
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/util/nvtx.h"
-#include "flamegpu/detail/cuda.cuh"
 #include "flamegpu/detail/numeric.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
 MessageSpatial2D::CUDAModelHandler::CUDAModelHandler(detail::CUDAMessage &a)

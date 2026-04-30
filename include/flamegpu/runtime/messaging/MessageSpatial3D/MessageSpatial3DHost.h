@@ -9,7 +9,7 @@
 #include "flamegpu/runtime/messaging/MessageSpatial3D.h"
 #include "flamegpu/runtime/messaging/MessageSpatial2D/MessageSpatial2DHost.h"
 #include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 

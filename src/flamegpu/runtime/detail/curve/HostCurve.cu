@@ -13,6 +13,8 @@
 
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/util/nvtx.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {

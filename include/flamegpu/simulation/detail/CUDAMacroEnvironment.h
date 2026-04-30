@@ -16,6 +16,7 @@
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/runtime/detail/curve/HostCurve.cuh"
 #include "flamegpu/runtime/environment/HostMacroProperty.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 // forward declare classes from other modules

@@ -18,6 +18,8 @@
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/runtime/agent/HostNewAgentAPI.h"
 #include "flamegpu/exception/FLAMEGPUException.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 
 #ifdef FLAMEGPU_USE_CUDA
 #ifdef _MSC_VER

@@ -15,6 +15,8 @@
 
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/simulation/detail/CUDAFatAgentStateList.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 #ifdef FLAMEGPU_USE_CUDA

@@ -9,6 +9,8 @@
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/runtime/HostAPI.h"
 #include "flamegpu/util/nvtx.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 #ifdef FLAMEGPU_USE_CUDA

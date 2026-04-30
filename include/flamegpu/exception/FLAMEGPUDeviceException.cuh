@@ -5,7 +5,6 @@
 #include <type_traits>
 
 #include "flamegpu/detail/gpu/types.hpp"
-#include "flamegpu/detail/cuda.cuh"
 #include "flamegpu/simulation/detail/CUDAScanCompaction.h"
 
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS

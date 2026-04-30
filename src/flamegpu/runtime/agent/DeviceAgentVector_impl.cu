@@ -5,7 +5,8 @@
 #include "flamegpu/runtime/agent/DeviceAgentVector_impl.h"
 #include "flamegpu/simulation/detail/CUDAAgent.h"
 #include "flamegpu/runtime/agent/HostNewAgentAPI.h"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 

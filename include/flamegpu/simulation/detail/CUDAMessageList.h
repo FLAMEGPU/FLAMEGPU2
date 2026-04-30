@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 #include <utility>
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 namespace detail {

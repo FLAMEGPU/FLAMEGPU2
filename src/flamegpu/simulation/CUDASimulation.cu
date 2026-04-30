@@ -42,6 +42,9 @@
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/model/SubEnvironmentData.h"
 #include "flamegpu/io/Telemetry.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/cuda.cuh"
 #ifdef FLAMEGPU_VISUALISATION
 #include "flamegpu/visualiser/FLAMEGPU_Visualisation.h"
 #endif

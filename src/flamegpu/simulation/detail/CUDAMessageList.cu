@@ -11,6 +11,8 @@
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h"
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {

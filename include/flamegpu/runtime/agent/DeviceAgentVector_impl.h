@@ -11,7 +11,7 @@
 
 #include "flamegpu/simulation/AgentVector.h"
 #include "flamegpu/simulation/detail/CUDAFatAgentStateList.h"  // VariableBuffer
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 namespace detail {

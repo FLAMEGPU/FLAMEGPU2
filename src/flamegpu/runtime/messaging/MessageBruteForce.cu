@@ -6,6 +6,8 @@
 #include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceDevice.cuh"
 #include "flamegpu/model/AgentDescription.h"  // Used by Move-Assign
 #include "flamegpu/simulation/detail/CUDAMessage.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {

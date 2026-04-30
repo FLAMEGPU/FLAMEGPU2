@@ -4,8 +4,9 @@
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/cuda.cuh"
 
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
 

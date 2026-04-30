@@ -16,7 +16,8 @@
 #include "flamegpu/io/StateReader.h"
 #include "flamegpu/io/StateReaderFactory.h"
 #include "flamegpu/simulation/CUDASimulation.h"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 HostEnvironment::HostEnvironment(CUDASimulation &_simulation, std::shared_ptr<detail::EnvironmentManager> env, std::shared_ptr<detail::CUDAMacroEnvironment> _macro_env,

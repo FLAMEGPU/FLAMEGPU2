@@ -36,10 +36,11 @@ namespace cub = hipcub;
 #include "flamegpu/simulation/detail/CUDAMessage.h"
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/util/nvtx.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/cuda.cuh"
 
 #include "flamegpu/runtime/messaging/MessageBucket/MessageBucketHost.h"
-// #include "flamegpu/runtime/messaging/MessageBucket/MessageBucketDevice.cuh"
-#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
 MessageBucket::CUDAModelHandler::CUDAModelHandler(detail::CUDAMessage &a)

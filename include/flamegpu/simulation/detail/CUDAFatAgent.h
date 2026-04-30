@@ -11,7 +11,7 @@
 #include "flamegpu/simulation/detail/CUDAAgentStateList.h"
 #include "flamegpu/simulation/detail/CUDAFatAgentStateList.h"
 #include "flamegpu/model/SubAgentData.h"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 class HostAPI;

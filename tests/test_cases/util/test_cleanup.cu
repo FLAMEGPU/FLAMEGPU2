@@ -6,6 +6,8 @@
 #include "flamegpu/util/cleanup.h"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/flamegpu.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 
 #include "gtest/gtest.h"
 

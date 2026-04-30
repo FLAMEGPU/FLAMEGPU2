@@ -4,9 +4,11 @@
 
 #include "flamegpu/runtime/messaging/MessageSpatial3D/MessageSpatial3DHost.h"
 #include "flamegpu/runtime/messaging/MessageSpatial3D/MessageSpatial3DDevice.cuh"
-#include "flamegpu/detail/cuda.cuh"
 #include "flamegpu/detail/numeric.h"
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/cuda.cuh"
 
 #ifdef FLAMEGPU_USE_CUDA
 #ifdef _MSC_VER

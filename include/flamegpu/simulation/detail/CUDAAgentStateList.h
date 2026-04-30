@@ -7,7 +7,7 @@
 #include <list>
 
 #include "flamegpu/simulation/detail/CUDAFatAgentStateList.h"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 struct VarOffsetStruct;

@@ -19,7 +19,7 @@
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 #include "flamegpu/simulation/detail/AgentInterface.h"
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 
 namespace flamegpu {

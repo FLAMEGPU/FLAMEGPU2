@@ -17,8 +17,10 @@
 #include "flamegpu/runtime/environment/HostEnvironment.cuh"
 #include "flamegpu/runtime/HostAPI_macros.h"
 #include "flamegpu/runtime/agent/HostNewAgentAPI.h"
-#include "flamegpu/detail/cuda.cuh"
 #include "flamegpu/simulation/CUDASimulation.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
 namespace detail {

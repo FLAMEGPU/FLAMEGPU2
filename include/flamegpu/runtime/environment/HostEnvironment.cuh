@@ -20,7 +20,7 @@
 #include "flamegpu/runtime/environment/HostMacroProperty.cuh"
 #include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
 #include "flamegpu/runtime/environment/HostEnvironmentDirectedGraph.cuh"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 

@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "flamegpu/runtime/agent/DeviceAgentVector_impl.h"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 

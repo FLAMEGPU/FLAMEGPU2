@@ -19,7 +19,7 @@
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/detail/compute_capability.cuh"
 #include "flamegpu/util/nvtx.h"
-
+#include "flamegpu/detail/gpu/macros.hpp"
 
 namespace flamegpu {
 namespace detail {

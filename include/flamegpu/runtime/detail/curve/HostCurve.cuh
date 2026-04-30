@@ -10,7 +10,7 @@
 
 #include "flamegpu/runtime/detail/curve/Curve.cuh"
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 namespace detail {

@@ -1,8 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDASCANCOMPACTION_H_
 #define INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDASCANCOMPACTION_H_
 
-#include <flamegpu/detail/gpu/types.hpp>
-#include <flamegpu/detail/cuda.cuh>
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 // forward declare classes from other modules

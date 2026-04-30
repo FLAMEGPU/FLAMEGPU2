@@ -18,6 +18,7 @@
 #include "flamegpu/runtime/detail/curve/HostCurve.cuh"
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/runtime/messaging.h"
+#include "flamegpu/detail/gpu/types.hpp"
 
 #ifdef FLAMEGPU_USE_CUDA
 #ifdef _MSC_VER

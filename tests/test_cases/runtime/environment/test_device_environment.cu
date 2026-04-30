@@ -5,6 +5,8 @@
  * > get() [per supported type, individual/array/element]
  */
 #include "flamegpu/flamegpu.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 
 #include "gtest/gtest.h"
 

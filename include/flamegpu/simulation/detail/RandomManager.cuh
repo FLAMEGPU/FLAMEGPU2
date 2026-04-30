@@ -8,7 +8,7 @@
 #include "flamegpu/defines.h"
 #include "flamegpu/detail/curand.cuh"
 #include "flamegpu/simulation/Simulation.h"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 // forward declare classes

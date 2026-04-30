@@ -12,7 +12,8 @@
 #include <string>
 // #include <stdexcept>
 #include "flamegpu/exception/FLAMEGPUException.h"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 namespace detail {

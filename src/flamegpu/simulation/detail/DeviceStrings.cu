@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/cuda.cuh"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 

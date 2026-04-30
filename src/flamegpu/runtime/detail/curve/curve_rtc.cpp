@@ -8,8 +8,10 @@
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
-#include "flamegpu/detail/cuda.cuh"
 #include "flamegpu/detail/demangle.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/cuda.cuh"
 
 #include "jitify/jitify2.hpp"
 

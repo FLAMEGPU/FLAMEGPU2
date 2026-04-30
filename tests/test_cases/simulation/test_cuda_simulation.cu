@@ -7,8 +7,8 @@
 #include <fstream>
 
 #include "flamegpu/flamegpu.h"
+#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/compute_capability.cuh"
-#include "flamegpu/detail/cuda.cuh"
 #include "helpers/device_initialisation.h"
 #include "flamegpu/io/Telemetry.h"
 

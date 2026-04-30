@@ -13,9 +13,10 @@
 #include "flamegpu/model/EnvironmentDirectedGraphData.cuh"
 #include "flamegpu/defines.h"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
-#include "flamegpu/detail/cuda.cuh"
 #include "flamegpu/detail/type_decode.h"
 #include "flamegpu/util/StringPair.h"
+#include "flamegpu/detail/gpu/types.hpp"
+
 namespace flamegpu {
 #ifdef FLAMEGPU_VISUALISATION
 namespace visualiser {

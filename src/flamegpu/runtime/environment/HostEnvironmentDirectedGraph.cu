@@ -8,7 +8,7 @@
 
 #include "flamegpu/io/JSONGraphReader.h"
 #include "flamegpu/io/JSONGraphWriter.h"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 HostEnvironmentDirectedGraph::HostEnvironmentDirectedGraph(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>& _directed_graph, const flamegpu::detail::gpu::Stream_t _stream,

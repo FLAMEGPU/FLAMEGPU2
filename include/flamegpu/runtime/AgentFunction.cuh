@@ -11,7 +11,8 @@
 #include "flamegpu/defines.h"
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 #include "flamegpu/runtime/AgentFunction_shim.cuh"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
 #ifndef __CUDACC_RTC__
 #include "flamegpu/runtime/detail/curve/DeviceCurve.cuh"

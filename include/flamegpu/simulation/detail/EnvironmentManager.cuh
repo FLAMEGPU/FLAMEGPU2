@@ -19,7 +19,7 @@
 #include "flamegpu/runtime/detail/curve/HostCurve.cuh"
 #include "flamegpu/detail/type_decode.h"
 #include "flamegpu/detail/Any.h"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 
 namespace flamegpu {

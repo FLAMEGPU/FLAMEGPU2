@@ -9,6 +9,7 @@
 #include "flamegpu/simulation/Simulation.h"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/simulation/CUDASimulation.h"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {

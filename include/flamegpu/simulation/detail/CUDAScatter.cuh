@@ -11,7 +11,7 @@
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/simulation/detail/CubTemporaryMemory.cuh"
 #include "flamegpu/simulation/detail/CUDAScanCompaction.h"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 struct VarOffsetStruct;

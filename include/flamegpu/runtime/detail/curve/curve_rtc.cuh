@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "flamegpu/util/StringPair.h"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace jitify2 {
 class KernelData;

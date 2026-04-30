@@ -10,6 +10,8 @@
 #include "flamegpu/model/AgentFunctionData.cuh"
 #include "flamegpu/model/SubEnvironmentData.h"
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {

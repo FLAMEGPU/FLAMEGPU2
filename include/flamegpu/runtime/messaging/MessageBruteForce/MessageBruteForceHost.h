@@ -14,7 +14,7 @@
 #include "flamegpu/runtime/messaging/MessageBruteForce.h"
 #include "flamegpu/runtime/messaging/MessageSortingType.h"
 #include "flamegpu/detail/type_decode.h"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 

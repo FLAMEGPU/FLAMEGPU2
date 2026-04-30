@@ -8,7 +8,7 @@
 #include "flamegpu/detail/Timer.h"
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
 
 namespace flamegpu {
 namespace detail {

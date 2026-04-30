@@ -7,8 +7,7 @@
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/runtime/messaging/MessageArray.h"
 #include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h"
-#include "flamegpu/detail/cuda.cuh"
-
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 

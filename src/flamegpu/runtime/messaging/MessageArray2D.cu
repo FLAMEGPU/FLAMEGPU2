@@ -9,7 +9,8 @@
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 
 #include "flamegpu/runtime/messaging/MessageArray2D/MessageArray2DHost.h"
-// #include "flamegpu/runtime/messaging/MessageArray2D/MessageArray2DDevice.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {

@@ -10,7 +10,7 @@
 
 #include "flamegpu/model/AgentData.h"
 #include "flamegpu/model/SubAgentData.h"
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 namespace detail {
