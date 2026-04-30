@@ -961,6 +961,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageArray, flamegpu::MessageNone) 
 }
 )###";
 TEST(TestRTCMessage_Array, ArrayVariable_glm) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription m(MODEL_NAME);
     MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
@@ -995,6 +996,9 @@ TEST(TestRTCMessage_Array, ArrayVariable_glm) {
         ASSERT_EQ(v[1], index * 7);
         ASSERT_EQ(v[2], index * 11);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 #else
 TEST(TestMessage_Array, DISABLED_ArrayVariable_glm) { }

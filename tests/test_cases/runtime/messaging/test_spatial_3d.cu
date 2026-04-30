@@ -804,6 +804,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageSpatial3D, flamegpu::MessageNo
 }
 )###";
 TEST(RTCSpatial3DMessageTest, ArrayVariable_glm) {
+    #ifdef FLAMEGPU_USE_CUDA
     const char* MODEL_NAME = "Model";
     const char* AGENT_NAME = "Agent";
     const char* MESSAGE_NAME = "Message";
@@ -852,6 +853,9 @@ TEST(RTCSpatial3DMessageTest, ArrayVariable_glm) {
         ASSERT_EQ(v[1], index[1] * 7);
         ASSERT_EQ(v[2], index[2] * 11);
     }
+    #else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    #endif  // FLAMEGPU_USE_CUDA
 }
 #else
 TEST(Spatial3DMessageTest, DISABLED_ArrayVariable_glm) { }

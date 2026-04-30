@@ -1577,6 +1577,7 @@ FLAMEGPU_AGENT_FUNCTION(MandatoryOutputArray_glm, flamegpu::MessageNone, flamegp
 }
 )###";
 TEST(DeviceRTCAgentCreationTest, Output_Array_glm) {
+#ifdef FLAMEGPU_USE_CUDA
     // Define model
     ModelDescription model("Spatial3DMessageTestModel");
     AgentDescription agent = model.newAgent("agent");
@@ -1614,6 +1615,9 @@ TEST(DeviceRTCAgentCreationTest, Output_Array_glm) {
     }
     EXPECT_EQ(is_1, AGENT_COUNT);
     EXPECT_EQ(is_12, AGENT_COUNT);
+    #else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    #endif  // FLAMEGPU_USE_CUDA
 }
 #else
 TEST(DeviceAgentCreationTest, DISABLED_Output_Array_glm) {}
