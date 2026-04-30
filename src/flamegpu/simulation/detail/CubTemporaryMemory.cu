@@ -6,7 +6,7 @@
 
 #include <cassert>
 
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/cuda.cuh"
