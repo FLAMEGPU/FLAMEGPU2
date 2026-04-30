@@ -3,13 +3,13 @@
 
 /**
  * Macros used for the thin CUDA/HIP abstraction.
- * Todo: This should be temporary, and combined into a single flamegpu/detail/gpu header which is the only place the macros are used? 
+ * Todo: This should be temporary, and combined into a single flamegpu/detail/gpu header which is the only place the macros are used?
  */
 
 #if defined(FLAMEGPU_USE_CUDA)
 #include <cuda_runtime.h>
 #include <cuda.h>
-#endif 
+#endif
 
 #if defined(FLAMEGPU_USE_HIP)
 #include <hip/hip_runtime.h>
