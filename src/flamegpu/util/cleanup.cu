@@ -9,7 +9,7 @@
 #endif
 
 #include "flamegpu/detail/gpu/macros.hpp"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/detail/JitifyCache.h"
 
 namespace flamegpu {

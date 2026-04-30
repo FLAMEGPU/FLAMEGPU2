@@ -8,7 +8,7 @@
 
 #include "flamegpu/simulation/detail/CUDAMessageList.h"
 #include "flamegpu/simulation/detail/CUDAMessage.h"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h"
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/detail/gpu/macros.hpp"

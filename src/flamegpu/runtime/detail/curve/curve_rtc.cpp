@@ -6,7 +6,7 @@
 
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 #include "flamegpu/exception/FLAMEGPUException.h"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
 #include "flamegpu/detail/demangle.h"
 #include "flamegpu/detail/gpu/macros.hpp"

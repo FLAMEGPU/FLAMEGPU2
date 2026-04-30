@@ -5,7 +5,7 @@
 #include <string>
 #include <set>
 
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 
 namespace flamegpu {
 namespace detail {

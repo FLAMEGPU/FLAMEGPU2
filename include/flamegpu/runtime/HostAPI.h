@@ -12,7 +12,7 @@
 #include <vector>
 #include <memory>
 
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/runtime/random/HostRandom.cuh"
 #include "flamegpu/runtime/environment/HostEnvironment.cuh"
 #include "flamegpu/runtime/HostAPI_macros.h"

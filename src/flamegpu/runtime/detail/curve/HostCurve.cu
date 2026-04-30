@@ -11,7 +11,7 @@
 #include "flamegpu/runtime/detail/curve/HostCurve.cuh"
 
 
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
