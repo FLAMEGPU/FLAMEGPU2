@@ -1436,7 +1436,7 @@ FLAMEGPU_AGENT_FUNCTION(DeviceBirth, flamegpu::MessageNone, flamegpu::MessageNon
         }
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -1616,7 +1616,7 @@ TEST(DeviceRTCAgentCreationTest, Output_Array_glm) {
     EXPECT_EQ(is_1, AGENT_COUNT);
     EXPECT_EQ(is_12, AGENT_COUNT);
     #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
     #endif  // FLAMEGPU_USE_CUDA
 }
 #else

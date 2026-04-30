@@ -37,7 +37,7 @@ TEST(DeviceRTCAPITest, AgentFunction_empty) {
     // Run 1 step to ensure agent function compiles and runs
     cudaSimulation.step();
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -65,7 +65,7 @@ TEST(DeviceRTCAPITest, AgentFunction_differentName) {
     // Run 1 step to ensure agent function compiles and runs
     cudaSimulation.step();
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -140,7 +140,7 @@ TEST(DeviceRTCAPITest, AgentFunction_death) {
     // Check population size is half of initial
     EXPECT_EQ(population.size(), AGENT_COUNT / 2);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -182,7 +182,7 @@ TEST(DeviceRTCAPITest, AgentFunction_get) {
     // Check population size is half of initial (which is only possible if get has returned the correct id)
     EXPECT_EQ(population.size(), AGENT_COUNT / 2);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -227,7 +227,7 @@ TEST(DeviceRTCAPITest, AgentFunction_getset) {
         EXPECT_EQ(instance.getVariable<int>("id_out"), i);
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -282,7 +282,7 @@ TEST(DeviceRTCAPITest, AgentFunction_array_get) {
         EXPECT_EQ(instance.getVariable<int>("a4"), 16 + j);
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -354,7 +354,7 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set) {
         EXPECT_EQ(instance.getVariable<int>("a0"), static_cast<int>(i));
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -411,7 +411,7 @@ TEST(DeviceRTCAPITest, AgentFunction_array_get_glm) {
         EXPECT_EQ(instance.getVariable<int>("a4"), 16 + j);
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -474,7 +474,7 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set_glm) {
         EXPECT_EQ(instance.getVariable<int>("a0"), static_cast<int>(i));
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 #else
@@ -541,7 +541,7 @@ TEST(DeviceRTCAPITest, AgentFunction_message_bruteforce) {
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -604,7 +604,7 @@ TEST(DeviceRTCAPITest, AgentFunction_random) {
         EXPECT_TRUE(a != c);
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -707,7 +707,7 @@ TEST(DeviceRTCAPITest, AgentFunction_env) {
         }
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -765,7 +765,7 @@ TEST(DeviceRTCAPITest, AgentFunction_agent_output) {
     EXPECT_EQ(is_1, AGENT_COUNT);
     EXPECT_EQ(is_12, AGENT_COUNT / 2);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -832,7 +832,7 @@ TEST(DeviceRTCAPITest, AgentFunction_cond_non_rtc) {
         EXPECT_EQ(id_out, id);
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -901,7 +901,7 @@ TEST(DeviceRTCAPITest, AgentFunction_cond_rtc) {
         EXPECT_EQ(id_out, id);
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -947,7 +947,7 @@ TEST(DeviceRTCAPITest, getStepCounter) {
         }
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 

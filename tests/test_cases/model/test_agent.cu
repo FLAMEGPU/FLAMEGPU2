@@ -257,7 +257,7 @@ TEST(AgentDescriptionTest, rtc_function_from_file) {
     // Cleanup the file we created
     ASSERT_EQ(::remove(test_file_name.c_str()), 0);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 TEST(AgentDescriptionTest, rtc_function_from_file_missing) {
@@ -269,7 +269,7 @@ TEST(AgentDescriptionTest, rtc_function_from_file_missing) {
     a.newVariable<int>("x");
     EXPECT_THROW(a.newRTCFunctionFile("test_rtcfunc_file2", test_file_name), exception::InvalidFilePath);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 

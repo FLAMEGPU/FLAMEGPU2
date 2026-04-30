@@ -828,7 +828,7 @@ TEST(DeviceMacroPropertyTest, DISABLED_RTC_WriteRead) {
     cudaSimulation.setPopulationData(population);
     EXPECT_THROW(cudaSimulation.simulate(), flamegpu::exception::DeviceError);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -879,7 +879,7 @@ TEST(DeviceMacroPropertyTest, RTC_add) {
     const unsigned int t_out = population.at(0).getVariable<unsigned int>("b");
     ASSERT_EQ(13u, t_out);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 

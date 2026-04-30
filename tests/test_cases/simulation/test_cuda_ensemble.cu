@@ -371,7 +371,7 @@ TEST(TestCUDAEnsemble, simulate_rtc) {
     EXPECT_THROW(ensemble.simulate(modelTwoPlans), flamegpu::exception::InvalidArgument);
     // Exceptions can also be thrown if output_directory cannot be created, but I'm unsure how to reliably test this cross platform.
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 TEST(TestCUDAEnsemble, verbosity) {
@@ -645,7 +645,7 @@ TEST(TestCUDAEnsemble, getEnsembleElapsedTime_rtc) {
     double threshold = sleepDurationSeconds * 0.8;
     EXPECT_GE(elapsedSeconds, threshold);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 unsigned int tracked_err_ct;
@@ -834,7 +834,7 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDASimulation_rtc) {
     // At this point, the cudaSim should still be usable (and dtor-able()
     EXPECT_NO_THROW(simulation.step());
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -1095,7 +1095,7 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc_rtc) {
     }
     d_int = nullptr;
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 

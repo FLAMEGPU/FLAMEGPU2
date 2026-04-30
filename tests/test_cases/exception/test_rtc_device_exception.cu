@@ -54,7 +54,7 @@ TEST(RTCDeviceExceptionTest, getAgentVar_name) {
     // The appropriate exception was thrown?
     ASSERT_TRUE(did_except);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_getAgentVarType = R"###(
@@ -83,7 +83,7 @@ TEST(RTCDeviceExceptionTest, getAgentVar_typesize) {
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 /**
@@ -124,7 +124,7 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_name) {
     // The appropriate exception was thrown?
     ASSERT_TRUE(did_except);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_getAgentArrayVar1 = R"###(
@@ -152,7 +152,7 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_typesize) {
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_getAgentArrayVar2 = R"###(
@@ -180,7 +180,7 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_length) {
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_getAgentArrayVar3 = R"###(
@@ -208,7 +208,7 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_bounds) {
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 /**
@@ -250,7 +250,7 @@ TEST(RTCDeviceExceptionTest, setAgentVar_name) {
     // The appropriate exception was thrown?
     ASSERT_TRUE(did_except);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_setAgentVar2 = R"###(
@@ -279,7 +279,7 @@ TEST(RTCDeviceExceptionTest, setAgentVar_typesize) {
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 /**
@@ -320,7 +320,7 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_name) {
     // The appropriate exception was thrown?
     ASSERT_TRUE(did_except);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_setAgentArrayVar1 = R"###(
@@ -348,7 +348,7 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_typesize) {
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_setAgentArrayVar2 = R"###(
@@ -376,7 +376,7 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_length) {
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_setAgentArrayVar3 = R"###(
@@ -404,7 +404,7 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_bounds) {
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 /**
@@ -447,7 +447,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentProp_name) {
     // The appropriate exception was thrown?
     ASSERT_TRUE(did_except);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_getEnvironmentProp1 = R"###(
@@ -477,7 +477,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentProp_typesize) {
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 /**
@@ -520,7 +520,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_name) {
     // The appropriate exception was thrown?
     ASSERT_TRUE(did_except);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_getEnvironmentArrayProp1 = R"###(
@@ -550,7 +550,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_typesize) {
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 // Device environment does not currently require user to specify length of array
@@ -581,7 +581,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_length) {
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_getEnvironmentArrayProp3 = R"###(
@@ -611,7 +611,7 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_bounds) {
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 

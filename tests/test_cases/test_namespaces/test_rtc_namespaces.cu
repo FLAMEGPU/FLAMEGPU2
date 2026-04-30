@@ -69,7 +69,7 @@ TEST(RTCNamespaceTest, AgentFunctionsExplicit) {
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -136,7 +136,7 @@ TEST(RTCNamespaceTest, AgentFunctionsDeclaration) {
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -199,7 +199,7 @@ TEST(RTCNamespaceTest, AgentFunctionsDirective) {
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -270,7 +270,7 @@ TEST(RTCNamespaceTest, AgentFunctionsNamed) {#ifdef FLAMEGPU_USE_CUDA
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
  */
@@ -334,7 +334,7 @@ TEST(RTCNamespaceTest, AgentFunctionsAlias) {
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -397,7 +397,7 @@ TEST(RTCNamespaceTest, AgentFunctionsAliasMixed) {
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 

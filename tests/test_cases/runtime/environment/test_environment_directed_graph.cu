@@ -1883,7 +1883,7 @@ TEST(TestEnvironmentDirectedGraph_RTC, Test_DeviceGetVertex_SEATBELTS1) {
 
     EXPECT_THROW(sim.step(), exception::DeviceError);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 TEST(TestEnvironmentDirectedGraph_RTC, Test_DeviceGetEdge_SEATBELTS1) {
@@ -1918,7 +1918,7 @@ TEST(TestEnvironmentDirectedGraph_RTC, Test_DeviceGetEdge_SEATBELTS1) {
 
     EXPECT_THROW(sim.step(), exception::DeviceError);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 #else

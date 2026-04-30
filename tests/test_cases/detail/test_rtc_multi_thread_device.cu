@@ -173,7 +173,7 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Message) {
     }
     ASSERT_EQ(cudaSetDevice(0), cudaSuccess);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Environment) {
@@ -272,8 +272,12 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Environment) {
         }
     }
     ASSERT_EQ(cudaSetDevice(0), cudaSuccess);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
+#ifdef FLAMEGPU_USE_CUDA
     const unsigned int POP_SIZE = 1000;
     const int SIMS_PER_DEVICE = 3;
     const int STEPS = 5;
@@ -349,7 +353,7 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
     }
     ASSERT_EQ(cudaSetDevice(0), cudaSuccess);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
@@ -427,7 +431,7 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
     }
     ASSERT_EQ(cudaSetDevice(0), cudaSuccess);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 }  // namespace test_rtc_multi_thread_device

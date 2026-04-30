@@ -495,7 +495,7 @@ TEST(RTCDeviceEnvironmentTest, get_array_shorthand) {
     const std::array<float, 3> t_out = population.at(0).getVariable<float, 3>("k");
     ASSERT_EQ(t_in, t_out);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 #ifdef FLAMEGPU_USE_GLM
@@ -550,7 +550,7 @@ TEST(RTCDeviceEnvironmentTest, Get_array_glm) {
     const glm::vec3 t_out = population.at(0).getVariable<glm::vec3>("k");
     ASSERT_EQ(t_in, t_out);
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 #else

@@ -641,7 +641,7 @@ TEST(RTCSpatial2DMessageTest, ArrayVariable) {
         ASSERT_EQ(v[2], index[1] * 11);
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 
@@ -787,7 +787,7 @@ TEST(RTCSpatial2DMessageTest, ArrayVariable_glm) {
         ASSERT_EQ(v[2], index[1] * 11);
     }
 #else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
 #endif  // FLAMEGPU_USE_CUDA
 }
 #else
