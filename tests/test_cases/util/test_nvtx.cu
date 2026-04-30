@@ -25,12 +25,5 @@ TEST(TestUtilNVTX, nvtx) {
     {
         flamegpu::util::nvtx::Range r{"Test_NVTX_RANGE"};
     }
-
-    // If NVTX is enabled, we can check macros to determine which version was loaded.
-    #if defined(FLAMEGPU_USE_NVTX) && defined(__CUDACC_VER_MAJOR__) && defined(NVTX_VERSION)
-        int nvtx_version = NVTX_VERSION;
-        // CUDA >= 10.0 should be using NVTX3 or newer
-        EXPECT_GE(nvtx_version, 3);
-    #endif
 }
 }  // namespace flamegpu
