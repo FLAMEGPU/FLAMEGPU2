@@ -43,7 +43,6 @@ namespace {
             FLAMEGPU->setVariable<int>("moved_this_step", 0);
             FLAMEGPU->setVariable<int>("target_x", -1);
             FLAMEGPU->setVariable<int>("target_y", -1);
-
         }
 
         if (FLAMEGPU->getVariable<int>("moved_this_step") == 1) {
