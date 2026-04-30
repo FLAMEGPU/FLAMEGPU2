@@ -88,6 +88,6 @@ inline void gpuCheckLaunch(const std::source_location loc = std::source_location
 }  // namespace detail
 }  // namespace flamegpu
 
-#endif  //__CUDACC_RTC__
+#endif  // __CUDACC_RTC__
 
 #endif  // INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDAERRORCHECKING_CUH_
