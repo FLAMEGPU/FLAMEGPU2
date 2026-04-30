@@ -30,7 +30,7 @@ FLAMEGPU_AGENT_FUNCTION(calculate_priority, MessageNone, MessageNone) {
     if (current_nectar > 0.01f && hunger_level > 0.0f) {
         FLAMEGPU->setVariable<float>("priority", 0.0f);
         // Ensure submodel doesn't move us if we want to stay
-        FLAMEGPU->setVariable<float>("current_cell_score", 1000.0f); 
+        FLAMEGPU->setVariable<float>("current_cell_score", 1000.0f);
         return ALIVE;
     }
 
@@ -78,13 +78,13 @@ FLAMEGPU_INIT_FUNCTION(createAgent) {
     const int FLOWER_SPACING = 5;
 
     // Create bees at random unique positions first
-    const int NUM_BEES = 100; // Increased count to see more action
+    const int NUM_BEES = 100;
     auto bee_api = FLAMEGPU->agent("bee");
 
     std::vector<int> available_indices(GRID_DIM * GRID_DIM);
     std::iota(available_indices.begin(), available_indices.end(), 0);
 
-    std::mt19937 g(std::random_device{}());
+    std::mt19937 g(std::random_device {}());
     std::shuffle(available_indices.begin(), available_indices.end(), g);
 
     std::vector<bool> is_bee_at(GRID_DIM * GRID_DIM, false);
