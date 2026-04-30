@@ -103,8 +103,8 @@ endif()
 option(FLAMEGPU_ENABLE_GLM "Experimental: Make GLM available to flamegpu2 projects on the include path" OFF)
 mark_as_advanced(FLAMEGPU_ENABLE_GLM)
 if (FLAMEGPU_ENABLE_GLM AND FLAMEGPU_GPU STREQUAL "HIP")
-    message(WARNING
-        "  FLAMEGPU_ENABLE_GLM support with FLAMEGPU_GPU=${FLAMEGPU_GPU} is currently untested and may not be compatible.\n"
+    message(FATAL_ERROR
+        "  FLAMEGPU_ENABLE_GLM support with FLAMEGPU_GPU=${FLAMEGPU_GPU} is not yet implemented.\n"
         "  See https://github.com/FLAMEGPU/FLAMEGPU2/issues/1376 for more information.\n"
     )
 endif()
