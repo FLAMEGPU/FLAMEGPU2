@@ -2,6 +2,7 @@
 #include <cuda_runtime.h>
 #endif
 
+#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/wddm.cuh"
 #include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 
@@ -11,23 +12,22 @@ namespace flamegpu {
 
 // Test getting the WDDM status of a device.
 TEST(TestUtilWDDM, deviceIsWDDM) {
-#ifdef FLAMEGPU_USE_CUDA
     // The output of these methods depends on the device it is running on, and will not be easy to mock.
     // Instead, it compares the computed value by the library against a locally calculated value, likely using the same code as in the implementation.
 
     // Get the number of cuda devices
     int device_count = 0;
-    if (cudaSuccess != cudaGetDeviceCount(&device_count) || device_count <= 0) {
+    if (FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) != FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&device_count) || device_count <= 0) {
         return;
     }
     // For each CUDA device, get the wddm value and check it.
     // Do not only check this if _MSC_VER, unsure how this will behave if WDDM + WSL
     for (int i = 0; i < device_count; i++) {
         bool reference = false;
-        #ifdef _MSC_VER
+        #if defined(_MSC_VER) && defined(FLAMEGPU_USE_CUDA)
             int tccDriver = 0;
             // Get if the driver is TCC or not
-            flamegpu::detail::gpuCheck(cudaDeviceGetAttribute(&tccDriver, cudaDevAttrTccDriver, i));
+            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceGetAttribute)(&tccDriver, FLAMEGPU_GPU_RUNTIME_SYMBOL(DevAttrTccDriver), i));
             // WDDM driver is if not the tcc driver, and on windows.
             reference = !tccDriver;
         #endif
@@ -41,18 +41,15 @@ TEST(TestUtilWDDM, deviceIsWDDM) {
 
     // Also check for the current device.
     int currentDeviceIndex = 0;
-    flamegpu::detail::gpuCheck(cudaGetDevice(&currentDeviceIndex));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDevice)(&currentDeviceIndex));
     bool reference = false;
-    #ifdef _MSC_VER
+    #if defined(_MSC_VER) && defined(FLAMEGPU_USE_CUDA)
         int tccDriver = 0;
         // Get if the driver is TCC or not
-        flamegpu::detail::gpuCheck(cudaDeviceGetAttribute(&tccDriver, cudaDevAttrTccDriver, currentDeviceIndex));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceGetAttribute)(&tccDriver, FLAMEGPU_GPU_RUNTIME_SYMBOL(DevAttrTccDriver), currentDeviceIndex));
         // WDDM driver is if not the tcc driver, and on windows.
         reference = !tccDriver;
     #endif
     EXPECT_EQ(detail::wddm::deviceIsWDDM(), reference);
-#else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
-#endif  // FLAMEGPU_USE_CUDA
 }
 }  // namespace flamegpu
