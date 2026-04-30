@@ -3,21 +3,15 @@
 
 #include <cstdint>
 
-// If NVTX is enabled, include header, defined namespace / class and macros.
+// If NVTX is enabled, include the appropriate header and define some internal types
 #if defined(FLAMEGPU_USE_NVTX)
-    // Include the appropriate header if enabled
-    #if FLAMEGPU_USE_NVTX >= 3
+    #if defined(FLAMEGPU_USE_CUDA)
         #include "nvtx3/nvToolsExt.h"
-    #else
-        #include "nvToolsExt.h"
-    #endif
-#endif
-
-/* @todo - Make these macros testable.
-   If FLAMEGPU_USE_NVTX is enabled, store static counts of push/pop/range's
-   Make accessors to enable testing the number of counts is as expected
-   Could also include this in a device shutdown method, to report if there is a mismatch of push/pop and therefore an NVTX error.
-*/
+    #endif  // defined(FLAMEGPU_USE_CUDA)
+    #if defined(FLAMEGPU_USE_HIP)
+        #include <rocprofiler-sdk-roctx/roctx.h>
+    #endif  // defined(FLAMEGPU_USE_HIP)
+#endif  // defined(FLAMEGPU_USE_NVTX)
 
 namespace flamegpu {
 namespace util {
@@ -58,6 +52,7 @@ inline void push(const char * label) {
     // Only do anything if nvtx is enabled, but also need to macro guard things from the  guarded headers
     #if defined(FLAMEGPU_USE_NVTX)
         if constexpr (ENABLED) {
+        #if defined(FLAMEGPU_USE_CUDA)
             // Static variable to track the next colour to be used with auto rotation.
             static uint32_t nextColourIdx = 0;
 
@@ -81,8 +76,12 @@ inline void push(const char * label) {
 
             // Increment the counter tracking the next colour to use.
             nextColourIdx = colourIdx + 1;
+        #else  // defined(FLAMEGPU_USE_HIP)
+            // roctx does not include an equivalent to nvtxRangePushEx, can only use the naive version
+            roctxRangePush(label);
+        #endif
         }
-    #endif
+    #endif  // defined(FLAMEGPU_USE_NVTX)
 }
 
 /**
@@ -93,7 +92,11 @@ inline void pop() {
     // Only do anything if nvtx is enabled
     #if defined(FLAMEGPU_USE_NVTX)
         if constexpr (ENABLED) {
+        #if defined(FLAMEGPU_USE_CUDA)
             nvtxRangePop();
+        #else  // defined(FLAMEGPU_USE_HIP)
+            roctxRangePop();
+        #endif
         }
     #endif
 }
