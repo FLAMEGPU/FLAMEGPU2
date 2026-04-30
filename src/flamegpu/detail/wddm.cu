@@ -17,12 +17,13 @@ bool wddm::deviceIsWDDM(int deviceIndex) {
         // Throw an excpetion if the device index is bad.
         THROW exception::InvalidCUDAdevice();
     }
-    // @todo - once WSL does not require insider builds, check how this behaves. AFAIK WSL is only supported for WDDM, but this may be incorrect.
+    // Assume not WDDM
     bool isWDDM = false;
-    #ifdef _MSC_VER
+    // If on windows with CUDA, check the tccDriver attribute, setting the result value to true if it is not tcc
+    #if defined(_MSC_VER) && defined(FLAMEGPU_USE_CUDA)
         int tccDriver = 0;
         // Load device attributes
-        flamegpu::detail::gpuCheck(cudaDeviceGetAttribute(&tccDriver, cudaDevAttrTccDriver, deviceIndex));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceGetAttribute)(&tccDriver, FLAMEGPU_GPU_RUNTIME_SYMBOL(DevAttrTccDriver), deviceIndex));
         // Compute the return value
         isWDDM = !tccDriver;
     #endif
