@@ -3,7 +3,7 @@
 
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"

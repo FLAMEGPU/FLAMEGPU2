@@ -3,7 +3,7 @@
 #endif
 
 #include "flamegpu/detail/wddm.cuh"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 
 #include "gtest/gtest.h"
 namespace flamegpu {
