@@ -8,7 +8,7 @@
 
 #include "flamegpu/model/EnvironmentData.h"
 #include "flamegpu/model/SubEnvironmentData.h"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/detail/gpu/macros.hpp"

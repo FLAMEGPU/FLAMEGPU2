@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "flamegpu/model/Variable.h"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 
 #include "flamegpu/runtime/messaging/MessageNone/MessageNoneHost.h"
 #include "flamegpu/runtime/messaging/MessageBruteForce.h"

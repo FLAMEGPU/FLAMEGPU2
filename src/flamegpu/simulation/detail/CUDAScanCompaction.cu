@@ -1,7 +1,7 @@
 #include <cassert>
 
 #include "flamegpu/simulation/detail/CUDAScanCompaction.h"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/simulation/CUDASimulation.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"

@@ -8,7 +8,7 @@
 #include <limits>
 
 #include "flamegpu/simulation/detail/CUDAAgent.h"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/runtime/detail/curve/HostCurve.cuh"
 #include "flamegpu/detail/gpu/macros.hpp"
