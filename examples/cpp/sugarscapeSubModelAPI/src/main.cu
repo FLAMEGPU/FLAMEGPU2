@@ -254,41 +254,5 @@ int main(int argc, const char ** argv) {
         cudaSimulation.setPopulationData(cell_pop);
     }
 
-    /**
-     * Visualization
-     */
-#ifdef FLAMEGPU_VISUALISATION
-    flamegpu::visualiser::ModelVis visualisation = cudaSimulation.getVisualisation();
-    visualisation.setSimulationSpeed(2);
-    visualisation.setInitialCameraLocation(GRID_WIDTH / 2.0f, GRID_HEIGHT / 2.0f, 225.0f);
-    visualisation.setInitialCameraTarget(GRID_WIDTH / 2.0f, GRID_HEIGHT / 2.0f, 0.0f);
-    visualisation.setOrthographic(true);
-    visualisation.setOrthographicZoomModifier(0.365f);
-
-    auto bug_vis = visualisation.addAgent("bug");
-    bug_vis.setModel(flamegpu::visualiser::Stock::Models::CUBE);
-    bug_vis.setModelScale(0.8f);
-    bug_vis.setColor(flamegpu::visualiser::Stock::Colors::RED);
-
-    auto cell_vis = visualisation.addAgent("sugar_cell");
-    cell_vis.setModel(flamegpu::visualiser::Stock::Models::CUBE);
-    cell_vis.setModelScale(1.0f);
-
-    // Color cells based on sugar level
-    flamegpu::visualiser::DiscreteColor<float> cell_colors = flamegpu::visualiser::DiscreteColor<float>("sugar", flamegpu::visualiser::Stock::Palettes::Viridis((unsigned int)SUGAR_MAX_CAPACITY + 1));
-    cell_vis.setColor(cell_colors);
-
-    visualisation.activate();
-#endif
-
-    /**
-     * Run Simulation
-     */
-    cudaSimulation.simulate();
-
-#ifdef FLAMEGPU_VISUALISATION
-    visualisation.join();
-#endif
-
     return 0;
 }
