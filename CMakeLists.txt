@@ -30,9 +30,9 @@ set(DOCUMENTATION_ONLY_BUILD OFF)
 
 # Check compiler functionailty, as there are known issues in some cases, but version checks are not always sufficient.
 include(./cmake/CheckCompilerFunctionality.cmake)
-# If this returned a negative result, set the docs only build. 
+# If this returned a negative result, set the docs only build.
 if(NOT FLAMEGPU_CheckCompilerFunctionality_RESULT)
-    set(DOCUMENTATION_ONLY_BUILD ON)      
+    set(DOCUMENTATION_ONLY_BUILD ON)
     message(STATUS "Documentation-only build: due to compiler compatability version. See prior warnings.")
 endif()
 
@@ -60,7 +60,7 @@ endif()
 
 # If CUDA is not available, or the minimum version is too low only build the docs.
 if(DOCUMENTATION_ONLY_BUILD)
-    # Not able to build code, so just make docs    
+    # Not able to build code, so just make docs
     include(./cmake/dependencies/doxygen.cmake)
     if(${FLAMEGPU_BUILD_API_DOCUMENTATION})
         flamegpu_create_doxygen_target("${FLAMEGPU_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}" "")
@@ -74,7 +74,7 @@ include(CMakeDependentOption)
 # Option to enable building all examples, defaults to ON if FLAMEGPU is the top level cmake, else OFF
 cmake_dependent_option(FLAMEGPU_BUILD_ALL_EXAMPLES "Enable building all FLAMEGPU examples" ON "FLAMEGPU_PROJECT_IS_TOP_LEVEL" OFF)
 
-# Options to enable building individual examples, if FLAMEGPU_BUILD_ALL_EXAMPLES is off. 
+# Options to enable building individual examples, if FLAMEGPU_BUILD_ALL_EXAMPLES is off.
 # Dependent options hide these from the CMake GUI if FLAMEGPU_BUILD_ALL_EXAMPLES is on, or if it is not the top level project
 cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_BOIDS_BRUTEFORCE "Enable building examples/cpp/boids_bruteforce" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
 cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_BOIDS_SPATIAL3D "Enable building examples/cpp/boids_spatial3D" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
@@ -87,6 +87,7 @@ cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_HOST_FUNCTIONS "Enable building ex
 cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_ENSEMBLE "Enable building examples/cpp/ensemble" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
 cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_SUGARSCAPE "Enable building examples/cpp/sugarscape" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
 cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_DIFFUSION "Enable building examples/cpp/diffusion" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
+cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_BEESANDBEES "Enable building examples/cpp/beesandflowers" OFF "FLAMEGPU_PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
 
 option(FLAMEGPU_BUILD_PYTHON "Enable python bindings via SWIG" OFF)
 
@@ -144,9 +145,13 @@ if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_ENSEMBLE)
 endif()
 if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_SUGARSCAPE)
     add_subdirectory(examples/cpp/sugarscape)
+    add_subdirectory(examples/cpp/sugarscapeSubModelAPI)
 endif()
 if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_DIFFUSION)
     add_subdirectory(examples/cpp/diffusion)
+endif()
+if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_BEESANDBEES)
+    add_subdirectory(examples/cpp/beesandflowers)
 endif()
 # Add the tests directory (if required)
 if(FLAMEGPU_BUILD_TESTS OR FLAMEGPU_BUILD_TESTS_DEV)
