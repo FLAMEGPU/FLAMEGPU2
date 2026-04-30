@@ -168,8 +168,7 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
             // maximum population size
             unsigned int length = writeLen;  // check to see if it is equal to pop
             curve.setMessageOutputVariable(mmp.first, d_ptr, length);
-        }
-        else {
+        } else {
 #ifdef FLAMEGPU_USE_CUDA
             // Map RTC variables (these must be mapped before each function execution as the runtime pointer may have changed to the swapping)
             // Copy data to rtc header cache
