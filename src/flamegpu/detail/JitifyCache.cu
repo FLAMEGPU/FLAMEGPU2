@@ -17,7 +17,7 @@
 
 #include "flamegpu/version.h"
 #include "flamegpu/exception/FLAMEGPUException.h"
-#include "flamegpu/detail/compute_capability.cuh"
+#include "flamegpu/detail/gpu/cuda/compute_capability.cuh"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 
@@ -396,12 +396,12 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
 #endif
 
     // Set the cuda compuate capability architecture to optimize / generate for, based on the values supported by the current dynamiclaly linked nvrtc and the device in question.
-    std::vector<int> nvrtcArchitectures = detail::compute_capability::getNVRTCSupportedComputeCapabilties();
+    std::vector<int> nvrtcArchitectures = detail::gpu::cuda::compute_capability::getNVRTCSupportedComputeCapabilties();
     if (nvrtcArchitectures.size()) {
         int currentDeviceIdx = 0;
         if (FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) == cudaGetDevice(&currentDeviceIdx)) {
-            int arch = compute_capability::getComputeCapability(currentDeviceIdx);
-            int maxSupportedArch = compute_capability::selectAppropraiteComputeCapability(arch, nvrtcArchitectures);
+            int arch = detail::gpu::cuda::compute_capability::getComputeCapability(currentDeviceIdx);
+            int maxSupportedArch = detail::gpu::cuda::compute_capability::selectAppropraiteComputeCapability(arch, nvrtcArchitectures);
             // only set a nvrtc compilation flag if a usable value was found
             if (maxSupportedArch != 0) {
                 options.push_back(std::string("--gpu-architecture=compute_" + std::to_string(maxSupportedArch)));
@@ -492,7 +492,7 @@ std::unique_ptr<jitify2::KernelData> JitifyCache::loadKernel(const std::string &
     // Detect current compute capability=
     int currentDeviceIdx = 0;
     cudaError_t status = cudaGetDevice(&currentDeviceIdx);
-    const std::string arch = std::to_string((status == FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) ? compute_capability::getComputeCapability(currentDeviceIdx) : 0);
+    const std::string arch = std::to_string((status == FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) ? detail::gpu::cuda::compute_capability::getComputeCapability(currentDeviceIdx) : 0);
     status = cudaRuntimeGetVersion(&currentDeviceIdx);
     const std::string cuda_version = std::to_string((status == FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) ? currentDeviceIdx : 0);
     const std::string seatbelts = std::to_string(FLAMEGPU_SEATBELTS);
