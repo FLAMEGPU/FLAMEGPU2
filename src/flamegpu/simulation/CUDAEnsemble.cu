@@ -33,7 +33,9 @@
 #include "flamegpu/io/Telemetry.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/device_name.hpp"
 #include "flamegpu/detail/cuda.cuh"
+
 
 namespace flamegpu {
 CUDAEnsemble::EnsembleConfig::EnsembleConfig()
@@ -445,9 +447,9 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
         // Generate some payload items
         std::map<std::string, std::string> payload_items;
 #ifndef FLAMEGPU_ENABLE_MPI
-        payload_items["GPUDevices"] = flamegpu::detail::compute_capability::getDeviceNames(config.devices);
+        payload_items["GPUDevices"] = flamegpu::detail::gpu::getDeviceNames(config.devices);
 #else
-        payload_items["GPUDevices"] = flamegpu::detail::compute_capability::getDeviceNames(config.devices) + remote_device_names;
+        payload_items["GPUDevices"] = flamegpu::detail::gpu::getDeviceNames(config.devices) + remote_device_names;
 #endif
         payload_items["SimTime(s)"] = std::to_string(ensemble_elapsed_time);
 #if defined(__CUDACC_VER_MAJOR__) && defined(__CUDACC_VER_MINOR__) && defined(__CUDACC_VER_BUILD__)
