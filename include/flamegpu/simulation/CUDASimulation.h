@@ -1,7 +1,9 @@
 #ifndef INCLUDE_FLAMEGPU_SIMULATION_CUDASIMULATION_H_
 #define INCLUDE_FLAMEGPU_SIMULATION_CUDASIMULATION_H_
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda.h>
+#endif
 
 #include <atomic>
 #include <memory>
@@ -22,17 +24,20 @@
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
 #include "flamegpu/simulation/detail/DeviceStrings.h"
 #include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 #ifdef FLAMEGPU_VISUALISATION
 #include "flamegpu/visualiser/ModelVis.h"
 #endif
 
+#ifdef FLAMEGPU_USE_CUDA
 #ifdef _MSC_VER
 #pragma warning(push, 2)
 #include "jitify/jitify.hpp"
 #pragma warning(pop)
 #else
 #include "jitify/jitify.hpp"
+#endif
 #endif
 
 namespace flamegpu {
@@ -498,7 +503,7 @@ class CUDASimulation : public Simulation {
     /**
      * Streams created within this cuda context for executing functions within layers in parallel
      */
-    std::vector<cudaStream_t> streams;
+    std::vector<flamegpu::detail::gpu::Stream_t> streams;
 
     /** 
      * Ensure the correct number of streams exist.
@@ -510,17 +515,20 @@ class CUDASimulation : public Simulation {
      * In some cases, this may return the 0th stream based on class flags.
      * @return specified cudaStream
      */
-    cudaStream_t getStream(const unsigned int n);
+    flamegpu::detail::gpu::Stream_t getStream(const unsigned int n);
 
     /**
      * Destroy all streams
      */
     void destroyStreams();
+
+#ifdef FLAMEGPU_USE_CUDA
     /**
      * Destroy all jitify2::KernelData embedded within CUDAAgents
      * @note This should only be triggered during the destructor
      */
     void safeDestroyJitify();
+#endif  // FLAMEGPU_USE_CUDA
 
     /**
      * Synchronize all streams for this simulation.
@@ -545,7 +553,7 @@ class CUDASimulation : public Simulation {
      * Spatially sort the agents.
      * This should only be called within step();
      */
-    void spatialSortAgent_async(const std::string& funcName, const std::string& agentName, const std::string& state, const int mode, cudaStream_t stream, unsigned int streamId);
+    void spatialSortAgent_async(const std::string& funcName, const std::string& agentName, const std::string& state, const int mode, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId);
 
     constexpr static int Agent2D = 0;
     constexpr static int Agent3D = 1;
@@ -671,7 +679,6 @@ class CUDASimulation : public Simulation {
      */
     static bool detectPureRTC(const std::shared_ptr<const ModelData>& _model);
 
-#if __CUDACC_VER_MAJOR__ >= 12
     /**
      * The unique ID for the CUDA context used for stream creation for this instance. This is only available in CUDA 12+.
      * This is used to ensure that streams can safely be destroyed in CUDA 12, even if the device has been reset.
@@ -679,7 +686,6 @@ class CUDASimulation : public Simulation {
      * Cannot use cuStream querying methods, as it is UB to specify an invalid stream to these methods, resulting in segfaults
      */
     std::uint64_t cudaContextID;
-#endif  // __CUDACC_VER_MAJOR__ >= 12
 
  protected:
     /**

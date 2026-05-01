@@ -1,5 +1,7 @@
 #include "flamegpu/detail/JitifyCache.h"
 
+#ifdef FLAMEGPU_USE_CUDA
+
 #include <nvrtc.h>
 
 #include <cassert>
@@ -15,9 +17,9 @@
 
 #include "flamegpu/version.h"
 #include "flamegpu/exception/FLAMEGPUException.h"
-#include "flamegpu/detail/compute_capability.cuh"
+#include "flamegpu/detail/gpu/cuda/compute_capability.cuh"
 #include "flamegpu/util/nvtx.h"
-
+#include "flamegpu/detail/gpu/macros.hpp"
 
 namespace flamegpu {
 namespace detail {
@@ -394,10 +396,10 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
 #endif
 
     // Set the cuda compuate capability architecture to optimize / generate for, based on the values supported by the current dynamiclaly linked nvrtc and the device in question.
-    std::vector<int> nvrtcArchitectures = detail::compute_capability::getNVRTCSupportedComputeCapabilties();
+    std::vector<int> nvrtcArchitectures = detail::gpu::cuda::compute_capability::getNVRTCSupportedComputeCapabilties();
     if (nvrtcArchitectures.size()) {
         int currentDeviceIdx = 0;
-        if (cudaSuccess == cudaGetDevice(&currentDeviceIdx)) {
+        if (FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) == cudaGetDevice(&currentDeviceIdx)) {
             int arch = compute_capability::getComputeCapability(currentDeviceIdx);
             int maxSupportedArch = compute_capability::selectAppropraiteComputeCapability(arch, nvrtcArchitectures);
             // only set a nvrtc compilation flag if a usable value was found
@@ -429,7 +431,7 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
 #endif
 
 // pass the c++ language dialect. It may be better to explicitly pass this from CMake.
-#if defined(__cplusplus) && __cplusplus >= 202002L && defined(__CUDACC_VER_MAJOR__) && __CUDACC_VER_MAJOR__ >= 12
+#if defined(__cplusplus) && __cplusplus >= 202002L
     options.push_back("--std=c++20");
 #endif
 
@@ -439,6 +441,9 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
 #else
     options.push_back("--define-macro=FLAMEGPU_SEATBELTS=0");
 #endif
+
+    // ensure NVRTC is aware CUDA is being used. This is currently the only RTC option
+    options.push_back("-DFLAMEGPU_USE_CUDA");
 
     // get the dynamically generated header from curve rtc
     headers.emplace("dynamic/curve_rtc_dynamic.h", dynamic_header);
@@ -487,9 +492,9 @@ std::unique_ptr<jitify2::KernelData> JitifyCache::loadKernel(const std::string &
     // Detect current compute capability=
     int currentDeviceIdx = 0;
     cudaError_t status = cudaGetDevice(&currentDeviceIdx);
-    const std::string arch = std::to_string((status == cudaSuccess) ? compute_capability::getComputeCapability(currentDeviceIdx) : 0);
+    const std::string arch = std::to_string((status == FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) ? compute_capability::getComputeCapability(currentDeviceIdx) : 0);
     status = cudaRuntimeGetVersion(&currentDeviceIdx);
-    const std::string cuda_version = std::to_string((status == cudaSuccess) ? currentDeviceIdx : 0);
+    const std::string cuda_version = std::to_string((status == FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) ? currentDeviceIdx : 0);
     const std::string seatbelts = std::to_string(FLAMEGPU_SEATBELTS);
     // Cat kernel, dynamic header, header version
     const std::string long_reference = kernel_src + dynamic_header;  // Don't need to include rest, they are explicit in short reference/filename
@@ -648,3 +653,5 @@ JitifyCache& JitifyCache::getInstance() {
 
 }  // namespace detail
 }  // namespace flamegpu
+
+#endif  // FLAMEGPU_USE_CUDA

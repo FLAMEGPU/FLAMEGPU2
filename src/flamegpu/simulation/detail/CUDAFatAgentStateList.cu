@@ -8,6 +8,8 @@
 #include <unordered_map>
 
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -48,8 +50,8 @@ CUDAFatAgentStateList::CUDAFatAgentStateList(const CUDAFatAgentStateList& other)
 }
 CUDAFatAgentStateList::~CUDAFatAgentStateList() {
     for (const auto &buff : variables_unique) {
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(buff->data));
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(buff->data_swap));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(buff->data));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(buff->data_swap));
     }
 }
 void CUDAFatAgentStateList::addSubAgentVariables(
@@ -76,7 +78,7 @@ std::shared_ptr<VariableBuffer> CUDAFatAgentStateList::getVariableBuffer(const u
     const AgentVariable variable = {fat_index, name};
     return variables.at(variable);
 }
-void CUDAFatAgentStateList::resize(const unsigned int minSize, const bool retainData, const cudaStream_t stream) {
+void CUDAFatAgentStateList::resize(const unsigned int minSize, const bool retainData, const flamegpu::detail::gpu::Stream_t stream) {
     // If already big enough return
     if (minSize <= bufferLen)
         return;
@@ -90,25 +92,25 @@ void CUDAFatAgentStateList::resize(const unsigned int minSize, const bool retain
         const size_t var_size = buff->type_size * buff->elements;
         const size_t buff_size = var_size * newSize;
         // Free old swap buffer
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(buff->data_swap));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(buff->data_swap));
         // Allocate new buffer to swap
-        gpuErrchk(cudaMalloc(&buff->data_swap, buff_size));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&buff->data_swap, buff_size));
         // Copy old data to new buffer in swap
         if (retainData && buff->data) {
             const size_t active_len = aliveAgents * var_size;
             // const size_t inactive_len = (newSize - aliveAgents) * var_size;
             // Copy across old data (TODO: We could improve this by doing a scatter for all variables at once)
-            gpuErrchk(cudaMemcpyAsync(buff->data_swap, buff->data, active_len, cudaMemcpyDeviceToDevice, stream));
+            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(buff->data_swap, buff->data, active_len, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice), stream));
             // Zero remaining new data (This will be overwritten before use, so redundant)
-            // gpuErrchk(cudaMemsetAsync(reinterpret_cast<char*>(buff->data_swap) + active_len, 0, inactive_len, stream));
+            // flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(reinterpret_cast<char*>(buff->data_swap) + active_len, 0, inactive_len, stream));
         } else {
             // Zero remaining new data (This will be overwritten before use, so redundant)
-            // gpuErrchk(cudaMemsetAsync(buff->data_swap, 0, buff_size, stream));
+            // flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(buff->data_swap, 0, buff_size, stream));
         }
     }
     if (retainData) {
         // Ensure copies have finished, before we free the buffers!
-        gpuErrchk(cudaStreamSynchronize(stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
     }
     for (auto& buff : variables_unique) {
         const size_t var_size = buff->type_size * buff->elements;
@@ -116,9 +118,9 @@ void CUDAFatAgentStateList::resize(const unsigned int minSize, const bool retain
         // Swap buffers
         std::swap(buff->data_swap, buff->data);
         // Free old swap buffer
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(buff->data_swap));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(buff->data_swap));
         // Allocate new buffer to swap
-        gpuErrchk(cudaMalloc(&buff->data_swap, buff_size));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&buff->data_swap, buff_size));
         // Update condition list
         assert(disabledAgents == 0);
         buff->data_condition = buff->data;
@@ -152,7 +154,7 @@ void CUDAFatAgentStateList::setAgentCount(const unsigned int newCount, const boo
     }
     aliveAgents = disabledAgents + newCount;
 }
-unsigned int CUDAFatAgentStateList::scatterDeath(detail::CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t stream) {
+unsigned int CUDAFatAgentStateList::scatterDeath(detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::gpu::Stream_t stream) {
     // Build scatter data
     std::vector<CUDAScatter::ScatterData> sd;
     for (const auto &v : variables_unique) {
@@ -176,7 +178,7 @@ unsigned int CUDAFatAgentStateList::scatterDeath(detail::CUDAScatter &scatter, c
 
     return living_agents;
 }
-unsigned int CUDAFatAgentStateList::scatterAgentFunctionConditionFalse(detail::CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t stream) {
+unsigned int CUDAFatAgentStateList::scatterAgentFunctionConditionFalse(detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::gpu::Stream_t stream) {
     // This makes no sense if we have disabled agents (it's supposed to reorder to create disabled agents)
     assert(disabledAgents == 0);
     // Build scatter data
@@ -193,7 +195,7 @@ unsigned int CUDAFatAgentStateList::scatterAgentFunctionConditionFalse(detail::C
         aliveAgents, 0, false, disabledAgents);
     return scattered_agents;
 }
-unsigned int CUDAFatAgentStateList::scatterAgentFunctionConditionTrue(const unsigned int conditionFailCount, detail::CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t stream) {
+unsigned int CUDAFatAgentStateList::scatterAgentFunctionConditionTrue(const unsigned int conditionFailCount, detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::gpu::Stream_t stream) {
     // This makes no sense if we have disabled agents (it's suppose to reorder to create disabled agents)
     assert(disabledAgents == 0);
     // Build scatter data
@@ -225,7 +227,7 @@ void CUDAFatAgentStateList::setDisabledAgents(const unsigned int numberOfDisable
         v->data_condition = data_p + (numberOfDisabled * v->type_size * v->elements);
     }
 }
-void CUDAFatAgentStateList::scatterSort_async(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
+void CUDAFatAgentStateList::scatterSort_async(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream) {
     // This is not designed to run when there are disabled agents
     assert(disabledAgents == 0);
     // Build scatter data
@@ -241,7 +243,7 @@ void CUDAFatAgentStateList::scatterSort_async(detail::CUDAScatter &scatter, unsi
     }
     scatter.scatterPosition_async(streamId, stream, CUDAScatter::Type::MESSAGE_OUTPUT, sd, aliveAgents);
 }
-void CUDAFatAgentStateList::initVariables(std::set<std::shared_ptr<VariableBuffer>> &exclusionSet, const unsigned int initCount, const unsigned initOffset, detail::CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t stream) {
+void CUDAFatAgentStateList::initVariables(std::set<std::shared_ptr<VariableBuffer>> &exclusionSet, const unsigned int initCount, const unsigned initOffset, detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::gpu::Stream_t stream) {
     if (initCount && exclusionSet.size()) {
         assert(initCount + initOffset <= bufferLen);
         std::list<std::shared_ptr<VariableBuffer>> initVars;

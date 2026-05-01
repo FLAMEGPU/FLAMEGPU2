@@ -1,11 +1,14 @@
 #ifndef INCLUDE_FLAMEGPU_DETAIL_CUDAEVENTTIMER_CUH_
 #define INCLUDE_FLAMEGPU_DETAIL_CUDAEVENTTIMER_CUH_
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
+#endif
 
 #include "flamegpu/detail/Timer.h"
 #include "flamegpu/exception/FLAMEGPUException.h"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
 
 namespace flamegpu {
 namespace detail {
@@ -16,6 +19,7 @@ namespace detail {
  * @todo - this appears unreliable on WDDM devices
  * @todo - make this device aware (cudaGetDevice, cudaSetDevice)?
  * @todo - make this context aware, in case of cudaDeviceReset between start and stop, or stop and getElapsed*
+ * @todo - rename to GPUEventTimer or similar, but with a deprecate alias in this location?. Use a using statement for the event time type?
  */
 class CUDAEventTimer : public virtual Timer {
  public:
@@ -29,15 +33,15 @@ class CUDAEventTimer : public virtual Timer {
     startEventRecorded(false),
     stopEventRecorded(false),
     synced(false) {
-        gpuErrchk(cudaEventCreate(&this->startEvent));
-        gpuErrchk(cudaEventCreate(&this->stopEvent));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(EventCreate)(&this->startEvent));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(EventCreate)(&this->stopEvent));
     }
     /** 
      * Destroys the cudaEvents created by this instance
      */
     ~CUDAEventTimer() {
-        gpuErrchk(cudaEventDestroy(this->startEvent));
-        gpuErrchk(cudaEventDestroy(this->stopEvent));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(EventDestroy)(this->startEvent));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(EventDestroy)(this->stopEvent));
         this->startEvent = NULL;
         this->stopEvent = NULL;
     }
@@ -45,7 +49,7 @@ class CUDAEventTimer : public virtual Timer {
      * Record the start event, resetting the syncronisation flag.
      */
     void start() override {
-        gpuErrchk(cudaEventRecord(this->startEvent));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(EventRecord)(this->startEvent));
         this->startEventRecorded = true;
         this->stopEventRecorded = false;
         this->synced = false;
@@ -54,7 +58,7 @@ class CUDAEventTimer : public virtual Timer {
      * Record the stop event, resetting the syncronisation flag.
      */
     void stop() override {
-        gpuErrchk(cudaEventRecord(this->stopEvent));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(EventRecord)(this->stopEvent));
         this->stopEventRecorded = true;
         this->synced = false;
     }
@@ -97,19 +101,19 @@ class CUDAEventTimer : public virtual Timer {
         if (!stopEventRecorded) {
             THROW exception::TimerException("stop() must be called prior to getElapsed*");
         }
-        gpuErrchk(cudaEventSynchronize(this->stopEvent));
-        gpuErrchk(cudaEventElapsedTime(&this->ms, this->startEvent, this->stopEvent));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(EventSynchronize)(this->stopEvent));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(EventElapsedTime)(&this->ms, this->startEvent, this->stopEvent));
         synced = true;
     }
 
     /**
      * CUDA Event for the start event
      */
-    cudaEvent_t startEvent;
+    FLAMEGPU_GPU_RUNTIME_SYMBOL(Event_t) startEvent;
     /**
      * CUDA Event for the stop event
      */
-    cudaEvent_t stopEvent;
+    FLAMEGPU_GPU_RUNTIME_SYMBOL(Event_t) stopEvent;
     /**
      * Elapsed times between start and stop in milliseconds
      */

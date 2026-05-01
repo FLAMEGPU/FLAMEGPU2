@@ -1,0 +1,141 @@
+# Compile project on Ubuntu using HIP. 
+# This is currently separate to keep thigns simple (CI refactoring is required at some point anyway),
+# And HIP builds only support a subset of features currently
+name: Ubuntu-HIP
+
+on:
+  # Branch pushes that do not only modify other workflow files
+  push:
+    branches:
+      - '**'
+    paths:
+      - "**"
+      - "!.github/**"
+      - ".github/scripts/install_hip_ubuntu.sh"
+      - ".github/workflows/Ubuntu-HIP.yml"
+  # Disabled for now. See https://github.com/FLAMEGPU/FLAMEGPU2/pull/644
+  # pull_request:
+  # Allow manual invocation.
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ${{ matrix.compilers.os }}
+    strategy:
+      fail-fast: false
+      # Multiplicative build matrix
+      # optional exclude: can be partial, include: must be specific
+      matrix:
+        compilers:
+          # see https://llvm.org/docs/AMDGPUUsage.html#amdgpu-generic-processor-table for arch flags
+          # HIP 7.2 with any RDNA3 GPU (recent consumer, that we can actually test)
+          - hip: "7.2"
+            hip_arch: "gfx11-generic"
+            hostcxx: hipcc
+            os: ubuntu-24.04
+          # HIP 7.0 with a Vega/CDNA Datacentre GPU (oldest we will support?)
+          - hip: "7.0"
+            hip_arch: "gfx9-generic"
+            hostcxx: hipcc
+            os: ubuntu-24.04
+        config:
+          - name: "Release"
+            config: "Release"
+            SEATBELTS: "ON"
+          # Temp disabled to keep CI smaller
+          # - name: "Beltsoff"
+          #   config: "Release"
+          #   SEATBELTS: "OFF"
+
+    # Name the job based on matrix/env options
+    name: "build (${{ matrix.compilers.hip }}, ${{ matrix.config.name }}, ${{ matrix.compilers.os }})"
+
+    # Define job-wide env constants, and promote matrix elements to env constants for portable steps.
+    env:
+      # Workflow specific constants for building a specific example
+      # Note this assumes the example exists in cpp, rather than cpp_rtc subdirectory
+      INDIVIDUAL_EXAMPLE: ${{ fromJSON('{true:"game_of_life",false:""}')[matrix.config.name == 'Release' && matrix.VISUALISATION == 'OFF'] }}
+      # Define constants
+      BUILD_DIR: "build"
+      FLAMEGPU_BUILD_TESTS: "ON"
+      # Port matrix options to environment, for more portability.
+      HIP: ${{ matrix.compilers.hip }}
+      HIP_ARCH: ${{ matrix.compilers.hip_arch }}
+      HOSTCXX: ${{ matrix.compilers.hostcxx }}
+      OS: ${{ matrix.compilers.os }}
+      CONFIG: ${{ matrix.config.config }}
+      FLAMEGPU_SEATBELTS: ${{ matrix.config.SEATBELTS }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install HIP
+      if: ${{ startswith(env.OS, 'ubuntu') && env.HIP != '' }}
+      env:
+        hip: ${{ env.HIP }}
+      run: .github/scripts/install_hip_ubuntu.sh
+
+    - name: Install/Select host compiler (HIPCC only)
+      run: |
+        echo "CC=hipcc" >> $GITHUB_ENV
+        echo "CXX=hipcc" >> $GITHUB_ENV
+
+    - name: Add custom problem matchers for annotations
+      run: echo "::add-matcher::.github/problem-matchers.json"
+
+    # This pre-emptively patches a bug from ManyLinux where git dir is owned by diff user, blocking buildnumber generation
+    - name: Enable git safe-directory
+      run: git config --global --add safe.directory $GITHUB_WORKSPACE
+
+    - name: Configure cmake
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}"
+        -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
+        -Werror=dev
+        -DCMAKE_WARN_DEPRECATED="OFF"
+        -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
+        -DFLAMEGPU_GPU="HIP"
+        -DCMAKE_HIP_ARCHITECTURES="${{ env.HIP_ARCH }}"
+        -DFLAMEGPU_SEATBELTS="${{ env.FLAMEGPU_SEATBELTS }}"
+        -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
+
+    # Check for bugs when cmake is reconfigured, i.e. fetch content patching
+    - name: Re-configure cmake
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}"
+
+    - name: Build static library
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target flamegpu --verbose -j `nproc`
+
+    - name: Build tests
+      if: ${{ env.FLAMEGPU_BUILD_TESTS == 'ON' }}
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target tests --verbose -j `nproc`
+
+    - name: Build all remaining targets
+      working-directory: ${{ env.BUILD_DIR }}
+      run: cmake --build . --target all --verbose -j `nproc`
+
+    - name: Configure Individual example
+      if: ${{ env.INDIVIDUAL_EXAMPLE != '' }}
+      working-directory: examples/cpp/${{ env.INDIVIDUAL_EXAMPLE }}
+      run: >
+        cmake . -B "${{ env.BUILD_DIR }}"
+        -DCMAKE_BUILD_TYPE="${{ env.CONFIG }}"
+        -Werror=dev
+        -DCMAKE_WARN_DEPRECATED="OFF"
+        -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
+        -DFLAMEGPU_SEATBELTS="${{ env.FLAMEGPU_SEATBELTS }}"
+        -DFLAMEGPU_GPU="HIP"
+        -DCMAKE_HIP_ARCHITECTURES="${{ env.HIP_ARCH }}"
+
+    - name: Build Individual example
+      if: ${{ env.INDIVIDUAL_EXAMPLE != '' }}
+      working-directory: examples/cpp/${{ env.INDIVIDUAL_EXAMPLE }}/${{ env.BUILD_DIR }}
+      run: cmake --build . --target ${{ env.INDIVIDUAL_EXAMPLE }} --verbose -j `nproc`
+

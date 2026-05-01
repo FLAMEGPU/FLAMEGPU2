@@ -1,13 +1,14 @@
 #ifndef INCLUDE_FLAMEGPU_DETAIL_CUDA_CUH_
 #define INCLUDE_FLAMEGPU_DETAIL_CUDA_CUH_
 
-#include <cuda_runtime.h>
-#include <cuda.h>
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 
 #ifndef __CUDACC_RTC__
 #include <limits>
 #include <cstdint>
 #include "flamegpu/exception/FLAMEGPUException.h"
+#endif  // __CUDACC_RTC__
 
 namespace flamegpu {
 namespace detail {
@@ -16,8 +17,13 @@ namespace detail {
  * Collection of cuda related utility methods for internal use.
  * Mostly to allow for graceful handling of device resets when cuda is called by dtors
  * @todo - we should check for unified addressing support prior to use of cudaPointerGetAttributes, but it should be available for all valid flamegpu targets (x64 linux and windows). Tegra's might be an edge case.
+ 
+ Todo:
+    - Rename / move / split into flamegpu::detail::gpu
  */
 namespace cuda {
+// NVRTC shouldn't see these, host-only.
+#ifndef __CUDACC_RTC__
 
 /**
  * Wrapped cudaFree which checks that the pointer is a valid device pointer in the current CUDA context prior to deallocation.
@@ -25,20 +31,20 @@ namespace cuda {
  * @param devPtr device pointer to memory to free
  * @return forward the cuda error status from the inner cudaFree call
  */
-inline cudaError_t cudaFree(void* devPtr) {
-    cudaError_t status = cudaSuccess;
+inline flamegpu::detail::gpu::Error_t cudaFree(void* devPtr) {
+    flamegpu::detail::gpu::Error_t status = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
     // Check the pointer attributes to detect if it is a valid ptr for the current context.
     // @todo - version which checks the device ordinal is a match for the active context too, potentially flip-flopping the device.
-    cudaPointerAttributes attributes = {};
-    status = cudaPointerGetAttributes(&attributes, devPtr);
+    flamegpu::detail::gpu::PointerAttributes_t attributes = {};
+    status = FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, devPtr);
     // valid device pointers have a type of cudaMemoryTypeDevice (2), or we could check the device is non negative (and matching the current device index?), or the devicePointer will be non null.
-    if (status == cudaSuccess && attributes.type == cudaMemoryTypeDevice) {
-        status = ::cudaFree(devPtr);
+    if (status == FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) && attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice)) {
+        status = ::FLAMEGPU_GPU_RUNTIME_SYMBOL(Free)(devPtr);
         // Forward any status on
         return status;
     }
-    // If the pointer attributes were not correct, return cudaSuccess to avoid bad error checking.
-    return cudaSuccess;
+    // If the pointer attributes were not correct, return FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) to avoid bad error checking.
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
 }
 
 /**
@@ -47,20 +53,20 @@ inline cudaError_t cudaFree(void* devPtr) {
  * @param devPtr pointer to memory to free
  * @return forward the cuda error status from the inner cudaFreeHost call
  */
-inline cudaError_t cudaFreeHost(void* devPtr) {
-    cudaError_t status = cudaSuccess;
+inline flamegpu::detail::gpu::Error_t cudaFreeHost(void* devPtr) {
+    flamegpu::detail::gpu::Error_t status = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
     // Check the pointer attributes to detect if it is a valid ptr for the current context.
     // @todo - version which checks the device ordinal is a match for the active context too, potentially flip-flopping the device.
-    cudaPointerAttributes attributes = {};
-    status = cudaPointerGetAttributes(&attributes, devPtr);
-    // valid pointers allocated using cudaMallocHost have a type of cudaMemoryTypeHost
-    if (status == cudaSuccess && attributes.type == cudaMemoryTypeHost) {
-        status = ::cudaFreeHost(devPtr);
+    flamegpu::detail::gpu::PointerAttributes_t attributes = {};
+    status = FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, devPtr);
+    // valid pointers allocated using cudaHostAlloc have a type of cudaMemoryTypeHost
+    if (status == FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) && attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeHost)) {
+        status = ::FLAMEGPU_GPU_RUNTIME_SYMBOL(FreeHost)(devPtr);
         // Forward on any cuda errors returned.
         return status;
     }
-    // If the pointer attributes were not correct, return cudaSuccess to avoid bad error checking.
-    return cudaSuccess;
+    // If the pointer attributes were not correct, return FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) to avoid bad error checking.
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
 }
 
 /**
@@ -70,6 +76,7 @@ inline cudaError_t cudaFreeHost(void* devPtr) {
  * @return bool indicating if primary context for the given device is active or not
  */
 inline bool cuDevicePrimaryContextIsActive(int ordinal) {
+#ifdef FLAMEGPU_USE_CUDA
     // Throw an exception if a negative device ordinal is passed
     if (ordinal < 0) {
         THROW exception::InvalidCUDAdevice("CUDA Device ordinals must be non-negative integers, in detail::cuda::cuDevicePrimaryContextIsActive()");
@@ -103,15 +110,19 @@ inline bool cuDevicePrimaryContextIsActive(int ordinal) {
     }
     // If we could not return the active state, return false.
     return false;
+#else
+    // Todo: Don't think hip has an equivalent to this? @todo
+    return true;
+#endif
 }
 
-#if __CUDACC_VER_MAJOR__ >= 12
 /**
  * use the CUDA 12+ driver api to get the unique id of the current CUDA context, with error checking.
  * This method will silenlty consume any cuda errors, as it is expected to (potentially) be called during CUDA shutdown.
  * @return the unique id for the CUDA context
  */
 inline std::uint64_t cuGetCurrentContextUniqueID() {
+#ifdef FLAMEGPU_USE_CUDA
     static_assert(sizeof(unsigned long long int) == sizeof(std::uint64_t));  // NOLINT
     CUresult cuErr = CUDA_SUCCESS;
     // Get the handle to the current context
@@ -126,11 +137,14 @@ inline std::uint64_t cuGetCurrentContextUniqueID() {
         }
     }
     return std::numeric_limits<std::uint64_t>::max();
+#else
+    // Todo: Don't think hip has an equivalent to this? @todo
+    return std::numeric_limits<std::uint64_t>::max();
+#endif
 }
-#endif  // __CUDACC_VER_MAJOR__ >= 12
+#endif  // __CUDACC_RTC__
 
 }  // namespace cuda
 }  // namespace detail
 }  // namespace flamegpu
-#endif  // __CUDACC_RTC__
 #endif  // INCLUDE_FLAMEGPU_DETAIL_CUDA_CUH_

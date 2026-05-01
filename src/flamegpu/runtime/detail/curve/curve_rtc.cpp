@@ -1,16 +1,16 @@
+#ifdef FLAMEGPU_USE_CUDA
 #include <sstream>
 #include <set>
 #include <string>
 #include <memory>
-#ifndef _MSC_VER
-// abi::__cxa_demangle()
-#include <cxxabi.h>
-#endif
 
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 #include "flamegpu/exception/FLAMEGPUException.h"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
+#include "flamegpu/detail/demangle.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 #include "jitify/jitify2.hpp"
@@ -279,12 +279,12 @@ CurveRTCHost::CurveRTCHost() : header(CurveRTCHost::curve_rtc_dynamic_h_template
 }
 
 CurveRTCHost::~CurveRTCHost() {
-    gpuErrchk(flamegpu::detail::cuda::cudaFreeHost(h_data_buffer));
+    flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFreeHost(h_data_buffer));
 }
 
 void CurveRTCHost::registerAgentVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
     RTCVariableProperties props;
-    props.type = CurveRTCHost::demangle(type);
+    props.type = detail::demangle::demangle(type);
     props.read = read;
     props.write = write;
     props.elements = elements;
@@ -296,7 +296,7 @@ void CurveRTCHost::registerAgentVariable(const char* variableName, const char* t
 }
 void CurveRTCHost::registerMessageInVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
     RTCVariableProperties props;
-    props.type = CurveRTCHost::demangle(type);
+    props.type = detail::demangle::demangle(type);
     props.read = read;
     props.write = write;
     props.elements = elements;
@@ -308,7 +308,7 @@ void CurveRTCHost::registerMessageInVariable(const char* variableName, const cha
 }
 void CurveRTCHost::registerMessageOutVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
     RTCVariableProperties props;
-    props.type = CurveRTCHost::demangle(type);
+    props.type = detail::demangle::demangle(type);
     props.read = read;
     props.write = write;
     props.elements = elements;
@@ -320,7 +320,7 @@ void CurveRTCHost::registerMessageOutVariable(const char* variableName, const ch
 }
 void CurveRTCHost::registerNewAgentVariable(const char* variableName, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
     RTCVariableProperties props;
-    props.type = CurveRTCHost::demangle(type);
+    props.type = detail::demangle::demangle(type);
     props.read = read;
     props.write = write;
     props.elements = elements;
@@ -332,7 +332,7 @@ void CurveRTCHost::registerNewAgentVariable(const char* variableName, const char
 }
 void CurveRTCHost::registerEnvironmentDirectedGraphVertexProperty(const std::string& graphName, const std::string& propertyName, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
     RTCVariableProperties props;
-    props.type = CurveRTCHost::demangle(type);
+    props.type = detail::demangle::demangle(type);
     props.read = read;
     props.write = write;
     props.elements = elements;
@@ -344,7 +344,7 @@ void CurveRTCHost::registerEnvironmentDirectedGraphVertexProperty(const std::str
 }
 void CurveRTCHost::registerEnvironmentDirectedGraphEdgeProperty(const std::string& graphName, const std::string& propertyName, const char* type, size_t type_size, unsigned int elements, bool read, bool write) {
     RTCVariableProperties props;
-    props.type = CurveRTCHost::demangle(type);
+    props.type = detail::demangle::demangle(type);
     props.read = read;
     props.write = write;
     props.elements = elements;
@@ -520,7 +520,7 @@ void CurveRTCHost::setEnvironmentDirectedGraphEdgePropertyCount(const std::strin
 
 void CurveRTCHost::registerEnvVariable(const char* propertyName, ptrdiff_t offset, const char* type, size_t type_size, unsigned int elements) {
     RTCEnvVariableProperties props;
-    props.type = CurveRTCHost::demangle(type);
+    props.type = detail::demangle::demangle(type);
     props.elements = elements;
     props.offset = offset;
     props.type_size = type_size;
@@ -547,7 +547,7 @@ void CurveRTCHost::unregisterEnvVariable(const char* propertyName) {
 }
 void CurveRTCHost::registerEnvMacroProperty(const char* propertyName, void *d_ptr, const char* type, size_t type_size, const std::array<unsigned int, 4> &dimensions) {
     RTCEnvMacroPropertyProperties props;
-    props.type = CurveRTCHost::demangle(type);
+    props.type = detail::demangle::demangle(type);
     props.dimensions = dimensions;
     props.d_ptr = d_ptr;
     props.h_data_ptr = nullptr;
@@ -1406,7 +1406,7 @@ void CurveRTCHost::initDataBuffer() {
         THROW exception::InvalidOperation("CurveRTCHost::initDataBuffer() should only be called once, during the init chain.\n");
     }
     // Alloc buffer
-    gpuErrchk(cudaMallocHost(&h_data_buffer, data_buffer_size));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(HostAlloc)(&h_data_buffer, data_buffer_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(HostAllocDefault)));
     // Notify all variables of their ptr to store data in cache
     size_t ct = 0;
     for (auto &element : agent_variables) {
@@ -1468,62 +1468,6 @@ std::string CurveRTCHost::getVariableSymbolName() {
     return name.str();
 }
 
-std::string CurveRTCHost::demangle(const char* verbose_name) {
-#ifndef _MSC_VER
-    // Implementation from Jitify1
-    size_t bufsize = 0;
-    char* buf = nullptr;
-    std::string s;
-    int status;
-    auto demangled_ptr = std::unique_ptr<char, decltype(free)*>(
-        abi::__cxa_demangle(verbose_name, buf, &bufsize, &status), free);
-    if (status == 0) {
-        s = demangled_ptr.get();  // all worked as expected
-    } else if (status == -2) {
-        s = verbose_name;  // we interpret this as plain C name
-    } else if (status == -1) {
-        THROW exception::UnknownInternalError("memory allocation failure in __cxa_demangle");
-    } else if (status == -3) {
-        THROW exception::UnknownInternalError("invalid argument to __cxa_demangle");
-    }
-#else
-    // Jitify removed the required demangle function, this is a basic clone of what was being done in earlier version
-    // It's possible jitify::reflection::detail::demangle_native_type() would work, however that requires type_info, not type_index
-    size_t index = 0;
-    std::string s = verbose_name;
-    while (true) {
-        /* Locate the substring to replace. */
-        index = s.find("class", index);
-        if (index == std::string::npos) break;
-
-        /* Make the replacement. */
-        s.replace(index, 5, "     ");
-
-        /* Advance index forward so the next iteration doesn't pick it up as well. */
-        index += 5;
-    }
-#endif
-    // Lambda function for trimming whitesapce as jitify demangle does not remove this
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
-        return !std::isspace(ch);
-        }));
-#ifdef _MSC_VER
-    // int64_t is the only known problematic type in windows as it has a typeid().name() of __int64.
-    // This can be manually replaced
-    std::string int64_type = "__int64";
-    std::string int64_type_fixed = "long long int";
-    size_t start_pos = s.find(int64_type);
-    if (!(start_pos == std::string::npos))
-        s.replace(start_pos, int64_type.length(), int64_type_fixed);
-#endif
-
-    // map known basic types in
-    return s;
-}
-
-std::string CurveRTCHost::demangle(const std::type_index& type) {
-    return demangle(type.name());
-}
 void CurveRTCHost::updateEnvCache(const void *env_ptr, const size_t bufferLen) {
     if (bufferLen <= agent_data_offset) {
         memcpy(h_data_buffer, env_ptr, bufferLen);
@@ -1533,16 +1477,18 @@ void CurveRTCHost::updateEnvCache(const void *env_ptr, const size_t bufferLen) {
             bufferLen, agent_data_offset);
     }
 }
-void CurveRTCHost::updateDevice_async(const jitify2::KernelData& instance, cudaStream_t stream) {
+void CurveRTCHost::updateDevice_async(const jitify2::KernelData& instance, flamegpu::detail::gpu::Stream_t stream) {
     // Move count buffer into h_data_buffer first
     memcpy(h_data_buffer + count_data_offset, count_buffer.data(), count_buffer.size() * sizeof(unsigned int));
     // The namespace is required here, but not in other uses of getVariableSymbolName.
     std::string cache_var_name = std::string("flamegpu::detail::curve::") + getVariableSymbolName();
     CUdeviceptr d_var_ptr;
     instance.program().get_global_ptr(cache_var_name.c_str(), &d_var_ptr);
-    gpuErrchkDriverAPI(cuMemcpyHtoDAsync(d_var_ptr, h_data_buffer, data_buffer_size, stream));
+    flamegpu::detail::gpuCheck(cuMemcpyHtoDAsync(d_var_ptr, h_data_buffer, data_buffer_size, stream));
 }
 
 }  // namespace curve
 }  // namespace detail
 }  // namespace flamegpu
+
+#endif  // FLAMEGPU_USE_CUDA

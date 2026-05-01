@@ -1,6 +1,9 @@
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
+#endif
+
 #include <vector>
 #include <cassert>
 #include <cstdio>
@@ -10,10 +13,13 @@
 #include <algorithm>
 #include <limits>
 
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/simulation/detail/CUDAFatAgentStateList.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
+#ifdef FLAMEGPU_USE_CUDA
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #pragma warning(disable : 4706 4834)
@@ -32,6 +38,13 @@
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif  // _MSC_VER
+#endif  // FLAMEGPU_USE_CUDA
+
+#ifdef FLAMEGPU_USE_HIP
+#include <hipcub/hipcub.hpp>
+// namepspace alias so cub:: can be used
+namespace cub = hipcub;
+#endif
 
 namespace flamegpu {
 namespace detail {
@@ -49,7 +62,7 @@ CUDAScatter::StreamData::~StreamData() {
      As this is only ever destroyed at exit time, it's not a real memory leak either.
     */
     if (d_data) {
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_data));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_data));
     }
     d_data = nullptr;
     data_len = 0;
@@ -57,9 +70,9 @@ CUDAScatter::StreamData::~StreamData() {
 void CUDAScatter::StreamData::resize(const unsigned int newLen) {
     if (newLen > data_len) {
         if (d_data) {
-            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_data));
+            flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_data));
         }
-        gpuErrchk(cudaMalloc(&d_data, newLen * sizeof(ScatterData)));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_data, newLen * sizeof(ScatterData)));
         data_len = newLen;
     }
 }
@@ -74,7 +87,7 @@ __global__ void scatter_generic(
     const unsigned int out_index_offset = 0,
     const unsigned int scatter_all_count = 0) {
     // global thread index
-    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+    unsigned int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     if (index >= threadCount) return;
 
@@ -92,7 +105,7 @@ __global__ void scatter_position_generic(
     CUDAScatter::ScatterData *scatter_data,
     const unsigned int scatter_len) {
     // global thread index
-    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+    unsigned int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     if (index >= threadCount) return;
 
@@ -108,7 +121,7 @@ __global__ void scatter_all_generic(
     const unsigned int scatter_len,
     const unsigned int out_index_offset = 0) {
     // global thread index
-    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+    unsigned int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     if (index >= threadCount) return;
     for (unsigned int i = 0; i < scatter_len; ++i) {
@@ -118,7 +131,7 @@ __global__ void scatter_all_generic(
 
 unsigned int CUDAScatter::scatter(
     const unsigned int streamResourceId,
-    const cudaStream_t stream,
+    const flamegpu::detail::gpu::Stream_t stream,
     const Type &messageOrAgent,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
@@ -137,24 +150,28 @@ unsigned int CUDAScatter::scatter(
 }
 unsigned int CUDAScatter::scatter(
     const unsigned int streamResourceId,
-    const cudaStream_t stream,
+    const flamegpu::detail::gpu::Stream_t stream,
     const Type &messageOrAgent,
     const std::vector<ScatterData> &sd,
     const unsigned int itemCount,
     const unsigned int out_index_offset,
     const bool invert_scan_flag,
     const unsigned int scatter_all_count) {
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
-    // calculate the grid block size for main agent function
-    gpuErrchk(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_generic<unsigned int*>, 0, itemCount));
-    //! Round up according to CUDAAgent state list size
-    gridSize = (itemCount + blockSize - 1) / blockSize;
+    // calculate the grid block size
+    #if defined(FLAMEGPU_USE_HIP)
+    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    int blockSize = 128;
+    #else
+    int blockSize = 0;
+    int minGridSize = 0;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, scatter_generic<unsigned int*>, 0, itemCount));
+    #endif  // defined(FLAMEGPU_USE_HIP)
+    int gridSize = (itemCount + blockSize - 1) / blockSize;
+
     // Make sure we have enough space to store scatterdata
     streamResources[streamResourceId].resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    gpuErrchk(cudaMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
     if (invert_scan_flag) {
         scatter_generic <<<gridSize, blockSize, 0, stream>>> (
             itemCount,
@@ -170,25 +187,25 @@ unsigned int CUDAScatter::scatter(
             streamResources[streamResourceId].d_data, static_cast<unsigned int>(sd.size()),
             out_index_offset, scatter_all_count);
     }
-    gpuErrchkLaunch();
+    flamegpu::detail::gpuCheckLaunch();
     // Update count of live agents
     unsigned int rtn = 0;
-    gpuErrchk(cudaMemcpyAsync(&rtn, scan.Config(messageOrAgent, streamResourceId).d_ptrs.position + itemCount - scatter_all_count, sizeof(unsigned int), cudaMemcpyDeviceToHost, stream));
-    gpuErrchk(cudaStreamSynchronize(stream));  // @todo - async + sync variants.
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(&rtn, scan.Config(messageOrAgent, streamResourceId).d_ptrs.position + itemCount - scatter_all_count, sizeof(unsigned int), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));  // @todo - async + sync variants.
     return rtn + scatter_all_count;
 }
 void CUDAScatter::scatterPosition(
     unsigned int streamResourceId,
-    cudaStream_t stream,
+    flamegpu::detail::gpu::Stream_t stream,
     Type messageOrAgent,
     const std::vector<ScatterData>& sd,
     unsigned int itemCount) {
     scatterPosition_async(streamResourceId, stream, scan.Config(messageOrAgent, streamResourceId).d_ptrs.position, sd, itemCount);
-    gpuErrchk(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
 }
 void CUDAScatter::scatterPosition_async(
     unsigned int streamResourceId,
-    cudaStream_t stream,
+    flamegpu::detail::gpu::Stream_t stream,
     Type messageOrAgent,
     const std::vector<ScatterData>& sd,
     unsigned int itemCount) {
@@ -196,69 +213,77 @@ void CUDAScatter::scatterPosition_async(
 }
 void CUDAScatter::scatterPosition_async(
     unsigned int streamResourceId,
-    cudaStream_t stream,
+    flamegpu::detail::gpu::Stream_t stream,
     unsigned int *position,
     const std::vector<ScatterData> &sd,
     unsigned int itemCount) {
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
-    // calculate the grid block size for main agent function
-    gpuErrchk(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_position_generic, 0, itemCount));
-    //! Round up according to CUDAAgent state list size
-    gridSize = (itemCount + blockSize - 1) / blockSize;
+    // calculate the grid block size
+    #if defined(FLAMEGPU_USE_HIP)
+    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    int blockSize = 128;
+    #else
+    int blockSize = 0;
+    int minGridSize = 0;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, scatter_position_generic, 0, itemCount));
+    #endif  // defined(FLAMEGPU_USE_HIP)
+    int gridSize = (itemCount + blockSize - 1) / blockSize;
+
     // Make sure we have enough space to store scatterdata
     streamResources[streamResourceId].resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    gpuErrchk(cudaMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
     scatter_position_generic <<<gridSize, blockSize, 0, stream>>> (
         itemCount,
         position,
         streamResources[streamResourceId].d_data, static_cast<unsigned int>(sd.size()));
-    gpuErrchkLaunch();
+    flamegpu::detail::gpuCheckLaunch();
 }
 unsigned int CUDAScatter::scatterCount(
     const unsigned int streamResourceId,
-    const cudaStream_t stream,
+    const flamegpu::detail::gpu::Stream_t stream,
     const Type &messageOrAgent,
     const unsigned int itemCount,
     const unsigned int scatter_all_count) {
     unsigned int rtn = 0;
-    gpuErrchk(cudaMemcpy(&rtn, scan.Config(messageOrAgent, streamResourceId).d_ptrs.position + itemCount - scatter_all_count, sizeof(unsigned int), cudaMemcpyDeviceToHost));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Memcpy)(&rtn, scan.Config(messageOrAgent, streamResourceId).d_ptrs.position + itemCount - scatter_all_count, sizeof(unsigned int), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost)));
     return rtn;
 }
 
 unsigned int CUDAScatter::scatterAll(
     const unsigned int streamResourceId,
-    const cudaStream_t stream,
+    const flamegpu::detail::gpu::Stream_t stream,
     const std::vector<ScatterData> &sd,
     const unsigned int itemCount,
     const unsigned int out_index_offset) {
     if (!itemCount)
         return itemCount;  // No work to do
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
 
-                       // calculate the grid block size for main agent function
-    gpuErrchk(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_all_generic, 0, itemCount));
-    //! Round up according to CUDAAgent state list size
-    gridSize = (itemCount + blockSize - 1) / blockSize;
+    // calculate the grid block size
+    #if defined(FLAMEGPU_USE_HIP)
+    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    int blockSize = 128;
+    #else
+    int blockSize = 0;
+    int minGridSize = 0;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, scatter_all_generic, 0, itemCount));
+    #endif  // defined(FLAMEGPU_USE_HIP)
+    int gridSize = (itemCount + blockSize - 1) / blockSize;
+
     streamResources[streamResourceId].resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    gpuErrchk(cudaMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
     scatter_all_generic <<<gridSize, blockSize, 0, stream>>> (
         itemCount,
         streamResources[streamResourceId].d_data, static_cast<unsigned int>(sd.size()),
         out_index_offset);
-    gpuErrchkLaunch();
-    gpuErrchk(cudaStreamSynchronize(stream));  // @todo - async + sync variants.
+    flamegpu::detail::gpuCheckLaunch();
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));  // @todo - async + sync variants.
     // Update count of live agents
     return itemCount;
 }
 unsigned int CUDAScatter::scatterAll(
     const unsigned int streamResourceId,
-    const cudaStream_t stream,
+    const flamegpu::detail::gpu::Stream_t stream,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,
@@ -281,7 +306,7 @@ __global__ void pbm_reorder_generic(
     CUDAScatter::ScatterData *scatter_data,
     const unsigned int scatter_len) {
     // global thread index
-    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+    unsigned int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     if (index >= threadCount) return;
 
@@ -295,7 +320,7 @@ __global__ void pbm_reorder_generic(
 
 void CUDAScatter::pbm_reorder(
     const unsigned int streamResourceId,
-    const cudaStream_t stream,
+    const flamegpu::detail::gpu::Stream_t stream,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,
@@ -308,14 +333,17 @@ void CUDAScatter::pbm_reorder(
         return;
     }
 
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
+    // calculate the grid block size
+    #if defined(FLAMEGPU_USE_HIP)
+    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    int blockSize = 128;
+    #else
+    int blockSize = 0;
+    int minGridSize = 0;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, pbm_reorder_generic, 0, itemCount));
+    #endif  // defined(FLAMEGPU_USE_HIP)
+    int gridSize = (itemCount + blockSize - 1) / blockSize;
 
-                       // calculate the grid block size for main agent function
-    gpuErrchk(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, pbm_reorder_generic, 0, itemCount));
-    //! Round up according to CUDAAgent state list size
-    gridSize = (itemCount + blockSize - 1) / blockSize;
     // for each variable, scatter from swap to regular
     std::vector<ScatterData> sd;
     for (const auto &v : vars) {
@@ -325,15 +353,15 @@ void CUDAScatter::pbm_reorder(
     }
     streamResources[streamResourceId].resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    gpuErrchk(cudaMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
     pbm_reorder_generic <<<gridSize, blockSize, 0, stream>>> (
             itemCount,
             d_bin_index,
             d_bin_sub_index,
             d_pbm,
             streamResources[streamResourceId].d_data, static_cast<unsigned int>(sd.size()));
-    gpuErrchkLaunch();
-    gpuErrchk(cudaStreamSynchronize(stream));  // @todo - async + sync variants.
+    flamegpu::detail::gpuCheckLaunch();
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));  // @todo - async + sync variants.
 }
 
 /**
@@ -352,7 +380,7 @@ __global__ void scatter_new_agents(
     const unsigned int scatter_len,
     const unsigned int out_index_offset) {
     // global thread index
-    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+    unsigned int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     if (index >= threadCount) return;
 
@@ -367,31 +395,35 @@ __global__ void scatter_new_agents(
 }
 void CUDAScatter::scatterNewAgents(
     const unsigned int streamResourceId,
-    const cudaStream_t stream,
+    const flamegpu::detail::gpu::Stream_t stream,
     const std::vector<ScatterData> &sd,
     const size_t totalAgentSize,
     const unsigned int inCount,
     const unsigned int outIndexOffset) {
     // 1 thread per agent variable
     const unsigned int threadCount = static_cast<unsigned int>(sd.size()) * inCount;
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
 
-    // calculate the grid block size for main agent function
-    gpuErrchk(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_new_agents, 0, threadCount));
-    //! Round up according to CUDAAgent state list size
-    gridSize = (threadCount + blockSize - 1) / blockSize;
+    // calculate the grid block size
+    #if defined(FLAMEGPU_USE_HIP)
+    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    int blockSize = 128;
+    #else
+    int blockSize = 0;
+    int minGridSize = 0;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, scatter_new_agents, 0, threadCount));
+    #endif  // defined(FLAMEGPU_USE_HIP)
+    int gridSize = (threadCount + blockSize - 1) / blockSize;
+
     streamResources[streamResourceId].resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    gpuErrchk(cudaMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
     scatter_new_agents <<<gridSize, blockSize, 0, stream>>> (
         threadCount,
         static_cast<unsigned int>(totalAgentSize),
         streamResources[streamResourceId].d_data, static_cast<unsigned int>(sd.size()),
         outIndexOffset);
-    gpuErrchkLaunch();
-    gpuErrchk(cudaStreamSynchronize(stream));  // @todo - async + sync variants.
+    flamegpu::detail::gpuCheckLaunch();
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));  // @todo - async + sync variants.
 }
 /**
 * Broadcast kernel for initialising agent variables to default on device
@@ -407,7 +439,7 @@ __global__ void broadcastInitKernel(
     const unsigned int scatter_len,
     const unsigned int out_index_offset) {
     // global thread index
-    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+    unsigned int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     if (index >= threadCount) return;
 
@@ -422,16 +454,16 @@ __global__ void broadcastInitKernel(
 }
 void CUDAScatter::broadcastInit(
     unsigned int streamResourceId,
-    cudaStream_t stream,
+    flamegpu::detail::gpu::Stream_t stream,
     const std::list<std::shared_ptr<VariableBuffer>> &vars,
     unsigned int inCount,
     unsigned int outIndexOffset) {
     broadcastInit_async(streamResourceId, stream, vars, inCount, outIndexOffset);
-    gpuErrchk(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
 }
 void CUDAScatter::broadcastInit_async(
     unsigned int streamResourceId,
-    cudaStream_t stream,
+    flamegpu::detail::gpu::Stream_t stream,
     const std::list<std::shared_ptr<VariableBuffer>>& vars,
     unsigned int inCount,
     unsigned int outIndexOffset) {
@@ -439,14 +471,18 @@ void CUDAScatter::broadcastInit_async(
     if (vars.size() == 0) return;
     // 1 thread per agent variable
     const unsigned int threadCount = static_cast<unsigned int>(vars.size()) * inCount;
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
 
-    // calculate the grid block size for main agent function
-    gpuErrchk(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, broadcastInitKernel, 0, threadCount));
-    //! Round up according to CUDAAgent state list size
-    gridSize = (threadCount + blockSize - 1) / blockSize;
+    // calculate the grid block size
+    #if defined(FLAMEGPU_USE_HIP)
+    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    int blockSize = 128;
+    #else
+    int blockSize = 0;
+    int minGridSize = 0;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, broadcastInitKernel, 0, threadCount));
+    #endif  // defined(FLAMEGPU_USE_HIP)
+    int gridSize = (threadCount + blockSize - 1) / blockSize;
+
     // Calculate memory usage (crudely in multiples of ScatterData)
     ptrdiff_t offset = 0;
     for (const auto &v : vars) {
@@ -468,42 +504,46 @@ void CUDAScatter::broadcastInit_async(
         offset += v->type_size * v->elements;
     }
     // Important that sd.size() is used here, as allocated len would exceed 2nd memcpy
-    gpuErrchk(cudaMemcpyAsync(streamResources[streamResourceId].d_data, default_data, offset, cudaMemcpyHostToDevice, stream));
-    gpuErrchk(cudaMemcpyAsync(streamResources[streamResourceId].d_data + offset, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(streamResources[streamResourceId].d_data, default_data, offset, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(streamResources[streamResourceId].d_data + offset, sd.data(), sizeof(ScatterData) * sd.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
     ::free(default_data);
     broadcastInitKernel <<<gridSize, blockSize, 0, stream>>> (
         threadCount,
         streamResources[streamResourceId].d_data + offset, static_cast<unsigned int>(sd.size()),
         outIndexOffset);
-    gpuErrchkLaunch();
+    flamegpu::detail::gpuCheckLaunch();
 }
 void CUDAScatter::broadcastInit(
     unsigned int streamResourceId,
-    cudaStream_t stream,
+    flamegpu::detail::gpu::Stream_t stream,
     const VariableMap& vars,
     void* const d_newBuff,
     unsigned int inCount,
     unsigned int outIndexOffset) {
     broadcastInit_async(streamResourceId, stream, vars, d_newBuff, inCount, outIndexOffset);
-    gpuErrchk(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
 }
 void CUDAScatter::broadcastInit_async(
     unsigned int streamResourceId,
-    cudaStream_t stream,
+    flamegpu::detail::gpu::Stream_t stream,
     const VariableMap &vars,
     void * const d_newBuff,
     unsigned int inCount,
     unsigned int outIndexOffset) {
     // 1 thread per agent variable
     const unsigned int threadCount = static_cast<unsigned int>(vars.size()) * inCount;
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
 
-    // calculate the grid block size for main agent function
-    gpuErrchk(cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, broadcastInitKernel, 0, threadCount));
-    //! Round up according to CUDAAgent state list size
-    gridSize = (threadCount + blockSize - 1) / blockSize;
+    // calculate the grid block size
+    #if defined(FLAMEGPU_USE_HIP)
+    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    int blockSize = 128;
+    #else
+    int blockSize = 0;
+    int minGridSize = 0;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, broadcastInitKernel, 0, threadCount));
+    #endif  // defined(FLAMEGPU_USE_HIP)
+    int gridSize = (threadCount + blockSize - 1) / blockSize;
+
     // Calculate memory usage (crudely in multiples of ScatterData)
     std::vector<ScatterData> sd;
     ptrdiff_t offset = 0;
@@ -528,14 +568,14 @@ void CUDAScatter::broadcastInit_async(
         offset += v.second.type_size * v.second.elements;
     }
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    gpuErrchk(cudaMemcpyAsync(streamResources[streamResourceId].d_data, default_data, offset, cudaMemcpyHostToDevice, stream));
-    gpuErrchk(cudaMemcpyAsync(streamResources[streamResourceId].d_data + offset, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(streamResources[streamResourceId].d_data, default_data, offset, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(streamResources[streamResourceId].d_data + offset, sd.data(), sizeof(ScatterData) * sd.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
     ::free(default_data);
     broadcastInitKernel <<<gridSize, blockSize, 0, stream>>> (
         threadCount,
         streamResources[streamResourceId].d_data + offset, static_cast<unsigned int>(sd.size()),
         outIndexOffset);
-    gpuErrchkLaunch();
+    flamegpu::detail::gpuCheckLaunch();
 }
 __global__ void reorder_array_messages(
     const unsigned int threadCount,
@@ -548,7 +588,7 @@ __global__ void reorder_array_messages(
     const unsigned int scatter_len
 ) {
     // global thread index
-    int index = (blockIdx.x*blockDim.x) + threadIdx.x;
+    unsigned int index = (blockIdx.x*blockDim.x) + threadIdx.x;
 
     if (index >= threadCount) return;
 
@@ -566,7 +606,7 @@ __global__ void reorder_array_messages(
 }
 void CUDAScatter::arrayMessageReorder(
     const unsigned int streamResourceId,
-    const cudaStream_t stream,
+    const flamegpu::detail::gpu::Stream_t stream,
     const VariableMap &vars,
     const std::map<std::string, void*> &in,
     const std::map<std::string, void*> &out,
@@ -581,13 +621,18 @@ void CUDAScatter::arrayMessageReorder(
     if (itemCount > array_length) {
         THROW exception::ArrayMessageWriteConflict("Too many messages output for array message structure (%u > %u).\n", itemCount, array_length);
     }
-    int blockSize = 0;  // The launch configurator returned block size
-    int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
-    int gridSize = 0;  // The actual grid size needed, based on input size
-                       // calculate the grid block size for main agent function
-    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, reorder_array_messages, 0, itemCount);
-    //! Round up according to CUDAAgent state list size
-    gridSize = (itemCount + blockSize - 1) / blockSize;
+
+    // calculate the grid block size
+    #if defined(FLAMEGPU_USE_HIP)
+    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    int blockSize = 128;
+    #else
+    int blockSize = 0;
+    int minGridSize = 0;
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, reorder_array_messages, 0, itemCount));
+    #endif  // defined(FLAMEGPU_USE_HIP)
+    int gridSize = (itemCount + blockSize - 1) / blockSize;
+
     unsigned int *d_position = nullptr;
     // Build AoS -> AoS list
     std::vector<ScatterData> sd;
@@ -606,7 +651,7 @@ void CUDAScatter::arrayMessageReorder(
     {  // Decide per-stream resource memory requirements based on curve data, and potentially cub temp memory
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
         // Query cub to find the number of temporary bytes required.
-        gpuErrchk(cub::DeviceReduce::Max(nullptr, t_data_len, d_write_flag, d_position, array_length, stream));
+        flamegpu::detail::gpuCheck(cub::DeviceReduce::Max(nullptr, t_data_len, d_write_flag, d_position, array_length, stream));
 #endif
         // the num bytes required is maximum of the per message variable ScatterData and the cub temp bytes required
         const size_t srBytesRequired = std::max(sd.size() * sizeof(ScatterData), t_data_len);
@@ -619,7 +664,7 @@ void CUDAScatter::arrayMessageReorder(
         }
     }
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    gpuErrchk(cudaMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), cudaMemcpyHostToDevice, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
     reorder_array_messages <<<gridSize, blockSize, 0, stream >>> (
         itemCount, array_length,
         d_position,
@@ -627,18 +672,18 @@ void CUDAScatter::arrayMessageReorder(
         d_write_flag,
 #endif
         streamResources[streamResourceId].d_data, static_cast<unsigned int>(sd.size()));
-    gpuErrchkLaunch();
+    flamegpu::detail::gpuCheckLaunch();
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     // Check d_write_flag for dupes
-    gpuErrchk(cub::DeviceReduce::Max(streamResources[streamResourceId].d_data, t_data_len, d_write_flag, d_position, array_length, stream));
+    flamegpu::detail::gpuCheck(cub::DeviceReduce::Max(streamResources[streamResourceId].d_data, t_data_len, d_write_flag, d_position, array_length, stream));
     unsigned int maxBinSize = 0;
-    gpuErrchk(cudaMemcpyAsync(&maxBinSize, d_position, sizeof(unsigned int), cudaMemcpyDeviceToHost, stream));
-    gpuErrchk(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(&maxBinSize, d_position, sizeof(unsigned int), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
     if (maxBinSize > 1) {
         // Too many messages for single element of array
         // Report bad ones
         unsigned int *hd_write_flag = (unsigned int *)malloc(sizeof(unsigned int) * array_length);
-        gpuErrchk(cudaMemcpy(hd_write_flag, d_write_flag, sizeof(unsigned int)* array_length, cudaMemcpyDeviceToHost));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Memcpy)(hd_write_flag, d_write_flag, sizeof(unsigned int)* array_length, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost)));
         unsigned int last_fail_index = std::numeric_limits<unsigned int>::max();
         for (unsigned int i = 0; i < array_length; ++i) {
             if (hd_write_flag[i] > 1) {

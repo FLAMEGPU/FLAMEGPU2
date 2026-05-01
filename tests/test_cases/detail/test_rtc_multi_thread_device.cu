@@ -6,7 +6,7 @@
 
 #include "flamegpu/flamegpu.h"
 #include "gtest/gtest.h"
-#include "flamegpu/detail/compute_capability.cuh"
+#include "flamegpu/detail/gpu/cuda/compute_capability.cuh"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -107,6 +107,7 @@ void initRunSim(std::shared_ptr<CUDASimulation> sim, const AgentDescription &a, 
     }
 }
 TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Message) {
+#ifdef FLAMEGPU_USE_CUDA
     const unsigned int POP_SIZE = 10000;
     const int SIMS_PER_DEVICE = 3;
     const int STEPS = 10;
@@ -139,8 +140,11 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Message) {
     int offset = 0;
     // For each device
     for (int device = 0; device < devices; ++device) {
-        // If built with a suitable compute capability
-        if (detail::compute_capability::checkComputeCapability(device)) {
+        bool compatible_device = true;
+        #if defined(FLAMEGPU_USE_CUDA)
+        detail::gpu::cuda::compute_capability::checkComputeCapability(device);
+        #endif  // defined(FLAMEGPU_USE_CUDA)
+        if (compatible_device) {
             for (int i = 0; i < SIMS_PER_DEVICE; ++i) {
                 // Set sim Running
                 sims.emplace(sims.end(), std::make_shared<CUDASimulation>(m));
@@ -171,8 +175,12 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Message) {
         }
     }
     ASSERT_EQ(cudaSetDevice(0), cudaSuccess);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Environment) {
+#ifdef FLAMEGPU_USE_CUDA
     const unsigned int POP_SIZE = 10000;
     const int SIMS_PER_DEVICE = 3;
     const int STEPS = 10;
@@ -215,8 +223,11 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Environment) {
     int offset = 0;
     // For each device
     for (int device = 0; device < devices; ++device) {
-        // If built with a suitable compute capability
-        if (detail::compute_capability::checkComputeCapability(device)) {
+        bool compatible_device = true;
+        #if defined(FLAMEGPU_USE_CUDA)
+        detail::gpu::cuda::compute_capability::checkComputeCapability(device);
+        #endif  // defined(FLAMEGPU_USE_CUDA)
+        if (compatible_device) {
             for (int i = 0; i < SIMS_PER_DEVICE; ++i) {
                 // Set sim Running
                 m.Environment().setProperty<int>("one", 1 * (offset + 1));
@@ -267,8 +278,12 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_Environment) {
         }
     }
     ASSERT_EQ(cudaSetDevice(0), cudaSuccess);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
+#ifdef FLAMEGPU_USE_CUDA
     const unsigned int POP_SIZE = 1000;
     const int SIMS_PER_DEVICE = 3;
     const int STEPS = 5;
@@ -301,8 +316,11 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
     int offset = 0;
     // For each device
     for (int device = 0; device < devices; ++device) {
-        // If built with a suitable compute capability
-        if (detail::compute_capability::checkComputeCapability(device)) {
+        bool compatible_device = true;
+        #if defined(FLAMEGPU_USE_CUDA)
+        detail::gpu::cuda::compute_capability::checkComputeCapability(device);
+        #endif  // defined(FLAMEGPU_USE_CUDA)
+        if (compatible_device) {
             for (int i = 0; i < SIMS_PER_DEVICE; ++i) {
                 // Set sim Running
                 sims.emplace(sims.end(), std::make_shared<CUDASimulation>(m));
@@ -343,8 +361,12 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
         }
     }
     ASSERT_EQ(cudaSetDevice(0), cudaSuccess);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
+#ifdef FLAMEGPU_USE_CUDA
     const unsigned int POP_SIZE = 10000;
     const int SIMS_PER_DEVICE = 3;
     const int STEPS = 10;
@@ -377,8 +399,11 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
     int offset = 0;
     // For each device
     for (int device = 0; device < devices; ++device) {
-        // If built with a suitable compute capability
-        if (detail::compute_capability::checkComputeCapability(device)) {
+        bool compatible_device = true;
+        #if defined(FLAMEGPU_USE_CUDA)
+        detail::gpu::cuda::compute_capability::checkComputeCapability(device);
+        #endif  // defined(FLAMEGPU_USE_CUDA)
+        if (compatible_device) {
             for (int i = 0; i < SIMS_PER_DEVICE; ++i) {
                 // Set sim Running
                 sims.emplace(sims.end(), std::make_shared<CUDASimulation>(m));
@@ -417,6 +442,9 @@ TEST(RTCMultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
         }
     }
     ASSERT_EQ(cudaSetDevice(0), cudaSuccess);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 }  // namespace test_rtc_multi_thread_device
 }  // namespace flamegpu

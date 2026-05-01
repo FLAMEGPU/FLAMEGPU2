@@ -15,12 +15,15 @@ namespace util {
  * This method should ideally be called as the final method prior to an `exit` or the `return` of the main method, as it is costly and can invalidate device memory allocations, potentially breaking application state.
  */
 void cleanup();
+
+#ifdef FLAMEGPU_USE_CUDA
 /**
  * Clear the cache of compiled RTC agent functions
  * This is normally located within the operating system's temporary directory, and persists between executions of FLAMEGPU
  * e.g. %temp%/flamegpu/jitifycache
  */
 void clearRTCDiskCache();
+#endif  // FLAMEGPU_USE_CUDA
 
 }  // namespace util
 }  // namespace flamegpu

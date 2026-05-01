@@ -5,12 +5,14 @@
 #include "flamegpu/runtime/agent/DeviceAgentVector_impl.h"
 #include "flamegpu/simulation/detail/CUDAAgent.h"
 #include "flamegpu/runtime/agent/HostNewAgentAPI.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 
 DeviceAgentVector_impl::DeviceAgentVector_impl(detail::CUDAAgent& _cuda_agent, const std::string &_cuda_agent_state,
                                                const VarOffsetStruct& _agentOffsets, std::vector<NewAgentStorage>& _newAgentData,
-                                               detail::CUDAScatter& _scatter, const unsigned int _streamId, const cudaStream_t _stream)
+                                               detail::CUDAScatter& _scatter, const unsigned int _streamId, const flamegpu::detail::gpu::Stream_t _stream)
     : AgentVector(_cuda_agent.getAgentDescription(), 0)
     , unbound_buffers_has_changed(false)
     , known_device_buffer_size(_cuda_agent.getStateSize(_cuda_agent_state))
@@ -59,7 +61,7 @@ void DeviceAgentVector_impl::syncChanges() {
         char* device_dest = static_cast<char*>(cuda_agent.getStateVariablePtr(cuda_agent_state, ch.first));
         const size_t copy_offset = ch.second.first * v.type_size * v.elements;
         const size_t copy_len = (ch.second.second - ch.second.first) * v.type_size * v.elements;
-        gpuErrchk(cudaMemcpyAsync(device_dest + copy_offset, host_src + copy_offset, copy_len, cudaMemcpyHostToDevice, stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(device_dest + copy_offset, host_src + copy_offset, copy_len, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
     }
     change_detail.clear();
     // Copy all unbound buffes
@@ -69,11 +71,11 @@ void DeviceAgentVector_impl::syncChanges() {
         }
         for (auto &buff : unbound_buffers) {
             const size_t variable_size = buff.device->type_size * buff.device->elements;
-            gpuErrchk(cudaMemcpyAsync(buff.device->data, buff.host, unbound_host_buffer_size * variable_size, cudaMemcpyHostToDevice, stream));
+            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(buff.device->data, buff.host, unbound_host_buffer_size * variable_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
         }
         unbound_buffers_has_changed = false;
     }
-    gpuErrchk(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
     // Update CUDAAgent statelist size
     cuda_agent.setStateAgentCount(cuda_agent_state, _size);
 }
@@ -103,14 +105,14 @@ void DeviceAgentVector_impl::initUnboundBuffers() {
         const size_t var_size = buff.device->type_size * buff.device->elements;
         buff.host = static_cast<char*>(malloc(_capacity * var_size));
         // DtH memcpy
-        gpuErrchk(cudaMemcpyAsync(buff.host, buff.device->data, copy_len * var_size, cudaMemcpyDeviceToHost, stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(buff.host, buff.device->data, copy_len * var_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
         // Not sure this will ever happen, but better safe
         for (unsigned int i = device_len; i < _size; ++i) {
             // We have unknown agents, default init them
             memcpy(buff.host + i * var_size, buff.device->default_value, var_size);
         }
     }
-    gpuErrchk(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
     unbound_host_buffer_capacity = _capacity;
     unbound_host_buffer_size = copy_len;
     unbound_buffers_has_changed = true;  // Probably not required, but if they are being init, high chance they're going to be changed
@@ -134,14 +136,14 @@ void DeviceAgentVector_impl::reinitUnboundBuffers() {
             buff.host = static_cast<char*>(malloc(_capacity * var_size));
         }
         // DtH memcpy
-        gpuErrchk(cudaMemcpyAsync(buff.host, buff.device->data, copy_len * var_size, cudaMemcpyDeviceToHost, stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(buff.host, buff.device->data, copy_len * var_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
         // Not sure this will ever happen, but better safe
         for (unsigned int i = device_len; i < _size; ++i) {
             // We have unknown agents, default init them
             memcpy(buff.host + i * var_size, buff.device->default_value, var_size);
         }
     }
-    gpuErrchk(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
     unbound_host_buffer_capacity = unbound_host_buffer_capacity < _capacity ?_capacity : unbound_host_buffer_capacity;
     unbound_host_buffer_size = copy_len;
     unbound_buffers_has_changed = true;  // Probably not required, but if they are being init, high chance they're going to be changed
@@ -335,7 +337,7 @@ void DeviceAgentVector_impl::_require(const std::string& variable_name) const {
         // Copy back variable data into array
         void* host_dest = _data->at(variable_name)->getDataPtr();
         const void* device_src = cuda_agent.getStateVariablePtr(cuda_agent_state, variable_name);
-        gpuErrchk(cudaMemcpyAsync(host_dest, device_src, _size * v.type_size * v.elements, cudaMemcpyDeviceToHost, stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(host_dest, device_src, _size * v.type_size * v.elements, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
         if (_capacity > _size) {
             // Default-init remaining buffer space
             const auto it = _data->find(variable_name);
@@ -347,7 +349,7 @@ void DeviceAgentVector_impl::_require(const std::string& variable_name) const {
         }
         // The invalid variable is now current
         invalid_variables.erase(variable_name);
-        gpuErrchk(cudaStreamSynchronize(stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
     }
 }
 void DeviceAgentVector_impl::_requireAll() const {
@@ -356,7 +358,7 @@ void DeviceAgentVector_impl::_requireAll() const {
         // Copy back variable data into array
         void* host_dest = _data->at(vn)->getDataPtr();
         const void* device_src = cuda_agent.getStateVariablePtr(cuda_agent_state, vn);
-        gpuErrchk(cudaMemcpyAsync(host_dest, device_src, _size * v.type_size * v.elements, cudaMemcpyDeviceToHost, stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(host_dest, device_src, _size * v.type_size * v.elements, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
     }
     // Perform the cuda ops in a separate loop to host inits, gives a slight bit of time to eat latency
     for (const auto& vn : invalid_variables) {
@@ -373,7 +375,7 @@ void DeviceAgentVector_impl::_requireAll() const {
     }
     // All invalid variables are now current
     invalid_variables.clear();
-    gpuErrchk(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
 }
 void DeviceAgentVector_impl::_requireLength() const {
     /**

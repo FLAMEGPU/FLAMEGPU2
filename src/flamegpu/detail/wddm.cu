@@ -1,5 +1,6 @@
 #include "flamegpu/detail/wddm.cuh"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
 
 namespace flamegpu {
 namespace detail {
@@ -11,17 +12,18 @@ bool wddm::deviceIsWDDM(int deviceIndex) {
     }
     // Ensure deviceIndex is valid.
     int deviceCount = 0;
-    gpuErrchk(cudaGetDeviceCount(&deviceCount));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&deviceCount));
     if (deviceIndex >= deviceCount) {
         // Throw an excpetion if the device index is bad.
         THROW exception::InvalidCUDAdevice();
     }
-    // @todo - once WSL does not require insider builds, check how this behaves. AFAIK WSL is only supported for WDDM, but this may be incorrect.
+    // Assume not WDDM
     bool isWDDM = false;
-    #ifdef _MSC_VER
+    // If on windows with CUDA, check the tccDriver attribute, setting the result value to true if it is not tcc
+    #if defined(_MSC_VER) && defined(FLAMEGPU_USE_CUDA)
         int tccDriver = 0;
         // Load device attributes
-        gpuErrchk(cudaDeviceGetAttribute(&tccDriver, cudaDevAttrTccDriver, deviceIndex));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceGetAttribute)(&tccDriver, FLAMEGPU_GPU_RUNTIME_SYMBOL(DevAttrTccDriver), deviceIndex));
         // Compute the return value
         isWDDM = !tccDriver;
     #endif
@@ -31,7 +33,7 @@ bool wddm::deviceIsWDDM(int deviceIndex) {
 bool wddm::deviceIsWDDM() {
     // Get the current device
     int currentDeviceIndex = 0;
-    gpuErrchk(cudaGetDevice(&currentDeviceIndex));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDevice)(&currentDeviceIndex));
     // Get the wddm status for that device
     bool isWDDM = wddm::deviceIsWDDM(currentDeviceIndex);
     return isWDDM;

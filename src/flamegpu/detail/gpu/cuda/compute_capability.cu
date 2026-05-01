@@ -1,3 +1,5 @@
+// only implemented for CUDA
+#if defined(FLAMEGPU_USE_CUDA)
 #include <nvrtc.h>
 
 #include <cassert>
@@ -5,12 +7,14 @@
 #include <vector>
 #include <string>
 
-#include "flamegpu/detail/compute_capability.cuh"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
-
+#include "flamegpu/detail/gpu/cuda/compute_capability.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
 
 namespace flamegpu {
 namespace detail {
+namespace gpu {
+namespace cuda {
 
 namespace {
     /**
@@ -36,14 +40,14 @@ int compute_capability::getComputeCapability(int deviceIndex) {
 
     // Ensure deviceIndex is valid.
     int deviceCount = 0;
-    gpuErrchk(cudaGetDeviceCount(&deviceCount));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&deviceCount));
     if (deviceIndex >= deviceCount) {
         // Throw an excpetion if the device index is bad.
         THROW exception::InvalidCUDAdevice();
     }
     // Load device attributes
-    gpuErrchk(cudaDeviceGetAttribute(&minor, cudaDevAttrComputeCapabilityMinor, deviceIndex));
-    gpuErrchk(cudaDeviceGetAttribute(&major, cudaDevAttrComputeCapabilityMajor, deviceIndex));
+    flamegpu::detail::gpuCheck(cudaDeviceGetAttribute(&minor, cudaDevAttrComputeCapabilityMinor, deviceIndex));
+    flamegpu::detail::gpuCheck(cudaDeviceGetAttribute(&major, cudaDevAttrComputeCapabilityMajor, deviceIndex));
     // Compute the arch integer value.
     int arch = (10 * major) + minor;
     return arch;
@@ -99,9 +103,8 @@ bool compute_capability::checkComputeCapability(int deviceIndex) {
 }
 
 std::vector<int> compute_capability::getNVRTCSupportedComputeCapabilties() {
-// NVRTC included with CUDA 11.2+ includes methods to query the supported architectures and CUDA from 11.2+
-// Also changes the soname rules such that nvrtc.11.2.so is vald for all nvrtc >= 11.2, and libnvrtc.12.so for CUDA 12.x etc, so this is different at runtime not compile time for future versions, so use the methods
-#if (__CUDACC_VER_MAJOR__ > 11) || ((__CUDACC_VER_MAJOR__ == 11) && __CUDACC_VER_MINOR__ >= 2)
+    // NVRTC included with CUDA 11.2+ includes methods to query the supported architectures and CUDA from 11.2+
+    // Also changes the soname rules such that nvrtc.11.2.so is vald for all nvrtc >= 11.2, and libnvrtc.12.so for CUDA 12.x etc, so this is different at runtime not compile time for future versions, so use the methods
     nvrtcResult nvrtcStatus = NVRTC_SUCCESS;
     int nvrtcNumSupportedArchs = 0;
     // Query the number of architecture flags supported by this nvrtc, to allocate enough memory
@@ -118,20 +121,6 @@ std::vector<int> compute_capability::getNVRTCSupportedComputeCapabilties() {
     }
     // If any of the above functions failed, we have no idea what arch's are supported, so assume none are?
     return {};
-// Older CUDA's do not support this, but this is simple to hard-code for CUDA 11.0/11.1 (and CUDA 10.x).
-// CUDA 11.1 supports 35 to 86
-#elif (__CUDACC_VER_MAJOR__ == 11) && __CUDACC_VER_MINOR__ == 1
-    return {35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75, 80, 86};
-// CUDA 11.0 supports 35 to 80
-#elif (__CUDACC_VER_MAJOR__ == 11) && __CUDACC_VER_MINOR__ == 0
-    return {35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75, 80};
-// CUDA 10.x supports 30 to 75
-#elif (__CUDACC_VER_MAJOR__ >= 10)
-    return {30, 32, 35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75};
-// This should be all cases for FLAME GPU 2, but leave the fallback branch just in case
-#else
-    return {};
-#endif
 }
 
 int compute_capability::selectAppropraiteComputeCapability(const int target, const std::vector<int>& architectures) {
@@ -148,60 +137,9 @@ int compute_capability::selectAppropraiteComputeCapability(const int target, con
     return maxArch;
 }
 
-
-const std::string compute_capability::getDeviceName(int deviceIndex) {
-    // Throw an exception if the deviceIndex is negative.
-    if (deviceIndex < 0) {
-        THROW exception::InvalidCUDAdevice();
-    }
-
-    // Ensure deviceIndex is valid.
-    int deviceCount = 0;
-    gpuErrchk(cudaGetDeviceCount(&deviceCount));
-    if (deviceIndex >= deviceCount) {
-        // Throw an excpetion if the device index is bad.
-        THROW exception::InvalidCUDAdevice();
-    }
-    // Load device properties
-    cudaDeviceProp prop;
-    cudaGetDeviceProperties(&prop, deviceIndex);
-
-    return std::string(prop.name);
-}
-
-const std::string compute_capability::getDeviceNames(std::set<int> devices) {
-    std::string device_names;
-    bool first = true;
-    // Get the count of devices
-    int deviceCount = 0;
-    gpuErrchk(cudaGetDeviceCount(&deviceCount));
-    // If no devices were passed in, add each device to the set of devices.
-    if (devices.size() == 0) {
-        for (int i = 0; i < deviceCount; i++) {
-            devices.emplace_hint(devices.end(), i);
-        }
-    }
-    for (int device_id : devices) {
-        // Throw an exception if the deviceIndex is negative.
-        if (device_id < 0) {
-            THROW exception::InvalidCUDAdevice();
-        }
-        // Ensure deviceIndex is valid.
-        if (device_id >= deviceCount) {
-            // Throw an exception if the device index is bad.
-            THROW exception::InvalidCUDAdevice();
-        }
-        // Load device properties
-        cudaDeviceProp prop;
-        cudaGetDeviceProperties(&prop, device_id);
-        if (!first)
-            device_names.append(", ");
-        device_names.append(prop.name);
-        first = false;
-    }
-    return device_names;
-}
-
-
+}  // namespace cuda
+}  // namespace gpu
 }  // namespace detail
 }  // namespace flamegpu
+
+#endif  // defined(FLAMEGPU_USE_CUDA)

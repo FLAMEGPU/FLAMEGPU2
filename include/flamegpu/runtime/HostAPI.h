@@ -1,7 +1,10 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_HOSTAPI_H_
 #define INCLUDE_FLAMEGPU_RUNTIME_HOSTAPI_H_
 
-#include <cuda_runtime.h>  // required for cudaStream_t. This doesn't require nvcc however, as no device code.
+#ifdef FLAMEGPU_USE_CUDA
+#include <cuda_runtime.h>  // required for flamegpu::detail::gpu::Stream_t. This doesn't require nvcc however, as no device code.
+#endif
+
 #include <string>
 #include <utility>
 #include <functional>
@@ -9,13 +12,15 @@
 #include <vector>
 #include <memory>
 
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/runtime/random/HostRandom.cuh"
 #include "flamegpu/runtime/environment/HostEnvironment.cuh"
 #include "flamegpu/runtime/HostAPI_macros.h"
 #include "flamegpu/runtime/agent/HostNewAgentAPI.h"
-#include "flamegpu/detail/cuda.cuh"
 #include "flamegpu/simulation/CUDASimulation.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
 namespace detail {
@@ -61,7 +66,7 @@ class HostAPI {
         const std::shared_ptr<detail::CUDAMacroEnvironment> &macro_env,
         CUDADirectedGraphMap &directed_graph_map,
         unsigned int streamId,
-        cudaStream_t stream);
+        flamegpu::detail::gpu::Stream_t stream);
     /**
      * Frees held device memory
      */
@@ -113,9 +118,9 @@ class HostAPI {
 
 #ifdef FLAMEGPU_ADVANCED_API
     /**
-     * Returns the cudaStream_t assigned to the current instance of HostAPI (and it's child objects)
+     * Returns the flamegpu::detail::gpu::Stream_t assigned to the current instance of HostAPI (and it's child objects)
      */
-    cudaStream_t getCUDAStream() { return stream; }
+    flamegpu::detail::gpu::Stream_t getCUDAStream() { return stream; }
 #endif
 
  private:
@@ -146,16 +151,16 @@ class HostAPI {
     /**
      * CUDA stream object for CUDA operations
      */
-    cudaStream_t stream;
+    flamegpu::detail::gpu::Stream_t stream;
 };
 
 template<typename T>
 void HostAPI::resizeOutputSpace(const unsigned int items) {
     if (sizeof(T) * items > d_output_space_size) {
         if (d_output_space_size) {
-            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_output_space));
+            flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_output_space));
         }
-        gpuErrchk(cudaMalloc(&d_output_space, sizeof(T) * items));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_output_space, sizeof(T) * items));
         d_output_space_size = sizeof(T) * items;
     }
 }

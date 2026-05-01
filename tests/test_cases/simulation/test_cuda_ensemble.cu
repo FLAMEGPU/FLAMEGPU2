@@ -1,16 +1,22 @@
 #include <thread>
 #include <chrono>
 #include <filesystem>
+#include <fstream>
 #include <string>
 #include <set>
 
 #include "flamegpu/flamegpu.h"
+#include "flamegpu/detail/gpu/macros.hpp"
 
 #include "gtest/gtest.h"
 
 namespace flamegpu {
 namespace tests {
 namespace test_cuda_ensemble {
+
+#if FLAMEGPU_USE_HIP
+using cudaPointerAttributes = hipPointerAttribute_t;
+#endif
 
 TEST(TestCUDAEnsemble, constructor) {
     // Create a model
@@ -120,7 +126,7 @@ TEST(TestCUDAEnsemble, initialise_devices_wrong) {
     flamegpu::ModelDescription model("test");
     flamegpu::CUDAEnsemble ensemble(model);
     int device_ct = -1;
-    EXPECT_EQ(cudaGetDeviceCount(&device_ct), cudaSuccess);
+    EXPECT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&device_ct), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
     ensemble.Config().devices = { device_ct };
     RunPlanVector plan(model, 1);
     // Sim with out of bounds device ID, get exception
@@ -321,6 +327,7 @@ TEST(TestCUDAEnsemble, simulate) {
     // Exceptions can also be thrown if output_directory cannot be created, but I'm unsure how to reliably test this cross platform.
 }
 TEST(TestCUDAEnsemble, simulate_rtc) {
+#ifdef FLAMEGPU_USE_CUDA
     // Reset the atomic sum of sums to 0. Just in case.
     testSimulateSumOfSums = 0;
     // Number of simulations to run.
@@ -363,6 +370,9 @@ TEST(TestCUDAEnsemble, simulate_rtc) {
     flamegpu::RunPlanVector modelTwoPlans(modelTwo, 1);
     EXPECT_THROW(ensemble.simulate(modelTwoPlans), flamegpu::exception::InvalidArgument);
     // Exceptions can also be thrown if output_directory cannot be created, but I'm unsure how to reliably test this cross platform.
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 TEST(TestCUDAEnsemble, verbosity) {
     // Reset the atomic sum of sums to 0. Just in case.
@@ -383,13 +393,10 @@ TEST(TestCUDAEnsemble, verbosity) {
     model.addInitFunction(simulateInit);
     model.addExitFunction(simulateExit);
     // Crete a small runplan, using a different number of steps per sim.
-    uint64_t expectedResult = 0;
     flamegpu::RunPlanVector plans(model, planCount);
     for (uint32_t idx = 0; idx < plans.size(); idx++) {
         auto& plan = plans[idx];
         plan.setSteps(idx + 1);  // Can't have 0 steps without exit condition
-        // Increment the expected result based on the number of steps.
-        expectedResult += (idx + 1) * populationSize;
     }
     // Create an ensemble
     flamegpu::CUDAEnsemble ensemble(model);
@@ -605,6 +612,7 @@ TEST(TestCUDAEnsemble, getEnsembleElapsedTime) {
     EXPECT_GE(elapsedSeconds, threshold);
 }
 TEST(TestCUDAEnsemble, getEnsembleElapsedTime_rtc) {
+#ifdef FLAMEGPU_USE_CUDA
     // Create a model containing atleast one agent type and function.
     flamegpu::ModelDescription model("test");
     // Environmental constant for initial population
@@ -636,6 +644,9 @@ TEST(TestCUDAEnsemble, getEnsembleElapsedTime_rtc) {
     // Ensure the elapsed time is larger than a threshold.
     double threshold = sleepDurationSeconds * 0.8;
     EXPECT_GE(elapsedSeconds, threshold);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 unsigned int tracked_err_ct;
 unsigned int tracked_runs_ct;
@@ -762,13 +773,10 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDASimulation) {
     model.newLayer().addAgentFunction(simulateAgentFn);
     model.addInitFunction(simulateInit);
     // Crete a small runplan, using a different number of steps per sim.
-    uint64_t expectedResult = 0;
     flamegpu::RunPlanVector plans(model, planCount);
     for (uint32_t idx = 0; idx < plans.size(); idx++) {
         auto &plan = plans[idx];
         plan.setSteps(idx + 1);  // Can't have 0 steps without exit condition
-        // Increment the expected result based on the number of steps.
-        expectedResult += (idx + 1) * populationSize;
     }
 
     // Create and use but do not destroy a CUDASimulation, so it can be used to check for device reset issues later
@@ -788,6 +796,7 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDASimulation) {
     EXPECT_NO_THROW(simulation.step());
 }
 TEST(TestCUDAEnsemble, SimualteWithExistingCUDASimulation_rtc) {
+#ifdef FLAMEGPU_USE_CUDA
     // Number of simulations to run.
     constexpr uint32_t planCount = 2u;
     constexpr uint32_t populationSize = 32u;
@@ -803,13 +812,10 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDASimulation_rtc) {
     model.newLayer().addAgentFunction("Agent", "simulateAgentFn");
     model.addInitFunction(simulateInit);
     // Crete a small runplan, using a different number of steps per sim.
-    uint64_t expectedResult = 0;
     flamegpu::RunPlanVector plans(model, planCount);
     for (uint32_t idx = 0; idx < plans.size(); idx++) {
         auto &plan = plans[idx];
         plan.setSteps(idx + 1);  // Can't have 0 steps without exit condition
-        // Increment the expected result based on the number of steps.
-        expectedResult += (idx + 1) * populationSize;
     }
 
     // Create and use but do not destroy a CUDASimulation, so it can be used to check for device reset issues later
@@ -827,6 +833,9 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDASimulation_rtc) {
 
     // At this point, the cudaSim should still be usable (and dtor-able()
     EXPECT_NO_THROW(simulation.step());
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 /*
@@ -837,11 +846,11 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDASimulation_rtc) {
 TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc) {
     // Allocate some arbitraty device memory.
     int * d_int = nullptr;
-    gpuErrchk(cudaMalloc(&d_int, sizeof(int)));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_int, sizeof(int)));
     // Validate that the ptr is a valid device pointer
     cudaPointerAttributes attributes = {};
-    gpuErrchk(cudaPointerGetAttributes(&attributes, d_int));
-    EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, d_int));
+    EXPECT_EQ(attributes.type, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice));
 
     // Add extra layer of scope, so the ensemble get's dtor'd incase the dtor triggers a reset
     {
@@ -860,13 +869,10 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc) {
         model.newLayer().addAgentFunction(simulateAgentFn);
         model.addInitFunction(simulateInit);
         // Crete a small runplan, using a different number of steps per sim.
-        uint64_t expectedResult = 0;
         flamegpu::RunPlanVector plans(model, planCount);
         for (uint32_t idx = 0; idx < plans.size(); idx++) {
             auto &plan = plans[idx];
             plan.setSteps(idx + 1);  // Can't have 0 steps without exit condition
-            // Increment the expected result based on the number of steps.
-            expectedResult += (idx + 1) * populationSize;
         }
         // Create an ensemble
         flamegpu::CUDAEnsemble ensemble(model);
@@ -877,13 +883,13 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc) {
         EXPECT_NO_THROW(ensemble.simulate(plans));
     }
 
-    // At this point, the manually allocated data should still be valid, i.e. cudaMemoryTypeDevice
-    gpuErrchk(cudaPointerGetAttributes(&attributes, d_int));
-    EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
+    // At this point, the manually allocated data should still be valid, i.e. FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice)
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, d_int));
+    EXPECT_EQ(attributes.type, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice));
 
     // Free explicit device memory, if it was valid (to get the correct error)
-    if (attributes.type == cudaMemoryTypeDevice) {
-        gpuErrchk(cudaFree(d_int));
+    if (attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice)) {
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Free)(d_int));
     }
     d_int = nullptr;
 }
@@ -1039,13 +1045,14 @@ TEST(TestCUDAEnsemble, TruncationOff_Exit) {
 }
 
 TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc_rtc) {
+#ifdef FLAMEGPU_USE_CUDA
     // Allocate some arbitraty device memory.
     int * d_int = nullptr;
-    gpuErrchk(cudaMalloc(&d_int, sizeof(int)));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_int, sizeof(int)));
     // Validate that the ptr is a valid device pointer
     cudaPointerAttributes attributes = {};
-    gpuErrchk(cudaPointerGetAttributes(&attributes, d_int));
-    EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, d_int));
+    EXPECT_EQ(attributes.type, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice));
 
     // Add extra layer of scope, so the ensemble get's dtor'd incase the dtor triggers a reset
     {
@@ -1064,13 +1071,10 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc_rtc) {
         model.newLayer().addAgentFunction("Agent", "simulateAgentFn");
         model.addInitFunction(simulateInit);
         // Crete a small runplan, using a different number of steps per sim.
-        uint64_t expectedResult = 0;
         flamegpu::RunPlanVector plans(model, planCount);
         for (uint32_t idx = 0; idx < plans.size(); idx++) {
             auto &plan = plans[idx];
             plan.setSteps(idx + 1);  // Can't have 0 steps without exit condition
-            // Increment the expected result based on the number of steps.
-            expectedResult += (idx + 1) * populationSize;
         }
         // Create an ensemble
         flamegpu::CUDAEnsemble ensemble(model);
@@ -1081,15 +1085,18 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc_rtc) {
         EXPECT_NO_THROW(ensemble.simulate(plans));
     }
 
-    // At this point, the manually allocated data should still be valid, i.e. cudaMemoryTypeDevice
-    gpuErrchk(cudaPointerGetAttributes(&attributes, d_int));
-    EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
+    // At this point, the manually allocated data should still be valid, i.e. FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice)
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, d_int));
+    EXPECT_EQ(attributes.type, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice));
 
     // Free explicit device memory, if it was valid (to get the correct error)
-    if (attributes.type == cudaMemoryTypeDevice) {
-        gpuErrchk(cudaFree(d_int));
+    if (attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice)) {
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Free)(d_int));
     }
     d_int = nullptr;
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 TEST(TestCUDASimulation, simulationTelemetryConfig) {

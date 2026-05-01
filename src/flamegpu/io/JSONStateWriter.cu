@@ -17,6 +17,7 @@
 #include "flamegpu/util/StringPair.h"
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
 #include "flamegpu/simulation/detail/CUDAMacroEnvironment.h"
+#include "flamegpu/detail/gpu/macros.hpp"
 
 namespace flamegpu {
 namespace io {
@@ -204,7 +205,7 @@ void JSONStateWriter::writeMacroEnvironment(const std::shared_ptr<const detail::
                     continue;
                 // Copy data
                 const size_t element_ct = std::accumulate(prop.elements.begin(), prop.elements.end(), 1, std::multiplies<unsigned int>());
-                gpuErrchk(cudaMemcpy(t_buffer, prop.d_ptr, element_ct * prop.type_size, cudaMemcpyDeviceToHost));
+                flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Memcpy)(t_buffer, prop.d_ptr, element_ct * prop.type_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost)));
                 j_menv[name] = {};
                 for (size_t i = 0; i < element_ct; ++i) {
                     if (prop.type == std::type_index(typeid(float))) {

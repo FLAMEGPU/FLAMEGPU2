@@ -58,15 +58,22 @@ This is used to build the FLAMEGPU2 library, examples, tests and documentation.
 Building FLAME GPU has the following requirements. There are also optional dependencies which are required for some components, such as Documentation or Python bindings.
 
 + [CMake](https://cmake.org/download/) `>= 3.25.2`
-+ [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 12.0` (Linux) or `>= 12.4` (Windows)
-  + FLAME GPU aims to support the 2 most recent major CUDA versions, currently `12` and `13`.
-  + For native Windows builds, CUDA `12.0-12.3` may work for some but not all parts of FLAME GPU due to c++20 compilation issues and MSVC support.
-  + A [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 5.0` (CUDA 12.x) or `>= 7.5` (CUDA 13.x) NVIDIA GPU is required for execution.
-+ C++20 capable C++ compiler (host), compatible with the installed CUDA version
-  + [Microsoft Visual Studio 2022](https://visualstudio.microsoft.com/) (Windows)
++ CUDA for NVIDIA GPUs, or HIP/ROCm for AMD GPUS
+  + [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 12.4`
+    + FLAME GPU aims to support the 2 most recent major CUDA versions, currently `12` and `13`.
+    + Due to compiler issues on multiple platforms we have dropped support for CUDA `12.0`-`12.3`, requiring `>= 12.4`
+    + A [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 5.0` (CUDA 12.x) or `>= 7.5` (CUDA 13.x) NVIDIA GPU is required for execution.
+  + [ROCm/HIP](https://rocm.docs.amd.com/en/latest/) `>= 7.x` (Linux only)
+    + ROCm/HIP support in FLAME GPU is under active development. Not all features are available. Other ROCm versions are unsupported but may work.
+    + An AMD GPU [with ROCm support](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/system-requirements.html#supported-gpus) is required for execution 
++ C++20 capable C++ compiler (host), compatible with the installed CUDA/ROCm version
+  + Windows: [Microsoft Visual Studio 2022](https://visualstudio.microsoft.com/) (CUDA-only)
     + *Note:* Visual Studio must be installed before the CUDA toolkit is installed. See the [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) for more information.
     + *Note:* Windows 11 SDK (10.0.22000.0) component is required within the Visual Studio (in latest versions this is default for C++ Desktop Development workloads even even on Windows 10). Windows 10 *must* be updated to build 19045 (22H2) or later to support this at runtime.
-  + [make](https://www.gnu.org/software/make/) and [GCC](https://gcc.gnu.org/) `>= 10` (Linux)
+  + Linux: [make](https://www.gnu.org/software/make/) or [Ninja](https://ninja-build.org/) with:
+    + [GCC](https://gcc.gnu.org/) `>= 11` compatible with your CUDA installation
+    + `clang` / `amdclang++` / `hipcc` compatible wih your HIP/ROCm installation
+      + *Note:* You may need to explicitly set `amdclang++`/`hipcc` as the host compiler, as GCC cannot be used for CXX objects due to `HIP/ROCm`'s CMake enforcing `-x hip` for CXX objects which link against HIP/ROCm targets.
 + [git](https://git-scm.com/)
 
 Optionally:
@@ -75,7 +82,6 @@ Optionally:
 + [Doxygen](http://www.doxygen.nl/) to build the documentation
 + [Python](https://www.python.org/) `>= 3.10` for python integration
   + With `setuptools`, `wheel`, `build` and optionally `venv` python packages installed
-  + On Windows, CUDA >= 12.4 is required for python integration
 + [swig](http://www.swig.org/) `>= 4.1.0` for python integration (with c++20 support)
   + Swig >= `4.1.0` will be automatically downloaded by CMake if not provided (if possible).
   + Swig `4.2.0` and `4.2.1` is known to encounter issues in some cases. Consider using an alternate SWIG version
@@ -88,6 +94,9 @@ Optionally:
   + [FreeType](http://www.freetype.org/)  *(font loading)*
   + [DevIL](http://openil.sourceforge.net/)  *(image loading)*
   + [Fontconfig](https://www.fontconfig.org/)  *(Linux only, font detection)*
+
+> [!WARNING]
+> ROCm/AMD GPU support is under development. Some features such as Visualisation are not yet supported.
 
 ### Building with CMake
 
@@ -165,7 +174,10 @@ cmake --build . --target all
 | Option                               | Value                       | Description                                                                                                |
 | -------------------------------------| --------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | `CMAKE_BUILD_TYPE`                   | `Release` / `Debug` / `MinSizeRel` / `RelWithDebInfo` | Select the build configuration for single-target generators such as `make`   |
-| `CMAKE_CUDA_ARCHITECTURES`           | e.g `60`, `"60;70"`         | [CUDA Compute Capabilities][cuda-CC] to build/optimise for, as a `;` separated list. See [CMAKE_CUDA_ARCHITECTURES][cmake-CCA]. Defaults to `all-major` or equivalent. Alternatively use the `CUDAARCHS` environment variable. |
+| `FLAMEGPU_USE_CUDA`                  | `ON`, `OFF` | Enable CUDA / NVIDIA GPU support |
+| `FLAMEGPU_USE_HIP`                   | `ON`, `OFF` | Enable HIP / ROCm / AMD GPU support |
+| `CMAKE_CUDA_ARCHITECTURES`           | e.g `60`, `"60;70"`         | [CUDA Compute Capabilities][cuda-CC] to build/optimise for, as a `;` separated list. See [CMAKE_CUDA_ARCHITECTURES][cmake-CCA]. Defaults to a value provided by the NVCC. Alternatively use the `CUDAARCHS` environment variable. |
+| `CMAKE_HIP_ARCHITECTURES`            | e.g `gfx942`, `"gfx942;gfx1100"`         | [HIP/ROCM LLVM target][hip-llvm-target] to build/optimise for, as a `;` separated list. See [CMAKE_HIP_ARCHITECTURES][cmake-CHA]. Defaults to a value appropriate for the `CMAKE_HIP_PLATFORM` |
 | `FLAMEGPU_SEATBELTS`                 | `ON`/`OFF`                  | Enable / Disable additional runtime checks which harm performance but increase usability. Default `ON`     |
 | `FLAMEGPU_BUILD_PYTHON`              | `ON`/`OFF`                  | Enable Python target `pyflamegpu` via Swig. Default `OFF`. Python packages `setuptools`, `build` & `wheel` required |
 | `FLAMEGPU_BUILD_PYTHON_VENV`         | `ON`/`OFF`                  | Use a python `venv` when building the python Swig target. Default `ON`. Python package `venv` required     |
@@ -200,6 +212,8 @@ cmake --build . --target all
 
 [cuda-CC]: https://developer.nvidia.com/cuda-gpus
 [cmake-CCA]: https://cmake.org/cmake/help/latest/prop_tgt/CUDA_ARCHITECTURES.html
+[hip-llvm-target]: https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/system-requirements.html#supported-gpus
+[cmake-CHA]: https://cmake.org/cmake/help/latest/variable/CMAKE_HIP_ARCHITECTURES.html
 
 For a list of available CMake configuration options, run the following from the `build` directory:
 

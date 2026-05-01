@@ -16,10 +16,12 @@
 #include "flamegpu/io/StateReader.h"
 #include "flamegpu/io/StateReaderFactory.h"
 #include "flamegpu/simulation/CUDASimulation.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 HostEnvironment::HostEnvironment(CUDASimulation &_simulation, std::shared_ptr<detail::EnvironmentManager> env, std::shared_ptr<detail::CUDAMacroEnvironment> _macro_env,
-    CUDADirectedGraphMap& _directed_graph_map, detail::CUDAScatter& _scatter, const unsigned int _streamID, const cudaStream_t _stream)
+    CUDADirectedGraphMap& _directed_graph_map, detail::CUDAScatter& _scatter, const unsigned int _streamID, const flamegpu::detail::gpu::Stream_t _stream)
     : env_mgr(std::move(env))
     , macro_env(std::move(_macro_env))
     , directed_graph_map(_directed_graph_map)
@@ -52,7 +54,7 @@ void HostEnvironment::importMacroProperty(const std::string& property_name, cons
             THROW exception::InvalidInputFile("Length of input file '%s's environment macro property '%s'  does not match, (%u != %u), in HostEnvironment::importMacroProperty()",
                 file_path.c_str(), property_name.c_str(), static_cast<unsigned int>(l_prop->second.size()), static_cast<unsigned int>(m_prop_elements * m_prop->second.type_size));
         }
-        gpuErrchk(cudaMemcpyAsync(m_prop->second.d_ptr, l_prop->second.data(), l_prop->second.size(), cudaMemcpyHostToDevice, stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(m_prop->second.d_ptr, l_prop->second.data(), l_prop->second.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
     } catch (const exception::UnsupportedFileType&) {
         const std::string extension = std::filesystem::path(file_path).extension().string();
         if (extension == ".bin") {
@@ -66,12 +68,12 @@ void HostEnvironment::importMacroProperty(const std::string& property_name, cons
                     file_path.c_str(), property_name.c_str(), static_cast<unsigned int>(buffer.size()), static_cast<unsigned int>(m_prop_elements * m_prop->second.type_size));
             }
             // Update the property
-            gpuErrchk(cudaMemcpyAsync(m_prop->second.d_ptr, buffer.data(), buffer.size(), cudaMemcpyHostToDevice, stream));
+            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(m_prop->second.d_ptr, buffer.data(), buffer.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
         } else {
             throw;
         }
     }
-    gpuErrchk(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
     // If macro property exists in cache sync cache
     if (const auto cache = macro_env->getHostPropertyMetadata(property_name)) {
         cache->force_download();
@@ -106,8 +108,8 @@ void HostEnvironment::exportMacroProperty(const std::string& property_name, cons
             const unsigned int m_prop_elements = std::accumulate(m_prop->second.elements.begin(), m_prop->second.elements.end(), 1, std::multiplies<unsigned int>());
             std::vector<char> buffer;
             buffer.resize(m_prop_elements * m_prop->second.type_size);
-            gpuErrchk(cudaMemcpyAsync(buffer.data(), m_prop->second.d_ptr, m_prop_elements * m_prop->second.type_size, cudaMemcpyDeviceToHost, stream));
-            gpuErrchk(cudaStreamSynchronize(stream));
+            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(buffer.data(), m_prop->second.d_ptr, m_prop_elements * m_prop->second.type_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
             // Output to file
             std::ofstream output(file_path, std::ios::binary);
             output.write(buffer.data(), buffer.size());

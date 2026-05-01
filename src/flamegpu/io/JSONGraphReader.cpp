@@ -12,6 +12,7 @@
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 namespace io {
@@ -96,7 +97,7 @@ class JSONAdjacencyGraphReader : public nlohmann::json_sax<nlohmann::json> {
     /**
      * CUDA stream required for synchronising graph buffers
      */
-    cudaStream_t stream;
+    flamegpu::detail::gpu::Stream_t stream;
     /**
      * Access to graph metadata
      */
@@ -129,7 +130,7 @@ class JSONAdjacencyGraphReader : public nlohmann::json_sax<nlohmann::json> {
 
  public:
      JSONAdjacencyGraphReader(const std::string &_filename,
-        const std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>& _graph, cudaStream_t _stream)
+        const std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>& _graph, flamegpu::detail::gpu::Stream_t _stream)
         : filename(_filename)
         , graph(_graph)
         , stream(_stream)
@@ -373,7 +374,7 @@ class JSONAdjacencyGraphReader : public nlohmann::json_sax<nlohmann::json> {
 };
 }  // namespace
 
-void JSONGraphReader::loadAdjacencyLike(const std::string& filepath, const std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>& directed_graph, cudaStream_t stream) {
+void JSONGraphReader::loadAdjacencyLike(const std::string& filepath, const std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>& directed_graph, flamegpu::detail::gpu::Stream_t stream) {
     std::ifstream in(filepath, std::ios::in | std::ios::binary);
     if (!in) {
         THROW exception::InvalidFilePath("Unable to open file '%s' for reading.\n", filepath.c_str());

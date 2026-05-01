@@ -214,7 +214,7 @@ template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned in
 __device__ __forceinline__ DeviceMacroProperty<T, I, J, K, W>::DeviceMacroProperty(T* _ptr, unsigned int* _rwf)
     : ReadOnlyDeviceMacroProperty<T, I, J, K, W>(_ptr, _rwf)
 { }
-#ifdef __CUDACC__
+#if defined(__CUDACC__) || defined(__HIPCC__)
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ void ReadOnlyDeviceMacroProperty<T, I, J, K, W>::setCheckReadFlag() const {
     const unsigned int old = atomicOr(read_write_flag, 1u << 0);
@@ -498,12 +498,14 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::CAS(T compare, 
 }
 
 // GCC doesn't like seeing atomicExch with host compiler
-#ifdef __CUDACC__
+#if defined(__CUDACC__) || defined(__HIPCC__)
+#if defined(__CUDACC__)
 #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
 #pragma nv_diag_suppress = initialization_not_reachable
 #else
 #pragma diag_suppress = initialization_not_reachable
 #endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
+#endif  // defined(__CUDACC__)
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
 __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::exchange(T val) {
     static_assert(std::is_same<T, int32_t>::value ||
@@ -531,12 +533,14 @@ __device__ __forceinline__ T DeviceMacroProperty<T, I, J, K, W>::exchange(T val)
     return *reinterpret_cast<const T*>(&rval);
     // return atomicExch(this->ptr, val);
 }
+#if defined(__CUDACC__)
 #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
 #pragma nv_diag_default = initialization_not_reachable
 #else
 #pragma diag_default = initialization_not_reachable
 #endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
 #endif  // __CUDACC__
+#endif  // defined(__CUDACC__) || defined(__HIPCC__)
 
 }  // namespace flamegpu
 

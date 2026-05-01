@@ -3,7 +3,9 @@
 
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
 
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
@@ -19,35 +21,35 @@ DeviceExceptionManager::DeviceExceptionManager()
 }
 DeviceExceptionManager::~DeviceExceptionManager() {
     for (auto &i : d_buffer) {
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(i));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(i));
     }
 }
-DeviceExceptionBuffer *DeviceExceptionManager::getDevicePtr(const unsigned int streamId, const cudaStream_t stream) {
+DeviceExceptionBuffer *DeviceExceptionManager::getDevicePtr(const unsigned int streamId, const flamegpu::detail::gpu::Stream_t stream) {
     if (streamId >= detail::CUDAScanCompaction::MAX_STREAMS) {
         THROW exception::OutOfBoundsException("Stream id %u is out of bounds, %u >= %u, "
         "in FLAMEGPUDeviceException::getDevicePtr()\n", streamId, streamId, detail::CUDAScanCompaction::MAX_STREAMS);
     }
     // It may be better to move this (and the memsets) out to a separate up-front reset call in the future.
     if (!d_buffer[streamId]) {
-        gpuErrchk(cudaMalloc(&d_buffer[streamId], sizeof(DeviceExceptionBuffer)));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_buffer[streamId], sizeof(DeviceExceptionBuffer)));
     }
     // @todo - We might need a sync here in some cases? Tests all pass without it.
-    // gpuErrchk(cudaDeviceSynchronize());
+    // flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceSynchronize)());
 
     // Memset and return buffer
-    gpuErrchk(cudaMemsetAsync(d_buffer[streamId], 0, sizeof(DeviceExceptionBuffer), stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_buffer[streamId], 0, sizeof(DeviceExceptionBuffer), stream));
     memset(&hd_buffer[streamId], 0, sizeof(DeviceExceptionBuffer));
     return d_buffer[streamId];
 }
-void DeviceExceptionManager::checkError(const std::string &function, const unsigned int streamId, const cudaStream_t stream) {
+void DeviceExceptionManager::checkError(const std::string &function, const unsigned int streamId, const flamegpu::detail::gpu::Stream_t stream) {
     if (streamId >= detail::CUDAScanCompaction::MAX_STREAMS) {
         THROW exception::OutOfBoundsException("Stream id %u is out of bounds, %u >= %u, "
         "in FLAMEGPUDeviceException::checkError()\n", streamId, streamId, detail::CUDAScanCompaction::MAX_STREAMS);
     }
     if (d_buffer[streamId]) {
         // Grab buffer from device
-        gpuErrchk(cudaMemcpyAsync(&hd_buffer[streamId], d_buffer[streamId], sizeof(DeviceExceptionBuffer), cudaMemcpyDeviceToHost, stream));
-        gpuErrchk(cudaStreamSynchronize(stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(&hd_buffer[streamId], d_buffer[streamId], sizeof(DeviceExceptionBuffer), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
         // If there is a reported error count
         if (hd_buffer[streamId].error_count) {
             std::string location_string = getLocationString(hd_buffer[streamId]);

@@ -8,9 +8,11 @@
 
 #include "flamegpu/model/EnvironmentData.h"
 #include "flamegpu/model/SubEnvironmentData.h"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/util/nvtx.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -52,7 +54,7 @@ void EnvironmentManager::init(const EnvironmentData& desc) {
         memcpy(h_buffer + i.offset, i.data, i.length);
         properties.emplace(name, EnvProp(i.offset, i.length, i.isConst, i.elements, i.type));
     }
-    gpuErrchk(cudaMalloc(&d_buffer, newSize));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_buffer, newSize));
 }
 void EnvironmentManager::init(const EnvironmentData& desc, const std::shared_ptr<EnvironmentManager>& parent_environment, const SubEnvironmentData& mapping) {
     init(desc);
@@ -152,7 +154,7 @@ EnvironmentManager::~EnvironmentManager() {
         h_buffer = nullptr;
     }
     if (d_buffer) {
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_buffer));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_buffer));
         d_buffer = nullptr;
     }
     h_buffer_len = 0;
@@ -169,9 +171,9 @@ void EnvironmentManager::resetModel(const EnvironmentData& desc) {
         }
     }
 }
-void EnvironmentManager::updateDevice_async(const cudaStream_t stream) const {
+void EnvironmentManager::updateDevice_async(const flamegpu::detail::gpu::Stream_t stream) const {
     if (!d_buffer_ready) {
-        gpuErrchk(cudaMemcpyAsync(d_buffer, h_buffer, h_buffer_len, cudaMemcpyHostToDevice, stream));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(d_buffer, h_buffer, h_buffer_len, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
         d_buffer_ready = true;
     }
 }

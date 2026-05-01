@@ -2,7 +2,8 @@
 #include <chrono>
 #include "flamegpu/detail/CUDAEventTimer.cuh"
 #include "flamegpu/detail/wddm.cuh"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
 
 #include "gtest/gtest.h"
 namespace flamegpu {
@@ -34,7 +35,7 @@ TEST(TestUtilCUDAEventTimer, CUDAEventTimer) {
     // If the WDDM driver is being used, this test is only accurate if the  start event is synchronised (pushed to the device) prior to the sleep.
     // Essentially, CUDAEventTimers should not be used to time host code, they are only accurate for  the device code which they wrap.
     if (detail::wddm::deviceIsWDDM()) {
-        gpuErrchk(cudaDeviceSynchronize());
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceSynchronize)());
     }
     // Sleep for some amount of time.
     std::this_thread::sleep_for(std::chrono::seconds(sleep_duration_seconds));

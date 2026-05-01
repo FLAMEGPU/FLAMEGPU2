@@ -1,7 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDASCANCOMPACTION_H_
 #define INCLUDE_FLAMEGPU_SIMULATION_DETAIL_CUDASCANCOMPACTION_H_
 
-#include <flamegpu/detail/cuda.cuh>
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 // forward declare classes from other modules
@@ -63,7 +63,7 @@ struct CUDAScanCompactionConfig {
      * @param stream The CUDA stream used to execute the memset
      * @note This method is async, the cuda stream is not synchronised
      */
-    void zero_scan_flag_async(cudaStream_t stream);
+    void zero_scan_flag_async(flamegpu::detail::gpu::Stream_t stream);
 };
 
 /**
@@ -113,7 +113,7 @@ class CUDAScanCompaction {
      * @param streamId The stream index of the scan flag buffer to be zerod
      * @note This method is async, the cuda stream is not synchronised
      */
-    void zero_async(const Type& type, cudaStream_t stream, unsigned int streamId);
+    void zero_async(const Type& type, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId);
     /**
      * Returns a const reference to the scan flag config structure for the specified stream and type
      * @param type The type of the scan flag buffer to return

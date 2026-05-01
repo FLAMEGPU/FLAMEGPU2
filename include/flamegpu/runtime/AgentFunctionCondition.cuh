@@ -1,8 +1,10 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTIONCONDITION_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_AGENTFUNCTIONCONDITION_CUH_
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
+#endif
 
 #include "flamegpu/runtime/DeviceAPI.cuh"
 #include "flamegpu/runtime/AgentFunctionCondition_shim.cuh"
@@ -71,10 +73,10 @@ __global__ void agent_function_condition_wrapper(
     detail::curve::DeviceCurve::init(d_curve_table);
 #endif
 
-#if defined(__CUDACC__)  // @todo - This should not be required. This template should only ever be processed by a CUDA compiler.
+#if defined(__CUDACC__) || defined(__HIPCC__)  // @todo - This should not be required. This template should only ever be processed by a CUDA compiler.
     // Sync the block after Thread 0 has written to shared.
     __syncthreads();
-#endif  // __CUDACC__
+#endif  // defined(__CUDACC__) || defined(__HIPCC__)
     // Must be terminated here, else AgentRandom has bounds issues inside DeviceAPI constructor
     if (ReadOnlyDeviceAPI::getIndex() >= popNo)
         return;

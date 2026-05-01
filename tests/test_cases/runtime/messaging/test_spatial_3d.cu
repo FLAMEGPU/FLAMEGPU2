@@ -498,7 +498,7 @@ FLAMEGPU_AGENT_FUNCTION(count3D, MessageSpatial3D, MessageNone) {
     unsigned int count = 0;
     // Count how many messages we received (including our own)
     // This is all those which fall within the 3x3x3 Moore neighbourhood
-    for (const auto &message : FLAMEGPU->message_in(0, 0, 0)) {
+    for ([[maybe_unused]] const auto &message : FLAMEGPU->message_in(0, 0, 0)) {
         count++;
     }
     FLAMEGPU->setVariable<unsigned int>("count", count);
@@ -615,6 +615,7 @@ TEST(Spatial3DMessageTest, ArrayVariable) {
         ASSERT_EQ(v[2], index[2] * 11);
     }
 }
+#ifdef FLAMEGPU_USE_CUDA
 const char* rtc_ArrayOut_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MessageNone, flamegpu::MessageSpatial3D) {
     const unsigned int x = FLAMEGPU->getVariable<unsigned int, 3>("index", 0);
@@ -645,7 +646,9 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageSpatial3D, flamegpu::MessageNo
     return flamegpu::ALIVE;
 }
 )###";
+#endif  // FLAMEGPU_USE_CUDA
 TEST(RTCSpatial3DMessageTest, ArrayVariable) {
+#ifdef FLAMEGPU_USE_CUDA
     const char* MODEL_NAME = "Model";
     const char* AGENT_NAME = "Agent";
     const char* MESSAGE_NAME = "Message";
@@ -694,6 +697,9 @@ TEST(RTCSpatial3DMessageTest, ArrayVariable) {
         ASSERT_EQ(v[1], index[1] * 7);
         ASSERT_EQ(v[2], index[2] * 11);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 #if defined(FLAMEGPU_USE_GLM)
@@ -798,6 +804,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageSpatial3D, flamegpu::MessageNo
 }
 )###";
 TEST(RTCSpatial3DMessageTest, ArrayVariable_glm) {
+    #ifdef FLAMEGPU_USE_CUDA
     const char* MODEL_NAME = "Model";
     const char* AGENT_NAME = "Agent";
     const char* MESSAGE_NAME = "Message";
@@ -846,6 +853,9 @@ TEST(RTCSpatial3DMessageTest, ArrayVariable_glm) {
         ASSERT_EQ(v[1], index[1] * 7);
         ASSERT_EQ(v[2], index[2] * 11);
     }
+    #else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+    #endif  // FLAMEGPU_USE_CUDA
 }
 #else
 TEST(Spatial3DMessageTest, DISABLED_ArrayVariable_glm) { }
@@ -980,7 +990,7 @@ FLAMEGPU_AGENT_FUNCTION(in_wrapped_EnvDimsNotFactor, MessageSpatial3D, MessageNo
     const float x1 = FLAMEGPU->getVariable<float>("x");
     const float y1 = FLAMEGPU->getVariable<float>("y");
     const float z1 = FLAMEGPU->getVariable<float>("z");
-    for (auto &t : FLAMEGPU->message_in.wrap(x1, y1, z1)) {
+    for ([[maybe_unused]] auto &t : FLAMEGPU->message_in.wrap(x1, y1, z1)) {
         // Do nothing, it should throw a device exception
     }
     return ALIVE;
@@ -1102,7 +1112,7 @@ FLAMEGPU_AGENT_FUNCTION(in_bounds_not_factor, MessageSpatial3D, MessageNone) {
     const float z1 = FLAMEGPU->getVariable<float>("z");
     unsigned int count = 0;
     // Count how many messages we received (including our own)
-    for (const auto& message : FLAMEGPU->message_in(x1, y1, z1)) {
+    for ([[maybe_unused]] const auto& message : FLAMEGPU->message_in(x1, y1, z1)) {
         ++count;
     }
     FLAMEGPU->setVariable<unsigned int>("count", count);

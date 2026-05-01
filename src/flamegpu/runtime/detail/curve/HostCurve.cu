@@ -1,4 +1,6 @@
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
+#endif
 
 #include <cstdio>
 #include <cassert>
@@ -9,8 +11,10 @@
 #include "flamegpu/runtime/detail/curve/HostCurve.cuh"
 
 
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/util/nvtx.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -39,7 +43,7 @@ HostCurve::HostCurve()
 }
 HostCurve::~HostCurve() {
     if (d_curve_table) {
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_curve_table));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_curve_table));
         d_curve_table = nullptr;
     }
 }
@@ -47,7 +51,7 @@ void HostCurve::initialiseDevice() {
     // Don't lock mutex here, do it in the calling method
     if (!d_curve_table) {
         // get a host pointer to d_hashes and d_variables
-        gpuErrchk(cudaMalloc(&d_curve_table, sizeof(CurveTable)));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_curve_table, sizeof(CurveTable)));
     }
 }
 
@@ -156,12 +160,12 @@ int HostCurve::size() const {
     }
     return rtn;
 }
-void HostCurve::updateDevice_async(const cudaStream_t stream) {
+void HostCurve::updateDevice_async(const flamegpu::detail::gpu::Stream_t stream) {
     flamegpu::util::nvtx::Range range{"HostCurve::updateDevice_async()"};
     // Initialise the device (if required)
     assert(d_curve_table);  // No reason for this to ever fail.
     // Copy
-    gpuErrchk(cudaMemcpyAsync(d_curve_table, &h_curve_table, sizeof(CurveTable), cudaMemcpyHostToDevice, stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(d_curve_table, &h_curve_table, sizeof(CurveTable), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
 }
 const CurveTable *HostCurve::getDevicePtr() const {
     return d_curve_table;

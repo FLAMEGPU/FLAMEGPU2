@@ -16,6 +16,7 @@ FetchContent_Declare(
     GIT_PROGRESS   ON
     # UPDATE_DISCONNECTED   ON
     SOURCE_SUBDIR "do_not_use_add_subirectory"
+    SYSTEM
 )
 
 # @todo - try finding the pacakge first, assuming it sets system correctly when used.

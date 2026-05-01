@@ -707,7 +707,6 @@ FLAMEGPU_AGENT_FUNCTION(OutSimpleXY, MessageNone, MessageArray2D) {
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(MooreWTestXYC, MessageArray2D, MessageNone) {
-    const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
     const unsigned int y = FLAMEGPU->getVariable<unsigned int>("y");
     const unsigned int COMRADIUS = FLAMEGPU->environment.getProperty<unsigned int>("COMRADIUS");
@@ -836,7 +835,6 @@ TEST(TestMessage_Array2D, MooreWrapR2NonUniform) {
 }
 
 FLAMEGPU_AGENT_FUNCTION(MooreTestXYC, MessageArray2D, MessageNone) {
-    const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
     const unsigned int y = FLAMEGPU->getVariable<unsigned int>("y");
     const unsigned int COMRADIUS = FLAMEGPU->environment.getProperty<unsigned int>("COMRADIUS");
@@ -1020,6 +1018,7 @@ TEST(TestMessage_Array2D, ArrayVariable) {
         ASSERT_EQ(v[2], index[1] * 11);
     }
 }
+#ifdef FLAMEGPU_USE_CUDA
 const char* rtc_ArrayOut_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MessageNone, flamegpu::MessageArray2D) {
     const unsigned int x = FLAMEGPU->getVariable<unsigned int, 2>("index", 0);
@@ -1042,7 +1041,9 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageArray2D, flamegpu::MessageNone
     return flamegpu::ALIVE;
 }
 )###";
+#endif  // FLAMEGPU_USE_CUDA
 TEST(TestRTCMessage_Array2D, ArrayVariable) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription m(MODEL_NAME);
     MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
@@ -1080,6 +1081,9 @@ TEST(TestRTCMessage_Array2D, ArrayVariable) {
         ASSERT_EQ(v[1], index[1] * 7);
         ASSERT_EQ(v[2], index[1] * 11);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 #if defined(FLAMEGPU_USE_GLM)
@@ -1157,6 +1161,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageArray2D, flamegpu::MessageNone
 }
 )###";
 TEST(TestRTCMessage_Array2D, ArrayVariable_glm) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription m(MODEL_NAME);
     MessageArray2D::Description message = m.newMessage<MessageArray2D>(MESSAGE_NAME);
     message.setDimensions(SQRT_AGENT_COUNT, SQRT_AGENT_COUNT);
@@ -1195,6 +1200,9 @@ TEST(TestRTCMessage_Array2D, ArrayVariable_glm) {
         ASSERT_EQ(v[1], index[1] * 7);
         ASSERT_EQ(v[2], index[1] * 11);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 #else
 TEST(TestMessage_Array2D, DISABLED_ArrayVariable_glm) { }
@@ -1246,10 +1254,11 @@ FLAMEGPU_AGENT_FUNCTION(IterateAB, MessageArray2D, MessageNone) {
     // Iterate message list counting how many messages were read.
     unsigned int count = 0;
     for (const auto &message : FLAMEGPU->message_in.wrap(x, y, COMRADIUS)) {
-        const unsigned int m_a = message.getVariable<unsigned int>("a");
-        const unsigned int m_b = message.getVariable<unsigned int>("b");
+        [[maybe_unused]] const unsigned int m_a = message.getVariable<unsigned int>("a");
+        [[maybe_unused]] const unsigned int m_b = message.getVariable<unsigned int>("b");
         count++;
     }
+    static_cast<void>(count);  // suppress -Wunused-but-set-warning
     // Don't actually do anything, the function just needs to take the message list as input.
     return ALIVE;
 }
@@ -1264,9 +1273,10 @@ FLAMEGPU_AGENT_FUNCTION(IterateA, MessageArray2D, MessageNone) {
     // Iterate message list counting how many messages were read.
     unsigned int count = 0;
     for (const auto &message : FLAMEGPU->message_in.wrap(x, y, COMRADIUS)) {
-        const unsigned int m_a = message.getVariable<unsigned int>("a");
+        [[maybe_unused]] const unsigned int m_a = message.getVariable<unsigned int>("a");
         count++;
     }
+    static_cast<void>(count);  // suppress -Wunused-but-set-warning
     // Don't actually do anything, the function just needs to take the message list as input.
     return ALIVE;
 }

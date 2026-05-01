@@ -11,6 +11,7 @@
 #include "flamegpu/simulation/AgentLoggingConfig_Reductions.cuh"
 #include "flamegpu/simulation/AgentLoggingConfig_SumReturn.h"
 #include "flamegpu/runtime/agent/HostAgentAPI.cuh"
+#include "flamegpu/detail/gpu/macros.hpp"
 
 namespace flamegpu {
 
@@ -137,7 +138,7 @@ detail::Any getAgentVariableStandardDevFunc(HostAgentAPI &ai, const std::string 
     // Then for each number: subtract the Mean and square the result
     // Then work out the mean of those squared differences.
     auto lock = std::unique_lock<std::mutex>(detail::STANDARD_DEVIATION_MEAN_mutex);
-    gpuErrchk(cudaMemcpyToSymbol(detail::STANDARD_DEVIATION_MEAN, &mean, sizeof(double)));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyToSymbol)(detail::STANDARD_DEVIATION_MEAN, &mean, sizeof(double)));
     const double variance = ai.transformReduce<T, double>(variable_name, detail::standard_deviation_subtract_mean, detail::standard_deviation_add, 0) / static_cast<double>(ai.count());
     lock.unlock();
     // Take the square root of that and we are done!

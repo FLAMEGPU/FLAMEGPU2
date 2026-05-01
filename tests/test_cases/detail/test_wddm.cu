@@ -1,7 +1,10 @@
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
+#endif
 
+#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/wddm.cuh"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 
 #include "gtest/gtest.h"
 namespace flamegpu {
@@ -14,17 +17,17 @@ TEST(TestUtilWDDM, deviceIsWDDM) {
 
     // Get the number of cuda devices
     int device_count = 0;
-    if (cudaSuccess != cudaGetDeviceCount(&device_count) || device_count <= 0) {
+    if (FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) != FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&device_count) || device_count <= 0) {
         return;
     }
     // For each CUDA device, get the wddm value and check it.
     // Do not only check this if _MSC_VER, unsure how this will behave if WDDM + WSL
     for (int i = 0; i < device_count; i++) {
         bool reference = false;
-        #ifdef _MSC_VER
+        #if defined(_MSC_VER) && defined(FLAMEGPU_USE_CUDA)
             int tccDriver = 0;
             // Get if the driver is TCC or not
-            gpuErrchk(cudaDeviceGetAttribute(&tccDriver, cudaDevAttrTccDriver, i));
+            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceGetAttribute)(&tccDriver, FLAMEGPU_GPU_RUNTIME_SYMBOL(DevAttrTccDriver), i));
             // WDDM driver is if not the tcc driver, and on windows.
             reference = !tccDriver;
         #endif
@@ -38,12 +41,12 @@ TEST(TestUtilWDDM, deviceIsWDDM) {
 
     // Also check for the current device.
     int currentDeviceIndex = 0;
-    gpuErrchk(cudaGetDevice(&currentDeviceIndex));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDevice)(&currentDeviceIndex));
     bool reference = false;
-    #ifdef _MSC_VER
+    #if defined(_MSC_VER) && defined(FLAMEGPU_USE_CUDA)
         int tccDriver = 0;
         // Get if the driver is TCC or not
-        gpuErrchk(cudaDeviceGetAttribute(&tccDriver, cudaDevAttrTccDriver, currentDeviceIndex));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceGetAttribute)(&tccDriver, FLAMEGPU_GPU_RUNTIME_SYMBOL(DevAttrTccDriver), currentDeviceIndex));
         // WDDM driver is if not the tcc driver, and on windows.
         reference = !tccDriver;
     #endif

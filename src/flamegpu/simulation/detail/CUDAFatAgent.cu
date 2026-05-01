@@ -9,8 +9,11 @@
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/runtime/HostAPI.h"
 #include "flamegpu/util/nvtx.h"
+#include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
+#ifdef FLAMEGPU_USE_CUDA
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #pragma warning(disable : 4706 4834)
@@ -29,6 +32,13 @@
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif  // _MSC_VER
+#endif  // FLAMEGPU_USE_CUDA
+
+#ifdef FLAMEGPU_USE_HIP
+#include <hipcub/hipcub.hpp>
+// namepspace alias so cub:: can be used
+namespace cub = hipcub;
+#endif
 
 namespace flamegpu {
 namespace detail {
@@ -50,10 +60,10 @@ CUDAFatAgent::CUDAFatAgent(const AgentData& description)
 }
 CUDAFatAgent::~CUDAFatAgent() {
     if (d_nextID) {
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(d_nextID));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_nextID));
     }
     for (auto &b : d_newLists) {
-        gpuErrchk(flamegpu::detail::cuda::cudaFree(b.data));
+        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(b.data));
     }
     d_newLists.clear();
 }
@@ -102,7 +112,7 @@ void CUDAFatAgent::addSubAgent(
     mappedAgentCount++;
 }
 
-void CUDAFatAgent::processDeath(const unsigned int agent_fat_id, const std::string &state_name, detail::CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t stream) {
+void CUDAFatAgent::processDeath(const unsigned int agent_fat_id, const std::string &state_name, detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::gpu::Stream_t stream) {
     auto sm = states.find({agent_fat_id, state_name});
     if (sm == states.end()) {
         THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
@@ -115,7 +125,7 @@ void CUDAFatAgent::processDeath(const unsigned int agent_fat_id, const std::stri
     // Check if we need to resize cub storage
     auto& cub_temp = scatter.CubTemp(streamId);
     size_t tempByte = 0;
-    gpuErrchk(cub::DeviceScan::ExclusiveSum(
+    flamegpu::detail::gpuCheck(cub::DeviceScan::ExclusiveSum(
         nullptr,
         tempByte,
         scanCfg.d_ptrs.scan_flag,
@@ -123,20 +133,20 @@ void CUDAFatAgent::processDeath(const unsigned int agent_fat_id, const std::stri
         sm->second->getAllocatedSize() + 1,
         stream));
     cub_temp.resize(tempByte);
-    gpuErrchk(cub::DeviceScan::ExclusiveSum(
+    flamegpu::detail::gpuCheck(cub::DeviceScan::ExclusiveSum(
         cub_temp.getPtr(),
         cub_temp.getSize(),
         scanCfg.d_ptrs.scan_flag,
         scanCfg.d_ptrs.position,
         agent_count + 1,
         stream));
-    gpuErrchk(cudaStreamSynchronize(stream));  // Redundant? scatter occurs in same stream
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));  // Redundant? scatter occurs in same stream
 
     // Scatter
     sm->second->scatterDeath(scatter, streamId, stream);
 }
 
-void CUDAFatAgent::transitionState(unsigned int agent_fat_id, const std::string &_src, const std::string &_dest, detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) {
+void CUDAFatAgent::transitionState(unsigned int agent_fat_id, const std::string &_src, const std::string &_dest, detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream) {
     // Optionally process state transition
     if (_src != _dest) {
         auto src = states.find({agent_fat_id, _src});
@@ -183,7 +193,7 @@ void CUDAFatAgent::transitionState(unsigned int agent_fat_id, const std::string 
     }
 }
 
-void CUDAFatAgent::processFunctionCondition(const unsigned int agent_fat_id, const std::string &state_name, detail::CUDAScatter &scatter, const unsigned int streamId, const cudaStream_t stream) {
+void CUDAFatAgent::processFunctionCondition(const unsigned int agent_fat_id, const std::string &state_name, detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::gpu::Stream_t stream) {
     auto sm = states.find({agent_fat_id, state_name});
     if (sm == states.end()) {
         THROW exception::InvalidCudaAgentState("Error: Agent ('%s') state ('%s') was not found "
@@ -196,7 +206,7 @@ void CUDAFatAgent::processFunctionCondition(const unsigned int agent_fat_id, con
     // Check if we need to resize cub storage
     auto& cub_temp = scatter.CubTemp(streamId);
     size_t tempByte = 0;
-    gpuErrchk(cub::DeviceScan::ExclusiveSum(
+    flamegpu::detail::gpuCheck(cub::DeviceScan::ExclusiveSum(
         nullptr,
         tempByte,
         scanCfg.d_ptrs.scan_flag,
@@ -204,29 +214,29 @@ void CUDAFatAgent::processFunctionCondition(const unsigned int agent_fat_id, con
         sm->second->getAllocatedSize() + 1));
     cub_temp.resize(tempByte);
     // Perform scan (agent function conditions use death flag scan compact arrays as there is no overlap in use)
-    gpuErrchk(cub::DeviceScan::ExclusiveSum(
+    flamegpu::detail::gpuCheck(cub::DeviceScan::ExclusiveSum(
         cub_temp.getPtr(),
         cub_temp.getSize(),
         scanCfg.d_ptrs.scan_flag,
         scanCfg.d_ptrs.position,
         agent_count + 1,
         stream));
-    gpuErrchkLaunch();
-    gpuErrchk(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheckLaunch();
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
     // Use scan results to sort false agents into start of list (and don't swap buffers)
     const unsigned int conditionFailCount = sm->second->scatterAgentFunctionConditionFalse(scatter, streamId, stream);
     // Invert scan
     CUDAScatter::InversionIterator ii = CUDAScatter::InversionIterator(scanCfg.d_ptrs.scan_flag);
-    cudaMemsetAsync(scanCfg.d_ptrs.position, 0, sizeof(unsigned int)*(agent_count + 1), stream);
-    gpuErrchk(cub::DeviceScan::ExclusiveSum(
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(scanCfg.d_ptrs.position, 0, sizeof(unsigned int)*(agent_count + 1), stream));
+    flamegpu::detail::gpuCheck(cub::DeviceScan::ExclusiveSum(
         cub_temp.getPtr(),
         cub_temp.getSize(),
         ii,
         scanCfg.d_ptrs.position,
         agent_count + 1,
         stream));
-    gpuErrchkLaunch();
-    gpuErrchk(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheckLaunch();
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
     // Use inverted scan results to sort true agents into end of list (and swap buffers)
     const unsigned int conditionpassCount = sm->second->scatterAgentFunctionConditionTrue(conditionFailCount, scatter, streamId, stream);
     if (agent_count != conditionpassCount + conditionFailCount) {
@@ -273,8 +283,8 @@ void *CUDAFatAgent::allocNewBuffer(const size_t total_agent_size, const unsigned
             NewBuffer my_b = b;
             // Erase and resize/reinsert to d_newLists to mark as in use
             d_newLists.erase(b);
-            gpuErrchk(flamegpu::detail::cuda::cudaFree(my_b.data));
-            gpuErrchk(cudaMalloc(&my_b.data, ALLOCATION_SIZE));
+            flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(my_b.data));
+            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&my_b.data, ALLOCATION_SIZE));
             my_b.size = ALLOCATION_SIZE;
             my_b.in_use = true;
             d_newLists.insert(my_b);
@@ -284,7 +294,7 @@ void *CUDAFatAgent::allocNewBuffer(const size_t total_agent_size, const unsigned
     }
     // No existing buffer available, so create a new one
     NewBuffer my_b;
-    gpuErrchk(cudaMalloc(&my_b.data, ALLOCATION_SIZE));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&my_b.data, ALLOCATION_SIZE));
     my_b.size = ALLOCATION_SIZE;
     my_b.in_use = true;
     d_newLists.insert(my_b);
@@ -324,10 +334,10 @@ id_t CUDAFatAgent::nextID(unsigned int count) {
 }
 id_t *CUDAFatAgent::getDeviceNextID() {
     if (!d_nextID) {
-        gpuErrchk(cudaMalloc(&d_nextID, sizeof(id_t)));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_nextID, sizeof(id_t)));
     }
     if (hd_nextID != _nextID) {
-        gpuErrchk(cudaMemcpy(d_nextID, &_nextID, sizeof(id_t), cudaMemcpyHostToDevice));
+        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Memcpy)(d_nextID, &_nextID, sizeof(id_t), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice)));
         hd_nextID = _nextID;
     }
     return d_nextID;
@@ -339,12 +349,12 @@ void CUDAFatAgent::notifyDeviceBirths(unsigned int newCount) {
     // Sanity validation, check hd_nextID == d_nextID
     assert(d_nextID);
     id_t t = 0;
-    gpuErrchk(cudaMemcpy(&t, d_nextID, sizeof(id_t), cudaMemcpyDeviceToHost));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Memcpy)(&t, d_nextID, sizeof(id_t), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost)));
     assert(t == hd_nextID);
     assert(t == _nextID);  // At the end of device birth they should be equal, as no host birth can occur between pre and post processing agent fn
 #endif
 }
-void CUDAFatAgent::assignIDs(HostAPI& hostapi, detail::CUDAScatter &scatter, cudaStream_t stream, const unsigned int streamId) {
+void CUDAFatAgent::assignIDs(HostAPI& hostapi, detail::CUDAScatter &scatter, flamegpu::detail::gpu::Stream_t stream, const unsigned int streamId) {
     flamegpu::util::nvtx::Range range{"CUDAFatAgent::assignIDs"};
     if (agent_ids_have_init) return;
     id_t h_max = ID_NOT_SET;
@@ -359,13 +369,13 @@ void CUDAFatAgent::assignIDs(HostAPI& hostapi, detail::CUDAScatter &scatter, cud
             // Check if we need to resize cub storage
             auto& cub_temp = scatter.CubTemp(streamId);
             size_t tempByte = 0;
-            gpuErrchk(cub::DeviceReduce::Max(nullptr, tempByte, static_cast<id_t*>(vb->data), reinterpret_cast<id_t*>(hostapi.d_output_space), s->getSize(), stream));
+            flamegpu::detail::gpuCheck(cub::DeviceReduce::Max(nullptr, tempByte, static_cast<id_t*>(vb->data), reinterpret_cast<id_t*>(hostapi.d_output_space), s->getSize(), stream));
             cub_temp.resize(tempByte);
             hostapi.resizeOutputSpace<id_t>();
             // Reduce for max
-            gpuErrchk(cub::DeviceReduce::Max(cub_temp.getPtr(), cub_temp.getSize(), static_cast<id_t*>(vb->data), reinterpret_cast<id_t*>(hostapi.d_output_space), s->getSize(), stream));
-            gpuErrchk(cudaMemcpyAsync(&h_max, hostapi.d_output_space, sizeof(id_t), cudaMemcpyDeviceToHost, stream));
-            gpuErrchk(cudaStreamSynchronize(stream));
+            flamegpu::detail::gpuCheck(cub::DeviceReduce::Max(cub_temp.getPtr(), cub_temp.getSize(), static_cast<id_t*>(vb->data), reinterpret_cast<id_t*>(hostapi.d_output_space), s->getSize(), stream));
+            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(&h_max, hostapi.d_output_space, sizeof(id_t), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
             _nextID = std::max(_nextID, h_max + 1);
         }
     }
@@ -380,14 +390,14 @@ void CUDAFatAgent::assignIDs(HostAPI& hostapi, detail::CUDAScatter &scatter, cud
         if (vb && vb->data && s->getSize()) {
             const unsigned int blockSize = 1024;
             const unsigned int blocks = ((s->getSize() - 1) / blockSize) + 1;
-            allocateIDs<< <blocks, blockSize, 0, stream>> > (static_cast<id_t*>(vb->data), s->getSize(), ID_NOT_SET, _nextID);
-            gpuErrchkLaunch();
+            allocateIDs<<<blocks, blockSize, 0, stream>>> (static_cast<id_t*>(vb->data), s->getSize(), ID_NOT_SET, _nextID);
+            flamegpu::detail::gpuCheckLaunch();
         }
         _nextID += s->getSizeWithDisabled();
     }
 
     agent_ids_have_init = true;
-    gpuErrchk(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
 }
 void CUDAFatAgent::resetIDCounter() {
     // Resetting ID whilst agents exist is a bad idea, so fail silently
