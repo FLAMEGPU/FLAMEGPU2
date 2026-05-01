@@ -2,7 +2,8 @@
 #include <string>
 
 #include "flamegpu/flamegpu.h"
-#include "flamegpu/detail/compute_capability.cuh"
+#include "flamegpu/detail/gpu/cuda/compute_capability.cuh"
+
 
 #include "gtest/gtest.h"
 

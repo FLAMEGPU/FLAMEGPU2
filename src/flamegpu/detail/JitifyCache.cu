@@ -17,7 +17,7 @@
 
 #include "flamegpu/version.h"
 #include "flamegpu/exception/FLAMEGPUException.h"
-#include "flamegpu/detail/compute_capability.cuh"
+#include "flamegpu/detail/gpu/cuda/compute_capability.cuh"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 
@@ -396,7 +396,7 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
 #endif
 
     // Set the cuda compuate capability architecture to optimize / generate for, based on the values supported by the current dynamiclaly linked nvrtc and the device in question.
-    std::vector<int> nvrtcArchitectures = detail::compute_capability::getNVRTCSupportedComputeCapabilties();
+    std::vector<int> nvrtcArchitectures = detail::gpu::cuda::compute_capability::getNVRTCSupportedComputeCapabilties();
     if (nvrtcArchitectures.size()) {
         int currentDeviceIdx = 0;
         if (FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) == cudaGetDevice(&currentDeviceIdx)) {

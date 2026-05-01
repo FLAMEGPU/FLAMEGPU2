@@ -22,7 +22,7 @@
 #include "flamegpu/version.h"
 #include "flamegpu/model/ModelDescription.h"
 #include "flamegpu/simulation/RunPlanVector.h"
-#include "flamegpu/detail/compute_capability.cuh"
+#include "flamegpu/detail/gpu/cuda/compute_capability.cuh"
 #include "flamegpu/detail/SteadyClockTimer.h"
 #include "flamegpu/simulation/CUDASimulation.h"
 #include "flamegpu/io/StateWriterFactory.h"
@@ -174,14 +174,14 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
     devices = mpi->devicesForThisRank(devices);
 #endif  // ifdef FLAMEGPU_ENABLE_MPI
 
-    // Check that each device is capable, and init cuda context
+    // Check that each device is capable (CUDA only), and init cuda context
     for (auto d = devices.begin(); d != devices.end(); ++d) {
-        // todo: HIP equiavalent
-#ifdef FLAMEGPU_USE_CUDA
-        if (!detail::compute_capability::checkComputeCapability(*d)) {
-#else  // FLAMEGPU_USE_CUDA
-        if (false) {
-#endif  // FLAMEGPU_USE_CUDA
+        bool compatible_gpu_arch = true;
+        // if CUDA, we can check the compute capability and emit a useful error if not compatible
+#if defined(FLAMEGPU_USE_CUDA)
+        compatible_gpu_arch = detail::gpu::cuda::compute_capability::checkComputeCapability(*d)
+#endif  // defined(FLAMEGPU_USE_CUDA)
+        if (!compatible_gpu_arch) {
             // Emit a warning unless quiet verbosity was specified.
             if (config.verbosity >= Verbosity::Default) {
                 fprintf(stderr, "FLAMEGPU2 has not been built with an appropriate compute capability for device %d, this device will not be used.\n", *d);
@@ -189,6 +189,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
             d = devices.erase(d);
             --d;
         } else {
+            // Initialise the context on the device
             flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(*d));
             flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(nullptr));
         }

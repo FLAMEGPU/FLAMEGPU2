@@ -25,7 +25,7 @@
 #include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
 #include "flamegpu/simulation/detail/CUDAScanCompaction.h"
 #include "flamegpu/util/nvtx.h"
-#include "flamegpu/detail/compute_capability.cuh"
+#include "flamegpu/detail/gpu/cuda/compute_capability.cuh"
 #include "flamegpu/detail/SignalHandlers.h"
 #include "flamegpu/detail/wddm.cuh"
 #include "flamegpu/detail/SteadyClockTimer.h"
@@ -1570,16 +1570,15 @@ void CUDASimulation::applyConfig_derived() {
         THROW exception::InvalidCUDAdevice("Unable to set CUDA device to '%d' after the CUDASimulation has already initialised on device '%d'.", config.device_id, deviceInitialised);
     }
 
-// Todo: HIP equivalent
-#ifdef FLAMEGPU_USE_CUDA
-    // Check the compute capability of the device, throw an exception if not valid for the executable.
-    if (!detail::compute_capability::checkComputeCapability(static_cast<int>(config.device_id))) {
-        int min_cc = detail::compute_capability::minimumCompiledComputeCapability();
-        std::string compiled_ccs = detail::compute_capability::compiledCompiledComputeCapabilitiesString();
-        int cc = detail::compute_capability::getComputeCapability(static_cast<int>(config.device_id));
+#if defined(FLAMEGPU_USE_CUDA)
+    // On CUDA, check the compute capability of the device, throw an exception if not valid for the executable.
+    if (!detail::gpu::cuda::compute_capability::checkComputeCapability(static_cast<int>(config.device_id))) {
+        int min_cc = detail::gpu::cuda::compute_capability::minimumCompiledComputeCapability();
+        std::string compiled_ccs = detail::gpu::cuda::compute_capability::compiledCompiledComputeCapabilitiesString();
+        int cc = detail::gpu::cuda::compute_capability::getComputeCapability(static_cast<int>(config.device_id));
         THROW exception::InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capabilities \"%s\". Rebuild including compute capability <= %d for device %u.", compiled_ccs.c_str(), cc, config.device_id);
     }
-#endif  // FLAMEGPU_USE_CUDA
+#endif  // defined(FLAMEGPU_USE_CUDA)
 
     cudaStatus = FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(static_cast<int>(config.device_id));
     if (cudaStatus != FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) {
@@ -1622,17 +1621,15 @@ void CUDASimulation::reseed(const uint64_t seed) {
 void CUDASimulation::initialiseSingletons() {
     // Only do this once.
     if (!singletonsInitialised) {
-        // If the device has not been specified, also check the compute capability is OK
-        // Check the compute capability of the device, throw an exception if not valid for the executable.
-        // todo: HIP equivalent
-#ifdef FLAMEGPU_USE_CUDA
-        if (!detail::compute_capability::checkComputeCapability(static_cast<int>(config.device_id))) {
-            int min_cc = detail::compute_capability::minimumCompiledComputeCapability();
-            std::string compiled_ccs = detail::compute_capability::compiledCompiledComputeCapabilitiesString();
-            int cc = detail::compute_capability::getComputeCapability(static_cast<int>(config.device_id));
+#if defined(FLAMEGPU_USE_CUDA)
+        // On CUDA, Check the compute capability of the device, throw an exception if not valid for the executable.
+        if (!detail::gpu::cuda::compute_capability::checkComputeCapability(static_cast<int>(config.device_id))) {
+            int min_cc = detail::gpu::cuda::compute_capability::minimumCompiledComputeCapability();
+            std::string compiled_ccs = detail::gpu::cuda::compute_capability::compiledCompiledComputeCapabilitiesString();
+            int cc = detail::gpu::cuda::compute_capability::getComputeCapability(static_cast<int>(config.device_id));
             THROW exception::InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capabilities \"%s\". Rebuild including compute capability <= %d for device %u.", compiled_ccs.c_str(), cc, config.device_id);
         }
-#endif  // FLAMEGPU_USE_CUDA
+#endif  // defined(FLAMEGPU_USE_CUDA)
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDevice)(&deviceInitialised));
         // Get references to all required singleton and store in the instance.
         singletons = new Singletons((!submodel)?

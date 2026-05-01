@@ -287,10 +287,10 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/types.hpp
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/gpu_api_error_checking.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/device_name.hpp
+    ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/cuda/compute_capability.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/Any.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/demangle.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/type_decode.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/detail/compute_capability.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/curand.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/wddm.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/CUDAEventTimer.cuh
@@ -386,8 +386,8 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/io/Telemetry.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/util/cleanup.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/detail/gpu/device_name.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/detail/gpu/cuda/compute_capability.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/detail/demangle.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/detail/compute_capability.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/detail/wddm.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/detail/JitifyCache.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/detail/TestSuiteTelemetry.cpp

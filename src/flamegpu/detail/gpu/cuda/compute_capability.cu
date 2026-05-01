@@ -1,20 +1,20 @@
-#ifdef FLAMEGPU_USE_CUDA
+// only implemented for CUDA
+#if defined(FLAMEGPU_USE_CUDA)
 #include <nvrtc.h>
-#endif  // FLAMEGPU_USE_CUDA
 
 #include <cassert>
 #include <array>
 #include <vector>
 #include <string>
 
-#include "flamegpu/detail/compute_capability.cuh"
+#include "flamegpu/detail/gpu/cuda/compute_capability.cuh"
 #include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/detail/gpu/macros.hpp"
 
-#ifdef FLAMEGPU_USE_CUDA
-
 namespace flamegpu {
 namespace detail {
+namespace gpu {
+namespace cuda {
 
 namespace {
     /**
@@ -137,7 +137,9 @@ int compute_capability::selectAppropraiteComputeCapability(const int target, con
     return maxArch;
 }
 
+}  // namespace cuda
+}  // namespace gpu
 }  // namespace detail
 }  // namespace flamegpu
 
-#endif  // FLAMEGPU_USE_CUDA
+#endif  // defined(FLAMEGPU_USE_CUDA)
