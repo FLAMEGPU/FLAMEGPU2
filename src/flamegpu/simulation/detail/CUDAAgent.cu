@@ -57,7 +57,7 @@ namespace cub = hipcub;
 #include "flamegpu/runtime/detail/curve/HostCurve.cuh"
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
-#include "flamegpu/detail/compute_capability.cuh"
+#include "flamegpu/detail/gpu/cuda/compute_capability.cuh"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/runtime/agent/DeviceAgentVector_impl.h"
 #include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
