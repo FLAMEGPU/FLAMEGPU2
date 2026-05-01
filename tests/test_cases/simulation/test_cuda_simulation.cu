@@ -8,7 +8,7 @@
 
 #include "flamegpu/flamegpu.h"
 #include "flamegpu/detail/gpu/macros.hpp"
-#include "flamegpu/detail/compute_capability.cuh"
+#include "flamegpu/detail/gpu/cuda/compute_capability.cuh"
 #include "helpers/device_initialisation.h"
 #include "flamegpu/io/Telemetry.h"
 
@@ -66,17 +66,18 @@ TEST(TestCUDASimulation, ApplyConfigDerivedContextCreation) {
 }
 // Test that the CUDASimulation applyConfig_derived works for multiple GPU device_id values (if available)
 TEST(TestCUDASimulation, AllDeviceIdValues) {
-#ifdef FLAMEGPU_USE_CUDA
-
     // Get the number of devices
     int device_count = 1;
-    if (FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) != cudaGetDeviceCount(&device_count) || device_count <= 0) {
+    if (FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) != FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&device_count) || device_count <= 0) {
         // Skip the test, if no CUDA or GPUs.
         return;
     }
     for (int i = 0; i < device_count; i++) {
-        // Check if the specified device is allowed to run the tests to determine if the test should throw or not. This is system dependent so must be dynamic.
-        bool shouldThrowCCException = !flamegpu::detail::compute_capability::checkComputeCapability(i);
+        // Check if the specified device is allowed to run the tests to determine if the test should throw or not. This is system dependent so must be dynamic. CUDA only.
+        bool shouldThrowCCException = false;
+        #if defined(FLAMEGPU_USE_CUDA)
+        shouldThrowCCException = !flamegpu::detail::gpu::cuda::compute_capability::checkComputeCapability(i);
+        #endif  // defined(FLAMEGPU_USE_CUDA)
         // Initialise and run a simple model on each device in the system. This test is pointless on single GPU machines.
         ModelDescription m(MODEL_NAME);
         m.newAgent(AGENT_NAME);
@@ -100,9 +101,6 @@ TEST(TestCUDASimulation, AllDeviceIdValues) {
     }
     // Return to prior state for remaining tests.
     ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(Success), FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(0));
-#else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
-#endif  // FLAMEGPU_USE_CUDA
 }
 TEST(TestSimulation, ArgParse_inputfile_long) {
     ModelDescription m(MODEL_NAME);

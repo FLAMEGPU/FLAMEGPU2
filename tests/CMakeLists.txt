@@ -14,7 +14,7 @@ endif()
 # Prepare source files for the tests target
 SET(TESTS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/gpu/test_device_name.cu
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_compute_capability.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/gpu/cuda/test_compute_capability.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_cuda.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_wddm.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_dependency_versions.cu
