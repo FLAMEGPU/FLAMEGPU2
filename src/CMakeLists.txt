@@ -286,6 +286,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/macros.hpp
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/types.hpp
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/gpu_api_error_checking.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/device_name.hpp
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/Any.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/demangle.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/type_decode.h
@@ -384,6 +385,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONGraphWriter.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/Telemetry.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/util/cleanup.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/detail/gpu/device_name.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/detail/demangle.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/detail/compute_capability.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/detail/wddm.cu

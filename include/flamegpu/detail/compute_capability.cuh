@@ -1,6 +1,9 @@
 #ifndef INCLUDE_FLAMEGPU_DETAIL_COMPUTE_CAPABILITY_CUH_
 #define INCLUDE_FLAMEGPU_DETAIL_COMPUTE_CAPABILITY_CUH_
 
+// Todo: device on the AMD equivalent compute capability stuff
+#ifdef FLAMEGPU_USE_CUDA
+
 #include <vector>
 #include <string>
 #include <set>
@@ -11,8 +14,6 @@ namespace flamegpu {
 namespace detail {
 namespace compute_capability {
 
-// Todo: device on the AMD equivalent compute capability stff
-#ifdef FLAMEGPU_USE_CUDA
 /**
  * get the compute capability for a device
  * @param deviceIndex the index of the device to be queried
@@ -67,27 +68,10 @@ std::vector<int> getNVRTCSupportedComputeCapabilties();
  */
 int selectAppropraiteComputeCapability(const int target, const std::vector<int>& architectures);
 
-#endif  // FLAMEGPU_USE_CUDA
-
-
-/**
- * Get the device name reported by CUDA runtime API
- * @param deviceIndex the index of the device to be queried
- * @return string representing the device name E.g. "NVIDIA GeForce RTX3080"
- * todo: split out of CC related file
- */
-const std::string getDeviceName(int deviceIndex);
-
-/**
- * Get the device names reported by CUDA runtime API
- * @param set<int> of device id's to be queried
- * @return comma seperated string of device names E.g. "NVIDIA GeForce RTX3080, NVIDIAGe Force RTX3070"
- * todo: split out of CC related file
- */
-const std::string getDeviceNames(std::set<int> devices);
-
 }  // namespace compute_capability
 }  // namespace detail
 }  // namespace flamegpu
+
+#endif  // FLAMEGPU_USE_CUDA
 
 #endif  // INCLUDE_FLAMEGPU_DETAIL_COMPUTE_CAPABILITY_CUH_

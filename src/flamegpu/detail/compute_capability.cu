@@ -11,10 +11,11 @@
 #include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/detail/gpu/macros.hpp"
 
+#ifdef FLAMEGPU_USE_CUDA
+
 namespace flamegpu {
 namespace detail {
 
-#ifdef FLAMEGPU_USE_CUDA
 namespace {
     /**
      * Templated variadic template constexpr method which returns a std::array from a number of arguments
@@ -136,68 +137,7 @@ int compute_capability::selectAppropraiteComputeCapability(const int target, con
     return maxArch;
 }
 
-#endif  // FLAMEGPU_USE_CUDA
-
-#ifdef FLAMEGPU_USE_CUDA
-    using DeviceProp_t = cudaDeviceProp;
-#endif  // FLAMEGPU_USE_CUDA
-#ifdef FLAMEGPU_USE_HIP
-    using DeviceProp_t = hipDeviceProp_t;
-#endif  // FLAMEGPU_USE_HIP
-
-const std::string compute_capability::getDeviceName(int deviceIndex) {
-    // Throw an exception if the deviceIndex is negative.
-    if (deviceIndex < 0) {
-        THROW exception::InvalidCUDAdevice();
-    }
-
-    // Ensure deviceIndex is valid.
-    int deviceCount = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&deviceCount));
-    if (deviceIndex >= deviceCount) {
-        // Throw an excpetion if the device index is bad.
-        THROW exception::InvalidCUDAdevice();
-    }
-    // Load device properties
-    DeviceProp_t prop;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceProperties)(&prop, deviceIndex));
-
-    return std::string(prop.name);
-}
-
-const std::string compute_capability::getDeviceNames(std::set<int> devices) {
-    std::string device_names;
-    bool first = true;
-    // Get the count of devices
-    int deviceCount = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&deviceCount));
-    // If no devices were passed in, add each device to the set of devices.
-    if (devices.size() == 0) {
-        for (int i = 0; i < deviceCount; i++) {
-            devices.emplace_hint(devices.end(), i);
-        }
-    }
-    for (int device_id : devices) {
-        // Throw an exception if the deviceIndex is negative.
-        if (device_id < 0) {
-            THROW exception::InvalidCUDAdevice();
-        }
-        // Ensure deviceIndex is valid.
-        if (device_id >= deviceCount) {
-            // Throw an exception if the device index is bad.
-            THROW exception::InvalidCUDAdevice();
-        }
-        // Load device properties
-        DeviceProp_t prop;
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceProperties)(&prop, device_id));
-        if (!first)
-            device_names.append(", ");
-        device_names.append(prop.name);
-        first = false;
-    }
-    return device_names;
-}
-
-
 }  // namespace detail
 }  // namespace flamegpu
+
+#endif  // FLAMEGPU_USE_CUDA

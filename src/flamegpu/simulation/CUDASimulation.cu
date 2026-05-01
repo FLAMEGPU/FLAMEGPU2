@@ -44,6 +44,7 @@
 #include "flamegpu/io/Telemetry.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/device_name.hpp"
 #include "flamegpu/detail/cuda.cuh"
 #ifdef FLAMEGPU_VISUALISATION
 #include "flamegpu/visualiser/FLAMEGPU_Visualisation.h"
@@ -1335,7 +1336,7 @@ void CUDASimulation::simulate() {
     if (getSimulationConfig().telemetry && !getCUDAConfig().is_submodel) {
         // Generate some payload items
         std::map<std::string, std::string> payload_items;
-        payload_items["GPUDevices"] = flamegpu::detail::compute_capability::getDeviceName(deviceInitialised);
+        payload_items["GPUDevices"] = flamegpu::detail::gpu::getDeviceName(deviceInitialised);
         payload_items["SimTime(s)"] = std::to_string(elapsedSecondsSimulation);
         #if defined(__CUDACC_VER_MAJOR__) && defined(__CUDACC_VER_MINOR__) && defined(__CUDACC_VER_BUILD__)
             payload_items["NVCCVersion"] = std::to_string(__CUDACC_VER_MAJOR__) + "." + std::to_string(__CUDACC_VER_MINOR__) + "." + std::to_string(__CUDACC_VER_BUILD__);
