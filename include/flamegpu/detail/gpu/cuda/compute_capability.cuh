@@ -1,8 +1,7 @@
-#ifndef INCLUDE_FLAMEGPU_DETAIL_COMPUTE_CAPABILITY_CUH_
-#define INCLUDE_FLAMEGPU_DETAIL_COMPUTE_CAPABILITY_CUH_
+#ifndef INCLUDE_FLAMEGPU_DETAIL_GPU_CUDA_COMPUTE_CAPABILITY_CUH_
+#define INCLUDE_FLAMEGPU_DETAIL_GPU_CUDA_COMPUTE_CAPABILITY_CUH_
 
-// Todo: device on the AMD equivalent compute capability stuff
-#ifdef FLAMEGPU_USE_CUDA
+#if defined(FLAMEGPU_USE_CUDA)
 
 #include <vector>
 #include <string>
@@ -12,10 +11,17 @@
 
 namespace flamegpu {
 namespace detail {
+namespace gpu {
+/**
+ * CUDA-specifc internal code
+ */
+namespace cuda {
 namespace compute_capability {
 
 /**
  * get the compute capability for a device
+ * 
+ * @note CUDA only
  * @param deviceIndex the index of the device to be queried
  * @return integer value representing the compute capability, i.e 70 for SM_70
  */
@@ -27,6 +33,8 @@ int getComputeCapability(int deviceIndex);
  * Extracts the first element from `__CUDA_ARCH_LIST__` which is an ordered list of integer architectures passed to nvcc, with the 0th value being the lowest.
  *
  * __CUDA_ARCH_LIST__ values are 3 or 4 digits long, with SM_80 becoming 800, or SM_103 becoming 1030, so they are scaled back down to match SM_ notation.
+ * 
+ * @note CUDA only
  *
  * @return the minimum compute capability from __CUDA_ARCH_LIST__ as a 2+ digit integer, i.e. 80 for SM_80, or 0 if __CUDA_ARCH_LIST__ was undefined
  */
@@ -44,6 +52,9 @@ std::string compiledCompiledComputeCapabilitiesString();
  * This assumes JIT support is enabled for future (major) architectures.
  * If __CUDA_ARCH_LIST__ could not be used to extract a minimum compiled architecture, no decision can be made so it is assumed to be successful.
  * If a or f post-fixed architectures are used, this check may also be insufficient for forwards compatibilty, but this requires an SM >= 100 device to test this on.
+ * 
+ * @note CUDA only
+ * 
  * @param deviceIndex the index of the device to be checked.
  * @return boolean indicating if the executable can run on the specified device.
  */
@@ -52,6 +63,9 @@ bool checkComputeCapability(int deviceIndex);
 /**
  * Get the comptue capabilities supported by the linked NVRTC, irrespective of whether FLAMEGPU was configured for that architecture.
  * CUDA 11.2 or greater provides methods to make this dynamic. Older versions of CUDA are hardcoded (11.1, 11.0 and 10.x only).
+ * 
+ * @note CUDA only
+ * 
  * @return vector of compute capability integers ((major * 10) + minor) in ascending order 
  */
 std::vector<int> getNVRTCSupportedComputeCapabilties();
@@ -62,6 +76,8 @@ std::vector<int> getNVRTCSupportedComputeCapabilties();
  *
  * This method has been separated from JitifyCache::preprocessKernel so that it can be tested generically, without having to write tests which are relative to the linked nvrtc and/or the current device.
  * 
+ * @note CUDA only
+ * 
  * @param target compute capability to find the best match for
  * @param archictectures a vector of architectures in ascending order
  * @return the best compute capability to use (the largest value LE target), or 0 if none are appropriate.
@@ -69,9 +85,11 @@ std::vector<int> getNVRTCSupportedComputeCapabilties();
 int selectAppropraiteComputeCapability(const int target, const std::vector<int>& architectures);
 
 }  // namespace compute_capability
+}  // namespace cuda
+}  // namespace gpu
 }  // namespace detail
 }  // namespace flamegpu
 
-#endif  // FLAMEGPU_USE_CUDA
+#endif  // defined(FLAMEGPU_USE_CUDA)
 
-#endif  // INCLUDE_FLAMEGPU_DETAIL_COMPUTE_CAPABILITY_CUH_
+#endif  // INCLUDE_FLAMEGPU_DETAIL_GPU_CUDA_COMPUTE_CAPABILITY_CUH_
