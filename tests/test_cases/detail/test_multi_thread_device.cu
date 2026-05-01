@@ -6,8 +6,9 @@
 
 #include "flamegpu/flamegpu.h"
 #include "gtest/gtest.h"
-#include "flamegpu/detail/compute_capability.cuh"
+#include "flamegpu/detail/gpu/cuda/compute_capability.cuh"
 #include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -489,7 +490,6 @@ void initRunSim(std::shared_ptr<CUDASimulation> sim, const AgentDescription &a, 
     }
 }
 TEST(MultiThreadDeviceTest, SameModelMultiDevice_Agent) {
-#ifdef FLAMEGPU_USE_CUDA
     const unsigned int POP_SIZE = 10000;
     const int SIMS_PER_DEVICE = 3;
     const int STEPS = 10;
@@ -510,7 +510,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Agent) {
 
     int devices = 0;
     if (FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) != FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&devices) || devices <= 0) {
-        // Skip the test, if no CUDA or GPUs.
+        // Skip the test, if no GPUs.
         return;
     }
     std::vector<std::shared_ptr<CUDASimulation>> sims;
@@ -521,8 +521,12 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Agent) {
     int offset = 0;
     // For each device
     for (int device = 0; device < devices; ++device) {
-        // If built with a suitable compute capability
-        if (detail::compute_capability::checkComputeCapability(device)) {
+        // If built with a suitable compute capability (on CUDA)
+        bool compatible_device = true;
+        #if defined(FLAMEGPU_USE_CUDA)
+        detail::gpu::cuda::compute_capability::checkComputeCapability(device);
+        #endif  // defined(FLAMEGPU_USE_CUDA)
+        if (compatible_device) {
             for (int i = 0; i < SIMS_PER_DEVICE; ++i) {
                 // Set sim Running
                 sims.emplace(sims.end(), std::make_shared<CUDASimulation>(m));
@@ -545,20 +549,16 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Agent) {
         // Check exceptions
         ASSERT_FALSE(results[i]);
         // Get agent data
-        ASSERT_EQ(cudaSetDevice(sims[i]->CUDAConfig().device_id), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
+        ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(sims[i]->CUDAConfig().device_id), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
         sims[i]->getPopulationData(pop);
         for (unsigned int j = 0; j < POP_SIZE; ++j) {
             int x = pop[j].getVariable<int>("x");
             ASSERT_EQ(x, static_cast<int>(2 * STEPS + i));
         }
     }
-    ASSERT_EQ(cudaSetDevice(0), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
-#else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
-#endif  // FLAMEGPU_USE_CUDA
+    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(0), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
 }
 TEST(MultiThreadDeviceTest, SameModelMultiDevice_Message) {
-#ifdef FLAMEGPU_USE_CUDA
     const unsigned int POP_SIZE = 10000;
     const int SIMS_PER_DEVICE = 3;
     const int STEPS = 10;
@@ -589,8 +589,12 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Message) {
     int offset = 0;
     // For each device
     for (int device = 0; device < devices; ++device) {
-        // If built with a suitable compute capability
-        if (detail::compute_capability::checkComputeCapability(device)) {
+        // If built with a suitable compute capability (on CUDA)
+        bool compatible_device = true;
+        #if defined(FLAMEGPU_USE_CUDA)
+        detail::gpu::cuda::compute_capability::checkComputeCapability(device);
+        #endif  // defined(FLAMEGPU_USE_CUDA)
+        if (compatible_device) {
             for (int i = 0; i < SIMS_PER_DEVICE; ++i) {
                 // Set sim Running
                 sims.emplace(sims.end(), std::make_shared<CUDASimulation>(m));
@@ -613,20 +617,16 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Message) {
         // Check exceptions
         ASSERT_FALSE(results[i]);
         // Get agent data
-        ASSERT_EQ(cudaSetDevice(sims[i]->CUDAConfig().device_id), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
+        ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(sims[i]->CUDAConfig().device_id), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
         sims[i]->getPopulationData(pop);
         for (unsigned int j = 0; j < POP_SIZE; ++j) {
             int x = pop[j].getVariable<int>("x");
             ASSERT_EQ(x, static_cast<int>(POP_SIZE * STEPS + i));
         }
     }
-    ASSERT_EQ(cudaSetDevice(0), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
-#else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
-#endif  // FLAMEGPU_USE_CUDA
+    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(0), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
 }
 TEST(MultiThreadDeviceTest, SameModelMultiDevice_Environment) {
-#ifdef FLAMEGPU_USE_CUDA
     const unsigned int POP_SIZE = 10000;
     const int SIMS_PER_DEVICE = 10;
     const int STEPS = 10;
@@ -669,8 +669,12 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Environment) {
     int offset = 0;
     // For each device
     for (int device = 0; device < devices; ++device) {
-        // If built with a suitable compute capability
-        if (detail::compute_capability::checkComputeCapability(device)) {
+        // If built with a suitable compute capability (on CUDA)
+        bool compatible_device = true;
+        #if defined(FLAMEGPU_USE_CUDA)
+        detail::gpu::cuda::compute_capability::checkComputeCapability(device);
+        #endif  // defined(FLAMEGPU_USE_CUDA)
+        if (compatible_device) {
             for (int i = 0; i < SIMS_PER_DEVICE; ++i) {
                 // Set sim Running
                 m.Environment().setProperty<int>("one", 1 * (offset + 1));
@@ -695,7 +699,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Environment) {
         // Check exceptions
         ASSERT_FALSE(results[i]);
         // Get agent data
-        ASSERT_EQ(cudaSetDevice(sims[i]->CUDAConfig().device_id), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
+        ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(sims[i]->CUDAConfig().device_id), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
         sims[i]->getPopulationData(pop);
         int bad = 0;
         int x = static_cast<int>(4 * STEPS * (i + 1) + i);
@@ -713,20 +717,16 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Environment) {
         // Check exceptions
         ASSERT_FALSE(results[i]);
         // Get agent data
-        ASSERT_EQ(cudaSetDevice(sims[i]->CUDAConfig().device_id), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
+        ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(sims[i]->CUDAConfig().device_id), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
         sims[i]->getPopulationData(pop);
         for (unsigned int j = 0; j < POP_SIZE; ++j) {
             int x = pop[j].getVariable<int>("x");
             ASSERT_EQ(x, static_cast<int>(4 * STEPS * (i + 1) + i));
         }
     }
-    ASSERT_EQ(cudaSetDevice(0), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
-#else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
-#endif  // FLAMEGPU_USE_CUDA
+    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(0), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
 }
 TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
-#ifdef FLAMEGPU_USE_CUDA
     const unsigned int POP_SIZE = 1000;
     const int SIMS_PER_DEVICE = 3;
     const int STEPS = 5;
@@ -758,8 +758,12 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
     int offset = 0;
     // For each device
     for (int device = 0; device < devices; ++device) {
-        // If built with a suitable compute capability
-        if (detail::compute_capability::checkComputeCapability(device)) {
+        // If built with a suitable compute capability (on CUDA)
+        bool compatible_device = true;
+        #if defined(FLAMEGPU_USE_CUDA)
+        detail::gpu::cuda::compute_capability::checkComputeCapability(device);
+        #endif  // defined(FLAMEGPU_USE_CUDA)
+        if (compatible_device) {
             for (int i = 0; i < SIMS_PER_DEVICE; ++i) {
                 // Set sim Running
                 sims.emplace(sims.end(), std::make_shared<CUDASimulation>(m));
@@ -782,7 +786,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
         // Check exceptions
         ASSERT_FALSE(results[i]);
         // Get agent data
-        ASSERT_EQ(cudaSetDevice(sims[i]->CUDAConfig().device_id), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
+        ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(sims[i]->CUDAConfig().device_id), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
         sims[i]->getPopulationData(pop);
         for (unsigned int j = 0; j < POP_SIZE; ++j) {
             int x = pop[j].getVariable<int>("x");
@@ -799,13 +803,9 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
             }
         }
     }
-    ASSERT_EQ(cudaSetDevice(0), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
-#else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
-#endif  // FLAMEGPU_USE_CUDA
+    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(0), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
 }
 TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
-#ifdef FLAMEGPU_USE_CUDA
     const unsigned int POP_SIZE = 10000;
     const int SIMS_PER_DEVICE = 3;
     const int STEPS = 10;
@@ -837,8 +837,12 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
     int offset = 0;
     // For each device
     for (int device = 0; device < devices; ++device) {
-        // If built with a suitable compute capability
-        if (detail::compute_capability::checkComputeCapability(device)) {
+        // If built with a suitable compute capability (on CUDA)
+        bool compatible_device = true;
+        #if defined(FLAMEGPU_USE_CUDA)
+        detail::gpu::cuda::compute_capability::checkComputeCapability(device);
+        #endif  // defined(FLAMEGPU_USE_CUDA)
+        if (compatible_device) {
             for (int i = 0; i < SIMS_PER_DEVICE; ++i) {
                 // Set sim Running
                 sims.emplace(sims.end(), std::make_shared<CUDASimulation>(m));
@@ -861,7 +865,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
         // Check exceptions
         ASSERT_FALSE(results[i]);
         // Get agent data
-        cudaSetDevice(sims[i]->CUDAConfig().device_id);
+        ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(sims[i]->CUDAConfig().device_id), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
         sims[i]->getPopulationData(pop);
         for (unsigned int j = 0; j < POP_SIZE; ++j) {
             int x = pop[j].getVariable<int>("x");
@@ -876,10 +880,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
             }
         }
     }
-    ASSERT_EQ(cudaSetDevice(0), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
-#else  // FLAMEGPU_USE_CUDA
-    GTEST_SKIP() << "Test not yet implemented for HIP/ROCm/AMD";
-#endif  // FLAMEGPU_USE_CUDA
+    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(0), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
 }
 }  // namespace test_multi_thread_device
 }  // namespace flamegpu
