@@ -158,14 +158,14 @@ unsigned int CUDAScatter::scatter(
     const bool invert_scan_flag,
     const unsigned int scatter_all_count) {
     // calculate the grid block size
-    #if defined(FLAMEGPU_USE_HIP)
-    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
-    int blockSize = 128;
-    #else
+    // #if defined(FLAMEGPU_USE_HIP)
+    // // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    // int blockSize = 128;
+    // #else
     int blockSize = 0;
     int minGridSize = 0;
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, scatter_generic<unsigned int*>, 0, itemCount));
-    #endif  // defined(FLAMEGPU_USE_HIP)
+    // #endif  // defined(FLAMEGPU_USE_HIP)
     int gridSize = (itemCount + blockSize - 1) / blockSize;
 
     // Make sure we have enough space to store scatterdata

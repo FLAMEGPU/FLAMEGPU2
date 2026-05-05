@@ -203,18 +203,20 @@ struct AgentFunctionLauncherHelper {
         }
 
         // Compute the grid and block size
-        #if defined(FLAMEGPU_USE_HIP)
+        // #if defined(FLAMEGPU_USE_HIP)
         // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
-        int blockSize = 128;
-        #else
+        // int blockSize = 128;
+        // #else
         // Use occupancy API for CUDA
         int minGridSize = 0;
         int blockSize = 0;
         AgentFunctionWrapper* kernel_ptr = &agent_function_wrapper<AgentFunction, MessageIn, MessageOut>;
         using KernelPtrType = AgentFunctionWrapper*;
         // using KernelPtrType = decltype(&agent_function_wrapper<AgentFunction, MessageIn, MessageOut>);
+        printf("AgentFunctionLauncherHelper pre-occupancy API\n");
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)<KernelPtrType>(&minGridSize, &blockSize, kernel_ptr, 0, popNo));
-        #endif  // defined(FLAMEGPU_USE_HIP)
+        printf("AgentFunctionLauncherHelper post-occupancy API min grid %d block %d\n", minGridSize, blockSize);
+        // #endif  // defined(FLAMEGPU_USE_HIP)
         int gridSize = (popNo + blockSize - 1) / blockSize;
 
         // Launch the kernel gridSize, blockSizes

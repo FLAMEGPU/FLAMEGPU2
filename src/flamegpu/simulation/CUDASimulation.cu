@@ -530,14 +530,14 @@ void CUDASimulation::spatialSortAgent_async(const std::string& funcName, const s
     void* binIndexPtr = cuda_agent.getStateVariablePtr(state, "_auto_sort_bin_index");
 
     // Compute the grid and block size
-    #if defined(FLAMEGPU_USE_HIP)
-    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
-    int blockSize = 128;
-    #else
+    // #if defined(FLAMEGPU_USE_HIP)
+    // // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+    // int blockSize = 128;
+    // #else
     int blockSize = 0;
     int minGridSize = 0;
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, calculateSpatialHash, 0, state_list_size));
-    #endif  // defined(FLAMEGPU_USE_HIP)
+    // #endif  // defined(FLAMEGPU_USE_HIP)
 
     // Round up according to CUDAAgent state list size
     int gridSize = (state_list_size + blockSize - 1) / blockSize;
@@ -771,14 +771,14 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 // switch between normal and RTC agent function condition
                 if (func_des->condition) {
                     // calculate the grid block size for agent function condition
-                    #if defined(FLAMEGPU_USE_HIP)
-                    // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
-                    int blockSize = 128;
-                    #else
+                    // #if defined(FLAMEGPU_USE_HIP)
+                    // // Use a fixed blocksize on AMD, as the occupancy API hangs in debug and sig
+                    // int blockSize = 128;
+                    // #else
                     int blockSize = 0;
                     int minGridSize = 0;
                     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, func_des->condition, 0, state_list_size));
-                    #endif  // defined(FLAMEGPU_USE_HIP)
+                    // #endif  // defined(FLAMEGPU_USE_HIP)
                     //! Round up according to CUDAAgent state list size
                     int gridSize = (state_list_size + blockSize - 1) / blockSize;
                     (func_des->condition) <<<gridSize, blockSize, 0, this->getStream(streamIdx)>>> (
