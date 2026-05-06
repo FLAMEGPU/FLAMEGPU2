@@ -213,6 +213,49 @@ namespace {
             agent.setVariable<int>("target_y", -1);
         }
     }
+
+    /**
+     * Automatically synchronize the is_occupied status of the grid with the starting positions of the agents.
+     */
+    FLAMEGPU_INIT_FUNCTION(initial_occupancy_sync) {
+        int width = FLAMEGPU->environment.getProperty<int>("submodel_env_width");
+        int height = FLAMEGPU->environment.getProperty<int>("submodel_env_height");
+
+        auto envAgent = FLAMEGPU->agent(INTERNAL_ENV_AGENT_NAME, "active");
+        auto &envPop = envAgent.getPopulationData();
+
+        // 1. Reset all cells to unoccupied
+        for (auto cell : envPop) {
+            cell.setVariable<int>("is_occupied", 0);
+        }
+
+        // 2. Map x,y to cell index for efficiency (assuming standard grid layout)
+        // If the population size matches width*height, we assume standard indexing.
+        bool is_standard_grid = static_cast<int>(envPop.size()) == (width * height);
+
+        auto movingAgent = FLAMEGPU->agent(INTERNAL_MOVING_AGENT_NAME, "active");
+        auto &movingPop = movingAgent.getPopulationData();
+
+        for (auto agent : movingPop) {
+            int ax = agent.getVariable<int>("x");
+            int ay = agent.getVariable<int>("y");
+
+            if (is_standard_grid) {
+                int index = ax * height + ay;
+                if (index >= 0 && index < static_cast<int>(envPop.size())) {
+                    envPop[index].setVariable<int>("is_occupied", 1);
+                }
+            } else {
+                // Fallback: Search for the matching cell (O(N) search per agent)
+                for (auto cell : envPop) {
+                    if (cell.getVariable<int>("x") == ax && cell.getVariable<int>("y") == ay) {
+                        cell.setVariable<int>("is_occupied", 1);
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }  // namespace
 
 flamegpu::SubModelDescription SingleAgentDiscreteMovement::addSingleAgentDiscreteMovementSubmodel(ModelDescription &model, int ENV_SIZE_X, int ENV_SIZE_Y) {
@@ -247,6 +290,7 @@ flamegpu::SubModelDescription SingleAgentDiscreteMovement::addSingleAgentDiscret
     setMessages(movingAgent, envAgent, ENV_SIZE_X, ENV_SIZE_Y);
     defineLayer(sub_model_move);
     sub_model_move.addInitFunction(reset_variables);
+    sub_model_move.addInitFunction(initial_occupancy_sync);
     sub_model_move.addExitCondition(move_exit_condition);
 
     this->smm = std::make_unique<SubModelDescription>(model.newSubModel("MovementInstance", sub_model_move));

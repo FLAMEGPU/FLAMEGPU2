@@ -254,5 +254,7 @@ int main(int argc, const char ** argv) {
         cudaSimulation.setPopulationData(cell_pop);
     }
 
+    cudaSimulation.simulate();
+
     return 0;
 }

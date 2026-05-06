@@ -505,3 +505,8 @@ MigrationBackup/
 #Temporary for this branch
 GEMINI.md
 executionsteps
+
+# All log and image files
+*.png
+*.gif
+*.csv
