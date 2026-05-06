@@ -42,10 +42,13 @@
 %{
 // Include the main library header, that should subsequently make all other required (public) headers available.
 #include "flamegpu/flamegpu.h"
-// Also include TestSuiteTelemetyr header, which is not intended to be public. 
+// Also include TestSuiteTelemetyr header, which is not intended to be public.
 #include "flamegpu/detail/TestSuiteTelemetry.h"
+#include "flamegpu/stockAgent/subModels/AbstractSubmodels.h"
+#include "flamegpu/stockAgent/subModels/SingleAgentDiscreteMovement.h"
 // #include "flamegpu/runtime/HostFunctionCallback.h"
-using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, but swig just dumps stuff into the global namespace. 
+using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, but swig just dumps stuff into the global namespace.
+using namespace flamegpu::stockAgent::submodels;
 %}
 
 // Expand SWIG support for the standard library
@@ -61,7 +64,7 @@ using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, 
 %include <stdint.i>
 
 // argc/argv support
-%include <argcargv.i> 
+%include <argcargv.i>
 
 // Swig exception support
 %include "exception.i"
@@ -98,14 +101,14 @@ using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, 
  * TEMPLATE_VARIABLE_INSTANTIATE_FLOATS macro
  * Expands for floating point types
  */
-%define TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(function, classfunction) 
+%define TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(function, classfunction)
 // float and double
 %template(function ## Float) classfunction<float>;
 %template(function ## Double) classfunction<double>;
 %enddef
 
 // Array version, passing default 2nd template arg 0
-%define TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_FLOATS(function, classfunction) 
+%define TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_FLOATS(function, classfunction)
 // float and double
 %template(function ## Float) classfunction<float, 0>;
 %template(function ## Double) classfunction<double, 0>;
@@ -115,7 +118,7 @@ using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, 
  * TEMPLATE_VARIABLE_INSTANTIATE macro
  * Expands for int types
  */
-%define TEMPLATE_VARIABLE_INSTANTIATE_INTS(function, classfunction) 
+%define TEMPLATE_VARIABLE_INSTANTIATE_INTS(function, classfunction)
 // signed ints
 %template(function ## Int16) classfunction<int16_t>;
 %template(function ## Int32) classfunction<int32_t>;
@@ -130,7 +133,7 @@ using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, 
 %enddef
 
 // Array version, passing default 2nd template arg 0
-%define TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_INTS(function, classfunction) 
+%define TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_INTS(function, classfunction)
 // signed ints
 %template(function ## Int16) classfunction<int16_t, 0>;
 %template(function ## Int32) classfunction<int32_t, 0>;
@@ -146,13 +149,13 @@ using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, 
 
 /**
  * TEMPLATE_VARIABLE_INSTANTIATE macro
- * Given a function name and a class::function specifier, this macro instanciates a typed version of the function for a set of basic types. 
+ * Given a function name and a class::function specifier, this macro instanciates a typed version of the function for a set of basic types.
  * E.g. TEMPLATE_VARIABLE_INSTANTIATE(function, SomeClass:function) will generate swig typed versions of the function like the following
  *    typedef SomeClass:function<int> functionInt;
  *    typedef SomeClass:function<float> functionFloat;
  *    ...
  */
-%define TEMPLATE_VARIABLE_INSTANTIATE(function, classfunction) 
+%define TEMPLATE_VARIABLE_INSTANTIATE(function, classfunction)
 TEMPLATE_VARIABLE_INSTANTIATE_FLOATS(function, classfunction)
 TEMPLATE_VARIABLE_INSTANTIATE_INTS(function, classfunction)
 // char types
@@ -165,7 +168,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(function, classfunction)
 %enddef
 
 // Array version, passing default 2nd template arg 0
-%define TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function, classfunction) 
+%define TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function, classfunction)
 TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_FLOATS(function, classfunction)
 TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_INTS(function, classfunction)
 // char types
@@ -183,22 +186,22 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_INTS(function, classfunction)
  */
 %define TEMPLATE_VARIABLE_INSTANTIATE_ID(function, classfunction)
 %template(function ## ID) classfunction<flamegpu::id_t>;
-TEMPLATE_VARIABLE_INSTANTIATE(function, classfunction) 
+TEMPLATE_VARIABLE_INSTANTIATE(function, classfunction)
 %enddef
 
 // Array version, passing default 2nd template arg 0
 %define TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(function, classfunction)
 %template(function ## ID) classfunction<flamegpu::id_t, 0>;
-TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function, classfunction) 
+TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function, classfunction)
 %enddef
 
 
 /**
  * TEMPLATE_SUM_INSTANTIATE macro
- * Specific template expansion for sum which allows different return types to avoid range issues 
+ * Specific template expansion for sum which allows different return types to avoid range issues
  * Return with same type is not Instantiated. I.e. All int type use 64 bit signed returned types
  */
-%define TEMPLATE_SUM_INSTANTIATE(sum_class) 
+%define TEMPLATE_SUM_INSTANTIATE(sum_class)
 // float and double
 %template(sumFloat) sum_class ## ::sum<float>;
 %template(sumDouble) sum_class ## ::sum<double>;
@@ -222,7 +225,7 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function, classfunction)
 %template(UIntArray3) std::array<unsigned int, 3>;
 
 /* Create some type objects to obtain sizes and type info of flamegpu2 basic types.
- * It is not required to demangle type names. These can be used to compare directly with the type_index 
+ * It is not required to demangle type names. These can be used to compare directly with the type_index
  * returned by the flamegpu2 library
  */
 %nodefaultctor std::type_index;
@@ -233,7 +236,7 @@ TEMPLATE_VARIABLE_ARRAY_INSTANTIATE(function, classfunction)
 	        static unsigned int size(){
 		        return sizeof(T);
 	        }
-	
+
 	        static const char* typeName() {
                 return std::type_index(typeid(T)).name();
 	        }
@@ -338,7 +341,7 @@ class FLAMEGPURuntimeException : public std::exception {
         PyObject* type_obj_name = PyObject_GetAttrString(type, "__name__");
         PyObject *type_str = PyObject_Str(type_obj_name);
         const char *pTypeStr = PyUnicode_AsUTF8(type_str);
-        // Director Obj Type        
+        // Director Obj Type
         PyObject* hostfn_type = PyObject_Type(hostfn);
         PyObject* hostfn_type_name = PyObject_GetAttrString(hostfn_type, "__name__");
         PyObject *hostfn_str = PyObject_Str(hostfn_type_name);
@@ -376,22 +379,22 @@ class FLAMEGPURuntimeException : public std::exception {
     catch (flamegpu::exception::FLAMEGPUException& e) {
         FLAMEGPURuntimeException *except = new FLAMEGPURuntimeException(std::string(e.what()), std::string(e.exception_type()));
         PyObject *err = SWIG_NewPointerObj(except, SWIGTYPE_p_FLAMEGPURuntimeException, 1);
-        SWIG_Python_Raise(err, except.type(), SWIGTYPE_p_FLAMEGPURuntimeException); 
+        SWIG_Python_Raise(err, except.type(), SWIGTYPE_p_FLAMEGPURuntimeException);
         SWIG_fail;
     }
-    catch (Swig::DirectorException&) { 
-        SWIG_fail; 
+    catch (Swig::DirectorException&) {
+        SWIG_fail;
     }
     catch(const std::exception& e) {
         SWIG_exception(SWIG_RuntimeError, const_cast<char*>(e.what()) );
     }
     catch (...) {
         SWIG_exception(SWIG_RuntimeError, "Unknown Exception");
-    } 
+    }
 }
 
 
-// Ignore directives. These go before any %includes. 
+// Ignore directives. These go before any %includes.
 // -----------------
 
 // Disable non RTC function and function condition set methods
@@ -474,7 +477,7 @@ class FLAMEGPURuntimeException : public std::exception {
 // Do not provide the FLAMEGPU_VERSION macro, instead just the pyflamegpu.VERSION* variants.
 %ignore FLAMEGPU_VERSION;
 
-// Ignores for nested classes, where flatnested is enabled. 
+// Ignores for nested classes, where flatnested is enabled.
 %feature("flatnested"); // flat nested on
     // Ignore some of the internal host classes defined for messaging
     // In the future should these be in the detail namespace which could globally be ignored? // @todo
@@ -487,11 +490,11 @@ class FLAMEGPURuntimeException : public std::exception {
 // Rename directives. These go before any %includes
 // -----------------
 
-%rename(insert) flamegpu::AgentVector::py_insert; 
-%rename(erase) flamegpu::AgentVector::py_erase; 
+%rename(insert) flamegpu::AgentVector::py_insert;
+%rename(erase) flamegpu::AgentVector::py_erase;
 
-%rename(insert) flamegpu::DeviceAgentVector_impl::py_insert; 
-%rename(erase) flamegpu::DeviceAgentVector_impl::py_erase; 
+%rename(insert) flamegpu::DeviceAgentVector_impl::py_insert;
+%rename(erase) flamegpu::DeviceAgentVector_impl::py_erase;
 
 // Renames which require flatnested, as swig/python does not support nested classes.
 %feature("flatnested");     // flat nested on to ensure Config is included
@@ -531,7 +534,7 @@ class FLAMEGPURuntimeException : public std::exception {
 // Director features. These go before the %includes.
 // -----------------
 /* Enable callback functions for step, exit and init through the use of "director" which allows Python -> C and C-> Python in callback.
- * FLAMEGPU2 supports callback or function pointers so no special tricks are needed. 
+ * FLAMEGPU2 supports callback or function pointers so no special tricks are needed.
  * To prevent raw pointer functions being exposed in Python these are ignored so only the callback versions are accessible.
  */
 %feature("director") flamegpu::HostFunctionCallback;
@@ -582,7 +585,7 @@ class FLAMEGPURuntimeException : public std::exception {
 // Value wrappers also go before includes.
 // -----------------
 // %feature("valuewrapper") flamegpu::DeviceAgentVector; // @todo - this doesn't appear to be required.
- 
+
 // Enums / type definitions.
 // -----------------
 
@@ -601,11 +604,11 @@ namespace EnvironmentManager{
 // -----------------
 // This is required where there are circular dependencies and how swig doesn't #include things. Instead, forward declare the class within the namespace that is otherwise #included.
 
-namespace flamegpu { 
-class ModelDescription;  // For DependencyGraph circular dependency. 
+namespace flamegpu {
+class ModelDescription;  // For DependencyGraph circular dependency.
 }
 
-// If visualisation is enabled, then CUDASimulation provides access to the visualisation class. This requires a forward declaraiton to place it in the correct namespace. 
+// If visualisation is enabled, then CUDASimulation provides access to the visualisation class. This requires a forward declaraiton to place it in the correct namespace.
 #ifdef FLAMEGPU_VISUALISATION
 namespace flamegpu {
 namespace visualiser {
@@ -614,10 +617,10 @@ class ModelVis;
 }  // namespace flamegpu
 #endif
 
-// %includes for classes to wrap. 
+// %includes for classes to wrap.
 // -----------------
-// A number of typedefs are not placed in the namespace, but they are currently unused anyway. 
-// SWIGTYPE_p_FLAMEGPURuntimeException - swig only, doesn't need to be namespaced? 
+// A number of typedefs are not placed in the namespace, but they are currently unused anyway.
+// SWIGTYPE_p_FLAMEGPURuntimeException - swig only, doesn't need to be namespaced?
 
 %include "flamegpu/defines.h" // Provides flamegpu::id_t amongst others.
 %include "flamegpu/version.h" // provides FLAMEGPU_VERSION etc
@@ -695,7 +698,7 @@ class ModelVis;
 %include "flamegpu/runtime/AgentFunction_shim.cuh"
 %include "flamegpu/runtime/AgentFunctionCondition_shim.cuh"
 
-// These are essentially nested classes that have been split out. 
+// These are essentially nested classes that have been split out.
 %include "flamegpu/simulation/AgentVector_Agent.h"
 %include "flamegpu/simulation/AgentVector.h"
 %include "flamegpu/runtime/agent/AgentInstance.h"
@@ -713,17 +716,21 @@ class ModelVis;
 
 %include "flamegpu/runtime/agent/HostNewAgentAPI.h"
 %include "flamegpu/runtime/agent/HostAgentAPI.cuh"
-%include "flamegpu/runtime/HostAPI.h" 
+%include "flamegpu/runtime/HostAPI.h"
 
 // Include logging implementations
 %include "flamegpu/simulation/LoggingConfig.h"
 %include "flamegpu/simulation/AgentLoggingConfig.h"
 %include "flamegpu/simulation/AgentLoggingConfig_SumReturn.h"
-%include "flamegpu/simulation/LogFrame.h"  // Includes RunLog. 
+%include "flamegpu/simulation/LogFrame.h"  // Includes RunLog.
 
 // Include ensemble implementations
 %include "flamegpu/simulation/RunPlan.h"
 %include "flamegpu/simulation/RunPlanVector.h"
+
+// Include submodel implementations
+%include "flamegpu/stockAgent/subModels/AbstractSubmodels.h"
+%include "flamegpu/stockAgent/subModels/SingleAgentDiscreteMovement.h"
 
 // Include public utility headers
 %include "flamegpu/util/cleanup.h"
@@ -735,7 +742,7 @@ class ModelVis;
 
 // unignore detail
 %rename("%s") flamegpu::detail;
-// Rename test suite telemetry detail/private api function, prior to ignoring detail. 
+// Rename test suite telemetry detail/private api function, prior to ignoring detail.
 // Because of how _ prefixes are handeled, this must be called via pyflamegpu._pyflamegpu.__TestSuiteTelemetry_sendResults()
 %rename (__TestSuiteTelemetry) flamegpu::detail::TestSuiteTelemetry;
 %include "flamegpu/detail/TestSuiteTelemetry.h"
@@ -743,7 +750,7 @@ class ModelVis;
 %ignore flamegpu::detail::JitifyCache::loadKernel;
 %rename(JitifyCache) flamegpu::detail::JitifyCache;
 %include "flamegpu/detail/JitifyCache.h"
-// Ignore detail agian? 
+// Ignore detail agian?
 %ignore flamegpu::detail;
 
 
@@ -779,7 +786,7 @@ namespace std {
         $self->operator[](index).setData(value);
     }
 }
-/* Extend HostRandom to add a templated version of the uniform function with a different name so this can be instantiated 
+/* Extend HostRandom to add a templated version of the uniform function with a different name so this can be instantiated
  * It is required to ingore the original defintion of uniform and separate the two functions to have a distinct name
  */
 %extend flamegpu::HostRandom{
@@ -897,7 +904,7 @@ class FLAMEGPUGraphMapIterator(object):
 
 %template(StepLogFrameList) std::list<flamegpu::StepLogFrame>;
 %template(RunLogMap) std::map<unsigned int, flamegpu::RunLog>;
- 
+
 // Instantiate template versions of agent functions from the API
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariable, flamegpu::AgentDescription::newVariable)
 TEMPLATE_VARIABLE_INSTANTIATE_ID(newVariableArray, flamegpu::AgentDescription::newVariableArray)
@@ -1134,7 +1141,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(poisson, flamegpu::HostRandom::poisson)
             # do not allow passthrough (host exection of this function)
             pass
         return wrapper
-		
+
     def agent_function_condition(func):
         @wraps(func)
         def wrapper():
@@ -1148,7 +1155,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(poisson, flamegpu::HostRandom::poisson)
             # essenitally a passthrough in case the function is also used in python host code
             # passthrough obviously does not support pyflamegpu device functions
             return func(*args, **kwargs)
-        
+
         # create an attribute to identify the wrapped function as having this decorator (without having to parse)
         wrapper.__is_pyflamegpu_device_function = True
         return wrapper
@@ -1167,7 +1174,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(poisson, flamegpu::HostRandom::poisson)
         using namespace flamegpu::visualiser;
     %}
 
-    // Ignore directives. These go before any %includes. 
+    // Ignore directives. These go before any %includes.
     // -----------------
     // Disable nvtx::range class, we don't trust swig+GC to dtor at the right time for it to be reliable
     %ignore flamegpu::util::nvtx::range;
@@ -1196,7 +1203,7 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(poisson, flamegpu::HostRandom::poisson)
     // -----------------
     // Enums / type definitions.
     // -----------------
-    // %includes for classes to wrap. 
+    // %includes for classes to wrap.
     // -----------------
     %include "flamegpu/visualiser/config/Stock.h"
     %include "flamegpu/visualiser/StaticModelVis.h"
@@ -1259,22 +1266,22 @@ TEMPLATE_VARIABLE_INSTANTIATE_INTS(poisson, flamegpu::HostRandom::poisson)
     TEMPLATE_VARIABLE_INSTANTIATE_ID(newEnvironmentPropertyDrag, flamegpu::visualiser::PanelVis::newEnvironmentPropertyDrag)
     TEMPLATE_VARIABLE_INSTANTIATE_ID(newEnvironmentPropertyInput, flamegpu::visualiser::PanelVis::newEnvironmentPropertyInput)
     TEMPLATE_VARIABLE_INSTANTIATE_INTS(newEnvironmentPropertyToggle, flamegpu::visualiser::PanelVis::newEnvironmentPropertyToggle)
-    
+
     TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(newEnvironmentPropertySlider, flamegpu::visualiser::PanelVis::newEnvironmentPropertySlider)
     TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(newEnvironmentPropertyDrag, flamegpu::visualiser::PanelVis::newEnvironmentPropertyDrag)
     TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_ID(newEnvironmentPropertyInput, flamegpu::visualiser::PanelVis::newEnvironmentPropertyInput)
     TEMPLATE_VARIABLE_ARRAY_INSTANTIATE_INTS(newEnvironmentPropertyToggle, flamegpu::visualiser::PanelVis::newEnvironmentPropertyToggle)
 
-    
+
     // Redefine the value to ensure it makes it into the python modules (without the FLAMEGPU_ prefix)
     #undef FLAMEGPU_VISUALISATION
     #define VISUALISATION true
-#else 
+#else
     // Define in the python module as false.
     #define VISUALISATION false
 #endif
 
-// Define pyflamegpu.SEATBELTS as true or false as appropriate, so tests can be disabled / enabled  
+// Define pyflamegpu.SEATBELTS as true or false as appropriate, so tests can be disabled / enabled
 #if defined(FLAMEGPU_SEATBELTS) && FLAMEGPU_SEATBELTS
     #undef FLAMEGPU_SEATBELTS
     #define SEATBELTS true
