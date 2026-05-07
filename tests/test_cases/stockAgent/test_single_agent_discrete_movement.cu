@@ -96,7 +96,6 @@ TEST(SingleAgentDiscreteMovementTest, SimpleMove) {
             auto c = cell_pop[x * HEIGHT + y];
             c.setVariable<int>("x", x);
             c.setVariable<int>("y", y);
-            c.setVariable<int>("is_occupied", 0);
             c.setVariable<float>("cell_score", 0.0f);
         }
     }
@@ -164,14 +163,13 @@ TEST(SingleAgentDiscreteMovementTest, CollisionAvoidance) {
     sim.SimulationConfig().steps = 1;
 
     // Grid initialization:
-    // We set is_occupied to 0 EVERYWHERE.
+    // is_occupied is 0 by default.
     // The submodel's internal InitFunction will automatically detect the agents
     // and set is_occupied to 1 at (0,1) and (2,1) before the first move starts.
     auto cell_pop = AgentVector(cell, WIDTH * HEIGHT);
     for (int i = 0; i < WIDTH * HEIGHT; ++i) {
         cell_pop[i].setVariable<int>("x", i / HEIGHT);
         cell_pop[i].setVariable<int>("y", i % HEIGHT);
-        cell_pop[i].setVariable<int>("is_occupied", 0);
         cell_pop[i].setVariable<float>("cell_score", 0.0f);
     }
     cell_pop[1 * HEIGHT + 1].setVariable<float>("cell_score", 10.0f);  // Target
@@ -244,7 +242,6 @@ TEST(SingleAgentDiscreteMovementTest, ResourceMemory) {
     for (int i = 0; i < WIDTH * HEIGHT; ++i) {
         cell_pop[i].setVariable<int>("x", i / HEIGHT);
         cell_pop[i].setVariable<int>("y", i % HEIGHT);
-        cell_pop[i].setVariable<int>("is_occupied", 0);
         cell_pop[i].setVariable<float>("cell_score", 0.0f);
     }
     // High score at (1,1)
@@ -310,7 +307,6 @@ TEST(SingleAgentDiscreteMovementTest, GridBoundaries) {
     for (int i = 0; i < WIDTH * HEIGHT; ++i) {
         cell_pop[i].setVariable<int>("x", i / HEIGHT);
         cell_pop[i].setVariable<int>("y", i % HEIGHT);
-        cell_pop[i].setVariable<int>("is_occupied", 0);
         cell_pop[i].setVariable<float>("cell_score", 0.0f);
     }
     // High score at (1,1)
