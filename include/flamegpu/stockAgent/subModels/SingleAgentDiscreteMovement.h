@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <memory>
+#include <optional>
 
 #include "AbstractSubmodels.h"
 
@@ -50,12 +51,15 @@ class SingleAgentDiscreteMovement : public AbstractSubmodel {
                   const std::map<std::string, std::string>& state_map = {},
                   bool auto_map = false);
 
+    flamegpu::SubModelDescription getSubModelDescription() const override;
+
     void validate() override;
 
+    std::string getName() const override;
+
  private:
-    // Internal pointer allows SingleAgentDiscreteMovement to be default-constructible
-    std::unique_ptr<flamegpu::SubModelDescription> smm;
-    bool is_initialized = false;
+    // SubModelDescription is a proxy. We use optional to allow late initialization without unique_ptr.
+    std::optional<flamegpu::SubModelDescription> smm;
 
     // Internal setup methods
     void setMessages(flamegpu::AgentDescription &movingAgent, flamegpu::AgentDescription &envAgent, int ENV_SIZE_X, int ENV_SIZE_Y);

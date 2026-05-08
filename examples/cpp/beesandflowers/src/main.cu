@@ -213,7 +213,7 @@ void define_model(ModelDescription &model) {
     flamegpu::stockAgent::submodels::SingleAgentDiscreteMovement move_sub_logic;
 
     // Initialize the submodel
-    auto move_sub_desc = move_sub_logic.addSingleAgentDiscreteMovementSubmodel(model, ENV_DIM, ENV_DIM);
+    move_sub_logic.addSingleAgentDiscreteMovementSubmodel(model, ENV_DIM, ENV_DIM);
 
     // Bind parent agents to submodel
     move_sub_logic.setMovingAgent("bee",
@@ -250,7 +250,7 @@ void define_model(ModelDescription &model) {
     l0.addAgentFunction(calculate_priority);
 
     LayerDescription l1 = model.newLayer();
-    l1.addSubModel(move_sub_desc);
+    l1.addSubModel(move_sub_logic.getSubModelDescription());
 
     LayerDescription l2 = model.newLayer();
     l2.addAgentFunction(update_hunger_wait);

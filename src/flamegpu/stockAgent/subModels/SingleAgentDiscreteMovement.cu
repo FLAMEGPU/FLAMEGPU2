@@ -293,9 +293,8 @@ flamegpu::SubModelDescription SingleAgentDiscreteMovement::addSingleAgentDiscret
     sub_model_move.addInitFunction(initial_occupancy_sync);
     sub_model_move.addExitCondition(move_exit_condition);
 
-    this->smm = std::make_unique<SubModelDescription>(model.newSubModel("MovementInstance", sub_model_move));
+    this->smm = model.newSubModel("MovementInstance", sub_model_move);
     this->smm->setMaxSteps(5);
-    this->is_initialized = true;
 
     return *(this->smm);
 }
@@ -304,7 +303,7 @@ void SingleAgentDiscreteMovement::setMovingAgent(const string& parent_name,
                            const map<string, string>& var_map,
                            const map<string, string>& state_map,
                            bool auto_map) {
-    if (!is_initialized) {
+    if (!smm.has_value()) {
         throw exception::InvalidSubModel("SingleAgentDiscreteMovement submodel was not initialized. Call addSingleAgentDiscreteMovementSubmodel() first.");
     }
     auto agent_map = this->smm->bindAgent(INTERNAL_MOVING_AGENT_NAME, parent_name, auto_map, auto_map);
@@ -316,7 +315,7 @@ void SingleAgentDiscreteMovement::setEnvironmentAgent(const string& parent_name,
                            const map<string, string>& var_map,
                            const map<string, string>& state_map,
                            bool auto_map) {
-    if (!is_initialized) {
+    if (!smm.has_value()) {
         throw exception::InvalidSubModel("SingleAgentDiscreteMovement submodel was not initialized. Call addSingleAgentDiscreteMovementSubmodel() first.");
     }
     auto agent_map = this->smm->bindAgent(INTERNAL_ENV_AGENT_NAME, parent_name, auto_map, auto_map);
@@ -324,25 +323,36 @@ void SingleAgentDiscreteMovement::setEnvironmentAgent(const string& parent_name,
     for (auto const& [internal_state, parent_state] : state_map) { agent_map.mapState(internal_state, parent_state); }
 }
 
-void SingleAgentDiscreteMovement::defineMessageSubmodule(ModelDescription &smm, int ENV_SIZE_X, int ENV_SIZE_Y) {
-    auto m1 = smm.newMessage<MessageArray2D>("cell_status");
+flamegpu::SubModelDescription SingleAgentDiscreteMovement::getSubModelDescription() const {
+    if (!smm.has_value()) {
+        throw exception::InvalidSubModel("SingleAgentDiscreteMovement submodel was not initialized.");
+    }
+    return *smm;
+}
+
+std::string SingleAgentDiscreteMovement::getName() const {
+    return "SingleAgentDiscreteMovement";
+}
+
+void SingleAgentDiscreteMovement::defineMessageSubmodule(ModelDescription &smm_desc, int ENV_SIZE_X, int ENV_SIZE_Y) {
+    auto m1 = smm_desc.newMessage<MessageArray2D>("cell_status");
     m1.newVariable<float>("cell_score");
     m1.newVariable<int>("is_occupied");
     m1.setDimensions(ENV_SIZE_X, ENV_SIZE_Y);
 
-    auto m2 = smm.newMessage<MessageArray2D>("move_requests");
+    auto m2 = smm_desc.newMessage<MessageArray2D>("move_requests");
     m2.newVariable<id_t>("requester_id");
     m2.newVariable<int>("target_x");
     m2.newVariable<int>("target_y");
     m2.newVariable<float>("priority");
     m2.setDimensions(ENV_SIZE_X, ENV_SIZE_Y);
 
-    auto m3 = smm.newMessage<MessageArray2D>("move_responses");
+    auto m3 = smm_desc.newMessage<MessageArray2D>("move_responses");
     m3.newVariable<id_t>("winner_id");
     m3.newVariable<float>("cell_score");
     m3.setDimensions(ENV_SIZE_X, ENV_SIZE_Y);
 
-    auto m4 = smm.newMessage<MessageArray2D>("new_locations");
+    auto m4 = smm_desc.newMessage<MessageArray2D>("new_locations");
     m4.newVariable<id_t>("moving_agent_id");
     m4.setDimensions(ENV_SIZE_X, ENV_SIZE_Y);
 }
@@ -366,16 +376,16 @@ void SingleAgentDiscreteMovement::setMessages(AgentDescription &movingAgent, Age
     envAgent_update_occupancy_fn.setMessageInput("new_locations");
 }
 
-void SingleAgentDiscreteMovement::defineLayer(ModelDescription &smm) {
-    smm.newLayer().addAgentFunction(envAgent_broadcast_status);
-    smm.newLayer().addAgentFunction(movingAgent_request_move);
-    smm.newLayer().addAgentFunction(envAgent_resolve_conflict);
-    smm.newLayer().addAgentFunction(movingAgent_execute_move);
-    smm.newLayer().addAgentFunction(envAgent_update_occupancy);
+void SingleAgentDiscreteMovement::defineLayer(ModelDescription &smm_desc) {
+    smm_desc.newLayer().addAgentFunction(envAgent_broadcast_status);
+    smm_desc.newLayer().addAgentFunction(movingAgent_request_move);
+    smm_desc.newLayer().addAgentFunction(envAgent_resolve_conflict);
+    smm_desc.newLayer().addAgentFunction(movingAgent_execute_move);
+    smm_desc.newLayer().addAgentFunction(envAgent_update_occupancy);
 }
 
 void SingleAgentDiscreteMovement::validate() {
-    if (!this->is_initialized) {
+    if (!this->smm.has_value()) {
         throw exception::InvalidSubModel("SingleAgentDiscreteMovement submodel was not initialized. Call addSingleAgentDiscreteMovementSubmodel() first.");
     }
 

@@ -1,6 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_STOCKAGENT_SUBMODELS_ABSTRACTSUBMODELS_H_
 #define INCLUDE_FLAMEGPU_STOCKAGENT_SUBMODELS_ABSTRACTSUBMODELS_H_
 
+#include <string>
 #include "flamegpu/flamegpu.h"
 
 namespace flamegpu {
@@ -13,8 +14,23 @@ namespace submodels {
      */
     class AbstractSubmodel {
      public:
-        virtual void validate() = 0;
         virtual ~AbstractSubmodel() = default;
+
+        /**
+         * Returns the underlying FLAME GPU SubModelDescription.
+         * Throws if the submodel hasn't been initialized/added to a model yet.
+         */
+        virtual flamegpu::SubModelDescription getSubModelDescription() const = 0;
+
+        /**
+         * Validates that all required agents and variables have been mapped.
+         */
+        virtual void validate() = 0;
+
+        /**
+         * Returns the name of the submodel instance.
+         */
+        virtual std::string getName() const = 0;
     };
 
 

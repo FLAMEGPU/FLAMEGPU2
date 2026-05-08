@@ -46,6 +46,10 @@ TEST(SingleAgentDiscreteMovementTest, Initialization) {
 
     // Validation should pass now
     EXPECT_NO_THROW(move_submodel.validate());
+
+    // Check getName and getSubModelDescription
+    EXPECT_EQ(move_submodel.getName(), "SingleAgentDiscreteMovement");
+    EXPECT_NO_THROW(move_submodel.getSubModelDescription());
 }
 
 /**
@@ -58,10 +62,10 @@ TEST(SingleAgentDiscreteMovementTest, SimpleMove) {
     int HEIGHT = 3;
 
     SingleAgentDiscreteMovement move_submodel;
-    auto smd = move_submodel.addSingleAgentDiscreteMovementSubmodel(model, WIDTH, HEIGHT);
+    move_submodel.addSingleAgentDiscreteMovementSubmodel(model, WIDTH, HEIGHT);
 
     // Submodels must be added to a layer to be executed during the simulation step
-    model.newLayer().addSubModel(smd);
+    model.newLayer().addSubModel(move_submodel.getSubModelDescription());
 
     // Define parent agents with necessary variables
     auto agent = model.newAgent("agent");
@@ -135,8 +139,8 @@ TEST(SingleAgentDiscreteMovementTest, CollisionAvoidance) {
     int HEIGHT = 3;
 
     SingleAgentDiscreteMovement move_submodel;
-    auto smd = move_submodel.addSingleAgentDiscreteMovementSubmodel(model, WIDTH, HEIGHT);
-    model.newLayer().addSubModel(smd);
+    move_submodel.addSingleAgentDiscreteMovementSubmodel(model, WIDTH, HEIGHT);
+    model.newLayer().addSubModel(move_submodel.getSubModelDescription());
 
     auto agent = model.newAgent("agent");
     agent.newVariable<int>("x");
@@ -211,8 +215,8 @@ TEST(SingleAgentDiscreteMovementTest, ResourceMemory) {
     int HEIGHT = 3;
 
     SingleAgentDiscreteMovement move_submodel;
-    auto smd = move_submodel.addSingleAgentDiscreteMovementSubmodel(model, WIDTH, HEIGHT);
-    model.newLayer().addSubModel(smd);
+    move_submodel.addSingleAgentDiscreteMovementSubmodel(model, WIDTH, HEIGHT);
+    model.newLayer().addSubModel(move_submodel.getSubModelDescription());
 
     auto agent = model.newAgent("agent");
     agent.newVariable<int>("x");
@@ -276,8 +280,8 @@ TEST(SingleAgentDiscreteMovementTest, GridBoundaries) {
     int HEIGHT = 2;
 
     SingleAgentDiscreteMovement move_submodel;
-    auto smd = move_submodel.addSingleAgentDiscreteMovementSubmodel(model, WIDTH, HEIGHT);
-    model.newLayer().addSubModel(smd);
+    move_submodel.addSingleAgentDiscreteMovementSubmodel(model, WIDTH, HEIGHT);
+    model.newLayer().addSubModel(move_submodel.getSubModelDescription());
 
     auto agent = model.newAgent("agent");
     agent.newVariable<int>("x");

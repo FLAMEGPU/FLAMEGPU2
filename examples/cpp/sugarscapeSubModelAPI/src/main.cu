@@ -131,7 +131,7 @@ int main(int argc, const char ** argv) {
      * Submodel Configuration
      */
     flamegpu::stockAgent::submodels::SingleAgentDiscreteMovement move_sub_logic;
-    auto move_sub_desc = move_sub_logic.addSingleAgentDiscreteMovementSubmodel(model, GRID_WIDTH, GRID_HEIGHT);
+    move_sub_logic.addSingleAgentDiscreteMovementSubmodel(model, GRID_WIDTH, GRID_HEIGHT);
 
     // Bind Bug to the submodel's moving agent
     move_sub_logic.setMovingAgent("bug",
@@ -167,7 +167,7 @@ int main(int argc, const char ** argv) {
     sugar_cell.newFunction("growback", growback);
 
     //  Layer 1: Movement
-    model.newLayer().addSubModel(move_sub_desc);
+    model.newLayer().addSubModel(move_sub_logic.getSubModelDescription());
 
     // Layer 2: Life logic (Metabolism and Growback can happen in parallel)
     {
