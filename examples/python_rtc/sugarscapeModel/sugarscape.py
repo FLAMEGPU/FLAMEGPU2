@@ -187,7 +187,7 @@ if __name__ == "__main__":
 
     submodel = pyflamegpu.SingleAgentDiscreteMovement()
 
-    move_sub_desc = submodel.addSingleAgentDiscreteMovementSubmodel(model, GRID_HEIGHT, GRID_WIDTH)
+    submodel.addSingleAgentDiscreteMovementSubmodel(model, GRID_HEIGHT, GRID_WIDTH)
 
     bug_vars = pyflamegpu.map_string_string()
     bug_vars["x"] = "x"
@@ -230,7 +230,7 @@ if __name__ == "__main__":
     layer2 = model.newLayer()
     layer2.addAgentFunction(metabolise_fn)
     layer3 = model.newLayer()
-    layer3.addSubModel(move_sub_desc)
+    layer3.addSubModel(submodel.getSubModelDescription())
 
     my_step = step_logger()
     model.addStepFunction(my_step)
