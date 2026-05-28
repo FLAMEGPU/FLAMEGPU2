@@ -204,6 +204,7 @@ cmake --build . --target all
 | `FLAMEGPU_SWIG_MINIMUM`              | `4.1.0` | The minimum version of SWIG required. |
 | `FLAMEGPU_SWIG_DOWNLOAD`             | `4.3.0` | The version of SWIG to download if the required version is not found. |
 | `FLAMEGPU_SWIG_EXACT`                | `ON`/`OFF` | Require the exact version of SWIG specified in `FLAMEGPU_SWIG_MINIMUM`. This enables downgrading swig. Default `OFF` |
+| `FLAMEGPU_ALLOW_UNSUPPORTED_COMPILER`| `ON`/`OFF` | Issue warnings rather than fatal errors for CUDA/HIP compilers below the minimum supported version. Default `OFF` |
 
 <!-- Additional options which users can find if they need them.
 | `FLAMEGPU_BUILD_API_DOCUMENTATION` | `ON`/`OFF` | Build the documentation target. Default `ON` |
