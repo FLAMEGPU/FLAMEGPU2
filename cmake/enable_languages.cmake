@@ -25,6 +25,11 @@ if(NOT "${FLAMEGPU_GPU}" IN_LIST _FLAMEGPU_GPU_OPTIONS)
 endif()
 unset(_FLAMEGPU_GPU_OPTIONS)
 
+# Define a (advanced) cmake option to control FATAL_ERROR vs WARNING for insufficient CUDA/HIP compiler warnings.
+# This only effects version-based checks, rather than actual compilation-based checks.
+option(FLAMEGPU_ALLOW_UNSUPPORTED_COMPILER "Issue warnings rather than fatal errors for CUDA/HIP compilers below the minimum supported version. Compilation checks are still performed." OFF)
+mark_as_advanced(FLAMEGPU_ALLOW_UNSUPPORTED_COMPILER)
+
 # Define a macro (enable_language should not be called from a function) which enables languages based on current cache variables, and will error if a language is already defined that conflicts with FLAMEGPU_GPU
 macro(flamegpu_enable_languages)
     # Raise an error if project() has not yet been called, as enable_language cannot be called without without a project()
@@ -36,6 +41,7 @@ macro(flamegpu_enable_languages)
     # Define the minimum supported CUDA and HIP versions
     set(MINIMUM_SUPPORTED_CUDA_VERSION 12.4)
     set(MINIMUM_SUPPORTED_HIP_VERSION 7.0)  # patch version differs from the rocm package
+
     # Set the std which is used in compilation testing examples
     set(_flamegpu_cxx_std 20)
 
@@ -127,7 +133,19 @@ macro(flamegpu_enable_languages)
             # Ensure that the found CUDA version is at least the minimum required by FLAMEGPU, otherwise raise an error.
             # Note: this is a breaking change to CMake behaviour (for docs-only builds), must set FLAMEGPU_GPU=OFF instead.
             if (CMAKE_CUDA_COMPILER_VERSION VERSION_LESS "${MINIMUM_SUPPORTED_CUDA_VERSION}")
-                message(FATAL_ERROR "CUDA ${MINIMUM_SUPPORTED_CUDA_VERSION} or greater is required for compilation with FLAMEGPU_GPU=${FLAMEGPU_GPU}")
+                if(NOT FLAMEGPU_ALLOW_UNSUPPORTED_COMPILER)
+                    message(FATAL_ERROR "CUDA ${MINIMUM_SUPPORTED_CUDA_VERSION} or greater is required for compilation with FLAMEGPU_GPU=${FLAMEGPU_GPU} (found ${CMAKE_CUDA_COMPILER_VERSION})")
+                else()
+                    if(NOT CUDA_VERSION_LESS_MINIMUM_SUPPORTED_SHOWN)
+                        message(WARNING "CUDA ${CMAKE_CUDA_COMPILER_VERSION} is unsupported for compilation with FLAMEGPU_GPU=${FLAMEGPU_GPU} (>= ${MINIMUM_SUPPORTED_CUDA_VERSION} supported)")
+                        get_directory_property(has_parent PARENT_DIRECTORY)
+                        if(has_parent)
+                            set(CUDA_VERSION_LESS_MINIMUM_SUPPORTED_SHOWN TRUE PARENT_SCOPE)
+                        else()
+                            set(CUDA_VERSION_LESS_MINIMUM_SUPPORTED_SHOWN TRUE)
+                        endif()
+                    endif()
+                endif()
             endif()
 
         # Check for and enable HIP if it was requested
@@ -150,9 +168,21 @@ macro(flamegpu_enable_languages)
             # Instead, we must find_package(hip) and query hip_VERSION, which has a differnt patch number than in the release number
             find_package(hip REQUIRED CONFIG)
 
-            # Ensure that the found HIP version is at least the minimum required by FLAMEGPU, otherwise raise an error.
+            # Ensure that the found HIP version is at least the minimum required by FLAMEGPU, issuing a FATAL_ERROR or a (single) WARNING depending on the value of FLAMEGPU_ALLOW_UNSUPPORTED_COMPILER
             if (${hip_VERSION} VERSION_LESS "${MINIMUM_SUPPORTED_HIP_VERSION}")
-                message(FATAL_ERROR "HIP ${MINIMUM_SUPPORTED_HIP_VERSION} or greater is required for compilation with FLAMEGPU_GPU=${FLAMEGPU_GPU} (found ${hip_VERSION})")
+                if(NOT FLAMEGPU_ALLOW_UNSUPPORTED_COMPILER)
+                    message(FATAL_ERROR "HIP ${MINIMUM_SUPPORTED_HIP_VERSION} or greater is required for compilation with FLAMEGPU_GPU=${FLAMEGPU_GPU} (found ${hip_VERSION})")
+                else()
+                    if(NOT HIP_VERSION_LESS_MINIMUM_SUPPORTED_SHOWN)
+                        message(WARNING "HIP ${hip_VERSION} is unsupported for compilation with FLAMEGPU_GPU=${FLAMEGPU_GPU} (>= ${MINIMUM_SUPPORTED_HIP_VERSION} supported)")
+                        get_directory_property(has_parent PARENT_DIRECTORY)
+                        if(has_parent)
+                            set(HIP_VERSION_LESS_MINIMUM_SUPPORTED_SHOWN TRUE PARENT_SCOPE)
+                        else()
+                            set(HIP_VERSION_LESS_MINIMUM_SUPPORTED_SHOWN TRUE)
+                        endif()
+                    endif()
+                endif()
             endif()
         endif()
 
