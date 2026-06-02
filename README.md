@@ -8,12 +8,12 @@
 [![Userguide](https://img.shields.io/badge/Userguide-docs.flamegpu.com-fed43b)](https://docs.flamegpu.com)
 
 FLAME GPU is a GPU accelerated agent-based simulation library for domain independent complex systems simulations.
-Version 2 is a complete re-write of the existing library offering greater flexibility, an improved interface for agent scripting and better research software engineering, with CUDA/C++ and Python interfaces.
+Version 2 is a complete re-write of the existing library offering greater flexibility, an improved interface for agent scripting and better research software engineering, with CUDA/ROCm C++ and Python interfaces.
 
-FLAME GPU provides a mapping between a formal agent specifications with C++ based scripting and optimised CUDA code.
+FLAME GPU provides a mapping between a formal agent specifications with C++ based scripting and optimised CUDA/ROCm code.
 This includes a number of key Agent-based Modelling (ABM) building blocks such as multiple agent types, agent communication and birth and death allocation.
 
-+ Agent-based (AB) modellers are able to focus on specifying agent behaviour and run simulations without explicit understanding of CUDA programming or GPU optimisation strategies.
++ Agent-based (AB) modellers are able to focus on specifying agent behaviour and run simulations without explicit understanding of CUDA/ROCm programming or GPU optimisation strategies.
 + Simulation performance is significantly increased in comparison with CPU alternatives. This allows simulation of far larger model sizes with high performance at a fraction of the cost of grid based alternatives.
 + Massive agent populations can be visualised in real time as agent data is already located on the GPU hardware.
 
@@ -25,6 +25,21 @@ The use of native Python agent functions (agent functions expressed as Python sy
 
 If you encounter issues while using FLAME GPU, please provide bug reports, feedback or ask questions via [GitHub Issues](https://github.com/FLAMEGPU/FLAMEGPU2/issues) and [Discussions](https://github.com/FLAMEGPU/FLAMEGPU2/discussions).
 
+> [!WARNING]
+> ROCm/AMD GPU support is limited:
+>
+> | Feature               | NVIDIA GPUs  | AMD GPUs         |
+> |:----------------------|:-------------|:-----------------|
+> | Linux                 | ✅ Supported | ✅ Supported     |
+> | Windows               | ✅ Supported | ❌ Not Supported ([#1370](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1370))|
+> | C++ AoT               | ✅ Supported | ✅ Supported     |
+> | C++ RTC               | ✅ Supported | ❌ Not Supported ([#1368](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1368))|
+> | Python (`pyflamegpu`) | ✅ Supported | ❌ Not Supported ([#1368](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1368))|
+> | Visualisation         | ✅ Supported | ❌ Not Supported ([#1369](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1369))|
+> | GLM                   | ✅ Supported | ✅ Supported     |
+> | MPI                   | ✅ Supported | ❌ Not Supported ([#1371](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1371))|
+
+
 ## Documentation and Support
 
 + [Quickstart Guide](https://docs.flamegpu.com/quickstart)
@@ -33,61 +48,73 @@ If you encounter issues while using FLAME GPU, please provide bug reports, feedb
 + [GitHub Issues](https://github.com/FLAMEGPU/FLAMEGPU2/issues)
 + [Website](https://flamegpu.com/)
 
-## Installation
-
-Pre-compiled python wheels are available for installation from [Releases](https://github.com/FLAMEGPU/FLAMEGPU2/releases/), and can also be installed via pip via [whl.flamegpu.com](https://whl.flamegpu.com). Wheels are not currently manylinux compliant.
-Please see the [latest release](https://github.com/FLAMEGPU/FLAMEGPU2/releases/latest) for more information on the available wheels and installation instructions.
-
-C++/CUDA installation is not currently available. Please refer to the section on [Building FLAME GPU](#Building-FLAME-GPU).
-
 ## Creating your own FLAME GPU Model
 
-Template repositories are provided as a simple starting point for your own FLAME GPU models, with separate template repositories for the CUDA C++ and Python interfaces.
+Template repositories are provided as a simple starting point for your own FLAME GPU models, with separate template repositories for the CUDA/ROCm C++ and Python interfaces.
 See the template repositories for further information on their use.
 
-+ CUDA C++: [FLAME GPU 2 example template project](https://github.com/FLAMEGPU/FLAMEGPU2-example-template)
-+ Python3: [FLAME GPU 2 python example template project](https://github.com/FLAMEGPU/FLAMEGPU2-python-example-template)
++ CUDA/ROCm C++: [FLAME GPU 2 Template for CUDA/ROCm C++](https://github.com/FLAMEGPU/FLAMEGPU2-model-template-cpp)
++ Python3: [FLAME GPU 2 Template for Python3](https://github.com/FLAMEGPU/FLAMEGPU2-model-template-python)
 
-## Building FLAME GPU
+## Installation
 
-FLAME GPU 2 uses [CMake](https://cmake.org/), as a cross-platform process, for configuring and generating build directives, e.g. `Makefile` or `.vcxproj`.
-This is used to build the FLAMEGPU2 library, examples, tests and documentation.
+### Binaries
 
-### Requirements
+Python Binary wheels are available via `pip` from [whl.flamegpu.com](https://whl.flamegpu.com), or they can be downloaded for installation from [Releases](https://github.com/FLAMEGPU/FLAMEGPU2/releases/).
 
-Building FLAME GPU has the following requirements. There are also optional dependencies which are required for some components, such as Documentation or Python bindings.
+> [!WARNING]
+> - Wheels are not currently manylinux compliant ([#647](https://github.com/FLAMEGPU/FLAMEGPU2/issues/647)).
+> - ROCm python wheels for AMD GPUs are not yet supported/available ([#1368](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1368)).
 
-+ [CMake](https://cmake.org/download/) `>= 3.25.2`
-+ CUDA for NVIDIA GPUs, or HIP/ROCm for AMD GPUS
-  + [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 12.4`
-    + FLAME GPU aims to support the 2 most recent major CUDA versions, currently `12` and `13`.
-    + Due to compiler issues on multiple platforms we have dropped support for CUDA `12.0`-`12.3`, requiring `>= 12.4`
-    + A [Compute Capability](https://developer.nvidia.com/cuda-gpus) `>= 5.0` (CUDA 12.x) or `>= 7.5` (CUDA 13.x) NVIDIA GPU is required for execution.
-  + [ROCm/HIP](https://rocm.docs.amd.com/en/latest/) `>= 7.x` (Linux only)
-    + ROCm/HIP support in FLAME GPU is under active development. Not all features are available. Other ROCm versions are unsupported but may work.
-    + An AMD GPU [with ROCm support](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/system-requirements.html#supported-gpus) is required for execution 
-+ C++20 capable C++ compiler (host), compatible with the installed CUDA/ROCm version
-  + Windows: [Microsoft Visual Studio 2022](https://visualstudio.microsoft.com/) (CUDA-only)
-    + *Note:* Visual Studio must be installed before the CUDA toolkit is installed. See the [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) for more information.
-    + *Note:* Windows 11 SDK (10.0.22000.0) component is required within the Visual Studio (in latest versions this is default for C++ Desktop Development workloads even even on Windows 10). Windows 10 *must* be updated to build 19045 (22H2) or later to support this at runtime.
-  + Linux: [make](https://www.gnu.org/software/make/) or [Ninja](https://ninja-build.org/) with:
-    + [GCC](https://gcc.gnu.org/) `>= 11` compatible with your CUDA installation
-    + `clang` / `amdclang++` / `hipcc` compatible wih your HIP/ROCm installation
-      + *Note:* You may need to explicitly set `amdclang++`/`hipcc` as the host compiler, as GCC cannot be used for CXX objects due to `HIP/ROCm`'s CMake enforcing `-x hip` for CXX objects which link against HIP/ROCm targets.
+Installation of the CUDA/ROCm C++ interface is not currently available, please refer to the section on [Installing FLAME GPU from source](#from-source) ([#260](https://github.com/FLAMEGPU/FLAMEGPU2/issues/260)).
+
+### From Source
+
+FLAME GPU 2 can be built from source using [CMake](https://cmake.org/) on all supported platforms, including the CUDA/ROCm C++ library, python wheels, test suite & documentation.
+
+#### Requirements
+
+Building FLAME GPU from source has the following requirements:
+
 + [git](https://git-scm.com/)
++ [CMake](https://cmake.org/download/) `>= 3.25.2`
++ CUDA or ROCm installation with a compatible C++20 host-compiler and build system:
+  | Hardware | OS | GPU Toolkit | Supported Compilers / Toolchains |
+  |:---------|:---|:----------|:---------------------------------|
+  | **NVIDIA GPU** | Linux | [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 12.4` | [GCC](https://gcc.gnu.org/) `>= 11` with [make](https://www.gnu.org/software/make/) or [Ninja](https://ninja-build.org/) |
+  | **NVIDIA GPU** | Windows | [CUDA](https://developer.nvidia.com/cuda-downloads) `>= 12.4` | [MSVC 2022](https://visualstudio.microsoft.com/) with Windows 11 SDK (>= 10.0.22000.0) |
+  | **AMD GPU** | Linux | [ROCm/HIP](https://rocm.docs.amd.com/en/latest/) `>= 7.x` | `amdclang++` / `hipcc` with [make](https://www.gnu.org/software/make/) or [Ninja](https://ninja-build.org/) |
+  | **AMD GPU** | Windows | Not supported | |
 
-Optionally:
+> [!NOTE]
+> + On Windows:
+>   + Visual Studio must be installed before the CUDA toolkit is installed. See the [CUDA installation guide for Windows](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html) for more information.
+>   +  Windows 11 SDK (10.0.22000.0) component is required within the Visual Studio (in latest versions this is default for C++ Desktop Development workloads even even on Windows 10).
+>   + Windows 10 *must* be updated to build 19045 (22H2) or later to support this at runtime.
+> + With HIP/ROCm for AMD GPUS:
+>   + You may need to explicitly set `amdclang++`/`hipcc` as the host compiler, as GCC cannot be used for CXX objects due to `HIP/ROCm` CMake enforcing `-x hip` for cxx objects.
+>   + ROCm 6.x in unsupported but may be usable via `-DFLAMEGPU_ALLOW_UNSUPPORTED_COMPILER=ON`. See [#1388](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1388)
+
+#### Optional Dependencies
+
+A number of optional dependencies may also be required for some features / targets:
+
+##### Development & Documentation
 
 + [cpplint](https://github.com/cpplint/cpplint) for linting code
 + [Doxygen](http://www.doxygen.nl/) to build the documentation
+
+##### Pyflamegpu
+
 + [Python](https://www.python.org/) `>= 3.10` for python integration
   + With `setuptools`, `wheel`, `build` and optionally `venv` python packages installed
 + [swig](http://www.swig.org/) `>= 4.1.0` for python integration (with c++20 support)
   + Swig >= `4.1.0` will be automatically downloaded by CMake if not provided (if possible).
   + Swig `4.2.0` and `4.2.1` is known to encounter issues in some cases. Consider using an alternate SWIG version
-+ MPI (e.g. [MPICH](https://www.mpich.org/), [OpenMPI](https://www.open-mpi.org/)) for distributed ensemble support
-  + MPI 3.0+ tested, older MPIs may work but not tested.
-+ [FLAMEGPU2-visualiser](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser) dependencies
+
+##### Visualisation
+
++ [FLAMEGPU2-visualiser](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser) and it's dependencies:
   + [SDL](https://www.libsdl.org/)
   + [GLM](http://glm.g-truc.net/) *(consistent C++/GLSL vector maths functionality)*
   + [GLEW](http://glew.sourceforge.net/) *(GL extension loader)*
@@ -95,44 +122,57 @@ Optionally:
   + [DevIL](http://openil.sourceforge.net/)  *(image loading)*
   + [Fontconfig](https://www.fontconfig.org/)  *(Linux only, font detection)*
 
-> [!WARNING]
-> ROCm/AMD GPU support is under development. Some features such as Visualisation are not yet supported.
+##### Other
+
++ [GLM](http://glm.g-truc.net/) > 1.0.3 for experimental GLM vector type support within models
++ MPI (e.g. [MPICH](https://www.mpich.org/), [OpenMPI](https://www.open-mpi.org/)) for distributed ensemble support
+  + MPI 3.0+ tested, older MPIs may work but not tested.
 
 ### Building with CMake
 
 Building via CMake is a three step process, with slight differences depending on your platform.
 
 1. Create a build directory for an out-of tree build
-2. Configure CMake into the build directory
-    + Using the CMake GUI or CLI tools
+2. Configure CMake into the build directory via the GUI or CLI
+    + Include setting appropriate
+    + For NVIDIA GPUs specify `FLAMEPGU_GPU=CUDA` and `CMAKE_CUDA_ARCHITECTURES`
+    + For AMD GPUs specify `FLAMEPGU_GPU=HIP` and `CMAKE_HIP_ARCHITECTURES`
+    + For documentation-only builds specify `FLAMEGPU_GPU=OFF`
     + Specifying build options such as the CUDA Compute Capabilities to target, the inclusion of Visualisation or Python components, or performance impacting features such as `FLAMEGPU_SEATBELTS`. See [CMake Configuration Options](#CMake-Configuration-Options) for details of the available configuration options
     + CMake will automatically find and select compilers, libraries and python interpreters based on current environmental variables and default locations. See [Mastering CMake](https://cmake.org/cmake/help/book/mastering-cmake/chapter/Getting%20Started.html#specifying-the-compiler-to-cmake) for more information.
         + Python dependencies must be installed in the selected python environment. If needed you can instruct CMake to use a specific python implementation using the `Python_ROOT_DIR` and `Python_Executable` CMake options at configure time.
 3. Build compilation targets using the configured build system
     + See [Available Targets](#Available-targets) for a list of available targets.
 
-#### Linux
+#### Linux (CUDA)
 
-To build under Linux using the command line, you can perform the following steps.
+To build under Linux for NVIDIA GPUs using the command line, you can perform the following steps.
 
 For example, to configure CMake for `Release` builds, for consumer Pascal GPUs (Compute Capability `61`), with python bindings enabled, producing the static library and `boids_bruteforce` example binary.
 
 ```bash
-# Create the build directory and change into it
-mkdir -p build && cd build
+# Configure CMake from the command line passing configure-time options.
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DFLAMEGPU_GPU=CUDA -DCMAKE_CUDA_ARCHITECTURES=61 -DFLAMEGPU_BUILD_PYTHON=ON
 
-# Configure CMake from the command line passing configure-time options. 
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=61 -DFLAMEGPU_BUILD_PYTHON=ON
-
-# Build the required targets. In this case all targets
-cmake --build . --target flamegpu boids_bruteforce -j 8
-
-# Alternatively make can be invoked directly
-make flamegpu boids_bruteforce -j8
-
+# Build the required targets
+cmake --build build --target flamegpu boids_bruteforce -j 8
 ```
 
-#### Windows
+#### Linux (HIP)
+
+To build under Linux for AMD GPUs using the command line, you can perform the following steps.
+
+For example, to configure CMake for `Release` builds, for consumer RDNA3 GPUs (`gfx1100`),  producing the static library and `boids_bruteforce` example binary.
+
+```bash
+# Configure CMake from the command line passing configure-time options.
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DFLAMEGPU_GPU=HIP -DCMAKE_HIP_ARCHITECTURES=gfx1100
+
+# Build the required targets
+cmake --build build --target flamegpu boids_bruteforce -j 8
+```
+
+#### Windows (CUDA)
 
 Under Windows, you must instruct CMake on which Visual Studio and architecture to build for, using the CMake `-A` and `-G` options.
 This can be done through the GUI or the CLI.
@@ -140,33 +180,28 @@ This can be done through the GUI or the CLI.
 I.e. to configure CMake for consumer Pascal GPUs (Compute Capability `61`), with python bindings enabled, and build the producing the static library and `boids_bruteforce` example binary in the Release configuration:
 
 ```cmd
-REM Create the build directory 
-mkdir build
-cd build
-
-REM Configure CMake from the command line, specifying the -A and -G options. Alternatively use the GUI
-cmake .. -A x64 -G "Visual Studio 16 2019" -DCMAKE_CUDA_ARCHITECTURES=61 -DFLAMEGPU_BUILD_PYTHON=ON
-
-REM You can then open Visual Studio manually from the .sln file, or via:
-cmake --open . 
+REM Configure CMake from the command line, specifying the -G option. Alternatively use the GUI
+cmake -S . -B build -G "Visual Studio 17 2022" -DFLAMEGPU_GPU=CUDA -DCMAKE_CUDA_ARCHITECTURES=61 -DFLAMEGPU_BUILD_PYTHON=ON
+REM You can then open Visual Studio manually from the .sln file in 'build', or via:
+cmake --open build
 REM Alternatively, build from the command line specifying the build configuration
-cmake --build . --config Release --target flamegpu boids_bruteforce --verbose
+cmake --build build --config Release --target flamegpu boids_bruteforce --verbose
 ```
 
-On Windows, by default CMake will select the newest version of CUDA available when configuring. If you have multiple versions of CUDA installed then you can select an earlier installed CUDA version (e.g. CUDA 11.2) by additionally passing `-T cuda=11.2` when calling CMake configure (`cmake ..`).
+> [!NOTE]
+> On Windows, by default CMake will select the newest version of CUDA available when configuring.
+> If you have multiple versions of CUDA installed then you can select an earlier installed CUDA version (e.g. CUDA 12.9) by additionally passing `-T cuda=12.9` when calling CMake configure (`cmake ..`).
 
 #### Configuring and Building a single example
 
 It is also possible to configure and build individual examples as standalone CMake projects.
 
-I.e. to configure and build `game_of_life` example in release mode from the command line, using linux as an example:
+For example, the `game_of_life` example can be configured and built in `Release` mode for NVIDIA consumer Ampere GPUs under linux via:
 
 ```bash
 cd examples/game_of_life
-mkdir -p build
-cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=61
-cmake --build . --target all
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DFLAMEGPU_GPU=CUDA -DCMAKE_CUDA_ARCHITECTURES=61
+cmake --build build --target all
 ```
 
 #### CMake Configuration Options
@@ -174,8 +209,7 @@ cmake --build . --target all
 | Option                               | Value                       | Description                                                                                                |
 | -------------------------------------| --------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | `CMAKE_BUILD_TYPE`                   | `Release` / `Debug` / `MinSizeRel` / `RelWithDebInfo` | Select the build configuration for single-target generators such as `make`   |
-| `FLAMEGPU_USE_CUDA`                  | `ON`, `OFF` | Enable CUDA / NVIDIA GPU support |
-| `FLAMEGPU_USE_HIP`                   | `ON`, `OFF` | Enable HIP / ROCm / AMD GPU support |
+| `FLAMEGPU_GPU`                       | `CUDA` / `HIP` / `OFF` | Select the GPU toolkit to use targetting NVIDIA, AMD or no GPUs. Defaults to `CUDA` for backwards compatibility. |
 | `CMAKE_CUDA_ARCHITECTURES`           | e.g `60`, `"60;70"`         | [CUDA Compute Capabilities][cuda-CC] to build/optimise for, as a `;` separated list. See [CMAKE_CUDA_ARCHITECTURES][cmake-CCA]. Defaults to a value provided by the NVCC. Alternatively use the `CUDAARCHS` environment variable. |
 | `CMAKE_HIP_ARCHITECTURES`            | e.g `gfx942`, `"gfx942;gfx1100"`         | [HIP/ROCM LLVM target][hip-llvm-target] to build/optimise for, as a `;` separated list. See [CMAKE_HIP_ARCHITECTURES][cmake-CHA]. Defaults to a value appropriate for the `CMAKE_HIP_PLATFORM` |
 | `FLAMEGPU_SEATBELTS`                 | `ON`/`OFF`                  | Enable / Disable additional runtime checks which harm performance but increase usability. Default `ON`     |
@@ -391,3 +425,5 @@ For a full list of known issues pleases see the [Issue Tracker](https://github.c
 
 + Warnings and a loss of performance due to hash collisions in device code ([#356](https://github.com/FLAMEGPU/FLAMEGPU2/issues/356))
 + Multiple known areas where performance can be improved (e.g. [#449](https://github.com/FLAMEGPU/FLAMEGPU2/issues/449), [#402](https://github.com/FLAMEGPU/FLAMEGPU2/issues/402))
++ AMD: RTC & Python not yet supported on AMD GPUs([#1368](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1368))
++ AMD: Fixed block-size of 128 threasd/block used for all kernels due to issues encountered with `hipOccupancyMaxPotentialBlockSize` ([#1387](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1387))
