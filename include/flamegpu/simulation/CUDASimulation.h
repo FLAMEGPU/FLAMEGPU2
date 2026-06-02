@@ -332,39 +332,39 @@ class CUDASimulation : public Simulation {
     visualiser::ModelVis getVisualisation();
 #endif
    /**
-     * Get the duration of the last time RTC was iniitliased 
-     * @return elapsed time of last simulation call in seconds.
+     * Get the duration of the last call to initialiseRTC() in seconds.
+     * @return elapsed time in seconds.
      */
     double getElapsedTimeRTCInitialisation() const;
 
     /**
      * Get the duration of the last call to simulate() in seconds. 
-     * @return elapsed time of last simulation call in seconds.
+     * @return elapsed time in seconds.
      */
     double getElapsedTimeSimulation() const;
 
     /**
      * Get the duration of the last call to initFunctions() in seconds. 
-     * @return elapsed time of last simulation call in seconds.
+     * @return elapsed time in seconds.
      */
     double getElapsedTimeInitFunctions() const;
 
     /**
-     * Get the duration of the last call to stepFunctions() in seconds. 
-     * @return elapsed time of last simulation call in seconds.
+     * Get the duration of the last call to exitFunctions() in seconds. 
+     * @return elapsed time in seconds.
      */
     double getElapsedTimeExitFunctions() const;
 
     /**
-     * Get the duration of each step() since the last call to `reset`
-     * @return vector of step times 
+     * Get the duration in seconds of each step() since the last call to `reset`
+     * @return vector of step times in seconds
      */
     std::vector<double> getElapsedTimeSteps() const;
 
     /** 
      * Get the duration of an individual step in seconds.
      * @param step Index of step, must be less than the number of steps executed.
-     * @return elapsed time of required step in seconds
+     * @return elapsed time in seconds
      */
     double getElapsedTimeStep(unsigned int step) const;
 
@@ -598,7 +598,7 @@ class CUDASimulation : public Simulation {
      */
     void initMacroEnvironment();
     /**
-     * Flag indicating that the model has been initialsed
+     * Flag indicating that the model has been initialised
      */
     bool singletonsInitialised;
 
