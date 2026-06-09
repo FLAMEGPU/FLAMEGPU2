@@ -51,6 +51,10 @@ inline auto gpuMallocManaged(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(MallocManaged)(std::forward<decltype(args)>(args)...);
 }
 
+inline auto gpuHostAlloc(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(HostAlloc)(std::forward<decltype(args)>(args)...);
+}
+
 inline auto gpuFree(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(Free)(std::forward<decltype(args)>(args)...);
 }
@@ -157,6 +161,7 @@ inline constexpr auto gpuMemoryTypeHost = FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryType
 inline constexpr auto gpuMemoryTypeDevice = FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice);
 inline constexpr auto gpuMemoryTypeUnregistered = FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeUnregistered);
 inline constexpr auto gpuDevAttrTccDriver = FLAMEGPU_GPU_RUNTIME_SYMBOL(DevAttrTccDriver);
+inline constexpr auto gpuHostAllocDefault = FLAMEGPU_GPU_RUNTIME_SYMBOL(HostAllocDefault);
 
 
 }  // namespace gpu
