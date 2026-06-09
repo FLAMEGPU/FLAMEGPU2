@@ -114,6 +114,10 @@ inline auto gpuEventElapsedTime(auto&&... args) {
 // Enums
 inline constexpr auto gpuSuccess = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
 
+inline constexpr auto gpuMemcpyHostToDevice = FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice);
+inline constexpr auto gpuMemcpyDeviceToHost = FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost);
+inline constexpr auto gpuMemcpyDeviceToDevice = FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice);
+
 
 }  // namespace gpu
 }  // namespace detail

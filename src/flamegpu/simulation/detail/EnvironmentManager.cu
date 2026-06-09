@@ -174,7 +174,7 @@ void EnvironmentManager::resetModel(const EnvironmentData& desc) {
 }
 void EnvironmentManager::updateDevice_async(const flamegpu::detail::gpu::Stream_t stream) const {
     if (!d_buffer_ready) {
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_buffer, h_buffer, h_buffer_len, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_buffer, h_buffer, h_buffer_len, flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
         d_buffer_ready = true;
     }
 }

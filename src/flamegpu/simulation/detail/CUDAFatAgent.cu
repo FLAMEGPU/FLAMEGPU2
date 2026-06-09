@@ -338,7 +338,7 @@ id_t *CUDAFatAgent::getDeviceNextID() {
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_nextID, sizeof(id_t)));
     }
     if (hd_nextID != _nextID) {
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpy(d_nextID, &_nextID, sizeof(id_t), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpy(d_nextID, &_nextID, sizeof(id_t), flamegpu::detail::gpu::gpuMemcpyHostToDevice));
         hd_nextID = _nextID;
     }
     return d_nextID;
@@ -350,7 +350,7 @@ void CUDAFatAgent::notifyDeviceBirths(unsigned int newCount) {
     // Sanity validation, check hd_nextID == d_nextID
     assert(d_nextID);
     id_t t = 0;
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpy(&t, d_nextID, sizeof(id_t), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost)));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpy(&t, d_nextID, sizeof(id_t), flamegpu::detail::gpu::gpuMemcpyDeviceToHost));
     assert(t == hd_nextID);
     assert(t == _nextID);  // At the end of device birth they should be equal, as no host birth can occur between pre and post processing agent fn
 #endif
@@ -375,7 +375,7 @@ void CUDAFatAgent::assignIDs(HostAPI& hostapi, detail::CUDAScatter &scatter, fla
             hostapi.resizeOutputSpace<id_t>();
             // Reduce for max
             flamegpu::detail::gpuCheck(cub::DeviceReduce::Max(cub_temp.getPtr(), cub_temp.getSize(), static_cast<id_t*>(vb->data), reinterpret_cast<id_t*>(hostapi.d_output_space), s->getSize(), stream));
-            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&h_max, hostapi.d_output_space, sizeof(id_t), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&h_max, hostapi.d_output_space, sizeof(id_t), flamegpu::detail::gpu::gpuMemcpyDeviceToHost, stream));
             flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
             _nextID = std::max(_nextID, h_max + 1);
         }

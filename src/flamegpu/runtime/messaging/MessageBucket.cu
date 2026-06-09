@@ -85,7 +85,7 @@ void MessageBucket::CUDAModelHandler::allocateMetaDataDevicePtr(flamegpu::detail
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_histogram, (bucketCount + 1) * sizeof(unsigned int)));
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&hd_data.PBM, (bucketCount + 1) * sizeof(unsigned int)));
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_data, sizeof(MetaData)));
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_data, &hd_data, sizeof(MetaData), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_data, &hd_data, sizeof(MetaData), flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
         resizeCubTemp();
     }
