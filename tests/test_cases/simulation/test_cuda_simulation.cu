@@ -870,7 +870,7 @@ TEST(TestCUDASimulation, SimulationWithExistingCUDAMalloc) {
 
     // Free explicit device memory, if it was valid (to get the correct error)
     if (attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice)) {
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Free)(d_int));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuFree(d_int));
     }
     d_int = nullptr;
 }
