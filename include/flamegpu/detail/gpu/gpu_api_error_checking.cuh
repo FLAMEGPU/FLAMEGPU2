@@ -13,6 +13,7 @@
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 
 namespace flamegpu {
 namespace detail {
@@ -56,7 +57,7 @@ inline void gpuAssert(CUresult code, const char* file, int line) {
   */
 inline void gpuLaunchAssert(const char *file, int line) {
 #ifdef _DEBUG
-    gpuAssert(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceSynchronize)(), file, line);
+    gpuAssert(flamegpu::detail::gpu::gpuDeviceSynchronize(), file, line);
 #endif
     gpuAssert(FLAMEGPU_GPU_RUNTIME_SYMBOL(PeekAtLastError)(), file, line);
 }
