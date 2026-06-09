@@ -27,7 +27,7 @@ namespace detail {
  */
 inline void gpuAssert(flamegpu::detail::gpu::Error_t code, const char *file, int line) {
     if (code != FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) {
-        THROW exception::CUDAError("CUDA Error: %s(%d): %s %s", file, line, FLAMEGPU_GPU_RUNTIME_SYMBOL(GetErrorName)(code), FLAMEGPU_GPU_RUNTIME_SYMBOL(GetErrorString)(code));
+        THROW exception::CUDAError("CUDA Error: %s(%d): %s %s", file, line, flamegpu::detail::gpu::gpuGetErrorName(code), flamegpu::detail::gpu::gpuGetErrorString(code));
     }
 }
 
@@ -59,7 +59,7 @@ inline void gpuLaunchAssert(const char *file, int line) {
 #ifdef _DEBUG
     gpuAssert(flamegpu::detail::gpu::gpuDeviceSynchronize(), file, line);
 #endif
-    gpuAssert(FLAMEGPU_GPU_RUNTIME_SYMBOL(PeekAtLastError)(), file, line);
+    gpuAssert(flamegpu::detail::gpu::gpuPeekAtLastError(), file, line);
 }
 
 /**
