@@ -46,6 +46,23 @@ inline auto gpuPeekAtLastError(auto&&... args) {
 }
 
 
+inline auto gpuStreamCreate(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamCreate)(std::forward<decltype(args)>(args)...);
+}
+
+inline auto gpuStreamDestroy(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamDestroy)(std::forward<decltype(args)>(args)...);
+}
+
+inline auto gpuStreamRecord(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamRecord)(std::forward<decltype(args)>(args)...);
+}
+
+inline auto gpuStreamSynchronize(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(std::forward<decltype(args)>(args)...);
+}
+
+
 inline auto gpuEventCreate(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(EventCreate)(std::forward<decltype(args)>(args)...);
 }

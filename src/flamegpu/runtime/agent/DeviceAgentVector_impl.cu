@@ -75,7 +75,7 @@ void DeviceAgentVector_impl::syncChanges() {
         }
         unbound_buffers_has_changed = false;
     }
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
     // Update CUDAAgent statelist size
     cuda_agent.setStateAgentCount(cuda_agent_state, _size);
 }
@@ -112,7 +112,7 @@ void DeviceAgentVector_impl::initUnboundBuffers() {
             memcpy(buff.host + i * var_size, buff.device->default_value, var_size);
         }
     }
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
     unbound_host_buffer_capacity = _capacity;
     unbound_host_buffer_size = copy_len;
     unbound_buffers_has_changed = true;  // Probably not required, but if they are being init, high chance they're going to be changed
@@ -143,7 +143,7 @@ void DeviceAgentVector_impl::reinitUnboundBuffers() {
             memcpy(buff.host + i * var_size, buff.device->default_value, var_size);
         }
     }
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
     unbound_host_buffer_capacity = unbound_host_buffer_capacity < _capacity ?_capacity : unbound_host_buffer_capacity;
     unbound_host_buffer_size = copy_len;
     unbound_buffers_has_changed = true;  // Probably not required, but if they are being init, high chance they're going to be changed
@@ -349,7 +349,7 @@ void DeviceAgentVector_impl::_require(const std::string& variable_name) const {
         }
         // The invalid variable is now current
         invalid_variables.erase(variable_name);
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
     }
 }
 void DeviceAgentVector_impl::_requireAll() const {
@@ -375,7 +375,7 @@ void DeviceAgentVector_impl::_requireAll() const {
     }
     // All invalid variables are now current
     invalid_variables.clear();
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
 }
 void DeviceAgentVector_impl::_requireLength() const {
     /**

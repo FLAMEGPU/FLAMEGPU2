@@ -192,7 +192,7 @@ unsigned int CUDAScatter::scatter(
     // Update count of live agents
     unsigned int rtn = 0;
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(&rtn, scan.Config(messageOrAgent, streamResourceId).d_ptrs.position + itemCount - scatter_all_count, sizeof(unsigned int), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));  // @todo - async + sync variants.
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));  // @todo - async + sync variants.
     return rtn + scatter_all_count;
 }
 void CUDAScatter::scatterPosition(
@@ -202,7 +202,7 @@ void CUDAScatter::scatterPosition(
     const std::vector<ScatterData>& sd,
     unsigned int itemCount) {
     scatterPosition_async(streamResourceId, stream, scan.Config(messageOrAgent, streamResourceId).d_ptrs.position, sd, itemCount);
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
 }
 void CUDAScatter::scatterPosition_async(
     unsigned int streamResourceId,
@@ -278,7 +278,7 @@ unsigned int CUDAScatter::scatterAll(
         streamResources[streamResourceId].d_data, static_cast<unsigned int>(sd.size()),
         out_index_offset);
     flamegpu::detail::gpuCheckLaunch();
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));  // @todo - async + sync variants.
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));  // @todo - async + sync variants.
     // Update count of live agents
     return itemCount;
 }
@@ -362,7 +362,7 @@ void CUDAScatter::pbm_reorder(
             d_pbm,
             streamResources[streamResourceId].d_data, static_cast<unsigned int>(sd.size()));
     flamegpu::detail::gpuCheckLaunch();
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));  // @todo - async + sync variants.
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));  // @todo - async + sync variants.
 }
 
 /**
@@ -424,7 +424,7 @@ void CUDAScatter::scatterNewAgents(
         streamResources[streamResourceId].d_data, static_cast<unsigned int>(sd.size()),
         outIndexOffset);
     flamegpu::detail::gpuCheckLaunch();
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));  // @todo - async + sync variants.
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));  // @todo - async + sync variants.
 }
 /**
 * Broadcast kernel for initialising agent variables to default on device
@@ -460,7 +460,7 @@ void CUDAScatter::broadcastInit(
     unsigned int inCount,
     unsigned int outIndexOffset) {
     broadcastInit_async(streamResourceId, stream, vars, inCount, outIndexOffset);
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
 }
 void CUDAScatter::broadcastInit_async(
     unsigned int streamResourceId,
@@ -522,7 +522,7 @@ void CUDAScatter::broadcastInit(
     unsigned int inCount,
     unsigned int outIndexOffset) {
     broadcastInit_async(streamResourceId, stream, vars, d_newBuff, inCount, outIndexOffset);
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
 }
 void CUDAScatter::broadcastInit_async(
     unsigned int streamResourceId,
@@ -679,7 +679,7 @@ void CUDAScatter::arrayMessageReorder(
     flamegpu::detail::gpuCheck(cub::DeviceReduce::Max(streamResources[streamResourceId].d_data, t_data_len, d_write_flag, d_position, array_length, stream));
     unsigned int maxBinSize = 0;
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(&maxBinSize, d_position, sizeof(unsigned int), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
     if (maxBinSize > 1) {
         // Too many messages for single element of array
         // Report bad ones

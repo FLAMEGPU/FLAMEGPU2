@@ -1956,7 +1956,7 @@ void CUDASimulation::initMacroEnvironment() {
             flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(it->second.d_ptr, buff.data(), buff.size() * sizeof(char), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
         }
     }
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
     // Clear init
     macro_env_init.clear();
 }
@@ -2080,7 +2080,7 @@ void CUDASimulation::createStreams(const unsigned int nStreams) {
     unsigned int totalStreams = std::max(nStreams, 1u);
     while (streams.size() < totalStreams) {
         flamegpu::detail::gpu::Stream_t stream = 0;
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamCreate)(&stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamCreate(&stream));
         streams.push_back(stream);
     }
 }
@@ -2116,7 +2116,7 @@ void CUDASimulation::destroyStreams() {
     if (safeToDestroy) {
         // Destroy streams.
         for (auto stream : streams) {
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamDestroy)(stream));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamDestroy(stream));
         }
     }
     streams.clear();
@@ -2139,7 +2139,7 @@ void CUDASimulation::safeDestroyJitify() {
 void CUDASimulation::synchronizeAllStreams() {
     // Sync streams.
     for (auto stream : streams) {
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
     }
 }
 
