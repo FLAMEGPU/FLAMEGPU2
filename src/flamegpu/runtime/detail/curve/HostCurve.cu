@@ -166,7 +166,7 @@ void HostCurve::updateDevice_async(const flamegpu::detail::gpu::Stream_t stream)
     // Initialise the device (if required)
     assert(d_curve_table);  // No reason for this to ever fail.
     // Copy
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_curve_table, &h_curve_table, sizeof(CurveTable), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_curve_table, &h_curve_table, sizeof(CurveTable), flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
 }
 const CurveTable *HostCurve::getDevicePtr() const {
     return d_curve_table;
