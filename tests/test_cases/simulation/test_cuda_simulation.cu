@@ -69,7 +69,7 @@ TEST(TestCUDASimulation, ApplyConfigDerivedContextCreation) {
 TEST(TestCUDASimulation, AllDeviceIdValues) {
     // Get the number of devices
     int device_count = 1;
-    if (flamegpu::detail::gpu::gpuSuccess != FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&device_count) || device_count <= 0) {
+    if (flamegpu::detail::gpu::gpuSuccess != flamegpu::detail::gpu::gpuGetDeviceCount(&device_count) || device_count <= 0) {
         // Skip the test, if no CUDA or GPUs.
         return;
     }

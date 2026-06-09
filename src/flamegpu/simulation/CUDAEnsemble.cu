@@ -143,7 +143,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
     // Workout how many devices and runner we will be executing
     // if MPI is enabled, This will throw exceptions if any rank has 0 GPUs visible, prior to device allocation preventing issues where rank 0 would not be participating.
     int device_count = -1;
-    flamegpu::detail::gpu::Error_t cudaStatus = FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&device_count);
+    flamegpu::detail::gpu::Error_t cudaStatus = flamegpu::detail::gpu::gpuGetDeviceCount(&device_count);
     if (cudaStatus != flamegpu::detail::gpu::gpuSuccess) {
         THROW exception::InvalidCUDAdevice("Error finding CUDA devices!  Do you have a CUDA-capable GPU installed?, in CUDAEnsemble::simulate()");
     }
@@ -573,7 +573,7 @@ int CUDAEnsemble::checkArgs(int argc, const char** argv) {
                 device_string.erase(0, pos + 1);
             }
             int ct = -1;
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&ct));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuGetDeviceCount(&ct));
             if (max_id >= ct) {
                 fprintf(stderr, "Device id %u exceeds available CUDA devices %d\n", max_id, ct);
                 printHelp(argv[0]);

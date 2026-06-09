@@ -27,10 +27,10 @@ void cleanup() {
     }
 #endif
     int originalDevice = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDevice)(&originalDevice));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuGetDevice(&originalDevice));
     // Reset all cuda devices for memcheck / profiling purposes.
     int devices = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&devices));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuGetDeviceCount(&devices));
     // @todo - this would be better to be only devices touched by flamegpu since the last call to cleanup.
     for (int device = 0; device < devices; ++device) {
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(device));

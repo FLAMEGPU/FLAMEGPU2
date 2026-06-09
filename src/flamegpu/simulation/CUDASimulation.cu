@@ -229,7 +229,7 @@ CUDASimulation::CUDASimulation(const std::shared_ptr<SubModelData> &submodel_des
 CUDASimulation::~CUDASimulation() {
     // Ensure we destruct with the right device, otherwise we could dealloc pointers on the wrong device
     int t_device_id = -1;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDevice)(&t_device_id));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuGetDevice(&t_device_id));
     if (t_device_id != deviceInitialised && deviceInitialised != -1) {
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(deviceInitialised));
     }
@@ -1554,7 +1554,7 @@ void CUDASimulation::applyConfig_derived() {
     int device_count;
 
     // default device
-    cudaStatus = FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&device_count);
+    cudaStatus = flamegpu::detail::gpu::gpuGetDeviceCount(&device_count);
 
     if (cudaStatus != flamegpu::detail::gpu::gpuSuccess) {
         THROW exception::InvalidCUDAdevice("Error finding CUDA devices!  Do you have a CUDA-capable GPU installed?");
@@ -1631,7 +1631,7 @@ void CUDASimulation::initialiseSingletons() {
             THROW exception::InvalidCUDAComputeCapability("Error application compiled for CUDA Compute Capabilities \"%s\". Rebuild including compute capability <= %d for device %u.", compiled_ccs.c_str(), cc, config.device_id);
         }
 #endif  // defined(FLAMEGPU_USE_CUDA)
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDevice)(&deviceInitialised));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuGetDevice(&deviceInitialised));
         // Get references to all required singleton and store in the instance.
         singletons = new Singletons((!submodel)?
             detail::EnvironmentManager::create(*model->environment) :
@@ -1703,7 +1703,7 @@ void CUDASimulation::initialiseSingletons() {
         singletonsInitialised = true;
     } else {
         int t = -1;
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDevice)(&t));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuGetDevice(&t));
         if (t != deviceInitialised) {
             THROW exception::CUDAError("CUDASimulation initialised on device %d, but stepped on device %d.\n", deviceInitialised, t);
         }
@@ -1976,7 +1976,7 @@ void CUDASimulation::resetLog() {
 #ifdef FLAMEGPU_USE_HIP
         hipDeviceProp_t d_props = {};
 #endif  // FLAMEGPU_USE_HIP
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceProperties)(&d_props, CUDAConfig().device_id));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuGetDeviceProperties(&d_props, CUDAConfig().device_id));
         run_log->performance_specs.device_name = d_props.name;
         previous_device_id = CUDAConfig().device_id;
     }
