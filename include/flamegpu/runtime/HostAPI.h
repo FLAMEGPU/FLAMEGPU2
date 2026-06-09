@@ -18,6 +18,7 @@
 #include "flamegpu/runtime/HostAPI_macros.h"
 #include "flamegpu/runtime/agent/HostNewAgentAPI.h"
 #include "flamegpu/simulation/CUDASimulation.h"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/cuda.cuh"
@@ -160,7 +161,7 @@ void HostAPI::resizeOutputSpace(const unsigned int items) {
         if (d_output_space_size) {
             flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_output_space));
         }
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_output_space, sizeof(T) * items));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_output_space, sizeof(T) * items));
         d_output_space_size = sizeof(T) * items;
     }
 }

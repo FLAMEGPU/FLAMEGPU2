@@ -17,6 +17,7 @@
 #include "flamegpu/simulation/detail/CUDAFatAgentStateList.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 #ifdef FLAMEGPU_USE_CUDA
@@ -72,7 +73,7 @@ void CUDAScatter::StreamData::resize(const unsigned int newLen) {
         if (d_data) {
             flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_data));
         }
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_data, newLen * sizeof(ScatterData)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_data, newLen * sizeof(ScatterData)));
         data_len = newLen;
     }
 }
