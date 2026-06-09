@@ -48,7 +48,7 @@ TEST(TestUtilDetailCuda, cudaFree) {
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, d_ptr));
     EXPECT_EQ(attributes.type, flamegpu::detail::gpu::gpuMemoryTypeDevice);
     // Trigger a device reset
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceReset)());
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuDeviceReset());
     // Attempt to free the ptr, this method should claim all things are fine (as the dev ptr has implicitly been freed)
     status = detail::cuda::cudaFree(d_ptr);
     EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
@@ -88,7 +88,7 @@ TEST(TestUtilDetailCuda, cudaFreeHost) {
     // this appears to return flamegpu::detail::gpu::gpuMemoryTypeHost, even though it should return flamegpu::detail::gpu::gpuMemoryTypeHost
     EXPECT_EQ(attributes.type, flamegpu::detail::gpu::gpuMemoryTypeHost);
     // Trigger a device reset
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceReset)());
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuDeviceReset());
     // Attempt to free the ptr, this method should claim all things are fine (as the dev ptr has implicitly been freed)
     status = detail::cuda::cudaFreeHost(p_ptr);
     EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
@@ -106,7 +106,7 @@ TEST(TestUtilDetailCuda, cuDevicePrimaryContextIsActive) {
     isActive = detail::cuda::cuDevicePrimaryContextIsActive(0);
     EXPECT_EQ(isActive, true);
     // Call device reset and check again without establishing a new context, it should not be active.
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceReset)());
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuDeviceReset());
     isActive = detail::cuda::cuDevicePrimaryContextIsActive(0);
     EXPECT_EQ(isActive, false);
     // Check that exceptions will be raised correctly when passing bad device ordinals.

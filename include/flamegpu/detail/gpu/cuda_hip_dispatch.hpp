@@ -91,6 +91,10 @@ inline auto gpuMemsetAsync(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(std::forward<decltype(args)>(args)...);
 }
 
+inline auto gpuDeviceReset(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceReset)(std::forward<decltype(args)>(args)...);
+}
+
 inline auto gpuDeviceSynchronize(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceSynchronize)(std::forward<decltype(args)>(args)...);
 }
