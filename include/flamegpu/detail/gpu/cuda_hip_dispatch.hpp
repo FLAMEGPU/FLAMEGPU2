@@ -155,6 +155,10 @@ inline auto gpuRuntimeGetVersion(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(RuntimeGetVersion)(std::forward<decltype(args)>(args)...);
 }
 
+inline auto gpuOccupancyMaxActiveBlocksPerMultiprocessor(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxActiveBlocksPerMultiprocessor)(std::forward<decltype(args)>(args)...);
+}
+
 // Enums
 inline constexpr auto gpuSuccess = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
 
