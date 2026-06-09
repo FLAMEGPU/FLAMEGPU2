@@ -152,6 +152,7 @@ inline constexpr auto gpuMemcpyDeviceToDevice = FLAMEGPU_GPU_RUNTIME_SYMBOL(Memc
 inline constexpr auto gpuMemoryTypeHost = FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeHost);
 inline constexpr auto gpuMemoryTypeDevice = FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice);
 inline constexpr auto gpuMemoryTypeUnregistered = FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeUnregistered);
+inline constexpr auto gpuDevAttrTccDriver = FLAMEGPU_GPU_RUNTIME_SYMBOL(DevAttrTccDriver);
 
 
 }  // namespace gpu

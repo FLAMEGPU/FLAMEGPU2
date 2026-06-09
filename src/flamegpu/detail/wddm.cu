@@ -23,7 +23,7 @@ bool wddm::deviceIsWDDM(int deviceIndex) {
     #if defined(_MSC_VER) && defined(FLAMEGPU_USE_CUDA)
         int tccDriver = 0;
         // Load device attributes
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuDeviceGetAttribute(&tccDriver, FLAMEGPU_GPU_RUNTIME_SYMBOL(DevAttrTccDriver), deviceIndex));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuDeviceGetAttribute(&tccDriver, flamegpu::detail::gpu::gpuDevAttrTccDriver, deviceIndex));
         // Compute the return value
         isWDDM = !tccDriver;
     #endif
