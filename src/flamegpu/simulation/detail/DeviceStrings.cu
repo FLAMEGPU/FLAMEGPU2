@@ -3,6 +3,7 @@
 #include <string>
 
 #include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 #include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 
@@ -31,7 +32,7 @@ const char* DeviceStrings::getDeviceString(const std::string &host_string) {
         // Double buffer len in size
         device_buffer_len = device_buffer_len == 0 ? 1024 : device_buffer_len * 2;
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Free)(device_buffer));
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&device_buffer, device_buffer_len));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&device_buffer, device_buffer_len));
         device_buffer_occupied = 0;
     }
     // Update device buffer if necessary

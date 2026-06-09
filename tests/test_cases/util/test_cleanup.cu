@@ -8,6 +8,7 @@
 #include "flamegpu/flamegpu.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 
 #include "gtest/gtest.h"
 
@@ -37,7 +38,7 @@ FLAMEGPU_AGENT_FUNCTION(alive, MessageNone, MessageNone) {
 TEST(TestCleanup, Explicit) {
     // Allocate some arbitrary device memory.
     int * d_int = nullptr;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_int, sizeof(int)));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_int, sizeof(int)));
     // Validate that the ptr is a valid device pointer
     flamegpu::detail::gpu::PointerAttributes_t attributes = {};
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, d_int));

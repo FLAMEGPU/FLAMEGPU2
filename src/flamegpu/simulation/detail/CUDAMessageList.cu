@@ -13,6 +13,7 @@
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -63,10 +64,10 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMessageMap &memory_map) {
 
 #ifdef UNIFIED_GPU_MEMORY
         // unified memory allocation
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MallocManaged)(reinterpret_cast<void**>(&d_ptr), var_size *  message.getMaximumListSize()))
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMallocManaged(reinterpret_cast<void**>(&d_ptr), var_size *  message.getMaximumListSize()))
 #else
         // non unified memory allocation
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(reinterpret_cast<void**>(&d_ptr), var_size * message.getMaximumListSize()));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(reinterpret_cast<void**>(&d_ptr), var_size * message.getMaximumListSize()));
 #endif
 
         // store the pointer in the map

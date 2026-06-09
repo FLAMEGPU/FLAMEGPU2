@@ -13,6 +13,7 @@
 #include "flamegpu/runtime/detail/curve/HostCurve.cuh"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 #ifdef FLAMEGPU_VISUALISATION
 #include "flamegpu/visualiser/ModelVis.h"
@@ -75,8 +76,8 @@ void CUDAEnvironmentDirectedGraphBuffers::allocateVertexBuffers(const size_type 
     for (auto& v : graph_description.vertexProperties) {
         auto &vb = vertex_buffers.at(v.first);
         if (!vb.d_ptr) {
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&vb.d_ptr, count * v.second.type_size * v.second.elements));
-            // flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&vb.d_ptr_swap, count * v.second.type_size * v.second.elements));  // Todo: required?
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&vb.d_ptr, count * v.second.type_size * v.second.elements));
+            // flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&vb.d_ptr_swap, count * v.second.type_size * v.second.elements));  // Todo: required?
             for (const auto & _curve : curve_instances) {
                 if (const auto curve = _curve.lock())
                     curve->setEnvironmentDirectedGraphVertexProperty(graph_description.name, v.first, vb.d_ptr, count);
@@ -100,9 +101,9 @@ void CUDAEnvironmentDirectedGraphBuffers::allocateVertexBuffers(const size_type 
         vb.ready = Buffer::Both;
     }
     // Min length 4, as pbm_swap is used when building graph
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_pbm, sizeof(unsigned int) * std::max<int>(count + 1, 4)));
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_pbm_swap, sizeof(unsigned int) * std::max<int>(count + 1, 4)));
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_ipbm, sizeof(unsigned int)* std::max<int>(count + 1, 4)));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_pbm, sizeof(unsigned int) * std::max<int>(count + 1, 4)));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_pbm_swap, sizeof(unsigned int) * std::max<int>(count + 1, 4)));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_ipbm, sizeof(unsigned int)* std::max<int>(count + 1, 4)));
     // Initialise PBMs incase they doesn't contain edges
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_pbm, 0, (count + 1) * sizeof(unsigned int), stream));
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_ipbm, 0, (count + 1) * sizeof(unsigned int), stream));
@@ -131,8 +132,8 @@ void CUDAEnvironmentDirectedGraphBuffers::allocateEdgeBuffers(const size_type co
     for (auto& e : graph_description.edgeProperties) {
         auto& eb = edge_buffers.at(e.first);
         if (!eb.d_ptr) {
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&eb.d_ptr, count * e.second.type_size * e.second.elements));
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&eb.d_ptr_swap, count * e.second.type_size * e.second.elements));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&eb.d_ptr, count * e.second.type_size * e.second.elements));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&eb.d_ptr_swap, count * e.second.type_size * e.second.elements));
             for (const auto& _curve : curve_instances) {
                 if (const auto curve = _curve.lock())
                     curve->setEnvironmentDirectedGraphEdgeProperty(graph_description.name, e.first, eb.d_ptr, count);
@@ -155,11 +156,11 @@ void CUDAEnvironmentDirectedGraphBuffers::allocateEdgeBuffers(const size_type co
         }
         eb.ready = Buffer::Both;
     }
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_keys, sizeof(uint64_t) * count));
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_keys_swap, sizeof(uint64_t) * count));
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_vals, sizeof(uint32_t) * (count + 1)));
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_vals_swap, sizeof(uint32_t) * (count + 1)));
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_ipbm_edges, sizeof(uint32_t) * (count + 1)));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_keys, sizeof(uint64_t) * count));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_keys_swap, sizeof(uint64_t) * count));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_vals, sizeof(uint32_t) * (count + 1)));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_vals_swap, sizeof(uint32_t) * (count + 1)));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_ipbm_edges, sizeof(uint32_t) * (count + 1)));
     for (const auto& _curve : curve_instances) {
         if (const auto curve = _curve.lock()) {
             curve->setEnvironmentDirectedGraphVertexProperty(graph_description.name, GRAPH_VERTEX_IPBM_EDGES_VARIABLE_NAME, d_ipbm_edges, 1);
@@ -443,7 +444,7 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
             if (d_vertex_index_map) {
                 flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_vertex_index_map));
             }
-            if (FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_vertex_index_map, sizeof(unsigned int) * (ID_RANGE + 1)) != FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) {
+            if (flamegpu::detail::gpu::gpuMalloc(&d_vertex_index_map, sizeof(unsigned int) * (ID_RANGE + 1)) != FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) {
                 THROW flamegpu::exception::OutOfMemory("Out of memory when allocating ID->index map, Vertex IDs cover too wide a range (%u) consider contiguous IDs, in CUDAEnvironmentDirectedGraphBuffers::syncDevice_async()", ID_RANGE);
             }
             // Copy the offset to the end of the map
