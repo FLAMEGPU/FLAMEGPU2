@@ -95,6 +95,10 @@ inline auto gpuGetErrorString(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(GetErrorString)(std::forward<decltype(args)>(args)...);
 }
 
+inline auto gpuGetLastError(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(GetLastError)(std::forward<decltype(args)>(args)...);
+}
+
 inline auto gpuPeekAtLastError(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(PeekAtLastError)(std::forward<decltype(args)>(args)...);
 }
