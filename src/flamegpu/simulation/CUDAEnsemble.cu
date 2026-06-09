@@ -144,7 +144,7 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
     // if MPI is enabled, This will throw exceptions if any rank has 0 GPUs visible, prior to device allocation preventing issues where rank 0 would not be participating.
     int device_count = -1;
     flamegpu::detail::gpu::Error_t cudaStatus = FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&device_count);
-    if (cudaStatus != FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) {
+    if (cudaStatus != flamegpu::detail::gpu::gpuSuccess) {
         THROW exception::InvalidCUDAdevice("Error finding CUDA devices!  Do you have a CUDA-capable GPU installed?, in CUDAEnsemble::simulate()");
     }
     if (device_count == 0) {

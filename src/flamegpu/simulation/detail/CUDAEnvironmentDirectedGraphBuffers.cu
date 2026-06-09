@@ -444,7 +444,7 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
             if (d_vertex_index_map) {
                 flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_vertex_index_map));
             }
-            if (flamegpu::detail::gpu::gpuMalloc(&d_vertex_index_map, sizeof(unsigned int) * (ID_RANGE + 1)) != FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) {
+            if (flamegpu::detail::gpu::gpuMalloc(&d_vertex_index_map, sizeof(unsigned int) * (ID_RANGE + 1)) != flamegpu::detail::gpu::gpuSuccess) {
                 THROW flamegpu::exception::OutOfMemory("Out of memory when allocating ID->index map, Vertex IDs cover too wide a range (%u) consider contiguous IDs, in CUDAEnvironmentDirectedGraphBuffers::syncDevice_async()", ID_RANGE);
             }
             // Copy the offset to the end of the map
