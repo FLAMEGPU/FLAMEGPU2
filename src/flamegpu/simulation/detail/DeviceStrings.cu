@@ -37,7 +37,7 @@ const char* DeviceStrings::getDeviceString(const std::string &host_string) {
     }
     // Update device buffer if necessary
     if (device_buffer_occupied < host_buffer_len) {
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpy(device_buffer, host_buffer.c_str(), host_buffer_len, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpy(device_buffer, host_buffer.c_str(), host_buffer_len, flamegpu::detail::gpu::gpuMemcpyHostToDevice));
         device_buffer_occupied = host_buffer_len;
     }
     // Return

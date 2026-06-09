@@ -127,7 +127,7 @@ void RandomManager::resizeDeviceArray(const size_type _length, flamegpu::detail:
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&t_hd_random_state, _length * sizeof(detail::curandState)));
         // Copy hd->t_hd[****    ]
         if (d_random_state) {
-            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(t_hd_random_state, d_random_state, length * sizeof(detail::curandState), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice), stream));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(t_hd_random_state, d_random_state, length * sizeof(detail::curandState), flamegpu::detail::gpu::gpuMemcpyDeviceToDevice, stream));
         }
         // Update pointers hd=t_hd
         if (d_random_state) {
@@ -139,7 +139,7 @@ void RandomManager::resizeDeviceArray(const size_type _length, flamegpu::detail:
             // We have part/all host backup, copy to device array
             // Reinit backup[    **  ]
             const size_type copy_len = std::min(h_max_random_size, _length);
-            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_random_state + length, h_max_random_state + length, copy_len * sizeof(detail::curandState), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));  // Host not pinned
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_random_state + length, h_max_random_state + length, copy_len * sizeof(detail::curandState), flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));  // Host not pinned
             length += copy_len;
         }
         if (_length > length) {
@@ -162,9 +162,9 @@ void RandomManager::resizeDeviceArray(const size_type _length, flamegpu::detail:
             t_h_max_random_state = h_max_random_state;
         // Copy old->new
         assert(d_random_state);
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(t_hd_random_state, d_random_state, _length * sizeof(detail::curandState), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(t_hd_random_state, d_random_state, _length * sizeof(detail::curandState), flamegpu::detail::gpu::gpuMemcpyDeviceToDevice, stream));
         // Copy part being shrunk away to host storage (This could be async with above memcpy?)
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(t_h_max_random_state + _length, d_random_state + _length, (length - _length) * sizeof(detail::curandState), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(t_h_max_random_state + _length, d_random_state + _length, (length - _length) * sizeof(detail::curandState), flamegpu::detail::gpu::gpuMemcpyDeviceToHost, stream));
         // Release and replace old host ptr
         if (length > h_max_random_size) {
             if (h_max_random_state)
