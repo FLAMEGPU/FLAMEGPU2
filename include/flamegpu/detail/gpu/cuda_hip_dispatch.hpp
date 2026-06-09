@@ -51,6 +51,10 @@ inline auto gpuMemcpyToSymbol(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyToSymbol)(std::forward<decltype(args)>(args)...);
 }
 
+inline auto gpuMemcpyToSymbolAsync(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyToSymbolAsync)(std::forward<decltype(args)>(args)...);
+}
+
 inline auto gpuMemcpyFromSymbol(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyFromSymbol)(std::forward<decltype(args)>(args)...);
 }

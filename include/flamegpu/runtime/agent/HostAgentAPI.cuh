@@ -614,7 +614,7 @@ void HostAgentAPI::meanStandardDeviation_async(const std::string& variable, std:
     // Then for each number: subtract the Mean and square the result
     // Then work out the mean of those squared differences.
     auto lock = std::unique_lock<std::mutex>(detail::STANDARD_DEVIATION_MEAN_mutex);
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyToSymbolAsync)(detail::STANDARD_DEVIATION_MEAN, &mean, sizeof(double), 0, flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyToSymbolAsync(detail::STANDARD_DEVIATION_MEAN, &mean, sizeof(double), 0, flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
     const double variance = transformReduce_async<InT, double>(variable, detail::standard_deviation_subtract_mean, detail::standard_deviation_add, 0, stream) / static_cast<double>(agentCount);
     lock.unlock();
     // Take the square root of that and we are done!
