@@ -472,7 +472,7 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
                 flamegpu::detail::gpuCheckLaunch();
                 unsigned int err_collision_range[3];
                 flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(err_collision_range, d_pbm_swap, 3 * sizeof(unsigned int), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
-                flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+                flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
                 if (err_collision_range[2] > 0) {
                     THROW flamegpu::exception::IDNotSet("Graph contains %u vertices which have not had their ID set, in CUDAEnvironmentDirectedGraphBuffers::syncDevice_async()", err_collision_range[2]);
                 } else if (err_collision_range[0] > 0) {
@@ -490,7 +490,7 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
                 flamegpu::detail::gpuCheckLaunch();
                 unsigned int err_collision_range[4];  // {src_notset, dest_notset, src_invalid, dest_invalid}
                 flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(err_collision_range, d_pbm_swap, 4 * sizeof(unsigned int), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
-                flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+                flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
                 if (err_collision_range[0] > 0 || err_collision_range[1] > 0) {
                     THROW flamegpu::exception::IDNotSet("Graph contains %u and %u edges which have not had their source and destinations set respectively, in CUDAEnvironmentDirectedGraphBuffers::syncDevice_async()", err_collision_range[0], err_collision_range[1]);
                 } else if (err_collision_range[2] > 0 || err_collision_range[3] > 0) {
@@ -631,7 +631,7 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
 void CUDAEnvironmentDirectedGraphBuffers::Buffer::updateHostBuffer(size_type edge_count, flamegpu::detail::gpu::Stream_t stream) const {
     if (ready == Device) {
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(h_ptr, d_ptr, edge_count * element_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
         ready = Both;
     }
 }
