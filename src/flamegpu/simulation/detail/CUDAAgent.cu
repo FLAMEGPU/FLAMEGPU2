@@ -235,7 +235,7 @@ void CUDAAgent::validateIDCollisions(flamegpu::detail::gpu::Stream_t stream) con
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_temp_storage, temp_storage_bytes));
     flamegpu::detail::gpuCheck(cub::DeviceRadixSort::SortKeys(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount, 0, sizeof(id_t) * 8, stream));
     // Reset d_keysIn
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_keysIn, 0, sizeof(id_t) * agentCount, stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(d_keysIn, 0, sizeof(id_t) * agentCount, stream));
     // Launch a kernel to set flags if keys overlap their neighbour
     const unsigned int blockSize = 1024;
     const unsigned int blocks = ((agentCount-1) / blockSize) + 1;
