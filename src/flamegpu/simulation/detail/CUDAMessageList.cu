@@ -120,7 +120,7 @@ void CUDAMessageList::zeroDeviceMessageList_async(CUDAMessageMap& memory_map, fl
         const size_t var_size = var.type_size * var.elements;
 
         // set the memory to zero
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(static_cast<char*>(mm.second) + (var_size * skip_offset), 0, var_size * (message.getMaximumListSize() - skip_offset), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(static_cast<char*>(mm.second) + (var_size * skip_offset), 0, var_size * (message.getMaximumListSize() - skip_offset), stream));
     }
 }
 

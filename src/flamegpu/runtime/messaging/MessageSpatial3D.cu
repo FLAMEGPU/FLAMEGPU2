@@ -85,7 +85,7 @@ __global__ void atomicHistogram3D(
 void MessageSpatial3D::CUDAModelHandler::init(detail::CUDAScatter &, unsigned int, flamegpu::detail::gpu::Stream_t stream) {
     allocateMetaDataDevicePtr(stream);
     // Set PBM to 0
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(hd_data.PBM, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(hd_data.PBM, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));  // This could probably be skipped/delayed safely
 }
 
@@ -125,13 +125,13 @@ void MessageSpatial3D::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter
     flamegpu::util::nvtx::Range range{"MessageSpatial3D::CUDAModelHandler::buildIndex"};
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     if (!MESSAGE_COUNT) {
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(hd_data.PBM, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(hd_data.PBM, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
         return;
     }
     resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count
     {  // Build atomic histogram
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_histogram, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(d_histogram, 0x00000000, (binCount + 1) * sizeof(unsigned int), stream));
         int blockSize;  // The launch configurator returned block size
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxActiveBlocksPerMultiprocessor)(&blockSize, atomicHistogram3D, 32, 0));  // Randomly 32
                                                                                                          // Round up according to array size

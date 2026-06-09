@@ -38,7 +38,7 @@ DeviceExceptionBuffer *DeviceExceptionManager::getDevicePtr(const unsigned int s
     // flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuDeviceSynchronize());
 
     // Memset and return buffer
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_buffer[streamId], 0, sizeof(DeviceExceptionBuffer), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(d_buffer[streamId], 0, sizeof(DeviceExceptionBuffer), stream));
     memset(&hd_buffer[streamId], 0, sizeof(DeviceExceptionBuffer));
     return d_buffer[streamId];
 }

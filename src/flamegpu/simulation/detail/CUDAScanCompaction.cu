@@ -51,10 +51,10 @@ void CUDAScanCompactionConfig::free_scan_flag() {
 
 void CUDAScanCompactionConfig::zero_scan_flag_async(flamegpu::detail::gpu::Stream_t stream) {
     if (d_ptrs.position) {
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_ptrs.position, 0, scan_flag_len * sizeof(unsigned int), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(d_ptrs.position, 0, scan_flag_len * sizeof(unsigned int), stream));
     }
     if (d_ptrs.scan_flag) {
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_ptrs.scan_flag, 0, scan_flag_len * sizeof(unsigned int), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(d_ptrs.scan_flag, 0, scan_flag_len * sizeof(unsigned int), stream));
     }
 }
 

@@ -38,7 +38,7 @@ void CUDAMacroEnvironment::init(flamegpu::detail::gpu::Stream_t _stream) {
             buffer_size += sizeof(unsigned int);  // Extra uint is used as read-write flag by seatbelts
 #endif
             flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&prop.second.d_ptr, buffer_size));
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(prop.second.d_ptr, 0, buffer_size, _stream));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(prop.second.d_ptr, 0, buffer_size, _stream));
         }
     }
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(_stream));
@@ -61,7 +61,7 @@ void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, std::shared_p
                     buffer_size += sizeof(unsigned int);  // Extra uint is used as read-write flag by seatbelts
 #endif
                     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&prop.second.d_ptr, buffer_size));
-                    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(prop.second.d_ptr, 0, buffer_size, _stream));
+                    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(prop.second.d_ptr, 0, buffer_size, _stream));
             } else {
                 // If it's a mapped sub macro property
                 auto mmp = master_macro_env->properties.find(sub->second);
@@ -130,7 +130,7 @@ void CUDAMacroEnvironment::resetFlagsAsync(const std::vector<flamegpu::detail::g
                 * prop.second.elements[1]
                 * prop.second.elements[2]
                 * prop.second.elements[3];
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(static_cast<char*>(prop.second.d_ptr) + buffer_size, 0 , sizeof(unsigned int), streams[i++%streams.size()]));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(static_cast<char*>(prop.second.d_ptr) + buffer_size, 0 , sizeof(unsigned int), streams[i++%streams.size()]));
         }
     }
     // Disable the sync here, users must sync themselves

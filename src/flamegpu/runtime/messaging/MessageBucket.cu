@@ -76,7 +76,7 @@ __global__ void atomicHistogram1D(
 void MessageBucket::CUDAModelHandler::init(detail::CUDAScatter &, unsigned int, flamegpu::detail::gpu::Stream_t stream) {
     allocateMetaDataDevicePtr(stream);
     // Set PBM to 0
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(hd_data.PBM, 0x00000000, (bucketCount + 1) * sizeof(unsigned int), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(hd_data.PBM, 0x00000000, (bucketCount + 1) * sizeof(unsigned int), stream));
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
 }
 
@@ -117,13 +117,13 @@ void MessageBucket::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, u
     // Cuda operations all occur within the stream, so only a final sync is required.s
     const unsigned int MESSAGE_COUNT = this->sim_message.getMessageCount();
     if (!MESSAGE_COUNT) {
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(hd_data.PBM, 0x00000000, (bucketCount + 1) * sizeof(unsigned int), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(hd_data.PBM, 0x00000000, (bucketCount + 1) * sizeof(unsigned int), stream));
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
         return;
     }
     resizeKeysVals(this->sim_message.getMaximumListSize());  // Resize based on allocated amount rather than message count
     {  // Build atomic histogram
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_histogram, 0x00000000, (bucketCount + 1) * sizeof(unsigned int), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(d_histogram, 0x00000000, (bucketCount + 1) * sizeof(unsigned int), stream));
         int blockSize;  // The launch configurator returned block size
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxActiveBlocksPerMultiprocessor)(&blockSize, atomicHistogram1D, 32, 0));  // Randomly 32
                                                                                                          // Round up according to array size
