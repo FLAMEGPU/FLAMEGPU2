@@ -313,7 +313,7 @@ void HostMacroProperty<T, I, J, K, W>::zero() {
         }
 #endif
         // Memset on device
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Memset)(reinterpret_cast<T*>(metadata->d_base_ptr) + offset, 0, I * J * K * W * metadata->type_size));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemset(reinterpret_cast<T*>(metadata->d_base_ptr) + offset, 0, I * J * K * W * metadata->type_size));
     }
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
@@ -463,7 +463,7 @@ void HostMacroProperty_swig<T>::zero() {
         metadata->has_changed = true;
     } else {
         // Memset on device
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Memset)(reinterpret_cast<T*>(metadata->d_base_ptr) + offset, 0, dimensions[0] * dimensions[1] * dimensions[2] * dimensions[3] * metadata->type_size));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemset(reinterpret_cast<T*>(metadata->d_base_ptr) + offset, 0, dimensions[0] * dimensions[1] * dimensions[2] * dimensions[3] * metadata->type_size));
     }
 }
 template<typename T>

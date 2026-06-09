@@ -105,8 +105,8 @@ void CUDAEnvironmentDirectedGraphBuffers::allocateVertexBuffers(const size_type 
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_pbm_swap, sizeof(unsigned int) * std::max<int>(count + 1, 4)));
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_ipbm, sizeof(unsigned int)* std::max<int>(count + 1, 4)));
     // Initialise PBMs incase they doesn't contain edges
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_pbm, 0, (count + 1) * sizeof(unsigned int), stream));
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_ipbm, 0, (count + 1) * sizeof(unsigned int), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(d_pbm, 0, (count + 1) * sizeof(unsigned int), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(d_ipbm, 0, (count + 1) * sizeof(unsigned int), stream));
     for (const auto& _curve : curve_instances) {
         if (const auto curve = _curve.lock()) {
             curve->setEnvironmentDirectedGraphVertexProperty(graph_description.name, GRAPH_VERTEX_PBM_VARIABLE_NAME, d_pbm, 1);
@@ -464,8 +464,8 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
 #endif  // FLAMEGPU_USE_CUDA
             {  // Build the map
                 const auto& v_id_b = vertex_buffers.at(ID_VARIABLE_NAME);
-                flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_vertex_index_map, 0xffffffff, ID_RANGE * sizeof(unsigned int), stream));
-                flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_pbm_swap, 0, 3 * sizeof(unsigned int), stream));  // We will use spare pbm_swap to count errors, save allocating more memory
+                flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(d_vertex_index_map, 0xffffffff, ID_RANGE * sizeof(unsigned int), stream));
+                flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(d_pbm_swap, 0, 3 * sizeof(unsigned int), stream));  // We will use spare pbm_swap to count errors, save allocating more memory
                 const unsigned int BLOCK_SZ = 512;
                 const unsigned int BLOCK_CT = static_cast<unsigned int>(ceil(vertex_count / static_cast<float>(BLOCK_SZ)));
                 buildIDMap<<<BLOCK_CT, BLOCK_SZ, 0, stream>>> (static_cast<id_t*>(v_id_b.d_ptr), d_vertex_index_map, vertex_count, d_pbm_swap, vertex_id_min, vertex_id_max);
@@ -483,7 +483,7 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
             }
             {  // Validate that edge source/dest pairs correspond to valid IDs
                 const auto& e_srcdest_b = edge_buffers.at(GRAPH_SOURCE_DEST_VARIABLE_NAME);
-                flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_pbm_swap, 0, 4 * sizeof(unsigned int), stream));  // We will use spare pbm_swap to count errors, save allocating more memory
+                flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(d_pbm_swap, 0, 4 * sizeof(unsigned int), stream));  // We will use spare pbm_swap to count errors, save allocating more memory
                 const unsigned int BLOCK_SZ = 512;
                 const unsigned int BLOCK_CT = static_cast<unsigned int>(ceil(edge_count / static_cast<float>(BLOCK_SZ)));
                 validateSrcDest<<<BLOCK_CT, BLOCK_SZ, 0, stream>>>(static_cast<id_t*>(e_srcdest_b.d_ptr), d_vertex_index_map, edge_count, d_pbm_swap, vertex_id_min, vertex_id_max);
@@ -513,7 +513,7 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
             cub_temp.resize(temp_req);
             flamegpu::detail::gpuCheck(cub::DeviceRadixSort::SortPairs(cub_temp.getPtr(), cub_temp.getSize(), d_keys, d_keys_swap, d_vals, d_vals_swap, edge_count, 0, sizeof(uint64_t) * 8, stream));
             // Build PBM (For vertices with edges)
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Memset)(d_pbm, 0xffffffff, (vertex_count + 1) * sizeof(unsigned int)));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemset(d_pbm, 0xffffffff, (vertex_count + 1) * sizeof(unsigned int)));
             flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxActiveBlocksPerMultiprocessor)(&blockSize, findBinStart, 32, 0));  // Randomly 32
             gridSize = (edge_count + blockSize - 1) / blockSize;  // Round up according to array size
             findBinStart<<<gridSize, blockSize, 0, stream>>>(d_pbm, d_keys_swap, edge_count, vertex_count);
@@ -571,7 +571,7 @@ void CUDAEnvironmentDirectedGraphBuffers::syncDevice_async(detail::CUDAScatter& 
             auto& cub_temp = scatter.CubTemp(streamID);
             flamegpu::detail::gpuCheck(cub::DeviceRadixSort::SortPairs(cub_temp.getPtr(), cub_temp.getSize(), d_keys, d_keys_swap, d_vals, d_vals_swap, edge_count, 0, sizeof(uint64_t) * 8, stream));
             // Build inverted PBM (For vertices with edges)
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Memset)(d_ipbm, 0xffffffff, (vertex_count + 1) * sizeof(unsigned int)));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemset(d_ipbm, 0xffffffff, (vertex_count + 1) * sizeof(unsigned int)));
             flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxActiveBlocksPerMultiprocessor)(&blockSize, findBinStart, 32, 0));  // Randomly 32
             gridSize = (edge_count + blockSize - 1) / blockSize;  // Round up according to array size
             findBinStart <<<gridSize, blockSize, 0, stream>>>(d_ipbm, d_keys_swap, edge_count, vertex_count);
