@@ -5,6 +5,7 @@
 #include "flamegpu/simulation/CUDASimulation.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -60,8 +61,8 @@ void CUDAScanCompactionConfig::zero_scan_flag_async(flamegpu::detail::gpu::Strea
 void CUDAScanCompactionConfig::resize_scan_flag(const unsigned int count) {
     if (count + 1 > scan_flag_len) {
         free_scan_flag();
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_ptrs.scan_flag, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_ptrs.position, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_ptrs.scan_flag, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_ptrs.position, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
         scan_flag_len = count + 1;
     }
 }

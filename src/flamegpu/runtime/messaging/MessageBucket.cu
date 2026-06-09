@@ -38,6 +38,7 @@ namespace cub = hipcub;
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 #include "flamegpu/runtime/messaging/MessageBucket/MessageBucketHost.h"
@@ -81,9 +82,9 @@ void MessageBucket::CUDAModelHandler::init(detail::CUDAScatter &, unsigned int, 
 
 void MessageBucket::CUDAModelHandler::allocateMetaDataDevicePtr(flamegpu::detail::gpu::Stream_t stream) {
     if (d_data == nullptr) {
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_histogram, (bucketCount + 1) * sizeof(unsigned int)));
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&hd_data.PBM, (bucketCount + 1) * sizeof(unsigned int)));
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_data, sizeof(MetaData)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_histogram, (bucketCount + 1) * sizeof(unsigned int)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&hd_data.PBM, (bucketCount + 1) * sizeof(unsigned int)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_data, sizeof(MetaData)));
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(d_data, &hd_data, sizeof(MetaData), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
         resizeCubTemp();
@@ -153,7 +154,7 @@ void MessageBucket::CUDAModelHandler::resizeCubTemp() {
             flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_CUB_temp_storage));
         }
         d_CUB_temp_storage_bytes = bytesCheck;
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_CUB_temp_storage, d_CUB_temp_storage_bytes));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_CUB_temp_storage, d_CUB_temp_storage_bytes));
     }
 }
 
@@ -165,8 +166,8 @@ void MessageBucket::CUDAModelHandler::resizeKeysVals(const unsigned int newSize)
             flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_vals));
         }
         d_keys_vals_storage_bytes = bytesCheck;
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_keys, d_keys_vals_storage_bytes));
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_vals, d_keys_vals_storage_bytes));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_keys, d_keys_vals_storage_bytes));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_vals, d_keys_vals_storage_bytes));
     }
 }
 

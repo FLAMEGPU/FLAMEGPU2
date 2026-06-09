@@ -6,6 +6,7 @@
 #include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
@@ -31,7 +32,7 @@ DeviceExceptionBuffer *DeviceExceptionManager::getDevicePtr(const unsigned int s
     }
     // It may be better to move this (and the memsets) out to a separate up-front reset call in the future.
     if (!d_buffer[streamId]) {
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_buffer[streamId], sizeof(DeviceExceptionBuffer)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_buffer[streamId], sizeof(DeviceExceptionBuffer)));
     }
     // @todo - We might need a sync here in some cases? Tests all pass without it.
     // flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceSynchronize)());

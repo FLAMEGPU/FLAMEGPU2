@@ -12,6 +12,7 @@
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -36,7 +37,7 @@ void CUDAMacroEnvironment::init(flamegpu::detail::gpu::Stream_t _stream) {
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
             buffer_size += sizeof(unsigned int);  // Extra uint is used as read-write flag by seatbelts
 #endif
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&prop.second.d_ptr, buffer_size));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&prop.second.d_ptr, buffer_size));
             flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(prop.second.d_ptr, 0, buffer_size, _stream));
         }
     }
@@ -59,7 +60,7 @@ void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, std::shared_p
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
                     buffer_size += sizeof(unsigned int);  // Extra uint is used as read-write flag by seatbelts
 #endif
-                    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&prop.second.d_ptr, buffer_size));
+                    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&prop.second.d_ptr, buffer_size));
                     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(prop.second.d_ptr, 0, buffer_size, _stream));
             } else {
                 // If it's a mapped sub macro property

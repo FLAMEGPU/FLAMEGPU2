@@ -15,6 +15,7 @@
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -51,7 +52,7 @@ void HostCurve::initialiseDevice() {
     // Don't lock mutex here, do it in the calling method
     if (!d_curve_table) {
         // get a host pointer to d_hashes and d_variables
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_curve_table, sizeof(CurveTable)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_curve_table, sizeof(CurveTable)));
     }
 }
 

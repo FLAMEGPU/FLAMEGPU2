@@ -11,6 +11,7 @@
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 #ifdef FLAMEGPU_USE_CUDA
@@ -284,7 +285,7 @@ void *CUDAFatAgent::allocNewBuffer(const size_t total_agent_size, const unsigned
             // Erase and resize/reinsert to d_newLists to mark as in use
             d_newLists.erase(b);
             flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(my_b.data));
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&my_b.data, ALLOCATION_SIZE));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&my_b.data, ALLOCATION_SIZE));
             my_b.size = ALLOCATION_SIZE;
             my_b.in_use = true;
             d_newLists.insert(my_b);
@@ -294,7 +295,7 @@ void *CUDAFatAgent::allocNewBuffer(const size_t total_agent_size, const unsigned
     }
     // No existing buffer available, so create a new one
     NewBuffer my_b;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&my_b.data, ALLOCATION_SIZE));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&my_b.data, ALLOCATION_SIZE));
     my_b.size = ALLOCATION_SIZE;
     my_b.in_use = true;
     d_newLists.insert(my_b);
@@ -334,7 +335,7 @@ id_t CUDAFatAgent::nextID(unsigned int count) {
 }
 id_t *CUDAFatAgent::getDeviceNextID() {
     if (!d_nextID) {
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_nextID, sizeof(id_t)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_nextID, sizeof(id_t)));
     }
     if (hd_nextID != _nextID) {
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Memcpy)(d_nextID, &_nextID, sizeof(id_t), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice)));
