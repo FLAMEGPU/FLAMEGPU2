@@ -43,8 +43,8 @@ void MessageArray3D::CUDAModelHandler::init(detail::CUDAScatter &scatter, unsign
     for (auto &var : this->sim_message.getMessageData().variables) {
         // Elements is harmless, futureproof for arrays support
         // hd_metadata.length is used, as message array can be longer than message count
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(write_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length, stream));
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(read_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length, stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(write_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length, stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(read_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length, stream));
     }
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
 }
@@ -76,7 +76,7 @@ void MessageArray3D::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, 
     for (auto &var : this->sim_message.getMessageData().variables) {
         // Elements is harmless, futureproof for arrays support
         // hd_metadata.length is used, as message array can be longer than message count
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(write_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length, stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(write_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length, stream));
     }
 
     // Reorder messages
