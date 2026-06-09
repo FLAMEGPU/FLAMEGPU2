@@ -101,7 +101,7 @@ TEST(TestCUDASimulation, AllDeviceIdValues) {
         }
     }
     // Return to prior state for remaining tests.
-    ASSERT_EQ(flamegpu::detail::gpu::gpuSuccess, FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(0));
+    ASSERT_EQ(flamegpu::detail::gpu::gpuSuccess, flamegpu::detail::gpu::gpuSetDevice(0));
 }
 TEST(TestSimulation, ArgParse_inputfile_long) {
     ModelDescription m(MODEL_NAME);
