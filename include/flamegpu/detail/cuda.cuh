@@ -39,7 +39,7 @@ inline flamegpu::detail::gpu::Error_t cudaFree(void* devPtr) {
     status = FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, devPtr);
     // valid device pointers have a type of cudaMemoryTypeDevice (2), or we could check the device is non negative (and matching the current device index?), or the devicePointer will be non null.
     if (status == FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) && attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice)) {
-        status = ::FLAMEGPU_GPU_RUNTIME_SYMBOL(Free)(devPtr);
+        status = ::flamegpu::detail::gpu::gpuFree(devPtr);
         // Forward any status on
         return status;
     }
@@ -61,7 +61,7 @@ inline flamegpu::detail::gpu::Error_t cudaFreeHost(void* devPtr) {
     status = FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, devPtr);
     // valid pointers allocated using cudaHostAlloc have a type of cudaMemoryTypeHost
     if (status == FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) && attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeHost)) {
-        status = ::FLAMEGPU_GPU_RUNTIME_SYMBOL(FreeHost)(devPtr);
+        status = ::flamegpu::detail::gpu::gpuFreeHost(devPtr);
         // Forward on any cuda errors returned.
         return status;
     }

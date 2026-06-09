@@ -31,7 +31,7 @@ const char* DeviceStrings::getDeviceString(const std::string &host_string) {
     if (!device_buffer || device_buffer_len < host_buffer_len) {
         // Double buffer len in size
         device_buffer_len = device_buffer_len == 0 ? 1024 : device_buffer_len * 2;
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Free)(device_buffer));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuFree(device_buffer));
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&device_buffer, device_buffer_len));
         device_buffer_occupied = 0;
     }

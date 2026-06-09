@@ -29,6 +29,14 @@ inline auto gpuMallocManaged(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(MallocManaged)(std::forward<decltype(args)>(args)...);
 }
 
+inline auto gpuFree(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(Free)(std::forward<decltype(args)>(args)...);
+}
+
+inline auto gpuFreeHost(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(FreeHost)(std::forward<decltype(args)>(args)...);
+}
+
 inline auto gpuDeviceSynchronize(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceSynchronize)(std::forward<decltype(args)>(args)...);
 }
