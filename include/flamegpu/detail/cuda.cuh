@@ -38,7 +38,7 @@ inline flamegpu::detail::gpu::Error_t cudaFree(void* devPtr) {
     flamegpu::detail::gpu::PointerAttributes_t attributes = {};
     status = flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, devPtr);
     // valid device pointers have a type of cudaMemoryTypeDevice (2), or we could check the device is non negative (and matching the current device index?), or the devicePointer will be non null.
-    if (status == flamegpu::detail::gpu::gpuSuccess && attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice)) {
+    if (status == flamegpu::detail::gpu::gpuSuccess && attributes.type == flamegpu::detail::gpu::gpuMemoryTypeDevice) {
         status = ::flamegpu::detail::gpu::gpuFree(devPtr);
         // Forward any status on
         return status;
@@ -60,7 +60,7 @@ inline flamegpu::detail::gpu::Error_t cudaFreeHost(void* devPtr) {
     flamegpu::detail::gpu::PointerAttributes_t attributes = {};
     status = flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, devPtr);
     // valid pointers allocated using cudaHostAlloc have a type of cudaMemoryTypeHost
-    if (status == flamegpu::detail::gpu::gpuSuccess && attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeHost)) {
+    if (status == flamegpu::detail::gpu::gpuSuccess && attributes.type == flamegpu::detail::gpu::gpuMemoryTypeHost) {
         status = ::flamegpu::detail::gpu::gpuFreeHost(devPtr);
         // Forward on any cuda errors returned.
         return status;

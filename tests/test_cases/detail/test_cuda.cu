@@ -26,7 +26,7 @@ TEST(TestUtilDetailCuda, cudaFree) {
     // Validate that the ptr is a valid device pointer
     cudaPointerAttributes attributes = {};
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, d_ptr));
-    EXPECT_EQ(attributes.type, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice));
+    EXPECT_EQ(attributes.type, flamegpu::detail::gpu::gpuMemoryTypeDevice);
     // call the wrapped cuda free method
     status = detail::cuda::cudaFree(d_ptr);
     // It should not have thrown any cuda errors in normal use.
@@ -34,7 +34,7 @@ TEST(TestUtilDetailCuda, cudaFree) {
     // The pointer will still have a non nullptr value, but it will no longer be a valid device ptr.
     EXPECT_NE(d_ptr, nullptr);
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, d_ptr));
-    EXPECT_EQ(attributes.type, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeUnregistered));
+    EXPECT_EQ(attributes.type, flamegpu::detail::gpu::gpuMemoryTypeUnregistered);
     // Try a double free.
     status = detail::cuda::cudaFree(d_ptr);
     // This will appear to succeed (a double free is identical to a device reset then free according from flamegpu::detail::gpu::gpuPointerGetAttributes' perspective), which is a difference from actual cudaFree which would return cudaErrorInvalidValue.
@@ -46,7 +46,7 @@ TEST(TestUtilDetailCuda, cudaFree) {
     // Validate that the ptr is a valid device pointer
     attributes = {};
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, d_ptr));
-    EXPECT_EQ(attributes.type, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice));
+    EXPECT_EQ(attributes.type, flamegpu::detail::gpu::gpuMemoryTypeDevice);
     // Trigger a device reset
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceReset)());
     // Attempt to free the ptr, this method should claim all things are fine (as the dev ptr has implicitly been freed)
@@ -63,8 +63,8 @@ TEST(TestUtilDetailCuda, cudaFreeHost) {
     // Validate that the ptr is a valid page-locked host pointer
     cudaPointerAttributes attributes = {};
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, p_ptr));
-    // this appears to return FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeHost), even though it should return FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeHost)
-    EXPECT_EQ(attributes.type, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeHost));
+    // this appears to return flamegpu::detail::gpu::gpuMemoryTypeHost, even though it should return flamegpu::detail::gpu::gpuMemoryTypeHost
+    EXPECT_EQ(attributes.type, flamegpu::detail::gpu::gpuMemoryTypeHost);
     // call the wrapped cuda free method
     status = detail::cuda::cudaFreeHost(p_ptr);
     // It should not have thrown any cuda errors in normal use.
@@ -72,7 +72,7 @@ TEST(TestUtilDetailCuda, cudaFreeHost) {
     // The pointer will still have a non nullptr value, but it will no longer be a valid page-locked ptr.
     EXPECT_NE(p_ptr, nullptr);
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, p_ptr));
-    EXPECT_EQ(attributes.type, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeUnregistered));
+    EXPECT_EQ(attributes.type, flamegpu::detail::gpu::gpuMemoryTypeUnregistered);
 
     // Try a double free.
     status = detail::cuda::cudaFreeHost(p_ptr);
@@ -85,8 +85,8 @@ TEST(TestUtilDetailCuda, cudaFreeHost) {
     // Validate that the ptr is a valid page-locked host pointer
     attributes = {};
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, p_ptr));
-    // this appears to return FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeHost), even though it should return FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeHost)
-    EXPECT_EQ(attributes.type, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeHost));
+    // this appears to return flamegpu::detail::gpu::gpuMemoryTypeHost, even though it should return flamegpu::detail::gpu::gpuMemoryTypeHost
+    EXPECT_EQ(attributes.type, flamegpu::detail::gpu::gpuMemoryTypeHost);
     // Trigger a device reset
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceReset)());
     // Attempt to free the ptr, this method should claim all things are fine (as the dev ptr has implicitly been freed)
