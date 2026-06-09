@@ -399,7 +399,7 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
     std::vector<int> nvrtcArchitectures = detail::gpu::cuda::compute_capability::getNVRTCSupportedComputeCapabilties();
     if (nvrtcArchitectures.size()) {
         int currentDeviceIdx = 0;
-        if (FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) == cudaGetDevice(&currentDeviceIdx)) {
+        if (flamegpu::detail::gpu::gpuSuccess == cudaGetDevice(&currentDeviceIdx)) {
             int arch = detail::gpu::cuda::compute_capability::getComputeCapability(currentDeviceIdx);
             int maxSupportedArch = detail::gpu::cuda::compute_capability::selectAppropraiteComputeCapability(arch, nvrtcArchitectures);
             // only set a nvrtc compilation flag if a usable value was found
@@ -492,9 +492,9 @@ std::unique_ptr<jitify2::KernelData> JitifyCache::loadKernel(const std::string &
     // Detect current compute capability=
     int currentDeviceIdx = 0;
     cudaError_t status = cudaGetDevice(&currentDeviceIdx);
-    const std::string arch = std::to_string((status == FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) ? detail::gpu::cuda::compute_capability::getComputeCapability(currentDeviceIdx) : 0);
+    const std::string arch = std::to_string((status == flamegpu::detail::gpu::gpuSuccess) ? detail::gpu::cuda::compute_capability::getComputeCapability(currentDeviceIdx) : 0);
     status = cudaRuntimeGetVersion(&currentDeviceIdx);
-    const std::string cuda_version = std::to_string((status == FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) ? currentDeviceIdx : 0);
+    const std::string cuda_version = std::to_string((status == flamegpu::detail::gpu::gpuSuccess) ? currentDeviceIdx : 0);
     const std::string seatbelts = std::to_string(FLAMEGPU_SEATBELTS);
     // Cat kernel, dynamic header, header version
     const std::string long_reference = kernel_src + dynamic_header;  // Don't need to include rest, they are explicit in short reference/filename

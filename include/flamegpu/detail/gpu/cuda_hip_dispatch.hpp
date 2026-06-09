@@ -21,6 +21,8 @@ namespace flamegpu {
 namespace detail {
 namespace gpu {
 
+// Functions
+
 inline auto gpuMalloc(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(std::forward<decltype(args)>(args)...);
 }
@@ -108,6 +110,10 @@ inline auto gpuEventSynchronize(auto&&... args) {
 inline auto gpuEventElapsedTime(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(EventElapsedTime)(std::forward<decltype(args)>(args)...);
 }
+
+// Enums
+inline constexpr auto gpuSuccess = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
+
 
 }  // namespace gpu
 }  // namespace detail
