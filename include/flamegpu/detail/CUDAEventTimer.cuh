@@ -9,6 +9,7 @@
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 
 namespace flamegpu {
 namespace detail {
@@ -33,8 +34,8 @@ class CUDAEventTimer : public virtual Timer {
     startEventRecorded(false),
     stopEventRecorded(false),
     synced(false) {
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(EventCreate)(&this->startEvent));
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(EventCreate)(&this->stopEvent));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuEventCreate(&this->startEvent));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuEventCreate(&this->stopEvent));
     }
     /** 
      * Destroys the cudaEvents created by this instance

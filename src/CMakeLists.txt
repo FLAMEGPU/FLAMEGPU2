@@ -285,6 +285,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/util/StringPair.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/macros.hpp
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/types.hpp
+    ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/cuda_hip_dispatch.hpp
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/gpu_api_error_checking.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/device_name.hpp
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/cuda/compute_capability.cuh
