@@ -9,15 +9,9 @@ class SingleAgentDiscreteMovementTest(TestCase):
     """
     def test_initialization(self):
         model = pyflamegpu.ModelDescription("parent_model")
-        move_submodel = pyflamegpu.SingleAgentDiscreteMovement()
-
-        # Should throw if we try to bind before calling addSingleAgentDiscreteMovementSubmodel
-        with pytest.raises(pyflamegpu.FLAMEGPURuntimeException) as e:
-            move_submodel.setMovingAgent("agent")
-        assert e.value.type() == "InvalidSubModel"
 
         # Initialize the submodel
-        move_submodel.addSingleAgentDiscreteMovementSubmodel(model, 10, 10)
+        move_submodel = pyflamegpu.SingleAgentDiscreteMovement(model, 10, 10)
 
         # Setup a valid parent agent for moving
         agent = model.newAgent("agent")
@@ -69,8 +63,7 @@ class SingleAgentDiscreteMovementTest(TestCase):
         WIDTH = 3
         HEIGHT = 3
 
-        move_submodel = pyflamegpu.SingleAgentDiscreteMovement()
-        move_submodel.addSingleAgentDiscreteMovementSubmodel(model, WIDTH, HEIGHT)
+        move_submodel = pyflamegpu.SingleAgentDiscreteMovement(model, WIDTH, HEIGHT)
 
         # Submodels must be added to a layer to be executed during the simulation step
         model.newLayer().addSubModel(move_submodel.getSubModelDescription())
@@ -150,8 +143,7 @@ class SingleAgentDiscreteMovementTest(TestCase):
         WIDTH = 3
         HEIGHT = 3
 
-        move_submodel = pyflamegpu.SingleAgentDiscreteMovement()
-        move_submodel.addSingleAgentDiscreteMovementSubmodel(model, WIDTH, HEIGHT)
+        move_submodel = pyflamegpu.SingleAgentDiscreteMovement(model, WIDTH, HEIGHT)
         model.newLayer().addSubModel(move_submodel.getSubModelDescription())
 
         agent = model.newAgent("agent")
@@ -229,8 +221,7 @@ class SingleAgentDiscreteMovementTest(TestCase):
         WIDTH = 3
         HEIGHT = 3
 
-        move_submodel = pyflamegpu.SingleAgentDiscreteMovement()
-        move_submodel.addSingleAgentDiscreteMovementSubmodel(model, WIDTH, HEIGHT)
+        move_submodel = pyflamegpu.SingleAgentDiscreteMovement(model, WIDTH, HEIGHT)
         model.newLayer().addSubModel(move_submodel.getSubModelDescription())
 
         agent = model.newAgent("agent")
@@ -300,8 +291,7 @@ class SingleAgentDiscreteMovementTest(TestCase):
         WIDTH = 2
         HEIGHT = 2
 
-        move_submodel = pyflamegpu.SingleAgentDiscreteMovement()
-        move_submodel.addSingleAgentDiscreteMovementSubmodel(model, WIDTH, HEIGHT)
+        move_submodel = pyflamegpu.SingleAgentDiscreteMovement(model, WIDTH, HEIGHT)
         model.newLayer().addSubModel(move_submodel.getSubModelDescription())
 
         agent = model.newAgent("agent")
@@ -357,10 +347,6 @@ class SingleAgentDiscreteMovementTest(TestCase):
         # Should move to (1,1)
         assert agent_pop[0].getVariableInt("x") == 1
         assert agent_pop[0].getVariableInt("y") == 1
-
-if __name__ == "__main__":
-    import unittest
-    unittest.main()
 
 if __name__ == "__main__":
     import unittest

@@ -1,9 +1,9 @@
 #include "flamegpu/flamegpu.h"
-#include "flamegpu/stockAgent/subModels/SingleAgentDiscreteMovement.h"
+#include "flamegpu/stock/subModels/SingleAgentDiscreteMovement.h"
 #include "gtest/gtest.h"
 
 namespace flamegpu {
-namespace stockAgent {
+namespace stock {
 namespace submodels {
 
 /**
@@ -12,13 +12,9 @@ namespace submodels {
  */
 TEST(SingleAgentDiscreteMovementTest, Initialization) {
     ModelDescription model("parent_model");
-    SingleAgentDiscreteMovement move_submodel;
 
-    // Should throw if we try to bind before calling addSingleAgentDiscreteMovementSubmodel
-    EXPECT_THROW(move_submodel.setMovingAgent("agent"), exception::InvalidSubModel);
-
-    // Initialize the submodel
-    move_submodel.addSingleAgentDiscreteMovementSubmodel(model, 10, 10);
+    // Initialize the submodel using the constructor
+    SingleAgentDiscreteMovement move_submodel(model, 10, 10);
 
     // Setup a valid parent agent for moving
     auto agent = model.newAgent("agent");
@@ -41,8 +37,8 @@ TEST(SingleAgentDiscreteMovementTest, Initialization) {
 
     // Bind agents: auto_map=true handles variables with matching names,
     // but we must explicitly map internal "active" state to parent "default" state.
-    move_submodel.setMovingAgent("agent", {}, {{"active", "default"}}, true);
-    move_submodel.setEnvironmentAgent("cell", {}, {{"active", "default"}}, true);
+    move_submodel.setMovingAgent("agent", {}, {}, true);
+    move_submodel.setEnvironmentAgent("cell", {}, {}, true);
 
     // Validation should pass now
     EXPECT_NO_THROW(move_submodel.validate());
@@ -61,8 +57,7 @@ TEST(SingleAgentDiscreteMovementTest, SimpleMove) {
     int WIDTH = 3;
     int HEIGHT = 3;
 
-    SingleAgentDiscreteMovement move_submodel;
-    move_submodel.addSingleAgentDiscreteMovementSubmodel(model, WIDTH, HEIGHT);
+    SingleAgentDiscreteMovement move_submodel(model, WIDTH, HEIGHT);
 
     // Submodels must be added to a layer to be executed during the simulation step
     model.newLayer().addSubModel(move_submodel.getSubModelDescription());
@@ -87,8 +82,8 @@ TEST(SingleAgentDiscreteMovementTest, SimpleMove) {
     cell.newState("default");
 
     // Bind to submodel
-    move_submodel.setMovingAgent("agent", {}, {{"active", "default"}}, true);
-    move_submodel.setEnvironmentAgent("cell", {}, {{"active", "default"}}, true);
+    move_submodel.setMovingAgent("agent", {}, {}, true);
+    move_submodel.setEnvironmentAgent("cell", {}, {}, true);
 
     CUDASimulation sim(model);
     sim.SimulationConfig().steps = 1;
@@ -138,8 +133,7 @@ TEST(SingleAgentDiscreteMovementTest, CollisionAvoidance) {
     int WIDTH = 3;
     int HEIGHT = 3;
 
-    SingleAgentDiscreteMovement move_submodel;
-    move_submodel.addSingleAgentDiscreteMovementSubmodel(model, WIDTH, HEIGHT);
+    SingleAgentDiscreteMovement move_submodel(model, WIDTH, HEIGHT);
     model.newLayer().addSubModel(move_submodel.getSubModelDescription());
 
     auto agent = model.newAgent("agent");
@@ -160,8 +154,8 @@ TEST(SingleAgentDiscreteMovementTest, CollisionAvoidance) {
     cell.newVariable<float>("cell_score", 0.0f);
     cell.newState("default");
 
-    move_submodel.setMovingAgent("agent", {}, {{"active", "default"}}, true);
-    move_submodel.setEnvironmentAgent("cell", {}, {{"active", "default"}}, true);
+    move_submodel.setMovingAgent("agent", {}, {}, true);
+    move_submodel.setEnvironmentAgent("cell", {}, {}, true);
 
     CUDASimulation sim(model);
     sim.SimulationConfig().steps = 1;
@@ -214,8 +208,7 @@ TEST(SingleAgentDiscreteMovementTest, ResourceMemory) {
     int WIDTH = 3;
     int HEIGHT = 3;
 
-    SingleAgentDiscreteMovement move_submodel;
-    move_submodel.addSingleAgentDiscreteMovementSubmodel(model, WIDTH, HEIGHT);
+    SingleAgentDiscreteMovement move_submodel(model, WIDTH, HEIGHT);
     model.newLayer().addSubModel(move_submodel.getSubModelDescription());
 
     auto agent = model.newAgent("agent");
@@ -236,8 +229,8 @@ TEST(SingleAgentDiscreteMovementTest, ResourceMemory) {
     cell.newVariable<float>("cell_score", 0.0f);
     cell.newState("default");
 
-    move_submodel.setMovingAgent("agent", {}, {{"active", "default"}}, true);
-    move_submodel.setEnvironmentAgent("cell", {}, {{"active", "default"}}, true);
+    move_submodel.setMovingAgent("agent", {}, {}, true);
+    move_submodel.setEnvironmentAgent("cell", {}, {}, true);
 
     CUDASimulation sim(model);
     sim.SimulationConfig().steps = 1;
@@ -279,8 +272,7 @@ TEST(SingleAgentDiscreteMovementTest, GridBoundaries) {
     int WIDTH = 2;
     int HEIGHT = 2;
 
-    SingleAgentDiscreteMovement move_submodel;
-    move_submodel.addSingleAgentDiscreteMovementSubmodel(model, WIDTH, HEIGHT);
+    SingleAgentDiscreteMovement move_submodel(model, WIDTH, HEIGHT);
     model.newLayer().addSubModel(move_submodel.getSubModelDescription());
 
     auto agent = model.newAgent("agent");
@@ -301,8 +293,8 @@ TEST(SingleAgentDiscreteMovementTest, GridBoundaries) {
     cell.newVariable<float>("cell_score", 0.0f);
     cell.newState("default");
 
-    move_submodel.setMovingAgent("agent", {}, {{"active", "default"}}, true);
-    move_submodel.setEnvironmentAgent("cell", {}, {{"active", "default"}}, true);
+    move_submodel.setMovingAgent("agent", {}, {}, true);
+    move_submodel.setEnvironmentAgent("cell", {}, {}, true);
 
     CUDASimulation sim(model);
     sim.SimulationConfig().steps = 1;
@@ -332,5 +324,5 @@ TEST(SingleAgentDiscreteMovementTest, GridBoundaries) {
 }
 
 }  // namespace submodels
-}  // namespace stockAgent
+}  // namespace stock
 }  // namespace flamegpu

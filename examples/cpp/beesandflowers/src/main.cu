@@ -5,7 +5,7 @@
 #include <numeric>
 #include <random>
 #include "flamegpu/flamegpu.h"
-#include "flamegpu/stockAgent/subModels/SingleAgentDiscreteMovement.h"
+#include "flamegpu/stock/subModels/SingleAgentDiscreteMovement.h"
 
 #define ENV_DIM 100
 #define SIMULATION_STEPS 100
@@ -209,11 +209,8 @@ void define_model(ModelDescription &model) {
     bee.newVariable<float>("current_cell_score", 0.0f);
 
 
-    // Declared on the stack - uses empty constructor
-    flamegpu::stockAgent::submodels::SingleAgentDiscreteMovement move_sub_logic;
-
-    // Initialize the submodel
-    move_sub_logic.addSingleAgentDiscreteMovementSubmodel(model, ENV_DIM, ENV_DIM);
+    // Initialize the submodel using the constructor
+    flamegpu::stock::submodels::SingleAgentDiscreteMovement move_sub_logic(model, ENV_DIM, ENV_DIM);
 
     // Bind parent agents to submodel
     move_sub_logic.setMovingAgent("bee",
@@ -227,9 +224,7 @@ void define_model(ModelDescription &model) {
             {"priority", "priority"},
             {"current_cell_score", "current_cell_score"}
         },
-        {
-            {"active", flamegpu::ModelData::DEFAULT_STATE}
-        });
+        {});
 
     move_sub_logic.setEnvironmentAgent("flower_cell",
         {
@@ -238,9 +233,7 @@ void define_model(ModelDescription &model) {
             {"is_occupied", "is_occupied"},
             {"cell_score", "nectar"}
         },
-        {
-            {"active", flamegpu::ModelData::DEFAULT_STATE}
-        });
+        {});
 
 
     bee.newFunction("calculate_priority", calculate_priority);

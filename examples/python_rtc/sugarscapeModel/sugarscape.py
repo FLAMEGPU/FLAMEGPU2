@@ -1,4 +1,5 @@
 import os
+print("DEBUG: Running sugarscape.py")
 import pyflamegpu
 import pyflamegpu.codegen
 import csv
@@ -185,9 +186,7 @@ if __name__ == "__main__":
     sugar_cell.newVariableFloat("max_sugar")
     sugar_cell.newVariableInt("is_occupied")
 
-    submodel = pyflamegpu.SingleAgentDiscreteMovement()
-
-    submodel.addSingleAgentDiscreteMovementSubmodel(model, GRID_HEIGHT, GRID_WIDTH)
+    submodel = pyflamegpu.SingleAgentDiscreteMovement(model, GRID_HEIGHT, GRID_WIDTH)
 
     bug_vars = pyflamegpu.map_string_string()
     bug_vars["x"] = "x"
@@ -198,12 +197,10 @@ if __name__ == "__main__":
     bug_vars["last_resources_y"] = "last_resources_y"
     bug_vars["current_cell_score"] = "current_cell_score"
 
-    bug_states = pyflamegpu.map_string_string()
-    bug_states["active"] = "default" # Ecco di nuovo il nostro "default"
-
     submodel.setMovingAgent("bug",
         bug_vars,
-        bug_states
+        pyflamegpu.map_string_string(), # Empty state map
+        True # auto_map=True will map "default" to "default"
     )
 
     env_vars = pyflamegpu.map_string_string()
@@ -212,13 +209,10 @@ if __name__ == "__main__":
     env_vars["is_occupied"] = "is_occupied"
     env_vars["cell_score"] = "sugar"
 
-    # 4. Definisci la mappatura degli stati per l'ambiente
-    env_states = pyflamegpu.map_string_string()
-    env_states["active"] = "default"
-
     submodel.setEnvironmentAgent("sugar_cell",
         env_vars,
-        env_states
+        pyflamegpu.map_string_string(), # Empty state map
+        True # auto_map=True
     )
 
     metabolise_fn = bug.newRTCFunction("metabolise", pyflamegpu.codegen.translate(metabolise))

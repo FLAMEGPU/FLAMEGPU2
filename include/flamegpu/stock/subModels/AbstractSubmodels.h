@@ -1,11 +1,11 @@
-#ifndef INCLUDE_FLAMEGPU_STOCKAGENT_SUBMODELS_ABSTRACTSUBMODELS_H_
-#define INCLUDE_FLAMEGPU_STOCKAGENT_SUBMODELS_ABSTRACTSUBMODELS_H_
+#ifndef INCLUDE_FLAMEGPU_STOCK_SUBMODELS_ABSTRACTSUBMODELS_H_
+#define INCLUDE_FLAMEGPU_STOCK_SUBMODELS_ABSTRACTSUBMODELS_H_
 
 #include <string>
 #include "flamegpu/flamegpu.h"
 
 namespace flamegpu {
-namespace stockAgent {
+namespace stock {
 namespace submodels {
     /**
      * Abstract base class for submodels.
@@ -35,7 +35,7 @@ namespace submodels {
 
 
 }  // namespace submodels
-}  // namespace stockAgent
+}  // namespace stock
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_STOCKAGENT_SUBMODELS_ABSTRACTSUBMODELS_H_
+#endif  // INCLUDE_FLAMEGPU_STOCK_SUBMODELS_ABSTRACTSUBMODELS_H_

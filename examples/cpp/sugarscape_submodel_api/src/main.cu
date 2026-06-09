@@ -9,7 +9,7 @@
 #include <algorithm>
 
 #include "flamegpu/flamegpu.h"
-#include "flamegpu/stockAgent/subModels/SingleAgentDiscreteMovement.h"
+#include "flamegpu/stock/subModels/SingleAgentDiscreteMovement.h"
 
 // Grid Size
 #define GRID_WIDTH 256
@@ -130,8 +130,7 @@ int main(int argc, const char ** argv) {
     /**
      * Submodel Configuration
      */
-    flamegpu::stockAgent::submodels::SingleAgentDiscreteMovement move_sub_logic;
-    move_sub_logic.addSingleAgentDiscreteMovementSubmodel(model, GRID_WIDTH, GRID_HEIGHT);
+    flamegpu::stock::submodels::SingleAgentDiscreteMovement move_sub_logic(model, GRID_WIDTH, GRID_HEIGHT);
 
     // Bind Bug to the submodel's moving agent
     move_sub_logic.setMovingAgent("bug",
@@ -144,9 +143,7 @@ int main(int argc, const char ** argv) {
             {"last_resources_y", "last_resources_y"},
             {"current_cell_score", "current_cell_score"}
         },
-        {
-            {"active", flamegpu::ModelData::DEFAULT_STATE}
-        });
+        {});
 
     // Bind SugarCell to the submodel's environment agent
     move_sub_logic.setEnvironmentAgent("sugar_cell",
@@ -156,9 +153,7 @@ int main(int argc, const char ** argv) {
             {"is_occupied", "is_occupied"},
             {"cell_score", "sugar"}
         },
-        {
-            {"active", flamegpu::ModelData::DEFAULT_STATE}
-        });
+        {});
 
     /**
      * Functions and Layers

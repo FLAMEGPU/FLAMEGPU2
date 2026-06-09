@@ -44,11 +44,11 @@
 #include "flamegpu/flamegpu.h"
 // Also include TestSuiteTelemetyr header, which is not intended to be public.
 #include "flamegpu/detail/TestSuiteTelemetry.h"
-#include "flamegpu/stockAgent/subModels/AbstractSubmodels.h"
-#include "flamegpu/stockAgent/subModels/SingleAgentDiscreteMovement.h"
+#include "flamegpu/stock/subModels/AbstractSubmodels.h"
+#include "flamegpu/stock/subModels/SingleAgentDiscreteMovement.h"
 // #include "flamegpu/runtime/HostFunctionCallback.h"
 using namespace flamegpu; // @todo - is this required? Ideally it shouldn't be, but swig just dumps stuff into the global namespace.
-using namespace flamegpu::stockAgent::submodels;
+using namespace flamegpu::stock::submodels;
 %}
 
 // Expand SWIG support for the standard library
@@ -729,8 +729,8 @@ class ModelVis;
 %include "flamegpu/simulation/RunPlanVector.h"
 
 // Include submodel implementations
-%include "flamegpu/stockAgent/subModels/AbstractSubmodels.h"
-%include "flamegpu/stockAgent/subModels/SingleAgentDiscreteMovement.h"
+%include "flamegpu/stock/subModels/AbstractSubmodels.h"
+%include "flamegpu/stock/subModels/SingleAgentDiscreteMovement.h"
 
 // Include public utility headers
 %include "flamegpu/util/cleanup.h"

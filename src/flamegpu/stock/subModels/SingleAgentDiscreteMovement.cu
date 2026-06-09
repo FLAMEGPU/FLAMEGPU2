@@ -1,4 +1,4 @@
-#include "flamegpu/stockAgent/subModels/SingleAgentDiscreteMovement.h"
+#include "flamegpu/stock/subModels/SingleAgentDiscreteMovement.h"
 
 #include <map>
 #include <string>
@@ -11,7 +11,7 @@ using std::string;
 using std::map;
 
 namespace flamegpu {
-namespace stockAgent {
+namespace stock {
 namespace submodels {
 
 const char* INTERNAL_MOVING_AGENT_NAME = "MovingAgent";
@@ -196,7 +196,7 @@ namespace {
     FLAMEGPU_HOST_CONDITION(move_exit_condition) {
         static int iterations = 0;
         iterations++;
-        bool unresolved = FLAMEGPU->agent(INTERNAL_MOVING_AGENT_NAME, "active").count<int>("moved_this_step", 0) > 0;
+        bool unresolved = FLAMEGPU->agent(INTERNAL_MOVING_AGENT_NAME).count<int>("moved_this_step", 0) > 0;
         if (unresolved && iterations < 5) {
             return CONTINUE;
         }
@@ -205,7 +205,7 @@ namespace {
     }
 
     FLAMEGPU_INIT_FUNCTION(reset_variables) {
-        auto movingAgent = FLAMEGPU->agent(INTERNAL_MOVING_AGENT_NAME, "active");
+        auto movingAgent = FLAMEGPU->agent(INTERNAL_MOVING_AGENT_NAME);
         auto &movingPopulation = movingAgent.getPopulationData();
         for (auto agent : movingPopulation) {
             agent.setVariable<int>("moved_this_step", 0);
@@ -221,7 +221,7 @@ namespace {
         int width = FLAMEGPU->environment.getProperty<int>("submodel_env_width");
         int height = FLAMEGPU->environment.getProperty<int>("submodel_env_height");
 
-        auto envAgent = FLAMEGPU->agent(INTERNAL_ENV_AGENT_NAME, "active");
+        auto envAgent = FLAMEGPU->agent(INTERNAL_ENV_AGENT_NAME);
         auto &envPop = envAgent.getPopulationData();
 
         // 1. Reset all cells to unoccupied
@@ -233,7 +233,7 @@ namespace {
         // If the population size matches width*height, we assume standard indexing.
         bool is_standard_grid = static_cast<int>(envPop.size()) == (width * height);
 
-        auto movingAgent = FLAMEGPU->agent(INTERNAL_MOVING_AGENT_NAME, "active");
+        auto movingAgent = FLAMEGPU->agent(INTERNAL_MOVING_AGENT_NAME);
         auto &movingPop = movingAgent.getPopulationData();
 
         for (auto agent : movingPop) {
@@ -258,7 +258,7 @@ namespace {
     }
 }  // namespace
 
-flamegpu::SubModelDescription SingleAgentDiscreteMovement::addSingleAgentDiscreteMovementSubmodel(ModelDescription &model, int ENV_SIZE_X, int ENV_SIZE_Y) {
+SingleAgentDiscreteMovement::SingleAgentDiscreteMovement(ModelDescription &model, int ENV_SIZE_X, int ENV_SIZE_Y) {
     ModelDescription sub_model_move("movement_submodel");
 
     sub_model_move.Environment().newProperty<int>("submodel_env_width", ENV_SIZE_X);
@@ -266,7 +266,6 @@ flamegpu::SubModelDescription SingleAgentDiscreteMovement::addSingleAgentDiscret
 
 
     AgentDescription movingAgent = sub_model_move.newAgent(INTERNAL_MOVING_AGENT_NAME);
-    movingAgent.newState("active");
     movingAgent.newVariable<int>("x");
     movingAgent.newVariable<int>("y");
     movingAgent.newVariable<float>("priority", 0.0f);
@@ -280,7 +279,6 @@ flamegpu::SubModelDescription SingleAgentDiscreteMovement::addSingleAgentDiscret
     movingAgent.newVariable<int>("last_resources_y", -1);
 
     AgentDescription envAgent = sub_model_move.newAgent(INTERNAL_ENV_AGENT_NAME);
-    envAgent.newState("active");
     envAgent.newVariable<int>("x");
     envAgent.newVariable<int>("y");
     envAgent.newVariable<int>("is_occupied", 0);
@@ -295,8 +293,6 @@ flamegpu::SubModelDescription SingleAgentDiscreteMovement::addSingleAgentDiscret
 
     this->smm = model.newSubModel("MovementInstance", sub_model_move);
     this->smm->setMaxSteps(5);
-
-    return *(this->smm);
 }
 
 void SingleAgentDiscreteMovement::setMovingAgent(const string& parent_name,
@@ -304,7 +300,7 @@ void SingleAgentDiscreteMovement::setMovingAgent(const string& parent_name,
                            const map<string, string>& state_map,
                            bool auto_map) {
     if (!smm.has_value()) {
-        throw exception::InvalidSubModel("SingleAgentDiscreteMovement submodel was not initialized. Call addSingleAgentDiscreteMovementSubmodel() first.");
+        throw exception::InvalidSubModel("SingleAgentDiscreteMovement submodel was not initialized.");
     }
     auto agent_map = this->smm->bindAgent(INTERNAL_MOVING_AGENT_NAME, parent_name, auto_map, auto_map);
     for (auto const& [internal_var, parent_var] : var_map) { agent_map.mapVariable(internal_var, parent_var); }
@@ -316,7 +312,7 @@ void SingleAgentDiscreteMovement::setEnvironmentAgent(const string& parent_name,
                            const map<string, string>& state_map,
                            bool auto_map) {
     if (!smm.has_value()) {
-        throw exception::InvalidSubModel("SingleAgentDiscreteMovement submodel was not initialized. Call addSingleAgentDiscreteMovementSubmodel() first.");
+        throw exception::InvalidSubModel("SingleAgentDiscreteMovement submodel was not initialized.");
     }
     auto agent_map = this->smm->bindAgent(INTERNAL_ENV_AGENT_NAME, parent_name, auto_map, auto_map);
     for (auto const& [internal_var, parent_var] : var_map) { agent_map.mapVariable(internal_var, parent_var); }
@@ -386,7 +382,7 @@ void SingleAgentDiscreteMovement::defineLayer(ModelDescription &smm_desc) {
 
 void SingleAgentDiscreteMovement::validate() {
     if (!this->smm.has_value()) {
-        throw exception::InvalidSubModel("SingleAgentDiscreteMovement submodel was not initialized. Call addSingleAgentDiscreteMovementSubmodel() first.");
+        throw exception::InvalidSubModel("SingleAgentDiscreteMovement submodel was not initialized.");
     }
 
     try {
@@ -408,8 +404,6 @@ void SingleAgentDiscreteMovement::validate() {
         env_agent.getVariableMapping("cell_score");
 
         // Mandatory state mapping check
-        env_agent.getStateMapping("active");
-        moving_agent.getStateMapping("active");
     } catch (const exception::InvalidAgentState& e) {
         string msg = "SingleAgentDiscreteMovement submodel missing required state binding: " + string(e.what());
         throw exception::InvalidAgentState(msg.c_str());
@@ -423,5 +417,5 @@ void SingleAgentDiscreteMovement::validate() {
 }
 
 }  // namespace submodels
-}  // namespace stockAgent
+}  // namespace stock
 }  // namespace flamegpu

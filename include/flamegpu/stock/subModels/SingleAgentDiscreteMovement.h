@@ -1,5 +1,5 @@
-#ifndef INCLUDE_FLAMEGPU_STOCKAGENT_SUBMODELS_SINGLEAGENTDISCRETEMOVEMENT_H_
-#define INCLUDE_FLAMEGPU_STOCKAGENT_SUBMODELS_SINGLEAGENTDISCRETEMOVEMENT_H_
+#ifndef INCLUDE_FLAMEGPU_STOCK_SUBMODELS_SINGLEAGENTDISCRETEMOVEMENT_H_
+#define INCLUDE_FLAMEGPU_STOCK_SUBMODELS_SINGLEAGENTDISCRETEMOVEMENT_H_
 
 #include <map>
 #include <string>
@@ -10,7 +10,7 @@
 
 
 namespace flamegpu {
-namespace stockAgent {
+namespace stock {
 namespace submodels {
 
 /**
@@ -22,18 +22,12 @@ namespace submodels {
 class SingleAgentDiscreteMovement : public AbstractSubmodel {
  public:
     /**
-     * Empty constructor. Object must be initialized via addSingleAgentDiscreteMovementSubmodel().
-     */
-    SingleAgentDiscreteMovement() = default;
-
-    /**
-     * Defines the movement submodel and adds it to the provided parent model.
+     * Constructor. Defines the movement submodel and adds it to the provided parent model.
      * @param model The parent ModelDescription
      * @param ENV_SIZE_X Width of the environment
      * @param ENV_SIZE_Y Height of the environment
-     * @return The created SubModelDescription
      */
-    flamegpu::SubModelDescription addSingleAgentDiscreteMovementSubmodel(flamegpu::ModelDescription &model, int ENV_SIZE_X, int ENV_SIZE_Y);
+    SingleAgentDiscreteMovement(flamegpu::ModelDescription &model, int ENV_SIZE_X, int ENV_SIZE_Y);
 
     /**
      * Binds a parent agent to the submodel's internal moving agent.
@@ -68,7 +62,7 @@ class SingleAgentDiscreteMovement : public AbstractSubmodel {
 };
 
 }  // namespace submodels
-}  // namespace stockAgent
+}  // namespace stock
 }  // namespace flamegpu
 
-#endif  // INCLUDE_FLAMEGPU_STOCKAGENT_SUBMODELS_SINGLEAGENTDISCRETEMOVEMENT_H_
+#endif  // INCLUDE_FLAMEGPU_STOCK_SUBMODELS_SINGLEAGENTDISCRETEMOVEMENT_H_

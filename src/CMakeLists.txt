@@ -299,8 +299,8 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/Timer.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/TestSuiteTelemetry.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/JitifyCache.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/stockAgent/subModels/AbstractSubmodels.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/stockAgent/subModels/SingleAgentDiscreteMovement.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/stock/subModels/AbstractSubmodels.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/stock/subModels/SingleAgentDiscreteMovement.h
 )
 SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/exception/FLAMEGPUException.cpp
@@ -387,7 +387,7 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/detail/wddm.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/detail/JitifyCache.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/detail/TestSuiteTelemetry.cpp
-    ${FLAMEGPU_ROOT}/src/flamegpu/stockAgent/subModels/SingleAgentDiscreteMovement.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/stock/subModels/SingleAgentDiscreteMovement.cu
 )
 SET(SRC_DYNAMIC
     ${DYNAMIC_VERSION_SRC_DEST}
