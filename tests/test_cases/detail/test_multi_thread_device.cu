@@ -509,7 +509,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Agent) {
     m.Environment().newProperty<int>("zero", 0);
 
     int devices = 0;
-    if (flamegpu::detail::gpu::gpuSuccess != FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&devices) || devices <= 0) {
+    if (flamegpu::detail::gpu::gpuSuccess != flamegpu::detail::gpu::gpuGetDeviceCount(&devices) || devices <= 0) {
         // Skip the test, if no GPUs.
         return;
     }
@@ -577,7 +577,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Message) {
     m.newLayer().addAgentFunction(SlowFnMessage);
 
     int devices = 0;
-    if (flamegpu::detail::gpu::gpuSuccess != FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&devices) || devices <= 0) {
+    if (flamegpu::detail::gpu::gpuSuccess != flamegpu::detail::gpu::gpuGetDeviceCount(&devices) || devices <= 0) {
         // Skip the test, if no CUDA or GPUs.
         return;
     }
@@ -649,7 +649,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Environment) {
     m.Environment().newProperty<int>("three", 3);
 
     int devices = 0;
-    if (flamegpu::detail::gpu::gpuSuccess != FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&devices) || devices <= 0) {
+    if (flamegpu::detail::gpu::gpuSuccess != flamegpu::detail::gpu::gpuGetDeviceCount(&devices) || devices <= 0) {
         // Skip the test, if no CUDA or GPUs.
         return;
     }
@@ -746,7 +746,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
     m.Environment().newProperty<int>("zero", 0);
 
     int devices = 0;
-    if (flamegpu::detail::gpu::gpuSuccess != FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&devices) || devices <= 0) {
+    if (flamegpu::detail::gpu::gpuSuccess != flamegpu::detail::gpu::gpuGetDeviceCount(&devices) || devices <= 0) {
         // Skip the test, if no CUDA or GPUs.
         return;
     }
@@ -825,7 +825,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
     m.Environment().newProperty<int>("zero", 0);
 
     int devices = 0;
-    if (flamegpu::detail::gpu::gpuSuccess != FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&devices) || devices <= 0) {
+    if (flamegpu::detail::gpu::gpuSuccess != flamegpu::detail::gpu::gpuGetDeviceCount(&devices) || devices <= 0) {
         // Skip the test, if no CUDA or GPUs.
         return;
     }
