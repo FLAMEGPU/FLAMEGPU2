@@ -549,14 +549,14 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Agent) {
         // Check exceptions
         ASSERT_FALSE(results[i]);
         // Get agent data
-        ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(sims[i]->CUDAConfig().device_id), flamegpu::detail::gpu::gpuSuccess);
+        ASSERT_EQ(flamegpu::detail::gpu::gpuSetDevice(sims[i]->CUDAConfig().device_id), flamegpu::detail::gpu::gpuSuccess);
         sims[i]->getPopulationData(pop);
         for (unsigned int j = 0; j < POP_SIZE; ++j) {
             int x = pop[j].getVariable<int>("x");
             ASSERT_EQ(x, static_cast<int>(2 * STEPS + i));
         }
     }
-    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(0), flamegpu::detail::gpu::gpuSuccess);
+    ASSERT_EQ(flamegpu::detail::gpu::gpuSetDevice(0), flamegpu::detail::gpu::gpuSuccess);
 }
 TEST(MultiThreadDeviceTest, SameModelMultiDevice_Message) {
     const unsigned int POP_SIZE = 10000;
@@ -617,14 +617,14 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Message) {
         // Check exceptions
         ASSERT_FALSE(results[i]);
         // Get agent data
-        ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(sims[i]->CUDAConfig().device_id), flamegpu::detail::gpu::gpuSuccess);
+        ASSERT_EQ(flamegpu::detail::gpu::gpuSetDevice(sims[i]->CUDAConfig().device_id), flamegpu::detail::gpu::gpuSuccess);
         sims[i]->getPopulationData(pop);
         for (unsigned int j = 0; j < POP_SIZE; ++j) {
             int x = pop[j].getVariable<int>("x");
             ASSERT_EQ(x, static_cast<int>(POP_SIZE * STEPS + i));
         }
     }
-    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(0), flamegpu::detail::gpu::gpuSuccess);
+    ASSERT_EQ(flamegpu::detail::gpu::gpuSetDevice(0), flamegpu::detail::gpu::gpuSuccess);
 }
 TEST(MultiThreadDeviceTest, SameModelMultiDevice_Environment) {
     const unsigned int POP_SIZE = 10000;
@@ -656,10 +656,10 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Environment) {
     devices = devices > MAX_DEVICES ? MAX_DEVICES : devices;
     // BEGIN: Attempt to pre init contexts
     for (int device = 0; device < devices; ++device) {
-        ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(device), flamegpu::detail::gpu::gpuSuccess);
+        ASSERT_EQ(flamegpu::detail::gpu::gpuSetDevice(device), flamegpu::detail::gpu::gpuSuccess);
         ASSERT_EQ(flamegpu::detail::cuda::cudaFree(nullptr), flamegpu::detail::gpu::gpuSuccess);
     }
-    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(0), flamegpu::detail::gpu::gpuSuccess);
+    ASSERT_EQ(flamegpu::detail::gpu::gpuSetDevice(0), flamegpu::detail::gpu::gpuSuccess);
     // END: Attempt to pre init contexts
     std::vector<std::shared_ptr<CUDASimulation>> sims;
     sims.reserve(devices * SIMS_PER_DEVICE);
@@ -699,7 +699,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Environment) {
         // Check exceptions
         ASSERT_FALSE(results[i]);
         // Get agent data
-        ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(sims[i]->CUDAConfig().device_id), flamegpu::detail::gpu::gpuSuccess);
+        ASSERT_EQ(flamegpu::detail::gpu::gpuSetDevice(sims[i]->CUDAConfig().device_id), flamegpu::detail::gpu::gpuSuccess);
         sims[i]->getPopulationData(pop);
         int bad = 0;
         int x = static_cast<int>(4 * STEPS * (i + 1) + i);
@@ -717,14 +717,14 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_Environment) {
         // Check exceptions
         ASSERT_FALSE(results[i]);
         // Get agent data
-        ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(sims[i]->CUDAConfig().device_id), flamegpu::detail::gpu::gpuSuccess);
+        ASSERT_EQ(flamegpu::detail::gpu::gpuSetDevice(sims[i]->CUDAConfig().device_id), flamegpu::detail::gpu::gpuSuccess);
         sims[i]->getPopulationData(pop);
         for (unsigned int j = 0; j < POP_SIZE; ++j) {
             int x = pop[j].getVariable<int>("x");
             ASSERT_EQ(x, static_cast<int>(4 * STEPS * (i + 1) + i));
         }
     }
-    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(0), flamegpu::detail::gpu::gpuSuccess);
+    ASSERT_EQ(flamegpu::detail::gpu::gpuSetDevice(0), flamegpu::detail::gpu::gpuSuccess);
 }
 TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
     const unsigned int POP_SIZE = 1000;
@@ -786,7 +786,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
         // Check exceptions
         ASSERT_FALSE(results[i]);
         // Get agent data
-        ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(sims[i]->CUDAConfig().device_id), flamegpu::detail::gpu::gpuSuccess);
+        ASSERT_EQ(flamegpu::detail::gpu::gpuSetDevice(sims[i]->CUDAConfig().device_id), flamegpu::detail::gpu::gpuSuccess);
         sims[i]->getPopulationData(pop);
         for (unsigned int j = 0; j < POP_SIZE; ++j) {
             int x = pop[j].getVariable<int>("x");
@@ -803,7 +803,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentOutput) {
             }
         }
     }
-    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(0), flamegpu::detail::gpu::gpuSuccess);
+    ASSERT_EQ(flamegpu::detail::gpu::gpuSetDevice(0), flamegpu::detail::gpu::gpuSuccess);
 }
 TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
     const unsigned int POP_SIZE = 10000;
@@ -865,7 +865,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
         // Check exceptions
         ASSERT_FALSE(results[i]);
         // Get agent data
-        ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(sims[i]->CUDAConfig().device_id), flamegpu::detail::gpu::gpuSuccess);
+        ASSERT_EQ(flamegpu::detail::gpu::gpuSetDevice(sims[i]->CUDAConfig().device_id), flamegpu::detail::gpu::gpuSuccess);
         sims[i]->getPopulationData(pop);
         for (unsigned int j = 0; j < POP_SIZE; ++j) {
             int x = pop[j].getVariable<int>("x");
@@ -880,7 +880,7 @@ TEST(MultiThreadDeviceTest, SameModelMultiDevice_AgentFunctionCondition) {
             }
         }
     }
-    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(0), flamegpu::detail::gpu::gpuSuccess);
+    ASSERT_EQ(flamegpu::detail::gpu::gpuSetDevice(0), flamegpu::detail::gpu::gpuSuccess);
 }
 }  // namespace test_multi_thread_device
 }  // namespace flamegpu

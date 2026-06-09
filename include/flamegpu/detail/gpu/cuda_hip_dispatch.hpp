@@ -39,6 +39,10 @@ inline auto gpuDeviceGetAttribute(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceGetAttribute)(std::forward<decltype(args)>(args)...);
 }
 
+inline auto gpuSetDevice(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(std::forward<decltype(args)>(args)...);
+}
+
 inline auto gpuMalloc(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(std::forward<decltype(args)>(args)...);
 }
