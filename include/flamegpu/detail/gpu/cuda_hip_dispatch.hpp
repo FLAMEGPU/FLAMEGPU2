@@ -33,6 +33,19 @@ inline auto gpuDeviceSynchronize(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceSynchronize)(std::forward<decltype(args)>(args)...);
 }
 
+inline auto gpuGetErrorName(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(GetErrorName)(std::forward<decltype(args)>(args)...);
+}
+
+inline auto gpuGetErrorString(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(GetErrorString)(std::forward<decltype(args)>(args)...);
+}
+
+inline auto gpuPeekAtLastError(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(PeekAtLastError)(std::forward<decltype(args)>(args)...);
+}
+
+
 inline auto gpuEventCreate(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(EventCreate)(std::forward<decltype(args)>(args)...);
 }
