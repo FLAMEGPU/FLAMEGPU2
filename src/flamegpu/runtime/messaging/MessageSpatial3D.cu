@@ -8,6 +8,7 @@
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 #ifdef FLAMEGPU_USE_CUDA
@@ -90,9 +91,9 @@ void MessageSpatial3D::CUDAModelHandler::init(detail::CUDAScatter &, unsigned in
 
 void MessageSpatial3D::CUDAModelHandler::allocateMetaDataDevicePtr(flamegpu::detail::gpu::Stream_t stream) {
     if (d_data == nullptr) {
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_histogram, (binCount + 1) * sizeof(unsigned int)));
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&hd_data.PBM, (binCount + 1) * sizeof(unsigned int)));
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_data, sizeof(MetaData)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_histogram, (binCount + 1) * sizeof(unsigned int)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&hd_data.PBM, (binCount + 1) * sizeof(unsigned int)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_data, sizeof(MetaData)));
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(d_data, &hd_data, sizeof(MetaData), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
         resizeCubTemp(stream);
@@ -163,7 +164,7 @@ void MessageSpatial3D::CUDAModelHandler::resizeCubTemp(flamegpu::detail::gpu::St
             flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_CUB_temp_storage));
         }
         d_CUB_temp_storage_bytes = bytesCheck;
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_CUB_temp_storage, d_CUB_temp_storage_bytes));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_CUB_temp_storage, d_CUB_temp_storage_bytes));
     }
 }
 
@@ -175,8 +176,8 @@ void MessageSpatial3D::CUDAModelHandler::resizeKeysVals(const unsigned int newSi
             flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_vals));
         }
         d_keys_vals_storage_bytes = bytesCheck;
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_keys, d_keys_vals_storage_bytes));
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_vals, d_keys_vals_storage_bytes));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_keys, d_keys_vals_storage_bytes));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_vals, d_keys_vals_storage_bytes));
     }
 }
 /// <summary>

@@ -16,6 +16,7 @@
 #include "flamegpu/simulation/CUDASimulation.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -123,7 +124,7 @@ void RandomManager::resizeDeviceArray(const size_type _length, flamegpu::detail:
         // Growing array
         detail::curandState *t_hd_random_state = nullptr;
         // Allocate new mem to t_hd
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&t_hd_random_state, _length * sizeof(detail::curandState)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&t_hd_random_state, _length * sizeof(detail::curandState)));
         // Copy hd->t_hd[****    ]
         if (d_random_state) {
             flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(t_hd_random_state, d_random_state, length * sizeof(detail::curandState), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice), stream));
@@ -153,7 +154,7 @@ void RandomManager::resizeDeviceArray(const size_type _length, flamegpu::detail:
         detail::curandState *t_hd_random_state = nullptr;
         detail::curandState *t_h_max_random_state = nullptr;
         // Allocate new
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&t_hd_random_state, _length * sizeof(detail::curandState)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&t_hd_random_state, _length * sizeof(detail::curandState)));
         // Allocate host backup
         if (length > h_max_random_size)
             t_h_max_random_state = reinterpret_cast<detail::curandState*>(malloc(length * sizeof(detail::curandState)));

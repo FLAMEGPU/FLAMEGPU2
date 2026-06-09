@@ -45,6 +45,7 @@
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/gpu/device_name.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 #ifdef FLAMEGPU_VISUALISATION
 #include "flamegpu/visualiser/FLAMEGPU_Visualisation.h"
@@ -1842,7 +1843,7 @@ void CUDASimulation::processHostAgentCreation(const unsigned int streamId) {
                             flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(dt_buff));
                         }
                         t_buff = reinterpret_cast<char*>(malloc(size_req));
-                        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&dt_buff, size_req));
+                        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&dt_buff, size_req));
                         t_bufflen = size_req;
                     }
                 }

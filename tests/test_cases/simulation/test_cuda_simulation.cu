@@ -8,6 +8,7 @@
 
 #include "flamegpu/flamegpu.h"
 #include "flamegpu/detail/gpu/macros.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/gpu/cuda/compute_capability.cuh"
 #include "helpers/device_initialisation.h"
 #include "flamegpu/io/Telemetry.h"
@@ -843,7 +844,7 @@ TEST(TestCUDASimulation, setEnvironmentProperty) {
 TEST(TestCUDASimulation, SimulationWithExistingCUDAMalloc) {
     // Allocate some arbitraty device memory.
     int * d_int = nullptr;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_int, sizeof(int)));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_int, sizeof(int)));
     // Validate that the ptr is a valid device pointer
     cudaPointerAttributes attributes = {};
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, d_int));

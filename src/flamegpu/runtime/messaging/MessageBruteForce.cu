@@ -8,6 +8,7 @@
 #include "flamegpu/simulation/detail/CUDAMessage.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -21,7 +22,7 @@ void MessageBruteForce::CUDAModelHandler::init(detail::CUDAScatter &, unsigned i
 
 void MessageBruteForce::CUDAModelHandler::allocateMetaDataDevicePtr(flamegpu::detail::gpu::Stream_t stream) {
     if (d_metadata == nullptr) {
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_metadata, sizeof(MetaData)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_metadata, sizeof(MetaData)));
     }
 }
 
