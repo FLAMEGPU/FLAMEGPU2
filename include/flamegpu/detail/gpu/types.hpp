@@ -10,52 +10,47 @@
 #include <hip/hip_runtime.h>
 #endif
 
+#include "flamegpu/detail/gpu/macros.hpp"
+
 namespace flamegpu {
 namespace detail {
 
 /**
  * Internal (detail) namespace abstracting differences between CUDA and HIP
  * 
- * Todo: Improve this
- * Todo: Consider where Stream_t should be defined (seeing as it is used in parts of the public api I.e. HostAPI::HostAPI). Should this actually be flamegpu::gpu for types with other parts in flamegpu::gpu::detail instead?
+ *  * Todo: Consider where Stream_t should be defined (seeing as it is used in parts of the public api I.e. HostAPI::HostAPI). Should this actually be flamegpu::gpu for types with other parts in flamegpu::gpu::detail instead?
  */
 namespace gpu {
 
-// Using statement for cuda/hip streams, which are part of the public API
-// Todo: should this just use the macro instead? Should this be in detail seeing as it is used in parts of the (sortof) public API?
-#if defined(FLAMEGPU_USE_CUDA)
-using Stream_t = cudaStream_t;
-#elif defined(FLAMEGPU_USE_HIP)
-using Stream_t = hipStream_t;
-#else
-// naked struct for intellisense, this should never occur for actual compilation Todo: this is not correct.
-#error "CUDA/HIP required"
-typedef struct stream* Stream_t;
-#endif
+/**
+ * Abstraction for cudaStream_t or hipStream_t as appropriate
+ * 
+ * Todo: Should this be in detail given it is used as part of the public (ish) API?
+ */
+using Stream_t = FLAMEGPU_GPU_RUNTIME_SYMBOL(Stream_t);
 
+/**
+ * Abstraction for cudaError_t or hipError_t as appropriate
+ * 
+ * Todo: Should this be in detail given it is used as part of the public (ish) API?
+ */
+using Error_t = FLAMEGPU_GPU_RUNTIME_SYMBOL(Error_t);
 
-// Using statement for cuda/hip error_t, which is part of the private API?
-// Todo: Should this just use the macro instead?
-// Todo: Move type definitions and macros for this to a separate header for lighter includes? flamegpu/gpu/types.h or similar, and then flamegpu/gpu/macros.h and flamegpu/gpu/
-// Should this actually be in detail?
-#if defined(FLAMEGPU_USE_CUDA)
-using Error_t = cudaError_t;
-#elif defined(FLAMEGPU_USE_HIP)
-using Error_t = hipError_t;
-#else
-// naked struct for intellisense, this should never occur for actual compilation. Todo: this is not correct.
-typedef struct error* Error_t;
-#endif
-
-// pointerAttributes is _t in hip :(
-#if defined(FLAMEGPU_USE_CUDA)
-using PointerAttributes_t = cudaPointerAttributes;
-#elif defined(FLAMEGPU_USE_HIP)
+/**
+ * Abstraction for cudaPointerAttributes or hipPointerAttribute_t as appropriate
+ * 
+ * Note: This is different between CUDA and HIP, 
+ */
+#if defined(FLAMEGPU_USE_HIP)
 using PointerAttributes_t = hipPointerAttribute_t;
-#else
-// naked struct for intellisense, this should never occur for actual compilation Todo: this is not correct.
-typedef struct pointerAttribtues* PointerAttributes_t;
+#else  // if defined(FLAMEGPU_USE_CUDA)
+using PointerAttributes_t = cudaPointerAttributes;
 #endif
+
+/**
+ * Abstraction for cudaEvent_t or hipEvent_t as appropriate
+ */
+using Event_t = FLAMEGPU_GPU_RUNTIME_SYMBOL(Event_t);
 
 }  // namespace gpu
 }  // namespace detail
