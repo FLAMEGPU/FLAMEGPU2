@@ -94,7 +94,7 @@ void MessageSpatial3D::CUDAModelHandler::allocateMetaDataDevicePtr(flamegpu::det
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_histogram, (binCount + 1) * sizeof(unsigned int)));
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&hd_data.PBM, (binCount + 1) * sizeof(unsigned int)));
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_data, sizeof(MetaData)));
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_data, &hd_data, sizeof(MetaData), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_data, &hd_data, sizeof(MetaData), flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
         resizeCubTemp(stream);
     }

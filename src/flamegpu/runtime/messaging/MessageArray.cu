@@ -50,7 +50,7 @@ void MessageArray::CUDAModelHandler::init(detail::CUDAScatter &scatter, unsigned
 void MessageArray::CUDAModelHandler::allocateMetaDataDevicePtr(flamegpu::detail::gpu::Stream_t stream) {
     if (d_metadata == nullptr) {
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_metadata, sizeof(MetaData)));
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_metadata, &hd_metadata, sizeof(MetaData), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_metadata, &hd_metadata, sizeof(MetaData), flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
     }
 }
