@@ -69,7 +69,7 @@ TEST(TestCUDASimulation, ApplyConfigDerivedContextCreation) {
 TEST(TestCUDASimulation, AllDeviceIdValues) {
     // Get the number of devices
     int device_count = 1;
-    if (FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) != FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&device_count) || device_count <= 0) {
+    if (flamegpu::detail::gpu::gpuSuccess != FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&device_count) || device_count <= 0) {
         // Skip the test, if no CUDA or GPUs.
         return;
     }
@@ -101,7 +101,7 @@ TEST(TestCUDASimulation, AllDeviceIdValues) {
         }
     }
     // Return to prior state for remaining tests.
-    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(Success), FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(0));
+    ASSERT_EQ(flamegpu::detail::gpu::gpuSuccess, FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(0));
 }
 TEST(TestSimulation, ArgParse_inputfile_long) {
     ModelDescription m(MODEL_NAME);
@@ -177,7 +177,7 @@ TEST(TestSimulation, ArgParse_randomseed_short) {
     EXPECT_EQ(c.getSimulationConfig().random_seed, 12u);
 }
 TEST(TestCUDASimulation, ArgParse_device_long) {
-    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetLastError)(), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
+    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetLastError)(), flamegpu::detail::gpu::gpuSuccess);
     ModelDescription m(MODEL_NAME);
     CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "--device", "1200" };
@@ -187,13 +187,13 @@ TEST(TestCUDASimulation, ArgParse_device_long) {
     EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), exception::InvalidCUDAdevice);
     EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
     // Blank init does not reset value to default
-    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetLastError)(), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
+    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetLastError)(), flamegpu::detail::gpu::gpuSuccess);
     EXPECT_THROW(c.initialise(0, nullptr), exception::InvalidCUDAdevice);
     EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
-    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetLastError)(), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
+    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetLastError)(), flamegpu::detail::gpu::gpuSuccess);
 }
 TEST(TestCUDASimulation, ArgParse_device_short) {
-    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetLastError)(), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
+    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetLastError)(), flamegpu::detail::gpu::gpuSuccess);
     ModelDescription m(MODEL_NAME);
     CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "-d", "1200" };
@@ -203,10 +203,10 @@ TEST(TestCUDASimulation, ArgParse_device_short) {
     EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), exception::InvalidCUDAdevice);
     EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
     // Blank init does not reset value to default
-    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetLastError)(), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
+    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetLastError)(), flamegpu::detail::gpu::gpuSuccess);
     EXPECT_THROW(c.initialise(0, nullptr), exception::InvalidCUDAdevice);
     EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
-    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetLastError)(), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
+    ASSERT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetLastError)(), flamegpu::detail::gpu::gpuSuccess);
 }
 TEST(TestSimulation, ArgParse_unknown) {
     ModelDescription m(MODEL_NAME);
