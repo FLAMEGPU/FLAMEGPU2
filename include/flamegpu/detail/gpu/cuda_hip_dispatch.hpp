@@ -25,6 +25,22 @@ inline auto gpuEventCreate(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(EventCreate)(std::forward<decltype(args)>(args)...);
 }
 
+inline auto gpuEventDestroy(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(EventDestroy)(std::forward<decltype(args)>(args)...);
+}
+
+inline auto gpuEventRecord(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(EventRecord)(std::forward<decltype(args)>(args)...);
+}
+
+inline auto gpuEventSynchronize(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(EventSynchronize)(std::forward<decltype(args)>(args)...);
+}
+
+inline auto gpuEventElapsedTime(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(EventElapsedTime)(std::forward<decltype(args)>(args)...);
+}
+
 }  // namespace gpu
 }  // namespace detail
 }  // namespace flamegpu
