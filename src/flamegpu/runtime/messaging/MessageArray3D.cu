@@ -46,13 +46,13 @@ void MessageArray3D::CUDAModelHandler::init(detail::CUDAScatter &scatter, unsign
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(write_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length, stream));
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(read_list.at(var.first), 0, var.second.type_size * var.second.elements * hd_metadata.length, stream));
     }
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
 }
 void MessageArray3D::CUDAModelHandler::allocateMetaDataDevicePtr(flamegpu::detail::gpu::Stream_t stream) {
     if (d_metadata == nullptr) {
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_metadata, sizeof(MetaData)));
         flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(d_metadata, &hd_metadata, sizeof(MetaData), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
     }
 }
 
@@ -101,7 +101,7 @@ void MessageArray3D::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, 
         this->sim_message.setMessageCount(hd_metadata.length);
     // Detect errors
     // TODO
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));  // Redundant: Array msg reorder has a sync
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));  // Redundant: Array msg reorder has a sync
 }
 
 /// <summary>
