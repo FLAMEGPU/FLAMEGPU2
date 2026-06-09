@@ -1990,7 +1990,7 @@ void CUDASimulation::resetLog() {
     flamegpu::detail::gpuCheck(hipDeviceGetAttribute(&run_log->performance_specs.device_cc_major, hipDeviceAttributeComputeCapabilityMajor, CUDAConfig().device_id));
     flamegpu::detail::gpuCheck(hipDeviceGetAttribute(&run_log->performance_specs.device_cc_minor,  hipDeviceAttributeComputeCapabilityMinor, CUDAConfig().device_id));
 #endif
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(RuntimeGetVersion)(&run_log->performance_specs.cuda_version));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuRuntimeGetVersion(&run_log->performance_specs.cuda_version));
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
     run_log->performance_specs.seatbelts = true;
 #else

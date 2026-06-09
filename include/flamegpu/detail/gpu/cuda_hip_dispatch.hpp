@@ -151,6 +151,10 @@ inline auto gpuEventElapsedTime(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(EventElapsedTime)(std::forward<decltype(args)>(args)...);
 }
 
+inline auto gpuRuntimeGetVersion(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(RuntimeGetVersion)(std::forward<decltype(args)>(args)...);
+}
+
 // Enums
 inline constexpr auto gpuSuccess = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
 
