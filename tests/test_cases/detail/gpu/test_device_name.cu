@@ -14,7 +14,7 @@ namespace flamegpu {
 TEST(TestDetailGPUDeviceName, getDeviceName) {
     // Get the number of devices so testing is accurate, assume it must be >= 0 else other tests will be failing
     int deviceCount = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&deviceCount));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuGetDeviceCount(&deviceCount));
 
     // Expect an exception if a negative device name is used
     EXPECT_THROW(flamegpu::detail::gpu::getDeviceName(-1), flamegpu::exception::InvalidCUDAdevice);
@@ -30,7 +30,7 @@ TEST(TestDetailGPUDeviceName, getDeviceName) {
 TEST(TestDetailGPUDeviceName, getDeviceNames) {
     // The returned value will depend on the number of devices.
     int deviceCount = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&deviceCount));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuGetDeviceCount(&deviceCount));
 
     std::string names = "";
 
