@@ -20,6 +20,9 @@ jobs:
     # Contains is used to allow whitespace in the comment which is checked in an inner step.
     if: github.event_name == 'pull_request_target' || (contains(github.event.comment.body, 'recheck') || contains(github.event.comment.body, 'I have read the CLA Document and I hereby sign the CLA'))
     runs-on: ubuntu-latest
+    env:
+      # Allow NODE 20 to continue to be used until node 20 is fully removed in "fall 2026". 
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       # If triggered by an issue comment, compare a trimmed version to allow for additional whitespace.
       # Uses JS to avoid having to do shell character escaping nicely
