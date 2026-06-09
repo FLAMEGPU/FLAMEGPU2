@@ -17,7 +17,7 @@ TEST(TestUtilWDDM, deviceIsWDDM) {
 
     // Get the number of cuda devices
     int device_count = 0;
-    if (FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) != FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&device_count) || device_count <= 0) {
+    if (flamegpu::detail::gpu::gpuSuccess != FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&device_count) || device_count <= 0) {
         return;
     }
     // For each CUDA device, get the wddm value and check it.
