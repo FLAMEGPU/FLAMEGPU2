@@ -225,7 +225,7 @@ void CUDAAgent::validateIDCollisions(flamegpu::detail::gpu::Stream_t stream) con
     ptrdiff_t buffOffset = 0;
     for (const auto& s : state_map) {
         const unsigned int t_size = s.second->getSize();
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(d_keysIn + buffOffset, s.second->getVariablePointer(ID_VARIABLE_NAME), t_size * sizeof(id_t), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_keysIn + buffOffset, s.second->getVariablePointer(ID_VARIABLE_NAME), t_size * sizeof(id_t), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice), stream));
         buffOffset += t_size;
     }
     // Sort agent ids into d_keysOut
@@ -251,7 +251,7 @@ void CUDAAgent::validateIDCollisions(flamegpu::detail::gpu::Stream_t stream) con
     }
     flamegpu::detail::gpuCheck(cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount - 1, stream));
     id_t flagsSet = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(&flagsSet, d_keysOut, sizeof(id_t), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&flagsSet, d_keysOut, sizeof(id_t), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
     // Cleanup
     flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_temp_storage));
     flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_keysIn));
