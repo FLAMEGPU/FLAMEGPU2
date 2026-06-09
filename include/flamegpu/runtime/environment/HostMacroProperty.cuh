@@ -52,7 +52,7 @@ struct HostMacroProperty_MetaData {
         if (!h_base_ptr) {
             h_base_ptr = static_cast<char*>(malloc(elements * type_size));
         }
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(h_base_ptr, d_base_ptr, elements * type_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(h_base_ptr, d_base_ptr, elements * type_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
         has_changed = false;
     }
@@ -68,7 +68,7 @@ struct HostMacroProperty_MetaData {
                     property_name.c_str());
             }
 #endif
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(d_base_ptr, h_base_ptr, elements * type_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_base_ptr, h_base_ptr, elements * type_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
             flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
             has_changed = false;
         }

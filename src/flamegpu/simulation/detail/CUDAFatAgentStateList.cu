@@ -101,7 +101,7 @@ void CUDAFatAgentStateList::resize(const unsigned int minSize, const bool retain
             const size_t active_len = aliveAgents * var_size;
             // const size_t inactive_len = (newSize - aliveAgents) * var_size;
             // Copy across old data (TODO: We could improve this by doing a scatter for all variables at once)
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(buff->data_swap, buff->data, active_len, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice), stream));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(buff->data_swap, buff->data, active_len, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice), stream));
             // Zero remaining new data (This will be overwritten before use, so redundant)
             // flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(reinterpret_cast<char*>(buff->data_swap) + active_len, 0, inactive_len, stream));
         } else {
