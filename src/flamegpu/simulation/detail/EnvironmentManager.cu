@@ -13,6 +13,7 @@
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -54,7 +55,7 @@ void EnvironmentManager::init(const EnvironmentData& desc) {
         memcpy(h_buffer + i.offset, i.data, i.length);
         properties.emplace(name, EnvProp(i.offset, i.length, i.isConst, i.elements, i.type));
     }
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_buffer, newSize));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_buffer, newSize));
 }
 void EnvironmentManager::init(const EnvironmentData& desc, const std::shared_ptr<EnvironmentManager>& parent_environment, const SubEnvironmentData& mapping) {
     init(desc);
