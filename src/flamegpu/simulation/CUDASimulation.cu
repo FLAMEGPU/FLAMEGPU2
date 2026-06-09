@@ -1458,14 +1458,14 @@ void CUDASimulation::setPopulationData(AgentVector& population, const std::strin
         visualisation->updateBuffers();
     }
 #endif
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceSynchronize)());
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuDeviceSynchronize());
     agent_ids_have_init = false;
 }
 void CUDASimulation::getPopulationData(AgentVector& population, const std::string& state_name) {
     // Ensure singletons have been initialised
     initialiseSingletons();
     flamegpu::util::nvtx::Range range{"CUDASimulation::getPopulationData()"};
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceSynchronize)());
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuDeviceSynchronize());
     auto it = agent_map.find(population.getAgentName());
     if (it == agent_map.end()) {
         THROW exception::InvalidAgent("Agent '%s' was not found, "
@@ -1474,7 +1474,7 @@ void CUDASimulation::getPopulationData(AgentVector& population, const std::strin
     }
     // This call hierarchy validates agent desc matches and state is valid
     it->second->getPopulationData(population, state_name);
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceSynchronize)());
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuDeviceSynchronize());
 }
 detail::CUDAAgent& CUDASimulation::getCUDAAgent(const std::string& agent_name) const {
     CUDAAgentMap::const_iterator it;
