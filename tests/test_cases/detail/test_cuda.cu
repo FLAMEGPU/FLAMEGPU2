@@ -59,7 +59,7 @@ TEST(TestUtilDetailCuda, cudaFreeHost) {
     int * p_ptr = nullptr;
     flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuSuccess;
     // manually allocate a page-locked host pointer
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(HostAlloc)(reinterpret_cast<void**>(&p_ptr), sizeof(int), FLAMEGPU_GPU_RUNTIME_SYMBOL(HostAllocDefault)));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuHostAlloc(reinterpret_cast<void**>(&p_ptr), sizeof(int), flamegpu::detail::gpu::gpuHostAllocDefault));
     // Validate that the ptr is a valid page-locked host pointer
     cudaPointerAttributes attributes = {};
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, p_ptr));
@@ -81,7 +81,7 @@ TEST(TestUtilDetailCuda, cudaFreeHost) {
     // reset the ptr
     p_ptr = nullptr;
     // Allocate the pointer again
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(HostAlloc)(reinterpret_cast<void**>(&p_ptr), sizeof(int), FLAMEGPU_GPU_RUNTIME_SYMBOL(HostAllocDefault)));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuHostAlloc(reinterpret_cast<void**>(&p_ptr), sizeof(int), flamegpu::detail::gpu::gpuHostAllocDefault));
     // Validate that the ptr is a valid page-locked host pointer
     attributes = {};
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, p_ptr));
