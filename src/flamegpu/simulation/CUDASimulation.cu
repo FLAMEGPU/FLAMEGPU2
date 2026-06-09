@@ -1556,7 +1556,7 @@ void CUDASimulation::applyConfig_derived() {
     // default device
     cudaStatus = FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&device_count);
 
-    if (cudaStatus != FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) {
+    if (cudaStatus != flamegpu::detail::gpu::gpuSuccess) {
         THROW exception::InvalidCUDAdevice("Error finding CUDA devices!  Do you have a CUDA-capable GPU installed?");
     }
     if (device_count == 0) {
@@ -1582,7 +1582,7 @@ void CUDASimulation::applyConfig_derived() {
 #endif  // defined(FLAMEGPU_USE_CUDA)
 
     cudaStatus = FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(static_cast<int>(config.device_id));
-    if (cudaStatus != FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) {
+    if (cudaStatus != flamegpu::detail::gpu::gpuSuccess) {
         THROW exception::InvalidCUDAdevice("Unknown error setting CUDA device to '%d'. (%d available)", config.device_id, device_count);
     }
     // Call cudaFree to initialise the context early
