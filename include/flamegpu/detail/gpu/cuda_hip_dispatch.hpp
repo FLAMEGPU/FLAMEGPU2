@@ -37,6 +37,14 @@ inline auto gpuFreeHost(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(FreeHost)(std::forward<decltype(args)>(args)...);
 }
 
+inline auto gpuMemset(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(Memset)(std::forward<decltype(args)>(args)...);
+}
+
+inline auto gpuMemsetAsync(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(std::forward<decltype(args)>(args)...);
+}
+
 inline auto gpuDeviceSynchronize(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceSynchronize)(std::forward<decltype(args)>(args)...);
 }

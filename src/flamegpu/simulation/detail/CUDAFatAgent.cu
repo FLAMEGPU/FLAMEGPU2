@@ -228,7 +228,7 @@ void CUDAFatAgent::processFunctionCondition(const unsigned int agent_fat_id, con
     const unsigned int conditionFailCount = sm->second->scatterAgentFunctionConditionFalse(scatter, streamId, stream);
     // Invert scan
     CUDAScatter::InversionIterator ii = CUDAScatter::InversionIterator(scanCfg.d_ptrs.scan_flag);
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(scanCfg.d_ptrs.position, 0, sizeof(unsigned int)*(agent_count + 1), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(scanCfg.d_ptrs.position, 0, sizeof(unsigned int)*(agent_count + 1), stream));
     flamegpu::detail::gpuCheck(cub::DeviceScan::ExclusiveSum(
         cub_temp.getPtr(),
         cub_temp.getSize(),
