@@ -73,7 +73,7 @@ void HostEnvironment::importMacroProperty(const std::string& property_name, cons
             throw;
         }
     }
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
     // If macro property exists in cache sync cache
     if (const auto cache = macro_env->getHostPropertyMetadata(property_name)) {
         cache->force_download();
@@ -109,7 +109,7 @@ void HostEnvironment::exportMacroProperty(const std::string& property_name, cons
             std::vector<char> buffer;
             buffer.resize(m_prop_elements * m_prop->second.type_size);
             flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(buffer.data(), m_prop->second.d_ptr, m_prop_elements * m_prop->second.type_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
             // Output to file
             std::ofstream output(file_path, std::ios::binary);
             output.write(buffer.data(), buffer.size());

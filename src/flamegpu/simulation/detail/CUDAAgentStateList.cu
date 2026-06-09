@@ -134,7 +134,7 @@ void CUDAAgentStateList::setAgentData(const AgentVector& population, CUDAScatter
 
             // copy the host data to the GPU
             flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(_var.second->data, v_data, var_elements * var_size * data_count, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
         }
     }
     // Update alive count etc
@@ -219,7 +219,7 @@ unsigned int CUDAAgentStateList::scatterNew(void * d_newBuff, const unsigned int
             scanCfg.d_ptrs.position,
             newSize + 1,
             stream));
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
         // Resize if necessary
         // @todo? this could be improved by checking scan result for the actual size, rather than max size)
         resize(parent_list->getSizeWithDisabled() + newSize, true, stream);

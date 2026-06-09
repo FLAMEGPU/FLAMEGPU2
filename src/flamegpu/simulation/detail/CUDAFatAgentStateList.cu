@@ -111,7 +111,7 @@ void CUDAFatAgentStateList::resize(const unsigned int minSize, const bool retain
     }
     if (retainData) {
         // Ensure copies have finished, before we free the buffers!
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
     }
     for (auto& buff : variables_unique) {
         const size_t var_size = buff->type_size * buff->elements;
