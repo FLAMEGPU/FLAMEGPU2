@@ -29,14 +29,14 @@ const std::string getDeviceName(int deviceIndex) {
 
     // Ensure deviceIndex is valid.
     int deviceCount = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&deviceCount));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuGetDeviceCount(&deviceCount));
     if (deviceIndex >= deviceCount) {
         // Throw an excpetion if the device index is bad.
         THROW exception::InvalidCUDAdevice();
     }
     // Load device properties
     DeviceProp_t prop;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceProperties)(&prop, deviceIndex));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuGetDeviceProperties(&prop, deviceIndex));
 
     return std::string(prop.name);
 }
@@ -46,7 +46,7 @@ const std::string getDeviceNames(std::set<int> devices) {
     bool first = true;
     // Get the count of devices
     int deviceCount = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&deviceCount));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuGetDeviceCount(&deviceCount));
     // If no devices were passed in, add each device to the set of devices.
     if (devices.size() == 0) {
         for (int i = 0; i < deviceCount; i++) {
@@ -65,7 +65,7 @@ const std::string getDeviceNames(std::set<int> devices) {
         }
         // Load device properties
         DeviceProp_t prop;
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceProperties)(&prop, device_id));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuGetDeviceProperties(&prop, device_id));
         if (!first)
             device_names.append(", ");
         device_names.append(prop.name);
