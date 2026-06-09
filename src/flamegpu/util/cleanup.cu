@@ -34,7 +34,7 @@ void cleanup() {
     // @todo - this would be better to be only devices touched by flamegpu since the last call to cleanup.
     for (int device = 0; device < devices; ++device) {
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuSetDevice(device));
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceReset)());
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuDeviceReset());
     }
     // resume the old device, but do not create a new context via reset or memsets
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuSetDevice(originalDevice));
