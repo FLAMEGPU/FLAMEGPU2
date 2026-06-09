@@ -847,7 +847,7 @@ TEST(TestCUDASimulation, SimulationWithExistingCUDAMalloc) {
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_int, sizeof(int)));
     // Validate that the ptr is a valid device pointer
     cudaPointerAttributes attributes = {};
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, d_int));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
     EXPECT_EQ(attributes.type, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice));
 
     // Add extra layer of scope, so the ensemble get's dtor'd incase the dtor triggers a reset
@@ -865,7 +865,7 @@ TEST(TestCUDASimulation, SimulationWithExistingCUDAMalloc) {
     }
 
     // At this point, the manually allocated data should still be valid, i.e. FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice)
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, d_int));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
     EXPECT_EQ(attributes.type, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice));
 
     // Free explicit device memory, if it was valid (to get the correct error)
