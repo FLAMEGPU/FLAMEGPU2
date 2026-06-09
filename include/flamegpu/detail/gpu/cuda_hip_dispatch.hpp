@@ -23,6 +23,22 @@ namespace gpu {
 
 // Functions
 
+inline auto gpuGetDeviceCount(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(std::forward<decltype(args)>(args)...);
+}
+
+inline auto gpuGetDevice(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDevice)(std::forward<decltype(args)>(args)...);
+}
+
+inline auto gpuGetDeviceProperties(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceProperties)(std::forward<decltype(args)>(args)...);
+}
+
+inline auto gpuDeviceGetAttribute(auto&&... args) {
+    return FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceGetAttribute)(std::forward<decltype(args)>(args)...);
+}
+
 inline auto gpuMalloc(auto&&... args) {
     return FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(std::forward<decltype(args)>(args)...);
 }
