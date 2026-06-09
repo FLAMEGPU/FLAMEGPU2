@@ -165,7 +165,7 @@ unsigned int CUDAScatter::scatter(
     #else
     int blockSize = 0;
     int minGridSize = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, scatter_generic<unsigned int*>, 0, itemCount));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_generic<unsigned int*>, 0, itemCount));
     #endif  // defined(FLAMEGPU_USE_HIP)
     int gridSize = (itemCount + blockSize - 1) / blockSize;
 
@@ -225,7 +225,7 @@ void CUDAScatter::scatterPosition_async(
     #else
     int blockSize = 0;
     int minGridSize = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, scatter_position_generic, 0, itemCount));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_position_generic, 0, itemCount));
     #endif  // defined(FLAMEGPU_USE_HIP)
     int gridSize = (itemCount + blockSize - 1) / blockSize;
 
@@ -266,7 +266,7 @@ unsigned int CUDAScatter::scatterAll(
     #else
     int blockSize = 0;
     int minGridSize = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, scatter_all_generic, 0, itemCount));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_all_generic, 0, itemCount));
     #endif  // defined(FLAMEGPU_USE_HIP)
     int gridSize = (itemCount + blockSize - 1) / blockSize;
 
@@ -341,7 +341,7 @@ void CUDAScatter::pbm_reorder(
     #else
     int blockSize = 0;
     int minGridSize = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, pbm_reorder_generic, 0, itemCount));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, pbm_reorder_generic, 0, itemCount));
     #endif  // defined(FLAMEGPU_USE_HIP)
     int gridSize = (itemCount + blockSize - 1) / blockSize;
 
@@ -411,7 +411,7 @@ void CUDAScatter::scatterNewAgents(
     #else
     int blockSize = 0;
     int minGridSize = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, scatter_new_agents, 0, threadCount));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, scatter_new_agents, 0, threadCount));
     #endif  // defined(FLAMEGPU_USE_HIP)
     int gridSize = (threadCount + blockSize - 1) / blockSize;
 
@@ -480,7 +480,7 @@ void CUDAScatter::broadcastInit_async(
     #else
     int blockSize = 0;
     int minGridSize = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, broadcastInitKernel, 0, threadCount));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, broadcastInitKernel, 0, threadCount));
     #endif  // defined(FLAMEGPU_USE_HIP)
     int gridSize = (threadCount + blockSize - 1) / blockSize;
 
@@ -541,7 +541,7 @@ void CUDAScatter::broadcastInit_async(
     #else
     int blockSize = 0;
     int minGridSize = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, broadcastInitKernel, 0, threadCount));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, broadcastInitKernel, 0, threadCount));
     #endif  // defined(FLAMEGPU_USE_HIP)
     int gridSize = (threadCount + blockSize - 1) / blockSize;
 
@@ -630,7 +630,7 @@ void CUDAScatter::arrayMessageReorder(
     #else
     int blockSize = 0;
     int minGridSize = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)(&minGridSize, &blockSize, reorder_array_messages, 0, itemCount));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, reorder_array_messages, 0, itemCount));
     #endif  // defined(FLAMEGPU_USE_HIP)
     int gridSize = (itemCount + blockSize - 1) / blockSize;
 
