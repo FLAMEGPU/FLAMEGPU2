@@ -10,6 +10,7 @@
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -94,7 +95,7 @@ void CUDAFatAgentStateList::resize(const unsigned int minSize, const bool retain
         // Free old swap buffer
         flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(buff->data_swap));
         // Allocate new buffer to swap
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&buff->data_swap, buff_size));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&buff->data_swap, buff_size));
         // Copy old data to new buffer in swap
         if (retainData && buff->data) {
             const size_t active_len = aliveAgents * var_size;
@@ -120,7 +121,7 @@ void CUDAFatAgentStateList::resize(const unsigned int minSize, const bool retain
         // Free old swap buffer
         flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(buff->data_swap));
         // Allocate new buffer to swap
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&buff->data_swap, buff_size));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&buff->data_swap, buff_size));
         // Update condition list
         assert(disabledAgents == 0);
         buff->data_condition = buff->data;

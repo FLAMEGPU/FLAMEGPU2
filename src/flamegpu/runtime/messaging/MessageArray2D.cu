@@ -11,6 +11,7 @@
 #include "flamegpu/runtime/messaging/MessageArray2D/MessageArray2DHost.h"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -49,7 +50,7 @@ flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream
 }
 void MessageArray2D::CUDAModelHandler::allocateMetaDataDevicePtr(flamegpu::detail::gpu::Stream_t stream) {
     if (d_metadata == nullptr) {
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_metadata, sizeof(MetaData)));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_metadata, sizeof(MetaData)));
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(d_metadata, &hd_metadata, sizeof(MetaData), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice)));
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
     }
@@ -88,7 +89,7 @@ void MessageArray2D::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, 
                 flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_write_flag));
             }
             d_write_flag_len = static_cast<unsigned int>(MESSAGE_COUNT * 1.1f);
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_write_flag, sizeof(unsigned int) * d_write_flag_len));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_write_flag, sizeof(unsigned int) * d_write_flag_len));
         }
         t_d_write_flag = d_write_flag;
     }

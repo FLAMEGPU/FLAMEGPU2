@@ -63,6 +63,7 @@ namespace cub = hipcub;
 #include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
 #include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -218,8 +219,8 @@ void CUDAAgent::validateIDCollisions(flamegpu::detail::gpu::Stream_t stream) con
     if (!agentCount) return;
     // Allocate buffers we will use
     id_t * d_keysIn = nullptr, *d_keysOut = nullptr;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_keysIn, sizeof(id_t) * agentCount));
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_keysOut, sizeof(id_t) * agentCount));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_keysIn, sizeof(id_t) * agentCount));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_keysOut, sizeof(id_t) * agentCount));
     // Copy agent IDs to keysIn buff
     ptrdiff_t buffOffset = 0;
     for (const auto& s : state_map) {
@@ -231,7 +232,7 @@ void CUDAAgent::validateIDCollisions(flamegpu::detail::gpu::Stream_t stream) con
     void* d_temp_storage = nullptr;
     size_t temp_storage_bytes = 0;
     flamegpu::detail::gpuCheck(cub::DeviceRadixSort::SortKeys(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount, 0, sizeof(id_t) * 8, stream));
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_temp_storage, temp_storage_bytes));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_temp_storage, temp_storage_bytes));
     flamegpu::detail::gpuCheck(cub::DeviceRadixSort::SortKeys(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount, 0, sizeof(id_t) * 8, stream));
     // Reset d_keysIn
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemsetAsync)(d_keysIn, 0, sizeof(id_t) * agentCount, stream));
@@ -246,7 +247,7 @@ void CUDAAgent::validateIDCollisions(flamegpu::detail::gpu::Stream_t stream) con
     if (temp_storage_bytes2 > temp_storage_bytes) {
         flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_temp_storage));
         temp_storage_bytes = temp_storage_bytes2;
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Malloc)(&d_temp_storage, temp_storage_bytes));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_temp_storage, temp_storage_bytes));
     }
     flamegpu::detail::gpuCheck(cub::DeviceReduce::Sum(d_temp_storage, temp_storage_bytes, d_keysIn, d_keysOut, agentCount - 1, stream));
     id_t flagsSet = 0;
