@@ -133,7 +133,7 @@ void CUDAAgentStateList::setAgentData(const AgentVector& population, CUDAScatter
             const void* v_data = population.data(_var.first);
 
             // copy the host data to the GPU
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(_var.second->data, v_data, var_elements * var_size * data_count, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(_var.second->data, v_data, var_elements * var_size * data_count, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
             flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
         }
     }
@@ -161,7 +161,7 @@ void CUDAAgentStateList::getAgentData(AgentVector& population) const {
             void* v_data = const_cast<void*>(static_cast<const AgentVector&>(population).data(_var.first));
 
             // copy the host data to the GPU
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Memcpy)(v_data, _var.second->data, var_elements * var_size * data_count, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost)));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpy(v_data, _var.second->data, var_elements * var_size * data_count, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost)));
         }
     }
     population._size = data_count;  // Private AgentVector::resize() does not update size
