@@ -1852,7 +1852,7 @@ void CUDASimulation::processHostAgentCreation(const unsigned int streamId) {
                     memcpy(t_buff + (i*offsets.totalSize), state.second[i].data, offsets.totalSize);
                 }
                 // Copy t_buff to device
-                flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(dt_buff, t_buff, size_req, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), this->getStream(streamId)));
+                flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(dt_buff, t_buff, size_req, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), this->getStream(streamId)));
                 // Scatter to device
                 auto &cudaagent = agent_map.at(agent.first);
                 cudaagent->scatterHostCreation(state.first, static_cast<unsigned int>(state.second.size()), dt_buff, offsets, this->singletons->scatter, streamId, this->getStream(streamId));
@@ -1953,7 +1953,7 @@ void CUDASimulation::initMacroEnvironment() {
                 "this should have been caught during file parsing, "
                 "in CUDASimulation::initMacroEnvironment()\n", name.c_str(), static_cast<unsigned int>(buff.size()), elements * it->second.type_size);
         } else {
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(it->second.d_ptr, buff.data(), buff.size() * sizeof(char), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(it->second.d_ptr, buff.data(), buff.size() * sizeof(char), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
         }
     }
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
