@@ -573,7 +573,7 @@ void HostAgentAPI::sum_async(const std::string &variable, OutT &result, const fl
     api.resizeOutputSpace<OutT>();
     flamegpu::detail::gpuCheck(cub::DeviceReduce::Sum(cub_temp.getPtr(), cub_temp.getSize(), reinterpret_cast<InT*>(var_ptr), reinterpret_cast<OutT*>(api.d_output_space), static_cast<int>(agentCount), stream));
     flamegpu::detail::gpuCheckLaunch();
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(&result, api.d_output_space, sizeof(OutT), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&result, api.d_output_space, sizeof(OutT), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
 }
 template<typename InT>
 std::pair<double, double> HostAgentAPI::meanStandardDeviation(const std::string& variable) const {
@@ -660,7 +660,7 @@ void HostAgentAPI::min_async(const std::string &variable, InT& result, const fla
     api.resizeOutputSpace<InT>();
     flamegpu::detail::gpuCheck(cub::DeviceReduce::Min(cub_temp.getPtr(), cub_temp.getSize(), reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount), stream));
     flamegpu::detail::gpuCheckLaunch();
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(&result, api.d_output_space, sizeof(InT), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&result, api.d_output_space, sizeof(InT), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
 }
 template<typename InT>
 InT HostAgentAPI::max(const std::string& variable) const {
@@ -701,7 +701,7 @@ void HostAgentAPI::max_async(const std::string &variable, InT &result, const fla
     api.resizeOutputSpace<InT>();
     flamegpu::detail::gpuCheck(cub::DeviceReduce::Max(cub_temp.getPtr(), cub_temp.getSize(), reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space), static_cast<int>(agentCount), stream));
     flamegpu::detail::gpuCheckLaunch();
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(&result, api.d_output_space, sizeof(InT), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&result, api.d_output_space, sizeof(InT), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
 }
 template<typename InT>
 unsigned int HostAgentAPI::count(const std::string &variable, InT value) const {
@@ -788,7 +788,7 @@ void HostAgentAPI::histogramEven_async(const std::string &variable, unsigned int
         reinterpret_cast<InT*>(var_ptr), reinterpret_cast<OutT*>(api.d_output_space), histogramBins + 1, lowerBound, upperBound, static_cast<int>(agentCount), stream));
     flamegpu::detail::gpuCheckLaunch();
     result.resize(histogramBins);
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(result.data(), api.d_output_space, histogramBins * sizeof(OutT), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(result.data(), api.d_output_space, histogramBins * sizeof(OutT), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
 }
 template<typename InT, typename reductionOperatorT>
 InT HostAgentAPI::reduce(const std::string &variable, reductionOperatorT reductionOperator, InT init) const {
@@ -832,7 +832,7 @@ void HostAgentAPI::reduce_async(const std::string & variable, reductionOperatorT
     flamegpu::detail::gpuCheck(cub::DeviceReduce::Reduce(cub_temp.getPtr(), cub_temp.getSize(), reinterpret_cast<InT*>(var_ptr), reinterpret_cast<InT*>(api.d_output_space),
         static_cast<int>(agentCount), typename reductionOperatorT::template binary_function<InT>(), init, stream));
     flamegpu::detail::gpuCheckLaunch();
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(&result, api.d_output_space, sizeof(InT), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&result, api.d_output_space, sizeof(InT), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
 }
 template<typename InT, typename OutT, typename transformOperatorT, typename reductionOperatorT>
 OutT HostAgentAPI::transformReduce(const std::string &variable, transformOperatorT transformOperator, reductionOperatorT reductionOperator, OutT init) const {
@@ -909,7 +909,7 @@ void HostAgentAPI::sort_async(const std::string & variable, Order order, int beg
     // Create array of TID (use scanflag_death.position)
     fillTIDArray_async(vals_in, agentCount, stream);
     // Create array of agent values (use scanflag_death.scan_flag)
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(keys_in, var_ptr, total_variable_buffer_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(keys_in, var_ptr, total_variable_buffer_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice), stream));
     // Check if we need to resize cub storage
     auto& cub_temp = api.scatter.CubTemp(streamId);
     // Resize cub storage
@@ -985,7 +985,7 @@ void HostAgentAPI::sort_async(const std::string & variable1, Order order1, const
         // Fill
         void *keys1b = scan.Config(detail::CUDAScanCompaction::Type::AGENT_DEATH, streamId).d_ptrs.position;
         void *var_ptr = agent.getStateVariablePtr(stateName, variable1);
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(keys1b, var_ptr, total_variable_buffer_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(keys1b, var_ptr, total_variable_buffer_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice), stream));
     }
     // Fill array with var2 keys
     {
@@ -996,7 +996,7 @@ void HostAgentAPI::sort_async(const std::string & variable1, Order order1, const
         // Fill
         void *keys2 = scan.Config(detail::CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamId).d_ptrs.scan_flag;
         void *var_ptr = agent.getStateVariablePtr(stateName, variable2);
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(keys2, var_ptr, total_variable_buffer_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(keys2, var_ptr, total_variable_buffer_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice), stream));
     }
     // Define our buffers (here, after resize)
     Var1T *keys1 = reinterpret_cast<Var1T *>(scan.Config(detail::CUDAScanCompaction::Type::AGENT_DEATH, streamId).d_ptrs.scan_flag);
