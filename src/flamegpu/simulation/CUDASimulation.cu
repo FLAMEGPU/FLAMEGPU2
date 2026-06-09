@@ -1586,7 +1586,7 @@ void CUDASimulation::applyConfig_derived() {
         THROW exception::InvalidCUDAdevice("Unknown error setting CUDA device to '%d'. (%d available)", config.device_id, device_count);
     }
     // Call cudaFree to initialise the context early
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(Free)(nullptr));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuFree(nullptr));
 
     // Get the unique ID of the current cuda context, to prevent unsafe stream destruction post flamegpu::cleanup for CUDA 12+
     this->cudaContextID = flamegpu::detail::cuda::cuGetCurrentContextUniqueID();
