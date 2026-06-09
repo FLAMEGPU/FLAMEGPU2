@@ -149,11 +149,9 @@ inline constexpr auto gpuSuccess = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
 inline constexpr auto gpuMemcpyHostToDevice = FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice);
 inline constexpr auto gpuMemcpyDeviceToHost = FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost);
 inline constexpr auto gpuMemcpyDeviceToDevice = FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToDevice);
-
 inline constexpr auto gpuMemoryTypeHost = FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeHost);
 inline constexpr auto gpuMemoryTypeDevice = FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice);
 inline constexpr auto gpuMemoryTypeUnregistered = FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeUnregistered);
-
 
 
 }  // namespace gpu
