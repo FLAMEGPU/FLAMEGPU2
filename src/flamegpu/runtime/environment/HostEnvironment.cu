@@ -54,7 +54,7 @@ void HostEnvironment::importMacroProperty(const std::string& property_name, cons
             THROW exception::InvalidInputFile("Length of input file '%s's environment macro property '%s'  does not match, (%u != %u), in HostEnvironment::importMacroProperty()",
                 file_path.c_str(), property_name.c_str(), static_cast<unsigned int>(l_prop->second.size()), static_cast<unsigned int>(m_prop_elements * m_prop->second.type_size));
         }
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(m_prop->second.d_ptr, l_prop->second.data(), l_prop->second.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(m_prop->second.d_ptr, l_prop->second.data(), l_prop->second.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
     } catch (const exception::UnsupportedFileType&) {
         const std::string extension = std::filesystem::path(file_path).extension().string();
         if (extension == ".bin") {
@@ -68,7 +68,7 @@ void HostEnvironment::importMacroProperty(const std::string& property_name, cons
                     file_path.c_str(), property_name.c_str(), static_cast<unsigned int>(buffer.size()), static_cast<unsigned int>(m_prop_elements * m_prop->second.type_size));
             }
             // Update the property
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(m_prop->second.d_ptr, buffer.data(), buffer.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(m_prop->second.d_ptr, buffer.data(), buffer.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
         } else {
             throw;
         }
@@ -108,7 +108,7 @@ void HostEnvironment::exportMacroProperty(const std::string& property_name, cons
             const unsigned int m_prop_elements = std::accumulate(m_prop->second.elements.begin(), m_prop->second.elements.end(), 1, std::multiplies<unsigned int>());
             std::vector<char> buffer;
             buffer.resize(m_prop_elements * m_prop->second.type_size);
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(buffer.data(), m_prop->second.d_ptr, m_prop_elements * m_prop->second.type_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(buffer.data(), m_prop->second.d_ptr, m_prop_elements * m_prop->second.type_size, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
             flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
             // Output to file
             std::ofstream output(file_path, std::ios::binary);

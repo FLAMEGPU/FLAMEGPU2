@@ -49,7 +49,7 @@ void DeviceExceptionManager::checkError(const std::string &function, const unsig
     }
     if (d_buffer[streamId]) {
         // Grab buffer from device
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(&hd_buffer[streamId], d_buffer[streamId], sizeof(DeviceExceptionBuffer), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&hd_buffer[streamId], d_buffer[streamId], sizeof(DeviceExceptionBuffer), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
         // If there is a reported error count
         if (hd_buffer[streamId].error_count) {
