@@ -135,7 +135,7 @@ void CUDAMacroEnvironment::resetFlagsAsync(const std::vector<flamegpu::detail::g
     }
     // Disable the sync here, users must sync themselves
     // if (properties.size()) {
-//      flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceSynchronize)());
+//      flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuDeviceSynchronize());
     // }
 }
 bool CUDAMacroEnvironment::getDeviceReadFlag(const std::string& property_name) {
