@@ -211,9 +211,7 @@ struct AgentFunctionLauncherHelper {
         int minGridSize = 0;
         int blockSize = 0;
         AgentFunctionWrapper* kernel_ptr = &agent_function_wrapper<AgentFunction, MessageIn, MessageOut>;
-        using KernelPtrType = AgentFunctionWrapper*;
-        // using KernelPtrType = decltype(&agent_function_wrapper<AgentFunction, MessageIn, MessageOut>);
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxPotentialBlockSize)<KernelPtrType>(&minGridSize, &blockSize, kernel_ptr, 0, popNo));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, kernel_ptr, 0, popNo));
         #endif  // defined(FLAMEGPU_USE_HIP)
         int gridSize = (popNo + blockSize - 1) / blockSize;
 
