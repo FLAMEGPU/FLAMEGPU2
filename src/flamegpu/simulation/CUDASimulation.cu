@@ -231,7 +231,7 @@ CUDASimulation::~CUDASimulation() {
     int t_device_id = -1;
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuGetDevice(&t_device_id));
     if (t_device_id != deviceInitialised && deviceInitialised != -1) {
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(deviceInitialised));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuSetDevice(deviceInitialised));
     }
 
     submodel_map.clear();  // Test
@@ -265,7 +265,7 @@ CUDASimulation::~CUDASimulation() {
 
     // Reset the active device if not the device used for this simulation
     if (t_device_id != deviceInitialised) {
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(t_device_id));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuSetDevice(t_device_id));
     }
 }
 
@@ -1581,7 +1581,7 @@ void CUDASimulation::applyConfig_derived() {
     }
 #endif  // defined(FLAMEGPU_USE_CUDA)
 
-    cudaStatus = FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(static_cast<int>(config.device_id));
+    cudaStatus = flamegpu::detail::gpu::gpuSetDevice(static_cast<int>(config.device_id));
     if (cudaStatus != flamegpu::detail::gpu::gpuSuccess) {
         THROW exception::InvalidCUDAdevice("Unknown error setting CUDA device to '%d'. (%d available)", config.device_id, device_count);
     }

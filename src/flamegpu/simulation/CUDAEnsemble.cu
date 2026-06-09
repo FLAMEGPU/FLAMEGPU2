@@ -190,12 +190,12 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
             --d;
         } else {
             // Initialise the context on the device
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(*d));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuSetDevice(*d));
             flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(nullptr));
         }
     }
     // Return to device 0 (or check original device first?)
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(SetDevice)(0));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuSetDevice(0));
 
     // If there are no devices left (and mpi is not being used), we need to error as the work cannot be executed.
 #ifndef FLAMEGPU_ENABLE_MPI
