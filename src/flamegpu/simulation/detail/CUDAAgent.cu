@@ -262,7 +262,7 @@ void CUDAAgent::validateIDCollisions(flamegpu::detail::gpu::Stream_t stream) con
             "in CUDAAgent::validateIDCollisions()\n",
             static_cast<unsigned int>(flagsSet), agent_description.name.c_str());
     }
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
 }
 /**
  * Returns the number of alive and active agents in the named state
