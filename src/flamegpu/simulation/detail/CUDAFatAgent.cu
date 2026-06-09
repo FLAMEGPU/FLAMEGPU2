@@ -141,7 +141,7 @@ void CUDAFatAgent::processDeath(const unsigned int agent_fat_id, const std::stri
         scanCfg.d_ptrs.position,
         agent_count + 1,
         stream));
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));  // Redundant? scatter occurs in same stream
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));  // Redundant? scatter occurs in same stream
 
     // Scatter
     sm->second->scatterDeath(scatter, streamId, stream);
@@ -223,7 +223,7 @@ void CUDAFatAgent::processFunctionCondition(const unsigned int agent_fat_id, con
         agent_count + 1,
         stream));
     flamegpu::detail::gpuCheckLaunch();
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
     // Use scan results to sort false agents into start of list (and don't swap buffers)
     const unsigned int conditionFailCount = sm->second->scatterAgentFunctionConditionFalse(scatter, streamId, stream);
     // Invert scan
@@ -237,7 +237,7 @@ void CUDAFatAgent::processFunctionCondition(const unsigned int agent_fat_id, con
         agent_count + 1,
         stream));
     flamegpu::detail::gpuCheckLaunch();
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
     // Use inverted scan results to sort true agents into end of list (and swap buffers)
     const unsigned int conditionpassCount = sm->second->scatterAgentFunctionConditionTrue(conditionFailCount, scatter, streamId, stream);
     if (agent_count != conditionpassCount + conditionFailCount) {
@@ -376,7 +376,7 @@ void CUDAFatAgent::assignIDs(HostAPI& hostapi, detail::CUDAScatter &scatter, fla
             // Reduce for max
             flamegpu::detail::gpuCheck(cub::DeviceReduce::Max(cub_temp.getPtr(), cub_temp.getSize(), static_cast<id_t*>(vb->data), reinterpret_cast<id_t*>(hostapi.d_output_space), s->getSize(), stream));
             flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyAsync)(&h_max, hostapi.d_output_space, sizeof(id_t), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
-            flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
             _nextID = std::max(_nextID, h_max + 1);
         }
     }
@@ -398,7 +398,7 @@ void CUDAFatAgent::assignIDs(HostAPI& hostapi, detail::CUDAScatter &scatter, fla
     }
 
     agent_ids_have_init = true;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
 }
 void CUDAFatAgent::resetIDCounter() {
     // Resetting ID whilst agents exist is a bad idea, so fail silently

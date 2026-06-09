@@ -531,14 +531,14 @@ template<typename InT>
 InT HostAgentAPI::sum(const std::string &variable) const {
     InT rtn;
     sum_async<InT, InT>(variable, rtn, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(this->api.stream));
     return rtn;
 }
 template<typename InT, typename OutT>
 OutT HostAgentAPI::sum(const std::string& variable) const {
     OutT rtn;
     sum_async<InT, OutT>(variable, rtn, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(this->api.stream));
     return rtn;
 }
 template<typename InT, typename OutT>
@@ -579,7 +579,7 @@ template<typename InT>
 std::pair<double, double> HostAgentAPI::meanStandardDeviation(const std::string& variable) const {
     std::pair<double, double> rtn;
     meanStandardDeviation_async<InT>(variable, rtn, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));  // Redundant, meanStandardDeviation_async() is not truly async
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(this->api.stream));  // Redundant, meanStandardDeviation_async() is not truly async
     return rtn;
 }
 template<typename InT>
@@ -609,7 +609,7 @@ void HostAgentAPI::meanStandardDeviation_async(const std::string& variable, std:
     // Calculate mean (We could make this more efficient by leaving sum in device mem?)
     typename sum_input_t<InT>::result_t sum_result;
     sum_async<InT, typename sum_input_t<InT>::result_t>(variable, sum_result, stream, streamId);
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
     const double mean = sum_result / static_cast<double>(agentCount);
     // Then for each number: subtract the Mean and square the result
     // Then work out the mean of those squared differences.
@@ -624,7 +624,7 @@ template<typename InT>
 InT HostAgentAPI::min(const std::string& variable) const {
     InT rtn;
     min_async<InT>(variable, rtn, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(this->api.stream));
     return rtn;
 }
 template<typename InT>
@@ -666,7 +666,7 @@ template<typename InT>
 InT HostAgentAPI::max(const std::string& variable) const {
     InT rtn;
     max_async<InT>(variable, rtn, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(this->api.stream));
     return rtn;
 }
 template<typename InT>
@@ -738,14 +738,14 @@ template<typename InT>
 std::vector<unsigned int> HostAgentAPI::histogramEven(const std::string &variable, unsigned int histogramBins, InT lowerBound, InT upperBound) const {
     std::vector<unsigned int> rtn;
     histogramEven_async<InT, unsigned int>(variable, histogramBins, lowerBound, upperBound, rtn, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(this->api.stream));
     return rtn;
 }
 template<typename InT, typename OutT>
 std::vector<OutT> HostAgentAPI::histogramEven(const std::string &variable, unsigned int histogramBins, InT lowerBound, InT upperBound) const {
     std::vector<OutT> rtn;
     histogramEven_async<InT, OutT>(variable, histogramBins, lowerBound, upperBound, rtn, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(this->api.stream));
     return rtn;
 }
 template<typename InT, typename OutT>
@@ -794,7 +794,7 @@ template<typename InT, typename reductionOperatorT>
 InT HostAgentAPI::reduce(const std::string &variable, reductionOperatorT reductionOperator, InT init) const {
     InT rtn;
     reduce_async<InT, reductionOperatorT>(variable, reductionOperator, init, rtn, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(this->api.stream));
     return rtn;
 }
 template<typename InT, typename reductionOperatorT>
@@ -870,7 +870,7 @@ OutT HostAgentAPI::transformReduce_async(const std::string &variable, transformO
 template<typename VarT>
 void HostAgentAPI::sort(const std::string &variable, Order order, int beginBit, int endBit) {
     sort_async<VarT>(variable, order, beginBit, endBit, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(this->api.stream));
 }
 template<typename VarT>
 void HostAgentAPI::sort_async(const std::string & variable, Order order, int beginBit, int endBit, const flamegpu::detail::gpu::Stream_t stream, const unsigned int streamId) {
@@ -938,7 +938,7 @@ void HostAgentAPI::sort_async(const std::string & variable, Order order, int beg
 template<typename Var1T, typename Var2T>
 void HostAgentAPI::sort(const std::string &variable1, Order order1, const std::string &variable2, Order order2) {
     sort_async<Var1T, Var2T>(variable1, order1, variable2, order2, this->api.stream, this->api.streamId);
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(StreamSynchronize)(this->api.stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(this->api.stream));
 }
 template<typename Var1T, typename Var2T>
 void HostAgentAPI::sort_async(const std::string & variable1, Order order1, const std::string & variable2, Order order2, const flamegpu::detail::gpu::Stream_t stream, const unsigned int streamId) {
