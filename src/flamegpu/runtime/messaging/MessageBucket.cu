@@ -125,7 +125,7 @@ void MessageBucket::CUDAModelHandler::buildIndex(detail::CUDAScatter &scatter, u
     {  // Build atomic histogram
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(d_histogram, 0x00000000, (bucketCount + 1) * sizeof(unsigned int), stream));
         int blockSize;  // The launch configurator returned block size
-        flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(OccupancyMaxActiveBlocksPerMultiprocessor)(&blockSize, atomicHistogram1D, 32, 0));  // Randomly 32
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuOccupancyMaxActiveBlocksPerMultiprocessor(&blockSize, atomicHistogram1D, 32, 0));  // Randomly 32
                                                                                                          // Round up according to array size
         int gridSize = (MESSAGE_COUNT + blockSize - 1) / blockSize;
         atomicHistogram1D <<<gridSize, blockSize, 0, stream >>>(d_data, d_keys, d_vals, d_histogram, MESSAGE_COUNT,
