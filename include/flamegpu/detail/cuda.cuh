@@ -32,19 +32,19 @@ namespace cuda {
  * @return forward the cuda error status from the inner cudaFree call
  */
 inline flamegpu::detail::gpu::Error_t cudaFree(void* devPtr) {
-    flamegpu::detail::gpu::Error_t status = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
+    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuSuccess;
     // Check the pointer attributes to detect if it is a valid ptr for the current context.
     // @todo - version which checks the device ordinal is a match for the active context too, potentially flip-flopping the device.
     flamegpu::detail::gpu::PointerAttributes_t attributes = {};
     status = FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, devPtr);
     // valid device pointers have a type of cudaMemoryTypeDevice (2), or we could check the device is non negative (and matching the current device index?), or the devicePointer will be non null.
-    if (status == FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) && attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice)) {
+    if (status == flamegpu::detail::gpu::gpuSuccess && attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeDevice)) {
         status = ::flamegpu::detail::gpu::gpuFree(devPtr);
         // Forward any status on
         return status;
     }
-    // If the pointer attributes were not correct, return FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) to avoid bad error checking.
-    return FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
+    // If the pointer attributes were not correct, return flamegpu::detail::gpu::gpuSuccess to avoid bad error checking.
+    return flamegpu::detail::gpu::gpuSuccess;
 }
 
 /**
@@ -54,19 +54,19 @@ inline flamegpu::detail::gpu::Error_t cudaFree(void* devPtr) {
  * @return forward the cuda error status from the inner cudaFreeHost call
  */
 inline flamegpu::detail::gpu::Error_t cudaFreeHost(void* devPtr) {
-    flamegpu::detail::gpu::Error_t status = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
+    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuSuccess;
     // Check the pointer attributes to detect if it is a valid ptr for the current context.
     // @todo - version which checks the device ordinal is a match for the active context too, potentially flip-flopping the device.
     flamegpu::detail::gpu::PointerAttributes_t attributes = {};
     status = FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, devPtr);
     // valid pointers allocated using cudaHostAlloc have a type of cudaMemoryTypeHost
-    if (status == FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) && attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeHost)) {
+    if (status == flamegpu::detail::gpu::gpuSuccess && attributes.type == FLAMEGPU_GPU_RUNTIME_SYMBOL(MemoryTypeHost)) {
         status = ::flamegpu::detail::gpu::gpuFreeHost(devPtr);
         // Forward on any cuda errors returned.
         return status;
     }
-    // If the pointer attributes were not correct, return FLAMEGPU_GPU_RUNTIME_SYMBOL(Success) to avoid bad error checking.
-    return FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
+    // If the pointer attributes were not correct, return flamegpu::detail::gpu::gpuSuccess to avoid bad error checking.
+    return flamegpu::detail::gpu::gpuSuccess;
 }
 
 /**

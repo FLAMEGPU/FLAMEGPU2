@@ -127,7 +127,7 @@ TEST(TestCUDAEnsemble, initialise_devices_wrong) {
     flamegpu::ModelDescription model("test");
     flamegpu::CUDAEnsemble ensemble(model);
     int device_ct = -1;
-    EXPECT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&device_ct), FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
+    EXPECT_EQ(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&device_ct), flamegpu::detail::gpu::gpuSuccess);
     ensemble.Config().devices = { device_ct };
     RunPlanVector plan(model, 1);
     // Sim with out of bounds device ID, get exception

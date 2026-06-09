@@ -20,7 +20,7 @@ using cudaPointerAttributes = hipPointerAttribute_t;
 // Test that wrapped cudaFree works.
 TEST(TestUtilDetailCuda, cudaFree) {
     int * d_ptr = nullptr;
-    flamegpu::detail::gpu::Error_t status = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
+    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuSuccess;
     // manually allocate a device pointer
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_ptr, sizeof(int)));
     // Validate that the ptr is a valid device pointer
@@ -30,7 +30,7 @@ TEST(TestUtilDetailCuda, cudaFree) {
     // call the wrapped cuda free method
     status = detail::cuda::cudaFree(d_ptr);
     // It should not have thrown any cuda errors in normal use.
-    EXPECT_EQ(status, FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
+    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
     // The pointer will still have a non nullptr value, but it will no longer be a valid device ptr.
     EXPECT_NE(d_ptr, nullptr);
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, d_ptr));
@@ -38,7 +38,7 @@ TEST(TestUtilDetailCuda, cudaFree) {
     // Try a double free.
     status = detail::cuda::cudaFree(d_ptr);
     // This will appear to succeed (a double free is identical to a device reset then free according from FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)' perspective), which is a difference from actual cudaFree which would return cudaErrorInvalidValue.
-    EXPECT_EQ(status, FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
+    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
     // reset the ptr
     d_ptr = nullptr;
     // Allocate the pointer again
@@ -51,13 +51,13 @@ TEST(TestUtilDetailCuda, cudaFree) {
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceReset)());
     // Attempt to free the ptr, this method should claim all things are fine (as the dev ptr has implicitly been freed)
     status = detail::cuda::cudaFree(d_ptr);
-    EXPECT_EQ(status, FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
+    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
 }
 
 // Test that the wrapped cudaFreeHost works.
 TEST(TestUtilDetailCuda, cudaFreeHost) {
     int * p_ptr = nullptr;
-    flamegpu::detail::gpu::Error_t status = FLAMEGPU_GPU_RUNTIME_SYMBOL(Success);
+    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuSuccess;
     // manually allocate a page-locked host pointer
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(HostAlloc)(reinterpret_cast<void**>(&p_ptr), sizeof(int), FLAMEGPU_GPU_RUNTIME_SYMBOL(HostAllocDefault)));
     // Validate that the ptr is a valid page-locked host pointer
@@ -68,7 +68,7 @@ TEST(TestUtilDetailCuda, cudaFreeHost) {
     // call the wrapped cuda free method
     status = detail::cuda::cudaFreeHost(p_ptr);
     // It should not have thrown any cuda errors in normal use.
-    EXPECT_EQ(status, FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
+    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
     // The pointer will still have a non nullptr value, but it will no longer be a valid page-locked ptr.
     EXPECT_NE(p_ptr, nullptr);
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)(&attributes, p_ptr));
@@ -77,7 +77,7 @@ TEST(TestUtilDetailCuda, cudaFreeHost) {
     // Try a double free.
     status = detail::cuda::cudaFreeHost(p_ptr);
     // This will appear to succeed (a double free is identical to a device reset then free according from FLAMEGPU_GPU_RUNTIME_SYMBOL(PointerGetAttributes)' perspective), which is a difference from actual cudaFreeHost which would return cudaErrorInvalidValue.
-    EXPECT_EQ(status, FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
+    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
     // reset the ptr
     p_ptr = nullptr;
     // Allocate the pointer again
@@ -91,7 +91,7 @@ TEST(TestUtilDetailCuda, cudaFreeHost) {
     flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(DeviceReset)());
     // Attempt to free the ptr, this method should claim all things are fine (as the dev ptr has implicitly been freed)
     status = detail::cuda::cudaFreeHost(p_ptr);
-    EXPECT_EQ(status, FLAMEGPU_GPU_RUNTIME_SYMBOL(Success));
+    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
 }
 
 // Test that getting the primary context works, Difficult to trigger failure cases for this method, so coverage is subpar.

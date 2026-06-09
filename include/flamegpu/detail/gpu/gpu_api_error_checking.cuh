@@ -26,7 +26,7 @@ namespace detail {
  * @throws CUDAError If code != cudaSuccess / hipSuccess
  */
 inline void gpuAssert(flamegpu::detail::gpu::Error_t code, const char *file, int line) {
-    if (code != FLAMEGPU_GPU_RUNTIME_SYMBOL(Success)) {
+    if (code != flamegpu::detail::gpu::gpuSuccess) {
         THROW exception::CUDAError("CUDA Error: %s(%d): %s %s", file, line, flamegpu::detail::gpu::gpuGetErrorName(code), flamegpu::detail::gpu::gpuGetErrorString(code));
     }
 }
