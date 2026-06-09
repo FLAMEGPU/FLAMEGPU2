@@ -151,7 +151,7 @@ bool CUDAMacroEnvironment::getDeviceReadFlag(const std::string& property_name) {
         * prop->second.elements[2]
         * prop->second.elements[3];
     unsigned int ret = 0;
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&ret, static_cast<char*>(prop->second.d_ptr) + buffer_size, sizeof(unsigned int), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&ret, static_cast<char*>(prop->second.d_ptr) + buffer_size, sizeof(unsigned int), flamegpu::detail::gpu::gpuMemcpyDeviceToHost, stream));
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
     return (ret & 1u << 0);
 }
@@ -168,7 +168,7 @@ bool CUDAMacroEnvironment::getDeviceWriteFlag(const std::string& property_name) 
         * prop->second.elements[2]
         * prop->second.elements[3];
     unsigned int ret = 0;
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&ret, static_cast<char*>(prop->second.d_ptr) + buffer_size, sizeof(unsigned int), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&ret, static_cast<char*>(prop->second.d_ptr) + buffer_size, sizeof(unsigned int), flamegpu::detail::gpu::gpuMemcpyDeviceToHost, stream));
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
     return (ret & 1u << 1);
 }
@@ -185,7 +185,7 @@ unsigned int CUDAMacroEnvironment::getDeviceRWFlags(const std::string& property_
         * prop->second.elements[2]
         * prop->second.elements[3];
     unsigned int ret = 0;
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&ret, static_cast<char*>(prop->second.d_ptr) + buffer_size, sizeof(unsigned int), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&ret, static_cast<char*>(prop->second.d_ptr) + buffer_size, sizeof(unsigned int), flamegpu::detail::gpu::gpuMemcpyDeviceToHost, stream));
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
     return ret;
 }

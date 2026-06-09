@@ -172,7 +172,7 @@ unsigned int CUDAScatter::scatter(
     // Make sure we have enough space to store scatterdata
     streamResources[streamResourceId].resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
     if (invert_scan_flag) {
         scatter_generic <<<gridSize, blockSize, 0, stream>>> (
             itemCount,
@@ -191,7 +191,7 @@ unsigned int CUDAScatter::scatter(
     flamegpu::detail::gpuCheckLaunch();
     // Update count of live agents
     unsigned int rtn = 0;
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&rtn, scan.Config(messageOrAgent, streamResourceId).d_ptrs.position + itemCount - scatter_all_count, sizeof(unsigned int), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&rtn, scan.Config(messageOrAgent, streamResourceId).d_ptrs.position + itemCount - scatter_all_count, sizeof(unsigned int), flamegpu::detail::gpu::gpuMemcpyDeviceToHost, stream));
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));  // @todo - async + sync variants.
     return rtn + scatter_all_count;
 }
@@ -232,7 +232,7 @@ void CUDAScatter::scatterPosition_async(
     // Make sure we have enough space to store scatterdata
     streamResources[streamResourceId].resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
     scatter_position_generic <<<gridSize, blockSize, 0, stream>>> (
         itemCount,
         position,
@@ -246,7 +246,7 @@ unsigned int CUDAScatter::scatterCount(
     const unsigned int itemCount,
     const unsigned int scatter_all_count) {
     unsigned int rtn = 0;
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpy(&rtn, scan.Config(messageOrAgent, streamResourceId).d_ptrs.position + itemCount - scatter_all_count, sizeof(unsigned int), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost)));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpy(&rtn, scan.Config(messageOrAgent, streamResourceId).d_ptrs.position + itemCount - scatter_all_count, sizeof(unsigned int), flamegpu::detail::gpu::gpuMemcpyDeviceToHost));
     return rtn;
 }
 
@@ -272,7 +272,7 @@ unsigned int CUDAScatter::scatterAll(
 
     streamResources[streamResourceId].resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
     scatter_all_generic <<<gridSize, blockSize, 0, stream>>> (
         itemCount,
         streamResources[streamResourceId].d_data, static_cast<unsigned int>(sd.size()),
@@ -354,7 +354,7 @@ void CUDAScatter::pbm_reorder(
     }
     streamResources[streamResourceId].resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
     pbm_reorder_generic <<<gridSize, blockSize, 0, stream>>> (
             itemCount,
             d_bin_index,
@@ -417,7 +417,7 @@ void CUDAScatter::scatterNewAgents(
 
     streamResources[streamResourceId].resize(static_cast<unsigned int>(sd.size()));
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
     scatter_new_agents <<<gridSize, blockSize, 0, stream>>> (
         threadCount,
         static_cast<unsigned int>(totalAgentSize),
@@ -505,8 +505,8 @@ void CUDAScatter::broadcastInit_async(
         offset += v->type_size * v->elements;
     }
     // Important that sd.size() is used here, as allocated len would exceed 2nd memcpy
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data, default_data, offset, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data + offset, sd.data(), sizeof(ScatterData) * sd.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data, default_data, offset, flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data + offset, sd.data(), sizeof(ScatterData) * sd.size(), flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
     ::free(default_data);
     broadcastInitKernel <<<gridSize, blockSize, 0, stream>>> (
         threadCount,
@@ -569,8 +569,8 @@ void CUDAScatter::broadcastInit_async(
         offset += v.second.type_size * v.second.elements;
     }
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data, default_data, offset, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data + offset, sd.data(), sizeof(ScatterData) * sd.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data, default_data, offset, flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data + offset, sd.data(), sizeof(ScatterData) * sd.size(), flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
     ::free(default_data);
     broadcastInitKernel <<<gridSize, blockSize, 0, stream>>> (
         threadCount,
@@ -665,7 +665,7 @@ void CUDAScatter::arrayMessageReorder(
         }
     }
     // Important that sd.size() is still used here, incase allocated len (data_len) is bigger
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyHostToDevice), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(streamResources[streamResourceId].d_data, sd.data(), sizeof(ScatterData) * sd.size(), flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
     reorder_array_messages <<<gridSize, blockSize, 0, stream >>> (
         itemCount, array_length,
         d_position,
@@ -678,13 +678,13 @@ void CUDAScatter::arrayMessageReorder(
     // Check d_write_flag for dupes
     flamegpu::detail::gpuCheck(cub::DeviceReduce::Max(streamResources[streamResourceId].d_data, t_data_len, d_write_flag, d_position, array_length, stream));
     unsigned int maxBinSize = 0;
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&maxBinSize, d_position, sizeof(unsigned int), FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost), stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&maxBinSize, d_position, sizeof(unsigned int), flamegpu::detail::gpu::gpuMemcpyDeviceToHost, stream));
     flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
     if (maxBinSize > 1) {
         // Too many messages for single element of array
         // Report bad ones
         unsigned int *hd_write_flag = (unsigned int *)malloc(sizeof(unsigned int) * array_length);
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpy(hd_write_flag, d_write_flag, sizeof(unsigned int)* array_length, FLAMEGPU_GPU_RUNTIME_SYMBOL(MemcpyDeviceToHost)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpy(hd_write_flag, d_write_flag, sizeof(unsigned int)* array_length, flamegpu::detail::gpu::gpuMemcpyDeviceToHost));
         unsigned int last_fail_index = std::numeric_limits<unsigned int>::max();
         for (unsigned int i = 0; i < array_length; ++i) {
             if (hd_write_flag[i] > 1) {
