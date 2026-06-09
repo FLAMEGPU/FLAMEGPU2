@@ -40,7 +40,7 @@ int compute_capability::getComputeCapability(int deviceIndex) {
 
     // Ensure deviceIndex is valid.
     int deviceCount = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&deviceCount));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuGetDeviceCount(&deviceCount));
     if (deviceIndex >= deviceCount) {
         // Throw an excpetion if the device index is bad.
         THROW exception::InvalidCUDAdevice();

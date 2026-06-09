@@ -114,7 +114,7 @@ TEST(TestUtilDetailCuda, cuDevicePrimaryContextIsActive) {
     EXPECT_THROW(detail::cuda::cuDevicePrimaryContextIsActive(-1), exception::InvalidCUDAdevice);
     // First grab the device count, to check for exceptions when the device ordinal is too big.
     int deviceCount = 0;
-    flamegpu::detail::gpuCheck(FLAMEGPU_GPU_RUNTIME_SYMBOL(GetDeviceCount)(&deviceCount));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuGetDeviceCount(&deviceCount));
     if (deviceCount > 0) {
         // Expect an exception if the ordinal is too big.
         EXPECT_THROW(detail::cuda::cuDevicePrimaryContextIsActive(deviceCount), exception::InvalidCUDAdevice);
