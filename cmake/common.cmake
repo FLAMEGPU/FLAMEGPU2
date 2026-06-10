@@ -85,7 +85,6 @@ mark_as_advanced(FLAMEGPU_VERBOSE_PTXAS)
 option(FLAMEGPU_WARNINGS_AS_ERRORS "Promote compilation warnings to errors" OFF)
 
 # Option to change curand engine used for CUDA random generation
-# Todo: should FLAMEGPU_CURAND_ENGINGE be renamed? This would be a breaking change though...
 set(FLAMEGPU_CURAND_ENGINE "PHILOX" CACHE STRING "The curand engine to use. Suitable options: \"PHILOX\", \"XORWOW\", \"MRG\"")
 set_property(CACHE FLAMEGPU_CURAND_ENGINE PROPERTY STRINGS PHILOX XORWOW MRG)
 mark_as_advanced(FLAMEGPU_CURAND_ENGINE)
