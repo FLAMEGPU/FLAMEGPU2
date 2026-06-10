@@ -222,7 +222,7 @@ cmake --build build --target all
 | `FLAMEGPU_ENABLE_GTEST_DISCOVER`     | `ON`/`OFF`                  | Run individual CUDA C++ tests as independent `ctest` tests. This dramatically increases test suite runtime. Default `OFF`. |
 | `FLAMEGPU_VISUALISATION`             | `ON`/`OFF`                  | Enable Visualisation. Default `OFF`.                                                                       |
 | `FLAMEGPU_VISUALISATION_ROOT`        | `path/to/vis`               | Provide a path to a local copy of the visualisation repository.                                            |
-| `FLAMEGPU_ENABLE_NVTX`               | `ON`/`OFF`                  | Enable NVTX markers for improved profiling. Default `OFF`                                                  |
+| `FLAMEGPU_ENABLE_PROFILING`          | `ON`/`OFF`                  | Enable NVTX/ROCTx markers for improved profiling. Default `OFF`                                                  |
 | `FLAMEGPU_WARNINGS_AS_ERRORS`        | `ON`/`OFF`                  | Promote compiler/tool warnings to errors are build time. Default `OFF`                                     |
 | `FLAMEGPU_RTC_EXPORT_SOURCES`        | `ON`/`OFF`                  | At runtime, export dynamic RTC files to disk. Useful for debugging RTC models. Default `OFF`               |
 | `FLAMEGPU_RTC_DISK_CACHE`            | `ON`/`OFF`                  | Enable/Disable caching of RTC functions to disk. Default `ON`.                                             |
