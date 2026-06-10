@@ -2,13 +2,6 @@
 cmake_minimum_required(VERSION 3.25.2...4.3.0 FATAL_ERROR)
 
 # Module for abstracting selection of CUDA or HIP or DOCS only builds
-# Todo:
-# - Better cache variable than FLAMEGPU_GPU?
-# - if no FLAMEGPU_GPU value set and CUDA not found, automatically try hip?
-# - Figure out how to nicely handle this for projects which have CUDA enabled (i.e. template examples...) if HIP was requested or used
-# - Figure out how standalone examples which add_project the main FLAMEGPU source should work, so that they use the same value as the FLAMEGPU target.
-# - Figure out how this might work in a future find_package(FLAMEGPU) to avoid future CMake breaks?
-# - Test this on all platforms with loads of diff compiler combinations :(
 
 # Only define the macro once
 include_guard(GLOBAL)
