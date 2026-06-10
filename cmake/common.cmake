@@ -78,7 +78,6 @@ if (FLAMEGPU_ENABLE_NVTX)
 endif()
 mark_as_advanced(FLAMEGPU_ENABLE_NVTX)
 
-
 # Option to enable verbose PTXAS output (CUDA Only)
 option(FLAMEGPU_VERBOSE_PTXAS "Enable verbose PTXAS output (CUDA only)" OFF)
 mark_as_advanced(FLAMEGPU_VERBOSE_PTXAS)
