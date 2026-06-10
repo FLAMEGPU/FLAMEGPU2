@@ -15,7 +15,7 @@
 #include "jitify/jitify2.hpp"
 #endif  // FLAMEGPU_USE_CUDA
 
-#include "flamegpu/detail/curand.cuh"
+#include "flamegpu/detail/gpu/rand.cuh"
 #include "flamegpu/model/AgentFunctionData.cuh"
 #include "flamegpu/model/LayerData.h"
 #include "flamegpu/model/AgentDescription.h"
@@ -739,7 +739,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     // If any condition kernel needs to be executed, do so, by checking the number of threads from before.
     if (totalThreads > 0) {
         // Ensure RandomManager is the correct size to accommodate all threads to be launched
-        detail::curandState *d_rng = singletons->rng.resize(totalThreads, getStream(0));
+        detail::gpu::gpurandState *d_rng = singletons->rng.resize(totalThreads, getStream(0));
         // Track which stream to use for concurrency
         streamIdx = 0;
         // Sum the total number of threads being launched in the layer, for rng offsetting.
@@ -764,7 +764,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
                 }
 
                 //  Agent function condition kernel wrapper args
-                detail::curandState *t_rng = d_rng + totalThreads;
+                detail::gpu::gpurandState *t_rng = d_rng + totalThreads;
                 unsigned int *scanFlag_agentDeath = this->singletons->scatter.Scan().Config(detail::CUDAScanCompaction::Type::AGENT_DEATH, streamIdx).d_ptrs.scan_flag;
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
                 auto *error_buffer = this->singletons->exception.getDevicePtr(streamIdx, this->getStream(streamIdx));
@@ -948,7 +948,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
     // If any kernel needs to be executed, do so, by checking the number of threads from before.
     if (totalThreads > 0) {
         // Ensure RandomManager is the correct size to accommodate all threads to be launched
-        detail::curandState *d_rng = singletons->rng.resize(totalThreads, getStream(0));
+        detail::gpu::gpurandState *d_rng = singletons->rng.resize(totalThreads, getStream(0));
         // Total threads is now used to provide kernel launches an offset to thread-safe thread-index
         totalThreads = 0;
         streamIdx = 0;
@@ -997,7 +997,7 @@ void CUDASimulation::stepLayer(const std::shared_ptr<LayerData>& layer, const un
             }
 
             // Agent function kernel wrapper args
-            detail::curandState *t_rng = d_rng + totalThreads;
+            detail::gpu::gpurandState *t_rng = d_rng + totalThreads;
             unsigned int *scanFlag_agentDeath = func_des->has_agent_death ? this->singletons->scatter.Scan().Config(detail::CUDAScanCompaction::Type::AGENT_DEATH, streamIdx).d_ptrs.scan_flag : nullptr;
             unsigned int *scanFlag_messageOutput = this->singletons->scatter.Scan().Config(detail::CUDAScanCompaction::Type::MESSAGE_OUTPUT, streamIdx).d_ptrs.scan_flag;
             unsigned int *scanFlag_agentOutput = this->singletons->scatter.Scan().Config(detail::CUDAScanCompaction::Type::AGENT_OUTPUT, streamIdx).d_ptrs.scan_flag;

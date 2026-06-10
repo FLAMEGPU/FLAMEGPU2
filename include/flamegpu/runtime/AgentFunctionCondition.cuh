@@ -26,7 +26,7 @@ typedef void(AgentFunctionConditionWrapper)(
     const char* d_env_buffer,
 #endif
     const unsigned int popNo,
-    detail::curandState *d_rng,
+    detail::gpu::gpurandState *d_rng,
     unsigned int *scanFlag_conditionResult);  // Can't put __global__ in a typedef
 
 /**
@@ -55,7 +55,7 @@ __global__ void agent_function_condition_wrapper(
     const char* d_env_buffer,
 #endif
     const unsigned int popNo,
-    detail::curandState *d_rng,
+    detail::gpu::gpurandState *d_rng,
     unsigned int *scanFlag_conditionResult) {
     // We place these at the start of shared memory, so we can locate it anywhere in device code without a reference
     using detail::sm;

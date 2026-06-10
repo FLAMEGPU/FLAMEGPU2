@@ -6,7 +6,7 @@
 #include <device_launch_parameters.h>
 #endif
 
-#include "flamegpu/detail/curand.cuh"
+#include "flamegpu/detail/gpu/rand.cuh"
 #include "flamegpu/runtime/detail/SharedBlock.h"
 #include "flamegpu/defines.h"
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"
@@ -37,7 +37,7 @@ typedef void(AgentFunctionWrapper)(
     const unsigned int popNo,
     const void *in_messagelist_metadata,
     const void *out_messagelist_metadata,
-    detail::curandState *d_rng,
+    detail::gpu::gpurandState *d_rng,
     unsigned int *scanFlag_agentDeath,
     unsigned int *scanFlag_messageOutput,
     unsigned int *scanFlag_agentOutput);  // Can't put __global__ in a typedef
@@ -77,7 +77,7 @@ __global__ void agent_function_wrapper(
     const unsigned int popNo,
     const void *in_messagelist_metadata,
     const void *out_messagelist_metadata,
-    detail::curandState *d_rng,
+    detail::gpu::gpurandState *d_rng,
     unsigned int *scanFlag_agentDeath,
     unsigned int *scanFlag_messageOutput,
     unsigned int *scanFlag_agentOutput) {
@@ -146,7 +146,7 @@ typedef void(*AgentFunctionLauncher)(
     const unsigned int popNo,
     const void *in_messagelist_metadata,
     const void *out_messagelist_metadata,
-    detail::curandState *d_rng,
+    detail::gpu::gpurandState *d_rng,
     unsigned int *scanFlag_agentDeath,
     unsigned int *scanFlag_messageOutput,
     unsigned int *scanFlag_agentOutput,
@@ -190,7 +190,7 @@ struct AgentFunctionLauncherHelper {
         const unsigned int popNo,
         const void *in_messagelist_metadata,
         const void *out_messagelist_metadata,
-        detail::curandState *d_rng,
+        detail::gpu::gpurandState *d_rng,
         unsigned int *scanFlag_agentDeath,
         unsigned int *scanFlag_messageOutput,
         unsigned int *scanFlag_agentOutput,
