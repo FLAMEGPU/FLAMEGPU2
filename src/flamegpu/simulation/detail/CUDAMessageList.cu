@@ -11,7 +11,6 @@
 #include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h"
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
-#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"

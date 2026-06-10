@@ -2,7 +2,6 @@
 #include <cuda_runtime.h>
 #endif
 
-#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/wddm.cuh"
 #include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 
