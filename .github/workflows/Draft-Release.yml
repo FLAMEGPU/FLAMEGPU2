@@ -162,7 +162,7 @@ jobs:
         -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}"
         -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
-        -DFLAMEGPU_ENABLE_NVTX="ON"
+        -DFLAMEGPU_ENABLE_PROFILING="ON"
 
     - name: Build static library
       working-directory: ${{ env.BUILD_DIR }}
@@ -290,7 +290,7 @@ jobs:
         -DPython3_ROOT_DIR="$(dirname $(which python))"
         -DPython3_EXECUTABLE="$(which python)"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
-        -DFLAMEGPU_ENABLE_NVTX="ON"
+        -DFLAMEGPU_ENABLE_PROFILING="ON"
 
     - name: Build static library
       working-directory: ${{ env.BUILD_DIR }}
@@ -455,7 +455,7 @@ jobs:
         -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}"
         -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
-        -DFLAMEGPU_ENABLE_NVTX="ON"
+        -DFLAMEGPU_ENABLE_PROFILING="ON"
         -DGLEW_USE_STATIC_LIBS="${{ env.USE_STATIC_GLEW }}"
         -DOpenGL_GL_PREFERENCE:STRING=LEGACY
         -DFLAMEGPU_BUILD_PYTHON_PATCHELF="ON"
@@ -598,7 +598,7 @@ jobs:
         -DPython3_ROOT_DIR="$(dirname $(which python))"
         -DPython3_EXECUTABLE="$(which python)"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
-        -DFLAMEGPU_ENABLE_NVTX="ON"
+        -DFLAMEGPU_ENABLE_PROFILING="ON"
         -DFLAMEGPU_SWIG_MINIMUM="4.1.0"
         -DFLAMEGPU_SWIG_DOWNLOAD="4.1.0"
         -DFLAMEGPU_SWIG_EXACT="ON"
