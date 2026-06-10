@@ -42,7 +42,6 @@ if (CMAKE_CUDA_COMPILER_LOADED)
     include(${CMAKE_CURRENT_LIST_DIR}/dependencies/Jitify.cmake)
 endif()
 if (CMAKE_HIP_COMPILER_LOADED)
-    # Todo: put this into dependencies? 
     find_package(rocthrust REQUIRED)
     find_package(hipcub REQUIRED)
     find_package(hiprand REQUIRED)
@@ -177,7 +176,6 @@ if (CMAKE_HIP_COMPILER_LOADED)
     set(CMAKE_HIP_RUNTIME_LIBRARY shared)
 
     # hiprtc is it's own cmake package and target, separate to the hip package
-    # Todo: Enable this check when adding hiprtc support
     # find_package(hiprtc REQUIRED)
     # if(NOT TARGET hiprtc::hiprtc)
     #     message(FATAL_ERROR "hiprtc::hiprtc is a required dependency")
