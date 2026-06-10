@@ -21,7 +21,6 @@ include(${FLAMEGPU_ROOT}/cmake/enable_languages.cmake)
 flamegpu_enable_languages()
 
 # If FLAMEGPU_GPU was set to OFF, and API documentation building is enabled, create the docs only target
-# Todo: Abstract this somewhere?
 if(NOT (CMAKE_CUDA_COMPILER_LOADED OR CMAKE_HIP_COMPILER_LOADED))
     include(./cmake/dependencies/doxygen.cmake)
     if(${FLAMEGPU_BUILD_API_DOCUMENTATION})
