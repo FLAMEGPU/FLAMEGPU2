@@ -56,7 +56,6 @@ namespace thrust {
 #include "flamegpu/simulation/AgentLoggingConfig_Reductions.cuh"
 #include "flamegpu/simulation/AgentLoggingConfig_SumReturn.h"
 #include "flamegpu/detail/type_decode.h"
-#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
