@@ -202,10 +202,6 @@ macro(flamegpu_enable_languages)
 
         # Set cache variables which can only be determined by compilation 
         _flamegpu_check_source_compiles_file_offset_bits_64()
-
-    else() # (${FLAMEGPU_GPU} STREQUAL "OFF")
-        # TODO: Set this in parent scope or cache? if necessary, can probably just check for `CMAKE_CUDA_COMPILER OR CMAKE_HIP_COMPILER` instead.
-        set(DOCS_ONLY_BUILD ON)
     endif()
 
     # Success, only print once per cmake configuration
