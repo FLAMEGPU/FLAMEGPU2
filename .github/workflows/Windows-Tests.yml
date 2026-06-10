@@ -104,7 +104,7 @@ jobs:
         -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
         -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
-        -DFLAMEGPU_ENABLE_NVTX="ON"
+        -DFLAMEGPU_ENABLE_PROFILING="ON"
 
     - name: Build static library
       working-directory: ${{ env.BUILD_DIR }}
