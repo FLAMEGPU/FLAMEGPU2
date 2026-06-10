@@ -217,7 +217,7 @@ jobs:
         -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
         -DFLAMEGPU_ENABLE_MPI="ON"
-        -DFLAMEGPU_ENABLE_NVTX="ON"
+        -DFLAMEGPU_ENABLE_PROFILING="ON"
         ${MPI_OVERRIDE_CXX_OPTIONS}
 
     - name: Reconfigure cmake fixing MPICH from apt

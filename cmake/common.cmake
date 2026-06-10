@@ -58,9 +58,26 @@ endif()
 set(CMAKE_SKIP_INSTALL_RULES TRUE)
 set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE INTERNAL "" FORCE)
 
-# Option to enable/disable NVTX markers for improved profiling
-# Todo: generic NVTX/ROCTx flag instead. Deprecating this one? 
-option(FLAMEGPU_ENABLE_NVTX "Build with NVTX markers enabled" OFF)
+# Option to enable/disable NVTX/ROCTx markers for improved profiling
+option(FLAMEGPU_ENABLE_PROFILING "Build with profiling markers (NVTX or ROCTx) enabled" OFF)
+# Deprecated old option
+option(FLAMEGPU_ENABLE_NVTX "Deprecated: Build with NVTX markers enabled" OFF)
+if (FLAMEGPU_ENABLE_NVTX)
+    # Warn once per configuration about this being deprecated if set
+    if(NOT FLAMEGPU_DEPRECATED_NVTX_WARNED)
+        message(DEPRECATION 
+            "  FLAMEGPU_ENABLE_NVTX is deprecated and will be removed in a future release.\n"
+            "  Please use FLAMEGPU_ENABLE_PROFILING instead."
+        )
+    endif()
+    set(FLAMEGPU_DEPRECATED_NVTX_WARNED TRUE PARENT_SCOPE)
+    # Set the non-deprecated variable to ON
+    set(FLAMEGPU_ENABLE_PROFILING ON CACHE BOOL "" FORCE)
+    # Set the deprecated variable to OFF
+    set(FLAMEGPU_ENABLE_NVTX OFF CACHE BOOL "" FORCE)
+endif()
+mark_as_advanced(FLAMEGPU_ENABLE_NVTX)
+
 
 # Option to enable verbose PTXAS output (CUDA Only)
 option(FLAMEGPU_VERBOSE_PTXAS "Enable verbose PTXAS output (CUDA only)" OFF)
@@ -135,7 +152,7 @@ if (CMAKE_CUDA_COMPILER_LOADED)
     endif()
 
     # If NVTX is enabled, find the library and update variables accordingly. 
-    if(FLAMEGPU_ENABLE_NVTX)
+    if(FLAMEGPU_ENABLE_PROFILING)
         # Find the nvtx library using custom cmake module, providing imported targets
         # Do not use CUDA::nvToolsExt as this always uses NVTX1 not 3.
         # See https://gitlab.kitware.com/cmake/cmake/-/issues/21377
@@ -143,12 +160,12 @@ if (CMAKE_CUDA_COMPILER_LOADED)
         # If the targets were not found, emit a warning 
         if(NOT TARGET NVTX::nvtx)
             # If not found, emit a warning and continue without NVTX
-            message(WARNING "NVTX could not be found. Proceeding with FLAMEGPU_ENABLE_NVTX=OFF")
+            message(WARNING "NVTX could not be found. Proceeding with FLAMEGPU_ENABLE_PROFILING=OFF")
             if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-                SET(FLAMEGPU_ENABLE_NVTX "OFF" PARENT_SCOPE)
+                SET(FLAMEGPU_ENABLE_PROFILING "OFF" PARENT_SCOPE)
             endif()
         endif()
-    endif(FLAMEGPU_ENABLE_NVTX)
+    endif(FLAMEGPU_ENABLE_PROFILING)
 endif()
 
 if (CMAKE_HIP_COMPILER_LOADED)
@@ -167,18 +184,18 @@ if (CMAKE_HIP_COMPILER_LOADED)
     #     message(FATAL_ERROR "hiprtc::hiprtc is a required dependency")
     # endif()
 
-    # 
-    if(FLAMEGPU_ENABLE_NVTX)
+    # roctx for profiling
+    if(FLAMEGPU_ENABLE_PROFILING)
         # roctx is part or the rocprofiler-sdk, atleast in rocm 7.2.0, proabbly 6.2+?
         # https://github.com/ROCm/roctracer/issues/56#issuecomment-2375400996
         find_package(rocprofiler-sdk-roctx)
         if(NOT TARGET rocprofiler-sdk-roctx::rocprofiler-sdk-roctx)
-            message(WARNING "ROCTx could not be found. Proceeding with FLAMEGPU_ENABLE_NVTX=OFF")
+            message(WARNING "ROCTx could not be found. Proceeding with FLAMEGPU_ENABLE_PROFILING=OFF")
             if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-                SET(FLAMEGPU_ENABLE_NVTX "OFF" PARENT_SCOPE)
+                SET(FLAMEGPU_ENABLE_PROFILING "OFF" PARENT_SCOPE)
             endif()
         endif()
-    endif(FLAMEGPU_ENABLE_NVTX)
+    endif(FLAMEGPU_ENABLE_PROFILING)
 
 endif()
 

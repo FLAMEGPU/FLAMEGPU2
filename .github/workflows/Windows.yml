@@ -158,7 +158,7 @@ jobs:
         -DPython3_ROOT_DIR="$(dirname $(which python))"
         -DPython3_EXECUTABLE="$(which python)"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
-        -DFLAMEGPU_ENABLE_NVTX="ON"
+        -DFLAMEGPU_ENABLE_PROFILING="ON"
 
     # Check for bugs when cmake is reconfigured, i.e. fetch content patching
     - name: Re-configure cmake
@@ -206,7 +206,7 @@ jobs:
         -DFLAMEGPU_SEATBELTS="${{ env.FLAMEGPU_SEATBELTS }}"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
-        -DFLAMEGPU_ENABLE_NVTX="ON"
+        -DFLAMEGPU_ENABLE_PROFILING="ON"
 
     - name: Build Individual example
       if: ${{ env.INDIVIDUAL_EXAMPLE != '' }}
