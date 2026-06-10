@@ -42,7 +42,6 @@
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/model/SubEnvironmentData.h"
 #include "flamegpu/io/Telemetry.h"
-#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/gpu/device_name.hpp"
 #include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"

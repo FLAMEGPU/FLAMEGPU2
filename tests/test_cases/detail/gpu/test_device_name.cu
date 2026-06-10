@@ -3,7 +3,6 @@
 #include <string>
 #include <ranges>
 #include <vector>
-#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/detail/gpu/device_name.hpp"
 

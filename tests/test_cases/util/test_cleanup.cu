@@ -6,7 +6,6 @@
 #include "flamegpu/util/cleanup.h"
 #include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/flamegpu.h"
-#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 
