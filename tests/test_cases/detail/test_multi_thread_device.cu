@@ -7,7 +7,6 @@
 #include "flamegpu/flamegpu.h"
 #include "gtest/gtest.h"
 #include "flamegpu/detail/gpu/cuda/compute_capability.cuh"
-#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/detail/cuda.cuh"
 

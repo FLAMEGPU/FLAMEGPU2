@@ -38,7 +38,6 @@ namespace cub = hipcub;
 #include "flamegpu/simulation/detail/CUDAScatter.cuh"
 #include "flamegpu/util/nvtx.h"
 #include "flamegpu/detail/numeric.h"
-#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"

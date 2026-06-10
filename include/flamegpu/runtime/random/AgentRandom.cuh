@@ -3,7 +3,6 @@
 
 #include <limits>
 
-#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/rand.cuh"
 #include "flamegpu/detail/StaticAssert.h"
 #include "flamegpu/exception/FLAMEGPUDeviceException.cuh"

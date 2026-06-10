@@ -1,7 +1,6 @@
 #ifndef INCLUDE_FLAMEGPU_DETAIL_CUDA_CUH_
 #define INCLUDE_FLAMEGPU_DETAIL_CUDA_CUH_
 
-#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
 
 #ifndef __CUDACC_RTC__

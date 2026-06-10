@@ -31,7 +31,6 @@
 #include "flamegpu/simulation/LogFrame.h"
 #include "flamegpu/simulation/detail/SimLogger.h"
 #include "flamegpu/io/Telemetry.h"
-#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/gpu/device_name.hpp"
 #include "flamegpu/detail/cuda.cuh"

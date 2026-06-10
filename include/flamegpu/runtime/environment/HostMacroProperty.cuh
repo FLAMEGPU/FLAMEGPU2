@@ -7,7 +7,6 @@
 #include <memory>
 #include <cmath>
 #include <string>
-#include "flamegpu/detail/gpu/macros.hpp"
 #include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
