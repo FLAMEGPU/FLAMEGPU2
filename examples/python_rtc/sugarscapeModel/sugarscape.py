@@ -172,10 +172,6 @@ if __name__ == "__main__":
     bug.newVariableInt("y")
     bug.newVariableFloat("sugar")
     bug.newVariableFloat("metabolism")
-    bug.newVariableInt("last_x")
-    bug.newVariableInt("last_y")
-    bug.newVariableInt("last_resources_x")
-    bug.newVariableInt("last_resources_y")
     bug.newVariableFloat("current_cell_score")
 
     sugar_cell = model.newAgent("sugar_cell")
@@ -191,10 +187,6 @@ if __name__ == "__main__":
     bug_vars = pyflamegpu.map_string_string()
     bug_vars["x"] = "x"
     bug_vars["y"] = "y"
-    bug_vars["last_x"] = "last_x"
-    bug_vars["last_y"] = "last_y"
-    bug_vars["last_resources_x"] = "last_resources_x"
-    bug_vars["last_resources_y"] = "last_resources_y"
     bug_vars["current_cell_score"] = "current_cell_score"
 
     submodel.setMovingAgent("bug",

@@ -17,11 +17,6 @@ class SingleAgentDiscreteMovementTest(TestCase):
         agent = model.newAgent("agent")
         agent.newVariableInt("x")
         agent.newVariableInt("y")
-        agent.newVariableInt("last_x")
-        agent.newVariableInt("last_y")
-        agent.newVariableInt("last_resources_x")
-        agent.newVariableInt("last_resources_y")
-        agent.newVariableFloat("current_cell_score")
         agent.newState("default")
 
         # Setup a valid parent agent for the environment grid
@@ -32,16 +27,13 @@ class SingleAgentDiscreteMovementTest(TestCase):
         cell.newVariableFloat("cell_score")
         cell.newState("default")
 
-        # Bind agents: auto_map=true handles variables with matching names,
-        # but we must explicitly map internal "active" state to parent "default" state.
+        # Bind agents: auto_map=true handles variables and states with matching names.
         bug_vars = pyflamegpu.map_string_string()
         bug_states = pyflamegpu.map_string_string()
-        bug_states["active"] = "default"
         move_submodel.setMovingAgent("agent", bug_vars, bug_states, True)
         
         env_vars = pyflamegpu.map_string_string()
         env_states = pyflamegpu.map_string_string()
-        env_states["active"] = "default"
         move_submodel.setEnvironmentAgent("cell", env_vars, env_states, True)
 
         # Validation should pass now
@@ -72,10 +64,6 @@ class SingleAgentDiscreteMovementTest(TestCase):
         agent = model.newAgent("agent")
         agent.newVariableInt("x")
         agent.newVariableInt("y")
-        agent.newVariableInt("last_x", -1)
-        agent.newVariableInt("last_y", -1)
-        agent.newVariableInt("last_resources_x", -1)
-        agent.newVariableInt("last_resources_y", -1)
         agent.newVariableFloat("current_cell_score", 0.0)
         agent.newVariableFloat("priority", 1.0)
         agent.newState("default")
@@ -87,15 +75,13 @@ class SingleAgentDiscreteMovementTest(TestCase):
         cell.newVariableFloat("cell_score", 0.0)
         cell.newState("default")
 
-        # Bind to submodel
+        # Bind agents: auto_map=true handles variables and states with matching names.
         bug_vars = pyflamegpu.map_string_string()
         bug_states = pyflamegpu.map_string_string()
-        bug_states["active"] = "default"
         move_submodel.setMovingAgent("agent", bug_vars, bug_states, True)
         
         env_vars = pyflamegpu.map_string_string()
         env_states = pyflamegpu.map_string_string()
-        env_states["active"] = "default"
         move_submodel.setEnvironmentAgent("cell", env_vars, env_states, True)
 
         sim = pyflamegpu.CUDASimulation(model)
@@ -149,10 +135,6 @@ class SingleAgentDiscreteMovementTest(TestCase):
         agent = model.newAgent("agent")
         agent.newVariableInt("x")
         agent.newVariableInt("y")
-        agent.newVariableInt("last_x", -1)
-        agent.newVariableInt("last_y", -1)
-        agent.newVariableInt("last_resources_x", -1)
-        agent.newVariableInt("last_resources_y", -1)
         agent.newVariableFloat("current_cell_score", 0.0)
         agent.newVariableFloat("priority", 0.0)
         agent.newState("default")
@@ -166,12 +148,10 @@ class SingleAgentDiscreteMovementTest(TestCase):
 
         bug_vars = pyflamegpu.map_string_string()
         bug_states = pyflamegpu.map_string_string()
-        bug_states["active"] = "default"
         move_submodel.setMovingAgent("agent", bug_vars, bug_states, True)
         
         env_vars = pyflamegpu.map_string_string()
         env_states = pyflamegpu.map_string_string()
-        env_states["active"] = "default"
         move_submodel.setEnvironmentAgent("cell", env_vars, env_states, True)
 
         sim = pyflamegpu.CUDASimulation(model)
@@ -244,12 +224,10 @@ class SingleAgentDiscreteMovementTest(TestCase):
 
         bug_vars = pyflamegpu.map_string_string()
         bug_states = pyflamegpu.map_string_string()
-        bug_states["active"] = "default"
         move_submodel.setMovingAgent("agent", bug_vars, bug_states, True)
         
         env_vars = pyflamegpu.map_string_string()
         env_states = pyflamegpu.map_string_string()
-        env_states["active"] = "default"
         move_submodel.setEnvironmentAgent("cell", env_vars, env_states, True)
 
         sim = pyflamegpu.CUDASimulation(model)
@@ -297,10 +275,6 @@ class SingleAgentDiscreteMovementTest(TestCase):
         agent = model.newAgent("agent")
         agent.newVariableInt("x")
         agent.newVariableInt("y")
-        agent.newVariableInt("last_x", -1)
-        agent.newVariableInt("last_y", -1)
-        agent.newVariableInt("last_resources_x", -1)
-        agent.newVariableInt("last_resources_y", -1)
         agent.newVariableFloat("current_cell_score", 0.0)
         agent.newVariableFloat("priority", 1.0)
         agent.newState("default")
@@ -314,12 +288,10 @@ class SingleAgentDiscreteMovementTest(TestCase):
 
         bug_vars = pyflamegpu.map_string_string()
         bug_states = pyflamegpu.map_string_string()
-        bug_states["active"] = "default"
         move_submodel.setMovingAgent("agent", bug_vars, bug_states, True)
         
         env_vars = pyflamegpu.map_string_string()
         env_states = pyflamegpu.map_string_string()
-        env_states["active"] = "default"
         move_submodel.setEnvironmentAgent("cell", env_vars, env_states, True)
 
         sim = pyflamegpu.CUDASimulation(model)

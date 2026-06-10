@@ -113,10 +113,6 @@ int main(int argc, const char ** argv) {
     bug.newVariable<float>("metabolism");
     bug.newVariable<int>("x");
     bug.newVariable<int>("y");
-    bug.newVariable<int>("last_x", -1);
-    bug.newVariable<int>("last_y", -1);
-    bug.newVariable<int>("last_resources_x", -1);
-    bug.newVariable<int>("last_resources_y", -1);
     bug.newVariable<float>("current_cell_score", 0.0f);
 
     // SugarCell Agent (The environment agent)
@@ -137,10 +133,6 @@ int main(int argc, const char ** argv) {
         {
             {"x", "x"},
             {"y", "y"},
-            {"last_x", "last_x"},
-            {"last_y", "last_y"},
-            {"last_resources_x", "last_resources_x"},
-            {"last_resources_y", "last_resources_y"},
             {"current_cell_score", "current_cell_score"}
         },
         {});

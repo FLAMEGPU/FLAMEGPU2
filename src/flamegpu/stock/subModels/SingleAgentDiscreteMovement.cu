@@ -273,6 +273,10 @@ SingleAgentDiscreteMovement::SingleAgentDiscreteMovement(ModelDescription &model
     movingAgent.newVariable<int>("target_x", -1);
     movingAgent.newVariable<int>("target_y", -1);
     movingAgent.newVariable<int>("moved_this_step", 0);
+    // These variables are optional. If mapped to the parent agent, they persist across
+    // parent simulation steps, enabling "avoid last position" behavior.
+    // If NOT mapped, they reset to -1 every time the submodel is called,
+    // effectively disabling the avoidance behavior across parent steps.
     movingAgent.newVariable<int>("last_x", -1);
     movingAgent.newVariable<int>("last_y", -1);
     movingAgent.newVariable<int>("last_resources_x", -1);
@@ -392,16 +396,14 @@ void SingleAgentDiscreteMovement::validate() {
         // Mandatory mappings check
         moving_agent.getVariableMapping("x");
         moving_agent.getVariableMapping("y");
-        moving_agent.getVariableMapping("last_x");
-        moving_agent.getVariableMapping("last_y");
-        moving_agent.getVariableMapping("last_resources_x");
-        moving_agent.getVariableMapping("last_resources_y");
-        moving_agent.getVariableMapping("current_cell_score");
 
         env_agent.getVariableMapping("x");
         env_agent.getVariableMapping("y");
         env_agent.getVariableMapping("is_occupied");
         env_agent.getVariableMapping("cell_score");
+
+        // Optional mappings (mapped if names match and auto_map=true, or if explicitly mapped)
+        // last_x, last_y, last_resources_x, last_resources_y, current_cell_score
 
         // Mandatory state mapping check
     } catch (const exception::InvalidAgentState& e) {
