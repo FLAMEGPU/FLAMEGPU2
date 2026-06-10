@@ -292,7 +292,7 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/Any.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/demangle.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/type_decode.h
-    ${FLAMEGPU_ROOT}/include/flamegpu/detail/curand.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/rand.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/wddm.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/CUDAEventTimer.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/cuda.cuh
