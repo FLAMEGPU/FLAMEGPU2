@@ -15,7 +15,6 @@
 #include "flamegpu/simulation/CUDASimulation.h"
 #include "flamegpu/simulation/AgentVector.h"
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
-#include "flamegpu/detail/gpu/macros.hpp"
 
 namespace flamegpu {
 namespace io {
