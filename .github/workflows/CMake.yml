@@ -191,7 +191,7 @@ jobs:
         -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}"
         -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
-        -DFLAMEGPU_ENABLE_NVTX="ON"
+        -DFLAMEGPU_ENABLE_PROFILING="ON"
 
     - name: Configure Individual example
       if: ${{ env.INDIVIDUAL_EXAMPLE != '' }}
@@ -205,4 +205,4 @@ jobs:
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
         -DFLAMEGPU_SEATBELTS="${{ env.FLAMEGPU_SEATBELTS }}"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
-        -DFLAMEGPU_ENABLE_NVTX="ON"
+        -DFLAMEGPU_ENABLE_PROFILING="ON"
