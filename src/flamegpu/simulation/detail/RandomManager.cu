@@ -11,7 +11,7 @@
 #include <cstdio>
 #include <algorithm>
 
-#include "flamegpu/detail/curand.cuh"
+#include "flamegpu/detail/gpu/rand.cuh"
 #include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/simulation/CUDASimulation.h"
 #include "flamegpu/detail/gpu/macros.hpp"
@@ -88,7 +88,7 @@ void RandomManager::free() {
     freeDevice();
 }
 
-detail::curandState *RandomManager::resize(size_type _length, flamegpu::detail::gpu::Stream_t stream) {
+detail::gpu::gpurandState *RandomManager::resize(size_type _length, flamegpu::detail::gpu::Stream_t stream) {
     assert(growthModifier > 1.0);
     assert(shrinkModifier > 0.0);
     assert(shrinkModifier <= 1.0);
@@ -111,10 +111,10 @@ detail::curandState *RandomManager::resize(size_type _length, flamegpu::detail::
         resizeDeviceArray(t_length, stream);
     return d_random_state;
 }
-__global__ void init_curand(detail::curandState *d_random_state, unsigned int threadCount, uint64_t seed, flamegpu::size_type offset) {
+__global__ void init_curand(detail::gpu::gpurandState *d_random_state, unsigned int threadCount, uint64_t seed, flamegpu::size_type offset) {
     unsigned int id = blockIdx.x * blockDim.x + threadIdx.x;
     if (id < threadCount) {
-        FLAMEGPU_GPU_DRIVER_SYMBOL(rand_init)(seed, offset + id, 0, &d_random_state[offset + id]);
+        flamegpu::detail::gpu::gpurand_init(seed, offset + id, 0, &d_random_state[offset + id]);
     }
 }
 void RandomManager::resizeDeviceArray(const size_type _length, flamegpu::detail::gpu::Stream_t stream) {
@@ -122,12 +122,12 @@ void RandomManager::resizeDeviceArray(const size_type _length, flamegpu::detail:
     deviceInitialised = true;
     if (_length > h_max_random_size) {
         // Growing array
-        detail::curandState *t_hd_random_state = nullptr;
+        detail::gpu::gpurandState *t_hd_random_state = nullptr;
         // Allocate new mem to t_hd
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&t_hd_random_state, _length * sizeof(detail::curandState)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&t_hd_random_state, _length * sizeof(detail::gpu::gpurandState)));
         // Copy hd->t_hd[****    ]
         if (d_random_state) {
-            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(t_hd_random_state, d_random_state, length * sizeof(detail::curandState), flamegpu::detail::gpu::gpuMemcpyDeviceToDevice, stream));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(t_hd_random_state, d_random_state, length * sizeof(detail::gpu::gpurandState), flamegpu::detail::gpu::gpuMemcpyDeviceToDevice, stream));
         }
         // Update pointers hd=t_hd
         if (d_random_state) {
@@ -139,7 +139,7 @@ void RandomManager::resizeDeviceArray(const size_type _length, flamegpu::detail:
             // We have part/all host backup, copy to device array
             // Reinit backup[    **  ]
             const size_type copy_len = std::min(h_max_random_size, _length);
-            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_random_state + length, h_max_random_state + length, copy_len * sizeof(detail::curandState), flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));  // Host not pinned
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_random_state + length, h_max_random_state + length, copy_len * sizeof(detail::gpu::gpurandState), flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));  // Host not pinned
             length += copy_len;
         }
         if (_length > length) {
@@ -151,20 +151,20 @@ void RandomManager::resizeDeviceArray(const size_type _length, flamegpu::detail:
         }
     } else {
         // Shrinking array
-        detail::curandState *t_hd_random_state = nullptr;
-        detail::curandState *t_h_max_random_state = nullptr;
+        detail::gpu::gpurandState *t_hd_random_state = nullptr;
+        detail::gpu::gpurandState *t_h_max_random_state = nullptr;
         // Allocate new
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&t_hd_random_state, _length * sizeof(detail::curandState)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&t_hd_random_state, _length * sizeof(detail::gpu::gpurandState)));
         // Allocate host backup
         if (length > h_max_random_size)
-            t_h_max_random_state = reinterpret_cast<detail::curandState*>(malloc(length * sizeof(detail::curandState)));
+            t_h_max_random_state = reinterpret_cast<detail::gpu::gpurandState*>(malloc(length * sizeof(detail::gpu::gpurandState)));
         else
             t_h_max_random_state = h_max_random_state;
         // Copy old->new
         assert(d_random_state);
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(t_hd_random_state, d_random_state, _length * sizeof(detail::curandState), flamegpu::detail::gpu::gpuMemcpyDeviceToDevice, stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(t_hd_random_state, d_random_state, _length * sizeof(detail::gpu::gpurandState), flamegpu::detail::gpu::gpuMemcpyDeviceToDevice, stream));
         // Copy part being shrunk away to host storage (This could be async with above memcpy?)
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(t_h_max_random_state + _length, d_random_state + _length, (length - _length) * sizeof(detail::curandState), flamegpu::detail::gpu::gpuMemcpyDeviceToHost, stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(t_h_max_random_state + _length, d_random_state + _length, (length - _length) * sizeof(detail::gpu::gpurandState), flamegpu::detail::gpu::gpuMemcpyDeviceToHost, stream));
         // Release and replace old host ptr
         if (length > h_max_random_size) {
             if (h_max_random_state)
@@ -204,7 +204,7 @@ flamegpu::size_type RandomManager::size() {
 uint64_t RandomManager::seed() {
     return mSeed;
 }
-detail::curandState *RandomManager::cudaRandomState() {
+detail::gpu::gpurandState *RandomManager::cudaRandomState() {
     return d_random_state;
 }
 
