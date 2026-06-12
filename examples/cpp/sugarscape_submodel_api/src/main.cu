@@ -22,7 +22,6 @@
 #define SUGAR_MAX_CAPACITY 7.0f
 
 flamegpu::CUDASimulation *global_sim = nullptr;
-const char *global_out_dir = "output/";
 
 /**
  * Agent Functions
@@ -82,7 +81,7 @@ FLAMEGPU_STEP_FUNCTION(step_logger) {
     printf("Step %u: bugs=%u\n", step, bug_count);
 
     if (global_sim) {
-        global_sim->exportData(std::string(global_out_dir) + "step_" + std::to_string(step) + ".xml");
+        global_sim->exportData("output/step_" + std::to_string(step) + ".xml");
     }
 }
 
@@ -90,10 +89,7 @@ FLAMEGPU_STEP_FUNCTION(step_logger) {
  * Main
  */
 int main(int argc, const char ** argv) {
-    if (std::filesystem::exists("examples/cpp/sugarscape_submodel_api")) {
-        global_out_dir = "examples/cpp/sugarscape_submodel_api/output/";
-    }
-    std::filesystem::create_directories(global_out_dir);
+    std::filesystem::create_directories("output/");
 
     flamegpu::ModelDescription model("Sugarscape");
 
@@ -244,11 +240,11 @@ int main(int argc, const char ** argv) {
         cudaSimulation.setPopulationData(cell_pop);
     }
 
-    cudaSimulation.exportData(std::string(global_out_dir) + "initial_state.xml");
+    cudaSimulation.exportData("output/initial_state.xml");
 
     cudaSimulation.simulate();
 
-    cudaSimulation.exportLog(std::string(global_out_dir) + "simulation_log.json", true, true, false, false);
+    cudaSimulation.exportLog("output/simulation_log.json", true, true, false, false);
 
     return 0;
 }

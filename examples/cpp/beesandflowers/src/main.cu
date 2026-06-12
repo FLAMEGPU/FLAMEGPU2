@@ -22,7 +22,6 @@ using flamegpu::ALIVE;
 using flamegpu::EnvironmentDescription;
 
 CUDASimulation *global_sim = nullptr;
-const char *global_out_dir = "output/";
 
 FLAMEGPU_AGENT_FUNCTION(calculate_priority, MessageNone, MessageNone) {
     float current_nectar = FLAMEGPU->getVariable<float>("current_cell_score");
@@ -136,7 +135,7 @@ FLAMEGPU_STEP_FUNCTION(stepLogger) {
 
     // Export data per step using global pointer
     if (global_sim) {
-        global_sim->exportData(global_out_dir + "step_" + std::to_string(step) + ".xml");
+        global_sim->exportData("output/step_" + std::to_string(step) + ".xml");
     }
 }
 
@@ -203,11 +202,7 @@ void define_model(ModelDescription &model) {
 }
 
 int main(int argc, const char ** argv) {
-    // Determine output directory based on execution context
-    if (std::filesystem::exists("examples/cpp/beesandflowers")) {
-        global_out_dir = "examples/cpp/beesandflowers/output/";
-    }
-    std::filesystem::create_directories(global_out_dir);
+    std::filesystem::create_directories("output/");
 
     ModelDescription model("OneAgentMovingModel");
 
@@ -232,13 +227,13 @@ int main(int argc, const char ** argv) {
     simulation.initialise(argc, argv);
 
     // Export initial state
-    simulation.exportData(global_out_dir + "initial_state.xml");
+    simulation.exportData("output/initial_state.xml");
 
     // Run the simulation normally
     simulation.simulate();
 
     // Export the summary log
-    simulation.exportLog(global_out_dir + "simulation_log.json", true, true, false, false);
+    simulation.exportLog("output/simulation_log.json", true, true, false, false);
 
     return EXIT_SUCCESS;
 }
