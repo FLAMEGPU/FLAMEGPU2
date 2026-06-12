@@ -306,7 +306,8 @@ void SingleAgentDiscreteMovement::setMovingAgent(const string& parent_name,
     if (!smm.has_value()) {
         throw exception::InvalidSubModel("SingleAgentDiscreteMovement submodel was not initialized.");
     }
-    auto agent_map = this->smm->bindAgent(INTERNAL_MOVING_AGENT_NAME, parent_name, auto_map, auto_map);
+    bool auto_map_states = auto_map || state_map.empty();
+    auto agent_map = this->smm->bindAgent(INTERNAL_MOVING_AGENT_NAME, parent_name, auto_map, auto_map_states);    for (auto const& [internal_var, parent_var] : var_map) { agent_map.mapVariable(internal_var, parent_var); }
     for (auto const& [internal_var, parent_var] : var_map) { agent_map.mapVariable(internal_var, parent_var); }
     for (auto const& [internal_state, parent_state] : state_map) { agent_map.mapState(internal_state, parent_state); }
 }
@@ -318,7 +319,8 @@ void SingleAgentDiscreteMovement::setEnvironmentAgent(const string& parent_name,
     if (!smm.has_value()) {
         throw exception::InvalidSubModel("SingleAgentDiscreteMovement submodel was not initialized.");
     }
-    auto agent_map = this->smm->bindAgent(INTERNAL_ENV_AGENT_NAME, parent_name, auto_map, auto_map);
+    bool auto_map_states = auto_map || state_map.empty();
+    auto agent_map = this->smm->bindAgent(INTERNAL_ENV_AGENT_NAME, parent_name, auto_map, auto_map_states);    for (auto const& [internal_var, parent_var] : var_map) { agent_map.mapVariable(internal_var, parent_var); }
     for (auto const& [internal_var, parent_var] : var_map) { agent_map.mapVariable(internal_var, parent_var); }
     for (auto const& [internal_state, parent_state] : state_map) { agent_map.mapState(internal_state, parent_state); }
 }
