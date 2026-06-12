@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
@@ -7,6 +8,7 @@
 #include <random>
 #include <numeric>
 #include <algorithm>
+#include <filesystem>
 
 #include "flamegpu/flamegpu.h"
 #include "flamegpu/stock/subModels/SingleAgentDiscreteMovement.h"
@@ -19,82 +21,68 @@
 #define SUGAR_GROWBACK_RATE 1.0f
 #define SUGAR_MAX_CAPACITY 7.0f
 
+flamegpu::CUDASimulation *global_sim = nullptr;
+const char *global_out_dir = "output/";
+
 /**
  * Agent Functions
  */
 
-// 1. Metabolise & Harvest: Bug eats the sugar at its new location and consumes energy
+// 1. Metabolise: Bug eats the sugar at its new location and consumes energy
 // This runs AFTER movement, so current_cell_score is already updated by the submodel.
 FLAMEGPU_AGENT_FUNCTION(metabolise, flamegpu::MessageNone, flamegpu::MessageNone) {
-    float sugar = FLAMEGPU->getVariable<float>("sugar");
+    float sugar_level = FLAMEGPU->getVariable<float>("sugar_level");
     float metabolism = FLAMEGPU->getVariable<float>("metabolism");
     float harvested = FLAMEGPU->getVariable<float>("current_cell_score");
 
     // Add what we found and subtract what we used
-    sugar += harvested;
-    sugar -= metabolism;
+    if (harvested > 0) {
+        sugar_level += harvested;
+    }
+    sugar_level -= metabolism;
 
     // Death check
-    if (sugar <= 0.0f) {
+    if (sugar_level <= 0.0f) {
         return flamegpu::DEAD;
     }
 
-    FLAMEGPU->setVariable<float>("sugar", sugar);
+    FLAMEGPU->setVariable<float>("sugar_level", sugar_level);
     return flamegpu::ALIVE;
 }
 
 // 2. Growback: SugarCell grows sugar or is emptied if a bug is currently standing on it
 FLAMEGPU_AGENT_FUNCTION(growback, flamegpu::MessageNone, flamegpu::MessageNone) {
-    float sugar = FLAMEGPU->getVariable<float>("sugar");
-    float max_sugar = FLAMEGPU->getVariable<float>("max_sugar");
+    float env_sugar_level = FLAMEGPU->getVariable<float>("env_sugar_level");
+    float env_max_sugar_level = FLAMEGPU->getVariable<float>("env_max_sugar_level");
     int is_occupied = FLAMEGPU->getVariable<int>("is_occupied");
 
     if (is_occupied) {
-        // A bug is here, so it has eaten the sugar
-        sugar = 0.0f;
+        // A bug is here, so it has eaten the sugar. Mark as -1 to mirror original.
+        env_sugar_level = -1.0f;
     } else {
         // Grow back
-        sugar += SUGAR_GROWBACK_RATE;
-        if (sugar > max_sugar) {
-            sugar = max_sugar;
+        env_sugar_level += SUGAR_GROWBACK_RATE;
+        if (env_sugar_level > env_max_sugar_level) {
+            env_sugar_level = env_max_sugar_level;
         }
+        // Ensure it's not negative if it was just vacated
+        if (env_sugar_level < 0) env_sugar_level = 0;
     }
 
-    FLAMEGPU->setVariable<float>("sugar", sugar);
+    FLAMEGPU->setVariable<float>("env_sugar_level", env_sugar_level);
     return flamegpu::ALIVE;
 }
 
 /**
- * Step function to log simulation state to CSV
+ * Step function to log simulation state
  */
 FLAMEGPU_STEP_FUNCTION(step_logger) {
     unsigned int step = FLAMEGPU->getStepCounter();
     unsigned int bug_count = FLAMEGPU->agent("bug").count();
     printf("Step %u: bugs=%u\n", step, bug_count);
 
-    // Log bugs every step
-    static std::ofstream bug_log;
-    if (step == 0) {
-        bug_log.open("bugs_log.csv");
-        bug_log << "step,x,y,sugar,metabolism" << std::endl;
-    }
-    // getPopulationData returns a reference to a DeviceAgentVector_impl, so we must use a reference
-    auto& bug_pop = FLAMEGPU->agent("bug").getPopulationData();
-    for (const auto& bug : bug_pop) {
-        bug_log << step << "," << bug.getVariable<int>("x") << "," << bug.getVariable<int>("y") << "," << bug.getVariable<float>("sugar") << "," << bug.getVariable<float>("metabolism") << std::endl;
-    }
-
-    // Log cells every 10 steps to save space (and step 0)
-    static std::ofstream cell_log;
-    if (step == 0) {
-        cell_log.open("cells_log.csv");
-        cell_log << "step,x,y,sugar,max_sugar" << std::endl;
-    }
-    if (step % 10 == 0) {
-        auto& cell_pop = FLAMEGPU->agent("sugar_cell").getPopulationData();
-        for (const auto& cell : cell_pop) {
-            cell_log << step << "," << cell.getVariable<int>("x") << "," << cell.getVariable<int>("y") << "," << cell.getVariable<float>("sugar") << "," << cell.getVariable<float>("max_sugar") << std::endl;
-        }
+    if (global_sim) {
+        global_sim->exportData(std::string(global_out_dir) + "step_" + std::to_string(step) + ".xml");
     }
 }
 
@@ -102,6 +90,11 @@ FLAMEGPU_STEP_FUNCTION(step_logger) {
  * Main
  */
 int main(int argc, const char ** argv) {
+    if (std::filesystem::exists("examples/cpp/sugarscape_submodel_api")) {
+        global_out_dir = "examples/cpp/sugarscape_submodel_api/output/";
+    }
+    std::filesystem::create_directories(global_out_dir);
+
     flamegpu::ModelDescription model("Sugarscape");
 
     /**
@@ -109,7 +102,7 @@ int main(int argc, const char ** argv) {
      */
     // Bug Agent (The moving agent)
     flamegpu::AgentDescription bug = model.newAgent("bug");
-    bug.newVariable<float>("sugar");
+    bug.newVariable<float>("sugar_level");
     bug.newVariable<float>("metabolism");
     bug.newVariable<int>("x");
     bug.newVariable<int>("y");
@@ -119,8 +112,8 @@ int main(int argc, const char ** argv) {
     flamegpu::AgentDescription sugar_cell = model.newAgent("sugar_cell");
     sugar_cell.newVariable<int>("x");
     sugar_cell.newVariable<int>("y");
-    sugar_cell.newVariable<float>("sugar");
-    sugar_cell.newVariable<float>("max_sugar");
+    sugar_cell.newVariable<float>("env_sugar_level");
+    sugar_cell.newVariable<float>("env_max_sugar_level");
     sugar_cell.newVariable<int>("is_occupied", 0);
 
     /**
@@ -143,7 +136,7 @@ int main(int argc, const char ** argv) {
             {"x", "x"},
             {"y", "y"},
             {"is_occupied", "is_occupied"},
-            {"cell_score", "sugar"}
+            {"cell_score", "env_sugar_level"}
         },
         {});
 
@@ -169,13 +162,23 @@ int main(int argc, const char ** argv) {
      * Simulation Setup
      */
     flamegpu::CUDASimulation cudaSimulation(model);
-    cudaSimulation.initialise(argc, argv);
+    global_sim = &cudaSimulation;
+
     cudaSimulation.SimulationConfig().steps = 100;
+    cudaSimulation.SimulationConfig().truncate_log_files = true;
+
+    flamegpu::StepLoggingConfig step_log(model);
+    step_log.agent("bug").logCount();
+    step_log.agent("bug").logMean<float>("sugar_level");
+    step_log.agent("sugar_cell").logMean<float>("env_sugar_level");
+    cudaSimulation.setStepLog(step_log);
+
+    cudaSimulation.initialise(argc, argv);
 
     // If no input file, generate a random starting state
     if (cudaSimulation.getSimulationConfig().input_file.empty()) {
         std::mt19937_64 rng(42);
-        // Define sugar hotspots (spatial distribution of max_sugar)
+        // Define sugar hotspots (spatial distribution of env_max_sugar_level)
         std::vector<std::array<unsigned int, 4>> sugar_hotspots;
         {
             std::uniform_int_distribution<unsigned int> width_dist(0, GRID_WIDTH - 1);
@@ -209,7 +212,7 @@ int main(int argc, const char ** argv) {
             auto instance = bug_pop[i];
             instance.setVariable<int>("x", idx / GRID_HEIGHT);
             instance.setVariable<int>("y", idx % GRID_HEIGHT);
-            instance.setVariable<float>("sugar", bug_sugar_dist(rng));
+            instance.setVariable<float>("sugar_level", bug_sugar_dist(rng));
             instance.setVariable<float>("metabolism", bug_metabolism_dist(rng));
         }
 
@@ -232,8 +235,8 @@ int main(int argc, const char ** argv) {
                         if (v > max_val) max_val = v;
                     }
                 }
-                instance.setVariable<float>("max_sugar", max_val);
-                instance.setVariable<float>("sugar", max_val);
+                instance.setVariable<float>("env_max_sugar_level", max_val);
+                instance.setVariable<float>("env_sugar_level", max_val);
             }
         }
 
@@ -241,7 +244,11 @@ int main(int argc, const char ** argv) {
         cudaSimulation.setPopulationData(cell_pop);
     }
 
+    cudaSimulation.exportData(std::string(global_out_dir) + "initial_state.xml");
+
     cudaSimulation.simulate();
+
+    cudaSimulation.exportLog(std::string(global_out_dir) + "simulation_log.json", true, true, false, false);
 
     return 0;
 }

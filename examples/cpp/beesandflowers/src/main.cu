@@ -1,26 +1,28 @@
 #include <iostream>
+#include <string>
 #include <fstream>
 #include <vector>
 #include <algorithm>
 #include <numeric>
 #include <random>
+#include <filesystem>
 #include "flamegpu/flamegpu.h"
 #include "flamegpu/stock/subModels/SingleAgentDiscreteMovement.h"
 
 #define ENV_DIM 100
-#define SIMULATION_STEPS 100
 
 using flamegpu::ModelDescription;
 using flamegpu::AgentDescription;
 using flamegpu::AgentFunctionDescription;
 using flamegpu::LayerDescription;
 using flamegpu::CUDASimulation;
+using flamegpu::StepLoggingConfig;
 using flamegpu::MessageNone;
 using flamegpu::ALIVE;
 using flamegpu::EnvironmentDescription;
 
-// Global log file
-std::ofstream agents_log;
+CUDASimulation *global_sim = nullptr;
+const char *global_out_dir = "output/";
 
 FLAMEGPU_AGENT_FUNCTION(calculate_priority, MessageNone, MessageNone) {
     float current_nectar = FLAMEGPU->getVariable<float>("current_cell_score");
@@ -123,58 +125,18 @@ FLAMEGPU_INIT_FUNCTION(createAgent) {
     }
 }
 
-
-FLAMEGPU_INIT_FUNCTION(initLog) {
-    agents_log.open("bees_log.csv");
-    agents_log << "step,id,x,y,hunger_level,wait" << std::endl;
-}
-
 FLAMEGPU_STEP_FUNCTION(stepLogger) {
     auto bees = FLAMEGPU->agent("bee");
-    auto& bee_pop = bees.getPopulationData();
     unsigned int step = FLAMEGPU->getStepCounter();
-
-    int count = 0;
-    for (const auto& bee : bee_pop) {
-        if (count < 5) {
-            std::cout << "Bee " << bee.getID() << " at (" << bee.getVariable<int>("x") << ", " << bee.getVariable<int>("y") << ")" << std::endl;
-            count++;
-        }
-        agents_log << step << ","
-                 << bee.getID() << ","
-                 << bee.getVariable<int>("x") << ","
-                 << bee.getVariable<int>("y") << ","
-                 << bee.getVariable<float>("hunger_level") << ","
-                 << bee.getVariable<int>("wait") << "\n";
-    }
-
-    // Log cells with nectar once at the start
-    if (step == 0) {
-        std::ofstream flower_log("flowers_log.csv");
-        flower_log << "id,x,y,nectar" << std::endl;
-        auto cells = FLAMEGPU->agent("flower_cell");
-        auto& cell_pop = cells.getPopulationData();
-        for (const auto& cell : cell_pop) {
-            float nectar = cell.getVariable<float>("nectar");
-            if (nectar > 0.0f) {
-                flower_log << cell.getID() << ","
-                           << cell.getVariable<int>("x") << ","
-                           << cell.getVariable<int>("y") << ","
-                           << nectar << "\n";
-            }
-        }
-        flower_log.close();
-    }
 
     float avg_hunger = bees.sum<float>("hunger_level") / (float)bees.count();
     std::cout << "Step: " << step
               << " | Bee count: " << bees.count()
               << " | Avg Hunger: " << avg_hunger << std::endl;
-}
 
-FLAMEGPU_EXIT_FUNCTION(exitLog) {
-    if (agents_log.is_open()) {
-        agents_log.close();
+    // Export data per step using global pointer
+    if (global_sim) {
+        global_sim->exportData(global_out_dir + "step_" + std::to_string(step) + ".xml");
     }
 }
 
@@ -237,20 +199,46 @@ void define_model(ModelDescription &model) {
     l2.addAgentFunction(update_hunger_wait);
 
     model.addInitFunction(createAgent);
-    model.addInitFunction(initLog);
     model.addStepFunction(stepLogger);
-    model.addExitFunction(exitLog);
 }
 
 int main(int argc, const char ** argv) {
+    // Determine output directory based on execution context
+    if (std::filesystem::exists("examples/cpp/beesandflowers")) {
+        global_out_dir = "examples/cpp/beesandflowers/output/";
+    }
+    std::filesystem::create_directories(global_out_dir);
+
     ModelDescription model("OneAgentMovingModel");
 
     define_model(model);
 
     CUDASimulation simulation(model);
-    simulation.SimulationConfig().steps = SIMULATION_STEPS;
 
+    // Assign global pointer for step export
+    global_sim = &simulation;
+
+    // Set defaults before initialising (allows CLI to override)
+    simulation.SimulationConfig().steps = 100;
+    simulation.SimulationConfig().truncate_log_files = true;
+
+    // Configure logging using the FLAMEGPU API
+    StepLoggingConfig step_log(model);
+    step_log.agent("bee").logCount();
+    step_log.agent("bee").logMean<float>("hunger_level");
+    step_log.agent("bee").logMean<int>("wait");
+    simulation.setStepLog(step_log);
+
+    simulation.initialise(argc, argv);
+
+    // Export initial state
+    simulation.exportData(global_out_dir + "initial_state.xml");
+
+    // Run the simulation normally
     simulation.simulate();
+
+    // Export the summary log
+    simulation.exportLog(global_out_dir + "simulation_log.json", true, true, false, false);
 
     return EXIT_SUCCESS;
 }
