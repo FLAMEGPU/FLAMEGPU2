@@ -4,10 +4,6 @@
 #include <mpi.h>
 #endif
 
-#ifdef FLAMEGPU_USE_CUDA
-#include <cuda_runtime.h>
-#endif
-
 #include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/detail/JitifyCache.h"
 
