@@ -46,6 +46,10 @@ FLAMEGPU_AGENT_FUNCTION(metabolise, flamegpu::MessageNone, flamegpu::MessageNone
     }
 
     FLAMEGPU->setVariable<float>("sugar_level", sugar_level);
+#ifdef FLAMEGPU_VISUALISATION
+    FLAMEGPU->setVariable<float>("vis_x", static_cast<float>(FLAMEGPU->getVariable<int>("x")));
+    FLAMEGPU->setVariable<float>("vis_y", static_cast<float>(FLAMEGPU->getVariable<int>("y")));
+#endif
     return flamegpu::ALIVE;
 }
 
@@ -103,6 +107,11 @@ int main(int argc, const char ** argv) {
     bug.newVariable<int>("x");
     bug.newVariable<int>("y");
     bug.newVariable<float>("current_cell_score", 0.0f);
+#ifdef FLAMEGPU_VISUALISATION
+    bug.newVariable<float>("vis_x");
+    bug.newVariable<float>("vis_y");
+    bug.newVariable<float>("vis_z");
+#endif
 
     // SugarCell Agent (The environment agent)
     flamegpu::AgentDescription sugar_cell = model.newAgent("sugar_cell");
@@ -111,6 +120,11 @@ int main(int argc, const char ** argv) {
     sugar_cell.newVariable<float>("env_sugar_level");
     sugar_cell.newVariable<float>("env_max_sugar_level");
     sugar_cell.newVariable<int>("is_occupied", 0);
+#ifdef FLAMEGPU_VISUALISATION
+    sugar_cell.newVariable<float>("vis_x");
+    sugar_cell.newVariable<float>("vis_y");
+    sugar_cell.newVariable<float>("vis_z");
+#endif
 
     /**
      * Submodel Configuration
@@ -169,6 +183,36 @@ int main(int argc, const char ** argv) {
     step_log.agent("sugar_cell").logMean<float>("env_sugar_level");
     cudaSimulation.setStepLog(step_log);
 
+#ifdef FLAMEGPU_VISUALISATION
+    flamegpu::visualiser::ModelVis visualisation = cudaSimulation.getVisualisation();
+    {
+        visualisation.setSimulationSpeed(2);
+        visualisation.setInitialCameraLocation(GRID_WIDTH / 2.0f, GRID_HEIGHT / 2.0f, 225.0f);
+        visualisation.setInitialCameraTarget(GRID_WIDTH / 2.0f, GRID_HEIGHT / 2.0f, 0.0f);
+        visualisation.setCameraSpeed(0.001f * GRID_WIDTH);
+        visualisation.setOrthographic(true);
+        visualisation.setOrthographicZoomModifier(0.365f);
+        visualisation.setViewClips(0.1f, 5000);
+
+        auto bug_agt = visualisation.addAgent("bug");
+        bug_agt.setModel(flamegpu::visualiser::Stock::Models::CUBE);
+        bug_agt.setModelScale(0.5f);
+        bug_agt.setXVariable("vis_x");
+        bug_agt.setYVariable("vis_y");
+        bug_agt.setZVariable("vis_z");
+        bug_agt.setColor(flamegpu::visualiser::Stock::Colors::RED);
+
+        auto cell_agt = visualisation.addAgent("sugar_cell");
+        cell_agt.setModel(flamegpu::visualiser::Stock::Models::CUBE);
+        cell_agt.setModelScale(1.0f);
+        cell_agt.setXVariable("vis_x");
+        cell_agt.setYVariable("vis_y");
+        cell_agt.setZVariable("vis_z");
+        cell_agt.setColor(flamegpu::visualiser::ViridisInterpolation("env_sugar_level", 0.0f, SUGAR_MAX_CAPACITY));
+    }
+    visualisation.activate();
+#endif
+
     cudaSimulation.initialise(argc, argv);
 
     // If no input file, generate a random starting state
@@ -210,6 +254,11 @@ int main(int argc, const char ** argv) {
             instance.setVariable<int>("y", idx % GRID_HEIGHT);
             instance.setVariable<float>("sugar_level", bug_sugar_dist(rng));
             instance.setVariable<float>("metabolism", bug_metabolism_dist(rng));
+#ifdef FLAMEGPU_VISUALISATION
+            instance.setVariable<float>("vis_x", static_cast<float>(idx / GRID_HEIGHT));
+            instance.setVariable<float>("vis_y", static_cast<float>(idx % GRID_HEIGHT));
+            instance.setVariable<float>("vis_z", 0.1f);
+#endif
         }
 
         flamegpu::AgentVector cell_pop(sugar_cell, GRID_WIDTH * GRID_HEIGHT);
@@ -233,6 +282,11 @@ int main(int argc, const char ** argv) {
                 }
                 instance.setVariable<float>("env_max_sugar_level", max_val);
                 instance.setVariable<float>("env_sugar_level", max_val);
+#ifdef FLAMEGPU_VISUALISATION
+                instance.setVariable<float>("vis_x", static_cast<float>(x));
+                instance.setVariable<float>("vis_y", static_cast<float>(y));
+                instance.setVariable<float>("vis_z", 0.0f);
+#endif
             }
         }
 
@@ -245,6 +299,10 @@ int main(int argc, const char ** argv) {
     cudaSimulation.simulate();
 
     cudaSimulation.exportLog("output/simulation_log.json", true, true, false, false);
+
+#ifdef FLAMEGPU_VISUALISATION
+    visualisation.join();
+#endif
 
     return 0;
 }

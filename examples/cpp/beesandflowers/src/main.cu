@@ -70,6 +70,10 @@ FLAMEGPU_AGENT_FUNCTION(update_hunger_wait, MessageNone, MessageNone) {
 
     FLAMEGPU->setVariable<float>("hunger_level", hunger_level);
     FLAMEGPU->setVariable<int>("wait", wait);
+#ifdef FLAMEGPU_VISUALISATION
+    FLAMEGPU->setVariable<float>("vis_x", static_cast<float>(FLAMEGPU->getVariable<int>("x")));
+    FLAMEGPU->setVariable<float>("vis_y", static_cast<float>(FLAMEGPU->getVariable<int>("y")));
+#endif
 
     return ALIVE;
 }
@@ -103,6 +107,10 @@ FLAMEGPU_INIT_FUNCTION(createAgent) {
         bee.setVariable<int>("wait", 0);
         bee.setVariable<float>("priority", 0.0f);
         bee.setVariable<float>("current_cell_score", 0.0f);
+#ifdef FLAMEGPU_VISUALISATION
+        bee.setVariable<float>("vis_x", static_cast<float>(x));
+        bee.setVariable<float>("vis_y", static_cast<float>(y));
+#endif
     }
 
     // Create a 100x100 grid of cells and set occupancy
@@ -120,6 +128,10 @@ FLAMEGPU_INIT_FUNCTION(createAgent) {
                 nectar = FLAMEGPU->random.uniform<float>(10.0f, 50.0f);
             }
             cell.setVariable<float>("nectar", nectar);
+#ifdef FLAMEGPU_VISUALISATION
+            cell.setVariable<float>("vis_x", static_cast<float>(i));
+            cell.setVariable<float>("vis_y", static_cast<float>(j));
+#endif
         }
     }
 }
@@ -151,6 +163,10 @@ void define_model(ModelDescription &model) {
     cell.newVariable<int>("y");
     cell.newVariable<int>("is_occupied", 0);
     cell.newVariable<float>("nectar", 0.0f);
+#ifdef FLAMEGPU_VISUALISATION
+    cell.newVariable<float>("vis_x");
+    cell.newVariable<float>("vis_y");
+#endif
 
     // Bee Agent
     AgentDescription bee = model.newAgent("bee");
@@ -160,6 +176,10 @@ void define_model(ModelDescription &model) {
     bee.newVariable<int>("wait", 0);
     bee.newVariable<float>("priority", 0.0f);
     bee.newVariable<float>("current_cell_score", 0.0f);
+#ifdef FLAMEGPU_VISUALISATION
+    bee.newVariable<float>("vis_x");
+    bee.newVariable<float>("vis_y");
+#endif
 
 
     // Initialize the submodel using the constructor
@@ -224,6 +244,34 @@ int main(int argc, const char ** argv) {
     step_log.agent("bee").logMean<int>("wait");
     simulation.setStepLog(step_log);
 
+#ifdef FLAMEGPU_VISUALISATION
+    flamegpu::visualiser::ModelVis visualisation = simulation.getVisualisation();
+    {
+        visualisation.setSimulationSpeed(2);
+        visualisation.setInitialCameraLocation(ENV_DIM / 2.0f, ENV_DIM / 2.0f, 225.0f);
+        visualisation.setInitialCameraTarget(ENV_DIM / 2.0f, ENV_DIM / 2.0f, 0.0f);
+        visualisation.setCameraSpeed(0.001f * ENV_DIM);
+        visualisation.setOrthographic(true);
+        visualisation.setOrthographicZoomModifier(0.365f);
+        visualisation.setViewClips(0.1f, 5000);
+
+        auto bee_agt = visualisation.addAgent("bee");
+        bee_agt.setModel(flamegpu::visualiser::Stock::Models::CUBE);
+        bee_agt.setModelScale(0.5f);
+        bee_agt.setXVariable("vis_x");
+        bee_agt.setYVariable("vis_y");
+        bee_agt.setColor(flamegpu::visualiser::HSVInterpolation::GREENRED("hunger_level", 0.0f, 100.0f));
+
+        auto cell_agt = visualisation.addAgent("flower_cell");
+        cell_agt.setModel(flamegpu::visualiser::Stock::Models::CUBE);
+        cell_agt.setModelScale(0.9f);
+        cell_agt.setXVariable("vis_x");
+        cell_agt.setYVariable("vis_y");
+        cell_agt.setColor(flamegpu::visualiser::ViridisInterpolation("nectar", 0.0f, 50.0f));
+    }
+    visualisation.activate();
+#endif
+
     simulation.initialise(argc, argv);
 
     // Export initial state
@@ -234,6 +282,10 @@ int main(int argc, const char ** argv) {
 
     // Export the summary log
     simulation.exportLog("output/simulation_log.json", true, true, false, false);
+
+#ifdef FLAMEGPU_VISUALISATION
+    visualisation.join();
+#endif
 
     return EXIT_SUCCESS;
 }
