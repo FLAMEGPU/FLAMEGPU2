@@ -52,12 +52,16 @@ void ModelVisData::registerEnvProperties() {
 }
 void ModelVisData::updateBuffers(const unsigned int& sc) {
     if (visualiser) {
-        bool has_agents = false;
+        bool _has_first_agents = false;
         for (auto& a : agents) {
-            has_agents = a.second->requestBufferResizes(visualiser, sc == 0 || sc == UINT_MAX) || has_agents;
+            _has_first_agents = a.second->requestBufferResizes(visualiser, sc == 0 || sc == UINT_MAX) || _has_first_agents;
+        }
+        if (_has_first_agents) {
+            _has_first_agents = !this->has_first_agents;
+            this->has_first_agents = true;
         }
         // Block the sim when we first get agents, until vis has resized buffers, incase vis is being slow to init
-        if (has_agents && (sc == 0 || sc == UINT_MAX)) {
+        if (_has_first_agents) {
             while (!visualiser->buffersReady()) {
                 // Do nothing, just spin until ready
                 std::this_thread::yield();
@@ -74,7 +78,7 @@ void ModelVisData::updateBuffers(const unsigned int& sc) {
         }
         visualiser->releaseMutex();
         // Block the sim again, until vis is fully ready
-        if (has_agents && (sc == 0 || sc == UINT_MAX)) {
+        if (_has_first_agents) {
             while (!visualiser->isReady()) {
                 // Do nothing, just spin until ready
                 std::this_thread::yield();
@@ -198,6 +202,7 @@ void ModelVis::activate() {
             agent.second->initBindings(data->visualiser);
         }
         data->env_registered = false;
+        data->has_first_agents = false;
         data->registerEnvProperties();
         data->visualiser->start();
     }
