@@ -88,6 +88,7 @@ SET(TESTS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/runtime/messaging/test_append_truncate.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_cleanup.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/util/test_nvtx.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/stock/test_single_agent_discrete_movement.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/test_namespaces/test_namespaces.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/test_namespaces/test_rtc_namespaces.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/test_version.cpp
