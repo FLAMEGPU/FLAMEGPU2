@@ -15,7 +15,7 @@ namespace io {
 class JSONStateReader : public StateReader {
  public:
     /**
-    * Loads the specified XML file to an internal data-structure 
+    * Loads the specified JSON file to an internal data-structure 
     * @param input_file Path to file to be read
     * @param model Model description to ensure file loaded is suitable
     * @param verbosity Verbosity level to use during load
