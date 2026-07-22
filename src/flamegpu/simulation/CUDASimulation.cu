@@ -1855,6 +1855,7 @@ void CUDASimulation::initEnvironmentMgr() {
                 "in CUDASimulation::initEnvironmentMgr()\n", prop.first.c_str(), prop.second.elements, it->second.elements);
         } else {
             singletons->environment->setPropertyDirect(np, static_cast<char*>(prop.second.ptr));
+            singletons->environment->propagateMappedPropertyValue(np, static_cast<char*>(prop.second.ptr));
         }
     }
     // Clear init

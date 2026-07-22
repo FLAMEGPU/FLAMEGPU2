@@ -558,5 +558,83 @@ TEST(SubEnvironmentManagerTest, CantMapReserved) {
     EXPECT_THROW(se.mapMacroProperty("_stepCount", "stepCount"), flamegpu::exception::ReservedName);
     EXPECT_THROW(se.mapMacroProperty("stepCount", "_stepCount"), flamegpu::exception::ReservedName);
 }
+TEST(SubEnvironmentManagerTest, Bug_LoadFromFile) {
+    // Previously there was a bug, whereby a submodels mapped environment properties would not be set if the parent model's values were loaded from an input file
+    // https://github.com/FLAMEGPU/FLAMEGPU2/pull/1401
+    const char *JSON_FILE_NAME = "test.json";
+    const char* JSON_FILE_BODY = R"""(
+{
+  "environment": {
+    "property_read": 12,
+    "property_read2": [14, 15]
+  },
+  "agents": {
+    "agent": {
+      "default": [
+        {
+          "property_read": 0,
+          "property_read2": [0, 0]
+        }
+      ]
+    }
+  }
+}
+)""";
+    // Manually create test.json, containing the initial state
+    // Run model with initial state file, check that values are loaded properly
+    // Delete test.json
+    {
+        std::ofstream myfile;
+        myfile.open(JSON_FILE_NAME, std::ofstream::out | std::ofstream::trunc);
+        myfile << JSON_FILE_BODY;
+        myfile.close();
+    }
+
+    ModelDescription m2("sub");
+    {
+        // Define SubModel
+        m2.addExitCondition(ExitAlways);
+        // These defaults won't be used
+        m2.Environment().newProperty<int>("property_read", 0);
+        m2.Environment().newProperty<int, 2>("property_read2", { 0, 0 });
+        auto a = m2.newAgent("agent");
+        a.newFunction("", DeviceAPIGetFn);
+        a.newVariable<int>("property_read", 0);
+        a.newVariable<int, 2>("property_read2", { 0, 0 });
+        m2.newLayer().addAgentFunction(DeviceAPIGetFn);
+    }
+    ModelDescription m("host");
+    auto a = m.newAgent("agent");
+    {
+        // Define Model
+        m.Environment().newProperty<int>("property_read", 0);
+        m.Environment().newProperty<int, 2>("property_read2", { 0, 0 });
+        a.newVariable<int>("property_read", 0);
+        a.newVariable<int, 2>("property_read2", { 0, 0 });
+    }
+    // Setup submodel bindings
+    auto sm = m.newSubModel("sub", m2);
+    sm.bindAgent("agent", "agent", true, true);
+    sm.SubEnvironment(true);
+    // Construct model layers
+    m.newLayer().addSubModel(sm);  // DeviceAPIGetFn
+    // Init agent population (we only need 1 agent, default value is fine)
+    AgentVector pop(a, 1);
+    // Init and step model
+    CUDASimulation cm(m);
+    cm.SimulationConfig().input_file = JSON_FILE_NAME;
+    cm.applyConfig();
+    cm.step();
+    // Test result
+    cm.getPopulationData(pop);
+    EXPECT_EQ(pop.size(), 1u);  // Pop size is unchanged
+    AgentVector::Agent ai = pop.front();
+    std::array<int, 2> property_read2 = ai.getVariable<int, 2>("property_read2");
+    EXPECT_EQ(ai.getVariable<int>("property_read"), 12);  // Value read in sub was default from master
+    std::array<int, 2> test2 = { 14, 15 };
+    EXPECT_EQ(property_read2, test2);  // Value read in sub was default from master
+    // Cleanup
+    ASSERT_EQ(::remove(JSON_FILE_NAME), 0);
+}
 }  // namespace test_sub_environment_manager
 }  // namespace flamegpu
