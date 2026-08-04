@@ -60,14 +60,7 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMessageMap &memory_map) {
 
         // do the device allocation
         void * d_ptr;
-
-#ifdef UNIFIED_GPU_MEMORY
-        // unified memory allocation
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMallocManaged(reinterpret_cast<void**>(&d_ptr), var_size *  message.getMaximumListSize()))
-#else
-        // non unified memory allocation
         flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(reinterpret_cast<void**>(&d_ptr), var_size * message.getMaximumListSize()));
-#endif
 
         // store the pointer in the map
         memory_map.insert(CUDAMessageMap::value_type(var_name, d_ptr));
