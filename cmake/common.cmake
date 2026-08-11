@@ -84,10 +84,34 @@ mark_as_advanced(FLAMEGPU_VERBOSE_PTXAS)
 # Option to promote compilation warnings to error, useful for strict CI
 option(FLAMEGPU_WARNINGS_AS_ERRORS "Promote compilation warnings to errors" OFF)
 
-# Option to change curand engine used for CUDA random generation
-set(FLAMEGPU_CURAND_ENGINE "PHILOX" CACHE STRING "The curand engine to use. Suitable options: \"PHILOX\", \"XORWOW\", \"MRG\"")
-set_property(CACHE FLAMEGPU_CURAND_ENGINE PROPERTY STRINGS PHILOX XORWOW MRG)
-mark_as_advanced(FLAMEGPU_CURAND_ENGINE)
+# Option to change cu/hiprand engine used for GPU random number generation
+set(_FLAMEGPU_GPURAND_ENGINE_OPTIONS "PHILOX;XORWOW;MRG")
+set(FLAMEGPU_GPURAND_ENGINE "PHILOX" CACHE STRING "The cu/hiprand engine to use. Suitable options: ${_FLAMEGPU_GPURAND_ENGINE_OPTIONS}.")
+set_property(CACHE FLAMEGPU_GPURAND_ENGINE PROPERTY STRINGS ${_FLAMEGPU_GPURAND_ENGINE_OPTIONS})
+mark_as_advanced(FLAMEGPU_GPURAND_ENGINE)
+
+# Handle deprecation of FLAMEGPU_CURAND_ENGINE
+if (DEFINED CACHE{FLAMEGPU_CURAND_ENGINE})
+    # Warn once per configuration
+    if (NOT FLAMEGPU_DEPRECATED_CURAND_ENGINE_WARNED)
+        message(DEPRECATION 
+            "  FLAMEGPU_CURAND_ENGINE is deprecated and will be removed in a future release.\n"
+            "  Please use FLAMEGPU_GPURAND_ENGINE instead."
+        )
+        set(FLAMEGPU_DEPRECATED_CURAND_ENGINE_WARNED TRUE PARENT_SCOPE)
+    endif()
+    # Forward the old value to the new option
+    set(FLAMEGPU_GPURAND_ENGINE "${FLAMEGPU_CURAND_ENGINE}" CACHE STRING "The curand engine to use. Suitable options: \"PHILOX\", \"XORWOW\", \"MRG\"" FORCE)
+    # Remove the deprecated option from the cache
+    unset(FLAMEGPU_CURAND_ENGINE CACHE)
+endif()
+# Validate that FLAMEGPU_GPURAND_ENGINE is set to an allowed value, after the value has been potentially copied from the deprecated option.
+string(TOUPPER "${FLAMEGPU_GPURAND_ENGINE}" _FLAMEGPU_GPURAND_ENGINE_UPPER)
+if(NOT "${_FLAMEGPU_GPURAND_ENGINE_UPPER}" IN_LIST _FLAMEGPU_GPURAND_ENGINE_OPTIONS)
+    message(FATAL_ERROR "\"FLAMEGPU_GPURAND_ENGINE\" has an invalid value: \"${FLAMEGPU_GPURAND_ENGINE}\". Select from: ${_FLAMEGPU_GPURAND_ENGINE_OPTIONS}")
+endif()
+unset(_FLAMEGPU_GPURAND_ENGINE_OPTIONS)
+unset(_FLAMEGPU_GPURAND_ENGINE_UPPER)
 
 # If CUDA, add an option to control the use of NVCC_THREADS (CUDA >= 11.2)
 set(DEFAULT_FLAMEGPU_NVCC_THREADS 2)
