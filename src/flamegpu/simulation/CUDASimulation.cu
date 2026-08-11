@@ -1338,8 +1338,11 @@ void CUDASimulation::simulate() {
         std::map<std::string, std::string> payload_items;
         payload_items["GPUDevices"] = flamegpu::detail::gpu::getDeviceName(deviceInitialised);
         payload_items["SimTime(s)"] = std::to_string(elapsedSecondsSimulation);
-        #if defined(__CUDACC_VER_MAJOR__) && defined(__CUDACC_VER_MINOR__) && defined(__CUDACC_VER_BUILD__)
+        #if defined(FLAMEGPU_USE_CUDA) && defined(__CUDACC_VER_MAJOR__) && defined(__CUDACC_VER_MINOR__) && defined(__CUDACC_VER_BUILD__)
             payload_items["NVCCVersion"] = std::to_string(__CUDACC_VER_MAJOR__) + "." + std::to_string(__CUDACC_VER_MINOR__) + "." + std::to_string(__CUDACC_VER_BUILD__);
+        #endif
+        #if defined(FLAMEGPU_USE_HIP) && defined(HIP_VERSION_MAJOR) && defined(HIP_VERSION_MINOR) && defined(HIP_VERSION_PATCH)
+            payload_items["HIPVersion"] = std::to_string(HIP_VERSION_MAJOR) + "." + std::to_string(HIP_VERSION_MINOR) + "." + std::to_string(HIP_VERSION_PATCH);
         #endif
         // generate telemtry data
         std::string telemetry_data = flamegpu::io::Telemetry::generateData("simulation-run", payload_items, isSWIG);
