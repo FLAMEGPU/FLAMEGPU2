@@ -386,12 +386,12 @@ std::unique_ptr<jitify2::LinkedProgramData> JitifyCache::buildProgram(
 #endif
 
     // Forward the curand Engine request
-#if defined(FLAMEGPU_CURAND_MRG32k3a)
-    options.push_back(std::string("-DFLAMEGPU_CURAND_MRG32k3a"));
-#elif defined(FLAMEGPU_CURAND_Philox4_32_10)
-    options.push_back(std::string("-DFLAMEGPU_CURAND_Philox4_32_10"));
-#elif defined(FLAMEGPU_CURAND_XORWOW)
-    options.push_back(std::string("-DFLAMEGPU_CURAND_XORWOW"));
+#if defined(FLAMEGPU_GPURAND_MRG32k3a)
+    options.push_back(std::string("-DFLAMEGPU_GPURAND_MRG32k3a"));
+#elif defined(FLAMEGPU_GPURAND_Philox4_32_10)
+    options.push_back(std::string("-DFLAMEGPU_GPURAND_Philox4_32_10"));
+#elif defined(FLAMEGPU_GPURAND_XORWOW)
+    options.push_back(std::string("-DFLAMEGPU_GPURAND_XORWOW"));
 #endif
 
     // Set the cuda compuate capability architecture to optimize / generate for, based on the values supported by the current dynamiclaly linked nvrtc and the device in question.
@@ -507,11 +507,11 @@ std::unique_ptr<jitify2::KernelData> JitifyCache::loadKernel(const std::string &
 #ifdef FLAMEGPU_USE_GLM
         "glm_" +
 #endif
-#if defined(FLAMEGPU_CURAND_MRG32k3a)
+#if defined(FLAMEGPU_GPURAND_MRG32k3a)
         "MRG_" +
-#elif defined(FLAMEGPU_CURAND_Philox4_32_10)
+#elif defined(FLAMEGPU_GPURAND_Philox4_32_10)
         "PHILOX_" +
-#elif defined(FLAMEGPU_CURAND_XORWOW)
+#elif defined(FLAMEGPU_GPURAND_XORWOW)
         "XORWOW_" +
 #endif
         // Use jitify hash methods for consistent hashing between OSs
