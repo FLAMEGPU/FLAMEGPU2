@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include "flamegpu/flamegpu.h"
 
 #include "gtest/gtest.h"
