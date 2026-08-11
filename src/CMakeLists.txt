@@ -65,10 +65,10 @@ option(FLAMEGPU_SEATBELTS "Enable runtime checks which harm performance for rele
 
 # Option to enable/disable building the flamegpu visualiser into the flamegpu
 option(FLAMEGPU_VISUALISATION "Enable FLAMEGPU visualisation support" OFF)
-# FLAMEGPU_VISUALISATION is not currently compatible with FLAMEGPU_GPU=HIP
-if (FLAMEGPU_VISUALISATION AND FLAMEGPU_GPU STREQUAL "HIP")
+# FLAMEGPU_VISUALISATION is not currently compatible with FLAMEGPU_BACKEND=HIP
+if (FLAMEGPU_VISUALISATION AND FLAMEGPU_BACKEND STREQUAL "HIP")
     message(FATAL_ERROR
-        "  FLAMEGPU_VISUALISATION is not currently compatible with FLAMEGPU_GPU=${FLAMEGPU_GPU}.\n"
+        "  FLAMEGPU_VISUALISATION is not currently compatible with FLAMEGPU_BACKEND=${FLAMEGPU_BACKEND}.\n"
         "  See https://github.com/FLAMEGPU/FLAMEGPU2/issues/1369 for more information.\n"
     )
 endif()
@@ -91,10 +91,10 @@ unset(FLAMEGPU_ENABLE_LINT_FLAMEGPU_DEFAULT)
 
 # Option to enable/disable MPI support
 option(FLAMEGPU_ENABLE_MPI "Enable MPI support for distributed ensembles" OFF)
-# FLAMEGPU_ENABLE_MPI is not currently compatible with FLAMEGPU_GPU=HIP
-if (FLAMEGPU_ENABLE_MPI AND FLAMEGPU_GPU STREQUAL "HIP")
+# FLAMEGPU_ENABLE_MPI is not currently compatible with FLAMEGPU_BACKEND=HIP
+if (FLAMEGPU_ENABLE_MPI AND FLAMEGPU_BACKEND STREQUAL "HIP")
     message(FATAL_ERROR
-        "  FLAMEGPU_ENABLE_MPI is not currently compatible with FLAMEGPU_GPU=${FLAMEGPU_GPU}.\n"
+        "  FLAMEGPU_ENABLE_MPI is not currently compatible with FLAMEGPU_BACKEND=${FLAMEGPU_BACKEND}.\n"
         "  See https://github.com/FLAMEGPU/FLAMEGPU2/issues/1371 for more information.\n"
     )
 endif()
