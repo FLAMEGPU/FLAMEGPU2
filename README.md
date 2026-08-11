@@ -227,7 +227,7 @@ cmake --build build --target all
 | `FLAMEGPU_RTC_EXPORT_SOURCES`        | `ON`/`OFF`                  | At runtime, export dynamic RTC files to disk. Useful for debugging RTC models. Default `OFF`               |
 | `FLAMEGPU_RTC_DISK_CACHE`            | `ON`/`OFF`                  | Enable/Disable caching of RTC functions to disk. Default `ON`.                                             |
 | `FLAMEGPU_VERBOSE_PTXAS`             | `ON`/`OFF`                  | Enable verbose PTXAS output during compilation. Default `OFF`.                                             |
-| `FLAMEGPU_CURAND_ENGINE`             | `XORWOW` / `PHILOX` / `MRG` | Select the CUDA random engine. Default `XORWOW`                                                            |
+| `FLAMEGPU_GPURAND_ENGINE`            | `PHILOX` / `XORWOW` / `MRG` | Select the CUDA/HIP random engine. Default `PHILOX`.                                                       |
 | `FLAMEGPU_ENABLE_GLM`                | `ON`/`OFF`                  | Experimental feature for GLM type support within models. Default `OFF`.                                    |
 | `FLAMEGPU_ENABLE_MPI`                | `ON`/`OFF`                  | Enable MPI support for distributed CUDAEnsembles, each MPI worker should have exclusive access to it's GPUs e.g. 1 MPI worker per node. Default `OFF`.                                           |
 | `FLAMEGPU_ENABLE_ADVANCED_API`       | `ON`/`OFF`                  | Enable advanced API functionality (C++ only), providing access to internal sim components for high-performance extensions. No stability guarantees are provided around this interface and the returned objects.  Documentation is limited to that found in the source. Default `OFF`. |
