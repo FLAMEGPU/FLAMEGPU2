@@ -17,11 +17,11 @@ namespace flamegpu {
 namespace detail {
 namespace gpu {
 
-#if defined(FLAMEGPU_CURAND_MRG32k3a)
+#if defined(FLAMEGPU_GPURAND_MRG32k3a)
 typedef FLAMEGPU_GPU_DRIVER_SYMBOL(randStateMRG32k3a_t) gpurandState;
-#elif defined(FLAMEGPU_CURAND_XORWOW)
+#elif defined(FLAMEGPU_GPURAND_XORWOW)
 typedef FLAMEGPU_GPU_DRIVER_SYMBOL(randStateXORWOW_t) gpurandState;
-#else  // defined(FLAMEGPU_CURAND_Philox4_32_10)
+#else  // defined(FLAMEGPU_GPURAND_Philox4_32_10)
 typedef FLAMEGPU_GPU_DRIVER_SYMBOL(randStatePhilox4_32_10_t) gpurandState;
 #endif
 
