@@ -452,8 +452,11 @@ unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans) {
         payload_items["GPUDevices"] = flamegpu::detail::gpu::getDeviceNames(config.devices) + remote_device_names;
 #endif
         payload_items["SimTime(s)"] = std::to_string(ensemble_elapsed_time);
-#if defined(__CUDACC_VER_MAJOR__) && defined(__CUDACC_VER_MINOR__) && defined(__CUDACC_VER_BUILD__)
+#if defined(FLAMEGPU_USE_CUDA) && defined(__CUDACC_VER_MAJOR__) && defined(__CUDACC_VER_MINOR__) && defined(__CUDACC_VER_BUILD__)
         payload_items["NVCCVersion"] = std::to_string(__CUDACC_VER_MAJOR__) + "." + std::to_string(__CUDACC_VER_MINOR__) + "." + std::to_string(__CUDACC_VER_BUILD__);
+#endif
+#if defined(FLAMEGPU_USE_HIP) && defined(HIP_VERSION_MAJOR) && defined(HIP_VERSION_MINOR) && defined(HIP_VERSION_PATCH)
+        payload_items["HIPVersion"] = std::to_string(HIP_VERSION_MAJOR) + "." + std::to_string(HIP_VERSION_MINOR) + "." + std::to_string(HIP_VERSION_PATCH);
 #endif
         // Add the ensemble size to the ensemble telemetry payload
         payload_items["PlansSize"] = std::to_string(plans.size());
