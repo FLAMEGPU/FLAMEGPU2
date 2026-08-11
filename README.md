@@ -136,9 +136,9 @@ Building via CMake is a three step process, with slight differences depending on
 1. Create a build directory for an out-of tree build
 2. Configure CMake into the build directory via the GUI or CLI
     + Include setting appropriate
-    + For NVIDIA GPUs specify `FLAMEPGU_GPU=CUDA` and `CMAKE_CUDA_ARCHITECTURES`
-    + For AMD GPUs specify `FLAMEPGU_GPU=HIP` and `CMAKE_HIP_ARCHITECTURES`
-    + For documentation-only builds specify `FLAMEGPU_GPU=OFF`
+    + For NVIDIA GPUs specify `FLAMEGPU_BACKEND=CUDA` and `CMAKE_CUDA_ARCHITECTURES`
+    + For AMD GPUs specify `FLAMEGPU_BACKEND=HIP` and `CMAKE_HIP_ARCHITECTURES`
+    + For documentation-only builds specify `FLAMEGPU_BACKEND=OFF`
     + Specifying build options such as the CUDA Compute Capabilities to target, the inclusion of Visualisation or Python components, or performance impacting features such as `FLAMEGPU_SEATBELTS`. See [CMake Configuration Options](#CMake-Configuration-Options) for details of the available configuration options
     + CMake will automatically find and select compilers, libraries and python interpreters based on current environmental variables and default locations. See [Mastering CMake](https://cmake.org/cmake/help/book/mastering-cmake/chapter/Getting%20Started.html#specifying-the-compiler-to-cmake) for more information.
         + Python dependencies must be installed in the selected python environment. If needed you can instruct CMake to use a specific python implementation using the `Python_ROOT_DIR` and `Python_Executable` CMake options at configure time.
@@ -153,7 +153,7 @@ For example, to configure CMake for `Release` builds, for consumer Pascal GPUs (
 
 ```bash
 # Configure CMake from the command line passing configure-time options.
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DFLAMEGPU_GPU=CUDA -DCMAKE_CUDA_ARCHITECTURES=61 -DFLAMEGPU_BUILD_PYTHON=ON
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DFLAMEGPU_BACKEND=CUDA -DCMAKE_CUDA_ARCHITECTURES=61 -DFLAMEGPU_BUILD_PYTHON=ON
 
 # Build the required targets
 cmake --build build --target flamegpu boids_bruteforce -j 8
@@ -167,7 +167,7 @@ For example, to configure CMake for `Release` builds, for consumer RDNA3 GPUs (`
 
 ```bash
 # Configure CMake from the command line passing configure-time options.
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DFLAMEGPU_GPU=HIP -DCMAKE_HIP_ARCHITECTURES=gfx1100
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DFLAMEGPU_BACKEND=HIP -DCMAKE_HIP_ARCHITECTURES=gfx1100
 
 # Build the required targets
 cmake --build build --target flamegpu boids_bruteforce -j 8
@@ -182,7 +182,7 @@ I.e. to configure CMake for consumer Pascal GPUs (Compute Capability `61`), with
 
 ```cmd
 REM Configure CMake from the command line, specifying the -G option. Alternatively use the GUI
-cmake -S . -B build -G "Visual Studio 17 2022" -DFLAMEGPU_GPU=CUDA -DCMAKE_CUDA_ARCHITECTURES=61 -DFLAMEGPU_BUILD_PYTHON=ON
+cmake -S . -B build -G "Visual Studio 17 2022" -DFLAMEGPU_BACKEND=CUDA -DCMAKE_CUDA_ARCHITECTURES=61 -DFLAMEGPU_BUILD_PYTHON=ON
 REM You can then open Visual Studio manually from the .sln file in 'build', or via:
 cmake --open build
 REM Alternatively, build from the command line specifying the build configuration
@@ -201,7 +201,7 @@ For example, the `game_of_life` example can be configured and built in `Release`
 
 ```bash
 cd examples/game_of_life
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DFLAMEGPU_GPU=CUDA -DCMAKE_CUDA_ARCHITECTURES=61
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DFLAMEGPU_BACKEND=CUDA -DCMAKE_CUDA_ARCHITECTURES=61
 cmake --build build --target all
 ```
 
@@ -210,7 +210,7 @@ cmake --build build --target all
 | Option                               | Value                       | Description                                                                                                |
 | -------------------------------------| --------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | `CMAKE_BUILD_TYPE`                   | `Release` / `Debug` / `MinSizeRel` / `RelWithDebInfo` | Select the build configuration for single-target generators such as `make`   |
-| `FLAMEGPU_GPU`                       | `CUDA` / `HIP` / `OFF` | Select the GPU toolkit to use targetting NVIDIA, AMD or no GPUs. Defaults to `CUDA` for backwards compatibility. |
+| `FLAMEGPU_BACKEND`                   | `CUDA` / `HIP` / `OFF`      | Select the GPU toolkit to use targetting NVIDIA, AMD or no GPUs. Defaults to `CUDA` for backwards compatibility. |
 | `CMAKE_CUDA_ARCHITECTURES`           | e.g `60`, `"60;70"`         | [CUDA Compute Capabilities][cuda-CC] to build/optimise for, as a `;` separated list. See [CMAKE_CUDA_ARCHITECTURES][cmake-CCA]. Defaults to a value provided by the NVCC. Alternatively use the `CUDAARCHS` environment variable. |
 | `CMAKE_HIP_ARCHITECTURES`            | e.g `gfx942`, `"gfx942;gfx1100"`         | [HIP/ROCM LLVM target][hip-llvm-target] to build/optimise for, as a `;` separated list. See [CMAKE_HIP_ARCHITECTURES][cmake-CHA]. Defaults to a value appropriate for the `CMAKE_HIP_PLATFORM` |
 | `FLAMEGPU_SEATBELTS`                 | `ON`/`OFF`                  | Enable / Disable additional runtime checks which harm performance but increase usability. Default `ON`     |

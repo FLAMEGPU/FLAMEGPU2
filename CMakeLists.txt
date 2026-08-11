@@ -20,7 +20,7 @@ include(${FLAMEGPU_ROOT}/cmake/enable_languages.cmake)
 # Call the macro which enables the appropriate languages for the current project.
 flamegpu_enable_languages()
 
-# If FLAMEGPU_GPU was set to OFF, and API documentation building is enabled, create the docs only target
+# If FLAMEGPU_BACKEND was set to OFF, and API documentation building is enabled, create the docs only target
 if(NOT (CMAKE_CUDA_COMPILER_LOADED OR CMAKE_HIP_COMPILER_LOADED))
     include(./cmake/dependencies/doxygen.cmake)
     if(${FLAMEGPU_BUILD_API_DOCUMENTATION})
@@ -50,10 +50,10 @@ cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_SUGARSCAPE "Enable building exampl
 cmake_dependent_option(FLAMEGPU_BUILD_EXAMPLE_DIFFUSION "Enable building examples/cpp/diffusion" OFF "PROJECT_IS_TOP_LEVEL; NOT FLAMEGPU_BUILD_ALL_EXAMPLES" OFF)
 
 option(FLAMEGPU_BUILD_PYTHON "Enable python bindings via SWIG" OFF)
-# FLAMEGPU_BUILD_PYTHON is not currently compatible with FLAMEGPU_GPU=HIP
-if (FLAMEGPU_BUILD_PYTHON AND FLAMEGPU_GPU STREQUAL "HIP")
+# FLAMEGPU_BUILD_PYTHON is not currently compatible with FLAMEGPU_BACKEND=HIP
+if (FLAMEGPU_BUILD_PYTHON AND FLAMEGPU_BACKEND STREQUAL "HIP")
     message(FATAL_ERROR
-        "  FLAMEGPU_BUILD_PYTHON is not currently compatible with FLAMEGPU_GPU=${FLAMEGPU_GPU}.\n"
+        "  FLAMEGPU_BUILD_PYTHON is not currently compatible with FLAMEGPU_BACKEND=${FLAMEGPU_BACKEND}.\n"
         "  See https://github.com/FLAMEGPU/FLAMEGPU2/issues/1368 for more information.\n"
     )
 endif()
@@ -111,7 +111,7 @@ if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_DIFFUSION)
     add_subdirectory(examples/cpp/diffusion)
 endif()
 # RTC models are currently CUDA only
-if (FLAMEGPU_GPU STREQUAL "CUDA")
+if (FLAMEGPU_BACKEND STREQUAL "CUDA")
     if(FLAMEGPU_BUILD_ALL_EXAMPLES OR FLAMEGPU_BUILD_EXAMPLE_RTC_BOIDS_BRUTEFORCE)
         add_subdirectory(examples/cpp_rtc/boids_bruteforce)
     endif()

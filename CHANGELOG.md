@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 + AMD GPU support via HIP/ROCm for C++ Ahead-of-time compilation (not RTC or python) ([#1367](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1367), [#1379](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1379))
-+ `FLAMEGPU_GPU` CMake configuration option to select which GPU toolkit to use
++ `FLAMEGPU_BACKEND` CMake configuration option to select which GPU toolkit to use
 
 ### Changed (Breaking)
 

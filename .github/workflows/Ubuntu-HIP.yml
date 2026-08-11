@@ -98,7 +98,7 @@ jobs:
         -Werror=dev
         -DCMAKE_WARN_DEPRECATED="OFF"
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
-        -DFLAMEGPU_GPU="HIP"
+        -DFLAMEGPU_BACKEND="HIP"
         -DCMAKE_HIP_ARCHITECTURES="${{ env.HIP_ARCH }}"
         -DFLAMEGPU_SEATBELTS="${{ env.FLAMEGPU_SEATBELTS }}"
         -DFLAMEGPU_BUILD_TESTS="${{ env.FLAMEGPU_BUILD_TESTS }}"
@@ -131,7 +131,7 @@ jobs:
         -DCMAKE_WARN_DEPRECATED="OFF"
         -DFLAMEGPU_WARNINGS_AS_ERRORS="ON"
         -DFLAMEGPU_SEATBELTS="${{ env.FLAMEGPU_SEATBELTS }}"
-        -DFLAMEGPU_GPU="HIP"
+        -DFLAMEGPU_BACKEND="HIP"
         -DCMAKE_HIP_ARCHITECTURES="${{ env.HIP_ARCH }}"
 
     - name: Build Individual example

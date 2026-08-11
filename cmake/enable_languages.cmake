@@ -8,22 +8,39 @@ include_guard(GLOBAL)
 include(CheckLanguage)
 include(CheckSourceCompiles)
 
-# Define a cache variable FLAMEGPU_GPU controlling the GPU API to use, defaulting to CUDA in the GUI.
-set(_FLAMEGPU_GPU_OPTIONS "CUDA;HIP;OFF")
-set(FLAMEGPU_GPU "CUDA" CACHE STRING "The GPU API to use. Choose from ${_FLAMEGPU_GPU_OPTIONS}. Use OFF for a documentation-only build.")
-set_property(CACHE FLAMEGPU_GPU PROPERTY STRINGS ${_FLAMEGPU_GPU_OPTIONS})
-# Validate that FLAMEGPU_GPU is set to an allowed value
-if(NOT "${FLAMEGPU_GPU}" IN_LIST _FLAMEGPU_GPU_OPTIONS)
-    message(FATAL_ERROR "\"FLAMEGPU_GPU\" has an invalid value: \"${FLAMEGPU_GPU}\". Select from: ${_FLAMEGPU_GPU_OPTIONS}")
+# Define a cache variable FLAMEGPU_BACKEND controlling the GPU API to use, defaulting to CUDA in the GUI.
+set(_FLAMEGPU_BACKEND_OPTIONS "CUDA;HIP;OFF")
+set(_FLAMEGPU_BACKEND_DESCRIPTION "The GPU Backend to use. Choose from ${_FLAMEGPU_BACKEND_OPTIONS}. Use OFF for a documentation-only build.")
+set(FLAMEGPU_BACKEND "CUDA" CACHE STRING "${_FLAMEGPU_BACKEND_DESCRIPTION}")
+set_property(CACHE FLAMEGPU_BACKEND PROPERTY STRINGS ${_FLAMEGPU_BACKEND_OPTIONS})
+
+# Do not break the (never released, but used in external repos) FLAMEGPU_GPU option (for a short while)
+if (DEFINED CACHE{FLAMEGPU_GPU})
+    message(DEPRECATION 
+        "  FLAMEGPU_GPU is deprecated and will be removed in a future release.\n"
+        "  Please use FLAMEGPU_BACKEND instead."
+    )
+    # Forward the old value to the new option
+    set(FLAMEGPU_BACKEND "${FLAMEGPU_GPU}" CACHE STRING "${_FLAMEGPU_BACKEND_DESCRIPTION}" FORCE)
+    # Remove the deprecated option from the cache
+    unset(FLAMEGPU_GPU CACHE)
 endif()
-unset(_FLAMEGPU_GPU_OPTIONS)
+# Convert to upper case, to allow lower case versions.
+string(TOUPPER "${FLAMEGPU_BACKEND}" FLAMEGPU_BACKEND)
+set(FLAMEGPU_BACKEND "${FLAMEGPU_BACKEND}" CACHE STRING "${_FLAMEGPU_BACKEND_DESCRIPTION}" FORCE)
+# Validate that FLAMEGPU_BACKEND is set to an allowed value
+if(NOT "${FLAMEGPU_BACKEND}" IN_LIST _FLAMEGPU_BACKEND_OPTIONS)
+    message(FATAL_ERROR "\"FLAMEGPU_BACKEND\" has an invalid value: \"${FLAMEGPU_BACKEND}\". Select from: ${_FLAMEGPU_BACKEND_OPTIONS}")
+endif()
+unset(_FLAMEGPU_BACKEND_DESCRIPTION)
+unset(_FLAMEGPU_BACKEND_OPTIONS)
 
 # Define a (advanced) cmake option to control FATAL_ERROR vs WARNING for insufficient CUDA/HIP compiler warnings.
 # This only effects version-based checks, rather than actual compilation-based checks.
 option(FLAMEGPU_ALLOW_UNSUPPORTED_COMPILER "Issue warnings rather than fatal errors for CUDA/HIP compilers below the minimum supported version. Compilation checks are still performed." OFF)
 mark_as_advanced(FLAMEGPU_ALLOW_UNSUPPORTED_COMPILER)
 
-# Define a macro (enable_language should not be called from a function) which enables languages based on current cache variables, and will error if a language is already defined that conflicts with FLAMEGPU_GPU
+# Define a macro (enable_language should not be called from a function) which enables languages based on current cache variables, and will error if a language is already defined that conflicts with FLAMEGPU_BACKEND
 macro(flamegpu_enable_languages)
     # Raise an error if project() has not yet been called, as enable_language cannot be called without without a project()
     if (NOT PROJECT_NAME)
@@ -39,18 +56,18 @@ macro(flamegpu_enable_languages)
     set(_flamegpu_cxx_std 20)
 
     # Check for Host and Device compiler support if not in an intentional documentation-only build
-    if (NOT ${FLAMEGPU_GPU} STREQUAL "OFF")
+    if (NOT ${FLAMEGPU_BACKEND} STREQUAL "OFF")
         # Get the currently enabled languages, so that if a parent project has HIP enabled but FLAMEGPU is configured for CUDA we can raise an appropriate warning/error
         get_property(_enabled_langs GLOBAL PROPERTY ENABLED_LANGUAGES)
 
         # Raise an error if CUDA requested but HIP is an enabled language
-        if(${FLAMEGPU_GPU} STREQUAL "CUDA" AND "HIP" IN_LIST _enabled_langs)
-            message(FATAL_ERROR "HIP is enabled in this project, but FLAMEGPU_GPU=${FLAMEGPU_GPU}")
+        if(${FLAMEGPU_BACKEND} STREQUAL "CUDA" AND "HIP" IN_LIST _enabled_langs)
+            message(FATAL_ERROR "HIP is enabled in this project, but FLAMEGPU_BACKEND=${FLAMEGPU_BACKEND}")
         endif()
 
         # Raise an error if CUDA requested but HIP is an enabled language
-        if(${FLAMEGPU_GPU} STREQUAL "HIP" AND "CUDA" IN_LIST _enabled_langs)
-            message(FATAL_ERROR "CUDA is enabled in this project, but FLAMEGPU_GPU=${FLAMEGPU_GPU}")
+        if(${FLAMEGPU_BACKEND} STREQUAL "HIP" AND "CUDA" IN_LIST _enabled_langs)
+            message(FATAL_ERROR "CUDA is enabled in this project, but FLAMEGPU_BACKEND=${FLAMEGPU_BACKEND}")
         endif()
 
         # Enable C and CXX, which will error if neither can be enabled.
@@ -61,7 +78,7 @@ macro(flamegpu_enable_languages)
         _flamegpu_check_source_compiles_cxx_std()
 
         # Check for and enable CUDA if it was requested
-        if (${FLAMEGPU_GPU} STREQUAL "CUDA")
+        if (${FLAMEGPU_BACKEND} STREQUAL "CUDA")
             # Check for CUDA support
             check_language(CUDA)
             if (CMAKE_CUDA_COMPILER)
@@ -119,18 +136,18 @@ macro(flamegpu_enable_languages)
 
                 # If any msvc specific fatal errors were not raised, raise the generic error.
                 message(FATAL_ERROR 
-                "  CUDA language support could not be found (with FLAMEGPU_GPU=${FLAMEGPU_GPU}).\n"
-                "  Please ensure CUDA >= ${MINIMUM_SUPPORTED_CUDA_VERSION} is installed and discoverable by CMake, or request and alternative GPU backend via FLAMEGPU_GPU")
+                "  CUDA language support could not be found (with FLAMEGPU_BACKEND=${FLAMEGPU_BACKEND}).\n"
+                "  Please ensure CUDA >= ${MINIMUM_SUPPORTED_CUDA_VERSION} is installed and discoverable by CMake, or request and alternative GPU backend via FLAMEGPU_BACKEND")
             endif()
 
             # Ensure that the found CUDA version is at least the minimum required by FLAMEGPU, otherwise raise an error.
-            # Note: this is a breaking change to CMake behaviour (for docs-only builds), must set FLAMEGPU_GPU=OFF instead.
+            # Note: this is a breaking change to CMake behaviour (for docs-only builds), must set FLAMEGPU_BACKEND=OFF instead.
             if (CMAKE_CUDA_COMPILER_VERSION VERSION_LESS "${MINIMUM_SUPPORTED_CUDA_VERSION}")
                 if(NOT FLAMEGPU_ALLOW_UNSUPPORTED_COMPILER)
-                    message(FATAL_ERROR "CUDA ${MINIMUM_SUPPORTED_CUDA_VERSION} or greater is required for compilation with FLAMEGPU_GPU=${FLAMEGPU_GPU} (found ${CMAKE_CUDA_COMPILER_VERSION})")
+                    message(FATAL_ERROR "CUDA ${MINIMUM_SUPPORTED_CUDA_VERSION} or greater is required for compilation with FLAMEGPU_BACKEND=${FLAMEGPU_BACKEND} (found ${CMAKE_CUDA_COMPILER_VERSION})")
                 else()
                     if(NOT CUDA_VERSION_LESS_MINIMUM_SUPPORTED_SHOWN)
-                        message(WARNING "CUDA ${CMAKE_CUDA_COMPILER_VERSION} is unsupported for compilation with FLAMEGPU_GPU=${FLAMEGPU_GPU} (>= ${MINIMUM_SUPPORTED_CUDA_VERSION} supported)")
+                        message(WARNING "CUDA ${CMAKE_CUDA_COMPILER_VERSION} is unsupported for compilation with FLAMEGPU_BACKEND=${FLAMEGPU_BACKEND} (>= ${MINIMUM_SUPPORTED_CUDA_VERSION} supported)")
                         get_directory_property(has_parent PARENT_DIRECTORY)
                         if(has_parent)
                             set(CUDA_VERSION_LESS_MINIMUM_SUPPORTED_SHOWN TRUE PARENT_SCOPE)
@@ -142,7 +159,7 @@ macro(flamegpu_enable_languages)
             endif()
 
         # Check for and enable HIP if it was requested
-        elseif(${FLAMEGPU_GPU} STREQUAL "HIP")
+        elseif(${FLAMEGPU_BACKEND} STREQUAL "HIP")
             # Check for HIP support
             check_language(HIP)
             if (CMAKE_HIP_COMPILER)
@@ -153,8 +170,8 @@ macro(flamegpu_enable_languages)
             else()
                 # If HIP could not be found, a fatal error is raised
                 message(FATAL_ERROR 
-                "  HIP language support could not be found (with FLAMEGPU_GPU=${FLAMEGPU_GPU}).\n"
-                "  Please ensure HIP/ROCm >= ${MINIMUM_SUPPORTED_HIP_VERSION} is installed and discoverable by CMake, or request and alternative GPU backend via FLAMEGPU_GPU")
+                "  HIP language support could not be found (with FLAMEGPU_BACKEND=${FLAMEGPU_BACKEND}).\n"
+                "  Please ensure HIP/ROCm >= ${MINIMUM_SUPPORTED_HIP_VERSION} is installed and discoverable by CMake, or request and alternative GPU backend via FLAMEGPU_BACKEND")
             endif()
 
             # The CMAKE_HIP_COMPILER_VERSION is the clang version - not the hip/rocm version.
@@ -164,10 +181,10 @@ macro(flamegpu_enable_languages)
             # Ensure that the found HIP version is at least the minimum required by FLAMEGPU, issuing a FATAL_ERROR or a (single) WARNING depending on the value of FLAMEGPU_ALLOW_UNSUPPORTED_COMPILER
             if (${hip_VERSION} VERSION_LESS "${MINIMUM_SUPPORTED_HIP_VERSION}")
                 if(NOT FLAMEGPU_ALLOW_UNSUPPORTED_COMPILER)
-                    message(FATAL_ERROR "HIP ${MINIMUM_SUPPORTED_HIP_VERSION} or greater is required for compilation with FLAMEGPU_GPU=${FLAMEGPU_GPU} (found ${hip_VERSION})")
+                    message(FATAL_ERROR "HIP ${MINIMUM_SUPPORTED_HIP_VERSION} or greater is required for compilation with FLAMEGPU_BACKEND=${FLAMEGPU_BACKEND} (found ${hip_VERSION})")
                 else()
                     if(NOT HIP_VERSION_LESS_MINIMUM_SUPPORTED_SHOWN)
-                        message(WARNING "HIP ${hip_VERSION} is unsupported for compilation with FLAMEGPU_GPU=${FLAMEGPU_GPU} (>= ${MINIMUM_SUPPORTED_HIP_VERSION} supported)")
+                        message(WARNING "HIP ${hip_VERSION} is unsupported for compilation with FLAMEGPU_BACKEND=${FLAMEGPU_BACKEND} (>= ${MINIMUM_SUPPORTED_HIP_VERSION} supported)")
                         get_directory_property(has_parent PARENT_DIRECTORY)
                         if(has_parent)
                             set(HIP_VERSION_LESS_MINIMUM_SUPPORTED_SHOWN TRUE PARENT_SCOPE)
@@ -200,7 +217,7 @@ macro(flamegpu_enable_languages)
     # Success, only print once per cmake configuration
     get_property(_already_printed GLOBAL PROPERTY FLAMEGPU_ENABLE_LANGUAGES_PRINT_ONCE)
     if(NOT _already_printed)
-        message(STATUS "FLAMEGPU_GPU=${FLAMEGPU_GPU}")
+        message(STATUS "FLAMEGPU_BACKEND=${FLAMEGPU_BACKEND}")
         if (CMAKE_CUDA_COMPILER_LOADED)
             message(STATUS "CUDA Enabled")
             message(STATUS "CUDA Architectures: ${CMAKE_CUDA_ARCHITECTURES}")
@@ -208,7 +225,7 @@ macro(flamegpu_enable_languages)
             message(STATUS "HIP Enabled")
             message(STATUS "HIP Architectures: ${CMAKE_HIP_ARCHITECTURES}")
         else() # elseif(NOT (CMAKE_CUDA_COMPILER_LOADED OR CMAKE_HIP_COMPILER_LOADED))
-            message(STATUS "Documentation only - NOT (CMAKE_CUDA_COMPILER_LOADED OR CMAKE_HIP_COMPILER_LOADED) / FLAMEGPU_GPU=OFF")
+            message(STATUS "Documentation only - NOT (CMAKE_CUDA_COMPILER_LOADED OR CMAKE_HIP_COMPILER_LOADED) / FLAMEGPU_BACKEND=OFF")
         endif()
     endif()
     set_property(GLOBAL PROPERTY FLAMEGPU_ENABLE_LANGUAGES_PRINT_ONCE TRUE)

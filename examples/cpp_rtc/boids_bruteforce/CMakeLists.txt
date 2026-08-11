@@ -10,9 +10,9 @@ project(rtc_boids_bruteforce LANGUAGES NONE)
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)
 
-if (FLAMEGPU_GPU STREQUAL "HIP")
+if (FLAMEGPU_BACKEND STREQUAL "HIP")
     message(FATAL_ERROR
-        "  RTC models are not currently compatible with FLAMEGPU_GPU=${FLAMEGPU_GPU}.\n"
+        "  RTC models are not currently compatible with FLAMEGPU_BACKEND=${FLAMEGPU_BACKEND}.\n"
         "  See https://github.com/FLAMEGPU/FLAMEGPU2/issues/1368 for more information.\n"
     )
 endif()
