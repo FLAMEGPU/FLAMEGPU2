@@ -453,7 +453,7 @@ FLAMEGPU_AGENT_FUNCTION(count2D, MessageSpatial2D, MessageNone) {
     unsigned int count = 0;
     // Count how many messages we received (including our own)
     // This is all those which fall within the 3x3 Moore neighbourhood
-    for (const auto &message : FLAMEGPU->message_in(0, 0)) {
+    for ([[maybe_unused]] const auto &message : FLAMEGPU->message_in(0, 0)) {
         count++;
     }
     FLAMEGPU->setVariable<unsigned int>("count", count);
@@ -563,6 +563,7 @@ TEST(Spatial2DMessageTest, ArrayVariable) {
         ASSERT_EQ(v[2], index[1] * 11);
     }
 }
+#ifdef FLAMEGPU_USE_CUDA
 const char* rtc_ArrayOut_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MessageNone, flamegpu::MessageSpatial2D) {
     const unsigned int x = FLAMEGPU->getVariable<unsigned int, 2>("index", 0);
@@ -590,7 +591,9 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageSpatial2D, flamegpu::MessageNo
     return flamegpu::ALIVE;
 }
 )###";
+#endif  // FLAMEGPU_USE_CUDA
 TEST(RTCSpatial2DMessageTest, ArrayVariable) {
+#ifdef FLAMEGPU_USE_CUDA
     const char* MODEL_NAME = "Model";
     const char* AGENT_NAME = "Agent";
     const char* MESSAGE_NAME = "Message";
@@ -637,6 +640,9 @@ TEST(RTCSpatial2DMessageTest, ArrayVariable) {
         ASSERT_EQ(v[1], index[1] * 7);
         ASSERT_EQ(v[2], index[1] * 11);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 #if defined(FLAMEGPU_USE_GLM)
@@ -733,6 +739,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageSpatial2D, flamegpu::MessageNo
 }
 )###";
 TEST(RTCSpatial2DMessageTest, ArrayVariable_glm) {
+#ifdef FLAMEGPU_USE_CUDA
     const char* MODEL_NAME = "Model";
     const char* AGENT_NAME = "Agent";
     const char* MESSAGE_NAME = "Message";
@@ -779,6 +786,9 @@ TEST(RTCSpatial2DMessageTest, ArrayVariable_glm) {
         ASSERT_EQ(v[1], index[1] * 7);
         ASSERT_EQ(v[2], index[1] * 11);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 #else
 TEST(Spatial2DMessageTest, DISABLED_ArrayVariable_glm) { }
@@ -911,7 +921,7 @@ TEST(Spatial2DMessageTest, Wrapped_OutOfBounds) {
 FLAMEGPU_AGENT_FUNCTION(in_wrapped_EnvDimsNotFactor, MessageSpatial2D, MessageNone) {
     const float x1 = FLAMEGPU->getVariable<float>("x");
     const float y1 = FLAMEGPU->getVariable<float>("y");
-    for (auto& t : FLAMEGPU->message_in.wrap(x1, y1)) {
+    for ([[maybe_unused]] auto& t : FLAMEGPU->message_in.wrap(x1, y1)) {
         // Do nothing, it should throw a device exception
     }
     return ALIVE;
@@ -1027,7 +1037,7 @@ FLAMEGPU_AGENT_FUNCTION(in_bounds_not_factor, MessageSpatial2D, MessageNone) {
     const float y1 = FLAMEGPU->getVariable<float>("y");
     unsigned int count = 0;
     // Count how many messages we received (including our own)
-    for (const auto& message : FLAMEGPU->message_in(x1, y1)) {
+    for ([[maybe_unused]] const auto& message : FLAMEGPU->message_in(x1, y1)) {
         ++count;
     }
     FLAMEGPU->setVariable<unsigned int>("count", count);

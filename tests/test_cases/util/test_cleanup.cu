@@ -1,11 +1,20 @@
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
+#endif
 
 #include <vector>
 #include "flamegpu/util/cleanup.h"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/flamegpu.h"
+#include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 
 #include "gtest/gtest.h"
+
+#if FLAMEGPU_USE_HIP
+using cudaPointerAttributes = hipPointerAttribute_t;
+#endif
+
 namespace flamegpu {
 namespace tests {
 namespace test_cleanup {
@@ -28,22 +37,22 @@ FLAMEGPU_AGENT_FUNCTION(alive, MessageNone, MessageNone) {
 TEST(TestCleanup, Explicit) {
     // Allocate some arbitrary device memory.
     int * d_int = nullptr;
-    gpuErrchk(cudaMalloc(&d_int, sizeof(int)));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_int, sizeof(int)));
     // Validate that the ptr is a valid device pointer
-    cudaPointerAttributes attributes = {};
-    gpuErrchk(cudaPointerGetAttributes(&attributes, d_int));
-    EXPECT_EQ(attributes.type, cudaMemoryTypeDevice);
+    flamegpu::detail::gpu::PointerAttributes_t attributes = {};
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
+    EXPECT_EQ(attributes.type, flamegpu::detail::gpu::gpuMemoryTypeDevice);
 
     // Call the cleanup method
     flamegpu::util::cleanup();
 
     // Assert that the pointer is no logner valid - i.e. the device was actually reset
-    gpuErrchk(cudaPointerGetAttributes(&attributes, d_int));
-    EXPECT_NE(attributes.type, cudaMemoryTypeDevice);
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
+    EXPECT_NE(attributes.type, flamegpu::detail::gpu::gpuMemoryTypeDevice);
 
     // Free explicit device memory, if it was valid (to get the correct error)
-    if (attributes.type == cudaMemoryTypeDevice) {
-        gpuErrchk(cudaFree(d_int));
+    if (attributes.type == flamegpu::detail::gpu::gpuMemoryTypeDevice) {
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuFree(d_int));
     }
     d_int = nullptr;
 }

@@ -1,7 +1,9 @@
 #include "flamegpu/simulation/detail/RandomManager.cuh"
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
+#endif
 
 #include <ctime>
 
@@ -9,9 +11,11 @@
 #include <cstdio>
 #include <algorithm>
 
-#include "flamegpu/detail/curand.cuh"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/rand.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/simulation/CUDASimulation.h"
+#include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
@@ -71,7 +75,7 @@ void RandomManager::freeDevice() {
         length = 0;
         // Release old random states on the deivce and update pointers.
         if (d_random_state) {
-            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_random_state));
+            flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_random_state));
         }
         d_random_state = nullptr;
     }
@@ -83,7 +87,7 @@ void RandomManager::free() {
     freeDevice();
 }
 
-detail::curandState *RandomManager::resize(size_type _length, cudaStream_t stream) {
+detail::gpu::gpurandState *RandomManager::resize(size_type _length, flamegpu::detail::gpu::Stream_t stream) {
     assert(growthModifier > 1.0);
     assert(shrinkModifier > 0.0);
     assert(shrinkModifier <= 1.0);
@@ -106,26 +110,27 @@ detail::curandState *RandomManager::resize(size_type _length, cudaStream_t strea
         resizeDeviceArray(t_length, stream);
     return d_random_state;
 }
-__global__ void init_curand(detail::curandState *d_random_state, unsigned int threadCount, uint64_t seed, flamegpu::size_type offset) {
-    int id = blockIdx.x * blockDim.x + threadIdx.x;
-    if (id < threadCount)
-        curand_init(seed, offset + id, 0, &d_random_state[offset + id]);
+__global__ void init_curand(detail::gpu::gpurandState *d_random_state, unsigned int threadCount, uint64_t seed, flamegpu::size_type offset) {
+    unsigned int id = blockIdx.x * blockDim.x + threadIdx.x;
+    if (id < threadCount) {
+        flamegpu::detail::gpu::gpurand_init(seed, offset + id, 0, &d_random_state[offset + id]);
+    }
 }
-void RandomManager::resizeDeviceArray(const size_type _length, cudaStream_t stream) {
+void RandomManager::resizeDeviceArray(const size_type _length, flamegpu::detail::gpu::Stream_t stream) {
     // Mark that the device hsa now been initialised.
     deviceInitialised = true;
     if (_length > h_max_random_size) {
         // Growing array
-        detail::curandState *t_hd_random_state = nullptr;
+        detail::gpu::gpurandState *t_hd_random_state = nullptr;
         // Allocate new mem to t_hd
-        gpuErrchk(cudaMalloc(&t_hd_random_state, _length * sizeof(detail::curandState)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&t_hd_random_state, _length * sizeof(detail::gpu::gpurandState)));
         // Copy hd->t_hd[****    ]
         if (d_random_state) {
-            gpuErrchk(cudaMemcpyAsync(t_hd_random_state, d_random_state, length * sizeof(detail::curandState), cudaMemcpyDeviceToDevice, stream));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(t_hd_random_state, d_random_state, length * sizeof(detail::gpu::gpurandState), flamegpu::detail::gpu::gpuMemcpyDeviceToDevice, stream));
         }
         // Update pointers hd=t_hd
         if (d_random_state) {
-            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_random_state));
+            flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_random_state));
         }
         d_random_state = t_hd_random_state;
         // Init new[    ****]
@@ -133,7 +138,7 @@ void RandomManager::resizeDeviceArray(const size_type _length, cudaStream_t stre
             // We have part/all host backup, copy to device array
             // Reinit backup[    **  ]
             const size_type copy_len = std::min(h_max_random_size, _length);
-            gpuErrchk(cudaMemcpyAsync(d_random_state + length, h_max_random_state + length, copy_len * sizeof(detail::curandState), cudaMemcpyHostToDevice, stream));  // Host not pinned
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_random_state + length, h_max_random_state + length, copy_len * sizeof(detail::gpu::gpurandState), flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));  // Host not pinned
             length += copy_len;
         }
         if (_length > length) {
@@ -141,24 +146,24 @@ void RandomManager::resizeDeviceArray(const size_type _length, cudaStream_t stre
             unsigned int initThreads = 512;
             unsigned int initBlocks = ((_length - length) / initThreads) + 1;
             init_curand<<<initBlocks, initThreads, 0,  stream>>>(d_random_state, _length - length, mSeed, length);  // This could be async with above memcpy in diff stream
-            gpuErrchkLaunch();
+            flamegpu::detail::gpuCheckLaunch();
         }
     } else {
         // Shrinking array
-        detail::curandState *t_hd_random_state = nullptr;
-        detail::curandState *t_h_max_random_state = nullptr;
+        detail::gpu::gpurandState *t_hd_random_state = nullptr;
+        detail::gpu::gpurandState *t_h_max_random_state = nullptr;
         // Allocate new
-        gpuErrchk(cudaMalloc(&t_hd_random_state, _length * sizeof(detail::curandState)));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&t_hd_random_state, _length * sizeof(detail::gpu::gpurandState)));
         // Allocate host backup
         if (length > h_max_random_size)
-            t_h_max_random_state = reinterpret_cast<detail::curandState*>(malloc(length * sizeof(detail::curandState)));
+            t_h_max_random_state = reinterpret_cast<detail::gpu::gpurandState*>(malloc(length * sizeof(detail::gpu::gpurandState)));
         else
             t_h_max_random_state = h_max_random_state;
         // Copy old->new
         assert(d_random_state);
-        gpuErrchk(cudaMemcpyAsync(t_hd_random_state, d_random_state, _length * sizeof(detail::curandState), cudaMemcpyDeviceToDevice, stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(t_hd_random_state, d_random_state, _length * sizeof(detail::gpu::gpurandState), flamegpu::detail::gpu::gpuMemcpyDeviceToDevice, stream));
         // Copy part being shrunk away to host storage (This could be async with above memcpy?)
-        gpuErrchk(cudaMemcpyAsync(t_h_max_random_state + _length, d_random_state + _length, (length - _length) * sizeof(detail::curandState), cudaMemcpyDeviceToHost, stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(t_h_max_random_state + _length, d_random_state + _length, (length - _length) * sizeof(detail::gpu::gpurandState), flamegpu::detail::gpu::gpuMemcpyDeviceToHost, stream));
         // Release and replace old host ptr
         if (length > h_max_random_size) {
             if (h_max_random_state)
@@ -168,14 +173,14 @@ void RandomManager::resizeDeviceArray(const size_type _length, cudaStream_t stre
         }
         // Release old
         if (d_random_state != nullptr) {
-            gpuErrchk(flamegpu::detail::cuda::cudaFree(d_random_state));
+            flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_random_state));
         }
         // Update pointer
         d_random_state = t_hd_random_state;
     }
     // Update length
     length = _length;
-    gpuErrchk(cudaStreamSynchronize(stream));
+    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
 }
 void RandomManager::setGrowthModifier(float _growthModifier) {
     assert(growthModifier > 1.0);
@@ -198,7 +203,7 @@ flamegpu::size_type RandomManager::size() {
 uint64_t RandomManager::seed() {
     return mSeed;
 }
-detail::curandState *RandomManager::cudaRandomState() {
+detail::gpu::gpurandState *RandomManager::cudaRandomState() {
     return d_random_state;
 }
 

@@ -1,8 +1,10 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_ENVIRONMENT_HOSTENVIRONMENT_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_ENVIRONMENT_HOSTENVIRONMENT_CUH_
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>  // Required for FLAMEGPU_SEATBELTS=OFF builds for some reason.
+#endif
 
 #include <unordered_map>
 #include <array>
@@ -13,11 +15,12 @@
 #include <memory>
 
 #include "flamegpu/simulation/detail/CUDAMacroEnvironment.h"
-#include "flamegpu/simulation/detail/CUDAErrorChecking.cuh"
+#include "flamegpu/detail/gpu/gpu_api_error_checking.cuh"
 #include "flamegpu/simulation/detail/EnvironmentManager.cuh"
 #include "flamegpu/runtime/environment/HostMacroProperty.cuh"
 #include "flamegpu/simulation/detail/CUDAEnvironmentDirectedGraphBuffers.cuh"
 #include "flamegpu/runtime/environment/HostEnvironmentDirectedGraph.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 
@@ -40,7 +43,7 @@ class HostEnvironment {
      * Constructor, to be called by HostAPI
      */
     explicit HostEnvironment(CUDASimulation &_simulation, std::shared_ptr<detail::EnvironmentManager> env, std::shared_ptr<detail::CUDAMacroEnvironment> _macro_env,
-        CUDADirectedGraphMap& _directed_graph_map, detail::CUDAScatter& _scatter, unsigned int _streamID, cudaStream_t _stream);
+        CUDADirectedGraphMap& _directed_graph_map, detail::CUDAScatter& _scatter, unsigned int _streamID, flamegpu::detail::gpu::Stream_t _stream);
     /**
      * Provides access to EnvironmentManager singleton
      */
@@ -73,7 +76,7 @@ class HostEnvironment {
     /**
      * CUDA stream used for cuda operations.
      */
-    const cudaStream_t stream;
+    const flamegpu::detail::gpu::Stream_t stream;
 
  public:
     /**

@@ -595,12 +595,11 @@ FLAMEGPU_AGENT_FUNCTION(OutSimpleX, MessageNone, MessageArray) {
     return ALIVE;
 }
 FLAMEGPU_AGENT_FUNCTION(MooreWrapTestXC, MessageArray, MessageNone) {
-    const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
     const unsigned int COMRADIUS = FLAMEGPU->environment.getProperty<unsigned int>("COMRADIUS");
     // Iterate message list counting how many messages were read
     unsigned int count = 0;
-    for (const auto &message : FLAMEGPU->message_in.wrap(x, COMRADIUS)) {
+    for ([[maybe_unused]] const auto &message : FLAMEGPU->message_in.wrap(x, COMRADIUS)) {
         // @todo - check its the correct messages?
         count++;
     }
@@ -690,12 +689,11 @@ TEST(TestMessage_Array, MooreWrapR2) {
 }
 
 FLAMEGPU_AGENT_FUNCTION(MooreTestXC, MessageArray, MessageNone) {
-    const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
     const unsigned int x = FLAMEGPU->getVariable<unsigned int>("x");
     const unsigned int COMRADIUS = FLAMEGPU->environment.getProperty<unsigned int>("COMRADIUS");
     // Iterate message list counting how many messages were read
     unsigned int count = 0;
-    for (const auto &message : FLAMEGPU->message_in(x, COMRADIUS)) {
+    for ([[maybe_unused]] const auto &message : FLAMEGPU->message_in(x, COMRADIUS)) {
         // @todo - check its the correct messages?
         count++;
     }
@@ -832,6 +830,7 @@ TEST(TestMessage_Array, ArrayVariable) {
         ASSERT_EQ(v[2], index * 11);
     }
 }
+#ifdef FLAMEGPU_USE_CUDA
 const char* rtc_ArrayOut_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MessageNone, flamegpu::MessageArray) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
@@ -852,7 +851,9 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageArray, flamegpu::MessageNone) 
     return flamegpu::ALIVE;
 }
 )###";
+#endif  // FLAMEGPU_USE_CUDA
 TEST(TestRTCMessage_Array, ArrayVariable) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription m(MODEL_NAME);
     MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
@@ -887,6 +888,9 @@ TEST(TestRTCMessage_Array, ArrayVariable) {
         ASSERT_EQ(v[1], index * 7);
         ASSERT_EQ(v[2], index * 11);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 #ifdef FLAMEGPU_USE_GLM
@@ -957,6 +961,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageArray, flamegpu::MessageNone) 
 }
 )###";
 TEST(TestRTCMessage_Array, ArrayVariable_glm) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription m(MODEL_NAME);
     MessageArray::Description message = m.newMessage<MessageArray>(MESSAGE_NAME);
     message.setLength(AGENT_COUNT);
@@ -991,6 +996,9 @@ TEST(TestRTCMessage_Array, ArrayVariable_glm) {
         ASSERT_EQ(v[1], index * 7);
         ASSERT_EQ(v[2], index * 11);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 #else
 TEST(TestMessage_Array, DISABLED_ArrayVariable_glm) { }
@@ -1040,10 +1048,11 @@ FLAMEGPU_AGENT_FUNCTION(IterateAB, MessageArray, MessageNone) {
     // Iterate message list counting how many messages were read.
     unsigned int count = 0;
     for (const auto &message : FLAMEGPU->message_in.wrap(x, COMRADIUS)) {
-        const unsigned int m_a = message.getVariable<unsigned int>("a");
-        const unsigned int m_b = message.getVariable<unsigned int>("b");
+        [[maybe_unused]] const unsigned int m_a = message.getVariable<unsigned int>("a");
+        [[maybe_unused]] const unsigned int m_b = message.getVariable<unsigned int>("b");
         count++;
     }
+    static_cast<void>(count);  // suppress -Wunused-but-set-warning
     // Don't actually do anything, the function just needs to take the message list as input.
     return ALIVE;
 }
@@ -1057,9 +1066,10 @@ FLAMEGPU_AGENT_FUNCTION(IterateA, MessageArray, MessageNone) {
     // Iterate message list counting how many messages were read.
     unsigned int count = 0;
     for (const auto &message : FLAMEGPU->message_in.wrap(x, COMRADIUS)) {
-        const unsigned int m_a = message.getVariable<unsigned int>("a");
+        [[maybe_unused]] const unsigned int m_a = message.getVariable<unsigned int>("a");
         count++;
     }
+    static_cast<void>(count);  // suppress -Wunused-but-set-warning
     // Don't actually do anything, the function just needs to take the message list as input.
     return ALIVE;
 }

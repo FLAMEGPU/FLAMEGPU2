@@ -1,6 +1,11 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_CUH_
 
+// Todo: should cuda_runtime.h be included here too? if not __CUDACC_RTC__?
+#ifdef FLAMEGPU_USE_HIP
+#include <hip/hip_runtime.h>
+#endif  // FLAMEGPU_USE_HIP
+
 #ifndef __CUDACC_RTC__
 #include <string>
 #endif

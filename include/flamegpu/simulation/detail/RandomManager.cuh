@@ -6,8 +6,9 @@
 #include <string>
 
 #include "flamegpu/defines.h"
-#include "flamegpu/detail/curand.cuh"
+#include "flamegpu/detail/gpu/rand.cuh"
 #include "flamegpu/simulation/Simulation.h"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 // forward declare classes
@@ -60,7 +61,7 @@ class RandomManager {
      *     while(length*shrinkModifier>_length)
      *       length*=shrinkModifier
      */
-    detail::curandState*resize(size_type _length, cudaStream_t stream);
+    detail::gpu::gpurandState*resize(size_type _length, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Accessors
      */
@@ -82,14 +83,14 @@ class RandomManager {
      */
     size_type size();
     uint64_t seed();
-    detail::curandState*cudaRandomState();
+    detail::gpu::gpurandState*cudaRandomState();
 
  private:
     /**
      * Device array holding curand states
      * They should always be initialised
      */
-     detail::curandState*d_random_state = nullptr;
+     detail::gpu::gpurandState*d_random_state = nullptr;
     /**
      * Random seed used to initialise all currently allocated curand states
      */
@@ -118,14 +119,14 @@ class RandomManager {
      * If shrinking, 'deallocated' curand states are backed up to host until next required,
      *  this prevents them being reinitialised with the same seed.
      */
-    void resizeDeviceArray(size_type _length, cudaStream_t stream);
+    void resizeDeviceArray(size_type _length, flamegpu::detail::gpu::Stream_t stream);
     /**
      * Host copy of 'deallocated' curand states
      * When the device array shrinks in size, shrunk away curand states are stored here
      * @note h_max_random_state will be allocated to length h_max_random_size
      * However, it will only be initialised from hd_random_size(aka length) onwards
      */
-    detail::curandState *h_max_random_state = nullptr;
+    detail::gpu::gpurandState *h_max_random_state = nullptr;
     /**
      * Allocated length of h_max_random_state
      */

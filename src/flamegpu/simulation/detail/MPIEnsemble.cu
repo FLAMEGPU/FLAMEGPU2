@@ -8,7 +8,7 @@
 
 #include "flamegpu/simulation/detail/MPIEnsemble.h"
 
-#include "flamegpu/detail/compute_capability.cuh"
+#include "flamegpu/detail/gpu/device_name.hpp"
 
 namespace flamegpu {
 namespace detail {
@@ -184,7 +184,7 @@ std::string MPIEnsemble::assembleGPUsString() {
         }
         free(buff);
     } else {
-        const std::string d_string = local_rank == 0 ? compute_capability::getDeviceNames(config.devices) : "";
+        const std::string d_string = local_rank == 0 ? flamegpu::detail::gpu::getDeviceNames(config.devices) : "";
         // Send GPU count
         MPI_Send(
             d_string.c_str(),               // void* data

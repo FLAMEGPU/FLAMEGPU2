@@ -1,15 +1,11 @@
 # Minimum CMake version 3.25.2 for CUDA --std=c++20
-cmake_minimum_required(VERSION 3.25.2...4.1.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.25.2...4.3.0 FATAL_ERROR)
 
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../.. REALPATH)
 
-# Handle CMAKE_CUDA_ARCHITECTURES gracefully
-include(${FLAMEGPU_ROOT}/cmake/CUDAArchitectures.cmake)
-flamegpu_init_cuda_architectures(PROJECT game_of_life)
-
 # Name the project and enable required languages
-project(game_of_life CXX CUDA)
+project(game_of_life LANGUAGES NONE)
 
 # Include common rules.
 include(${FLAMEGPU_ROOT}/cmake/common.cmake)

@@ -1,5 +1,8 @@
+#ifdef FLAMEGPU_USE_CUDA
 #include <nvrtc.h>
 #include <cuda.h>
+#endif
+
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -12,13 +15,14 @@
 
 #include "flamegpu/model/AgentFunctionDescription.h"
 #include "flamegpu/detail/cxxname.hpp"
+#include "flamegpu/detail/demangle.h"
 
 namespace flamegpu {
 
 CAgentFunctionDescription::CAgentFunctionDescription(std::shared_ptr<AgentFunctionData> data)
     : function(std::move(data)) { }
 CAgentFunctionDescription::CAgentFunctionDescription(std::shared_ptr<const AgentFunctionData> data)
-    : function(std::move(std::const_pointer_cast<AgentFunctionData>(data))) { }
+    : function(std::const_pointer_cast<AgentFunctionData>(data)) { }
 
 bool CAgentFunctionDescription::operator==(const CAgentFunctionDescription& rhs) const {
     return *this->function == *rhs.function;  // Compare content is functionally the same
@@ -82,7 +86,7 @@ bool CAgentFunctionDescription::hasAgentOutput() const {
 bool CAgentFunctionDescription::hasFunctionCondition() const {
     return function->condition != nullptr;
 }
-AgentFunctionWrapper* CAgentFunctionDescription::getFunctionPtr() const {
+AgentFunctionLauncher CAgentFunctionDescription::getFunctionPtr() const {
     return function->func;
 }
 AgentFunctionConditionWrapper* CAgentFunctionDescription::getConditionPtr() const {
@@ -212,7 +216,7 @@ void AgentFunctionDescription::setMessageInput(const std::string &message_name) 
     if (a != mdl->messages.end()) {
         // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
         auto message_in_classname = detail::cxxname::getUnqualifiedName(this->function->message_in_type);
-        auto demangledClassName = detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
+        auto demangledClassName = detail::cxxname::getUnqualifiedName(detail::demangle::demangle(a->second->getType()));
         if (message_in_classname == demangledClassName) {
             this->function->message_input = a->second;
         } else {
@@ -248,7 +252,7 @@ void AgentFunctionDescription::setMessageInput(MessageBruteForce::CDescription m
         if (a->second == message.message) {
             // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
             auto message_in_classname = detail::cxxname::getUnqualifiedName(this->function->message_in_type);
-            auto demangledClassName = detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
+            auto demangledClassName = detail::cxxname::getUnqualifiedName(detail::demangle::demangle(a->second->getType()));
             if (message_in_classname == demangledClassName) {
                 this->function->message_input = a->second;
             } else {
@@ -290,7 +294,7 @@ void AgentFunctionDescription::setMessageOutput(const std::string &message_name)
     if (a != mdl->messages.end()) {
         // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
         auto message_out_classname = detail::cxxname::getUnqualifiedName(this->function->message_out_type);
-        auto demangledClassName = detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
+        auto demangledClassName = detail::cxxname::getUnqualifiedName(detail::demangle::demangle(a->second->getType()));
         if (message_out_classname == demangledClassName) {
             this->function->message_output = a->second;
             if (this->function->message_output_optional) {
@@ -335,7 +339,7 @@ void AgentFunctionDescription::setMessageOutput(MessageBruteForce::CDescription 
         if (a->second == message.message) {
             // Just compare the classname is the same, to allow for the various approaches to namespace use. This should only be required for RTC functions.
             auto message_out_classname = detail::cxxname::getUnqualifiedName(this->function->message_out_type);
-            auto demangledClassName = detail::cxxname::getUnqualifiedName(detail::curve::CurveRTCHost::demangle(a->second->getType()));
+            auto demangledClassName = detail::cxxname::getUnqualifiedName(detail::demangle::demangle(a->second->getType()));
             if (message_out_classname == demangledClassName) {
                 this->function->message_output = a->second;
                 if (this->function->message_output_optional) {
@@ -520,6 +524,7 @@ AgentDescription AgentFunctionDescription::AgentOutput() {
         "in AgentFunctionDescription::AgentOutput().");
 }
 
+#ifdef FLAMEGPU_USE_CUDA
 AgentFunctionDescription AgentDescription::newRTCFunction(const std::string& function_name, const std::string& func_src) {
     if (agent->functions.find(function_name) == agent->functions.end()) {
         // Use Regex to get agent function name, and input/output message type
@@ -598,5 +603,6 @@ AgentFunctionDescription AgentDescription::newRTCFunctionFile(const std::string&
         "in AgentDescription::newRTCFunctionFile().",
         agent->name.c_str(), function_name.c_str());
 }
+#endif  // FLAMEGPU_USE_CUDA
 
 }  // namespace flamegpu

@@ -1,6 +1,7 @@
 #ifndef INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_RTC_CUH_
 #define INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_RTC_CUH_
 
+#ifdef FLAMEGPU_USE_CUDA
 #include <driver_types.h>
 #include <array>
 #include <cstring>
@@ -11,6 +12,7 @@
 #include <vector>
 
 #include "flamegpu/util/StringPair.h"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace jitify2 {
 class KernelData;
@@ -259,22 +261,6 @@ class CurveRTCHost {
      * @return The identifier used for the environment property cache within the dynamic header
      */
     static std::string getVariableSymbolName();
-
-    /**
-     * Demangle a verbose type name (e.g. std::type_index.name().c_str()) into a user readable type
-     * This is required as different compilers will perform name mangling in different way (or not at all).
-     * @param verbose_name The verbose type name to be demangled
-     * @return The demangled type name
-     */
-    static std::string demangle(const char* verbose_name);
-
-    /**
-     * Demangle from a std::type_index into a user readable type
-     * This is required as different compilers will perform name mangling in different way (or not at all).
-     * @param type The type to return the demangled name for
-     * @return The demangled type name of the provided type
-     */
-    static std::string demangle(const std::type_index& type);
     /**
      * Copies the environment managers cache to the rtc header cache
      * @param d_env_ptr Device pointer to the Environment managers cache
@@ -287,7 +273,7 @@ class CurveRTCHost {
      * @param stream The CUDA stream used for the cuda memcpy
      * @note This is async, the stream is non synchronised
      */
-    void updateDevice_async(const jitify2::KernelData& instance, cudaStream_t stream);
+    void updateDevice_async(const jitify2::KernelData& instance, flamegpu::detail::gpu::Stream_t stream);
 
  protected:
    /**
@@ -505,5 +491,7 @@ class CurveRTCHost {
 }  // namespace curve
 }  // namespace detail
 }  // namespace flamegpu
+
+#endif  // FLAMEGPU_USE_CUDA
 
 #endif  // INCLUDE_FLAMEGPU_RUNTIME_DETAIL_CURVE_CURVE_RTC_CUH_

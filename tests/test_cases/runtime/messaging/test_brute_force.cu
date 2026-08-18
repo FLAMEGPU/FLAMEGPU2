@@ -323,7 +323,7 @@ FLAMEGPU_AGENT_FUNCTION(countBF, MessageBruteForce, MessageNone) {
     unsigned int count = 0;
     // Count how many messages we received (including our own)
     // This is all those which fall within the 3x3 Moore neighbourhood
-    for (const auto &message : FLAMEGPU->message_in) {
+    for ([[maybe_unused]] const auto &message : FLAMEGPU->message_in) {
         count++;
     }
     FLAMEGPU->setVariable<unsigned int>("count", count);
@@ -459,7 +459,6 @@ FLAMEGPU_AGENT_FUNCTION(out_simple, MessageNone, MessageBruteForce) {
 }
 // Agent function which iterates read in mesasges and sums the ID
 FLAMEGPU_AGENT_FUNCTION(in_simple, MessageBruteForce, MessageNone) {
-    const int id = FLAMEGPU->getVariable<int>("id");
     unsigned int count = 0;
     unsigned int sum = 0;
     for (auto &m : FLAMEGPU->message_in) {
@@ -601,7 +600,7 @@ TEST(TestMessage_BruteForce, PersistenceOn) {
     EXPECT_NO_THROW(cudaSimulation.simulate());
 }
 
-
+#ifdef FLAMEGPU_USE_CUDA
 const char* rtc_ArrayOut_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(ArrayOut, flamegpu::MessageNone, flamegpu::MessageBruteForce) {
     const unsigned int index = FLAMEGPU->getVariable<unsigned int>("index");
@@ -626,7 +625,9 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageBruteForce, flamegpu::MessageN
     return flamegpu::ALIVE;
 }
 )###";
+#endif  // FLAMEGPU_USE_CUDA
 TEST(TestRTCMessage_BruteForce, ArrayVariable) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription m(MODEL_NAME);
     MessageBruteForce::Description message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
     message.newVariable<unsigned int, 3>("v");
@@ -661,6 +662,9 @@ TEST(TestRTCMessage_BruteForce, ArrayVariable) {
         ASSERT_EQ(v[1], index * 7);
         ASSERT_EQ(v[2], index * 11);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 #if defined(FLAMEGPU_USE_GLM)
@@ -739,6 +743,7 @@ FLAMEGPU_AGENT_FUNCTION(ArrayIn, flamegpu::MessageBruteForce, flamegpu::MessageN
 }
 )###";
 TEST(TestRTCMessage_BruteForce, ArrayVariable_glm) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription m(MODEL_NAME);
     MessageBruteForce::Description message = m.newMessage<MessageBruteForce>(MESSAGE_NAME);
     message.newVariable<unsigned int, 3>("v");
@@ -773,6 +778,9 @@ TEST(TestRTCMessage_BruteForce, ArrayVariable_glm) {
         ASSERT_EQ(v[1], index * 7);
         ASSERT_EQ(v[2], index * 11);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 #else
 TEST(TestMessage_BruteForce, DISABLED_ArrayVariable_glm) { }

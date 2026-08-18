@@ -1,5 +1,6 @@
 # Minimum CMake version 3.25.2 for CUDA --std=c++20
-cmake_minimum_required(VERSION 3.25.2...4.1.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.25.2...4.3.0 FATAL_ERROR)
+
 
 # Option to enable GTEST_DISCOVER if tests or tests_dev are enabled. Defaults to off due to runtime increase
 cmake_dependent_option(FLAMEGPU_ENABLE_GTEST_DISCOVER "Enable GTEST_DISCOVER for more detailed ctest output without -VV. This dramatically increases test suite runtime to CUDA context initialisation." OFF "FLAMEGPU_BUILD_TESTS OR FLAMEGPU_BUILD_TESTS_DEV" OFF)
@@ -12,7 +13,8 @@ endif()
 # Define the source files early, prior to projects.
 # Prepare source files for the tests target
 SET(TESTS_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_compute_capability.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/gpu/test_device_name.cu
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/gpu/cuda/test_compute_capability.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_cuda.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_wddm.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/test_cases/detail/test_dependency_versions.cu
@@ -111,9 +113,6 @@ SET(HELPERS_SRC
 # Set the location of the ROOT flame gpu project relative to this CMakeList.txt
 get_filename_component(FLAMEGPU_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 
-# Include CMake for managing CMAKE_CUDA_ARCHITECTURES
-include(${FLAMEGPU_ROOT}/cmake/CUDAArchitectures.cmake)
-
 # Include googletest as a dependency.
 include(${FLAMEGPU_ROOT}/cmake/dependencies/googletest.cmake)
 
@@ -122,15 +121,12 @@ if((FLAMEGPU_BUILD_TESTS OR FLAMEGPU_BUILD_TESTS_DEV) AND FLAMEGPU_ENABLE_GTEST_
     include(GoogleTest)
 endif()
 
-
 # Define a macro for creating a named test project/executable
 # create_test_suite(suite_name, suite_src)
 macro(create_test_project)
     enable_testing()
-    # Handle CMAKE_CUDA_ARCHITECTURES and inject code into the tests project() command
-    flamegpu_init_cuda_architectures(PROJECT ${ARGV0})
     # Name the project and set languages
-    project(${ARGV0} CUDA CXX)
+    project(${ARGV0} LANGUAGES NONE)
     # Include common rules.
     include(${FLAMEGPU_ROOT}/cmake/common.cmake)
     # Set the source for this project

@@ -7,6 +7,7 @@
 #include <memory>
 #include <cmath>
 #include <string>
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 
@@ -15,7 +16,7 @@ struct HostMacroProperty_MetaData {
      * Constructor
      */
     HostMacroProperty_MetaData(void* _d_base_ptr, const std::array<unsigned int, 4>& _dims, size_t _type_size,
-        bool _device_read_flag, const std::string &name, cudaStream_t _stream)
+        bool _device_read_flag, const std::string &name, flamegpu::detail::gpu::Stream_t _stream)
         : h_base_ptr(nullptr)
         , d_base_ptr(static_cast<char*>(_d_base_ptr))
         , dims(_dims)
@@ -50,8 +51,8 @@ struct HostMacroProperty_MetaData {
         if (!h_base_ptr) {
             h_base_ptr = static_cast<char*>(malloc(elements * type_size));
         }
-        gpuErrchk(cudaMemcpyAsync(h_base_ptr, d_base_ptr, elements * type_size, cudaMemcpyDeviceToHost, stream));
-        gpuErrchk(cudaStreamSynchronize(stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(h_base_ptr, d_base_ptr, elements * type_size, flamegpu::detail::gpu::gpuMemcpyDeviceToHost, stream));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
         has_changed = false;
     }
     /**
@@ -66,8 +67,8 @@ struct HostMacroProperty_MetaData {
                     property_name.c_str());
             }
 #endif
-            gpuErrchk(cudaMemcpyAsync(d_base_ptr, h_base_ptr, elements * type_size, cudaMemcpyHostToDevice, stream));
-            gpuErrchk(cudaStreamSynchronize(stream));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_base_ptr, h_base_ptr, elements * type_size, flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
             has_changed = false;
         }
     }
@@ -79,7 +80,7 @@ struct HostMacroProperty_MetaData {
     bool has_changed;
     bool device_read_flag;
     std::string property_name;
-    cudaStream_t stream;
+    flamegpu::detail::gpu::Stream_t stream;
 };
 
 /**
@@ -311,7 +312,7 @@ void HostMacroProperty<T, I, J, K, W>::zero() {
         }
 #endif
         // Memset on device
-        gpuErrchk(cudaMemset(reinterpret_cast<T*>(metadata->d_base_ptr) + offset, 0, I * J * K * W * metadata->type_size));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemset(reinterpret_cast<T*>(metadata->d_base_ptr) + offset, 0, I * J * K * W * metadata->type_size));
     }
 }
 template<typename T, unsigned int I, unsigned int J, unsigned int K, unsigned int W>
@@ -461,7 +462,7 @@ void HostMacroProperty_swig<T>::zero() {
         metadata->has_changed = true;
     } else {
         // Memset on device
-        gpuErrchk(cudaMemset(reinterpret_cast<T*>(metadata->d_base_ptr) + offset, 0, dimensions[0] * dimensions[1] * dimensions[2] * dimensions[3] * metadata->type_size));
+        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemset(reinterpret_cast<T*>(metadata->d_base_ptr) + offset, 0, dimensions[0] * dimensions[1] * dimensions[2] * dimensions[3] * metadata->type_size));
     }
 }
 template<typename T>

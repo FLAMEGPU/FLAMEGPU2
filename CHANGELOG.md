@@ -21,6 +21,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 -->
 
+## [Unreleased]
+
+### Added
+
++ AMD GPU support via HIP/ROCm for C++ Ahead-of-time compilation (not RTC or python) ([#1367](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1367), [#1379](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1379))
++ `FLAMEGPU_BACKEND` CMake configuration option to select which GPU toolkit to use
+
+### Changed (Breaking)
+
++ Default `CMAKE_CUDA_ARCHITECTURES` is now the `nvcc` default (52 for CUDA 12, 75 for CUDA 13), rather than `all-major`. ([#1379](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1379))
+  + You should specify the correct architectures for optimal performance
++ Removed `gpuErrchk`, `gpuErrchkDriverAPI` & `gpuErrchkLaunch` macros which were not intended for public usage ([#1379](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1379)).
+  + Internal methods `flamegpu::detail::gpuCheck` & `flamegpu::detail::gpuCheckLaunch` are used instead
++ Minimum supported CUDA updated to 12.4 across all platforms for consistency and c++20 fixes (`<source_location>`) ([#1379](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1379)).
+
+### Changed
+
++ Maximum tested CMake upgraded to 4.3.0 ([#1379](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1379)).
++ Replaced used of `FLAMEGPU_PROJECT_IS_TOP_LEVEL` with the CMake provided `PROJECT_IS_TOP_LEVEL`
+
+<!-- ### Deprecated -->
+
+### Removed
+
++ Removed code paths for unsupported CUDA versions (`< 12.4`)
+
+### Fixed
+
++ Addressed various warnings issued by clang when used for AMD ([#1379](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1379)).
+  + Clang is not yet officially supported/tested for use as the host compiler with NVCC.
++ Typos and mistakes in comments & strings, including `CUDASimulation::getElapsedTimeExitFunctions` ([#1379](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1379), [#1392](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1392)).
++ Ensures that `AgentVector::resize` correctly initialises agent IDs to 0 ([#1379](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1379)).
+
 
 ## [2.0.0-rc.4] - 2025-11-18
 

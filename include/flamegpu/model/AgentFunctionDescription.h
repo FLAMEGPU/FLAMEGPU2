@@ -11,14 +11,20 @@
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/model/LayerDescription.h"
 #include "flamegpu/runtime/messaging/MessageBruteForce.h"
-#include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
+#include "flamegpu/detail/demangle.h"
 
+#ifdef FLAMEGPU_USE_CUDA
+#include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
+#endif
+
+#ifdef FLAMEGPU_USE_CUDA
 #ifdef _MSC_VER
 #pragma warning(push, 2)
 #include "jitify/jitify.hpp"
 #pragma warning(pop)
 #else
 #include "jitify/jitify.hpp"
+#endif
 #endif
 
 namespace flamegpu {
@@ -139,9 +145,9 @@ class CAgentFunctionDescription : public DependencyNode {
       */
      bool hasFunctionCondition() const;
      /**
-      * @return The cuda kernel entry point for executing the agent function
+      * @return The host function which launches the agent function kernel. Previously a __global__ function pointer, but this was modified for AMD support.
       */
-     AgentFunctionWrapper* getFunctionPtr() const;
+     AgentFunctionLauncher getFunctionPtr() const;
      /**
       * @return The cuda kernel entry point for executing the agent function condition
       */
@@ -338,9 +344,9 @@ class AgentFunctionDescription : public CAgentFunctionDescription {
 template<typename AgentFunction>
 AgentFunctionDescription AgentDescription::newFunction(const std::string &function_name, AgentFunction) {
     if (agent->functions.find(function_name) == agent->functions.end()) {
-        AgentFunctionWrapper *f = AgentFunction::fnPtr();
-        std::string in_t = detail::curve::CurveRTCHost::demangle(AgentFunction::inType().name());
-        std::string out_t = detail::curve::CurveRTCHost::demangle(AgentFunction::outType().name());
+        AgentFunctionLauncher f = AgentFunction::fnPtr();
+        std::string in_t = flamegpu::detail::demangle::demangle(AgentFunction::inType().name());
+        std::string out_t = flamegpu::detail::demangle::demangle(AgentFunction::outType().name());
         if (in_t == "flamegpu::MessageSpatial3D" || in_t == "flamegpu::MessageSpatial2D" || out_t == "flamegpu::MessageSpatial3D" || out_t == "flamegpu::MessageSpatial2D") {
             if (agent->variables.find("_auto_sort_bin_index") == agent->variables.end()) {
                 agent->variables.emplace("_auto_sort_bin_index", Variable(1, std::vector<unsigned int> {0}));

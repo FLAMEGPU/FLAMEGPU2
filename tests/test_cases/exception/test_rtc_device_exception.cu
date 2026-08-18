@@ -13,7 +13,7 @@ namespace flamegpu {
 #endif
 
 namespace test_rtc_device_exception {
-const unsigned int AGENT_COUNT = 64;
+[[maybe_unused]] const unsigned int AGENT_COUNT = 64;
 
 /**
  * Test that exceptions on getVariable() work
@@ -25,6 +25,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 }
 )###";
 TEST(RTCDeviceExceptionTest, getAgentVar_name) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -52,6 +53,9 @@ TEST(RTCDeviceExceptionTest, getAgentVar_name) {
     }
     // The appropriate exception was thrown?
     ASSERT_TRUE(did_except);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_getAgentVarType = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
@@ -60,6 +64,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 }
 )###";
 TEST(RTCDeviceExceptionTest, getAgentVar_typesize) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -77,6 +82,9 @@ TEST(RTCDeviceExceptionTest, getAgentVar_typesize) {
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 /**
  * Test that exceptions on getArrayVariable() works
@@ -88,6 +96,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 }
 )###";
 TEST(RTCDeviceExceptionTest, getAgentArrayVar_name) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 2>("id");
@@ -114,6 +123,9 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_name) {
     }
     // The appropriate exception was thrown?
     ASSERT_TRUE(did_except);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_getAgentArrayVar1 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
@@ -122,6 +134,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 }
 )###";
 TEST(RTCDeviceExceptionTest, getAgentArrayVar_typesize) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 2>("id");
@@ -138,6 +151,9 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_typesize) {
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_getAgentArrayVar2 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
@@ -146,6 +162,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 }
 )###";
 TEST(RTCDeviceExceptionTest, getAgentArrayVar_length) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 2>("id");
@@ -162,6 +179,9 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_length) {
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_getAgentArrayVar3 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
@@ -170,6 +190,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 }
 )###";
 TEST(RTCDeviceExceptionTest, getAgentArrayVar_bounds) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 2>("id");
@@ -186,6 +207,9 @@ TEST(RTCDeviceExceptionTest, getAgentArrayVar_bounds) {
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 /**
  * Test that exceptions on setVariable() works
@@ -197,6 +221,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 }
 )###";
 TEST(RTCDeviceExceptionTest, setAgentVar_name) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -224,6 +249,9 @@ TEST(RTCDeviceExceptionTest, setAgentVar_name) {
     }
     // The appropriate exception was thrown?
     ASSERT_TRUE(did_except);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_setAgentVar2 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
@@ -232,6 +260,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 }
 )###";
 TEST(RTCDeviceExceptionTest, setAgentVar_typesize) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -249,6 +278,9 @@ TEST(RTCDeviceExceptionTest, setAgentVar_typesize) {
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 /**
  * Test that exceptions on setVariable() work
@@ -260,6 +292,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 }
 )###";
 TEST(RTCDeviceExceptionTest, setAgentArrayVar_name) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 2>("id");
@@ -286,6 +319,9 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_name) {
     }
     // The appropriate exception was thrown?
     ASSERT_TRUE(did_except);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_setAgentArrayVar1 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
@@ -294,6 +330,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 }
 )###";
 TEST(RTCDeviceExceptionTest, setAgentArrayVar_typesize) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 2>("id");
@@ -310,6 +347,9 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_typesize) {
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_setAgentArrayVar2 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
@@ -318,6 +358,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 }
 )###";
 TEST(RTCDeviceExceptionTest, setAgentArrayVar_length) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 2>("id");
@@ -334,6 +375,9 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_length) {
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_setAgentArrayVar3 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
@@ -342,6 +386,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 }
 )###";
 TEST(RTCDeviceExceptionTest, setAgentArrayVar_bounds) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int, 2>("id");
@@ -358,6 +403,9 @@ TEST(RTCDeviceExceptionTest, setAgentArrayVar_bounds) {
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 /**
  * Test that exceptions on environment.getProperty() work
@@ -369,6 +417,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 }
 )###";
 TEST(RTCDeviceExceptionTest, getEnvironmentProp_name) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -397,6 +446,9 @@ TEST(RTCDeviceExceptionTest, getEnvironmentProp_name) {
     }
     // The appropriate exception was thrown?
     ASSERT_TRUE(did_except);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_getEnvironmentProp1 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
@@ -405,6 +457,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 }
 )###";
 TEST(RTCDeviceExceptionTest, getEnvironmentProp_typesize) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -423,6 +476,9 @@ TEST(RTCDeviceExceptionTest, getEnvironmentProp_typesize) {
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 /**
  * Test that exceptions on environment.getArrayProperty() work
@@ -434,6 +490,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 }
 )###";
 TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_name) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -462,6 +519,9 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_name) {
     }
     // The appropriate exception was thrown?
     ASSERT_TRUE(did_except);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_getEnvironmentArrayProp1 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
@@ -470,6 +530,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 }
 )###";
 TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_typesize) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -488,6 +549,9 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_typesize) {
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 // Device environment does not currently require user to specify length of array
 const char* rtc_dthrow_agent_func_getEnvironmentArrayProp2 = R"###(
@@ -497,6 +561,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 }
 )###";
 TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_length) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -515,6 +580,9 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_length) {
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 const char* rtc_dthrow_agent_func_getEnvironmentArrayProp3 = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
@@ -523,6 +591,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
 }
 )###";
 TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_bounds) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -541,6 +610,9 @@ TEST(RTCDeviceExceptionTest, getEnvironmentArrayProp_bounds) {
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure data is pushed to device
     EXPECT_THROW(cudaSimulation.step(), exception::DeviceError);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 }  // namespace test_rtc_device_exception
