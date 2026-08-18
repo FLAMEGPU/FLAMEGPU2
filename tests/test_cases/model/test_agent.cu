@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "flamegpu/flamegpu.h"
+#include "flamegpu/runtime/AgentFunction.cuh"
 
 #include "gtest/gtest.h"
 
@@ -55,11 +56,11 @@ TEST(AgentDescriptionTest, functions) {
     EXPECT_EQ(f1.getName(), FUNCTION_NAME1);
     EXPECT_EQ(f2.getName(), FUNCTION_NAME2);
     {
-        // TODO: DO NOT MERGE
-        // AgentFunctionLauncher *_a = &agent_function_launcher<agent_fn1_impl, MessageNone, MessageNone>;
-        // EXPECT_EQ(f1.getFunctionPtr(), _a);
-        // AgentFunctionLauncher *_b = &agent_function_launcher<agent_fn2_impl, MessageNone, MessageNone>;
-        // EXPECT_EQ(f2.getFunctionPtr(), _b);
+        // AgentFunctionLauncher _a;// = &agent_function_launcher<agent_fn1_impl, MessageNone, MessageNone>;
+        AgentFunctionLauncher _a = &AgentFunctionLauncherHelper<agent_fn1_impl, MessageNone, MessageNone>::agent_function_launcher;
+        EXPECT_EQ(f1.getFunctionPtr(), _a);
+        AgentFunctionLauncher _b = &AgentFunctionLauncherHelper<agent_fn2_impl, MessageNone, MessageNone>::agent_function_launcher;
+        EXPECT_EQ(f2.getFunctionPtr(), _b);
     }
 }
 TEST(AgentDescriptionTest, variables) {

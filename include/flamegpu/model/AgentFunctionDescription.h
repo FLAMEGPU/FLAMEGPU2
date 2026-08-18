@@ -145,7 +145,7 @@ class CAgentFunctionDescription : public DependencyNode {
       */
      bool hasFunctionCondition() const;
      /**
-      * @return The cuda kernel entry point for executing the agent function
+      * @return The host function which launches the agent function kernel. Previously a __global__ function pointer, but this was modified for AMD support.
       */
      AgentFunctionLauncher getFunctionPtr() const;
      /**
