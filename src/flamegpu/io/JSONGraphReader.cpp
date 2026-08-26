@@ -319,6 +319,7 @@ class JSONAdjacencyGraphReader : public nlohmann::json_sax<nlohmann::json> {
         } else if (mode.top() != Skip) {
             THROW exception::JSONError("Unexpected string whilst parsing input file '%s', string properties are not supported.\n", filename.c_str());
         }
+        return true;
     }
     bool binary(binary_t&) {
         THROW exception::JSONError("Unexpected binary value whilst parsing input file '%s'.\n", filename.c_str());
