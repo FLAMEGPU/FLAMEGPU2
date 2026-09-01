@@ -188,4 +188,48 @@ class HostAgentSort(TestCase):
             # Store prev
             prev = f
 
+    def test_empty_sort_float(self):
+        # Define model
+        model = pyflamegpu.ModelDescription("model")
+        agent = model.newAgent("agent")
+        agent.newVariableFloat("float")
+        agent.newVariableFloat("spare")
+        func_asc = sort_ascending_float()
+        func_desc = sort_descending_float()
+        model.newLayer().addHostFunction(func_asc)
+        model.newLayer().addHostFunction(func_desc)
 
+        # Init empty pop
+        pop = pyflamegpu.AgentVector(agent, 0)
+
+        # Setup Model
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
+        cudaSimulation.setPopulationData(pop)
+        # Execute step fn - should be no-op with no exception
+        cudaSimulation.step()
+        # Check results
+        cudaSimulation.getPopulationData(pop)
+        assert pop.size() == 0
+
+    def test_empty_sort_int(self):
+        # Define model
+        model = pyflamegpu.ModelDescription("model")
+        agent = model.newAgent("agent")
+        agent.newVariableInt("int")
+        agent.newVariableInt("spare")
+        func_asc = sort_ascending_int()
+        func_desc = sort_descending_int()
+        model.newLayer().addHostFunction(func_asc)
+        model.newLayer().addHostFunction(func_desc)
+
+        # Init empty pop
+        pop = pyflamegpu.AgentVector(agent, 0)
+
+        # Setup Model
+        cudaSimulation = pyflamegpu.CUDASimulation(model)
+        cudaSimulation.setPopulationData(pop)
+        # Execute step fn - should be no-op with no exception
+        cudaSimulation.step()
+        # Check results
+        cudaSimulation.getPopulationData(pop)
+        assert pop.size() == 0
