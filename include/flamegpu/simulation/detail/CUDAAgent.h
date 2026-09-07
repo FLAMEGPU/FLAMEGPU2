@@ -45,10 +45,6 @@ class CUDAAgent : public AgentInterface {
      typedef std::map<const std::string, std::unique_ptr<jitify2::KernelData>> CUDARTCFuncMap;
      typedef std::map<const std::string, std::shared_ptr<detail::curve::CurveRTCHost>> CUDARTCHeaderMap;
     /**
-     * Element type of CUDARTCFuncMap
-     */
-    typedef std::pair<const std::string, std::unique_ptr<jitify2::KernelData>> CUDARTCFuncMapPair;
-    /**
      * Normal constructor
      * @param description Agent description of the agent
      * @param _cudaSimulation Parent CUDASimulation of the agent

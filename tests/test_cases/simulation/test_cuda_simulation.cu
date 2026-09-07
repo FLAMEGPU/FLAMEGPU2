@@ -530,8 +530,9 @@ TEST(TestCUDASimulation, stepElapsedTime) {
 
     // Try getting the timer before running simulate, which should be empty.
     EXPECT_EQ(c.getElapsedTimeSteps().size(), 0.);
-    // Or gettng an individual element which is out of boudns should have some kind of error.
-    // EXPECT_GT(c.getElapsedTimeStep(1), 0.); // @todo
+    // Getting an individual element which is out of bounds should throw.
+    EXPECT_THROW(c.getElapsedTimeStep(0), exception::OutOfBoundsException);
+    EXPECT_THROW(c.getElapsedTimeStep(1), exception::OutOfBoundsException);
 
     // Call simulate to run 10 steps, which should take some length of time
     const unsigned int STEPS = 10u;
@@ -544,6 +545,8 @@ TEST(TestCUDASimulation, stepElapsedTime) {
         EXPECT_GT(stepTimes.at(step), 0.);
         EXPECT_GT(c.getElapsedTimeStep(step), 0.);
     }
+    // Accessing step == STEPS should throw (off-by-one boundary).
+    EXPECT_THROW(c.getElapsedTimeStep(STEPS), exception::OutOfBoundsException);
 }
 
 /* const char* rtc_empty_agent_func = R"###(
