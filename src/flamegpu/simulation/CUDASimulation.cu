@@ -1856,7 +1856,7 @@ double CUDASimulation::getElapsedTimeRTCInitialisation() const {
 }
 
 std::vector<double> CUDASimulation::getElapsedTimeSteps() const {
-    // returns a copy of the timing vector, to avoid mutabililty issues. This should not be called in a performacne intensive part of the application.
+    // returns a copy of the timing vector, to avoid mutability issues. This should not be called in a performance intensive part of the application.
     std::vector<double> rtn = this->elapsedSecondsPerStep;
     return rtn;
 }
