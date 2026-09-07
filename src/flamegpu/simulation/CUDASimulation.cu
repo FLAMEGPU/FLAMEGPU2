@@ -1862,7 +1862,7 @@ std::vector<double> CUDASimulation::getElapsedTimeSteps() const {
 }
 
 double CUDASimulation::getElapsedTimeStep(unsigned int step) const {
-    if (step > this->elapsedSecondsPerStep.size()) {
+    if (step >= this->elapsedSecondsPerStep.size()) {
         THROW exception::OutOfBoundsException("getElapsedTimeStep out of bounds.\n");
     }
     return this->elapsedSecondsPerStep.at(step);
