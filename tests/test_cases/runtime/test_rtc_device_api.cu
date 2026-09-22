@@ -6,7 +6,7 @@ namespace flamegpu {
 
 
 namespace test_rtc_device_api {
-const unsigned int AGENT_COUNT = 64;
+[[maybe_unused]] const unsigned int AGENT_COUNT = 64;
 
 const char* rtc_empty_agent_func = R"###(
 FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageNone) {
@@ -17,6 +17,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
  * Test an empty agent function to ensure that the RTC library can successful build and run a minimal example
  */
 TEST(DeviceRTCAPITest, AgentFunction_empty) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
@@ -35,12 +36,16 @@ TEST(DeviceRTCAPITest, AgentFunction_empty) {
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure agent function compiles and runs
     cudaSimulation.step();
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 /**
  * Test an empty agent function to ensure that the RTC library can successful build and run a minimal example
  */
 TEST(DeviceRTCAPITest, AgentFunction_differentName) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<float>("x");
@@ -59,6 +64,9 @@ TEST(DeviceRTCAPITest, AgentFunction_differentName) {
     cudaSimulation.setPopulationData(init_population);
     // Run 1 step to ensure agent function compiles and runs
     cudaSimulation.step();
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 const char* rtc_error_agent_func = R"###(
@@ -107,6 +115,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
  * Test an RTC function to ensure death is processed correctly
  */
 TEST(DeviceRTCAPITest, AgentFunction_death) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -130,6 +139,9 @@ TEST(DeviceRTCAPITest, AgentFunction_death) {
     cudaSimulation.getPopulationData(population);
     // Check population size is half of initial
     EXPECT_EQ(population.size(), AGENT_COUNT / 2);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 
@@ -145,6 +157,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
  * Test an RTC function to ensure that getVaribale function works correctly. Expected result is that all even id agents are killed.
  */
 TEST(DeviceRTCAPITest, AgentFunction_get) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -168,6 +181,9 @@ TEST(DeviceRTCAPITest, AgentFunction_get) {
     cudaSimulation.getPopulationData(population);
     // Check population size is half of initial (which is only possible if get has returned the correct id)
     EXPECT_EQ(population.size(), AGENT_COUNT / 2);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 const char* rtc_getset_agent_func = R"###(
@@ -181,6 +197,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
  * Test an RTC function to ensure that the setVariable function works correctly. Expected result is 'id' is copied to 'id_out'
  */
 TEST(DeviceRTCAPITest, AgentFunction_getset) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -209,6 +226,9 @@ TEST(DeviceRTCAPITest, AgentFunction_getset) {
         EXPECT_EQ(instance.getVariable<int>("id"), i);
         EXPECT_EQ(instance.getVariable<int>("id_out"), i);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 const char* rtc_array_get_agent_func = R"###(
@@ -226,6 +246,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
  * Test an RTC function to ensure that the getVariable function works correctly for array variables. Expected result is 'array_var' values are copied into a1, a2, a3 and a4.
  */
 TEST(DeviceRTCAPITest, AgentFunction_array_get) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -260,6 +281,9 @@ TEST(DeviceRTCAPITest, AgentFunction_array_get) {
         EXPECT_EQ(instance.getVariable<int>("a3"), 8 + j);
         EXPECT_EQ(instance.getVariable<int>("a4"), 16 + j);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 const char* rtc_array_set_agent_func = R"###(
@@ -284,6 +308,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
  * Also includes a test to ensure that scalar variables can not use the array get and set functions of the API.
  */
 TEST(DeviceRTCAPITest, AgentFunction_array_set) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -328,6 +353,9 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set) {
         // Value should not have been set by agent function as the value is scalar and the setter used was for an array
         EXPECT_EQ(instance.getVariable<int>("a0"), static_cast<int>(i));
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 #ifdef FLAMEGPU_USE_GLM
@@ -347,6 +375,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
  * Test an RTC function to ensure that the getVariable function works correctly for array variables. Expected result is 'array_var' values are copied into a1, a2, a3 and a4.
  */
 TEST(DeviceRTCAPITest, AgentFunction_array_get_glm) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -381,6 +410,9 @@ TEST(DeviceRTCAPITest, AgentFunction_array_get_glm) {
         EXPECT_EQ(instance.getVariable<int>("a3"), 8 + j);
         EXPECT_EQ(instance.getVariable<int>("a4"), 16 + j);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 const char* rtc_array_set_agent_func_glm = R"###(
@@ -397,6 +429,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_test_func, flamegpu::MessageNone, flamegpu::MessageN
  * Also includes a test to ensure that scalar variables can not use the array get and set functions of the API.
  */
 TEST(DeviceRTCAPITest, AgentFunction_array_set_glm) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -440,6 +473,9 @@ TEST(DeviceRTCAPITest, AgentFunction_array_set_glm) {
         // Value should not have been set by agent function as the value is scalar and the setter used was for an array
         EXPECT_EQ(instance.getVariable<int>("a0"), static_cast<int>(i));
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 #else
 // Mark that test is disabled
@@ -470,6 +506,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_message_in_func, flamegpu::MessageBruteForce, flameg
  * As messages are derived from a common CUDAMessage type there is no need to perform the same test with every message type.
  */
 TEST(DeviceRTCAPITest, AgentFunction_message_bruteforce) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription m("model");
     MessageBruteForce::Description message = m.newMessage("message_x");
     message.newVariable<int>("x");
@@ -503,6 +540,9 @@ TEST(DeviceRTCAPITest, AgentFunction_message_bruteforce) {
     for (AgentVector::Agent ai : pop) {
         ASSERT_EQ(ai.getVariable<int>("sum"), sum);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 const char* rtc_rand_func = R"###(
@@ -517,6 +557,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_rand_func, flamegpu::MessageNone, flamegpu::MessageN
  * Test agent random functions to ensure that random values are returned by RTC implementation. Implemented from AgentRandomTest.AgentRandomCheck Test Model 1. No need to check seed as this is done in the orginal test.
  */
 TEST(DeviceRTCAPITest, AgentFunction_random) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<float>("a");
@@ -562,6 +603,9 @@ TEST(DeviceRTCAPITest, AgentFunction_random) {
         EXPECT_TRUE(b != c);
         EXPECT_TRUE(a != c);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 
@@ -606,6 +650,7 @@ FLAMEGPU_STEP_FUNCTION(etc_env_step) {
  * Test agent environment functions.
  */
 TEST(DeviceRTCAPITest, AgentFunction_env) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("e1_out");
@@ -661,6 +706,9 @@ TEST(DeviceRTCAPITest, AgentFunction_env) {
             EXPECT_EQ(e_array_out_2[j], j);
         }
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 const char* rtc_agent_output_func = R"###(
@@ -677,6 +725,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_agent_output_func, flamegpu::MessageNone, flamegpu::
  * Test rtc agent output by optionally setting an agent output and checking for the correct population size and agent values
  */
 TEST(DeviceRTCAPITest, AgentFunction_agent_output) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<unsigned int>("x");
@@ -715,6 +764,9 @@ TEST(DeviceRTCAPITest, AgentFunction_agent_output) {
     }
     EXPECT_EQ(is_1, AGENT_COUNT);
     EXPECT_EQ(is_12, AGENT_COUNT / 2);
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 const char* rtc_func_cond_non_rtc_func = R"###(
@@ -731,6 +783,7 @@ FLAMEGPU_AGENT_FUNCTION_CONDITION(odd_only) {
  * Test an RTC function to an agent function condition (where the condition is not compiled using RTC)
  */
 TEST(DeviceRTCAPITest, AgentFunction_cond_non_rtc) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -778,6 +831,9 @@ TEST(DeviceRTCAPITest, AgentFunction_cond_non_rtc) {
         // odd id agent should have updated their id_out value
         EXPECT_EQ(id_out, id);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 const char* rtc_func_cond_func = R"###(
@@ -796,6 +852,7 @@ FLAMEGPU_AGENT_FUNCTION_CONDITION(odd_only) {
  * Test an RTC function to an agent function condition (where the condition IS compiled using RTC)
  */
 TEST(DeviceRTCAPITest, AgentFunction_cond_rtc) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent_name");
     agent.newVariable<int>("id");
@@ -843,6 +900,9 @@ TEST(DeviceRTCAPITest, AgentFunction_cond_rtc) {
         // odd id agent should have updated their id_out value
         EXPECT_EQ(id_out, id);
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 
@@ -856,6 +916,7 @@ FLAMEGPU_AGENT_FUNCTION(rtc_testGetStepCounter, flamegpu::MessageNone, flamegpu:
 }
 )###";
 TEST(DeviceRTCAPITest, getStepCounter) {
+#ifdef FLAMEGPU_USE_CUDA
     ModelDescription model("model");
     AgentDescription agent = model.newAgent("agent");
     agent.newVariable<unsigned int>("step");
@@ -885,6 +946,9 @@ TEST(DeviceRTCAPITest, getStepCounter) {
             EXPECT_EQ(instance.getVariable<unsigned int>("step"), step);
         }
     }
+#else  // FLAMEGPU_USE_CUDA
+    GTEST_SKIP() << "RTC not yet implemented for HIP/ROCm/AMD";
+#endif  // FLAMEGPU_USE_CUDA
 }
 
 }  // namespace test_rtc_device_api

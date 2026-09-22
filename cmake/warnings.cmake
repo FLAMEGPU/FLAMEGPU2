@@ -25,6 +25,8 @@ if(NOT COMMAND flamegpu_disable_compiler_warnings)
         endif()
         # Always tell nvcc to disable warnings
         target_compile_options(${DCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:-w>")
+        # Always tell hip to disable warnigns
+        target_compile_options(${DCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:HIP>:-w>")
     endfunction()
 endif()
 
@@ -52,23 +54,19 @@ if(NOT COMMAND flamegpu_set_high_warning_level)
             # Only set W4 for MSVC, WAll is more like Wall, Wextra and Wpedantic
             target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler /W4>")
             target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:/W4>")
-            # Reorder errors for device code are caused by some cub/thrust versions (< 2.1.0?), but can be suppressed by pragmas successfully in 11.5+ under windows
-            if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.5.0)
+            # Reorder errors for device code are caused by some cub/thrust versions (< 2.1.0?), but can be suppressed by pragmas successfully (11.5+) under windows
+            if(CMAKE_CUDA_COMPILER_LOADED)
                 target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--Wreorder>")
             endif()
         else()
             # Assume using GCC/Clang which Wall is relatively sane for. 
             target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wall$<COMMA>-Wsign-compare>")
-            target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wall>")
-            target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wsign-compare>")
-            # Reorder errors for device code are caused by some cub/thrust versions (< 2.1.0?), but can be suppressed by pragmas successfully in 11.3+ under linux
-            if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.3.0)
+            target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX,HIP>:-Wall>")
+            target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX,HIP>:-Wsign-compare>")
+            # Reorder errors for device code are caused by some cub/thrust versions (< 2.1.0?), but can be suppressed by pragmas successfully (11.3+) under linux
+            if(CMAKE_CUDA_COMPILER_LOADED)
                 target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:--Wreorder>")
             endif()
-            # Add warnings which suggest the use of override
-            # Disabled, as cpplint occasionally disagrees with gcc concerning override
-            # target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wsuggest-override>")
-            # target_compile_options(${SHWL_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wsuggest-override>")
         endif()
         # Generic options regardless of platform/host compiler:
         # Ensure NVCC outputs warning numbers
@@ -108,47 +106,56 @@ if(NOT COMMAND flamegpu_suppress_some_compiler_warnings)
             # C4127: conditional expression is constant. Longer term true static assertions would be better.
             target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler /wd4127>")
             target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:/wd4127>")
-            # Suppress Fatbinc warnings on msvc at link time (CMake >= 3.18)
-            target_link_options(${SSCW_TARGET} PRIVATE "$<DEVICE_LINK:SHELL:-Xcompiler /wd4100>")
+            if (CMAKE_CUDA_COMPILER_LOADED)
+                # Suppress Fatbinc warnings on msvc at link time (CMake >= 3.18)
+                target_link_options(${SSCW_TARGET} PRIVATE "$<DEVICE_LINK:SHELL:-Xcompiler /wd4100>")
+            endif()
             # CUDA 11.6 deprecates __device__ cudaDeviceSynchronize, but does not provide an alternative.
             # This is used in cub/thrust, and windows still emits this warning from the third party library
-            if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.6.0)
+            if(CMAKE_CUDA_COMPILER_LOADED)
                 target_compile_definitions(${SSCW_TARGET} PRIVATE "__CDPRT_SUPPRESS_SYNC_DEPRECATION_WARNING")
             endif()
             # CUDA 13.0 curand_poisson.h under windows generates error '#20199-D: unrecognized #pragma in device code'. This was fixed in CUDA 13.0 Update 1, but nvcc reports the same version so the suppression is applied to < 13.1
-            if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 13.0.0 AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 13.1)
+            if(CMAKE_CUDA_COMPILER_LOADED AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 13.0.0 AND CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 13.1)
                 target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe --diag_suppress=20199>")
             endif()
         elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
             # GCC specific warning suppressions
-            # GCC 10.1 AARCH specific ps ABI warnings in C++17 mode. See https://github.com/FLAMEGPU/FLAMEGPU2/issues/1176
-            if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 10.1.0)
+            # Suppress psABI warnings on: 
+            # - Power9 + GCC >= 10 Note: the layout of aggregates containing vectors with x-byte allignment has changed in GCC 5
+            # - GCC 10.1 AARCH specific ps ABI warnings in C++17 mode. See https://github.com/FLAMEGPU/FLAMEGPU2/issues/1176
+            if(
+                (CMAKE_SYSTEM_PROCESSOR STREQUAL "ppc64le" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 10)
+                OR (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 10.1.0)
+            )
                 target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-psabi>")
-                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wno-psabi>")
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:>-Wno-psabi")
             endif()
             # (some) GCC 12 in c++20 issues Wrestrict warnings for assigning a single character to a std::string, which is a false-positive.
             if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 12.0.0 AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 13.0.0)
                 target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Wno-restrict>")
                 target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wno-restrict>")
             endif()
+        elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Wno-unused-private-field>")
         endif()
-        # Generic OS/host compiler warning suppressions
-        # Ensure NVCC outputs warning numbers
-        target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe --display_error_number>")
-        # Suppress deprecated compute capability warnings.
-        target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:-Wno-deprecated-gpu-targets>")
-        target_link_options(${SSCW_TARGET} PRIVATE "$<DEVICE_LINK:-Wno-deprecated-gpu-targets>")
-        # Supress CUDA 11.3 specific warnings, which are host compiler agnostic.
-        if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.3.0)
-            # Suppress 117-D, declared_but_not_referenced
+        # Generic OS/host compiler warning suppressions        
+        if(CMAKE_CUDA_COMPILER_LOADED)
+            # Ensure NVCC outputs warning numbers
+            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe --display_error_number>")
+            # Suppress deprecated compute capability warnings.
+            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:-Wno-deprecated-gpu-targets>")
+            target_link_options(${SSCW_TARGET} PRIVATE "$<DEVICE_LINK:-Wno-deprecated-gpu-targets>")
+            # Suppress 117-D, declared_but_not_referenced (11.3+)
             target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe --diag_suppress=declared_but_not_referenced>")
+            # Suppress nodiscard warnings from the cuda frontend
+            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe --diag_suppress=2809>")
         endif()
-        # Suppress nodiscard warnings from the cuda frontend
-        target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcudafe --diag_suppress=2809>")
-        # Suppress Power9 + GCC >= 10 note re: ABI changes in GCC >= 5
-        # "Note: the layout of aggregates containing vectors with x-byte allignment has changed in GCC 5
-        if(CMAKE_SYSTEM_PROCESSOR STREQUAL "ppc64le" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 10)
-            target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:>-Wno-psabi")
+        # HIP-only warning suppressions
+        if(CMAKE_HIP_COMPILER_LOADED)
+            if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+                target_compile_options(${SSCW_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:HIP>:-Wno-unused-private-field>")
+            endif()
         endif()
     endfunction()
 endif()
@@ -178,30 +185,36 @@ if(NOT COMMAND flamegpu_enable_warnings_as_errors)
                 # Windows specific options
                 target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler /WX>")
                 target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:/WX>")
-                # Device link warnings as errors, CMake 3.18+
-                target_link_options(${EWAS_TARGET} PRIVATE "$<DEVICE_LINK:SHELL:-Xcompiler /WX>")
-                # Add reorder to Werror, this is usable with workign nv/diag_suppress pragmas for cub/thrust from CUDA 11.5+ under windows
-                if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.5.0)
+                if(CMAKE_CUDA_COMPILER_LOADED)
+                    # Device link warnings as errors, CMake 3.18+
+                    target_link_options(${EWAS_TARGET} PRIVATE "$<DEVICE_LINK:SHELL:-Xcompiler /WX>")
+                    # Add reorder to Werror, this is usable with workign nv/diag_suppress pragmas for cub/thrust from (CUDA 11.5+) under windows
                     target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror reorder>")
                 endif()
             else()
                 # Linux specific options
                 target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xcompiler -Werror>")
                 target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-Werror>")
-                # Device link warnings as errors, CMake 3.18+
-                target_link_options(${EWAS_TARGET} PRIVATE "$<DEVICE_LINK:SHELL:-Xcompiler -Werror>")
-                # Add cross-execution-space-call. This is blocked under msvc by a jitify related bug (untested > CUDA 10.1): https://github.com/NVIDIA/jitify/issues/62
-                target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror cross-execution-space-call>")
-                # Add reorder to Werror, this is usable with workign nv/diag_suppress pragmas for cub/thrust from CUDA 11.3+ under linux
-                if(CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.3.0)
+                if(CMAKE_CUDA_COMPILER_LOADED)
+                    # Device link warnings as errors, CMake 3.18+
+                    target_link_options(${EWAS_TARGET} PRIVATE "$<DEVICE_LINK:SHELL:-Xcompiler -Werror>")
+                    # Add cross-execution-space-call. This is blocked under msvc by a jitify related bug (untested > CUDA 10.1): https://github.com/NVIDIA/jitify/issues/62
+                    target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror cross-execution-space-call>")
+                    # Add reorder to Werror, this is usable with workign nv/diag_suppress pragmas for cub/thrust (from CUDA 11.3+) under linux
                     target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror reorder>")
                 endif()
             endif()
             # Platform/host-compiler indifferent options:
             # Generic WError settings for nvcc
-            target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xptxas=\"-Werror\" -Xnvlink=\"-Werror\">")
-            # Add all_warnings to the Werror option (supported by all CUDA 11.x+)
-            target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror all-warnings>")
+            if(CMAKE_CUDA_COMPILER_LOADED)
+                target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Xptxas=\"-Werror\" -Xnvlink=\"-Werror\">")
+                # Add all_warnings to the Werror option (supported by all CUDA 11.x+)
+                target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:SHELL:-Werror all-warnings>")
+            endif()
+            # Enable Werror for HIP
+            if(CMAKE_HIP_COMPILER_LOADED)
+                target_compile_options(${EWAS_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:HIP>:-Werror>")
+            endif()
         endif()
     endfunction()
 endif()

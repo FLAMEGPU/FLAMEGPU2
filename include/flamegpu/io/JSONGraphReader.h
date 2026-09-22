@@ -3,8 +3,7 @@
 
 #include <memory>
 #include <string>
-
-#include "flamegpu/detail/cuda.cuh"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 namespace detail {
@@ -24,7 +23,7 @@ class JSONGraphReader {
      * @throws exception::InvalidFilePath If the file cannot be opened for reading
      * @throws exception::JSONError If JSON fails for any reason (e.g. structure does not match expectations)
      */
-     static void loadAdjacencyLike(const std::string &filepath, const std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> &directed_graph, cudaStream_t stream);
+     static void loadAdjacencyLike(const std::string &filepath, const std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> &directed_graph, flamegpu::detail::gpu::Stream_t stream);
 };
 
 }  // namespace io

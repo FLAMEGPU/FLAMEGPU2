@@ -158,7 +158,7 @@ class MessageArray::In {
              * Returns the x array offset of message relative to the search origin
              * @note This value is unwrapped, so will always return a value within the search radius
              */
-            __device__ size_type getOffsetX() const {
+            __device__ int getOffsetX() const {
                 return relative_cell;
             }
             /**
@@ -512,7 +512,7 @@ class MessageArray::In {
             DTHROW("Invalid radius %u for accessing array messagelist of length %u\n", radius, length);
             return WrapFilter();
         } else if ((radius * 2) + 1 > length) {
-            unsigned int min_r = length % 2 == 0 ? length - 2 : length - 1;
+            [[maybe_unused]] unsigned int min_r = length % 2 == 0 ? length - 2 : length - 1;
             min_r /= 2;
             DTHROW("%u is not a valid radius for accessing Array message lists, as the diameter of messages accessed exceeds the message list length (%u)."
                 " Maximum supported radius for this message list is %u.\n",

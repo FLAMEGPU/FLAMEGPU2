@@ -273,6 +273,7 @@ class AgentDescription : public CAgentDescription {
      */
     template<typename AgentFunction>
     AgentFunctionDescription newFunction(const std::string &function_name, AgentFunction a = AgentFunction());
+#ifdef FLAMEGPU_USE_CUDA
     /**
      * Adds a new runtime (device) function to the agent from a string containing the source code
      * @param function_name Name of the functions
@@ -294,6 +295,7 @@ class AgentDescription : public CAgentDescription {
      * @note The same agent function can be passed to the same agent twice
      */
     AgentFunctionDescription newRTCFunctionFile(const std::string& function_name, const std::string& file_path);
+#endif  // FLAMEGPU_USE_CUDA
     /**
      * Returns a mutable reference to the named agent function, which can be used to configure the function
      * @param function_name Name used to refer to the desired agent function

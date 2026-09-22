@@ -436,6 +436,10 @@ DERIVED_FLAMEGPUException(InvalidGraphProperty, "Invalid graph property specifie
  * Defines an error when an invalid name for a graph is specified
  */
 DERIVED_FLAMEGPUException(InvalidGraphName, "Invalid graph name specified");
+/**
+ * Defines an error when functionality is not implemented for the current build configuration
+ */
+DERIVED_FLAMEGPUException(NotImplementedError, "Not implemented");
 
 }  // namespace exception
 }  // namespace flamegpu
