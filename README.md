@@ -318,8 +318,6 @@ Several environmental variables are used or required by FLAME GPU 2.
 
 The test suite for the CUDA/C++ library can be executed using CTest, or by manually running the test executable(s).
 
- can be used to orchestrate running multiple test suites for different aspects of FLAME GPU 2.
-
 The test suite can be executed using [CTest](https://cmake.org/cmake/help/latest/manual/ctest.1.html) by running `ctest`, or `ctest -VV` for verbose output of sub-tests, from the the build directory.
 
 More verbose CTest output for the GoogleTest based CUDA C++ test suite(s) can be enabled by configuring CMake with `FLAMEGPU_ENABLE_GTEST_DISCOVER` set to `ON`.
