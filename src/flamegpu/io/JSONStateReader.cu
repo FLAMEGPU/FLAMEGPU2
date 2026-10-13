@@ -1,5 +1,8 @@
 #include "flamegpu/io/JSONStateReader.h"
 
+#include <rapidjson/stream.h>
+#include <rapidjson/reader.h>
+#include <rapidjson/error/en.h>
 #include <stack>
 #include <fstream>
 #include <string>
@@ -10,8 +13,6 @@
 #include <vector>
 #include <functional>
 #include <memory>
-
-#include <nlohmann/json.hpp>
 
 #include "flamegpu/exception/FLAMEGPUException.h"
 #include "flamegpu/simulation/AgentVector.h"
@@ -27,7 +28,7 @@ namespace io {
  * This is the main sax style parser for the json state
  * It stores it's current position within the hierarchy with mode, lastKey and current_variable_array_index
  */
-class JSONStateReader_impl : public nlohmann::json_sax<nlohmann::json> {
+class JSONStateReader_impl : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, JSONStateReader_impl>  {
     enum Mode{ Nop, Root, Config, Stats, SimCfg, CUDACfg, Environment, MacroEnvironment, Agents, Agent, State, AgentInstance, VariableArray };
     std::stack<Mode> mode;
     std::string lastKey;
@@ -74,17 +75,17 @@ class JSONStateReader_impl : public nlohmann::json_sax<nlohmann::json> {
         if (mode.top() == Environment) {
             const auto it = model->environment->properties.find(lastKey);
             if (it == model->environment->properties.end()) {
-                THROW exception::JSONError("Input file contains unrecognised environment property '%s',"
+                THROW exception::RapidJSONError("Input file contains unrecognised environment property '%s',"
                     "in JSONStateReader::parse()\n", lastKey.c_str());
             }
             if (current_variable_array_index == 0) {
                 // New property, create buffer with default value and add to map
                 if (!env_init.emplace(lastKey, detail::Any(it->second.data)).second) {
-                    THROW exception::JSONError("Input file contains environment property '%s' multiple times, "
+                    THROW exception::RapidJSONError("Input file contains environment property '%s' multiple times, "
                         "in JSONStateReader::parse()\n", lastKey.c_str());
                 }
             } else if (current_variable_array_index >= it->second.data.elements) {
-                THROW exception::JSONError("Input file contains environment property '%s' with %u elements expected %u,"
+                THROW exception::RapidJSONError("Input file contains environment property '%s' with %u elements expected %u,"
                     "in JSONStateReader::parse()\n", lastKey.c_str(), current_variable_array_index, it->second.data.elements);
             }
             // Retrieve the linked any and replace the value
@@ -111,24 +112,24 @@ class JSONStateReader_impl : public nlohmann::json_sax<nlohmann::json> {
             } else if (val_type == std::type_index(typeid(uint8_t))) {
                 static_cast<uint8_t*>(const_cast<void*>(ei_it->second.ptr))[current_variable_array_index++] = static_cast<uint8_t>(val);
             } else {
-                THROW exception::JSONError("Model contains environment property '%s' of unsupported type '%s', "
+                THROW exception::RapidJSONError("Model contains environment property '%s' of unsupported type '%s', "
                     "in JSONStateReader::parse()\n", lastKey.c_str(), val_type.name());
             }
         } else if (mode.top() == MacroEnvironment) {
             const auto it = model->environment->macro_properties.find(lastKey);
             if (it == model->environment->macro_properties.end()) {
-                THROW exception::JSONError("Input file contains unrecognised macro environment property '%s',"
+                THROW exception::RapidJSONError("Input file contains unrecognised macro environment property '%s',"
                     "in JSONStateReader::parse()\n", lastKey.c_str());
             }
             const unsigned int macro_prop_elements = std::accumulate(it->second.elements.begin(), it->second.elements.end(), 1, std::multiplies<unsigned int>());
             if (current_variable_array_index == 0) {
                 // New property, create buffer with default value and add to map
                 if (!macro_env_init.emplace(lastKey, std::vector<char>(macro_prop_elements * it->second.type_size)).second) {
-                    THROW exception::JSONError("Input file contains environment property '%s' multiple times, "
+                    THROW exception::RapidJSONError("Input file contains environment property '%s' multiple times, "
                         "in JSONStateReader::parse()\n", lastKey.c_str());
                 }
             } else if (current_variable_array_index >= macro_prop_elements) {
-                THROW exception::JSONError("Input file contains environment property '%s' with %u elements expected %u,"
+                THROW exception::RapidJSONError("Input file contains environment property '%s' with %u elements expected %u,"
                     "in JSONStateReader::parse()\n", lastKey.c_str(), current_variable_array_index, macro_prop_elements);
             }
             // Retrieve the linked any and replace the value
@@ -155,7 +156,7 @@ class JSONStateReader_impl : public nlohmann::json_sax<nlohmann::json> {
             } else if (val_type == std::type_index(typeid(uint8_t))) {
                 static_cast<uint8_t*>(static_cast<void*>(mei.data()))[current_variable_array_index++] = static_cast<uint8_t>(val);
             } else {
-                THROW exception::JSONError("Model contains macro environment property '%s' of unsupported type '%s', "
+                THROW exception::RapidJSONError("Model contains macro environment property '%s' of unsupported type '%s', "
                     "in JSONStateReader::parse()\n", lastKey.c_str(), val_type.name());
             }
         } else if (mode.top() == AgentInstance) {
@@ -197,14 +198,14 @@ class JSONStateReader_impl : public nlohmann::json_sax<nlohmann::json> {
                 const uint8_t t = static_cast<uint8_t>(val);
                 memcpy(data + ((pop->size() - 1) * v_size) + (var_data.type_size * current_variable_array_index++), &t, var_data.type_size);
             } else {
-                THROW exception::JSONError("Model contains agent variable '%s:%s' of unsupported type '%s', "
+                THROW exception::RapidJSONError("Model contains agent variable '%s:%s' of unsupported type '%s', "
                     "in JSONStateReader::parse()\n", current_agent.c_str(), lastKey.c_str(), val_type.name());
             }
         }  else if (mode.top() == CUDACfg || mode.top() == SimCfg || mode.top() == Stats) {
             // Not useful
             // Cfg are loaded by counter
         } else {
-            THROW exception::JSONError("Unexpected value whilst parsing input file '%s'.\n", filename.c_str());
+            THROW exception::RapidJSONError("Unexpected value whilst parsing input file '%s'.\n", filename.c_str());
         }
         if (isArray == VariableArray) {
             mode.push(isArray);
@@ -213,45 +214,21 @@ class JSONStateReader_impl : public nlohmann::json_sax<nlohmann::json> {
         }
         return true;
     }
-    bool null() {
-        bool is_array = false;
-        if (mode.top() == VariableArray) {
-            mode.pop();
-            is_array = true;
-        }
-        // Emit a warning if the verbosity level is high enough
-        if (verbosity > Verbosity::Quiet) {
-            if (mode.top() == Environment) {
-                fprintf(stderr, "Warning: JSON Environment property '%s' contains NULL, this has been interpreted as NaN (but may represent Inf).\n", lastKey.c_str());
-            } else if (mode.top() == MacroEnvironment) {
-                fprintf(stderr, "Warning: JSON MacroEnvironment property '%s' contains NULL, this has been interpreted as NaN (but may represent Inf).\n", lastKey.c_str());
-            } else if (mode.top() == AgentInstance) {
-                fprintf(stderr, "Warning: JSON Agent '%s' variable '%s' contains NULL, this has been interpreted as NaN (but may represent Inf).\n", current_agent.c_str(), lastKey.c_str());
-            } else {
-                fprintf(stderr, "Warning: JSON state item '%s' contains NULL, this has been interpreted as NaN (but may represent Inf).\n", lastKey.c_str());
-            }
-        }
-        if (is_array) {
-            mode.push(VariableArray);
-        }
-        return processValue<number_float_t>(std::numeric_limits<number_float_t>::quiet_NaN());
-    }
-    bool boolean(bool b) { return processValue<bool>(b); }
-    bool number_integer(number_integer_t i) { return processValue<number_integer_t>(i); }
-    bool number_unsigned(number_unsigned_t u) { return processValue<number_unsigned_t>(u); }
-    bool number_float(number_float_t d, const string_t&) { return processValue<number_float_t>(d); }
-
-    bool string(string_t &) {
+    bool Null() { return true; }
+    bool Bool(bool b) { return processValue<bool>(b); }
+    bool Int(int i) { return processValue<int32_t>(i); }
+    bool Uint(unsigned u) { return processValue<uint32_t>(u); }
+    bool Int64(int64_t i) { return processValue<int64_t>(i); }
+    bool Uint64(uint64_t u) { return processValue<uint64_t>(u); }
+    bool Double(double d) { return processValue<double>(d); }
+    bool String(const char*, rapidjson::SizeType, bool) {
         // String is only possible in config, and config is not processed by this handler
         if (mode.top() == SimCfg || mode.top() == CUDACfg) {
             return true;
         }
-        THROW exception::JSONError("Unexpected string whilst parsing input file '%s'.\n", filename.c_str());
+        THROW exception::RapidJSONError("Unexpected string whilst parsing input file '%s'.\n", filename.c_str());
     }
-    bool binary(binary_t&) {
-        THROW exception::JSONError("Unexpected binary value whilst parsing input file '%s'.\n", filename.c_str());
-    }
-    bool start_object(size_t) {
+    bool StartObject() {
         if (mode.empty()) {
             mode.push(Root);
         } else if (mode.top() == Root) {
@@ -266,7 +243,7 @@ class JSONStateReader_impl : public nlohmann::json_sax<nlohmann::json> {
             } else if (lastKey == "agents") {
                 mode.push(Agents);
             } else {
-                THROW exception::JSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
+                THROW exception::RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
             }
         } else if (mode.top() == Config) {
             if (lastKey == "simulation") {
@@ -274,7 +251,7 @@ class JSONStateReader_impl : public nlohmann::json_sax<nlohmann::json> {
             } else if (lastKey == "cuda") {
                 mode.push(CUDACfg);
             } else {
-                THROW exception::JSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
+                THROW exception::RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
             }
         } else if (mode.top() == Agents) {
             current_agent = lastKey;
@@ -283,25 +260,25 @@ class JSONStateReader_impl : public nlohmann::json_sax<nlohmann::json> {
             mode.push(AgentInstance);
             auto f = agents_map.find({ current_agent, current_state });
             if (f == agents_map.end()) {
-                THROW exception::JSONError("Input file '%s' contains data for agent:state combination '%s:%s' not found in model description hierarchy.\n", filename.c_str(), current_agent.c_str(), current_state.c_str());
+                THROW exception::RapidJSONError("Input file '%s' contains data for agent:state combination '%s:%s' not found in model description hierarchy.\n", filename.c_str(), current_agent.c_str(), current_state.c_str());
             }
             f->second->push_back();
         } else {
-            THROW exception::JSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
+            THROW exception::RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
         }
         return true;
     }
-    bool key(string_t &str) {
+    bool Key(const char* str, rapidjson::SizeType, bool) {
         lastKey = str;
         return true;
     }
-    bool end_object() {
+    bool EndObject(rapidjson::SizeType) {
         mode.pop();
         return true;
     }
-    bool start_array(size_t) {
+    bool StartArray() {
         if (current_variable_array_index != 0) {
-            THROW exception::JSONError("Array start when current_variable_array_index !=0, in file '%s'. This should never happen.\n", filename.c_str());
+            THROW exception::RapidJSONError("Array start when current_variable_array_index !=0, in file '%s'. This should never happen.\n", filename.c_str());
         }
         if (mode.top() == AgentInstance) {
             mode.push(VariableArray);
@@ -313,18 +290,18 @@ class JSONStateReader_impl : public nlohmann::json_sax<nlohmann::json> {
             current_state = lastKey;
             mode.push(State);
         } else {
-            THROW exception::JSONError("Unexpected array start whilst parsing input file '%s'.\n", filename.c_str());
+            THROW exception::RapidJSONError("Unexpected array start whilst parsing input file '%s'.\n", filename.c_str());
         }
         return true;
     }
-    bool end_array() {
+    bool EndArray(rapidjson::SizeType) {
         if (mode.top() == VariableArray) {
             mode.pop();
             if (mode.top() == Environment) {
                 // Confirm env array had correct number of elements
                 const auto prop = model->environment->properties.at(lastKey);
                 if (current_variable_array_index != prop.data.elements) {
-                    THROW exception::JSONError("Input file contains environment property '%s' with %u elements expected %u,"
+                    THROW exception::RapidJSONError("Input file contains environment property '%s' with %u elements expected %u,"
                         "in JSONStateReader::parse()\n", lastKey.c_str(), current_variable_array_index, prop.data.elements);
                 }
             } else if (mode.top() == MacroEnvironment) {
@@ -332,7 +309,7 @@ class JSONStateReader_impl : public nlohmann::json_sax<nlohmann::json> {
                 const auto macro_prop = model->environment->macro_properties.at(lastKey);
                 const unsigned int macro_prop_elements = std::accumulate(macro_prop.elements.begin(), macro_prop.elements.end(), 1, std::multiplies<unsigned int>());
                 if (current_variable_array_index != macro_prop_elements) {
-                    THROW exception::JSONError("Input file contains environment macro property '%s' with %u elements expected %u,"
+                    THROW exception::RapidJSONError("Input file contains environment macro property '%s' with %u elements expected %u,"
                         "in JSONStateReader::parse()\n", lastKey.c_str(), current_variable_array_index, macro_prop_elements);
                 }
             }
@@ -342,17 +319,13 @@ class JSONStateReader_impl : public nlohmann::json_sax<nlohmann::json> {
         }
         return true;
     }
-    // called when a parse error occurs; byte position, the last token, and an exception is passed
-    bool parse_error(std::size_t /*position*/, const std::string& /*last_token*/, const nlohmann::json::exception& ex) {
-        THROW exception::JSONError(ex.what());
-    }
 };
 /**
  * This is a trivial parser, it builds a map of the number of agents in each state
  * This allows the agent statelists to be preallocated
  * It also reads the config blocks, so that device can be init before we do environment
  */
-class JSONStateReader_agentsize_counter : public nlohmann::json_sax<nlohmann::json> {
+class JSONStateReader_agentsize_counter : public rapidjson::BaseReaderHandler<rapidjson::UTF8<>, JSONStateReader_agentsize_counter>  {
     enum Mode{ Nop, Root, Config, Stats, SimCfg, CUDACfg, Environment, MacroEnvironment, Agents, Agent, State, AgentInstance, VariableArray };
     std::stack<Mode> mode;
     std::string lastKey;
@@ -403,7 +376,7 @@ class JSONStateReader_agentsize_counter : public nlohmann::json_sax<nlohmann::js
                 fprintf(stderr, "Warning: Cannot configure 'console_mode' with input file '%s', FLAMEGPU2 library has not been built with visualisation support enabled.\n", filename.c_str());
 #endif
             } else {
-                THROW exception::JSONError("Unexpected simulation config item '%s' in input file '%s'.\n", lastKey.c_str(), filename.c_str());
+                THROW exception::RapidJSONError("Unexpected simulation config item '%s' in input file '%s'.\n", lastKey.c_str(), filename.c_str());
             }
         } else if (mode.top() == CUDACfg) {
             if (lastKey == "device_id") {
@@ -411,7 +384,7 @@ class JSONStateReader_agentsize_counter : public nlohmann::json_sax<nlohmann::js
             } else if (lastKey == "inLayerConcurrency") {
                 cuda_config.emplace(lastKey, static_cast<bool>(val));
             } else {
-                THROW exception::JSONError("Unexpected CUDA config item '%s' in input file '%s'.\n", lastKey.c_str(), filename.c_str());
+                THROW exception::RapidJSONError("Unexpected CUDA config item '%s' in input file '%s'.\n", lastKey.c_str(), filename.c_str());
             }
         }  else {
             // Not useful
@@ -422,31 +395,29 @@ class JSONStateReader_agentsize_counter : public nlohmann::json_sax<nlohmann::js
         }
         return true;
     }
-    bool null() { return processValue<number_float_t>(std::numeric_limits<number_float_t>::quiet_NaN()); }
-    bool boolean(bool b) { return processValue<bool>(b); }
-    bool number_integer(number_integer_t i) { return processValue<number_integer_t>(i); }
-    bool number_unsigned(number_unsigned_t u) { return processValue<number_unsigned_t>(u); }
-    bool number_float(number_float_t d, const string_t&) { return processValue<number_float_t>(d); }
-
-    bool string(string_t& str) {
+    bool Null() { return true; }
+    bool Bool(bool b) { return processValue<bool>(b); }
+    bool Int(int i) { return processValue<int32_t>(i); }
+    bool Uint(unsigned u) { return processValue<uint32_t>(u); }
+    bool Int64(int64_t i) { return processValue<int64_t>(i); }
+    bool Uint64(uint64_t u) { return processValue<uint64_t>(u); }
+    bool Double(double d) { return processValue<double>(d); }
+    bool String(const char*str, rapidjson::SizeType, bool) {
         if (mode.top() == SimCfg) {
             if (lastKey == "input_file") {
                 if (filename != str && str[0] != '\0')
                     if (verbosity > Verbosity::Quiet)
-                        fprintf(stderr, "Warning: Input file '%s' refers to second input file '%s', this will not be loaded.\n", filename.c_str(), str.c_str());
+                        fprintf(stderr, "Warning: Input file '%s' refers to second input file '%s', this will not be loaded.\n", filename.c_str(), str);
                 // sim_instance->SimulationConfig().input_file = str;
             } else if (lastKey == "step_log_file" ||
                        lastKey == "exit_log_file" ||
                        lastKey == "common_log_file") {
-                simulation_config.emplace(lastKey, str);
+                simulation_config.emplace(lastKey, std::string(str));
             }
         }
         return true;
     }
-    bool binary(binary_t&) {
-        THROW exception::JSONError("Unexpected binary value whilst parsing input file '%s'.\n", filename.c_str());
-    }
-    bool start_object(size_t) {
+    bool StartObject() {
         if (mode.empty()) {
             mode.push(Root);
         } else if (mode.top() == Root) {
@@ -461,7 +432,7 @@ class JSONStateReader_agentsize_counter : public nlohmann::json_sax<nlohmann::js
             } else if (lastKey == "agents") {
                 mode.push(Agents);
             } else {
-                THROW exception::JSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
+                THROW exception::RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
             }
         } else if (mode.top() == Config) {
             if (lastKey == "simulation") {
@@ -469,7 +440,7 @@ class JSONStateReader_agentsize_counter : public nlohmann::json_sax<nlohmann::js
             } else if (lastKey == "cuda") {
                 mode.push(CUDACfg);
             } else {
-                THROW exception::JSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
+                THROW exception::RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
             }
         }  else if (mode.top() == Agents) {
             current_agent = lastKey;
@@ -478,21 +449,21 @@ class JSONStateReader_agentsize_counter : public nlohmann::json_sax<nlohmann::js
             agentstate_counts[{current_agent, current_state}]++;
             mode.push(AgentInstance);
         } else {
-            THROW exception::JSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
+            THROW exception::RapidJSONError("Unexpected object start whilst parsing input file '%s'.\n", filename.c_str());
         }
         return true;
     }
-    bool key(string_t &str) {
+    bool Key(const char* str, rapidjson::SizeType, bool) {
         lastKey = str;
         return true;
     }
-    bool end_object() {
+    bool EndObject(rapidjson::SizeType) {
         mode.pop();
         return true;
     }
-    bool start_array(size_t) {
+    bool StartArray() {
         if (currentIndex != 0) {
-            THROW exception::JSONError("Array start when current_variable_array_index !=0, in file '%s'. This should never happen.\n", filename.c_str());
+            THROW exception::RapidJSONError("Array start when current_variable_array_index !=0, in file '%s'. This should never happen.\n", filename.c_str());
         }
         if (mode.top() == AgentInstance) {
             mode.push(VariableArray);
@@ -504,20 +475,16 @@ class JSONStateReader_agentsize_counter : public nlohmann::json_sax<nlohmann::js
             current_state = lastKey;
             mode.push(State);
         } else {
-            THROW exception::JSONError("Unexpected array start whilst parsing input file '%s'.\n", filename.c_str());
+            THROW exception::RapidJSONError("Unexpected array start whilst parsing input file '%s'.\n", filename.c_str());
         }
         return true;
     }
-    bool end_array() {
+    bool EndArray(rapidjson::SizeType) {
         if (mode.top() == VariableArray) {
             currentIndex = 0;
         }
         mode.pop();
         return true;
-    }
-    // called when a parse error occurs; byte position, the last token, and an exception is passed
-    bool parse_error(std::size_t /*position*/, const std::string& /*last_token*/, const nlohmann::json::exception& ex) {
-        THROW exception::JSONError(ex.what());
     }
 };
 
@@ -526,11 +493,17 @@ void JSONStateReader::parse(const std::string &input_file, const std::shared_ptr
 
     std::ifstream in(input_file, std::ios::in | std::ios::binary);
     if (!in) {
-        THROW exception::JSONError("Unable to open file '%s' for reading, in JSONStateReader::parse().", input_file.c_str());
+        THROW exception::RapidJSONError("Unable to open file '%s' for reading, in JSONStateReader::parse().", input_file.c_str());
     }
     JSONStateReader_agentsize_counter agentcounter(input_file, simulation_config, cuda_config, verbosity);
-    if (!nlohmann::json::sax_parse(in, &agentcounter)) {
-        THROW exception::JSONError("Parsing input file '%s' failed, in JSONStateReader::parse()\n", input_file.c_str());
+    JSONStateReader_impl handler(input_file, model, env_init, macro_env_init, agents_map, verbosity);
+    std::string filestring = std::string((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    rapidjson::StringStream filess(filestring.c_str());
+    rapidjson::Reader reader;
+    // First parse the file and simply count the size of agent list
+    rapidjson::ParseResult pr1 = reader.Parse<rapidjson::kParseNanAndInfFlag, rapidjson::StringStream, flamegpu::io::JSONStateReader_agentsize_counter>(filess, agentcounter);
+    if (pr1.Code() != rapidjson::ParseErrorCode::kParseErrorNone) {
+        THROW exception::RapidJSONError("Whilst parsing input file '%s', RapidJSON returned error: %s\n", input_file.c_str(), rapidjson::GetParseError_En(pr1.Code()));
     }
     const util::StringPairUnorderedMap<unsigned int> agentCounts = agentcounter.getAgentCounts();
     // Use this to preallocate the agent statelists
@@ -543,13 +516,12 @@ void JSONStateReader::parse(const std::string &input_file, const std::shared_ptr
         auto [_it, _] = agents_map.emplace(it.first, std::make_shared<AgentVector>(*agent->second));
         _it->second->reserve(it.second);
     }
-    // Reset the stream
-    in.clear();
-    in.seekg(0);
+    // Reset the string stream
+    filess = rapidjson::StringStream(filestring.c_str());
     // Read in the file data
-    JSONStateReader_impl handler(input_file, model, env_init, macro_env_init, agents_map, verbosity);
-    if (!nlohmann::json::sax_parse(in, &handler)) {
-        THROW exception::JSONError("Parsing input file '%s' failed, in JSONStateReader::parse()\n", input_file.c_str());
+    rapidjson::ParseResult pr2 = reader.Parse<rapidjson::kParseNanAndInfFlag, rapidjson::StringStream, flamegpu::io::JSONStateReader_impl>(filess, handler);
+    if (pr2.Code() != rapidjson::ParseErrorCode::kParseErrorNone) {
+        THROW exception::RapidJSONError("Whilst parsing input file '%s', RapidJSON returned error: %s\n", input_file.c_str(), rapidjson::GetParseError_En(pr1.Code()));
     }
     // Mark input as loaded
     this->input_filepath = input_file;

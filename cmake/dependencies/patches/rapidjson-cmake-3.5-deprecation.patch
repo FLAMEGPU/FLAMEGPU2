@@ -1,0 +1,12 @@
+diff --git a/RapidJSONConfig.cmake.in b/RapidJSONConfig.cmake.in
+index c25d3125..2e49514b 100644
+--- a/RapidJSONConfig.cmake.in
++++ b/RapidJSONConfig.cmake.in
+@@ -1,6 +1,6 @@
+ ################################################################################
+ # CMake minimum version required
+-cmake_minimum_required(VERSION 3.0)
++cmake_minimum_required(VERSION 3.5)
+ 
+ ################################################################################
+ # RapidJSON source dir

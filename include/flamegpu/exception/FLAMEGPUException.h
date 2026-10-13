@@ -361,9 +361,9 @@ DERIVED_FLAMEGPUException(OutOfBoundsException, "Index exceeds bounds of array!"
  */
 DERIVED_FLAMEGPUException(TinyXMLError, "TinyXML returned an error code!");
 /**
- * Defines an exception for errors reported whilst processing JSON
+ * Defines an exception for errors reported by RapidJSON
  */
-DERIVED_FLAMEGPUException(JSONError, "JSON error occured!");
+DERIVED_FLAMEGPUException(RapidJSONError, "RapidJSON returned an error code!");
 
 /**
  * Defines an exception for errors when model components are mixed up
