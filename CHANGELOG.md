@@ -21,6 +21,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 -->
 
+## [2.0.0-rc.5] - 2026-10-14
+
+### Added
+
+- Add `DeviceMacroProperty` `addAtomic` and `subAtomic` correctly exposing atomicAdd/Sub operations for device macro properties ([#1356](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1356))
+  - DeviceMacroProperty did not previously expose atomicAdd/Sub, with `operator+=`/`operator-=` returning *this, not the old value.
+- Added Visual Studio 2026 support for CUDA >= 13.2 ([#1375](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1375))
+
+### Changed
+
+- Better Python errors using source python line numbers and filenames - ([#1352](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1352))
+- Refactor constructGraph() parameter to const shared ptr ([#1363](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1363))
+- Docstring improvements for `DependencyNode.h` by [@MukundaKatta](https://github.com/MukundaKatta) ([#1381](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1381))
+- 2.0.0-rc.5 changelog, metadata and visualisation hash ([#1418](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1418))
+
+### Fixed
+
+- Resolve race condition during graph visualisation init ([#1350](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1350))
+- Visualisation memory leak fixes by updating the flamegpu-visualiser dependency ([#1358](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1358) * [FLAMEGPU2-visualiser#149](https://github.com/FLAMEGPU/FLAMEGPU2-visualiser/pull/149) )
+- Fix/Remove broken CI badges in readme ([#1359](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1359))
+- Fix graph loader would error if graph contained unknown array ([#1361](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1361))
+- CI fixes & improvements ([#1373](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1373), [#1374](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1374), [#1395](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1395))
+- Mapped submodel env properties were not being init from file ([#1401](https://github.com/FLAMEGPU/FLAMEGPU2/pull/1401))
 
 ## [2.0.0-rc.4] - 2025-11-18
 
@@ -418,7 +441,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initial alpha release of FLAME GPU 2.0.0, a CUDA C++ / python3 library for agent based simulations
 
-[Unreleased]: https://github.com/FLAMEGPU/FLAMEGPU2/compare/v2.0.0-rc.4...HEAD
+[Unreleased]: https://github.com/FLAMEGPU/FLAMEGPU2/compare/v2.0.0-rc.5...HEAD
+[2.0.0-rc.5]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc.5
 [2.0.0-rc.4]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc.4
 [2.0.0-rc.3]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc.3
 [2.0.0-rc.2]: https://github.com/FLAMEGPU/FLAMEGPU2/releases/tag/v2.0.0-rc.2
