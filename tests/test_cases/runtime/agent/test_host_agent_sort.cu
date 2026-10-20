@@ -450,5 +450,70 @@ TEST(HostAgentSort, 2x_DescAsc_int) {
         prev = f1 + (999-f2);
     }
 }
+
+FLAMEGPU_STEP_FUNCTION(sort_exceptions_empty) {
+    EXPECT_THROW(FLAMEGPU->agent("agent").sort<float>("invalid_var", HostAgentAPI::Asc), exception::InvalidAgentVar);
+    EXPECT_THROW(FLAMEGPU->agent("agent").sort<int>("float", HostAgentAPI::Asc), exception::InvalidVarType);
+    EXPECT_THROW(FLAMEGPU->agent("agent").sort<float, float>("float1", HostAgentAPI::Asc, "invalid_var", HostAgentAPI::Asc), exception::InvalidAgentVar);
+    EXPECT_THROW(FLAMEGPU->agent("agent").sort<float, int>("float1", HostAgentAPI::Asc, "float2", HostAgentAPI::Asc), exception::InvalidVarType);
+    EXPECT_THROW(FLAMEGPU->agent("agent").sort<int>("array_var", HostAgentAPI::Asc), exception::UnsupportedVarType);
+}
+
+TEST(HostAgentSort, EmptyPopulation_1D) {
+    ModelDescription model("model");
+    AgentDescription agent = model.newAgent("agent");
+    agent.newVariable<float>("float");
+    agent.newVariable<int>("int");
+    agent.newVariable<int>("spare");
+    model.newLayer().addHostFunction(sort_ascending_float);
+    model.newLayer().addHostFunction(sort_descending_float);
+    model.newLayer().addHostFunction(sort_ascending_int);
+    model.newLayer().addHostFunction(sort_descending_int);
+
+    AgentVector pop(agent, 0);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(pop);
+    EXPECT_NO_THROW(cudaSimulation.step());
+    cudaSimulation.getPopulationData(pop);
+    EXPECT_EQ(0u, pop.size());
+}
+
+TEST(HostAgentSort, EmptyPopulation_2D) {
+    ModelDescription model("model");
+    AgentDescription agent = model.newAgent("agent");
+    agent.newVariable<float>("float1");
+    agent.newVariable<float>("float2");
+    agent.newVariable<int>("int1");
+    agent.newVariable<int>("int2");
+    agent.newVariable<int>("spare");
+    model.newLayer().addHostFunction(sort2x_ascending_float);
+    model.newLayer().addHostFunction(sort2x_descending_float);
+    model.newLayer().addHostFunction(sort2x_ascending_int);
+    model.newLayer().addHostFunction(sort2x_descending_int);
+    model.newLayer().addHostFunction(sort2x_ascdesc_int);
+    model.newLayer().addHostFunction(sort2x_descasc_int);
+
+    AgentVector pop(agent, 0);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(pop);
+    EXPECT_NO_THROW(cudaSimulation.step());
+    cudaSimulation.getPopulationData(pop);
+    EXPECT_EQ(0u, pop.size());
+}
+
+TEST(HostAgentSort, EmptyPopulation_Exceptions) {
+    ModelDescription model("model");
+    AgentDescription agent = model.newAgent("agent");
+    agent.newVariable<float>("float");
+    agent.newVariable<float>("float1");
+    agent.newVariable<float>("float2");
+    agent.newVariable<int, 4>("array_var");
+    model.newLayer().addHostFunction(sort_exceptions_empty);
+
+    AgentVector pop(agent, 0);
+    CUDASimulation cudaSimulation(model);
+    cudaSimulation.setPopulationData(pop);
+    EXPECT_NO_THROW(cudaSimulation.step());
+}
 }  // namespace test_host_agent_sort
 }  // namespace flamegpu

@@ -587,6 +587,7 @@ void HostAgentAPI::meanStandardDeviation_async(const std::string& variable, std:
     const auto agentCount = agent.getStateSize(stateName);
     if (agentCount == 0) {
         result = std::make_pair(0.0, 0.0);
+        return;
     }
     // Calculate mean (We could make this more efficient by leaving sum in device mem?)
     typename sum_input_t<InT>::result_t sum_result;
@@ -879,6 +880,9 @@ void HostAgentAPI::sort_async(const std::string & variable, Order order, int beg
     }
     // We will use scan_flag agent_death/message_output here so resize
     const unsigned int agentCount = agent.getStateSize(stateName);
+    if (agentCount == 0) {
+        return;
+    }
     void *var_ptr = agent.getStateVariablePtr(stateName, variable);
     const size_t total_variable_buffer_size = sizeof(VarT) * agentCount;
     const unsigned int fake_num_agent = static_cast<unsigned int>(total_variable_buffer_size/sizeof(unsigned int)) +1;
@@ -958,6 +962,9 @@ void HostAgentAPI::sort_async(const std::string & variable1, Order order1, const
         }
     }
     const unsigned int agentCount = agent.getStateSize(stateName);
+    if (agentCount == 0) {
+        return;
+    }
     // Fill array with var1 keys
     {
         // Resize

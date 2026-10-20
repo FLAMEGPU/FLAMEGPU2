@@ -51,6 +51,13 @@ TEST_F(HostReductionTest, MeanStandardDeviation_uint32_t) {
     EXPECT_DOUBLE_EQ(sum / 101.0, mean_sd_out.first);
     EXPECT_FLOAT_EQ(29.15476f, static_cast<float>(mean_sd_out.second));  // Test value calculated with excel
 }
+TEST_F(HostReductionTest, MeanStandardDeviation_empty) {
+    ms->model.addStepFunction(step_sum_float);
+    ms->population->resize(0);
+    ms->run();
+    EXPECT_DOUBLE_EQ(0.0, mean_sd_out.first);
+    EXPECT_DOUBLE_EQ(0.0, mean_sd_out.second);
+}
 
 }  // namespace test_host_reductions
 }  // namespace flamegpu

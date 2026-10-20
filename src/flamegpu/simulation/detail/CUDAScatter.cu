@@ -144,6 +144,9 @@ unsigned int CUDAScatter::scatter(
     const unsigned int out_index_offset,
     const bool invert_scan_flag,
     const unsigned int scatter_all_count) {
+    if (itemCount == 0) {
+        return scatter_all_count;
+    }
     int blockSize = 0;  // The launch configurator returned block size
     int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
     int gridSize = 0;  // The actual grid size needed, based on input size
@@ -200,6 +203,9 @@ void CUDAScatter::scatterPosition_async(
     unsigned int *position,
     const std::vector<ScatterData> &sd,
     unsigned int itemCount) {
+    if (itemCount == 0) {
+        return;
+    }
     int blockSize = 0;  // The launch configurator returned block size
     int minGridSize = 0;  // The minimum grid size needed to achieve the // maximum occupancy for a full device // launch
     int gridSize = 0;  // The actual grid size needed, based on input size
@@ -372,6 +378,9 @@ void CUDAScatter::scatterNewAgents(
     const size_t totalAgentSize,
     const unsigned int inCount,
     const unsigned int outIndexOffset) {
+    if (inCount == 0 || sd.empty()) {
+        return;
+    }
     // 1 thread per agent variable
     const unsigned int threadCount = static_cast<unsigned int>(sd.size()) * inCount;
     int blockSize = 0;  // The launch configurator returned block size
@@ -436,7 +445,7 @@ void CUDAScatter::broadcastInit_async(
     unsigned int inCount,
     unsigned int outIndexOffset) {
     // No variables means no work to do
-    if (vars.size() == 0) return;
+    if (vars.empty() || inCount == 0) return;
     // 1 thread per agent variable
     const unsigned int threadCount = static_cast<unsigned int>(vars.size()) * inCount;
     int blockSize = 0;  // The launch configurator returned block size
@@ -494,6 +503,7 @@ void CUDAScatter::broadcastInit_async(
     void * const d_newBuff,
     unsigned int inCount,
     unsigned int outIndexOffset) {
+    if (vars.empty() || inCount == 0) return;
     // 1 thread per agent variable
     const unsigned int threadCount = static_cast<unsigned int>(vars.size()) * inCount;
     int blockSize = 0;  // The launch configurator returned block size
