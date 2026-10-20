@@ -95,7 +95,7 @@ Our CLA assistant should check and prompt you to sign the CLA when you create yo
 The process for creating a new Release of FLAME GPU is as follows:
 
 1. Ensure that the `HEAD` of the `master` branch is in a good working state, which is intended to be released. Including:
-    * The version information in `cmake/version.cmake` must be correct
+    * The version information in `include/flamegpu/version.h` must be correct
     * Ensure `CHANGELOG.md` is up to date
     * Update `CITATION.cff` if required
     * All CI jobs should have passed for the commit
