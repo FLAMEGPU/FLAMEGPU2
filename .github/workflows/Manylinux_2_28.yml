@@ -113,7 +113,7 @@ jobs:
         yum install -y glew-devel fontconfig-devel SDL2-devel freetype-devel
         # Build/Install DevIL from source.
         yum install -y freeglut-devel
-        git clone --depth 1 https://github.com/DentonW/DevIL.git
+        for i in {1..5}; do git clone --depth 1 https://github.com/DentonW/DevIL.git && break || sleep 15; done
         cd DevIL/DevIL
         mkdir -p build
         cd build

@@ -1,0 +1,68 @@
+#ifndef INCLUDE_FLAMEGPU_STOCK_SUBMODELS_SINGLEAGENTDISCRETEMOVEMENT_H_
+#define INCLUDE_FLAMEGPU_STOCK_SUBMODELS_SINGLEAGENTDISCRETEMOVEMENT_H_
+
+#include <map>
+#include <string>
+#include <memory>
+#include <optional>
+
+#include "AbstractSubmodels.h"
+
+
+namespace flamegpu {
+namespace stock {
+namespace submodels {
+
+/**
+ * Submodel for handling agent movement logic on a discrete 2D grid.
+ * This submodel now supports two distinct agent types:
+ * 1. A moving agent (e.g., Bee, Person)
+ * 2. An environment agent (e.g., Flower, Grid Cell)
+ */
+class SingleAgentDiscreteMovement : public AbstractSubmodel {
+ public:
+    /**
+     * Constructor. Defines the movement submodel and adds it to the provided parent model.
+     * @param model The parent ModelDescription
+     * @param ENV_SIZE_X Width of the environment
+     * @param ENV_SIZE_Y Height of the environment
+     */
+    SingleAgentDiscreteMovement(flamegpu::ModelDescription &model, int ENV_SIZE_X, int ENV_SIZE_Y);
+
+    /**
+     * Binds a parent agent to the submodel's internal moving agent.
+     */
+    void setMovingAgent(const std::string& parent_name,
+                  const std::map<std::string, std::string>& var_map = {},
+                  const std::map<std::string, std::string>& state_map = {},
+                  bool auto_map = false);
+
+    /**
+     * Binds a parent agent to the submodel's internal environment agent (grid cell).
+     */
+    void setEnvironmentAgent(const std::string& parent_name,
+                  const std::map<std::string, std::string>& var_map = {},
+                  const std::map<std::string, std::string>& state_map = {},
+                  bool auto_map = false);
+
+    flamegpu::SubModelDescription getSubModelDescription() const override;
+
+    void validate() override;
+
+    std::string getName() const override;
+
+ private:
+    // SubModelDescription is a proxy. We use optional to allow late initialization without unique_ptr.
+    std::optional<flamegpu::SubModelDescription> smm;
+
+    // Internal setup methods
+    void setMessages(flamegpu::AgentDescription &movingAgent, flamegpu::AgentDescription &envAgent, int ENV_SIZE_X, int ENV_SIZE_Y);
+    void defineMessageSubmodule(flamegpu::ModelDescription &smm, int ENV_SIZE_X, int ENV_SIZE_Y);
+    void defineLayer(flamegpu::ModelDescription &smm);
+};
+
+}  // namespace submodels
+}  // namespace stock
+}  // namespace flamegpu
+
+#endif  // INCLUDE_FLAMEGPU_STOCK_SUBMODELS_SINGLEAGENTDISCRETEMOVEMENT_H_
