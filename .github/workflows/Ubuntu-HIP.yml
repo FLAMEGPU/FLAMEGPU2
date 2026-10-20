@@ -32,8 +32,18 @@ jobs:
       matrix:
         compilers:
           # see https://llvm.org/docs/AMDGPUUsage.html#amdgpu-generic-processor-table for arch flags
-          # HIP 7.2 with any RDNA3 GPU (recent consumer, that we can actually test)
-          - hip: "7.2"
+           # HIP 10.1 with any RDNA3 GPU
+          - hip: "10.1"
+            hip_arch: "gfx11-generic"
+            hostcxx: hipcc
+            os: ubuntu-26.04
+          # HIP 10.0 with any RDNA3 GPU
+          - hip: "10.0"
+            hip_arch: "gfx11-generic"
+            hostcxx: hipcc
+            os: ubuntu-26.04
+          # HIP 7.14 with any RDNA3 GPU (recent consumer, that we can actually test)
+          - hip: "7.14"
             hip_arch: "gfx11-generic"
             hostcxx: hipcc
             os: ubuntu-24.04
@@ -49,6 +59,26 @@ jobs:
           - name: "Beltsoff"
             config: "Release"
             SEATBELTS: "OFF"
+        VISUALISATION:
+          - "OFF"
+        exclude:
+          # Exclude beltsoff builds for all but one build (using 7.0 so its faster). 
+          - compilers:
+              hip: "10.1"
+            config:
+              name: "Beltsoff"
+          - compilers:
+              hip: "10.0"
+            config:
+              name: "Beltsoff"
+          - compilers:
+              hip: "7.14"
+            config:
+              name: "Beltsoff"
+          # Exclude beltsoff vis builds to keep the matrix lighter.
+          - config:
+              name: "Beltsoff"
+            VISUALISATION: "ON"
 
     # Name the job based on matrix/env options
     name: "build (${{ matrix.compilers.hip }}, ${{ matrix.config.name }}, ${{ matrix.compilers.os }})"
