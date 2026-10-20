@@ -97,9 +97,19 @@ void ModelVisData::rebuildEnvGraph(const std::string &graph_name) {
     graphs.at(graph_name)->constructGraph(model.directed_graph_map.at(graph_name));
 }
 
-ModelVis::ModelVis(std::shared_ptr<ModelVisData> _data, bool _isSWIG)
+ModelVis::ModelVis(const std::shared_ptr<ModelVisData> _data, const bool _isSWIG, const std::shared_ptr<VisInfo> visInfo)
     : isSWIG(_isSWIG)
-    , data(std::move(_data)) { }
+    , data(std::move(_data))
+    , visInfo(std::move(visInfo)) {
+    // Init VisInfo from model config
+    // Somewhat redundant as this class may be created late
+    if (visInfo) {
+        visInfo->isOrtho = data->modelCfg.isOrtho;
+        visInfo->orthoZoom = data->modelCfg.orthoZoom;
+        memcpy(visInfo->viewPos, data->modelCfg.cameraLocation, sizeof(float) * 3);
+        memcpy(visInfo->viewDir, data->modelCfg.cameraTarget, sizeof(float) * 3);
+    }
+}
 
 void ModelVis::setAutoPalette(const Palette& palette) {
     data->autoPalette = std::make_shared<AutoPalette>(palette);
@@ -199,6 +209,7 @@ void ModelVis::activate() {
         }
         data->env_registered = false;
         data->registerEnvProperties();
+        data->visualiser->registerVisInfo(visInfo);
         data->visualiser->start();
     }
 }

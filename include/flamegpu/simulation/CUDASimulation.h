@@ -36,7 +36,11 @@
 #endif
 
 namespace flamegpu {
-namespace detail {
+    namespace visualiser {
+        struct VisInfo;
+    }
+
+    namespace detail {
 class AbstractSimRunner;
 class CUDAAgent;
 class CUDAMessage;
@@ -59,6 +63,7 @@ class CUDASimulation : public Simulation {
      */
     friend class HostAgentAPI;
     friend class HostAPI;
+    friend class HostEnvironment;
     /**
      * Requires internal access to getCUDAAgent()
      */
@@ -432,7 +437,7 @@ class CUDASimulation : public Simulation {
      * Duration of the last call to exitFunctions() in seconds
      */
     double elapsedSecondsExitFunctions;
-   /**
+    /**
      * Duration of the last call to initialiseRTC() in seconds
      */
     double elapsedSecondsRTCInitialisation;
@@ -663,6 +668,10 @@ class CUDASimulation : public Simulation {
      * Empty if getVisualisation() hasn't been called
      */
     std::shared_ptr<visualiser::ModelVisData> visualisation;
+    /**
+     * Struct for data passed back from visualisation
+     */
+    std::shared_ptr<visualiser::VisInfo> visInfo;
 #endif
     /**
      * Returns false if any agent functions or agent function conditions are not RTC
