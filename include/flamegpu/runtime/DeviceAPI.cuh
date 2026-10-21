@@ -47,14 +47,14 @@ class ReadOnlyDeviceAPI {
         const detail::curve::CurveTable *,
 #endif
         const unsigned int,
-        detail::curandState *,
+        detail::gpu::gpurandState *,
         unsigned int *);
 
  public:
     /**
      * @param d_rng Pointer to the device random state buffer to be used
      */
-    __device__ ReadOnlyDeviceAPI(detail::curandState *&d_rng)
+    __device__ ReadOnlyDeviceAPI(detail::gpu::gpurandState *&d_rng)
         : random(AgentRandom(&d_rng[getIndex()]))
         , environment(DeviceEnvironment()) { }
     /**
@@ -175,7 +175,7 @@ class DeviceAPI {
         const unsigned int,
         const void *,
         const void *,
-        detail::curandState *,
+        detail::gpu::gpurandState *,
         unsigned int *,
         unsigned int *,
         unsigned int *);
@@ -259,7 +259,7 @@ class DeviceAPI {
      */
     __device__ DeviceAPI(
         id_t *&d_agent_output_nextID,
-        detail::curandState *&d_rng,
+        detail::gpu::gpurandState *&d_rng,
         unsigned int *&scanFlag_agentOutput,
         typename MessageIn::In &&message_in,
         typename MessageOut::Out &&message_out)
@@ -543,7 +543,7 @@ __device__ id_t DeviceAPI<MessageIn, MessageOut>::AgentOut::getID() const {
 #endif
     return ID_NOT_SET;
 }
-#ifdef __CUDACC__
+#if defined(__CUDACC__) || defined(__HIPCC__)
 template<typename MessageIn, typename MessageOut>
 __device__ void DeviceAPI<MessageIn, MessageOut>::AgentOut::genID() const {
     // Only called internally, so no need to check nextID != nullptr

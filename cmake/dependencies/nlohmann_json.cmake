@@ -12,6 +12,7 @@ FetchContent_Declare(
     nlohmann_json
     URL            "https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz"
     ${DEPENDENCY_ARGS}
+    SYSTEM
 )
 FetchContent_GetProperties(nlohmann_json)
 # Download and add_subdirectory

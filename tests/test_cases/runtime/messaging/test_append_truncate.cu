@@ -29,7 +29,7 @@ namespace test_message_AppendTruncate {
     }
     FLAMEGPU_AGENT_FUNCTION(In_AppendTruncate, MessageBruteForce, MessageNone) {
         int count = 0;
-        for (auto &message : FLAMEGPU->message_in) {
+        for ([[maybe_unused]] auto &message : FLAMEGPU->message_in) {
             count++;
         }
         FLAMEGPU->setVariable<unsigned int>("count", count);

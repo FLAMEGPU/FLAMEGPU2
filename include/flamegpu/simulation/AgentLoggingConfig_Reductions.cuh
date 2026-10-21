@@ -47,7 +47,7 @@ __device__ __forceinline__ OutT standard_deviation_add_impl::binary_function<Out
     return a + b;
 }
 template<typename InT, typename OutT>
-__device__ __forceinline__ OutT standard_deviation_subtract_mean_impl::unary_function<InT, OutT>::operator()(const InT &a) const {
+__host__ __device__ __forceinline__ OutT standard_deviation_subtract_mean_impl::unary_function<InT, OutT>::operator()(const InT &a) const {
     return pow(a - detail::STANDARD_DEVIATION_MEAN, 2.0);
 }
 

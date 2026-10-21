@@ -43,9 +43,9 @@ jobs:
             cuda_arch: "120"
             hostcxx: gcc-12
             os: ubuntu-24.04
-          - cuda: "12.0"
+          - cuda: "12.4"
             cuda_arch: "50"
-            hostcxx: gcc-10
+            hostcxx: gcc-11
             os: ubuntu-22.04
         python:
           - "3.14"
@@ -180,7 +180,7 @@ jobs:
         -DFLAMEGPU_BUILD_PYTHON="${{ env.FLAMEGPU_BUILD_PYTHON }}"
         -DPYTHON3_EXACT_VERSION="${{ env.PYTHON }}"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
-        -DFLAMEGPU_ENABLE_NVTX="ON"
+        -DFLAMEGPU_ENABLE_PROFILING="ON"
 
     # Check for bugs when cmake is reconfigured, i.e. fetch content patching
     - name: Re-configure cmake
@@ -217,7 +217,7 @@ jobs:
         -DFLAMEGPU_SEATBELTS="${{ env.FLAMEGPU_SEATBELTS }}"
         -DCMAKE_CUDA_ARCHITECTURES="${{ env.CUDA_ARCH }}"
         -DFLAMEGPU_VISUALISATION="${{ env.VISUALISATION }}"
-        -DFLAMEGPU_ENABLE_NVTX="ON"
+        -DFLAMEGPU_ENABLE_PROFILING="ON"
 
     - name: Build Individual example
       if: ${{ env.INDIVIDUAL_EXAMPLE != '' }}

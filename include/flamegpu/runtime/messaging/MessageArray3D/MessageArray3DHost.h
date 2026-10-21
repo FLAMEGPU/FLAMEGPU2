@@ -8,7 +8,7 @@
 #include "flamegpu/model/Variable.h"
 #include "flamegpu/runtime/messaging/MessageArray3D.h"
 #include "flamegpu/runtime/messaging/MessageBruteForce/MessageBruteForceHost.h"
-
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
 
@@ -36,7 +36,7 @@ class MessageArray3D::CUDAModelHandler : public MessageSpecialisationHandler {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream The CUDAStream to use for CUDA operations
      */
-    void init(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) override;
+    void init(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream) override;
     /**
      * Sort messages according to index
      * Detect and report any duplicate indicies/gaps
@@ -44,12 +44,12 @@ class MessageArray3D::CUDAModelHandler : public MessageSpecialisationHandler {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream The CUDAStream to use for CUDA operations
      */
-    void buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, cudaStream_t stream) override;
+    void buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream) override;
     /**
      * Allocates memory for the constructed index.
      * The memory allocation is checked by build index.
      */
-    void allocateMetaDataDevicePtr(cudaStream_t stream) override;
+    void allocateMetaDataDevicePtr(flamegpu::detail::gpu::Stream_t stream) override;
     /**
      * Releases memory for the constructed index.
      */

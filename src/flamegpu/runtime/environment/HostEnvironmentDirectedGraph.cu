@@ -8,9 +8,10 @@
 
 #include "flamegpu/io/JSONGraphReader.h"
 #include "flamegpu/io/JSONGraphWriter.h"
+#include "flamegpu/detail/gpu/types.hpp"
 
 namespace flamegpu {
-HostEnvironmentDirectedGraph::HostEnvironmentDirectedGraph(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>& _directed_graph, const cudaStream_t _stream,
+HostEnvironmentDirectedGraph::HostEnvironmentDirectedGraph(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers>& _directed_graph, const flamegpu::detail::gpu::Stream_t _stream,
     detail::CUDAScatter& _scatter, const unsigned int _streamID)
     : directed_graph(_directed_graph)
     , stream(_stream)
@@ -104,7 +105,7 @@ VertexMap HostEnvironmentDirectedGraph::vertices() {
     }
     THROW exception::ExpiredWeakPtr("Graph nolonger exists, weak pointer could not be locked, in HostEnvironmentDirectedGraph::vertices()\n");
 }
-VertexMap::VertexMap(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const cudaStream_t _stream)
+VertexMap::VertexMap(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const flamegpu::detail::gpu::Stream_t _stream)
     : directed_graph(std::move(_directed_graph))
     , stream(_stream) { }
 size_type VertexMap::size() const {
@@ -123,7 +124,7 @@ Vertex VertexMap::operator[](id_t vertex_id) {
     return Vertex{directed_graph, stream, vertex_id};
 }
 
-Vertex::Vertex(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const cudaStream_t _stream, id_t _vertex_id, bool is_index)
+Vertex::Vertex(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const flamegpu::detail::gpu::Stream_t _stream, id_t _vertex_id, bool is_index)
     : directed_graph(std::move(_directed_graph))
     , stream(_stream)
     , vertex_index(is_index ? _vertex_id : directed_graph->getVertexIndex(_vertex_id)) { }
@@ -144,7 +145,7 @@ EdgeMap HostEnvironmentDirectedGraph::edges() {
     }
     THROW exception::ExpiredWeakPtr("Graph nolonger exists, weak pointer could not be locked, in HostEnvironmentDirectedGraph::edges()\n");
 }
-EdgeMap::EdgeMap(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const cudaStream_t _stream)
+EdgeMap::EdgeMap(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const flamegpu::detail::gpu::Stream_t _stream)
     : directed_graph(std::move(_directed_graph))
     , stream(_stream) { }
 
@@ -164,12 +165,12 @@ Edge EdgeMap::operator[](SrcDestPair source_dest_vertex_ids) {
     return Edge{directed_graph, stream, source_dest_vertex_ids.first, source_dest_vertex_ids.second};
 }
 
-Edge::Edge(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const cudaStream_t _stream, id_t _source_vertex_id, id_t _dest_vertex_id)
+Edge::Edge(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const flamegpu::detail::gpu::Stream_t _stream, id_t _source_vertex_id, id_t _dest_vertex_id)
     : directed_graph(std::move(_directed_graph))
     , stream(_stream)
     , edge_index(directed_graph->getEdgeIndex(_source_vertex_id, _dest_vertex_id)) { }
 
-Edge::Edge(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const cudaStream_t _stream, unsigned int _edge_index)
+Edge::Edge(std::shared_ptr<detail::CUDAEnvironmentDirectedGraphBuffers> _directed_graph, const flamegpu::detail::gpu::Stream_t _stream, unsigned int _edge_index)
     : directed_graph(std::move(_directed_graph))
     , stream(_stream)
     , edge_index(_edge_index)
