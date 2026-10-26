@@ -14,6 +14,10 @@
 #include <vector>
 #include <string>
 
+#ifdef _MSC_VER
+#include <windows.h>
+#endif  // _MSC_VER
+
 #ifdef FLAMEGPU_ENABLE_MPI
 #include "flamegpu/simulation/detail/MPIEnsemble.h"
 #include "flamegpu/simulation/detail/MPISimRunner.h"
