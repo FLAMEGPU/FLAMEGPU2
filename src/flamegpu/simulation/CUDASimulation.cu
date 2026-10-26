@@ -29,7 +29,7 @@
 #include "flamegpu/detail/SignalHandlers.h"
 #include "flamegpu/detail/wddm.cuh"
 #include "flamegpu/detail/SteadyClockTimer.h"
-#include "flamegpu/detail/CUDAEventTimer.cuh"
+#include "flamegpu/detail/GPUEventTimer.cuh"
 #include "flamegpu/runtime/detail/curve/curve_rtc.cuh"
 #include "flamegpu/runtime/HostFunctionCallback.h"
 #include "flamegpu/runtime/messaging.h"
@@ -58,7 +58,7 @@ namespace {
     // Inlined method in the anonymous namespace to create a new timer, subject to the driver model.
     std::unique_ptr<detail::Timer> getDriverAppropriateTimer(bool is_ensemble) {
         if (!deviceUsingWDDM && !is_ensemble) {
-            return std::unique_ptr<detail::Timer>(new detail::CUDAEventTimer());
+            return std::unique_ptr<detail::Timer>(new detail::GPUEventTimer());
         } else {
             return std::unique_ptr<detail::Timer>(new detail::SteadyClockTimer());
         }
@@ -587,7 +587,7 @@ bool CUDASimulation::step() {
     // Ensure singletons have been initialised
     initialiseSingletons();
 
-    // Time the individual step, using a CUDAEventTimer if possible, else a steadyClockTimer.
+    // Time the individual step, using a GPUEventTimer if possible, else a steadyClockTimer.
     std::unique_ptr<detail::Timer> stepTimer = getDriverAppropriateTimer(getCUDAConfig().is_ensemble || getCUDAConfig().is_submodel);
     stepTimer->start();
 

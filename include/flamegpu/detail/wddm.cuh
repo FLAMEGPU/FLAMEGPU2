@@ -8,7 +8,7 @@ namespace wddm {
 /**
  * Determine if a device is using the WDDM driver or not.
  * 
- * This impacts on the suitability of CUDAEventTimers amongst other things.
+ * This impacts on the suitability of (CUDA) Event timing amongst other things.
  * WDDM driver mode is only available under windows. 
  * 
  * @param deviceIndex the index of the device to be queried
@@ -19,7 +19,7 @@ bool deviceIsWDDM(int deviceIndex);
 /**
  * Determine if the current device is using the WDDM driver or ot.
  * 
- * This impacts on the suitability of CUDAEventTimers amongst other things.
+ * This impacts on the suitability of (CUDA) Event timing amongst other things.
  * 
  * @return boolean indicating if the WDDM driver is in use or not.
  */

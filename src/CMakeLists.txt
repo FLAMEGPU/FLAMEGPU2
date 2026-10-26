@@ -294,9 +294,10 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/type_decode.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/gpu/rand.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/wddm.cuh
-    ${FLAMEGPU_ROOT}/include/flamegpu/detail/CUDAEventTimer.cuh
+    ${FLAMEGPU_ROOT}/include/flamegpu/detail/GPUEventTimer.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/cuda.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/cxxname.hpp
+    ${FLAMEGPU_ROOT}/include/flamegpu/detail/GPUEventTimer.cuh
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/numeric.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/SignalHandlers.h
     ${FLAMEGPU_ROOT}/include/flamegpu/detail/StaticAssert.h

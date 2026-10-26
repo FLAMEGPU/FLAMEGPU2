@@ -10,43 +10,39 @@ namespace flamegpu {
 
 namespace test_CUDAEventTimer {
 
+// Suppress deprecation warnings via pragmas so this can be tested in CI, but still issue the deprecation warning otherwise.
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#elif defined(__clang__)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#elif defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4996)
+#endif
+
 /**
- * This tests if the cudaEventTimer correctly times an event. 
- * GPUs using WDDM driver can be inaccurate.
- *   - eventRecord appear to be buffered to the device. 
- *   - So need to device sync before the threadSleep.
- *   - they appear to be accurate for timing the actual device work, just not wrt. the host (even in the default stream)
- *   - Needs further investigation at some point (@todo). May be worth falling back to chrono::steady_clock and notify the reduced precision if wddm? 
+ * CUDAEventTimer is a deprecated alias of GPUEventTimer. 
+
+ This test suite just checks that it can be imported and an instance constructed.
+
+ See test_GPUEventTimer for actual behavuioural testing
  */
-TEST(TestUtilCUDAEventTimer, CUDAEventTimer) {
-    // Create an event timer, time should be 0 initially.
+TEST(TestDetailCUDAEventTimer, CUDAEventTimer) {
     detail::Timer * timer = nullptr;
     EXPECT_NO_THROW(timer = new detail::CUDAEventTimer());
-    // Expect an exception if sync is called via getElapsed* if start() has not yet been called.
-    EXPECT_THROW(timer->getElapsedMilliseconds(), exception::TimerException);
-    // Time an arbitrary event, and check the value is approximately correct.
-    timer->start();
-    // Expect an exception if sync is called via getElapsed* if stop() has not yet been called.
-    EXPECT_THROW(timer->getElapsedMilliseconds(), exception::TimerException);
-    const int sleep_duration_seconds = 1;
-    const double min_expected_seconds = sleep_duration_seconds * 0.9;
-    const double min_expected_millis = min_expected_seconds * 1000.0;
-    // If the WDDM driver is being used, this test is only accurate if the  start event is synchronised (pushed to the device) prior to the sleep.
-    // Essentially, CUDAEventTimers should not be used to time host code, they are only accurate for  the device code which they wrap.
-    if (detail::wddm::deviceIsWDDM()) {
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuDeviceSynchronize());
-    }
-    // Sleep for some amount of time.
-    std::this_thread::sleep_for(std::chrono::seconds(sleep_duration_seconds));
-    // Stop the timer.
-    timer->stop();
-    // Get the elapsed time. This implicitly synchronises the timer.
-    EXPECT_GE(timer->getElapsedMilliseconds(), min_expected_millis);
-    // Also check the seconds method.
-    EXPECT_GE(timer->getElapsedSeconds(), min_expected_seconds);
-    // Trigger the destructor.
     EXPECT_NO_THROW(delete timer);
 }
+
+#if defined(__GNUC__)
+    #pragma GCC diagnostic pop
+#elif defined(__clang__)
+    #pragma clang diagnostic pop
+#elif defined(_MSC_VER)
+    #pragma warning(pop)
+#endif
 
 }  // namespace test_CUDAEventTimer
 }  // namespace flamegpu
