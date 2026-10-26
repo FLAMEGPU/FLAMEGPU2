@@ -40,10 +40,28 @@ class CUDAEventTimer : public virtual Timer {
      * Destroys the cudaEvents created by this instance
      */
     ~CUDAEventTimer() {
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuEventDestroy(this->startEvent));
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuEventDestroy(this->stopEvent));
+        if (this->startEvent) {
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuEventDestroy(this->startEvent));
+        }
+        if (this->stopEvent) {
+            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuEventDestroy(this->stopEvent));
+        }
         this->startEvent = NULL;
         this->stopEvent = NULL;
+    }
+    /**
+     * Deleted copy ctors to prevent the same CUDA/HIP Event objects being owned by multiple timer objects.
+     */
+    CUDAEventTimer(const CUDAEventTimer&) = delete;
+    CUDAEventTimer& operator=(const CUDAEventTimer&) = delete;
+    /**
+     * Move ctor which prevents events from being double-destroyed
+     */
+    CUDAEventTimer(CUDAEventTimer&& other) noexcept
+        : startEvent(other.startEvent)
+        , stopEvent(other.stopEvent) {
+        other.startEvent = NULL;
+        other.stopEvent  = NULL;
     }
     /**
      * Record the start event, resetting the syncronisation flag.
