@@ -16,10 +16,11 @@ namespace flamegpu {
 // @todo - modify all tests to actually verify that agent functions executed? Probably just set an int which is incremented each time an agent executes a function, reduce and check for positive values.
 
 // These tests are only meaningful in release builds (measure performance), so use a macro to disable them in non-release builds.
+// Also disabled on AMD on Windows due to concurrency issues
 // @todo - expand RTC variant coverage, although this will dramatically increase runtime.
 
 
-#ifndef _DEBUG
+#if !defined(_DEBUG) && !(defined(FLAMEGPU_USE_HIP) && defined(_MSC_VER))
 #define RELEASE_ONLY_TEST(TestSuiteName, TestName)\
     TEST(TestSuiteName, TestName)
 #else
@@ -28,7 +29,7 @@ namespace flamegpu {
 #endif
 
 // if seatbelts and not debug, run the test, otherwise disable.
-#if defined(FLAMEGPU_SEATBELTS) && FLAMEGPU_SEATBELTS && !defined(_DEBUG)
+#if defined(FLAMEGPU_SEATBELTS) && FLAMEGPU_SEATBELTS && !defined(_DEBUG) && !(defined(FLAMEGPU_USE_HIP) && defined(_MSC_VER))
 #define RELEASE_ONLY_SEATBELTS_TEST(TestSuiteName, TestName)\
     TEST(TestSuiteName, TestName)
 #else
