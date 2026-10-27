@@ -426,3 +426,4 @@ For a full list of known issues pleases see the [Issue Tracker](https://github.c
 + Multiple known areas where performance can be improved (e.g. [#449](https://github.com/FLAMEGPU/FLAMEGPU2/issues/449), [#402](https://github.com/FLAMEGPU/FLAMEGPU2/issues/402))
 + AMD: RTC & Python not yet supported on AMD GPUs([#1368](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1368))
 + AMD: Fixed block-size of 128 threasd/block used for all kernels due to issues encountered with `hipOccupancyMaxPotentialBlockSize` ([#1387](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1387))
++ AMD (Windows): Agent functions in separate streams do not execute concurrently under Windows ([1424](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1424))
