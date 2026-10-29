@@ -63,6 +63,27 @@ agent_func_complex_example_cpp = """
 
 """
 
+# Device function which uses the flamegpu device API, from agent/native python
+@pyflamegpu.device_function
+def read_prop_from_dev_func(pyflamegpu) -> int:
+    """
+    Pure python agent device function that uses the flamegpu device api abject to query an environment property.
+    This is mainly so we can make sure this works, and can be documented. 
+    In C++, this is more complex as the device api object is templated by the agfent function message type
+    """
+    # Get the env property and return it
+    twelve = pyflamegpu.environment.getPropertyInt("twelve");
+    return twelve
+
+@pyflamegpu.agent_function
+def get_prop_via_devapi(message_in: pyflamegpu.MessageNone, message_out: pyflamegpu.MessageNone):
+    # Call the device func which querioes the pyflamegpu device api object to get teh value of an env property, stroing it in an agent variable to validate on the host
+    # Use of pyflamegpu for the device api, and the module name is a terrible idea, but we're probably locked in now...
+    val = read_prop_from_dev_func(pyflamegpu)
+    pyflamegpu.setVariableInt("val", val)
+    return pyflamegpu.ALIVE
+
+
 class GPUTest(TestCase):
     """
     Test provides a basic integration test of the pure python code generator (pyflamegpu.codegen). The test replicates the test_gpu_validation test but uses the 
@@ -294,3 +315,29 @@ class GPUTest(TestCase):
         # Ensure expected result (use strip to remove any leading or trailing newlines)
         assert func_translated.strip() == codegen_example_modified.agent_func_complex_example_dynamic_cpp.strip()
         
+    def test_gpu_codegen_simulation_devfunc_devapi(self):
+        """
+        Test calling a device func which takes the device api as a parameter.
+        """
+        m = pyflamegpu.ModelDescription("test_gpu_codegen_simulation_devfunc_devapi")
+        a = m.newAgent("agent")
+        a.newVariableInt("val")
+        func_translated = pyflamegpu.codegen.translate(get_prop_via_devapi)
+        func = a.newRTCFunction("get_prop_via_devapi", func_translated)
+        p = pyflamegpu.AgentVector(a, AGENT_COUNT)
+        for i in range(AGENT_COUNT):
+            instance = p[i]
+            instance.setVariableInt("val", 0)
+        layer = m.newLayer("add_layer")
+        layer.addAgentFunction(func)
+        sim = pyflamegpu.CUDASimulation(m)
+        sim.SimulationConfig().steps = STEPS
+        sim.setPopulationData(p)
+        sim.simulate()
+        # Re-use the same population to read back the simulation step results
+        sim.getPopulationData(p)
+        # check values are the same
+        for i in range(AGENT_COUNT):
+            instance = p[i]
+            # use AgentInstance equality operator
+            assert instance.getVariableInt("val") == 12
