@@ -10,6 +10,7 @@
 #include <utility>
 #include <functional>
 #include <memory>
+#include <limits>
 
 #ifdef FLAMEGPU_USE_CUDA
 #include "jitify/jitify2.hpp"
@@ -2108,14 +2109,19 @@ void CUDASimulation::destroyStreams() {
         return;
     }
     /*
-    This method is called by ~CUDASimulation(), which may be after a device reset and / or CUDA shutdown (if static, or if GC'd by python implementation)
+    This method is called by ~CUDASimulation(), which may be after a device reset and / or CUDA/HIP shutdown (if static, or if GC'd by python implementation)
     cudaStreamDestroy and cudaStreamQuery under linux with CUDA 11.8 (and potentially others) would occasionally segfault after a reset, as passing invalid stream handles to various methods is UB, so these methods cannot be used to check for safe destruction.
     The Driver API equivalents include the same UB.
     Instead, we can use the CUDA driver API to check the primary context is correct / valid for the device, and if it is attempt to destroy the stream, which works for CUDA 11.x.
     CUDA 12.x however claims the ctx is active for the specified device, even after a reset. Getting the active context returns the same handle after a reset, so we cannot store and compare CUcontexts, but CUDA 12 does include a new method to get the unique ID for a context which we can store and check is a match.
+
+    For our supported HIP (7.0+), the parts of the CUDA Context management API are deprecated / not implemented, so we have no way to safely & reliably destory streams in a dtor, where deviceReset may have been called.
+    On Windows+HIP, destorying a stream from a different reset leads to a crash, so (for now until a better solution is found) we leak the streams.
+    This is through cuda::cuDevicePrimaryContextIsActive returning false, and/or the current context ID being an invalid value (uint64_t::max)
+    See https://github.com/FLAMEGPU/FLAMEGPU2/issues/1425
     */
     std::uint64_t currentContextID = flamegpu::detail::cuda::cuGetCurrentContextUniqueID();
-    bool safeToDestroy = flamegpu::detail::cuda::cuDevicePrimaryContextIsActive(deviceInitialised) && currentContextID == this->cudaContextID;
+    bool safeToDestroy = flamegpu::detail::cuda::cuDevicePrimaryContextIsActive(deviceInitialised) && this->cudaContextID != std::numeric_limits<std::uint64_t>::max() && currentContextID == this->cudaContextID;
     if (safeToDestroy) {
         // Destroy streams.
         for (auto stream : streams) {
@@ -2131,7 +2137,7 @@ void CUDASimulation::safeDestroyJitify() {
         return;
     // See note in destroyStreams()
     std::uint64_t currentContextID = flamegpu::detail::cuda::cuGetCurrentContextUniqueID();
-    bool safeToDestroy = flamegpu::detail::cuda::cuDevicePrimaryContextIsActive(deviceInitialised) && currentContextID == this->cudaContextID;
+    bool safeToDestroy = flamegpu::detail::cuda::cuDevicePrimaryContextIsActive(deviceInitialised) && this->cudaContextID != std::numeric_limits<std::uint64_t>::max() && currentContextID == this->cudaContextID;
     // Destroy any RTC functions
     for (auto &[_, ca] : agent_map) {
         ca->destroyRTCInstances(safeToDestroy);
