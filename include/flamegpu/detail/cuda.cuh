@@ -110,8 +110,9 @@ inline bool cuDevicePrimaryContextIsActive(int ordinal) {
     // If we could not return the active state, return false.
     return false;
 #else
-    // Todo: Don't think hip has an equivalent to this? @todo
-    return true;
+    // hipDevicePrimaryCtxGetState is deprecated in supported HIP (>= 7.0) for AMD devices, so assume it is not (leaking is better than UB-induced crash)
+    // see https://github.com/FLAMEGPU/FLAMEGPU2/issues/1425
+    return false;
 #endif
 }
 
@@ -137,7 +138,8 @@ inline std::uint64_t cuGetCurrentContextUniqueID() {
     }
     return std::numeric_limits<std::uint64_t>::max();
 #else
-    // Todo: Don't think hip has an equivalent to this? @todo
+    // hipCtxGetCurrent is "This API is deprecated on the AMD platform, only for equivalent cuCtx driver API on the NVIDIA platform.", and hipCtxGetId does not exist. always return an invalid value.
+    // see https://github.com/FLAMEGPU/FLAMEGPU2/issues/1425
     return std::numeric_limits<std::uint64_t>::max();
 #endif
 }
