@@ -23,7 +23,7 @@ HostAPI::HostAPI(CUDASimulation &_agentModel,
     const std::shared_ptr<detail::CUDAMacroEnvironment>& macro_env,
     CUDADirectedGraphMap &directed_graph_map,
     const unsigned int _streamId,
-    flamegpu::detail::gpu::Stream_t _stream)
+    detail::gpu::Stream_t _stream)
     : random(rng)
     , environment(_agentModel, env, macro_env, directed_graph_map, _scatter, _streamId, _stream)
     , agentModel(_agentModel)
@@ -38,7 +38,7 @@ HostAPI::HostAPI(CUDASimulation &_agentModel,
 HostAPI::~HostAPI() {
     // @todo - cuda is not allowed in destructor
     if (d_output_space_size) {
-        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_output_space));
+        detail::gpuCheck(detail::cuda::cudaFree(d_output_space));
         d_output_space_size = 0;
     }
 }

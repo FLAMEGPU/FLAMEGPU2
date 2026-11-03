@@ -45,7 +45,7 @@ const MessageBruteForce::Data& CUDAMessage::getMessageData() const {
     return message_description;
 }
 
-void CUDAMessage::resize(unsigned int newSize, detail::CUDAScatter &scatter, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId, unsigned int keepLen) {
+void CUDAMessage::resize(unsigned int newSize, detail::CUDAScatter &scatter, detail::gpu::Stream_t stream, unsigned int streamId, unsigned int keepLen) {
     // Only grow currently
     if (newSize > max_list_size) {
         const unsigned int _keep_len = std::min(max_list_size, keepLen);
@@ -76,10 +76,10 @@ void CUDAMessage::setMessageCount(const unsigned int _message_count) {
     }
     message_count = _message_count;
 }
-void CUDAMessage::init(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream) {
+void CUDAMessage::init(detail::CUDAScatter &scatter, unsigned int streamId, detail::gpu::Stream_t stream) {
     specialisation_handler->init(scatter, streamId, stream);
 }
-void CUDAMessage::zeroAllMessageData(flamegpu::detail::gpu::Stream_t stream) {
+void CUDAMessage::zeroAllMessageData(detail::gpu::Stream_t stream) {
     if (!message_list) {
         THROW exception::InvalidMessageData("MessageList '%s' is not yet allocated, in CUDAMessage::swap()\n", message_description.name.c_str());
     }
@@ -125,7 +125,7 @@ void *CUDAMessage::getReadPtr(const std::string &var_name) {
     }
     return message_list->getReadMessageListVariablePointer(var_name);
 }
-void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int writeLen, flamegpu::detail::gpu::Stream_t stream) const {
+void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const CUDAAgent& cuda_agent, const unsigned int writeLen, detail::gpu::Stream_t stream) const {
     // check that the message list has been allocated
     if (!message_list) {
         THROW exception::InvalidMessageData("Error: Initial message list for message '%s' has not been allocated, "
@@ -158,7 +158,7 @@ void CUDAMessage::mapWriteRuntimeVariables(const AgentFunctionData& func, const 
     specialisation_handler->allocateMetaDataDevicePtr(stream);
 }
 
-void CUDAMessage::swap(bool isOptional, unsigned int newMessageCount, detail::CUDAScatter &scatter, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId) {
+void CUDAMessage::swap(bool isOptional, unsigned int newMessageCount, detail::CUDAScatter &scatter, detail::gpu::Stream_t stream, unsigned int streamId) {
     if (!message_list) {
         THROW exception::InvalidMessageData("MessageList '%s' is not yet allocated, in CUDAMessage::swap()\n", message_description.name.c_str());
     }
@@ -167,7 +167,7 @@ void CUDAMessage::swap(bool isOptional, unsigned int newMessageCount, detail::CU
         // Check if we need to resize cub storage
         auto& cub_temp = scatter.CubTemp(streamId);
         size_t tempByte = 0;
-        flamegpu::detail::gpuCheck(cub::DeviceScan::ExclusiveSum(
+        detail::gpuCheck(cub::DeviceScan::ExclusiveSum(
             nullptr,
             tempByte,
             scanCfg.d_ptrs.scan_flag,
@@ -175,7 +175,7 @@ void CUDAMessage::swap(bool isOptional, unsigned int newMessageCount, detail::CU
             max_list_size + 1,
             stream));
         cub_temp.resize(tempByte);
-        flamegpu::detail::gpuCheck(cub::DeviceScan::ExclusiveSum(
+        detail::gpuCheck(cub::DeviceScan::ExclusiveSum(
             cub_temp.getPtr(),
             cub_temp.getSize(),
             scanCfg.d_ptrs.scan_flag,
@@ -203,7 +203,7 @@ void CUDAMessage::swap() {
     message_list->swap();
 }
 
-void CUDAMessage::buildIndex(detail::CUDAScatter &scatter, const unsigned int streamId, const flamegpu::detail::gpu::Stream_t stream) {
+void CUDAMessage::buildIndex(detail::CUDAScatter &scatter, const unsigned int streamId, const detail::gpu::Stream_t stream) {
     // Build the index if required.
     if (pbm_construction_required) {
         specialisation_handler->buildIndex(scatter, streamId, stream);
