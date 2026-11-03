@@ -24,8 +24,8 @@ class DeviceExceptionManager {
      * Free all device memory
      */
     ~DeviceExceptionManager();
-    DeviceExceptionBuffer *getDevicePtr(unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
-    void checkError(const std::string &function, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream);
+    DeviceExceptionBuffer *getDevicePtr(unsigned int streamId, detail::gpu::Stream_t stream);
+    void checkError(const std::string &function, unsigned int streamId, detail::gpu::Stream_t stream);
 
  private:
     /**

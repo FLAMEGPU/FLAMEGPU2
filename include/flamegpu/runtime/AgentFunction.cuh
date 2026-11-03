@@ -161,7 +161,7 @@ typedef void(*AgentFunctionLauncher)(
     unsigned int *scanFlag_agentDeath,
     unsigned int *scanFlag_messageOutput,
     unsigned int *scanFlag_agentOutput,
-    flamegpu::detail::gpu::Stream_t stream);
+    detail::gpu::Stream_t stream);
 
 
 /**
@@ -205,7 +205,7 @@ struct AgentFunctionLauncherHelper {
         unsigned int *scanFlag_agentDeath,
         unsigned int *scanFlag_messageOutput,
         unsigned int *scanFlag_agentOutput,
-        flamegpu::detail::gpu::Stream_t stream) {
+        detail::gpu::Stream_t stream) {
         #if defined(__CUDACC__) || defined(__HIPCC__)
 
         // Early exit if no threads to launch
@@ -222,7 +222,7 @@ struct AgentFunctionLauncherHelper {
         int minGridSize = 0;
         int blockSize = 0;
         AgentFunctionWrapper* kernel_ptr = &agent_function_wrapper<AgentFunction, MessageIn, MessageOut>;
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, kernel_ptr, 0, popNo));
+        detail::gpuCheck(detail::gpu::gpuOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, kernel_ptr, 0, popNo));
         #endif  // defined(FLAMEGPU_USE_HIP)
         int gridSize = (popNo + blockSize - 1) / blockSize;
 
@@ -245,7 +245,7 @@ struct AgentFunctionLauncherHelper {
             scanFlag_agentOutput);
 
         // Check for errors during the launch
-        flamegpu::detail::gpuCheckLaunch();
+        detail::gpuCheckLaunch();
 
         #endif  // defined(__CUDACC__) || defined(__HIPCC__)
     }

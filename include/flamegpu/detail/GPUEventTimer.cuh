@@ -28,8 +28,8 @@ class GPUEventTimer : public virtual Timer {
     startEventRecorded(false),
     stopEventRecorded(false),
     synced(false) {
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuEventCreate(&this->startEvent));
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuEventCreate(&this->stopEvent));
+        detail::gpuCheck(detail::gpu::gpuEventCreate(&this->startEvent));
+        detail::gpuCheck(detail::gpu::gpuEventCreate(&this->stopEvent));
     }
     /** 
      * Destroys the cuda/HIP Events created by this instance
@@ -38,10 +38,10 @@ class GPUEventTimer : public virtual Timer {
      */
     ~GPUEventTimer() {
         if (this->startEvent) {
-            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuEventDestroy(this->startEvent));
+            detail::gpuCheck(detail::gpu::gpuEventDestroy(this->startEvent));
         }
         if (this->stopEvent) {
-            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuEventDestroy(this->stopEvent));
+            detail::gpuCheck(detail::gpu::gpuEventDestroy(this->stopEvent));
         }
         this->startEvent = NULL;
         this->stopEvent = NULL;
@@ -64,7 +64,7 @@ class GPUEventTimer : public virtual Timer {
      * Record the start event, resetting the syncronisation flag.
      */
     void start() override {
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuEventRecord(this->startEvent));
+        detail::gpuCheck(detail::gpu::gpuEventRecord(this->startEvent));
         this->startEventRecorded = true;
         this->stopEventRecorded = false;
         this->synced = false;
@@ -73,7 +73,7 @@ class GPUEventTimer : public virtual Timer {
      * Record the stop event, resetting the syncronisation flag.
      */
     void stop() override {
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuEventRecord(this->stopEvent));
+        detail::gpuCheck(detail::gpu::gpuEventRecord(this->stopEvent));
         this->stopEventRecorded = true;
         this->synced = false;
     }
@@ -116,19 +116,19 @@ class GPUEventTimer : public virtual Timer {
         if (!stopEventRecorded) {
             THROW exception::TimerException("stop() must be called prior to getElapsed*");
         }
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuEventSynchronize(this->stopEvent));
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuEventElapsedTime(&this->ms, this->startEvent, this->stopEvent));
+        detail::gpuCheck(detail::gpu::gpuEventSynchronize(this->stopEvent));
+        detail::gpuCheck(detail::gpu::gpuEventElapsedTime(&this->ms, this->startEvent, this->stopEvent));
         synced = true;
     }
 
     /**
      * CUDA Event for the start event
      */
-    flamegpu::detail::gpu::Event_t startEvent;
+    detail::gpu::Event_t startEvent;
     /**
      * CUDA Event for the stop event
      */
-    flamegpu::detail::gpu::Event_t stopEvent;
+    detail::gpu::Event_t stopEvent;
     /**
      * Elapsed times between start and stop in milliseconds
      */

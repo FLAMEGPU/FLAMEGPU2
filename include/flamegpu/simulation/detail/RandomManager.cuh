@@ -61,7 +61,7 @@ class RandomManager {
      *     while(length*shrinkModifier>_length)
      *       length*=shrinkModifier
      */
-    detail::gpu::gpurandState*resize(size_type _length, flamegpu::detail::gpu::Stream_t stream);
+    detail::gpu::gpurandState*resize(size_type _length, detail::gpu::Stream_t stream);
     /**
      * Accessors
      */
@@ -119,7 +119,7 @@ class RandomManager {
      * If shrinking, 'deallocated' curand states are backed up to host until next required,
      *  this prevents them being reinitialised with the same seed.
      */
-    void resizeDeviceArray(size_type _length, flamegpu::detail::gpu::Stream_t stream);
+    void resizeDeviceArray(size_type _length, detail::gpu::Stream_t stream);
     /**
      * Host copy of 'deallocated' curand states
      * When the device array shrinks in size, shrunk away curand states are stored here
