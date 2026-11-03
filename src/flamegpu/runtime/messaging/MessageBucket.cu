@@ -5,32 +5,6 @@
 #include <memory>
 #include <limits>
 
-#ifdef FLAMEGPU_USE_CUDA
-#ifdef _MSC_VER
-#pragma warning(push, 1)
-#pragma warning(disable : 4706 4834)
-#endif  // _MSC_VER
-#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-#pragma nv_diag_suppress 1719
-#else
-#pragma diag_suppress 1719
-#endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
-#include <cub/cub.cuh>
-#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-#pragma nv_diag_default 1719
-#else
-#pragma diag_default 1719
-#endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif  // _MSC_VER
-#endif  // FLAMEGPU_USE_CUDA
-
-#ifdef FLAMEGPU_USE_HIP
-#include <hipcub/hipcub.hpp>
-// namepspace alias so cub:: can be used
-namespace cub = hipcub;
-#endif
 
 #include "flamegpu/model/AgentDescription.h"
 #include "flamegpu/simulation/detail/CUDAMessage.h"
@@ -39,7 +13,7 @@ namespace cub = hipcub;
 #include "flamegpu/detail/gpu/types.hpp"
 #include "flamegpu/detail/gpu/cuda_hip_dispatch.hpp"
 #include "flamegpu/detail/cuda.cuh"
-
+#include "flamegpu/detail/gpu/cub_import.cuh"
 #include "flamegpu/runtime/messaging/MessageBucket/MessageBucketHost.h"
 
 namespace flamegpu {
