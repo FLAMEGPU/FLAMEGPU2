@@ -68,7 +68,7 @@ TEST(TestCUDASimulation, ApplyConfigDerivedContextCreation) {
 TEST(TestCUDASimulation, AllDeviceIdValues) {
     // Get the number of devices
     int device_count = 1;
-    if (flamegpu::detail::gpu::gpuSuccess != flamegpu::detail::gpu::gpuGetDeviceCount(&device_count) || device_count <= 0) {
+    if (detail::gpu::gpuSuccess != detail::gpu::gpuGetDeviceCount(&device_count) || device_count <= 0) {
         // Skip the test, if no CUDA or GPUs.
         return;
     }
@@ -76,7 +76,7 @@ TEST(TestCUDASimulation, AllDeviceIdValues) {
         // Check if the specified device is allowed to run the tests to determine if the test should throw or not. This is system dependent so must be dynamic. CUDA only.
         bool shouldThrowCCException = false;
         #if defined(FLAMEGPU_USE_CUDA)
-        shouldThrowCCException = !flamegpu::detail::gpu::cuda::compute_capability::checkComputeCapability(i);
+        shouldThrowCCException = !detail::gpu::cuda::compute_capability::checkComputeCapability(i);
         #endif  // defined(FLAMEGPU_USE_CUDA)
         // Initialise and run a simple model on each device in the system. This test is pointless on single GPU machines.
         ModelDescription m(MODEL_NAME);
@@ -100,7 +100,7 @@ TEST(TestCUDASimulation, AllDeviceIdValues) {
         }
     }
     // Return to prior state for remaining tests.
-    ASSERT_EQ(flamegpu::detail::gpu::gpuSuccess, flamegpu::detail::gpu::gpuSetDevice(0));
+    ASSERT_EQ(detail::gpu::gpuSuccess, detail::gpu::gpuSetDevice(0));
 }
 TEST(TestSimulation, ArgParse_inputfile_long) {
     ModelDescription m(MODEL_NAME);
@@ -176,7 +176,7 @@ TEST(TestSimulation, ArgParse_randomseed_short) {
     EXPECT_EQ(c.getSimulationConfig().random_seed, 12u);
 }
 TEST(TestCUDASimulation, ArgParse_device_long) {
-    ASSERT_EQ(flamegpu::detail::gpu::gpuGetLastError(), flamegpu::detail::gpu::gpuSuccess);
+    ASSERT_EQ(detail::gpu::gpuGetLastError(), detail::gpu::gpuSuccess);
     ModelDescription m(MODEL_NAME);
     CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "--device", "1200" };
@@ -186,13 +186,13 @@ TEST(TestCUDASimulation, ArgParse_device_long) {
     EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), exception::InvalidCUDAdevice);
     EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
     // Blank init does not reset value to default
-    ASSERT_EQ(flamegpu::detail::gpu::gpuGetLastError(), flamegpu::detail::gpu::gpuSuccess);
+    ASSERT_EQ(detail::gpu::gpuGetLastError(), detail::gpu::gpuSuccess);
     EXPECT_THROW(c.initialise(0, nullptr), exception::InvalidCUDAdevice);
     EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
-    ASSERT_EQ(flamegpu::detail::gpu::gpuGetLastError(), flamegpu::detail::gpu::gpuSuccess);
+    ASSERT_EQ(detail::gpu::gpuGetLastError(), detail::gpu::gpuSuccess);
 }
 TEST(TestCUDASimulation, ArgParse_device_short) {
-    ASSERT_EQ(flamegpu::detail::gpu::gpuGetLastError(), flamegpu::detail::gpu::gpuSuccess);
+    ASSERT_EQ(detail::gpu::gpuGetLastError(), detail::gpu::gpuSuccess);
     ModelDescription m(MODEL_NAME);
     CUDASimulation c(m);
     const char *argv[3] = { "prog.exe", "-d", "1200" };
@@ -202,10 +202,10 @@ TEST(TestCUDASimulation, ArgParse_device_short) {
     EXPECT_THROW(c.initialise(sizeof(argv) / sizeof(char*), argv), exception::InvalidCUDAdevice);
     EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
     // Blank init does not reset value to default
-    ASSERT_EQ(flamegpu::detail::gpu::gpuGetLastError(), flamegpu::detail::gpu::gpuSuccess);
+    ASSERT_EQ(detail::gpu::gpuGetLastError(), detail::gpu::gpuSuccess);
     EXPECT_THROW(c.initialise(0, nullptr), exception::InvalidCUDAdevice);
     EXPECT_EQ(c.getCUDAConfig().device_id, 1200);
-    ASSERT_EQ(flamegpu::detail::gpu::gpuGetLastError(), flamegpu::detail::gpu::gpuSuccess);
+    ASSERT_EQ(detail::gpu::gpuGetLastError(), detail::gpu::gpuSuccess);
 }
 TEST(TestSimulation, ArgParse_unknown) {
     ModelDescription m(MODEL_NAME);
@@ -843,11 +843,11 @@ TEST(TestCUDASimulation, setEnvironmentProperty) {
 TEST(TestCUDASimulation, SimulationWithExistingCUDAMalloc) {
     // Allocate some arbitraty device memory.
     int * d_int = nullptr;
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_int, sizeof(int)));
+    detail::gpuCheck(detail::gpu::gpuMalloc(&d_int, sizeof(int)));
     // Validate that the ptr is a valid device pointer
     cudaPointerAttributes attributes = {};
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
-    EXPECT_EQ(attributes.type, flamegpu::detail::gpu::gpuMemoryTypeDevice);
+    detail::gpuCheck(detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
+    EXPECT_EQ(attributes.type, detail::gpu::gpuMemoryTypeDevice);
 
     // Add extra layer of scope, so the ensemble get's dtor'd incase the dtor triggers a reset
     {
@@ -863,13 +863,13 @@ TEST(TestCUDASimulation, SimulationWithExistingCUDAMalloc) {
         c.simulate();
     }
 
-    // At this point, the manually allocated data should still be valid, i.e. flamegpu::detail::gpu::gpuMemoryTypeDevice
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
-    EXPECT_EQ(attributes.type, flamegpu::detail::gpu::gpuMemoryTypeDevice);
+    // At this point, the manually allocated data should still be valid, i.e. detail::gpu::gpuMemoryTypeDevice
+    detail::gpuCheck(detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
+    EXPECT_EQ(attributes.type, detail::gpu::gpuMemoryTypeDevice);
 
     // Free explicit device memory, if it was valid (to get the correct error)
-    if (attributes.type == flamegpu::detail::gpu::gpuMemoryTypeDevice) {
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuFree(d_int));
+    if (attributes.type == detail::gpu::gpuMemoryTypeDevice) {
+        detail::gpuCheck(detail::gpu::gpuFree(d_int));
     }
     d_int = nullptr;
 }
