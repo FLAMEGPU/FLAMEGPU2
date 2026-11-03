@@ -1,0 +1,34 @@
+From 578d752056b31ff565600ddf8863782bb524fbfa Mon Sep 17 00:00:00 2001
+From: Peter Heywood <p.heywood@sheffield.ac.uk>
+Date: Fri, 30 Oct 2026 13:21:35 +0000
+Subject: [PATCH] Windows: Fallback to GetTempPathA when Kernel32.dll does not
+ contain GetTempPath2A
+
+---
+ jitify2.hpp | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/jitify2.hpp b/jitify2.hpp
+index c2ad6fd..2adbca1 100644
+--- a/jitify2.hpp
++++ b/jitify2.hpp
+@@ -4236,7 +4236,15 @@ inline std::string make_temp_dir() {
+   const uint64_t uid = ((uint64_t)_getpid() << 32) | id;
+   char tmpdir[JITIFY_PATH_MAX + 1];
+   // Note: tmpdir is guaranteed to end with a '\'.
+-  if (!GetTempPath2A(sizeof(tmpdir), tmpdir)) return "";
++  // Use GetTempPath2A if avaiable at runtime (requires Windows 10 19045 (22H2) or newer), else fallback to GetTempPathA 
++  using GetTempPath2AFn = DWORD(WINAPI*)(DWORD, LPSTR);
++  HMODULE hKernel32 = GetModuleHandleA("kernel32.dll");
++  auto pGetTempPath2A = hKernel32 ? (GetTempPath2AFn)GetProcAddress(hKernel32, "GetTempPath2A") : nullptr;
++  if (pGetTempPath2A) {
++    if (!pGetTempPath2A(sizeof(tmpdir), tmpdir)) return "";
++  } else {
++    if (!GetTempPathA(sizeof(tmpdir), tmpdir)) return "";
++  }
+   // Get the long-form of the tmpdir
+   GetLongPathNameA(tmpdir, tmpdir, sizeof(tmpdir));
+   std::string path = std::string(tmpdir) + "__jitify_" + std::to_string(uid);
+-- 
+2.46.0.windows.1
+

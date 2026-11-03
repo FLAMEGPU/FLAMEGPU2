@@ -34,9 +34,37 @@ execute_process(
 )
 # If applicable, apply the patch
 if (jitify_patch_check_result EQUAL 0)
-    message(CHECK_START  "Patching jitify #146")
+    message(CHECK_START  "Patching jitify (#146)")
     execute_process(
         COMMAND git apply ${CMAKE_CURRENT_LIST_DIR}/patches/jitify2-pr-146.patch
+        WORKING_DIRECTORY "${jitify_SOURCE_DIR}"
+        RESULT_VARIABLE jifity_patch_apply_result
+        OUTPUT_QUIET
+        ERROR_QUIET
+    )
+    # If the patch failed emit a warning but allow cmake to progress. This should not occur given the previous check.
+    if (jifity_patch_apply_result EQUAL 0)
+        message(CHECK_PASS "done")
+    else()
+        message(CHECK_FAIL "patching failed")
+    endif()
+    unset(jifity_patch_apply_result)
+endif()
+unset(jitify_patch_check_result)
+
+# patch generated from jitify fork/branch patching support for Windows 10 < 22H2 by falling back to GetTempPathA
+execute_process(
+    COMMAND git apply --check ${CMAKE_CURRENT_LIST_DIR}/patches/jitify2-GetTempPathFallback.patch
+    WORKING_DIRECTORY "${jitify_SOURCE_DIR}"
+    RESULT_VARIABLE jitify_patch_check_result
+    OUTPUT_QUIET
+    ERROR_QUIET
+)
+# If applicable, apply the patch
+if (jitify_patch_check_result EQUAL 0)
+    message(CHECK_START  "Patching jitify (GetTempPathA)")
+    execute_process(
+        COMMAND git apply ${CMAKE_CURRENT_LIST_DIR}/patches/jitify2-GetTempPathFallback.patch
         WORKING_DIRECTORY "${jitify_SOURCE_DIR}"
         RESULT_VARIABLE jifity_patch_apply_result
         OUTPUT_QUIET
