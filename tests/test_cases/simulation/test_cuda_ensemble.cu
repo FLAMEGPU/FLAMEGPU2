@@ -126,7 +126,7 @@ TEST(TestCUDAEnsemble, initialise_devices_wrong) {
     flamegpu::ModelDescription model("test");
     flamegpu::CUDAEnsemble ensemble(model);
     int device_ct = -1;
-    EXPECT_EQ(flamegpu::detail::gpu::gpuGetDeviceCount(&device_ct), flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(detail::gpu::gpuGetDeviceCount(&device_ct), detail::gpu::gpuSuccess);
     ensemble.Config().devices = { device_ct };
     RunPlanVector plan(model, 1);
     // Sim with out of bounds device ID, get exception
@@ -846,11 +846,11 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDASimulation_rtc) {
 TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc) {
     // Allocate some arbitraty device memory.
     int * d_int = nullptr;
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_int, sizeof(int)));
+    detail::gpuCheck(detail::gpu::gpuMalloc(&d_int, sizeof(int)));
     // Validate that the ptr is a valid device pointer
     cudaPointerAttributes attributes = {};
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
-    EXPECT_EQ(attributes.type, flamegpu::detail::gpu::gpuMemoryTypeDevice);
+    detail::gpuCheck(detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
+    EXPECT_EQ(attributes.type, detail::gpu::gpuMemoryTypeDevice);
 
     // Add extra layer of scope, so the ensemble get's dtor'd incase the dtor triggers a reset
     {
@@ -883,13 +883,13 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc) {
         EXPECT_NO_THROW(ensemble.simulate(plans));
     }
 
-    // At this point, the manually allocated data should still be valid, i.e. flamegpu::detail::gpu::gpuMemoryTypeDevice
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
-    EXPECT_EQ(attributes.type, flamegpu::detail::gpu::gpuMemoryTypeDevice);
+    // At this point, the manually allocated data should still be valid, i.e. detail::gpu::gpuMemoryTypeDevice
+    detail::gpuCheck(detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
+    EXPECT_EQ(attributes.type, detail::gpu::gpuMemoryTypeDevice);
 
     // Free explicit device memory, if it was valid (to get the correct error)
-    if (attributes.type == flamegpu::detail::gpu::gpuMemoryTypeDevice) {
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuFree(d_int));
+    if (attributes.type == detail::gpu::gpuMemoryTypeDevice) {
+        detail::gpuCheck(detail::gpu::gpuFree(d_int));
     }
     d_int = nullptr;
 }
@@ -1048,11 +1048,11 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc_rtc) {
 #ifdef FLAMEGPU_USE_CUDA
     // Allocate some arbitraty device memory.
     int * d_int = nullptr;
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_int, sizeof(int)));
+    detail::gpuCheck(detail::gpu::gpuMalloc(&d_int, sizeof(int)));
     // Validate that the ptr is a valid device pointer
     cudaPointerAttributes attributes = {};
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
-    EXPECT_EQ(attributes.type, flamegpu::detail::gpu::gpuMemoryTypeDevice);
+    detail::gpuCheck(detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
+    EXPECT_EQ(attributes.type, detail::gpu::gpuMemoryTypeDevice);
 
     // Add extra layer of scope, so the ensemble get's dtor'd incase the dtor triggers a reset
     {
@@ -1085,13 +1085,13 @@ TEST(TestCUDAEnsemble, SimualteWithExistingCUDAMalloc_rtc) {
         EXPECT_NO_THROW(ensemble.simulate(plans));
     }
 
-    // At this point, the manually allocated data should still be valid, i.e. flamegpu::detail::gpu::gpuMemoryTypeDevice
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
-    EXPECT_EQ(attributes.type, flamegpu::detail::gpu::gpuMemoryTypeDevice);
+    // At this point, the manually allocated data should still be valid, i.e. detail::gpu::gpuMemoryTypeDevice
+    detail::gpuCheck(detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
+    EXPECT_EQ(attributes.type, detail::gpu::gpuMemoryTypeDevice);
 
     // Free explicit device memory, if it was valid (to get the correct error)
-    if (attributes.type == flamegpu::detail::gpu::gpuMemoryTypeDevice) {
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuFree(d_int));
+    if (attributes.type == detail::gpu::gpuMemoryTypeDevice) {
+        detail::gpuCheck(detail::gpu::gpuFree(d_int));
     }
     d_int = nullptr;
 #else  // FLAMEGPU_USE_CUDA

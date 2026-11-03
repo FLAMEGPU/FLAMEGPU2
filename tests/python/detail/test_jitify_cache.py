@@ -4,7 +4,7 @@ from pyflamegpu import *
 
 class JitifyCacheTest(TestCase):
     """
-        Test the now exposed flamegpu::detail::JitifyCache methods are exposed to python
+        Test the now exposed detail::JitifyCache methods are exposed to python
         This does not test the clear*cache methods, as that would have grim side-effects
     """
     def test_memorycache(self):
