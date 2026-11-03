@@ -24,9 +24,9 @@ namespace detail {
  * @param line Line no where errorcode was reported (e.g. __LINE__)
  * @throws CUDAError If code != cudaSuccess / hipSuccess
  */
-inline void gpuAssert(flamegpu::detail::gpu::Error_t code, const char *file, int line) {
-    if (code != flamegpu::detail::gpu::gpuSuccess) {
-        THROW exception::CUDAError("CUDA Error: %s(%d): %s %s", file, line, flamegpu::detail::gpu::gpuGetErrorName(code), flamegpu::detail::gpu::gpuGetErrorString(code));
+inline void gpuAssert(detail::gpu::Error_t code, const char *file, int line) {
+    if (code != detail::gpu::gpuSuccess) {
+        THROW exception::CUDAError("CUDA Error: %s(%d): %s %s", file, line, detail::gpu::gpuGetErrorName(code), detail::gpu::gpuGetErrorString(code));
     }
 }
 
@@ -51,14 +51,14 @@ inline void gpuAssert(CUresult code, const char* file, int line) {
   * @param file File where errorcode was reported (e.g. __FILE__)
   * @param line Line no where errorcode was reported (e.g. __LINE__)
   * @throws CUDAError If If code != cudaSuccess / hipSuccess
-  * @see gpuAssert(flamegpu::detail::gpu::Error_t code, const char *file, int line)
+  * @see gpuAssert(detail::gpu::Error_t code, const char *file, int line)
   * @note Only synchronises in debug builds
   */
 inline void gpuLaunchAssert(const char *file, int line) {
 #ifdef _DEBUG
-    gpuAssert(flamegpu::detail::gpu::gpuDeviceSynchronize(), file, line);
+    gpuAssert(detail::gpu::gpuDeviceSynchronize(), file, line);
 #endif
-    gpuAssert(flamegpu::detail::gpu::gpuPeekAtLastError(), file, line);
+    gpuAssert(detail::gpu::gpuPeekAtLastError(), file, line);
 }
 
 /**
@@ -72,7 +72,7 @@ inline void gpuLaunchAssert(const char *file, int line) {
  */
 template <typename T>
 inline void gpuCheck(T code, const std::source_location loc = std::source_location::current()) {
-    flamegpu::detail::gpuAssert(code, loc.file_name(), loc.line());
+    detail::gpuAssert(code, loc.file_name(), loc.line());
 }
 
 /**
@@ -80,11 +80,11 @@ inline void gpuCheck(T code, const std::source_location loc = std::source_locati
  * 
  * Uses source_location so this can be a namespace-scoped function rather than macro
  * @throws CUDAError If code != cudaSuccess / hipSuccess
- * @see gpuAssert(flamegpu::detail::gpu::Error_t code, const char *file, int line)
+ * @see gpuAssert(detail::gpu::Error_t code, const char *file, int line)
  * @note Only synchronises in debug builds
  */
 inline void gpuCheckLaunch(const std::source_location loc = std::source_location::current()) {
-    flamegpu::detail::gpuLaunchAssert(loc.file_name(), loc.line());
+    detail::gpuLaunchAssert(loc.file_name(), loc.line());
 }
 
 }  // namespace detail

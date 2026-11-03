@@ -35,7 +35,7 @@ class MessageArray::CUDAModelHandler : public MessageSpecialisationHandler {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream The CUDAStream to use for CUDA operations
      */
-    void init(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream) override;
+    void init(detail::CUDAScatter &scatter, unsigned int streamId, detail::gpu::Stream_t stream) override;
     /**
      * Sort messages according to index
      * Detect and report any duplicate indicies/gaps
@@ -43,12 +43,12 @@ class MessageArray::CUDAModelHandler : public MessageSpecialisationHandler {
      * @param streamId The stream index to use for accessing stream specific resources such as scan compaction arrays and buffers
      * @param stream The CUDAStream to use for CUDA operations
      */
-    void buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, flamegpu::detail::gpu::Stream_t stream) override;
+    void buildIndex(detail::CUDAScatter &scatter, unsigned int streamId, detail::gpu::Stream_t stream) override;
     /**
      * Allocates memory for the constructed index.
      * The memory allocation is checked by build index.
      */
-    void allocateMetaDataDevicePtr(flamegpu::detail::gpu::Stream_t stream) override;
+    void allocateMetaDataDevicePtr(detail::gpu::Stream_t stream) override;
     /**
      * Releases memory for the constructed index.
      */

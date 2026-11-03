@@ -345,8 +345,8 @@ template<typename AgentFunction>
 AgentFunctionDescription AgentDescription::newFunction(const std::string &function_name, AgentFunction) {
     if (agent->functions.find(function_name) == agent->functions.end()) {
         AgentFunctionLauncher f = AgentFunction::fnPtr();
-        std::string in_t = flamegpu::detail::demangle::demangle(AgentFunction::inType().name());
-        std::string out_t = flamegpu::detail::demangle::demangle(AgentFunction::outType().name());
+        std::string in_t = detail::demangle::demangle(AgentFunction::inType().name());
+        std::string out_t = detail::demangle::demangle(AgentFunction::outType().name());
         if (in_t == "flamegpu::MessageSpatial3D" || in_t == "flamegpu::MessageSpatial2D" || out_t == "flamegpu::MessageSpatial3D" || out_t == "flamegpu::MessageSpatial2D") {
             if (agent->variables.find("_auto_sort_bin_index") == agent->variables.end()) {
                 agent->variables.emplace("_auto_sort_bin_index", Variable(1, std::vector<unsigned int> {0}));
