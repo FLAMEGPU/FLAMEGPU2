@@ -179,16 +179,16 @@ class DeviceEnvironmentTest : public testing::Test {
         int32_t _int32_t_out = 0;
         uint64_t _uint64_t_out = 0;
         int64_t _int64_t_out = 0;
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyToSymbol(float_out, &_float_out, sizeof(float)));
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyToSymbol(double_out, &_double_out, sizeof(uint8_t)));
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyToSymbol(uint8_t_out, &_uint8_t_out, sizeof(uint8_t)));
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyToSymbol(int8_t_out, &_int8_t_out, sizeof(int8_t)));
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyToSymbol(uint16_t_out, &_uint16_t_out, sizeof(uint16_t)));
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyToSymbol(int16_t_out, &_int16_t_out, sizeof(int16_t)));
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyToSymbol(uint32_t_out, &_uint32_t_out, sizeof(uint32_t)));
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyToSymbol(int32_t_out, &_int32_t_out, sizeof(int32_t)));
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyToSymbol(uint64_t_out, &_uint64_t_out, sizeof(uint64_t)));
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyToSymbol(int64_t_out, &_int64_t_out, sizeof(int64_t)));
+        detail::gpuCheck(detail::gpu::gpuMemcpyToSymbol(float_out, &_float_out, sizeof(float)));
+        detail::gpuCheck(detail::gpu::gpuMemcpyToSymbol(double_out, &_double_out, sizeof(uint8_t)));
+        detail::gpuCheck(detail::gpu::gpuMemcpyToSymbol(uint8_t_out, &_uint8_t_out, sizeof(uint8_t)));
+        detail::gpuCheck(detail::gpu::gpuMemcpyToSymbol(int8_t_out, &_int8_t_out, sizeof(int8_t)));
+        detail::gpuCheck(detail::gpu::gpuMemcpyToSymbol(uint16_t_out, &_uint16_t_out, sizeof(uint16_t)));
+        detail::gpuCheck(detail::gpu::gpuMemcpyToSymbol(int16_t_out, &_int16_t_out, sizeof(int16_t)));
+        detail::gpuCheck(detail::gpu::gpuMemcpyToSymbol(uint32_t_out, &_uint32_t_out, sizeof(uint32_t)));
+        detail::gpuCheck(detail::gpu::gpuMemcpyToSymbol(int32_t_out, &_int32_t_out, sizeof(int32_t)));
+        detail::gpuCheck(detail::gpu::gpuMemcpyToSymbol(uint64_t_out, &_uint64_t_out, sizeof(uint64_t)));
+        detail::gpuCheck(detail::gpu::gpuMemcpyToSymbol(int64_t_out, &_int64_t_out, sizeof(int64_t)));
     }
 
     void TearDown() override {
@@ -210,9 +210,9 @@ TEST_F(DeviceEnvironmentTest, Get_float) {
     // Setup environment
     auto float_check = ms->Get_test<float>();
     float _float_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_float_out, float_out, sizeof(float));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_float_out, float_out, sizeof(float));
     EXPECT_EQ(float_check, _float_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 TEST_F(DeviceEnvironmentTest, Get_double) {
     // Setup agent fn
@@ -222,9 +222,9 @@ TEST_F(DeviceEnvironmentTest, Get_double) {
     // Setup environment
     auto double_check = ms->Get_test<double>();
     double _double_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_double_out, double_out, sizeof(double));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_double_out, double_out, sizeof(double));
     EXPECT_EQ(double_check, _double_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 TEST_F(DeviceEnvironmentTest, Get_int8_t) {
     // Setup agent fn
@@ -234,9 +234,9 @@ TEST_F(DeviceEnvironmentTest, Get_int8_t) {
     // Setup environment
     auto int8_t_check = ms->Get_test<int8_t>();
     int8_t _int8_t_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_int8_t_out, int8_t_out, sizeof(int8_t));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_int8_t_out, int8_t_out, sizeof(int8_t));
     EXPECT_EQ(int8_t_check, _int8_t_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 TEST_F(DeviceEnvironmentTest, Get_uint8_t) {
     // Setup agent fn
@@ -246,9 +246,9 @@ TEST_F(DeviceEnvironmentTest, Get_uint8_t) {
     // Setup environment
     auto uint8_t_check = ms->Get_test<uint8_t>();
     uint8_t _uint8_t_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_uint8_t_out, uint8_t_out, sizeof(uint8_t));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_uint8_t_out, uint8_t_out, sizeof(uint8_t));
     EXPECT_EQ(uint8_t_check, _uint8_t_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 TEST_F(DeviceEnvironmentTest, Get_int16_t) {
     // Setup agent fn
@@ -258,9 +258,9 @@ TEST_F(DeviceEnvironmentTest, Get_int16_t) {
     // Setup environment
     auto int16_t_check = ms->Get_test<int16_t>();
     int16_t _int16_t_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_int16_t_out, int16_t_out, sizeof(int16_t));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_int16_t_out, int16_t_out, sizeof(int16_t));
     EXPECT_EQ(int16_t_check, _int16_t_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 TEST_F(DeviceEnvironmentTest, Get_uint16_t) {
     // Setup agent fn
@@ -270,9 +270,9 @@ TEST_F(DeviceEnvironmentTest, Get_uint16_t) {
     // Setup environment
     auto uint16_t_check = ms->Get_test<uint16_t>();
     uint16_t _uint16_t_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_uint16_t_out, uint16_t_out, sizeof(uint16_t));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_uint16_t_out, uint16_t_out, sizeof(uint16_t));
     EXPECT_EQ(uint16_t_check, _uint16_t_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 TEST_F(DeviceEnvironmentTest, Get_int32_t) {
     // Setup agent fn
@@ -282,9 +282,9 @@ TEST_F(DeviceEnvironmentTest, Get_int32_t) {
     // Setup environment
     auto int32_t_check = ms->Get_test<int32_t>();
     int32_t _int32_t_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_int32_t_out, int32_t_out, sizeof(int32_t));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_int32_t_out, int32_t_out, sizeof(int32_t));
     EXPECT_EQ(int32_t_check, _int32_t_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 TEST_F(DeviceEnvironmentTest, Get_uint32_t) {
     // Setup agent fn
@@ -294,9 +294,9 @@ TEST_F(DeviceEnvironmentTest, Get_uint32_t) {
     // Setup environment
     auto uint32_t_check = ms->Get_test<uint32_t>();
     uint32_t _uint32_t_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_uint32_t_out, uint32_t_out, sizeof(uint32_t));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_uint32_t_out, uint32_t_out, sizeof(uint32_t));
     EXPECT_EQ(uint32_t_check, _uint32_t_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 TEST_F(DeviceEnvironmentTest, Get_int64_t) {
     // Setup agent fn
@@ -306,9 +306,9 @@ TEST_F(DeviceEnvironmentTest, Get_int64_t) {
     // Setup environment
     auto int64_t_check = ms->Get_test<int64_t>();
     int64_t _int64_t_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_int64_t_out, int64_t_out, sizeof(int64_t));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_int64_t_out, int64_t_out, sizeof(int64_t));
     EXPECT_EQ(int64_t_check, _int64_t_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 TEST_F(DeviceEnvironmentTest, Get_uint64_t) {
     // Setup agent fn
@@ -318,9 +318,9 @@ TEST_F(DeviceEnvironmentTest, Get_uint64_t) {
     // Setup environment
     auto uint64_t_check = ms->Get_test<uint64_t>();
     uint64_t _uint64_t_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_uint64_t_out, uint64_t_out, sizeof(uint64_t));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_uint64_t_out, uint64_t_out, sizeof(uint64_t));
     EXPECT_EQ(uint64_t_check, _uint64_t_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_float) {
@@ -331,9 +331,9 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_float) {
     // Setup environment
     auto float_check = ms->Get_arrayElement_test<float>();
     float _float_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_float_out, float_out, sizeof(float));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_float_out, float_out, sizeof(float));
     EXPECT_EQ(float_check, _float_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_double) {
     // Setup agent fn
@@ -343,9 +343,9 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_double) {
     // Setup environment
     auto double_check = ms->Get_arrayElement_test<double>();
     double _double_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_double_out, double_out, sizeof(double));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_double_out, double_out, sizeof(double));
     EXPECT_EQ(double_check, _double_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_int8_t) {
     // Setup agent fn
@@ -355,9 +355,9 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_int8_t) {
     // Setup environment
     auto int8_t_check = ms->Get_arrayElement_test<int8_t>();
     int8_t _int8_t_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_int8_t_out, int8_t_out, sizeof(int8_t));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_int8_t_out, int8_t_out, sizeof(int8_t));
     EXPECT_EQ(int8_t_check, _int8_t_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint8_t) {
     // Setup agent fn
@@ -367,9 +367,9 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint8_t) {
     // Setup environment
     auto uint8_t_check = ms->Get_arrayElement_test<uint8_t>();
     uint8_t _uint8_t_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_uint8_t_out, uint8_t_out, sizeof(uint8_t));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_uint8_t_out, uint8_t_out, sizeof(uint8_t));
     EXPECT_EQ(uint8_t_check, _uint8_t_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_int16_t) {
     // Setup agent fn
@@ -379,9 +379,9 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_int16_t) {
     // Setup environment
     auto int16_t_check = ms->Get_arrayElement_test<int16_t>();
     int16_t _int16_t_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_int16_t_out, int16_t_out, sizeof(int16_t));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_int16_t_out, int16_t_out, sizeof(int16_t));
     EXPECT_EQ(int16_t_check, _int16_t_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint16_t) {
     // Setup agent fn
@@ -391,9 +391,9 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint16_t) {
     // Setup environment
     auto uint16_t_check = ms->Get_arrayElement_test<uint16_t>();
     uint16_t _uint16_t_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_uint16_t_out, uint16_t_out, sizeof(uint16_t));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_uint16_t_out, uint16_t_out, sizeof(uint16_t));
     EXPECT_EQ(uint16_t_check, _uint16_t_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint32_t) {
     // Setup agent fn
@@ -403,9 +403,9 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint32_t) {
     // Setup environment
     auto uint32_t_check = ms->Get_arrayElement_test<uint32_t>();
     uint32_t _uint32_t_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_uint32_t_out, uint32_t_out, sizeof(uint32_t));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_uint32_t_out, uint32_t_out, sizeof(uint32_t));
     EXPECT_EQ(uint32_t_check, _uint32_t_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_int32_t) {
     // Setup agent fn
@@ -415,9 +415,9 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_int32_t) {
     // Setup environment
     auto int32_t_check = ms->Get_arrayElement_test<int32_t>();
     int32_t _int32_t_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_int32_t_out, int32_t_out, sizeof(int32_t));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_int32_t_out, int32_t_out, sizeof(int32_t));
     EXPECT_EQ(int32_t_check, _int32_t_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint64_t) {
     // Setup agent fn
@@ -427,9 +427,9 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_uint64_t) {
     // Setup environment
     auto uint64_t_check = ms->Get_arrayElement_test<uint64_t>();
     uint64_t _uint64_t_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_uint64_t_out, uint64_t_out, sizeof(uint64_t));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_uint64_t_out, uint64_t_out, sizeof(uint64_t));
     EXPECT_EQ(uint64_t_check, _uint64_t_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 TEST_F(DeviceEnvironmentTest, Get_arrayElement_int64_t) {
     // Setup agent fn
@@ -439,9 +439,9 @@ TEST_F(DeviceEnvironmentTest, Get_arrayElement_int64_t) {
     // Setup environment
     auto int64_t_check = ms->Get_arrayElement_test<int64_t>();
     int64_t _int64_t_out = 0;
-    flamegpu::detail::gpu::Error_t status = flamegpu::detail::gpu::gpuMemcpyFromSymbol(&_int64_t_out, int64_t_out, sizeof(int64_t));
+    detail::gpu::Error_t status = detail::gpu::gpuMemcpyFromSymbol(&_int64_t_out, int64_t_out, sizeof(int64_t));
     EXPECT_EQ(int64_t_check, _int64_t_out);
-    EXPECT_EQ(status, flamegpu::detail::gpu::gpuSuccess);
+    EXPECT_EQ(status, detail::gpu::gpuSuccess);
 }
 FLAMEGPU_AGENT_FUNCTION(get_array_shorthand, MessageNone, MessageNone) {
     FLAMEGPU->setVariable<float, 3>("k", 0, FLAMEGPU->environment.getProperty<float>("k", 0));

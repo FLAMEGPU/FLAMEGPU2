@@ -18,7 +18,7 @@ namespace flamegpu {
 #define CUDA_ONLY_TEST(test_suite, test_name) TEST(test_suite, DISABLED_ ## test_name)
 #endif  // defined(FLAMEGPU_USE_CUDA)
 
-// flamegpu::detail::gpu::cuda::compute_capability is CUDA-only, so deine a macro which marks these tests as disabled otherwise.
+// detail::gpu::cuda::compute_capability is CUDA-only, so deine a macro which marks these tests as disabled otherwise.
 
 // Test the getting of a device's compute capability.
 CUDA_ONLY_TEST(TestDetailGPUCudaComputeCapability, getComputeCapability) {
@@ -33,8 +33,8 @@ CUDA_ONLY_TEST(TestDetailGPUCudaComputeCapability, getComputeCapability) {
         // Manually get the arch as the reference.
         int major = 0;
         int minor = 0;
-        flamegpu::detail::gpuCheck(cudaDeviceGetAttribute(&major, cudaDevAttrComputeCapabilityMajor, i));
-        flamegpu::detail::gpuCheck(cudaDeviceGetAttribute(&minor, cudaDevAttrComputeCapabilityMinor, i));
+        detail::gpuCheck(cudaDeviceGetAttribute(&major, cudaDevAttrComputeCapabilityMajor, i));
+        detail::gpuCheck(cudaDeviceGetAttribute(&minor, cudaDevAttrComputeCapabilityMinor, i));
         int reference = (10 * major) + minor;
         // The function should return the reference value.
         EXPECT_EQ(detail::gpu::cuda::compute_capability::getComputeCapability(i), reference);

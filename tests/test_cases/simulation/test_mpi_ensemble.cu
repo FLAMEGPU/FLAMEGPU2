@@ -420,44 +420,44 @@ TEST(TestMPIEnsembleNoFixture, devicesForThisRank) {
     // Call the static, testable version of devicesForThisRank assigns the correct number of devices to the "current" rank, faking the mpi rank and size to make this testable regardless of mpirun config.
 
     // with 1 local mpi rank, the full set of devices should be used regarldes of count
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0}, 1, 0), std::set<int>({0}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0, 1}, 1, 0), std::set<int>({0, 1}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({1, 2, 3}, 1, 0), std::set<int>({1, 2, 3}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0}, 1, 0), std::set<int>({0}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0, 1}, 1, 0), std::set<int>({0, 1}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({1, 2, 3}, 1, 0), std::set<int>({1, 2, 3}));
 
     // with the same number of ranks as gpus, each rank should get thier respective gpu
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 4, 0), std::set<int>({0}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 4, 1), std::set<int>({1}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 4, 2), std::set<int>({2}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 4, 3), std::set<int>({3}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({2, 3}, 2, 0), std::set<int>({2}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({2, 3}, 2, 1), std::set<int>({3}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 4, 0), std::set<int>({0}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 4, 1), std::set<int>({1}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 4, 2), std::set<int>({2}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 4, 3), std::set<int>({3}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({2, 3}, 2, 0), std::set<int>({2}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({2, 3}, 2, 1), std::set<int>({3}));
 
     // With fewer ranks than gpus, gpus should be load balanced, with lower ranks having extra gpus if the number is not divisible
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 2, 0), std::set<int>({0, 1}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 2, 1), std::set<int>({2, 3}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0, 1, 2}, 2, 0), std::set<int>({0, 1}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0, 1, 2}, 2, 1), std::set<int>({2}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 2, 0), std::set<int>({0, 1}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 2, 1), std::set<int>({2, 3}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0, 1, 2}, 2, 0), std::set<int>({0, 1}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0, 1, 2}, 2, 1), std::set<int>({2}));
 
     // with more ranks than gpus, each rank should get 1 or 0 gpus.
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0}, 3, 0), std::set<int>({0}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0}, 3, 1), std::set<int>({}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0}, 3, 2), std::set<int>({}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 6, 0), std::set<int>({0}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 6, 1), std::set<int>({1}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 6, 2), std::set<int>({2}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 6, 3), std::set<int>({3}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 6, 4), std::set<int>({}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 6, 5), std::set<int>({}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0}, 3, 0), std::set<int>({0}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0}, 3, 1), std::set<int>({}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0}, 3, 2), std::set<int>({}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 6, 0), std::set<int>({0}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 6, 1), std::set<int>({1}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 6, 2), std::set<int>({2}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 6, 3), std::set<int>({3}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 6, 4), std::set<int>({}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({0, 1, 2, 3}, 6, 5), std::set<int>({}));
 
     // std::set is sorted, not ordered, so the selected device will use lower device ids for lower ranks
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({3, 2, 1}, 3, 0), std::set<int>({1}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({3, 2, 1}, 3, 1), std::set<int>({2}));
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({3, 2, 1}, 3, 2), std::set<int>({3}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({3, 2, 1}, 3, 0), std::set<int>({1}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({3, 2, 1}, 3, 1), std::set<int>({2}));
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({3, 2, 1}, 3, 2), std::set<int>({3}));
 
     // no devices, set should be empty regardless of mpi size / rank
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({}, 1, 0), std::set<int>());
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({}, 2, 0), std::set<int>());
-    EXPECT_EQ(flamegpu::detail::MPIEnsemble::devicesForThisRank({}, 2, 1), std::set<int>());
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({}, 1, 0), std::set<int>());
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({}, 2, 0), std::set<int>());
+    EXPECT_EQ(detail::MPIEnsemble::devicesForThisRank({}, 2, 1), std::set<int>());
 }
 #else
 TEST(TestMPIEnsemble, DISABLED_success) { }

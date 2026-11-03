@@ -37,22 +37,22 @@ FLAMEGPU_AGENT_FUNCTION(alive, MessageNone, MessageNone) {
 TEST(TestCleanup, Explicit) {
     // Allocate some arbitrary device memory.
     int * d_int = nullptr;
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_int, sizeof(int)));
+    detail::gpuCheck(detail::gpu::gpuMalloc(&d_int, sizeof(int)));
     // Validate that the ptr is a valid device pointer
-    flamegpu::detail::gpu::PointerAttributes_t attributes = {};
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
-    EXPECT_EQ(attributes.type, flamegpu::detail::gpu::gpuMemoryTypeDevice);
+    detail::gpu::PointerAttributes_t attributes = {};
+    detail::gpuCheck(detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
+    EXPECT_EQ(attributes.type, detail::gpu::gpuMemoryTypeDevice);
 
     // Call the cleanup method
     flamegpu::util::cleanup();
 
     // Assert that the pointer is no logner valid - i.e. the device was actually reset
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
-    EXPECT_NE(attributes.type, flamegpu::detail::gpu::gpuMemoryTypeDevice);
+    detail::gpuCheck(detail::gpu::gpuPointerGetAttributes(&attributes, d_int));
+    EXPECT_NE(attributes.type, detail::gpu::gpuMemoryTypeDevice);
 
     // Free explicit device memory, if it was valid (to get the correct error)
-    if (attributes.type == flamegpu::detail::gpu::gpuMemoryTypeDevice) {
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuFree(d_int));
+    if (attributes.type == detail::gpu::gpuMemoryTypeDevice) {
+        detail::gpuCheck(detail::gpu::gpuFree(d_int));
     }
     d_int = nullptr;
 }

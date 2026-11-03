@@ -16,7 +16,7 @@ TEST(TestUtilWDDM, deviceIsWDDM) {
 
     // Get the number of cuda devices
     int device_count = 0;
-    if (flamegpu::detail::gpu::gpuSuccess != flamegpu::detail::gpu::gpuGetDeviceCount(&device_count) || device_count <= 0) {
+    if (detail::gpu::gpuSuccess != detail::gpu::gpuGetDeviceCount(&device_count) || device_count <= 0) {
         return;
     }
     // For each CUDA device, get the wddm value and check it.
@@ -26,7 +26,7 @@ TEST(TestUtilWDDM, deviceIsWDDM) {
         #if defined(_MSC_VER) && defined(FLAMEGPU_USE_CUDA)
             int tccDriver = 0;
             // Get if the driver is TCC or not
-            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuDeviceGetAttribute(&tccDriver, FLAMEGPU_GPU_RUNTIME_SYMBOL(DevAttrTccDriver), i));
+            detail::gpuCheck(detail::gpu::gpuDeviceGetAttribute(&tccDriver, FLAMEGPU_GPU_RUNTIME_SYMBOL(DevAttrTccDriver), i));
             // WDDM driver is if not the tcc driver, and on windows.
             reference = !tccDriver;
         #endif
@@ -40,12 +40,12 @@ TEST(TestUtilWDDM, deviceIsWDDM) {
 
     // Also check for the current device.
     int currentDeviceIndex = 0;
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuGetDevice(&currentDeviceIndex));
+    detail::gpuCheck(detail::gpu::gpuGetDevice(&currentDeviceIndex));
     bool reference = false;
     #if defined(_MSC_VER) && defined(FLAMEGPU_USE_CUDA)
         int tccDriver = 0;
         // Get if the driver is TCC or not
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuDeviceGetAttribute(&tccDriver, FLAMEGPU_GPU_RUNTIME_SYMBOL(DevAttrTccDriver), currentDeviceIndex));
+        detail::gpuCheck(detail::gpu::gpuDeviceGetAttribute(&tccDriver, FLAMEGPU_GPU_RUNTIME_SYMBOL(DevAttrTccDriver), currentDeviceIndex));
         // WDDM driver is if not the tcc driver, and on windows.
         reference = !tccDriver;
     #endif
