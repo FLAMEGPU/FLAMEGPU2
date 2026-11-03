@@ -184,7 +184,7 @@ std::string MPIEnsemble::assembleGPUsString() {
         }
         free(buff);
     } else {
-        const std::string d_string = local_rank == 0 ? flamegpu::detail::gpu::getDeviceNames(config.devices) : "";
+        const std::string d_string = local_rank == 0 ? detail::gpu::getDeviceNames(config.devices) : "";
         // Send GPU count
         MPI_Send(
             d_string.c_str(),               // void* data

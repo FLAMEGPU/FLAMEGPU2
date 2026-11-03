@@ -19,7 +19,7 @@ void CUDAScanCompaction::resize(const unsigned int newCount, const Type& type, c
     configs[type][streamId].resize_scan_flag(newCount);
 }
 
-void CUDAScanCompaction::zero_async(const Type& type, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId) {
+void CUDAScanCompaction::zero_async(const Type& type, detail::gpu::Stream_t stream, unsigned int streamId) {
     assert(streamId < MAX_STREAMS);
     assert(type < MAX_TYPES);
     configs[type][streamId].zero_scan_flag_async(stream);
@@ -39,29 +39,29 @@ CUDAScanCompactionConfig::~CUDAScanCompactionConfig() {
 }
 void CUDAScanCompactionConfig::free_scan_flag() {
     if (d_ptrs.scan_flag) {
-        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_ptrs.scan_flag));
+        detail::gpuCheck(detail::cuda::cudaFree(d_ptrs.scan_flag));
         d_ptrs.scan_flag = nullptr;
     }
     if (d_ptrs.position) {
-        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_ptrs.position));
+        detail::gpuCheck(detail::cuda::cudaFree(d_ptrs.position));
         d_ptrs.position = nullptr;
     }
 }
 
-void CUDAScanCompactionConfig::zero_scan_flag_async(flamegpu::detail::gpu::Stream_t stream) {
+void CUDAScanCompactionConfig::zero_scan_flag_async(detail::gpu::Stream_t stream) {
     if (d_ptrs.position) {
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(d_ptrs.position, 0, scan_flag_len * sizeof(unsigned int), stream));
+        detail::gpuCheck(detail::gpu::gpuMemsetAsync(d_ptrs.position, 0, scan_flag_len * sizeof(unsigned int), stream));
     }
     if (d_ptrs.scan_flag) {
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(d_ptrs.scan_flag, 0, scan_flag_len * sizeof(unsigned int), stream));
+        detail::gpuCheck(detail::gpu::gpuMemsetAsync(d_ptrs.scan_flag, 0, scan_flag_len * sizeof(unsigned int), stream));
     }
 }
 
 void CUDAScanCompactionConfig::resize_scan_flag(const unsigned int count) {
     if (count + 1 > scan_flag_len) {
         free_scan_flag();
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_ptrs.scan_flag, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_ptrs.position, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
+        detail::gpuCheck(detail::gpu::gpuMalloc(&d_ptrs.scan_flag, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
+        detail::gpuCheck(detail::gpu::gpuMalloc(&d_ptrs.position, (count + 1) * sizeof(unsigned int)));  // +1 so we can get the total from the scan
         scan_flag_len = count + 1;
     }
 }

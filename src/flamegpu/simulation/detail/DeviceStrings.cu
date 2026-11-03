@@ -10,7 +10,7 @@ namespace flamegpu {
 namespace detail {
 
 DeviceStrings::~DeviceStrings() {
-    flamegpu::detail::gpuCheck(detail::cuda::cudaFree(device_buffer));
+    detail::gpuCheck(detail::cuda::cudaFree(device_buffer));
 }
 void DeviceStrings::registerDeviceString(const std::string &host_string) {
     if (offsets.find(host_string) == offsets.end()) {
@@ -30,13 +30,13 @@ const char* DeviceStrings::getDeviceString(const std::string &host_string) {
     if (!device_buffer || device_buffer_len < host_buffer_len) {
         // Double buffer len in size
         device_buffer_len = device_buffer_len == 0 ? 1024 : device_buffer_len * 2;
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuFree(device_buffer));
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&device_buffer, device_buffer_len));
+        detail::gpuCheck(detail::gpu::gpuFree(device_buffer));
+        detail::gpuCheck(detail::gpu::gpuMalloc(&device_buffer, device_buffer_len));
         device_buffer_occupied = 0;
     }
     // Update device buffer if necessary
     if (device_buffer_occupied < host_buffer_len) {
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpy(device_buffer, host_buffer.c_str(), host_buffer_len, flamegpu::detail::gpu::gpuMemcpyHostToDevice));
+        detail::gpuCheck(detail::gpu::gpuMemcpy(device_buffer, host_buffer.c_str(), host_buffer_len, detail::gpu::gpuMemcpyHostToDevice));
         device_buffer_occupied = host_buffer_len;
     }
     // Return

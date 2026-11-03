@@ -24,7 +24,7 @@ CUDAMacroEnvironment::CUDAMacroEnvironment(const EnvironmentData& description, c
     }
 }
 
-void CUDAMacroEnvironment::init(flamegpu::detail::gpu::Stream_t _stream) {
+void CUDAMacroEnvironment::init(detail::gpu::Stream_t _stream) {
     this->stream = _stream;
     for (auto &prop : properties) {
         if (!prop.second.d_ptr) {
@@ -36,14 +36,14 @@ void CUDAMacroEnvironment::init(flamegpu::detail::gpu::Stream_t _stream) {
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
             buffer_size += sizeof(unsigned int);  // Extra uint is used as read-write flag by seatbelts
 #endif
-            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&prop.second.d_ptr, buffer_size));
-            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(prop.second.d_ptr, 0, buffer_size, _stream));
+            detail::gpuCheck(detail::gpu::gpuMalloc(&prop.second.d_ptr, buffer_size));
+            detail::gpuCheck(detail::gpu::gpuMemsetAsync(prop.second.d_ptr, 0, buffer_size, _stream));
         }
     }
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(_stream));
+    detail::gpuCheck(detail::gpu::gpuStreamSynchronize(_stream));
 }
 
-void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, std::shared_ptr<const detail::CUDAMacroEnvironment> master_macro_env, flamegpu::detail::gpu::Stream_t _stream) {
+void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, std::shared_ptr<const detail::CUDAMacroEnvironment> master_macro_env, detail::gpu::Stream_t _stream) {
     this->stream = _stream;
     // Map local properties
     for (auto& prop : properties) {
@@ -59,8 +59,8 @@ void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, std::shared_p
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
                     buffer_size += sizeof(unsigned int);  // Extra uint is used as read-write flag by seatbelts
 #endif
-                    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&prop.second.d_ptr, buffer_size));
-                    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(prop.second.d_ptr, 0, buffer_size, _stream));
+                    detail::gpuCheck(detail::gpu::gpuMalloc(&prop.second.d_ptr, buffer_size));
+                    detail::gpuCheck(detail::gpu::gpuMemsetAsync(prop.second.d_ptr, 0, buffer_size, _stream));
             } else {
                 // If it's a mapped sub macro property
                 auto mmp = master_macro_env->properties.find(sub->second);
@@ -78,13 +78,13 @@ void CUDAMacroEnvironment::init(const SubEnvironmentData& mapping, std::shared_p
             }
         }
     }
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(_stream));
+    detail::gpuCheck(detail::gpu::gpuStreamSynchronize(_stream));
 }
 void CUDAMacroEnvironment::free() {
     for (auto& prop : properties) {
         if (prop.second.d_ptr) {
             if (!prop.second.is_sub) {
-                flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(prop.second.d_ptr));
+                detail::gpuCheck(detail::cuda::cudaFree(prop.second.d_ptr));
             }
             prop.second.d_ptr = nullptr;
         }
@@ -120,7 +120,7 @@ std::shared_ptr<HostMacroProperty_MetaData> CUDAMacroEnvironment::getHostPropert
     return nullptr;
 }
 #if !defined(FLAMEGPU_SEATBELTS) || FLAMEGPU_SEATBELTS
-void CUDAMacroEnvironment::resetFlagsAsync(const std::vector<flamegpu::detail::gpu::Stream_t> &streams) {
+void CUDAMacroEnvironment::resetFlagsAsync(const std::vector<detail::gpu::Stream_t> &streams) {
     unsigned int i = 0;
     for (const auto& prop : properties) {
         if (prop.second.d_ptr) {
@@ -129,12 +129,12 @@ void CUDAMacroEnvironment::resetFlagsAsync(const std::vector<flamegpu::detail::g
                 * prop.second.elements[1]
                 * prop.second.elements[2]
                 * prop.second.elements[3];
-            flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(static_cast<char*>(prop.second.d_ptr) + buffer_size, 0 , sizeof(unsigned int), streams[i++%streams.size()]));
+            detail::gpuCheck(detail::gpu::gpuMemsetAsync(static_cast<char*>(prop.second.d_ptr) + buffer_size, 0 , sizeof(unsigned int), streams[i++%streams.size()]));
         }
     }
     // Disable the sync here, users must sync themselves
     // if (properties.size()) {
-//      flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuDeviceSynchronize());
+//      detail::gpuCheck(detail::gpu::gpuDeviceSynchronize());
     // }
 }
 bool CUDAMacroEnvironment::getDeviceReadFlag(const std::string& property_name) {
@@ -150,8 +150,8 @@ bool CUDAMacroEnvironment::getDeviceReadFlag(const std::string& property_name) {
         * prop->second.elements[2]
         * prop->second.elements[3];
     unsigned int ret = 0;
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&ret, static_cast<char*>(prop->second.d_ptr) + buffer_size, sizeof(unsigned int), flamegpu::detail::gpu::gpuMemcpyDeviceToHost, stream));
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
+    detail::gpuCheck(detail::gpu::gpuMemcpyAsync(&ret, static_cast<char*>(prop->second.d_ptr) + buffer_size, sizeof(unsigned int), detail::gpu::gpuMemcpyDeviceToHost, stream));
+    detail::gpuCheck(detail::gpu::gpuStreamSynchronize(stream));
     return (ret & 1u << 0);
 }
 bool CUDAMacroEnvironment::getDeviceWriteFlag(const std::string& property_name) {
@@ -167,8 +167,8 @@ bool CUDAMacroEnvironment::getDeviceWriteFlag(const std::string& property_name) 
         * prop->second.elements[2]
         * prop->second.elements[3];
     unsigned int ret = 0;
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&ret, static_cast<char*>(prop->second.d_ptr) + buffer_size, sizeof(unsigned int), flamegpu::detail::gpu::gpuMemcpyDeviceToHost, stream));
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
+    detail::gpuCheck(detail::gpu::gpuMemcpyAsync(&ret, static_cast<char*>(prop->second.d_ptr) + buffer_size, sizeof(unsigned int), detail::gpu::gpuMemcpyDeviceToHost, stream));
+    detail::gpuCheck(detail::gpu::gpuStreamSynchronize(stream));
     return (ret & 1u << 1);
 }
 unsigned int CUDAMacroEnvironment::getDeviceRWFlags(const std::string& property_name) {
@@ -184,8 +184,8 @@ unsigned int CUDAMacroEnvironment::getDeviceRWFlags(const std::string& property_
         * prop->second.elements[2]
         * prop->second.elements[3];
     unsigned int ret = 0;
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(&ret, static_cast<char*>(prop->second.d_ptr) + buffer_size, sizeof(unsigned int), flamegpu::detail::gpu::gpuMemcpyDeviceToHost, stream));
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
+    detail::gpuCheck(detail::gpu::gpuMemcpyAsync(&ret, static_cast<char*>(prop->second.d_ptr) + buffer_size, sizeof(unsigned int), detail::gpu::gpuMemcpyDeviceToHost, stream));
+    detail::gpuCheck(detail::gpu::gpuStreamSynchronize(stream));
     return ret;
 }
 #endif

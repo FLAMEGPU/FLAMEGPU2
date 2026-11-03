@@ -11,33 +11,33 @@
 #include "flamegpu/detail/cuda.cuh"
 
 namespace flamegpu {
-void MessageBruteForce::CUDAModelHandler::init(detail::CUDAScatter &, unsigned int, flamegpu::detail::gpu::Stream_t stream) {
+void MessageBruteForce::CUDAModelHandler::init(detail::CUDAScatter &, unsigned int, detail::gpu::Stream_t stream) {
     allocateMetaDataDevicePtr(stream);
     // Allocate messages
     hd_metadata.length = 0;  // This value should already be 0
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_metadata, &hd_metadata, sizeof(MetaData), flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));  // This could probably be skipped/delayed safely
+    detail::gpuCheck(detail::gpu::gpuMemcpyAsync(d_metadata, &hd_metadata, sizeof(MetaData), detail::gpu::gpuMemcpyHostToDevice, stream));
+    detail::gpuCheck(detail::gpu::gpuStreamSynchronize(stream));  // This could probably be skipped/delayed safely
 }
 
-void MessageBruteForce::CUDAModelHandler::allocateMetaDataDevicePtr(flamegpu::detail::gpu::Stream_t stream) {
+void MessageBruteForce::CUDAModelHandler::allocateMetaDataDevicePtr(detail::gpu::Stream_t stream) {
     if (d_metadata == nullptr) {
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(&d_metadata, sizeof(MetaData)));
+        detail::gpuCheck(detail::gpu::gpuMalloc(&d_metadata, sizeof(MetaData)));
     }
 }
 
 void MessageBruteForce::CUDAModelHandler::freeMetaDataDevicePtr() {
     if (d_metadata != nullptr) {
-        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(d_metadata));
+        detail::gpuCheck(detail::cuda::cudaFree(d_metadata));
     }
     d_metadata = nullptr;
 }
 
-void MessageBruteForce::CUDAModelHandler::buildIndex(detail::CUDAScatter &, unsigned int, flamegpu::detail::gpu::Stream_t stream) {
+void MessageBruteForce::CUDAModelHandler::buildIndex(detail::CUDAScatter &, unsigned int, detail::gpu::Stream_t stream) {
     unsigned int newLength = this->sim_message.getMessageCount();
     if (newLength != hd_metadata.length) {
         hd_metadata.length = newLength;
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemcpyAsync(d_metadata, &hd_metadata, sizeof(MetaData), flamegpu::detail::gpu::gpuMemcpyHostToDevice, stream));  // Not Pinned
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));  // This could probably be skipped/delayed safely if in the right stream
+        detail::gpuCheck(detail::gpu::gpuMemcpyAsync(d_metadata, &hd_metadata, sizeof(MetaData), detail::gpu::gpuMemcpyHostToDevice, stream));  // Not Pinned
+        detail::gpuCheck(detail::gpu::gpuStreamSynchronize(stream));  // This could probably be skipped/delayed safely if in the right stream
     }
 }
 
