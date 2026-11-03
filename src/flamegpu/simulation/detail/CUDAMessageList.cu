@@ -22,14 +22,14 @@ namespace detail {
 * CUDAMessageList class
 * @brief populates CUDA message map
 */
-CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message, detail::CUDAScatter &scatter, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId)
+CUDAMessageList::CUDAMessageList(CUDAMessage& cuda_message, detail::CUDAScatter &scatter, detail::gpu::Stream_t stream, unsigned int streamId)
     : message(cuda_message) {
     // allocate message lists
     allocateDeviceMessageList(d_list);
     allocateDeviceMessageList(d_swap_list);
     zeroDeviceMessageList_async(d_list, stream);
     zeroDeviceMessageList_async(d_swap_list, stream);
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
+    detail::gpuCheck(detail::gpu::gpuStreamSynchronize(stream));
 }
 
 /**
@@ -60,13 +60,13 @@ void CUDAMessageList::allocateDeviceMessageList(CUDAMessageMap &memory_map) {
 
         // do the device allocation
         void * d_ptr;
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMalloc(reinterpret_cast<void**>(&d_ptr), var_size * message.getMaximumListSize()));
+        detail::gpuCheck(detail::gpu::gpuMalloc(reinterpret_cast<void**>(&d_ptr), var_size * message.getMaximumListSize()));
 
         // store the pointer in the map
         memory_map.insert(CUDAMessageMap::value_type(var_name, d_ptr));
     }
 }
-void CUDAMessageList::resize(CUDAScatter& scatter, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId, unsigned int keep_len) {
+void CUDAMessageList::resize(CUDAScatter& scatter, detail::gpu::Stream_t stream, unsigned int streamId, unsigned int keep_len) {
     // Release d_swap_list, we don't retain this data
     releaseDeviceMessageList(d_swap_list);
     // Allocate the new d_list
@@ -90,19 +90,19 @@ void CUDAMessageList::resize(CUDAScatter& scatter, flamegpu::detail::gpu::Stream
     // Zero any new buffers with undefined data
     zeroDeviceMessageList_async(d_list, stream, keep_len);
     zeroDeviceMessageList_async(d_swap_list, stream);
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
+    detail::gpuCheck(detail::gpu::gpuStreamSynchronize(stream));
 }
 
 void CUDAMessageList::releaseDeviceMessageList(CUDAMessageMap& memory_map) {
     // for each device pointer in the cuda memory map we need to free these
     for (const auto &mm : memory_map) {
         // free the memory on the device
-        flamegpu::detail::gpuCheck(flamegpu::detail::cuda::cudaFree(mm.second));
+        detail::gpuCheck(detail::cuda::cudaFree(mm.second));
     }
     memory_map.clear();
 }
 
-void CUDAMessageList::zeroDeviceMessageList_async(CUDAMessageMap& memory_map, flamegpu::detail::gpu::Stream_t stream, unsigned int skip_offset) {
+void CUDAMessageList::zeroDeviceMessageList_async(CUDAMessageMap& memory_map, detail::gpu::Stream_t stream, unsigned int skip_offset) {
     if (skip_offset >= message.getMaximumListSize())
         return;
     // for each device pointer in the cuda memory map set the values to 0
@@ -112,7 +112,7 @@ void CUDAMessageList::zeroDeviceMessageList_async(CUDAMessageMap& memory_map, fl
         const size_t var_size = var.type_size * var.elements;
 
         // set the memory to zero
-        flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuMemsetAsync(static_cast<char*>(mm.second) + (var_size * skip_offset), 0, var_size * (message.getMaximumListSize() - skip_offset), stream));
+        detail::gpuCheck(detail::gpu::gpuMemsetAsync(static_cast<char*>(mm.second) + (var_size * skip_offset), 0, var_size * (message.getMaximumListSize() - skip_offset), stream));
     }
 }
 
@@ -137,10 +137,10 @@ void* CUDAMessageList::getWriteMessageListVariablePointer(std::string variable_n
     return mm->second;
 }
 
-void CUDAMessageList::zeroMessageData(flamegpu::detail::gpu::Stream_t stream) {
+void CUDAMessageList::zeroMessageData(detail::gpu::Stream_t stream) {
     zeroDeviceMessageList_async(d_list, stream);
     zeroDeviceMessageList_async(d_swap_list, stream);
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuStreamSynchronize(stream));
+    detail::gpuCheck(detail::gpu::gpuStreamSynchronize(stream));
 }
 
 
@@ -148,7 +148,7 @@ void CUDAMessageList::swap() {
     std::swap(d_list, d_swap_list);
 }
 
-unsigned int CUDAMessageList::scatter(unsigned int newCount, detail::CUDAScatter &scatter, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId, bool append) {
+unsigned int CUDAMessageList::scatter(unsigned int newCount, detail::CUDAScatter &scatter, detail::gpu::Stream_t stream, unsigned int streamId, bool append) {
     if (append) {
         unsigned int oldCount = message.getMessageCount();
         return oldCount + scatter.scatter(streamId,
@@ -168,7 +168,7 @@ unsigned int CUDAMessageList::scatter(unsigned int newCount, detail::CUDAScatter
             0);
     }
 }
-unsigned int CUDAMessageList::scatterAll(unsigned int newCount, detail::CUDAScatter &scatter, flamegpu::detail::gpu::Stream_t stream, unsigned int streamId) {
+unsigned int CUDAMessageList::scatterAll(unsigned int newCount, detail::CUDAScatter &scatter, detail::gpu::Stream_t stream, unsigned int streamId) {
     unsigned int oldCount = message.getMessageCount();
     return oldCount + scatter.scatterAll(streamId,
         stream,

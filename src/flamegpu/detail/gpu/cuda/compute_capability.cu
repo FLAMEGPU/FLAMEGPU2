@@ -39,14 +39,14 @@ int compute_capability::getComputeCapability(int deviceIndex) {
 
     // Ensure deviceIndex is valid.
     int deviceCount = 0;
-    flamegpu::detail::gpuCheck(flamegpu::detail::gpu::gpuGetDeviceCount(&deviceCount));
+    detail::gpuCheck(detail::gpu::gpuGetDeviceCount(&deviceCount));
     if (deviceIndex >= deviceCount) {
         // Throw an excpetion if the device index is bad.
         THROW exception::InvalidCUDAdevice();
     }
     // Load device attributes
-    flamegpu::detail::gpuCheck(cudaDeviceGetAttribute(&minor, cudaDevAttrComputeCapabilityMinor, deviceIndex));
-    flamegpu::detail::gpuCheck(cudaDeviceGetAttribute(&major, cudaDevAttrComputeCapabilityMajor, deviceIndex));
+    detail::gpuCheck(cudaDeviceGetAttribute(&minor, cudaDevAttrComputeCapabilityMinor, deviceIndex));
+    detail::gpuCheck(cudaDeviceGetAttribute(&major, cudaDevAttrComputeCapabilityMajor, deviceIndex));
     // Compute the arch integer value.
     int arch = (10 * major) + minor;
     return arch;
