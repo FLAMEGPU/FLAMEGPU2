@@ -10,7 +10,6 @@
 #else
 #pragma diag_suppress 1719
 #endif  // __NVCC_DIAG_PRAGMA_SUPPORT__
-#include <cub/cub.cuh>
 #include <thrust/count.h>  // NOLINT(build/include)
 #include <thrust/device_ptr.h>  // NOLINT(build/include)
 #include <thrust/sort.h>  // NOLINT(build/include)
@@ -26,13 +25,10 @@
 #endif  // FLAMEGPU_USE_CUDA
 
 #ifdef FLAMEGPU_USE_HIP
-#include <hipcub/hipcub.hpp>
 #include <thrust/count.h>  // NOLINT(build/include)
 #include <thrust/device_ptr.h>  // NOLINT(build/include)
 #include <thrust/sort.h>  // NOLINT(build/include)
 #include <thrust/execution_policy.h>   // NOLINT(build/include)
-// namepspace alias so cub:: can be used
-namespace cub = hipcub;
 // Ensure that thrust::cuda:: is usable, but actually thrust::hip
 namespace thrust {
     namespace cuda = hip;
@@ -57,6 +53,7 @@ namespace thrust {
 #include "flamegpu/simulation/AgentLoggingConfig_SumReturn.h"
 #include "flamegpu/detail/type_decode.h"
 #include "flamegpu/detail/gpu/types.hpp"
+#include "flamegpu/detail/gpu/cub_import.cuh"
 
 namespace flamegpu {
 
