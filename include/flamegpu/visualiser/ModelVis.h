@@ -24,6 +24,7 @@ class CUDASimulation;
 class FLAMEGPU_Visualisation;
 
 namespace visualiser {
+struct VisInfo;
 
 struct ModelVisData {
     /**
@@ -101,7 +102,7 @@ struct ModelVisData {
  */
 class ModelVis {
  public:
-    explicit ModelVis(std::shared_ptr<ModelVisData> data, bool _isSWIG);
+    explicit ModelVis(std::shared_ptr<ModelVisData> data, bool _isSWIG, std::shared_ptr<VisInfo> visInfo);
     /**
      * Default destructor behaviour
      * Defined explicitly, so that header include does not require including FLAMEGPU_Visualisation for std::unique_ptr destruction.
@@ -307,6 +308,7 @@ class ModelVis {
  private:
     const bool isSWIG;
     std::shared_ptr<ModelVisData> data;
+    std::shared_ptr<VisInfo> visInfo;
 };
 
 }  // namespace visualiser
