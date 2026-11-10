@@ -34,14 +34,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   + You should specify the correct architectures for optimal performance
 + Removed `gpuErrchk`, `gpuErrchkDriverAPI` & `gpuErrchkLaunch` macros which were not intended for public usage ([#1379](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1379)).
   + Internal methods `flamegpu::detail::gpuCheck` & `flamegpu::detail::gpuCheckLaunch` are used instead, but should not be considered part of the public API
-+ Minimum supported CUDA updated to 12.4 across all platforms for consistency and c++20 fixes (`<source_location>`) ([#1379](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1379)).
++ Minimum supported CUDA updated to 12.4 across all platforms for consistency and c++20 fixes (`<source_location>`) ([#1384](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1384)).
+  + The minimum supported GCC also updated to 11
++ Break: Consistently return int for all MessageArray Filter getOffset methods
+  + `getOffsetX`/`Y`/`Z` would previously return either `int` or `size_type` (`unsigned int`) 
 
 ### Changed
 
 + Maximum tested CMake upgraded to 4.3.0 ([#1379](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1379)).
 + Replaced used of `FLAMEGPU_PROJECT_IS_TOP_LEVEL` with the CMake-native `PROJECT_IS_TOP_LEVEL`
 
-<!-- ### Deprecated -->
+### Deprecated
+
++ `flamegpu_init_cuda_architectures` & `flamegpu_set_cuda_architectures` are deprecated and no longer required. Please specify `CMAKE_CUDA_ARCHITECTURES`/`CMAKE_HIP_ARCHITECTURES` correctly for your systems.
++ CMake option `FLAMEGPU_ENABLE_NVTX` deprecated, please use `FLAMEGPU_ENABLE_PROFILING` instead.
++ CMake option `FLAMEGPU_CURAND_ENGINE` deprecated, please use `FLAMEGPU_GPURAND_ENGINE` instead.
++ Internal class `flamegpu::detail::CUDAEventTimer` deprecated, replaced by `flamegpu::detail::GPUEventTimer`.
+
 
 ### Removed
 
@@ -53,6 +62,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   + Clang is not yet officially supported/tested for use as the host compiler with NVCC, but may work.
 + Typos and mistakes in comments & strings, including `CUDASimulation::getElapsedTimeExitFunctions` ([#1379](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1379), [#1392](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1392)).
 + Ensures that `AgentVector::resize` correctly initialises agent IDs to 0 ([#1379](https://github.com/FLAMEGPU/FLAMEGPU2/issues/1379)).
++ Prevent double-deletion of CUDA/HIP events in `GPUEventTimer`
++ Add missing `windows.h` include to `CUDAEnsemble`. This was an implicit include via the cuda headers previsouly.
 
 
 ## [2.0.0-rc.5] - 2026-10-14
