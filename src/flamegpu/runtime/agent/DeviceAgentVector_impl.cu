@@ -101,7 +101,8 @@ void DeviceAgentVector_impl::initUnboundBuffers() {
         }
         // Alloc
         const size_t var_size = buff.device->type_size * buff.device->elements;
-        buff.host = static_cast<char*>(malloc(_capacity * var_size));
+        buff.host_sz = _capacity * var_size;
+        buff.host = static_cast<char*>(malloc(buff.host_sz));
         // DtH memcpy
         gpuErrchk(cudaMemcpyAsync(buff.host, buff.device->data, copy_len * var_size, cudaMemcpyDeviceToHost, stream));
         // Not sure this will ever happen, but better safe
@@ -131,7 +132,8 @@ void DeviceAgentVector_impl::reinitUnboundBuffers() {
         if (unbound_host_buffer_capacity < _capacity) {
             free(buff.host);
             // Alloc
-            buff.host = static_cast<char*>(malloc(_capacity * var_size));
+            buff.host_sz = _capacity * var_size;
+            buff.host = static_cast<char*>(malloc(buff.host_sz));
         }
         // DtH memcpy
         gpuErrchk(cudaMemcpyAsync(buff.host, buff.device->data, copy_len * var_size, cudaMemcpyDeviceToHost, stream));
@@ -162,6 +164,7 @@ void DeviceAgentVector_impl::resizeUnboundBuffers(const unsigned int new_capacit
         // Free old
         free(buff.host);
         // Replace old ptr
+        buff.host_sz = new_capacity * var_size;
         buff.host = t;
         if (init) {
             for (unsigned int i = unbound_host_buffer_capacity; i < new_capacity; ++i) {
