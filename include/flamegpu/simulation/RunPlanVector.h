@@ -15,7 +15,10 @@
 
 
 namespace flamegpu {
-
+namespace io {
+class JSONRunPlanReader;
+class JSONRunPlanReader_impl;
+}
 class ModelDescription;
 class EnvironmentDescription;
 
@@ -27,6 +30,12 @@ class RunPlanVector : private std::vector<RunPlan>  {
     friend class RunPlan;
     friend class detail::AbstractSimRunner;
     friend unsigned int CUDAEnsemble::simulate(const RunPlanVector& plans);
+    friend class io::JSONRunPlanReader;
+    friend class io::JSONRunPlanReader_impl;
+    /**
+     * Internal constructor used during file-io
+     */
+    explicit RunPlanVector(const std::shared_ptr<const ModelData> &model, unsigned int initial_length);
 
  public:
     /**

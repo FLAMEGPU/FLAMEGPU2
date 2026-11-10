@@ -12,11 +12,13 @@
 namespace flamegpu {
 
 RunPlanVector::RunPlanVector(const ModelDescription &model, unsigned int initial_length)
+    : RunPlanVector(model.model, initial_length) { }
+RunPlanVector::RunPlanVector(const std::shared_ptr<const ModelData> &model, unsigned int initial_length)
     : std::vector<RunPlan>(initial_length, RunPlan(model))
     , randomPropertySeed(std::random_device()())
     , rand(randomPropertySeed)
-    , environment(std::make_shared<std::unordered_map<std::string, EnvironmentData::PropData> const>(model.model->environment->properties))
-    , allow_0_steps(model.model->exitConditions.size() + model.model->exitConditionCallbacks.size() > 0) {
+    , environment(std::make_shared<std::unordered_map<std::string, EnvironmentData::PropData> const>(model->environment->properties))
+    , allow_0_steps(model->exitConditions.size() + model->exitConditionCallbacks.size() > 0) {
     this->resize(initial_length, RunPlan(environment, allow_0_steps));
 }
 

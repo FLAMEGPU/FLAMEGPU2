@@ -26,7 +26,7 @@ struct Any {
         memcpy(ptr, _ptr, length);
     }
     template<typename T>
-    explicit Any(const T other)
+    explicit Any(const T &other)
         : ptr(malloc(sizeof(T)))
         , length(sizeof(T))
         , type(typeid(T))
@@ -87,7 +87,6 @@ struct Any {
      */
     const unsigned int elements;
 };
-
 }  // namespace detail
 }  // namespace flamegpu
 

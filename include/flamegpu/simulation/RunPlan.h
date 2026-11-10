@@ -24,6 +24,8 @@ class CUDASimulation;
 namespace io {
 class JSONLogger;
 class XMLLogger;
+class JSONRunPlanWriter;
+class JSONRunPlanReader_impl;
 }  // namespace io
 
 /**
@@ -35,6 +37,12 @@ class RunPlan {
     friend class CUDASimulation;
     friend class io::JSONLogger;
     friend class io::XMLLogger;
+    friend class io::JSONRunPlanWriter;
+    friend class io::JSONRunPlanReader_impl;
+    /**
+     * Internal constructor used during file-io
+     */
+    explicit RunPlan(const std::shared_ptr<const ModelData> &model);
 
  public:
     /**

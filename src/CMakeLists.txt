@@ -151,6 +151,8 @@ SET(SRC_INCLUDE
     ${FLAMEGPU_ROOT}/include/flamegpu/flamegpu.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/StateReader.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/StateWriter.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/JSONRunPlanReader.h
+    ${FLAMEGPU_ROOT}/include/flamegpu/io/JSONRunPlanWriter.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/JSONStateReader.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/JSONStateWriter.h
     ${FLAMEGPU_ROOT}/include/flamegpu/io/XMLStateReader.h
@@ -370,6 +372,8 @@ SET(SRC_FLAMEGPU
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/environment/HostEnvironment.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/environment/HostEnvironmentDirectedGraph.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/runtime/random/HostRandom.cu
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONRunPlanReader.cpp
+    ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONRunPlanWriter.cpp
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateReader.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/JSONStateWriter.cu
     ${FLAMEGPU_ROOT}/src/flamegpu/io/StateReader.cu
