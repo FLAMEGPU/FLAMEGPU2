@@ -393,6 +393,12 @@ class ModelDescription {
      */
     flamegpu::size_type getLayersCount() const;
 
+    /**
+     * Serialize the model to file in the JSON format
+     * @param path The file path to serialize the model to (must end in '.json')
+     */
+    void serialize(const std::string& path);
+
  private:
     /**
      * The class which stores all of the model hierarchies data.

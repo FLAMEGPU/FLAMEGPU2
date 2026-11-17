@@ -275,4 +275,9 @@ flamegpu::size_type ModelDescription::getLayersCount() const {
     return static_cast<flamegpu::size_type>(model->layers.size());
 }
 
+void ModelDescription::serialize(const std::string& path)
+{
+    //TODO
+}
+
 }  // namespace flamegpu
