@@ -13,6 +13,10 @@ FetchContent_Declare(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest.git
   GIT_TAG        v1.14.0
+  PATCH_COMMAND git reset --hard HEAD
+    COMMAND git clean -fd
+    COMMAND git apply "${CMAKE_CURRENT_LIST_DIR}/patches/googletest-cmake-4-5-0.patch"
+  UPDATE_DISCONNECTED 1
   ${DEPENDENCY_ARGS}
   SYSTEM
 )
