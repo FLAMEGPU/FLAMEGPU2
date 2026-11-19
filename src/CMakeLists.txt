@@ -554,7 +554,8 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC $<$<CONFIG:Debug>:DEBUG>)
 target_compile_definitions(${PROJECT_NAME} PUBLIC $<$<CONFIG:Debug>:_DEBUG>)
 
 # Prevent windows.h from defining max and min, this can be private as windows.h is only included in src files (directly, or via nvrtc/jitify)
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+# Must check for the platform (windows) not MSVC so that this applies to HIP/ROCm (i.e. clang)
+if(WIN32)
     target_compile_definitions(${PROJECT_NAME} PRIVATE NOMINMAX)
 endif()
 
