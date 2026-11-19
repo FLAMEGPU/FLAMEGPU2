@@ -1,0 +1,27 @@
+From 64201d011c8eaadc4ced8e2acbd3f9e581b530ab Mon Sep 17 00:00:00 2001
+From: Peter Heywood <p.heywood@sheffield.ac.uk>
+Date: Thu, 19 Nov 2026 13:37:31 +0000
+Subject: [PATCH] Suppress new diagnostic issued by CMake >= 4.5.0
+
+---
+ googletest/CMakeLists.txt | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/googletest/CMakeLists.txt b/googletest/CMakeLists.txt
+index caafa8c7..0046c87b 100644
+--- a/googletest/CMakeLists.txt
++++ b/googletest/CMakeLists.txt
+@@ -49,6 +49,10 @@ endif()
+ cmake_minimum_required(VERSION 3.13)
+ project(gtest VERSION ${GOOGLETEST_VERSION} LANGUAGES CXX C)
+ 
++# Prevent CMake >4.5.0 CMD_NON_TARGET_DIRECTIVE warnings
++if (CMAKE_VERSION VERSION_GREATER_EQUAL "4.5.0")
++    cmake_diagnostic(SET CMD_NON_TARGET_DIRECTIVE IGNORE RECURSE)
++endif()
+ if (COMMAND set_up_hermetic_build)
+   set_up_hermetic_build()
+ endif()
+-- 
+2.51.0
+
