@@ -722,8 +722,13 @@ class ModelVis;
 %include "flamegpu/simulation/LogFrame.h"  // Includes RunLog. 
 
 // Include ensemble implementations
+// Must wrap these prior to JSONRunPlanReader etc where they are used to avoid issues with no default constructors.
 %include "flamegpu/simulation/RunPlan.h"
 %include "flamegpu/simulation/RunPlanVector.h"
+
+// Standalone Access to RunPlanVector IO
+%include "flamegpu/io/JSONRunPlanReader.h"
+%include "flamegpu/io/JSONRunPlanWriter.h"
 
 // Include public utility headers
 %include "flamegpu/util/cleanup.h"
